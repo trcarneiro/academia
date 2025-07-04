@@ -1244,7 +1244,7 @@ server.get('/api/classes', async (request, reply) => {
       },
       orderBy: [
         { startTime: 'asc' },
-        { name: 'asc' }
+        { title: 'asc' }
       ]
     });
     

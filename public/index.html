@@ -5885,7 +5885,13 @@
         // Load billing plans dynamically
         async function loadBillingPlans() {
             try {
+                console.log('📋 Carregando planos de pagamento...');
                 const response = await fetch('/api/billing-plans');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success && data.data) {
@@ -5894,14 +5900,15 @@
                     window.billingPlans = data.data;
                     updateBillingPlansOptions();
                 } else {
-                    console.log('📋 Nenhum plano de pagamento encontrado');
+                    console.log('📋 Nenhum plano de pagamento encontrado ou erro na API');
                     window.billingPlans = [];
                     updateBillingPlansOptions();
                 }
             } catch (error) {
-                console.error('Erro ao carregar planos de pagamento:', error);
+                console.error('❌ Erro ao carregar planos de pagamento:', error.message);
                 window.billingPlans = [];
                 updateBillingPlansOptions();
+                // Don't throw - just log and continue
             }
         }
 
@@ -5927,11 +5934,47 @@
         }
 
         function openAddStudentModal() {
-            loadBillingPlans(); // Load billing plans first (planos reais)
-            loadCoursesForModal(); // Load courses second (cursos reais)
-            loadClassesForModal(); // Load classes third (turmas reais)
-            loadFinancialResponsibles(); // Load responsibles last
-            document.getElementById('addStudentModal').classList.add('active');
+            console.log('🔄 Abrindo modal de cadastro de aluno...');
+            
+            // ALWAYS open modal first - this is the critical part
+            const modal = document.getElementById('addStudentModal');
+            if (modal) {
+                modal.classList.add('active');
+                console.log('✅ Modal aberto com sucesso');
+            } else {
+                console.error('❌ Modal addStudentModal não encontrado');
+                return;
+            }
+            
+            // Load data after modal is open - don't block modal opening
+            loadDataForStudentModal();
+        }
+        
+        // Separate function to load data without blocking modal
+        async function loadDataForStudentModal() {
+            console.log('📊 Carregando dados do formulário...');
+            
+            // Load billing plans first (planos reais)
+            loadBillingPlans().catch(error => {
+                console.error('❌ Erro ao carregar planos:', error);
+            });
+            
+            // Load courses second (cursos reais)  
+            loadCoursesForModal().catch(error => {
+                console.error('❌ Erro ao carregar cursos:', error);
+            });
+            
+            // Load classes third (turmas reais)
+            loadClassesForModal().catch(error => {
+                console.error('❌ Erro ao carregar turmas:', error);
+            });
+            
+            // Load responsibles last
+            loadFinancialResponsibles().catch(error => {
+                console.error('❌ Erro ao carregar responsáveis:', error);
+            });
+            
+            console.log('✅ Carregamento de dados iniciado');
         }
 
         // Load classes dynamically for the modal
