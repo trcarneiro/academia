@@ -4514,6 +4514,13 @@
         </div>
     </main>
 
+    <!-- Debug Button for Testing Modal -->
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 9999;">
+        <button onclick="openAddStudentModal()" style="background: #10B981; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
+            🧪 TESTE MODAL
+        </button>
+    </div>
+
     <!-- Add Student Modal -->
     <div id="addStudentModal" class="modal">
         <div class="modal-content">
@@ -5934,20 +5941,31 @@
         }
 
         function openAddStudentModal() {
-            console.log('🔄 Abrindo modal de cadastro de aluno...');
+            console.log('🔄 Iniciando abertura do modal...');
             
-            // ALWAYS open modal first - this is the critical part
-            const modal = document.getElementById('addStudentModal');
-            if (modal) {
-                modal.classList.add('active');
-                console.log('✅ Modal aberto com sucesso');
-            } else {
-                console.error('❌ Modal addStudentModal não encontrado');
-                return;
+            try {
+                // ALWAYS open modal first - this is the critical part
+                const modal = document.getElementById('addStudentModal');
+                console.log('🔍 Modal encontrado:', modal ? 'SIM' : 'NÃO');
+                
+                if (modal) {
+                    console.log('📝 Classes atuais do modal:', modal.className);
+                    modal.classList.add('active');
+                    console.log('✅ Classe "active" adicionada');
+                    console.log('📝 Classes após adição:', modal.className);
+                    
+                    // Load data after modal is open - don't block modal opening
+                    console.log('📊 Iniciando carregamento de dados...');
+                    loadDataForStudentModal();
+                } else {
+                    console.error('❌ Modal addStudentModal não encontrado no DOM');
+                    alert('Erro: Modal não encontrado no DOM');
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Erro crítico ao abrir modal:', error);
+                alert('Erro crítico: ' + error.message);
             }
-            
-            // Load data after modal is open - don't block modal opening
-            loadDataForStudentModal();
         }
         
         // Separate function to load data without blocking modal
