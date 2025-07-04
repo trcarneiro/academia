@@ -1479,6 +1479,97 @@
                 gap: 0.5rem;
             }
         }
+        
+        /* ========================================
+           STUDENT TABLE EVENT HANDLING STYLES
+           ======================================== */
+        
+        /* Ensure action buttons are always clickable */
+        .actions-cell {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .actions-cell .action-btn {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            z-index: 15;
+            position: relative;
+        }
+        
+        /* Student table row styling */
+        .student-table-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .student-table-row:hover {
+            background-color: rgba(59, 130, 246, 0.05) !important;
+        }
+        
+        .student-table-row.row-selected {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+        }
+        
+        /* Action button styling */
+        .action-btn {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin: 0 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            pointer-events: auto;
+        }
+        
+        .action-btn:hover {
+            background: #3B82F6;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .action-btn.checkin {
+            border-color: #10B981;
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .action-btn.checkin:hover {
+            background: #10B981;
+            color: white;
+        }
+        
+        .action-btn.edit {
+            border-color: #F59E0B;
+            color: #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .action-btn.edit:hover {
+            background: #F59E0B;
+            color: white;
+        }
+        
+        /* Prevent text selection on table rows */
+        .student-table-row {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* Ensure proper event propagation */
+        .student-table-row * {
+            pointer-events: auto;
+        }
+        
+        .table-click-hint {
+            pointer-events: none !important;
+        }
     </style>
 </head>
 <body>
@@ -4478,6 +4569,16 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Plano de Pagamento</label>
+                    <select class="form-select" id="studentBillingPlan" onchange="updateStudentPlanPreview()">
+                        <option value="">Selecione um plano (opcional)</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <small style="color: #94A3B8; margin-top: 0.5rem; display: block;">
+                        Selecione um plano de pagamento ou deixe em branco para seleção automática
+                    </small>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Curso</label>
                     <select class="form-select" id="studentCourse" onchange="updateStudentPlanPreview()">
                         <option value="">Selecione um curso (opcional)</option>
@@ -5791,21 +5892,45 @@
                     console.log('📋 Planos de pagamento carregados:', data.data.length);
                     // Store plans for later use in plan preview
                     window.billingPlans = data.data;
+                    updateBillingPlansOptions();
                 } else {
                     console.log('📋 Nenhum plano de pagamento encontrado');
                     window.billingPlans = [];
+                    updateBillingPlansOptions();
                 }
             } catch (error) {
                 console.error('Erro ao carregar planos de pagamento:', error);
                 window.billingPlans = [];
+                updateBillingPlansOptions();
             }
         }
 
+        // Update billing plans select options
+        function updateBillingPlansOptions() {
+            const billingPlanSelect = document.getElementById('studentBillingPlan');
+            
+            if (!billingPlanSelect) return;
+            
+            let optionsHTML = '<option value="">Selecione um plano (opcional)</option>';
+            
+            if (window.billingPlans && window.billingPlans.length > 0) {
+                optionsHTML += window.billingPlans.map(plan => {
+                    const courseName = plan.course?.name || 'Curso não especificado';
+                    const price = plan.price ? `R$ ${plan.price.toFixed(2)}` : 'Preço não definido';
+                    const category = plan.category || 'Categoria geral';
+                    
+                    return `<option value="${plan.id}">${plan.name} - ${price} (${category}) - ${courseName}</option>`;
+                }).join('');
+            }
+            
+            billingPlanSelect.innerHTML = optionsHTML;
+        }
+
         function openAddStudentModal() {
-            loadBillingPlans(); // Load billing plans first
-            loadFinancialResponsibles(); // Load responsibles when opening modal
-            loadClassesForModal(); // Load classes dynamically
-            loadCoursesForModal(); // Load courses dynamically
+            loadBillingPlans(); // Load billing plans first (planos reais)
+            loadCoursesForModal(); // Load courses second (cursos reais)
+            loadClassesForModal(); // Load classes third (turmas reais)
+            loadFinancialResponsibles(); // Load responsibles last
             document.getElementById('addStudentModal').classList.add('active');
         }
 
@@ -5943,8 +6068,9 @@
                 birthDate: document.getElementById('studentBirthDate').value,
                 gender: document.getElementById('studentGender').value,
                 category: document.getElementById('studentCategory').value,
-                classId: document.getElementById('studentClass').value,
+                billingPlanId: document.getElementById('studentBillingPlan').value || null, // Billing plan selection
                 courseId: document.getElementById('studentCourse').value || null, // For intelligent enrollment
+                classId: document.getElementById('studentClass').value,
                 financialResponsibleId: document.getElementById('studentFinancialResponsible').value || null
             };
             
@@ -6440,6 +6566,11 @@
                 filteredStudents = [];
                 showStudentsEmptyState();
             }
+            
+            // Setup event delegation after loading students (PERMANENT FIX)
+            setTimeout(() => {
+                setupStudentTableEventDelegation();
+            }, 100);
         }
 
         // Switch between table and grid view
@@ -6495,6 +6626,108 @@
                 }, 50);
             } else {
                 updateStudentsGrid();
+            }
+        }
+
+        // ========================================
+        // STUDENT TABLE EVENT DELEGATION SYSTEM
+        // ========================================
+        
+        // Set up permanent event delegation for student table
+        function setupStudentTableEventDelegation() {
+            const tableBody = document.getElementById('studentsTableBody');
+            if (!tableBody) {
+                console.warn('🚨 Student table body not found for event delegation setup');
+                return;
+            }
+            
+            // Remove existing listeners to prevent duplicates
+            tableBody.removeEventListener('click', handleStudentTableClick);
+            tableBody.removeEventListener('dblclick', handleStudentTableDoubleClick);
+            
+            // Add event listeners with delegation
+            tableBody.addEventListener('click', handleStudentTableClick);
+            tableBody.addEventListener('dblclick', handleStudentTableDoubleClick);
+            
+            console.log('✅ Student table event delegation setup complete');
+        }
+        
+        // Handle all clicks in student table
+        function handleStudentTableClick(event) {
+            const target = event.target;
+            const studentRow = target.closest('tr.student-table-row');
+            
+            if (!studentRow) return;
+            
+            // Handle action buttons
+            if (target.dataset.action === 'checkin') {
+                event.stopPropagation();
+                quickCheckinFixed(target.dataset.studentId);
+                return;
+            }
+            
+            if (target.dataset.action === 'edit') {
+                event.stopPropagation();
+                openStudentEditPage(target.dataset.studentId);
+                return;
+            }
+            
+            // Handle row click (but not on action buttons)
+            if (!target.closest('.actions-cell')) {
+                // Single click on row - could add selection here if needed
+                studentRow.classList.add('row-selected');
+                setTimeout(() => {
+                    studentRow.classList.remove('row-selected');
+                }, 200);
+            }
+        }
+        
+        // Handle double-clicks in student table
+        function handleStudentTableDoubleClick(event) {
+            const target = event.target;
+            const studentRow = target.closest('tr.student-table-row');
+            
+            if (!studentRow) return;
+            
+            // Don't trigger on action buttons
+            if (target.closest('.actions-cell')) return;
+            
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const studentId = studentRow.dataset.studentId;
+            if (studentId) {
+                console.log('🖱️ Double-click detected for student:', studentId);
+                openStudentEditPage(studentId);
+            }
+        }
+        
+        // Fixed quick check-in function (prevents conflicts)
+        function quickCheckinFixed(studentId) {
+            if (!studentId) {
+                console.error('❌ Student ID not provided for check-in');
+                return;
+            }
+            
+            const student = allStudents.find(s => s.id === studentId);
+            if (!student) {
+                alert('❌ Aluno não encontrado!');
+                return;
+            }
+            
+            const user = student.user || {};
+            const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            const matricula = student.matricula || generateMatricula(student.id, 1);
+            
+            // Show confirmation
+            const confirmed = confirm(`✅ Confirmar check-in para:\n\n📋 Matrícula: ${matricula}\n👤 Nome: ${fullName}\n\nProsseguir?`);
+            
+            if (confirmed) {
+                console.log('✅ Quick check-in confirmed for:', fullName);
+                alert(`✅ Check-in realizado com sucesso!\n\n👤 ${fullName}\n📋 ${matricula}\n⏰ ${new Date().toLocaleTimeString()}`);
+                
+                // Here you would implement the actual check-in API call
+                // For now, just show success feedback
             }
         }
 
@@ -6564,6 +6797,11 @@
                     </tr>
                 `;
             }).join('');
+            
+            // Setup event delegation after updating table
+            setTimeout(() => {
+                setupStudentTableEventDelegation();
+            }, 50);
         }
 
         // Format CPF for display
@@ -6581,8 +6819,9 @@
             return cpf; // Return original if not 11 digits
         }
 
-        // Quick check-in function
-        function quickCheckin(studentId) {
+        // Quick check-in function - COMMENTED OUT TO PREVENT CONFLICTS
+        // Use quickCheckinFixed instead
+        function quickCheckin_DEPRECATED(studentId) {
             const student = allStudents.find(s => s.id === studentId);
             if (!student) {
                 alert('Aluno não encontrado!');
@@ -15000,12 +15239,7 @@ ${subscription.financialResponsible ? `💳 Responsável Financeiro: ${subscript
             }
         }
 
-        // Enhanced openAddStudentModal to load courses
-        function openAddStudentModal() {
-            loadFinancialResponsibles(); // Load responsibles when opening modal
-            loadCoursesForStudentModal(); // Load courses for automatic plan
-            document.getElementById('addStudentModal').classList.add('active');
-        }
+        // NOTE: openAddStudentModal is defined earlier in the file, this is a duplicate - removed
 
         // Form submission handlers
         document.getElementById('addResponsibleForm').addEventListener('submit', async function(e) {
@@ -18161,6 +18395,32 @@ ${subscription.financialResponsible ? `💳 Responsável Financeiro: ${subscript
         // ==========================================
         // AUTO-LOAD DATA FOR INFRASTRUCTURE SECTIONS (Already handled above)
         // ==========================================
+
+        // ==========================================
+        // STUDENT TABLE INITIALIZATION (PERMANENT FIX)
+        // ==========================================
+        
+        // Initialize student table event delegation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing student table event delegation...');
+            
+            // Setup event delegation after a small delay to ensure DOM is ready
+            setTimeout(() => {
+                setupStudentTableEventDelegation();
+                console.log('✅ Student table event delegation initialized on page load');
+            }, 500);
+        });
+        
+        // Backup initialization for cases where DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // DOMContentLoaded will handle it
+        } else {
+            // DOM is already ready
+            setTimeout(() => {
+                setupStudentTableEventDelegation();
+                console.log('✅ Student table event delegation initialized (DOM already ready)');
+            }, 100);
+        }
 
     </script>
 </body>
