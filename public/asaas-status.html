@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏦 Status Integração Asaas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-success {
+            border-left: 4px solid #10B981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .status-error {
+            border-left: 4px solid #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .status-warning {
+            border-left: 4px solid #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: rgba(245, 158, 11, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: #F59E0B;
+            font-weight: 600;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #F8FAFC, #3B82F6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Status da Integração Asaas</h1>
+            <p>Diagnóstico e resolução da conexão com API</p>
+        </div>
+        
+        <div class="status-card status-success">
+            <h2>✅ Sistema POC Funcionando</h2>
+            <p><strong>Interface de importação criada com sucesso!</strong></p>
+            <ul>
+                <li>✅ Endpoints de teste implementados</li>
+                <li>✅ Dados mock funcionais (3 clientes)</li>
+                <li>✅ Interface responsiva completa</li>
+                <li>✅ Sistema de debug avançado</li>
+            </ul>
+            <a href="/asaas-customers.html" class="btn">🔗 Acessar Interface</a>
+        </div>
+        
+        <div class="status-card status-error">
+            <h2>❌ Problema Identificado: API Key Inválida</h2>
+            <p><strong>Diagnóstico:</strong> HTTP 401 Unauthorized em todos os métodos de autenticação</p>
+            
+            <h3>🔍 Testes Realizados:</h3>
+            <ul>
+                <li>❌ Bearer Token: <code>Authorization: Bearer $api_key</code></li>
+                <li>❌ Access Token: <code>access_token: $api_key</code></li>
+                <li>❌ Basic Auth: <code>Authorization: Basic (base64)</code></li>
+            </ul>
+            
+            <div class="code">
+Response Status: 401 Unauthorized
+API Key Length: 166 characters
+Environment: Sandbox
+URL: https://sandbox.asaas.com/api/v3/customers
+            </div>
+        </div>
+        
+        <div class="status-card status-warning">
+            <h2>⚠️ Possíveis Causas do Problema</h2>
+            
+            <h3>1. API Key Incorreta ou Expirada</h3>
+            <ul>
+                <li>Chave pode estar incorreta no arquivo <span class="highlight">.env</span></li>
+                <li>Conta Asaas pode estar suspensa/inativa</li>
+                <li>API Key pode ter expirado</li>
+            </ul>
+            
+            <h3>2. Configuração de Conta</h3>
+            <ul>
+                <li>Conta sandbox pode não estar ativada</li>
+                <li>Permissões da API podem estar restritas</li>
+                <li>IP pode estar bloqueado</li>
+            </ul>
+            
+            <h3>3. Formato da Chave</h3>
+            <ul>
+                <li>API Key atual: <span class="highlight">$aact_prod_...</span></li>
+                <li>Pode precisar ser: <span class="highlight">$aact_sandbox_...</span></li>
+            </ul>
+        </div>
+        
+        <div class="status-card status-warning">
+            <h2>🔧 Como Resolver</h2>
+            
+            <h3>1. Verificar no Dashboard Asaas</h3>
+            <ul>
+                <li>Acessar <a href="https://sandbox.asaas.com" target="_blank" style="color: #3B82F6;">https://sandbox.asaas.com</a></li>
+                <li>Ir em <strong>Configurações → API → Chaves de Acesso</strong></li>
+                <li>Gerar nova chave para Sandbox</li>
+            </ul>
+            
+            <h3>2. Atualizar .env</h3>
+            <div class="code">
+# Substituir no arquivo .env
+ASAAS_API_KEY="$aact_sandbox_nova_chave_aqui"
+ASAAS_IS_SANDBOX=true
+ASAAS_BASE_URL="https://sandbox.asaas.com/api/v3"
+            </div>
+            
+            <h3>3. Testar Novamente</h3>
+            <ul>
+                <li>Reiniciar o servidor</li>
+                <li>Clicar em "🔑 Validar API Key"</li>
+                <li>Clicar em "🔍 Debug API Real"</li>
+            </ul>
+        </div>
+        
+        <div class="status-card status-success">
+            <h2>🚀 Funcionalidades Disponíveis</h2>
+            <p><strong>Enquanto a API Key não é corrigida, o sistema funciona com dados mock:</strong></p>
+            
+            <ul>
+                <li>✅ <strong>Lista de Clientes Mock:</strong> 3 clientes de exemplo</li>
+                <li>✅ <strong>Interface Completa:</strong> Tabela responsiva e filtros</li>
+                <li>✅ <strong>Sistema de Debug:</strong> Diagnóstico detalhado</li>
+                <li>✅ <strong>Validação:</strong> Verificação de formato da API Key</li>
+            </ul>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="/asaas-customers.html" class="btn">📥 Testar com Dados Mock</a>
+                <a href="/" class="btn" style="background: rgba(255,255,255,0.1);">🏠 Voltar Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

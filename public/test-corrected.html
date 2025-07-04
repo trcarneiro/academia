@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Teste Correção Asaas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0F172A;
+            color: #F8FAFC;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .status { padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .success { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .error { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+        .loading { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .code { background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.875rem; margin: 1rem 0; }
+        h1 { text-align: center; margin-bottom: 2rem; color: #3B82F6; }
+        .highlight { background: rgba(16, 185, 129, 0.2); padding: 0.25rem 0.5rem; border-radius: 4px; color: #10B981; }
+        ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste com Correções Oficiais Asaas</h1>
+        
+        <div class="card">
+            <h2>✅ Correções Aplicadas</h2>
+            <p><strong>Baseado na documentação oficial do Asaas:</strong></p>
+            <ul>
+                <li>✅ <span class="highlight">URL corrigida:</span> https://api-sandbox.asaas.com/v3</li>
+                <li>✅ <span class="highlight">Header correto:</span> access_token (não Authorization)</li>
+                <li>✅ <span class="highlight">User-Agent obrigatório:</span> Krav-Maga-Academy/1.0</li>
+                <li>✅ <span class="highlight">Content-Type:</span> application/json</li>
+            </ul>
+            
+            <div class="code">
+# Formato correto dos headers:
+headers: {
+  'Content-Type': 'application/json',
+  'User-Agent': 'Krav-Maga-Academy/1.0',
+  'access_token': 'sua_api_key'
+}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🔍 Teste da Conexão Corrigida</h2>
+            <button class="btn" onclick="testCorrectedAuth()">🚀 Testar Autenticação Correta</button>
+            <button class="btn" onclick="loadRealCustomers()">📋 Carregar Clientes Reais</button>
+            
+            <div id="status" class="status loading">
+                🕐 Aguardando teste...
+            </div>
+            
+            <div id="details" class="code" style="display: none;">
+                Resultados aparecerão aqui...
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>📊 Resultados</h3>
+            <div id="results">
+                <p>Aguardando testes...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const detailsEl = document.getElementById('details');
+        const resultsEl = document.getElementById('results');
+        
+        function updateStatus(type, message) {
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+        }
+        
+        function updateResults(html) {
+            resultsEl.innerHTML = html;
+        }
+        
+        async function testCorrectedAuth() {
+            updateStatus('loading', '🔍 Testando autenticação corrigida...');
+            
+            try {
+                const response = await fetch('/api/asaas/debug');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('success', `✅ Sucesso! Status: ${data.status}`);
+                    detailsEl.innerHTML = `
+Status HTTP: ${data.status}
+Dados recebidos: ${JSON.stringify(data.data, null, 2)}
+                    `;
+                    detailsEl.style.display = 'block';
+                    
+                    updateResults(`
+                        <h4 style="color: #10B981;">✅ Autenticação Funcionando!</h4>
+                        <p>Status: ${data.status}</p>
+                        <p>URL: https://api-sandbox.asaas.com/v3</p>
+                        <p>Método: access_token header</p>
+                    `);
+                } else {
+                    updateStatus('error', `❌ Falhou: ${data.error}`);
+                    detailsEl.innerHTML = `
+Erro: ${data.error}
+Detalhes: ${JSON.stringify(data.details || {}, null, 2)}
+                    `;
+                    detailsEl.style.display = 'block';
+                    
+                    updateResults(`
+                        <h4 style="color: #EF4444;">❌ Ainda com Problemas</h4>
+                        <p>Erro: ${data.error}</p>
+                        <p>Pode ser necessário gerar nova API Key no painel Asaas</p>
+                    `);
+                }
+            } catch (error) {
+                updateStatus('error', '❌ Erro de rede');
+                updateResults(`<h4 style="color: #EF4444;">❌ Erro de Rede</h4><p>${error.message}</p>`);
+            }
+        }
+        
+        async function loadRealCustomers() {
+            updateStatus('loading', '📋 Carregando clientes reais...');
+            
+            try {
+                const response = await fetch('/api/asaas/customers-real');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.data?.data?.length || 0;
+                    updateStatus('success', `✅ ${count} clientes encontrados!`);
+                    
+                    if (count > 0) {
+                        const customers = data.data.data.slice(0, 3); // Mostrar apenas os primeiros 3
+                        detailsEl.innerHTML = `
+Clientes encontrados: ${count}
+
+Exemplos:
+${customers.map(c => `- ${c.name || 'Nome não informado'} (${c.email || 'sem email'})`).join('\n')}
+                        `;
+                    } else {
+                        detailsEl.innerHTML = 'Nenhum cliente encontrado na conta sandbox';
+                    }
+                    detailsEl.style.display = 'block';
+                    
+                    updateResults(`
+                        <h4 style="color: #10B981;">✅ API Funcionando!</h4>
+                        <p>${count} clientes encontrados</p>
+                        <p>Conexão com Asaas estabelecida com sucesso</p>
+                    `);
+                } else {
+                    updateStatus('error', `❌ ${data.error}: ${data.message}`);
+                    updateResults(`
+                        <h4 style="color: #EF4444;">❌ API com Problemas</h4>
+                        <p>${data.message}</p>
+                    `);
+                }
+            } catch (error) {
+                updateStatus('error', '❌ Erro de rede');
+                updateResults(`<h4 style="color: #EF4444;">❌ Erro de Rede</h4><p>${error.message}</p>`);
+            }
+        }
+        
+        // Auto-start test
+        setTimeout(testCorrectedAuth, 1000);
+    </script>
+</body>
+</html>

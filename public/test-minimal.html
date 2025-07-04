@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Test</title>
+    <style>
+        body { margin: 0; font-family: Arial; background: #111; color: white; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 200px; background: #222; padding: 20px; }
+        .main { flex: 1; padding: 20px; }
+        .nav-link { 
+            display: block; 
+            padding: 10px; 
+            margin: 5px 0; 
+            background: #333; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nav-link:hover { background: #555; }
+        .nav-link.active { background: #007acc; }
+        .section { display: none; }
+        .section.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h3>Menu</h3>
+            <a class="nav-link active" onclick="showPage('home')">Home</a>
+            <a class="nav-link" onclick="showPage('students')">Students</a>
+            <a class="nav-link" onclick="showPage('courses')">Courses</a>
+            <a class="nav-link" onclick="showPage('settings')">Settings</a>
+        </div>
+        
+        <div class="main">
+            <div id="home" class="section active">
+                <h1>Home Page</h1>
+                <p>Welcome to the dashboard!</p>
+            </div>
+            
+            <div id="students" class="section">
+                <h1>Students Page</h1>
+                <p>Manage students here.</p>
+            </div>
+            
+            <div id="courses" class="section">
+                <h1>Courses Page</h1>
+                <p>Manage courses here.</p>
+            </div>
+            
+            <div id="settings" class="section">
+                <h1>Settings Page</h1>
+                <p>Configure settings here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            console.log('Switching to:', pageId);
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('Showed section:', pageId);
+            } else {
+                console.error('Section not found:', pageId);
+            }
+            
+            // Activate clicked link
+            event.target.classList.add('active');
+        }
+        
+        // Test in console
+        window.testClick = function() {
+            showPage('students');
+        };
+        
+        console.log('Navigation ready! Try clicking menu items or run testClick() in console');
+    </script>
+</body>
+</html>

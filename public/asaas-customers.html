@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏦 Clientes Asaas - Import</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #F8FAFC, #3B82F6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .status.loading {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .status.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #F8FAFC;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .customers-table {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .count-badge {
+            background: #3B82F6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .table-content {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(15, 23, 42, 0.5);
+            color: #CBD5E1;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            color: #F8FAFC;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .customer-name {
+            font-weight: 600;
+            color: #3B82F6;
+        }
+        
+        .customer-cpf {
+            font-family: monospace;
+            color: #CBD5E1;
+        }
+        
+        .customer-date {
+            color: #94A3B8;
+            font-size: 0.875rem;
+        }
+        
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #64748B;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .connection-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            color: #CBD5E1;
+        }
+        
+        .connection-info strong {
+            color: #F8FAFC;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .controls { flex-direction: column; align-items: center; }
+            .table-content { max-height: 400px; }
+            th, td { padding: 0.75rem 0.5rem; font-size: 0.875rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Importação de Clientes Asaas</h1>
+            <p>Visualize e importe clientes do sistema Asaas</p>
+        </div>
+        
+        <div class="connection-info">
+            <strong>📋 Configuração:</strong> <span id="config-info">Verificando conexão...</span>
+        </div>
+        
+        <div id="status" class="status loading">
+            📡 Verificando conexão com Asaas...
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="testConnection()">
+                🔗 Testar Conexão
+            </button>
+            <button class="btn" onclick="loadCustomers()">
+                📥 Carregar Clientes (Mock)
+            </button>
+            <button class="btn secondary" onclick="validateApiKey()">
+                🔑 Validar API Key
+            </button>
+            <button class="btn secondary" onclick="debugAsaas()">
+                🔍 Debug API Real
+            </button>
+            <button class="btn secondary" onclick="loadRealCustomers()">
+                📡 API Real Asaas
+            </button>
+            <button class="btn secondary" onclick="window.location.href='/asaas-status.html'">
+                📋 Ver Status Completo
+            </button>
+            <button class="btn secondary" onclick="window.location.href='/'">
+                🏠 Voltar ao Dashboard
+            </button>
+        </div>
+        
+        <div class="customers-table">
+            <div class="table-header">
+                <div class="table-title">Clientes Asaas</div>
+                <div class="count-badge" id="customers-count">0</div>
+            </div>
+            
+            <div class="table-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>CPF/CNPJ</th>
+                            <th>Telefone</th>
+                            <th>Data Criação</th>
+                            <th>ID Asaas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-tbody">
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-icon">🏦</div>
+                                <p>Clique em "Carregar Clientes" para buscar dados do Asaas</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let customers = [];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏦 Página de importação Asaas carregada');
+            testConnection();
+        });
+        
+        // Test Asaas connection
+        async function testConnection() {
+            console.log('🔗 Testando conexão Asaas...');
+            updateStatus('loading', '🔗 Testando conexão com Asaas...');
+            
+            try {
+                const response = await fetch('/api/asaas/test');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('success', `✅ Conexão bem-sucedida! ${data.message}`);
+                    document.getElementById('config-info').innerHTML = 
+                        `Sandbox: ${data.data.sandbox ? 'Sim' : 'Não'} | Base URL: ${data.data.baseUrl}`;
+                } else {
+                    updateStatus('error', `❌ Erro de conexão: ${data.message}`);
+                    document.getElementById('config-info').innerHTML = 'Erro na configuração';
+                }
+            } catch (error) {
+                console.error('Erro ao testar conexão:', error);
+                updateStatus('error', '❌ Erro de rede ao testar conexão');
+                document.getElementById('config-info').innerHTML = 'Erro de rede';
+            }
+        }
+        
+        // Load mock customers
+        async function loadCustomers() {
+            console.log('📥 Carregando clientes mock...');
+            updateStatus('loading', '📥 Carregando clientes mock...');
+            
+            try {
+                const response = await fetch('/api/asaas/customers');
+                const data = await response.json();
+                
+                if (data.success) {
+                    customers = data.data.data || [];
+                    displayCustomers(customers);
+                    updateStatus('success', `✅ ${customers.length} clientes mock carregados! (${data.message})`);
+                    document.getElementById('customers-count').textContent = customers.length;
+                } else {
+                    updateStatus('error', `❌ Erro ao carregar: ${data.message}`);
+                    displayEmptyState();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar clientes:', error);
+                updateStatus('error', '❌ Erro de rede ao carregar clientes');
+                displayEmptyState();
+            }
+        }
+        
+        // Validate API Key format
+        async function validateApiKey() {
+            console.log('🔑 Validando formato da API Key...');
+            updateStatus('loading', '🔑 Validando formato da API Key...');
+            
+            try {
+                const response = await fetch('/api/asaas/validate-key');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.data;
+                    updateStatus('success', `✅ ${data.message}`);
+                    document.getElementById('config-info').innerHTML = 
+                        `Formato: ${info.startsWithAact ? '✅' : '❌'} | ` +
+                        `Partes: ${info.parts}/3 | ` +
+                        `Ambiente: ${info.environment} | ` +
+                        `Preview: ${info.keyPreview}`;
+                } else {
+                    updateStatus('error', `❌ ${data.error}: ${data.suggestion || data.message}`);
+                }
+            } catch (error) {
+                console.error('Erro na validação:', error);
+                updateStatus('error', '❌ Erro de rede na validação');
+            }
+        }
+        
+        // Debug Asaas API
+        async function debugAsaas() {
+            console.log('🔍 Debug Asaas API...');
+            updateStatus('loading', '🔍 Debugando API Asaas...');
+            
+            try {
+                const response = await fetch('/api/asaas/debug');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('success', `✅ Debug OK: ${data.message}`);
+                    console.log('Debug data:', data);
+                } else {
+                    updateStatus('error', `❌ Debug falhou: ${data.error}`);
+                    console.error('Debug error:', data);
+                }
+            } catch (error) {
+                console.error('Erro no debug:', error);
+                updateStatus('error', '❌ Erro de rede no debug');
+            }
+        }
+        
+        // Load real customers from Asaas
+        async function loadRealCustomers() {
+            console.log('📡 Carregando clientes reais...');
+            updateStatus('loading', '📡 Carregando clientes da API real Asaas...');
+            
+            try {
+                const response = await fetch('/api/asaas/customers-real');
+                const data = await response.json();
+                
+                if (data.success) {
+                    customers = data.data.data || [];
+                    displayCustomers(customers);
+                    updateStatus('success', `✅ ${customers.length} clientes reais carregados!`);
+                    document.getElementById('customers-count').textContent = customers.length;
+                } else {
+                    updateStatus('error', `❌ Erro API real: ${data.message}`);
+                    displayEmptyState();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar clientes reais:', error);
+                updateStatus('error', '❌ Erro de rede com API real');
+                displayEmptyState();
+            }
+        }
+        
+        // Display customers in table
+        function displayCustomers(customersList) {
+            const tbody = document.getElementById('customers-tbody');
+            
+            if (!customersList || customersList.length === 0) {
+                displayEmptyState();
+                return;
+            }
+            
+            const html = customersList.map(customer => {
+                const createdDate = new Date(customer.dateCreated).toLocaleDateString('pt-BR');
+                return `
+                    <tr>
+                        <td>
+                            <div class="customer-name">${customer.name || 'Nome não informado'}</div>
+                        </td>
+                        <td>${customer.email || '-'}</td>
+                        <td>
+                            <div class="customer-cpf">${customer.cpfCnpj || '-'}</div>
+                        </td>
+                        <td>${customer.phone || '-'}</td>
+                        <td>
+                            <div class="customer-date">${createdDate}</div>
+                        </td>
+                        <td>
+                            <code style="background: rgba(255,255,255,0.1); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                ${customer.id}
+                            </code>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Display empty state
+        function displayEmptyState() {
+            const tbody = document.getElementById('customers-tbody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <div class="empty-icon">🏦</div>
+                        <p>Nenhum cliente encontrado</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #64748B;">
+                            Verifique a conexão com Asaas ou se há clientes cadastrados
+                        </p>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('customers-count').textContent = '0';
+        }
+        
+        // Update status message
+        function updateStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+        }
+        
+        console.log('🎯 Sistema de importação Asaas pronto!');
+    </script>
+</body>
+</html>

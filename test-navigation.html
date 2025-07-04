@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Navigation</title>
+    <script>
+        function testNavigation() {
+            console.log('Testing navigation...');
+            
+            // Test API endpoints
+            fetch('http://localhost:3000/api/students')
+                .then(r => r.json())
+                .then(data => console.log('Students API:', data));
+                
+            fetch('http://localhost:3000/api/activities/recent')
+                .then(r => r.json())
+                .then(data => console.log('Activities API:', data));
+        }
+        
+        window.onload = testNavigation;
+    </script>
+</head>
+<body>
+    <h1>Navigation Test</h1>
+    <p>Open console to see API test results</p>
+    <p><a href="http://localhost:3000" target="_blank">Open Main Dashboard</a></p>
+    
+    <h2>Test Instructions:</h2>
+    <ol>
+        <li>Click the dashboard link above</li>
+        <li>Try clicking each menu item:
+            <ul>
+                <li>Dashboard (should show stats with zeros)</li>
+                <li>Gestão de Alunos (should show empty student list)</li>
+                <li>Programas & Cursos (should show curriculum content)</li>
+                <li>Avaliações (should show evaluations content)</li>
+                <li>Financeiro (should show financial content)</li>
+                <li>Analytics & IA (should show analytics)</li>
+                <li>Comunicação (should show communication)</li>
+                <li>Gamificação (should show gamification)</li>
+                <li>Configurações (should show settings)</li>
+            </ul>
+        </li>
+        <li>All data should show zero/empty (real data, not hardcoded)</li>
+    </ol>
+</body>
+</html>

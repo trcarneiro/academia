@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Krav Maga Academy - Terminal de Check-in</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+            color: #F8FAFC;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .kiosk-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #3B82F6, #10B981);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .class-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .checkin-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #3B82F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .quick-checkin {
+            text-align: center;
+        }
+
+        .quick-input {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            border: 3px solid #3B82F6;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-align: center;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quick-input:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .quick-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .checkin-btn {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .checkin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .checkin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .student-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .student-card:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+
+        .student-card.present {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+            cursor: default;
+        }
+
+        .student-card.present:hover {
+            transform: none;
+        }
+
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #10B981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin: 0 auto 0.5rem;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .student-id {
+            font-size: 0.75rem;
+            color: #CBD5E1;
+            margin-bottom: 0.5rem;
+        }
+
+        .student-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .status-absent {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9CA3AF;
+        }
+
+        .status-present {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .recent-checkins {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 300px;
+            max-height: 200px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 12px;
+            padding: 1rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .recent-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #3B82F6;
+        }
+
+        .recent-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .recent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            z-index: 10000;
+            text-align: center;
+            min-width: 400px;
+            animation: successPulse 0.6s ease-in-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #3B82F6;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .emergency-contact {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .qr-btn {
+            width: 100%;
+            padding: 1rem;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        .qr-camera {
+            background: rgba(0,0,0,0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .kiosk-container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .recent-checkins {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                width: 100%;
+                margin-top: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="kiosk-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🥋 Terminal de Check-in</h1>
+            <p>Krav Maga Academy - Marque sua presença</p>
+            
+            <div class="class-info">
+                <div class="info-card">
+                    <div class="info-value">Aula 15</div>
+                    <div class="info-label">Defesas Básicas</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value">18:00 - 19:00</div>
+                    <div class="info-label">Horário</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="presentCount">0 Presentes</div>
+                    <div class="info-label">de <span id="totalStudents">0</span> alunos</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="currentTime">--:--</div>
+                    <div class="info-label">Agora</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Quick Check-in -->
+            <div class="checkin-section">
+                <div class="section-title">
+                    🏃‍♂️ Check-in Rápido
+                </div>
+                
+                <div class="quick-checkin">
+                    <input type="text" 
+                           id="quickInput" 
+                           class="quick-input" 
+                           placeholder="Digite sua matrícula ou nome"
+                           autocomplete="off">
+                    
+                    <button id="checkinBtn" class="checkin-btn">
+                        ✅ Marcar Presença
+                    </button>
+                    
+                    <div id="quickResult" class="result-message">
+                        Digite sua matrícula, email ou nome
+                    </div>
+                </div>
+
+                <!-- QR Scanner -->
+                <div class="qr-section">
+                    <button id="qrBtn" class="qr-btn">
+                        📱 Scanner QR Code
+                    </button>
+                    <div id="qrCamera" class="qr-camera">
+                        <video id="qrVideo" width="250" height="200" style="border-radius: 8px;"></video>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="stopQRScanner()" style="background: #EF4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                                Parar Scanner
+                            </button>
+                        </div>
+                    </div>
+                    <div id="qrResult" style="margin-top: 1rem; color: #CBD5E1;"></div>
+                </div>
+            </div>
+
+            <!-- Visual Selection -->
+            <div class="checkin-section">
+                <div class="section-title">
+                    👥 Seleção Visual
+                    <button onclick="refreshStudents()" style="background: #3B82F6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-left: 1rem;">
+                        🔄
+                    </button>
+                </div>
+                
+                <div id="studentGrid" class="student-grid">
+                    <div style="text-align: center; grid-column: 1/-1; padding: 2rem; color: #6B7280;">
+                        <div class="loading"></div>
+                        <div style="margin-top: 1rem;">Carregando alunos...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Check-ins -->
+        <div class="recent-checkins">
+            <div class="recent-title">📋 Check-ins Recentes</div>
+            <div id="recentList" class="recent-list">
+                <div style="text-align: center; color: #6B7280; padding: 1rem;">
+                    Nenhum check-in hoje
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="emergency-contact">
+            <div style="font-weight: bold;">🚨 Problemas?</div>
+            <div>Procure a recepção</div>
+            <div>📞 (11) 99999-9999</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:3001/api/kiosk';
+        
+        // Global state
+        let students = [];
+        let recentCheckins = [];
+        let selectedStudentId = null;
+
+        // Initialize kiosk
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+            loadRecentCheckins();
+            updateTime();
+            setupEventListeners();
+            
+            // Update time every second
+            setInterval(updateTime, 1000);
+            
+            // Refresh data every 30 seconds
+            setInterval(() => {
+                loadRecentCheckins();
+                updateCounts();
+            }, 30000);
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const quickInput = document.getElementById('quickInput');
+            const checkinBtn = document.getElementById('checkinBtn');
+            const qrBtn = document.getElementById('qrBtn');
+
+            quickInput.addEventListener('input', handleQuickSearch);
+            quickInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    quickCheckin();
+                }
+            });
+
+            checkinBtn.addEventListener('click', quickCheckin);
+            qrBtn.addEventListener('click', toggleQRScanner);
+        }
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+
+        // Load students
+        async function loadStudents() {
+            try {
+                const response = await fetch(`${API_BASE}/students`);
+                const result = await response.json();
+
+                if (result.success) {
+                    students = result.data;
+                    displayStudents();
+                    updateCounts();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                document.getElementById('studentGrid').innerHTML = `
+                    <div style="text-align: center; grid-column: 1/-1; padding: 2rem; color: #EF4444;">
+                        ❌ Erro ao carregar alunos
+                    </div>
+                `;
+            }
+        }
+
+        // Display students in grid
+        function displayStudents() {
+            const grid = document.getElementById('studentGrid');
+            
+            if (!students || students.length === 0) {
+                grid.innerHTML = `
+                    <div style="text-align: center; grid-column: 1/-1; padding: 2rem; color: #6B7280;">
+                        Nenhum aluno encontrado
+                    </div>
+                `;
+                return;
+            }
+
+            const html = students.map(enrollment => {
+                const student = enrollment.student;
+                const initials = `${student.user.firstName.charAt(0)}${student.user.lastName.charAt(0)}`;
+                const isPresent = recentCheckins.some(checkin => checkin.studentId === student.id);
+                
+                return `
+                    <div class="student-card ${isPresent ? 'present' : ''}" 
+                         onclick="${isPresent ? '' : `selectStudent('${student.id}')`}">
+                        
+                        <div class="student-avatar">
+                            ${initials}
+                        </div>
+                        
+                        <div class="student-name">
+                            ${student.user.firstName}
+                        </div>
+                        <div class="student-name">
+                            ${student.user.lastName}
+                        </div>
+                        
+                        <div class="student-id">
+                            ${student.id.slice(0, 8)}...
+                        </div>
+                        
+                        <div class="student-status ${isPresent ? 'status-present' : 'status-absent'}">
+                            ${isPresent ? '✅ Presente' : '👤 Ausente'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.innerHTML = html;
+        }
+
+        // Select student for check-in
+        function selectStudent(studentId) {
+            selectedStudentId = studentId;
+            const student = students.find(e => e.student.id === studentId);
+            
+            if (student) {
+                const name = `${student.student.user.firstName} ${student.student.user.lastName}`;
+                document.getElementById('quickResult').innerHTML = `
+                    <div style="color: #10B981;">✅ ${name} selecionado</div>
+                `;
+                
+                // Auto check-in after 2 seconds
+                setTimeout(() => {
+                    doCheckin(studentId, name);
+                }, 2000);
+            }
+        }
+
+        // Handle quick search
+        function handleQuickSearch(event) {
+            const query = event.target.value.trim();
+            const resultDiv = document.getElementById('quickResult');
+            
+            if (!query) {
+                selectedStudentId = null;
+                resultDiv.innerHTML = 'Digite sua matrícula, email ou nome';
+                return;
+            }
+
+            // Search students
+            const found = students.find(enrollment => {
+                const s = enrollment.student;
+                const fullName = `${s.user.firstName} ${s.user.lastName}`.toLowerCase();
+                return s.id.toLowerCase().includes(query.toLowerCase()) ||
+                       s.user.email.toLowerCase().includes(query.toLowerCase()) ||
+                       fullName.includes(query.toLowerCase());
+            });
+
+            if (found) {
+                selectedStudentId = found.student.id;
+                const name = `${found.student.user.firstName} ${found.student.user.lastName}`;
+                resultDiv.innerHTML = `
+                    <div style="color: #10B981;">✅ ${name} encontrado - Pressione Enter</div>
+                `;
+            } else {
+                selectedStudentId = null;
+                resultDiv.innerHTML = `
+                    <div style="color: #F59E0B;">⚠️ Aluno não encontrado</div>
+                `;
+            }
+        }
+
+        // Quick check-in
+        function quickCheckin() {
+            if (!selectedStudentId) {
+                document.getElementById('quickResult').innerHTML = `
+                    <div style="color: #EF4444;">❌ Digite uma matrícula válida</div>
+                `;
+                return;
+            }
+
+            const student = students.find(e => e.student.id === selectedStudentId);
+            const name = `${student.student.user.firstName} ${student.student.user.lastName}`;
+            
+            doCheckin(selectedStudentId, name);
+        }
+
+        // Perform check-in
+        async function doCheckin(studentId, studentName) {
+            const checkinBtn = document.getElementById('checkinBtn');
+            const resultDiv = document.getElementById('quickResult');
+            
+            try {
+                checkinBtn.disabled = true;
+                resultDiv.innerHTML = `
+                    <div style="color: #F59E0B;">
+                        <div class="loading" style="margin: 0 auto 0.5rem;"></div>
+                        Processando check-in...
+                    </div>
+                `;
+
+                const response = await fetch(`${API_BASE}/checkin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        method: 'KIOSK'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessAnimation(studentName);
+                    loadRecentCheckins();
+                    displayStudents();
+                    updateCounts();
+                    
+                    // Clear form
+                    document.getElementById('quickInput').value = '';
+                    selectedStudentId = null;
+                    resultDiv.innerHTML = 'Digite sua matrícula, email ou nome';
+                    
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                console.error('Check-in error:', error);
+                resultDiv.innerHTML = `
+                    <div style="color: #EF4444;">❌ Erro no check-in: ${error.message}</div>
+                `;
+            } finally {
+                checkinBtn.disabled = false;
+            }
+        }
+
+        // Show success animation
+        function showSuccessAnimation(studentName) {
+            const animation = document.createElement('div');
+            animation.className = 'success-animation';
+            animation.innerHTML = `
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <div>Check-in Realizado!</div>
+                <div style="font-size: 1.2rem; margin-top: 1rem;">${studentName}</div>
+                <div style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.8;">
+                    ${new Date().toLocaleTimeString('pt-BR')}
+                </div>
+            `;
+            
+            document.body.appendChild(animation);
+            
+            setTimeout(() => {
+                document.body.removeChild(animation);
+            }, 3000);
+        }
+
+        // Load recent check-ins
+        async function loadRecentCheckins() {
+            try {
+                const response = await fetch(`${API_BASE}/attendance/today`);
+                const result = await response.json();
+
+                if (result.success) {
+                    recentCheckins = result.data;
+                    displayRecentCheckins();
+                }
+            } catch (error) {
+                console.error('Error loading recent check-ins:', error);
+            }
+        }
+
+        // Display recent check-ins
+        function displayRecentCheckins() {
+            const container = document.getElementById('recentList');
+            
+            if (!recentCheckins || recentCheckins.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #6B7280; padding: 1rem;">
+                        Nenhum check-in hoje
+                    </div>
+                `;
+                return;
+            }
+
+            const html = recentCheckins.slice(-5).reverse().map(checkin => {
+                const time = new Date(checkin.date).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                return `
+                    <div class="recent-item">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.875rem;">
+                                ${checkin.student.user.firstName} ${checkin.student.user.lastName}
+                            </div>
+                            <div style="font-size: 0.75rem; color: #CBD5E1;">
+                                ${time}
+                            </div>
+                        </div>
+                        <div style="color: #10B981;">✅</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Update counts
+        function updateCounts() {
+            const presentCount = recentCheckins.length;
+            const totalStudents = students.length;
+            
+            document.getElementById('presentCount').textContent = `${presentCount} Presentes`;
+            document.getElementById('totalStudents').textContent = totalStudents;
+        }
+
+        // Refresh students
+        function refreshStudents() {
+            loadStudents();
+            loadRecentCheckins();
+        }
+
+        // QR Scanner functions
+        function toggleQRScanner() {
+            const camera = document.getElementById('qrCamera');
+            
+            if (camera.style.display === 'none' || !camera.style.display) {
+                startQRScanner();
+            } else {
+                stopQRScanner();
+            }
+        }
+
+        function startQRScanner() {
+            const camera = document.getElementById('qrCamera');
+            const result = document.getElementById('qrResult');
+            const btn = document.getElementById('qrBtn');
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                camera.style.display = 'block';
+                btn.textContent = '📷 Scanner Ativo';
+                btn.style.background = '#EF4444';
+                
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(stream => {
+                        const video = document.getElementById('qrVideo');
+                        video.srcObject = stream;
+                        video.play();
+                        result.innerHTML = '<span style="color: #10B981;">📷 Scanner ativo - Aponte para o QR code</span>';
+                        
+                        // Simulate QR detection after 5 seconds (for demo)
+                        setTimeout(() => {
+                            if (students.length > 0) {
+                                const firstStudent = students[0].student;
+                                doCheckin(firstStudent.id, `${firstStudent.user.firstName} ${firstStudent.user.lastName}`);
+                                result.innerHTML = '<span style="color: #10B981;">✅ QR Code detectado!</span>';
+                                stopQRScanner();
+                            }
+                        }, 5000);
+                    })
+                    .catch(err => {
+                        result.innerHTML = '<span style="color: #EF4444;">❌ Erro ao acessar câmera</span>';
+                        stopQRScanner();
+                    });
+            } else {
+                result.innerHTML = '<span style="color: #EF4444;">❌ Câmera não disponível</span>';
+            }
+        }
+
+        function stopQRScanner() {
+            const video = document.getElementById('qrVideo');
+            const camera = document.getElementById('qrCamera');
+            const btn = document.getElementById('qrBtn');
+            const result = document.getElementById('qrResult');
+            
+            if (video && video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            
+            camera.style.display = 'none';
+            btn.textContent = '📱 Scanner QR Code';
+            btn.style.background = '#8B5CF6';
+            result.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

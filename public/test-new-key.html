@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔑 Teste Nova API Key</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0F172A;
+            color: #F8FAFC;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .status { padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .success { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .error { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+        .loading { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .code { background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.875rem; }
+        h1 { text-align: center; margin-bottom: 2rem; color: #3B82F6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Teste Nova API Key Asaas</h1>
+        
+        <div class="card">
+            <h2>Validação da Nova Chave</h2>
+            <button class="btn" onclick="validateKey()">🔑 Validar Formato</button>
+            <button class="btn" onclick="debugConnection()">🔍 Debug Conexão</button>
+            <button class="btn" onclick="testRealAPI()">📡 Testar API Real</button>
+            
+            <div id="status" class="status loading">
+                🕐 Aguardando teste...
+            </div>
+            
+            <div id="details" class="code" style="display: none;">
+                Detalhes aparecerão aqui...
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>📋 Resultados dos Testes</h3>
+            <ul id="results">
+                <li>Aguardando testes...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const detailsEl = document.getElementById('details');
+        const resultsEl = document.getElementById('results');
+        
+        function updateStatus(type, message) {
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+        }
+        
+        function addResult(message) {
+            const li = document.createElement('li');
+            li.textContent = message;
+            resultsEl.appendChild(li);
+        }
+        
+        async function validateKey() {
+            updateStatus('loading', '🔑 Validando formato da API Key...');
+            
+            try {
+                const response = await fetch('/api/asaas/validate-key');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.data;
+                    updateStatus('success', `✅ ${data.message}`);
+                    detailsEl.innerHTML = `
+API Key: ${info.keyPreview}
+Comprimento: ${info.keyLength} caracteres
+Formato correto: ${info.startsWithAact ? 'Sim' : 'Não'}
+Partes: ${info.parts}/3
+Ambiente: ${info.environment}
+                    `;
+                    detailsEl.style.display = 'block';
+                    addResult(`✅ Validação: ${data.message}`);
+                } else {
+                    updateStatus('error', `❌ ${data.error}`);
+                    addResult(`❌ Validação falhou: ${data.error}`);
+                }
+            } catch (error) {
+                updateStatus('error', '❌ Erro de rede na validação');
+                addResult('❌ Erro de rede na validação');
+            }
+        }
+        
+        async function debugConnection() {
+            updateStatus('loading', '🔍 Testando conexão com Asaas...');
+            
+            try {
+                const response = await fetch('/api/asaas/debug');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStatus('success', `✅ ${data.message}`);
+                    addResult(`✅ Debug: ${data.message} (Status: ${data.status})`);
+                } else {
+                    updateStatus('error', `❌ ${data.error}`);
+                    detailsEl.innerHTML = `
+Erro: ${data.error}
+Status: ${data.details?.status || 'N/A'}
+Resposta: ${data.details?.rawResponse || 'N/A'}
+                    `;
+                    detailsEl.style.display = 'block';
+                    addResult(`❌ Debug falhou: ${data.error}`);
+                }
+            } catch (error) {
+                updateStatus('error', '❌ Erro de rede no debug');
+                addResult('❌ Erro de rede no debug');
+            }
+        }
+        
+        async function testRealAPI() {
+            updateStatus('loading', '📡 Testando API real de clientes...');
+            
+            try {
+                const response = await fetch('/api/asaas/customers-real');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.data?.data?.length || 0;
+                    updateStatus('success', `✅ ${count} clientes encontrados!`);
+                    detailsEl.innerHTML = `
+Clientes encontrados: ${count}
+Dados: ${JSON.stringify(data.data, null, 2)}
+                    `;
+                    detailsEl.style.display = 'block';
+                    addResult(`✅ API Real: ${count} clientes carregados`);
+                } else {
+                    updateStatus('error', `❌ ${data.error}: ${data.message}`);
+                    addResult(`❌ API Real falhou: ${data.message}`);
+                }
+            } catch (error) {
+                updateStatus('error', '❌ Erro de rede na API real');
+                addResult('❌ Erro de rede na API real');
+            }
+        }
+        
+        // Auto-start validation
+        setTimeout(validateKey, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,2306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Ultimate Academy Dashboard - Krav Maga Pro</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --dark: #0F172A;
+            --dark-light: #1E293B;
+            --dark-lighter: #334155;
+            --text: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 35px 60px -12px rgba(0, 0, 0, 0.35);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sidebar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            width: 280px;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .logo {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
+        }
+        
+        .logo h1 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            transform: translateX(4px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .badge {
+            background: var(--danger);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .main-content.expanded {
+            margin-left: 0;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            width: 350px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .notification-btn {
+            position: relative;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .notification-dot {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-profile:hover {
+            background: var(--glass-border);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+        }
+        
+        .stat-icon.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        
+        .stat-icon.success {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+        
+        .stat-icon.warning {
+            background: linear-gradient(135deg, var(--warning), #D97706);
+        }
+        
+        .stat-icon.danger {
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .stat-change.positive {
+            color: var(--success);
+        }
+        
+        .stat-change.negative {
+            color: var(--danger);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .chart-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .canvas-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+        
+        .activity-item:hover {
+            background: var(--glass);
+            margin: 0 -1rem;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        
+        .activity-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .activity-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .page-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .data-table {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .table-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn.secondary {
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .btn.danger {
+            background: var(--danger);
+        }
+        
+        .btn.success {
+            background: var(--success);
+        }
+        
+        .table-content {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem 2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        th {
+            background: var(--dark-light);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            color: var(--text-secondary);
+        }
+        
+        tr:hover {
+            background: var(--glass);
+        }
+        
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--dark-lighter);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.3s ease;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-select {
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, var(--glass) 25%, var(--glass-border) 50%, var(--glass) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .search-box input:focus {
+                width: 100%;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 1.5rem;
+            }
+            
+            .chart-card {
+                padding: 1.5rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-fist-raised"></i> KravMaga Pro</h1>
+                <p>Ultimate Academy Management</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-page="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="students">
+                        <i class="fas fa-users"></i>
+                        <span>Gestão de Alunos</span>
+                        <span class="badge">156</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="curriculum">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Programas & Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="evaluation">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Avaliações</span>
+                        <span class="badge">12</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="analytics">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Analytics & IA</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="communication">
+                        <i class="fas fa-comments"></i>
+                        <span>Comunicação</span>
+                        <span class="badge">8</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="gamification">
+                        <i class="fas fa-trophy"></i>
+                        <span>Gamificação</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Configurações</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Dashboard Principal</h1>
+                    <p id="pageSubtitle">Visão geral completa da sua academia</p>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar alunos, técnicas, relatórios...">
+                    </div>
+                    <div class="header-actions">
+                        <button class="notification-btn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <div class="user-profile">
+                            <div class="user-avatar">SM</div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text);">Sensei Master</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Administrador</div>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content -->
+            <div id="dashboardContent" class="content-section active">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card floating">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">156</div>
+                        <div class="stat-label">Alunos Ativos Hoje</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+12% vs semana passada</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card floating" style="animation-delay: 0.1s;">
+                        <div class="stat-header">
+                            <div class="stat-icon success">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">87%</div>
+                        <div class="stat-label">Taxa de Frequência</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+5% vs mês passado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card floating" style="animation-delay: 0.2s;">
+                        <div class="stat-header">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">R$ 45.8K</div>
+                        <div class="stat-label">Revenue Mensal</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+18% vs meta</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card floating" style="animation-delay: 0.3s;">
+                        <div class="stat-header">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Alunos em Risco</div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>-2 vs semana passada</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Frequência Semanal</h3>
+                            <div class="chart-filters">
+                                <button class="filter-btn active">7D</button>
+                                <button class="filter-btn">30D</button>
+                                <button class="filter-btn">90D</button>
+                            </div>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Atividade em Tempo Real</h3>
+                        </div>
+                        <div class="activity-feed">
+                            <div class="activity-item">
+                                <div class="activity-avatar">JD</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">João dominou "Guarda de Boxe"</div>
+                                    <div class="activity-time">2 minutos atrás</div>
+                                </div>
+                                <div class="activity-badge">+50 XP</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar">MS</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Maria fez check-in na Turma Avançada</div>
+                                    <div class="activity-time">5 minutos atrás</div>
+                                </div>
+                                <div class="activity-badge">Presente</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar">CA</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Carlos completou avaliação Lição 16</div>
+                                    <div class="activity-time">8 minutos atrás</div>
+                                </div>
+                                <div class="activity-badge">Aprovado</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar">LF</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Lucas conquistou "Sequência de 30 dias"</div>
+                                    <div class="activity-time">12 minutos atrás</div>
+                                </div>
+                                <div class="activity-badge">🏆 Badge</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar">AP</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Ana Paula enviou vídeo para validação</div>
+                                    <div class="activity-time">15 minutos atrás</div>
+                                </div>
+                                <div class="activity-badge">Pendente</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Ações Rápidas</h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <button class="btn" onclick="openModal('studentModal')">
+                            <i class="fas fa-user-plus"></i>
+                            Novo Aluno
+                        </button>
+                        <button class="btn secondary">
+                            <i class="fas fa-calendar-plus"></i>
+                            Agendar Aula
+                        </button>
+                        <button class="btn success">
+                            <i class="fas fa-video"></i>
+                            Validar Vídeos
+                        </button>
+                        <button class="btn warning">
+                            <i class="fas fa-chart-bar"></i>
+                            Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Students Content -->
+            <div id="studentsContent" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">Gestão de Alunos</h3>
+                        <div class="table-actions">
+                            <button class="btn secondary">
+                                <i class="fas fa-filter"></i>
+                                Filtros
+                            </button>
+                            <button class="btn" onclick="openModal('studentModal')">
+                                <i class="fas fa-plus"></i>
+                                Novo Aluno
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Progresso</th>
+                                    <th>Frequência</th>
+                                    <th>Risco</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTable">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Curriculum Content -->
+            <div id="curriculumContent" class="content-section">
+                <div class="page-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Biblioteca de Técnicas</h3>
+                            <div class="table-actions">
+                                <button class="btn">
+                                    <i class="fas fa-plus"></i>
+                                    Nova Técnica
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <div class="stat-icon primary">
+                                        <i class="fas fa-fist-raised"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value">Guarda de Boxe</div>
+                                <div class="stat-label">Técnica Fundamental • Dificuldade: 1/5</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%"></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <span class="status-badge active">92% Dominaram</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <div class="stat-icon warning">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value">Defesa Lateral</div>
+                                <div class="stat-label">Técnica Intermediária • Dificuldade: 3/5</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 67%"></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <span class="status-badge pending">67% Dominaram</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <div class="stat-icon danger">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-value">Contra-Ataque</div>
+                                <div class="stat-label">Técnica Avançada • Dificuldade: 5/5</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 34%"></div>
+                                </div>
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <span class="status-badge inactive">34% Dominaram</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Progressão do Curriculum (24 Semanas)</h3>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="curriculumChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Evaluation Content -->
+            <div id="evaluationContent" class="content-section">
+                <div class="page-grid">
+                    <div class="data-table">
+                        <div class="table-header">
+                            <h3 class="table-title">Vídeos Pendentes de Validação</h3>
+                            <div class="table-actions">
+                                <button class="btn success">
+                                    <i class="fas fa-check-double"></i>
+                                    Aprovar Selecionados
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; padding: 1.5rem;">
+                            <div class="stat-card">
+                                <div style="background: #1f2937; border-radius: 12px; height: 160px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                                    <i class="fas fa-play-circle" style="font-size: 3rem;"></i>
+                                </div>
+                                <div class="stat-value" style="font-size: 1.25rem;">João Santos</div>
+                                <div class="stat-label">Técnica: Guarda de Boxe • Lição 8</div>
+                                <div style="margin: 1rem 0; display: flex; gap: 0.5rem;">
+                                    <button class="btn success" style="flex: 1; padding: 0.5rem;">
+                                        <i class="fas fa-check"></i>
+                                        Aprovar
+                                    </button>
+                                    <button class="btn danger" style="flex: 1; padding: 0.5rem;">
+                                        <i class="fas fa-times"></i>
+                                        Reprovar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div style="background: #1f2937; border-radius: 12px; height: 160px; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                                    <i class="fas fa-play-circle" style="font-size: 3rem;"></i>
+                                </div>
+                                <div class="stat-value" style="font-size: 1.25rem;">Maria Silva</div>
+                                <div class="stat-label">Técnica: Defesa Lateral • Lição 16</div>
+                                <div style="margin: 1rem 0; display: flex; gap: 0.5rem;">
+                                    <button class="btn success" style="flex: 1; padding: 0.5rem;">
+                                        <i class="fas fa-check"></i>
+                                        Aprovar
+                                    </button>
+                                    <button class="btn danger" style="flex: 1; padding: 0.5rem;">
+                                        <i class="fas fa-times"></i>
+                                        Reprovar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics Content -->
+            <div id="analyticsContent" class="content-section">
+                <div class="page-grid">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Análise Preditiva - Risco de Abandono</h3>
+                            </div>
+                            <div class="canvas-container">
+                                <canvas id="churnChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Top Alunos em Risco</h3>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text);">Pedro Costa</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Última presença: 8 dias</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="color: var(--danger); font-weight: 600;">87% Risco</div>
+                                        <button class="btn danger" style="padding: 0.375rem 0.75rem; font-size: 0.75rem; margin-top: 0.25rem;">
+                                            <i class="fas fa-phone"></i>
+                                            Contatar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text);">Ana Oliveira</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Última presença: 5 dias</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="color: var(--warning); font-weight: 600;">62% Risco</div>
+                                        <button class="btn warning" style="padding: 0.375rem 0.75rem; font-size: 0.75rem; margin-top: 0.25rem;">
+                                            <i class="fas fa-envelope"></i>
+                                            Email
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Insights da IA</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div style="background: var(--glass); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--primary);">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-lightbulb"></i> Recomendação
+                                </div>
+                                <div style="color: var(--text); margin-bottom: 0.5rem;">Criar desafio semanal</div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    Alunos da categoria Master estão 23% menos engajados. Um desafio específico pode aumentar participação.
+                                </div>
+                            </div>
+                            <div style="background: var(--glass); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--success);">
+                                <div style="color: var(--success); font-weight: 600; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-chart-line"></i> Tendência
+                                </div>
+                                <div style="color: var(--text); margin-bottom: 0.5rem;">Horário otimizado</div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    Terças às 19h têm melhor taxa de frequência. Considere adicionar mais turmas neste horário.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Communication Content -->
+            <div id="communicationContent" class="content-section">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Centro de Mensagens</h3>
+                            <div class="table-actions">
+                                <button class="btn">
+                                    <i class="fas fa-plus"></i>
+                                    Nova Mensagem
+                                </button>
+                            </div>
+                        </div>
+                        <div class="activity-feed" style="max-height: 500px;">
+                            <div class="activity-item">
+                                <div class="activity-avatar">JS</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">João Santos</div>
+                                    <div style="color: var(--text); margin: 0.5rem 0;">Quando será a próxima avaliação?</div>
+                                    <div class="activity-time">Hoje, 14:30</div>
+                                </div>
+                                <button class="btn secondary" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-reply"></i>
+                                    Responder
+                                </button>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-avatar">MS</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Maria Silva</div>
+                                    <div style="color: var(--text); margin: 0.5rem 0;">Preciso remarcar minha aula de quinta-feira</div>
+                                    <div class="activity-time">Ontem, 16:45</div>
+                                </div>
+                                <button class="btn secondary" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-calendar"></i>
+                                    Reagendar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Campanhas Automáticas</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: var(--glass); border-radius: 12px; padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text);">Lembrete de Aula</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Enviado 2h antes das aulas</div>
+                                    </div>
+                                    <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                        <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--success); border-radius: 24px; transition: 0.3s;"></span>
+                                    </label>
+                                </div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    Taxa de abertura: 89% • Última execução: Hoje, 17:00
+                                </div>
+                            </div>
+                            <div style="background: var(--glass); border-radius: 12px; padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text);">Motivação Semanal</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem;">Segundas-feiras às 8h</div>
+                                    </div>
+                                    <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                        <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--success); border-radius: 24px; transition: 0.3s;"></span>
+                                    </label>
+                                </div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                    Taxa de abertura: 76% • Próxima execução: Segunda, 8:00
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gamification Content -->
+            <div id="gamificationContent" class="content-section">
+                <div class="page-grid">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">Conquistas Ativas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon success">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">342</div>
+                            <div class="stat-label">Badges Conquistados</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value">15.7K</div>
+                            <div class="stat-label">XP Total Distribuído</div>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Ranking Geral</h3>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, var(--warning), #D97706); border-radius: 12px;">
+                                    <div style="font-size: 2rem;">🥇</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: white;">Lucas Mendes</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 0.875rem;">2,450 XP • Nível 12</div>
+                                    </div>
+                                    <div style="text-align: right; color: white; font-weight: 600;">+120 XP</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div style="font-size: 2rem;">🥈</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--text);">Ana Clara</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem;">2,280 XP • Nível 11</div>
+                                    </div>
+                                    <div style="text-align: right; color: var(--text); font-weight: 600;">+95 XP</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div style="font-size: 2rem;">🥉</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--text);">Carlos Rodrigues</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem;">2,150 XP • Nível 11</div>
+                                    </div>
+                                    <div style="text-align: right; color: var(--text); font-weight: 600;">+78 XP</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Conquistas Recentes</h3>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                                <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔥</div>
+                                    <div style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Sequência 30 Dias</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.75rem;">Lucas M.</div>
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚡</div>
+                                    <div style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Técnica Master</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.75rem;">Ana C.</div>
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <div style="font-weight: 600; color: var(--text); font-size: 0.875rem;">Precisão 100%</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.75rem;">Maria S.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Content -->
+            <div id="settingsContent" class="content-section">
+                <div class="page-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Configurações da Academia</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                            <div>
+                                <h4 style="color: var(--text); margin-bottom: 1rem;">Informações Gerais</h4>
+                                <div class="form-group">
+                                    <label class="form-label">Nome da Academia</label>
+                                    <input class="form-input" value="Elite Krav Maga Academy" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email de Contato</label>
+                                    <input class="form-input" value="contato@elitekravmaga.com" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Telefone</label>
+                                    <input class="form-input" value="+55 11 9999-9999" />
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--text); margin-bottom: 1rem;">Integrações</h4>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--text);">Claude AI</div>
+                                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Análise preditiva e recomendações</div>
+                                        </div>
+                                        <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                            <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--success); border-radius: 24px; transition: 0.3s;"></span>
+                                        </label>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--glass); border-radius: 12px;">
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--text);">WhatsApp Business</div>
+                                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Comunicação automática</div>
+                                        </div>
+                                        <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                            <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--dark-lighter); border-radius: 24px; transition: 0.3s;"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button class="btn">
+                                <i class="fas fa-save"></i>
+                                Salvar Configurações
+                            </button>
+                            <button class="btn secondary">
+                                <i class="fas fa-download"></i>
+                                Backup de Dados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Student Modal -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="color: var(--text); font-size: 1.5rem;">Novo Aluno</h3>
+                <button onclick="closeModal('studentModal')" style="background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input class="form-input" placeholder="Digite o nome completo" />
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-input" type="email" placeholder="email@exemplo.com" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input class="form-input" placeholder="(11) 99999-9999" />
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Categoria</label>
+                <select class="form-select">
+                    <option>Adult (16+ anos)</option>
+                    <option>Master 1 (35+ anos)</option>
+                    <option>Master 2 (45+ anos)</option>
+                    <option>Master 3 (55+ anos)</option>
+                    <option>Hero 1 (6-9 anos)</option>
+                    <option>Hero 2 (10-12 anos)</option>
+                    <option>Hero 3 (13-15 anos)</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn" onclick="createStudent()" style="flex: 1;">
+                    <i class="fas fa-user-plus"></i>
+                    Criar Aluno
+                </button>
+                <button class="btn secondary" onclick="closeModal('studentModal')" style="flex: 1;">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage">Operação realizada com sucesso!</span>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        const state = {
+            currentPage: 'dashboard',
+            studentsData: [],
+            isLoading: false
+        };
+        
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Ultimate Dashboard...');
+            
+            // Setup core functionality first
+            setupEventListeners();
+            console.log('✅ Navegação configurada');
+            
+            // Load data
+            loadStudentsData();
+            console.log('✅ Dados carregados');
+            
+            // Try to initialize charts (non-blocking)
+            try {
+                initializeCharts();
+                console.log('✅ Gráficos inicializados');
+            } catch (error) {
+                console.warn('⚠️ Gráficos não puderam ser carregados:', error);
+                showChartPlaceholders();
+            }
+            
+            // Start real-time updates
+            simulateRealTimeUpdates();
+            
+            console.log('🎉 Ultimate Dashboard inicializado!');
+        });
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            console.log(`📍 Configurando ${navLinks.length} links de navegação`);
+            
+            navLinks.forEach(link => {
+                const page = link.dataset.page;
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log(`🔄 Navegando para: ${page}`);
+                    navigateToPage(page);
+                });
+            });
+            
+            // Mobile toggle
+            document.getElementById('mobileToggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('expanded');
+                
+                // Close sidebar when clicking outside on mobile
+                if (sidebar.classList.contains('active')) {
+                    setTimeout(() => {
+                        document.addEventListener('click', function closeSidebar(e) {
+                            if (!sidebar.contains(e.target) && !document.getElementById('mobileToggle').contains(e.target)) {
+                                sidebar.classList.remove('active');
+                                mainContent.classList.remove('expanded');
+                                document.removeEventListener('click', closeSidebar);
+                            }
+                        });
+                    }, 100);
+                }
+            });
+            
+            // Search functionality
+            const searchInput = document.querySelector('.search-box input');
+            searchInput.addEventListener('input', function() {
+                // Simulate search with loading state
+                if (this.value.length > 2) {
+                    // Add search logic here
+                }
+            });
+        }
+        
+        // Navigation
+        function navigateToPage(page) {
+            console.log(`🎯 Navegando para: ${page}`);
+            
+            try {
+                // Update active nav link
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                const activeLink = document.querySelector(`[data-page="${page}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                } else {
+                    console.error(`❌ Link não encontrado: ${page}`);
+                    return;
+                }
+                
+                // Update content sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                const targetSection = document.getElementById(`${page}Content`);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                } else {
+                    console.error(`❌ Seção não encontrada: ${page}Content`);
+                    return;
+                }
+            
+                // Update page titles
+                const titles = {
+                    dashboard: 'Dashboard Principal',
+                    students: 'Gestão de Alunos',
+                    curriculum: 'Programas & Cursos',
+                    evaluation: 'Validação & Avaliações',
+                    analytics: 'Analytics & IA',
+                    communication: 'Centro de Comunicação',
+                    gamification: 'Sistema de Gamificação',
+                    settings: 'Configurações'
+                };
+                
+                const subtitles = {
+                    dashboard: 'Visão geral completa da sua academia',
+                    students: 'Gerenciamento completo de alunos e progresso',
+                    curriculum: 'Biblioteca de técnicas e currículo de 24 semanas',
+                    evaluation: 'Validação de vídeos e sistema de avaliação',
+                    analytics: 'Análise preditiva e insights inteligentes',
+                    communication: 'Central de mensagens e campanhas automáticas',
+                    gamification: 'Sistema de conquistas e ranking',
+                    settings: 'Configurações da academia e integrações'
+                };
+                
+                const titleElement = document.getElementById('pageTitle');
+                const subtitleElement = document.getElementById('pageSubtitle');
+                
+                if (titleElement) titleElement.textContent = titles[page] || 'Dashboard';
+                if (subtitleElement) subtitleElement.textContent = subtitles[page] || 'Sistema de gestão';
+                
+                // Update state
+                state.currentPage = page;
+                
+                // Close mobile sidebar after navigation
+                if (window.innerWidth <= 1024) {
+                    const sidebar = document.getElementById('sidebar');
+                    const mainContent = document.getElementById('mainContent');
+                    if (sidebar) sidebar.classList.remove('active');
+                    if (mainContent) mainContent.classList.remove('expanded');
+                }
+                
+                console.log(`✅ Navegação concluída para: ${page}`);
+                
+            } catch (error) {
+                console.error(`❌ Erro na navegação para ${page}:`, error);
+            }
+        }
+        
+        // Charts Initialization
+        function initializeCharts() {
+            try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.warn('Chart.js não carregado, exibindo placeholder');
+                    return;
+                }
+                
+                // Attendance Chart
+                const attendanceCtx = document.getElementById('attendanceChart');
+                if (attendanceCtx) {
+                    new Chart(attendanceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                        datasets: [{
+                            label: 'Frequência',
+                            data: [85, 92, 78, 95, 88, 76, 45],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#CBD5E1'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#CBD5E1'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Curriculum Chart
+            const curriculumCtx = document.getElementById('curriculumChart');
+            if (curriculumCtx) {
+                new Chart(curriculumCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Sem 1-4', 'Sem 5-8', 'Sem 9-12', 'Sem 13-16', 'Sem 17-20', 'Sem 21-24'],
+                        datasets: [{
+                            label: 'Progresso Médio (%)',
+                            data: [95, 88, 78, 65, 42, 15],
+                            backgroundColor: [
+                                '#10B981',
+                                '#10B981', 
+                                '#F59E0B',
+                                '#F59E0B',
+                                '#EF4444',
+                                '#EF4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#CBD5E1'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#CBD5E1'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Churn Prediction Chart
+            const churnCtx = document.getElementById('churnChart');
+            if (churnCtx) {
+                new Chart(churnCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Baixo Risco', 'Médio Risco', 'Alto Risco'],
+                        datasets: [{
+                            data: [78, 14, 8],
+                            backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#CBD5E1',
+                                    padding: 20
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            } catch (error) {
+                console.error('Erro ao inicializar gráficos:', error);
+                // Exibir placeholders em caso de erro
+                showChartPlaceholders();
+            }
+        }
+        
+        // Show placeholder when charts fail to load
+        function showChartPlaceholders() {
+            const chartContainers = document.querySelectorAll('.canvas-container');
+            chartContainers.forEach(container => {
+                container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); background: var(--glass); border-radius: 12px;"><i class="fas fa-chart-line" style="font-size: 3rem; opacity: 0.3;"></i></div>';
+            });
+        }
+        
+        // Students Data Management
+        function loadStudentsData() {
+            const mockStudents = [
+                {
+                    id: 1,
+                    name: 'João Santos',
+                    category: 'Adult',
+                    progress: 85,
+                    attendance: 92,
+                    risk: 'low',
+                    status: 'active'
+                },
+                {
+                    id: 2,
+                    name: 'Maria Silva',
+                    category: 'Master 1',
+                    progress: 76,
+                    attendance: 88,
+                    risk: 'low',
+                    status: 'active'
+                },
+                {
+                    id: 3,
+                    name: 'Pedro Costa',
+                    category: 'Adult',
+                    progress: 45,
+                    attendance: 45,
+                    risk: 'high',
+                    status: 'active'
+                },
+                {
+                    id: 4,
+                    name: 'Ana Oliveira',
+                    category: 'Hero 2',
+                    progress: 67,
+                    attendance: 78,
+                    risk: 'medium',
+                    status: 'active'
+                },
+                {
+                    id: 5,
+                    name: 'Carlos Rodrigues',
+                    category: 'Master 2',
+                    progress: 91,
+                    attendance: 95,
+                    risk: 'low',
+                    status: 'active'
+                }
+            ];
+            
+            state.studentsData = mockStudents;
+            renderStudentsTable();
+        }
+        
+        function renderStudentsTable() {
+            const tbody = document.getElementById('studentsTable');
+            if (!tbody) return;
+            
+            tbody.innerHTML = state.studentsData.map(student => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--success)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                ${student.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text);">${student.name}</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">ID: ${student.id.toString().padStart(3, '0')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="status-badge ${student.status}">${student.category}</span></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="progress-bar" style="width: 80px;">
+                                <div class="progress-fill" style="width: ${student.progress}%"></div>
+                            </div>
+                            <span style="color: var(--text); font-weight: 600;">${student.progress}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="color: var(--text); font-weight: 600;">${student.attendance}%</div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${student.risk === 'low' ? 'active' : student.risk === 'medium' ? 'pending' : 'inactive'}">
+                            ${student.risk === 'low' ? 'Baixo' : student.risk === 'medium' ? 'Médio' : 'Alto'}
+                        </span>
+                    </td>
+                    <td><span class="status-badge ${student.status}">${student.status === 'active' ? 'Ativo' : 'Inativo'}</span></td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn secondary" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;" onclick="viewStudent(${student.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;" onclick="editStudent(${student.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Student Functions
+        function createStudent() {
+            // Simulate API call
+            showLoading();
+            
+            setTimeout(() => {
+                hideLoading();
+                closeModal('studentModal');
+                showToast('Aluno criado com sucesso!');
+                
+                // Add to students data
+                const newStudent = {
+                    id: state.studentsData.length + 1,
+                    name: 'Novo Aluno',
+                    category: 'Adult',
+                    progress: 0,
+                    attendance: 100,
+                    risk: 'low',
+                    status: 'active'
+                };
+                
+                state.studentsData.push(newStudent);
+                renderStudentsTable();
+            }, 1500);
+        }
+        
+        function viewStudent(id) {
+            showToast(`Visualizando aluno ID: ${id}`);
+        }
+        
+        function editStudent(id) {
+            showToast(`Editando aluno ID: ${id}`);
+        }
+        
+        // Utility Functions
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showLoading() {
+            state.isLoading = true;
+            document.body.classList.add('loading');
+        }
+        
+        function hideLoading() {
+            state.isLoading = false;
+            document.body.classList.remove('loading');
+        }
+        
+        // Real-time Updates Simulation
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Update stats with random variations
+                const statValues = document.querySelectorAll('.stat-value');
+                statValues.forEach(stat => {
+                    if (stat.textContent.includes('%')) {
+                        const currentValue = parseInt(stat.textContent);
+                        const variation = Math.random() * 2 - 1; // -1 to +1
+                        const newValue = Math.max(0, Math.min(100, currentValue + variation));
+                        stat.textContent = Math.round(newValue) + '%';
+                    }
+                });
+                
+                // Simulate new activity
+                if (Math.random() > 0.7) {
+                    addNewActivity();
+                }
+            }, 5000);
+        }
+        
+        function addNewActivity() {
+            const activities = [
+                'novo check-in registrado',
+                'técnica validada com sucesso',
+                'conquista desbloqueada',
+                'avaliação completada',
+                'vídeo enviado para análise'
+            ];
+            
+            const names = ['João', 'Maria', 'Pedro', 'Ana', 'Carlos', 'Lucia', 'Bruno'];
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            const name = names[Math.floor(Math.random() * names.length)];
+            
+            showToast(`${name} - ${activity}`);
+        }
+        
+        // API Integration (Mock)
+        const API = {
+            async get(endpoint) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+                
+                // Mock responses
+                switch(endpoint) {
+                    case '/health':
+                        return { status: 'healthy', timestamp: new Date().toISOString() };
+                    case '/students':
+                        return { success: true, data: state.studentsData };
+                    case '/organizations':
+                        return { success: true, data: [{ name: 'Elite Krav Maga Academy' }] };
+                    default:
+                        return { success: true, data: [] };
+                }
+            },
+            
+            async post(endpoint, data) {
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+                return { success: true, data: { id: Date.now(), ...data } };
+            }
+        };
+        
+        // Performance Optimization
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Accessibility
+        document.addEventListener('keydown', function(e) {
+            // ESC key closes modals
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+            
+            // Tab navigation for dashboard elements
+            if (e.key === 'Tab') {
+                // Custom tab handling if needed
+            }
+        });
+        
+        // Error Handling
+        window.addEventListener('error', function(e) {
+            console.error('Dashboard Error:', e.error || e);
+            // Only show error toast for critical issues, not chart loading
+            if (e.message && !e.message.includes('Chart') && !e.message.includes('canvas') && !e.message.includes('ResizeObserver')) {
+                console.warn('Erro não crítico detectado:', e.message);
+            }
+        });
+        
+        // Prevent Chart.js errors from breaking the app
+        window.addEventListener('unhandledrejection', function(e) {
+            console.warn('Promise rejeitada (não crítico):', e.reason);
+            e.preventDefault(); // Prevent the error from appearing in console
+        });
+        
+        // Service Worker for PWA (Optional)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
+        
+        // Test function for navigation
+        window.testNavigation = function() {
+            console.log('🧪 Testando navegação...');
+            const pages = ['students', 'curriculum', 'analytics', 'settings', 'dashboard'];
+            let index = 0;
+            
+            const testNext = () => {
+                if (index < pages.length) {
+                    console.log(`Testing page: ${pages[index]}`);
+                    navigateToPage(pages[index]);
+                    index++;
+                    setTimeout(testNext, 1000);
+                } else {
+                    console.log('✅ Teste de navegação concluído!');
+                }
+            };
+            
+            testNext();
+        };
+        
+        console.log('🥋 Ultimate Krav Maga Dashboard Loaded Successfully!');
+        console.log('📊 Real-time updates active');
+        console.log('🚀 All systems operational');
+        console.log('📋 Use testNavigation() para testar todas as páginas');
+    </script>
+</body>
+</html>
