@@ -507,3 +507,74 @@ node dist/server-simple.js
 - [ ] Navegação funcionando
 - [ ] Backup da versão anterior
 - [ ] Documentação atualizada
+
+---
+
+## 🚨 **PROBLEMA: Fastify Schema Validation Error**
+*Status: RESOLVIDO - Identificado em 06/07/2025*
+
+#### **🔍 ERRO ESPECÍFICO:**
+```
+"code": "FST_ERR_SCH_VALIDATION_BUILD",
+"message": "Failed building the validation schema for GET: /api/billing-plans, due to error schema is invalid: data/required must be array"
+```
+
+#### **🎯 CAUSA RAIZ:** 
+Conflito entre Zod schemas e Fastify built-in validation schemas
+
+#### **🔧 SOLUÇÃO APLICADA:**
+1. **Simplificar schemas Fastify** - Remover definições complexas
+2. **Usar formato JSON Schema padrão** em vez de Zod objects
+3. **Manter Zod para validação interna** mas schemas Fastify simplificados
+
+#### **💻 IMPLEMENTAÇÃO:**
+```typescript
+// ✅ CORRETO - Schema simplificado
+schema: {
+  tags: ['Billing Plans'],
+  summary: 'Get all billing plans',
+  querystring: {
+    type: 'object',
+    properties: {
+      active: { type: 'string' },
+      category: { type: 'string' },
+      limit: { type: 'string' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'array' },
+        count: { type: 'number' },
+        message: { type: 'string' }
+      }
+    }
+  }
+}
+
+// ❌ PROBLEMÁTICO - Schema complexo que causa erro
+schema: {
+  querystring: BillingPlanQuerySchema, // Zod object direto
+  response: {
+    200: {
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: { /* definições complexas */ }
+        }
+      }
+    }
+  }
+}
+```
+
+#### **📋 PROTOCOLO PARA NOVOS ENDPOINTS:**
+1. **Sempre usar schemas JSON Schema padrão** no Fastify
+2. **Manter Zod para validação TypeScript** interna
+3. **Testar schema validation** antes de deploy
+4. **Verificar logs de startup** para erros de schema
+
+---

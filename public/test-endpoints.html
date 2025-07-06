@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Endpoint Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: #fff; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #2d5016; }
+        .error { background: #5d1a16; }
+        .warning { background: #5d4516; }
+        button { background: #007acc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #005aa0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Endpoint Tester</h1>
+    <button onclick="testEndpoints()">Test All Endpoints</button>
+    <div id="results"></div>
+
+    <script>
+        async function testEndpoints() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing endpoints...</p>';
+            
+            const endpoints = [
+                { name: 'Health', url: '/health' },
+                { name: 'Students', url: '/api/students' },
+                { name: 'Courses', url: '/api/courses' },
+                { name: 'Classes', url: '/api/classes' },
+                { name: 'Organizations', url: '/api/organizations' },
+                { name: 'Techniques', url: '/api/techniques' },
+                { name: 'Billing Plans', url: '/api/billing-plans' },
+                { name: 'Financial Responsibles', url: '/api/financial-responsibles' }
+            ];
+            
+            let html = '';
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Testing ${endpoint.url}...`);
+                    const response = await fetch(endpoint.url);
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        const count = Array.isArray(data.data) ? data.data.length : 'N/A';
+                        html += `<div class="result success">✅ ${endpoint.name}: OK (${count} items)</div>`;
+                    } else if (response.status === 404) {
+                        html += `<div class="result error">❌ ${endpoint.name}: Not Found (404)</div>`;
+                    } else {
+                        html += `<div class="result warning">⚠️ ${endpoint.name}: ${data.error || 'Unknown error'}</div>`;
+                    }
+                } catch (error) {
+                    html += `<div class="result error">❌ ${endpoint.name}: ${error.message}</div>`;
+                }
+            }
+            
+            results.innerHTML = html;
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(testEndpoints, 1000);
+        });
+    </script>
+</body>
+</html>

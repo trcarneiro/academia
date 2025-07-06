@@ -6,6 +6,57 @@ import { upcomingClassesQuerySchema, classIdParamsSchema, createClassSchema, upd
 import { prisma } from '@/utils/database';
 
 export default async function classRoutes(fastify: FastifyInstance) {
+  // Root endpoint for diagnostic - Get all classes
+  fastify.get('/', {
+    schema: {
+      tags: ['Classes'],
+      summary: 'Get all classes',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array' },
+            message: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: async () => {
+      try {
+        const classes = await prisma.class.findMany({
+          orderBy: { createdAt: 'desc' }
+        });
+
+        return {
+          success: true,
+          data: classes.map(classItem => ({
+            id: classItem.id,
+            title: classItem.title,
+            description: classItem.description,
+            date: classItem.date,
+            startTime: classItem.startTime,
+            endTime: classItem.endTime,
+            status: classItem.status,
+            actualStudents: classItem.actualStudents,
+            maxStudents: classItem.maxStudents,
+            instructorId: classItem.instructorId,
+            courseId: classItem.courseId,
+            createdAt: classItem.createdAt
+          })),
+          message: 'Classes retrieved successfully'
+        };
+      } catch (error) {
+        fastify.log.error({ error }, 'Failed to fetch classes');
+        return {
+          success: false,
+          error: 'Failed to fetch classes',
+          data: []
+        };
+      }
+    },
+  });
+
   // Get upcoming classes
   fastify.get('/upcoming', {
     schema: {

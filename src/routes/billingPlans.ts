@@ -31,40 +31,27 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
   // Get all billing plans
   fastify.get('/api/billing-plans', {
     schema: {
-      querystring: BillingPlanQuerySchema,
+      tags: ['Billing Plans'],
+      summary: 'Get all billing plans',
+      querystring: {
+        type: 'object',
+        properties: {
+          active: { type: 'string' },
+          category: { type: 'string' },
+          limit: { type: 'string' }
+        }
+      },
       response: {
         200: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  price: { type: 'number' },
-                  billingType: { type: 'string' },
-                  features: { type: 'array', items: { type: 'string' } },
-                  classesPerWeek: { type: 'number' },
-                  hasPersonalTraining: { type: 'boolean' },
-                  hasNutrition: { type: 'boolean' },
-                  allowFreeze: { type: 'boolean' },
-                  isActive: { type: 'boolean' },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                }
-              }
-            },
+            data: { type: 'array' },
             count: { type: 'number' },
             message: { type: 'string' }
           }
         }
-      },
-      tags: ['Billing Plans'],
-      summary: 'Get all billing plans',
+      }
     },
     handler: async (request: FastifyRequest<{ Querystring: z.infer<typeof BillingPlanQuerySchema> }>, reply: FastifyReply) => {
       try {
@@ -114,9 +101,15 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
   // Get billing plan by ID
   fastify.get('/api/billing-plans/:id', {
     schema: {
-      params: BillingPlanParamsSchema,
       tags: ['Billing Plans'],
       summary: 'Get billing plan by ID',
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
     },
     handler: async (request: FastifyRequest<{ Params: z.infer<typeof BillingPlanParamsSchema> }>, reply: FastifyReply) => {
       try {

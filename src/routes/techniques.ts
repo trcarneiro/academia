@@ -18,33 +18,27 @@ export default async function techniqueRoutes(fastify: FastifyInstance) {
   // Get all techniques
   fastify.get('/api/techniques', {
     schema: {
-      querystring: TechniqueQuerySchema,
+      tags: ['Techniques'],
+      summary: 'Get all techniques',
+      querystring: {
+        type: 'object',
+        properties: {
+          category: { type: 'string' },
+          difficulty: { type: 'string' },
+          limit: { type: 'string' }
+        }
+      },
       response: {
         200: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  category: { type: 'string' },
-                  difficulty: { type: 'string' },
-                  createdAt: { type: 'string' },
-                }
-              }
-            },
+            data: { type: 'array' },
             count: { type: 'number' },
             message: { type: 'string' }
           }
         }
-      },
-      tags: ['Techniques'],
-      summary: 'Get all techniques',
+      }
     },
     handler: async (request: FastifyRequest<{ Querystring: z.infer<typeof TechniqueQuerySchema> }>, reply: FastifyReply) => {
       try {
@@ -87,9 +81,15 @@ export default async function techniqueRoutes(fastify: FastifyInstance) {
   // Get technique by ID
   fastify.get('/api/techniques/:id', {
     schema: {
-      params: TechniqueParamsSchema,
       tags: ['Techniques'],
       summary: 'Get technique by ID',
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
     },
     handler: async (request: FastifyRequest<{ Params: z.infer<typeof TechniqueParamsSchema> }>, reply: FastifyReply) => {
       try {

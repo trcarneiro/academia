@@ -6496,6 +6496,9 @@
         let knowledgeBase = [];
         let ragChunks = [];
         let uploadedDocuments = [];
+        
+        // Make variables globally accessible
+        window.ragChunks = ragChunks;
         let currentUploadTab = 'documents';
         
         // ==========================================
@@ -6617,10 +6620,10 @@
 
                 // Find student in existing data first
                 let student = null;
-                console.log('🔍 Debug: Verificando allStudents:', typeof allStudents, allStudents ? allStudents.length : 'undefined');
+                console.log('🔍 Debug: Verificando allStudents:', typeof window.allStudents, window.allStudents ? window.allStudents.length : 'undefined');
                 
-                if (typeof allStudents !== 'undefined' && allStudents) {
-                    student = allStudents.find(s => s.id === studentId);
+                if (typeof window.allStudents !== 'undefined' && window.allStudents) {
+                    student = window.allStudents.find(s => s.id === studentId);
                     console.log('🔍 Debug: Estudante encontrado em allStudents:', !!student);
                 }
                 
@@ -6979,28 +6982,41 @@
                 
                 // Try financial route first, then fallback to billing-plans, then mock data
                 try {
+                    console.log('🔍 Tentando rota financeira...');
                     const financialResponse = await fetch('/api/financial/plans');
                     if (financialResponse.ok) {
                         plansData = await financialResponse.json();
-                        console.log('📊 Financial plans response:', plansData);
-                        availablePlans = plansData.success ? plansData.data.filter(plan => plan.isActive) : [];
+                        console.log('📊 Financial plans response:', plansData.success ? `${plansData.data.length} planos` : 'sem dados');
+                        // Filtrar apenas planos ativos
+                        availablePlans = plansData.success ? 
+                            plansData.data.filter(plan => plan.isActive === true) : [];
+                        console.log('✅ Planos ativos encontrados:', availablePlans.length);
                     } else {
-                        throw new Error('Financial route not available');
+                        throw new Error(`Financial route returned ${financialResponse.status}`);
                     }
                 } catch (error) {
-                    console.log('⚠️ Financial route failed, trying billing-plans...');
+                    console.log('⚠️ Rota financeira falhou:', error.message, '- tentando billing-plans...');
                     try {
                         const billingResponse = await fetch('/api/billing-plans');
                         if (billingResponse.ok) {
                             plansData = await billingResponse.json();
-                            console.log('📊 Billing plans response:', plansData);
-                            availablePlans = plansData.success ? plansData.data.filter(plan => plan.isActive) : [];
+                            console.log('📊 Billing plans response:', plansData.success ? `${plansData.data.length} planos` : 'sem dados');
+                            // Filtrar apenas planos ativos
+                            availablePlans = plansData.success ? 
+                                plansData.data.filter(plan => plan.isActive === true) : [];
+                            console.log('✅ Planos ativos encontrados:', availablePlans.length);
                         } else {
-                            throw new Error('Billing route not available');
+                            throw new Error(`Billing route returned ${billingResponse.status}`);
                         }
                     } catch (billingError) {
-                        console.log('⚠️ Both routes failed, using comprehensive mock data...');
+                        console.log('⚠️ Ambas as rotas falharam:', billingError.message, '- usando dados mock...');
                         // Use comprehensive mock data as fallback
+                        console.log('📝 Carregando 10 planos de demonstração...');
+                        
+                        // Show info toast about mock data
+                        if (typeof showToast === 'function') {
+                            showToast('📝 Usando dados de demonstração para planos', 'info');
+                        }
                         availablePlans = [
                             {
                                 id: 'plan-1',
@@ -7161,16 +7177,25 @@
                 let hasActiveSubscription = false;
                 
                 try {
+                    console.log('🔍 Verificando assinatura do aluno...');
                     const subscriptionResponse = await fetch(`/api/students/${currentEditingStudentId}/subscription`);
+                    
                     if (subscriptionResponse.ok) {
                         const subscriptionData = await subscriptionResponse.json();
                         if (subscriptionData.success && subscriptionData.data) {
                             currentPlan = subscriptionData.data.plan;
                             hasActiveSubscription = true;
+                            console.log('✅ Assinatura ativa encontrada:', currentPlan.name);
+                        } else {
+                            console.log('ℹ️ Aluno sem plano ativo (resposta vazia)');
                         }
+                    } else if (subscriptionResponse.status === 404) {
+                        console.log('ℹ️ Aluno sem plano ativo (404 - normal para novos alunos)');
+                    } else {
+                        console.log('⚠️ Erro ao buscar assinatura:', subscriptionResponse.status);
                     }
                 } catch (subscriptionError) {
-                    console.log('Nenhuma assinatura encontrada para o aluno (isso é normal)');
+                    console.log('ℹ️ Nenhuma assinatura encontrada para o aluno (isso é normal para novos alunos)');
                 }
                 
                 content.innerHTML = `
@@ -7181,6 +7206,10 @@
                             <h3 style="color: #F8FAFC; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
                                 <span style="font-size: 1.5rem;">📋</span>
                                 Gestão de Planos
+                                ${!plansData || !plansData.success ? 
+                                    '<span style="background: rgba(245, 158, 11, 0.1); color: #F59E0B; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">DEMO</span>' 
+                                    : ''
+                                }
                             </h3>
                             <div style="display: flex; gap: 0.75rem;">
                                 ${!hasActiveSubscription ? `
@@ -7195,9 +7224,13 @@
                                     </button>
                                     <button onclick="showPlanCancellation()" 
                                             style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid #EF4444; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                                        ✋ Cancelar Plano
+                                        🛑 Gerenciar Plano
                                     </button>
                                 `}
+                                <button onclick="showPlanManagementPolicies()" 
+                                        style="background: rgba(59, 130, 246, 0.1); color: #3B82F6; border: 1px solid #3B82F6; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    📋 Políticas
+                                </button>
                             </div>
                         </div>
 
@@ -7254,13 +7287,22 @@
                                     <h4 style="color: #EF4444; margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 700;">
                                         Nenhum Plano Ativo
                                     </h4>
-                                    <p style="color: #94A3B8; margin: 0 0 2rem 0; font-size: 1.125rem;">
-                                        Este aluno não possui um plano de pagamento ativo. Para liberar o acesso às aulas, é necessário assinar um plano.
+                                    <p style="color: #94A3B8; margin: 0 0 1rem 0; font-size: 1.125rem;">
+                                        Este aluno não possui um plano de pagamento ativo.
                                     </p>
-                                    <button onclick="showQuickPlanSelector()" 
-                                            style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);">
-                                        🚀 Assinar Plano Agora
-                                    </button>
+                                    <p style="color: #F59E0B; margin: 0 0 2rem 0; font-size: 1rem; font-weight: 600;">
+                                        ⚡ Para liberar o acesso às aulas, é necessário assinar um plano.
+                                    </p>
+                                    <div style="display: flex; gap: 1rem; justify-content: center; align-items: center;">
+                                        <button onclick="showQuickPlanSelector()" 
+                                                style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);">
+                                            🚀 Assinar Plano Agora
+                                        </button>
+                                        <div style="color: #64748B; font-size: 0.875rem; text-align: left;">
+                                            <div>✅ ${availablePlans.length} planos ativos disponíveis</div>
+                                            <div>💰 A partir de R$ ${Math.min(...availablePlans.map(p => parseFloat(p.price)))}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             `}
                         </div>
@@ -7268,11 +7310,11 @@
                         <!-- Complete Plans Showcase (visible when no plan) -->
                         ${!hasActiveSubscription ? `
                             <div id="quickPlanSelector" style="background: rgba(15, 23, 42, 0.5); border-radius: 16px; padding: 2rem; border: 1px solid #334155;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                                    <h4 style="color: #F8FAFC; margin: 0; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
-                                        ⚡ Escolha seu Plano Ideal
-                                        <span style="background: #EF4444; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">URGENTE</span>
-                                    </h4>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">                            <h4 style="color: #F8FAFC; margin: 0; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+                                ⚡ Escolha seu Plano Ideal
+                                <span style="background: #10B981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">✅ APENAS ATIVOS</span>
+                                <span style="background: #EF4444; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">URGENTE</span>
+                            </h4>
                                     <div style="display: flex; gap: 0.75rem; align-items: center;">
                                         <span style="color: #94A3B8; font-size: 0.875rem;">${availablePlans.length} planos disponíveis</span>
                                         <select id="planTypeFilter" onchange="filterPlansByType()" style="background: #1E293B; border: 1px solid #475569; color: #F8FAFC; padding: 0.5rem; border-radius: 6px; font-size: 0.875rem;">
@@ -7463,10 +7505,10 @@
 
                         <!-- All Plans Section (collapsible) -->
                         <div id="allPlansSection" style="background: rgba(15, 23, 42, 0.5); border-radius: 16px; padding: 2rem; border: 1px solid #334155; ${!hasActiveSubscription ? 'display: none;' : ''}">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                                <h4 style="color: #F8FAFC; margin: 0; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
-                                    📋 Todos os Planos Disponíveis
-                                </h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">                            <h4 style="color: #F8FAFC; margin: 0; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+                                📋 Todos os Planos Disponíveis
+                                <span style="background: #10B981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem;">✅ APENAS ATIVOS</span>
+                            </h4>
                                 <div style="display: flex; gap: 0.75rem;">
                                     <select id="planCategoryFilter" onchange="filterPlansByCategory()" style="background: #1E293B; border: 1px solid #475569; color: #F8FAFC; padding: 0.5rem; border-radius: 6px;">
                                         <option value="">Todas as categorias</option>
@@ -7665,55 +7707,217 @@
             showToast('💡 Selecione um novo plano abaixo para trocar', 'info');
         }
         
-        // Show plan cancellation options
-        function showPlanCancellation() {
-            const confirmation = confirm(`⚠️ CANCELAR PLANO
-                
-Tem certeza que deseja cancelar o plano atual do aluno?
-
-⚠️ ATENÇÃO:
-• O aluno perderá acesso às aulas
-• A assinatura será encerrada imediatamente
-• Esta ação não pode ser desfeita
-
-Confirma o cancelamento?`);
-            
-            if (confirmation) {
-                cancelStudentPlan();
-            }
-        }
-        
-        // Cancel student plan
-        async function cancelStudentPlan() {
+        // Show plan management options (deactivate vs delete)
+        async function showPlanCancellation() {
             if (!currentEditingStudentId) {
                 showToast('Erro: ID do aluno não encontrado', 'error');
                 return;
             }
-            
+
             try {
-                showToast('⏳ Cancelando plano...', 'info');
+                // Verificar se o plano já foi usado (tem histórico de pagamentos ou aulas)
+                const hasUsageHistory = await checkPlanUsageHistory(currentEditingStudentId);
                 
-                // Call API to cancel subscription (placeholder - implement actual API)
-                const response = await fetch(`/api/students/${currentEditingStudentId}/subscription`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
+                if (hasUsageHistory) {
+                    // Plano foi usado - só pode ser desativado
+                    const confirmation = confirm(`⚠️ DESATIVAR PLANO
+
+Este plano possui histórico de uso (pagamentos ou aulas registradas).
+Por políticas de auditoria, ele não pode ser excluído, apenas desativado.
+
+⚠️ ATENÇÃO:
+• O aluno perderá acesso às aulas futuras
+• O histórico será mantido para auditoria
+• A assinatura será desativada (não cancelada)
+• É possível reativar posteriormente se necessário
+
+Confirma a DESATIVAÇÃO do plano?`);
+                    
+                    if (confirmation) {
+                        await deactivateStudentPlan();
                     }
+                } else {
+                    // Plano nunca foi usado - pode ser excluído ou desativado
+                    const action = confirm(`🗑️ GERENCIAR PLANO
+
+Este plano nunca foi utilizado (sem pagamentos ou aulas registradas).
+
+Escolha uma ação:
+• OK = EXCLUIR PERMANENTEMENTE (remove todos os dados)
+• Cancelar = DESATIVAR APENAS (mantém dados para auditoria)
+
+⚠️ EXCLUSÃO é irreversível!
+Deseja EXCLUIR permanentemente?`);
+                    
+                    if (action) {
+                        await deleteStudentPlan();
+                    } else {
+                        const deactivateConfirm = confirm(`📝 DESATIVAR PLANO
+
+O plano será desativado mas mantido no sistema.
+
+Confirma a DESATIVAÇÃO?`);
+                        
+                        if (deactivateConfirm) {
+                            await deactivateStudentPlan();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar histórico do plano:', error);
+                showToast('❌ Erro ao verificar histórico do plano: ' + error.message, 'error');
+            }
+        }
+
+        // Check if plan has usage history
+        async function checkPlanUsageHistory(studentId) {
+            try {
+                // Verificar pagamentos
+                const paymentsResponse = await fetch(`/api/students/${studentId}/payments`);
+                const paymentsData = paymentsResponse.ok ? await paymentsResponse.json() : { data: [] };
+                const hasPayments = paymentsData.data && paymentsData.data.length > 0;
+
+                // Verificar aulas/presenças
+                const attendanceResponse = await fetch(`/api/students/${studentId}/attendance`);
+                const attendanceData = attendanceResponse.ok ? await attendanceResponse.json() : { data: [] };
+                const hasAttendance = attendanceData.data && attendanceData.data.length > 0;
+
+                // Verificar se tem assinatura ativa há mais de 7 dias
+                const subscriptionResponse = await fetch(`/api/students/${studentId}/subscription`);
+                const subscriptionData = subscriptionResponse.ok ? await subscriptionResponse.json() : null;
+                let hasActiveSubscription = false;
+                
+                if (subscriptionData && subscriptionData.data) {
+                    const createdDate = new Date(subscriptionData.data.createdAt);
+                    const now = new Date();
+                    const daysSinceCreation = (now - createdDate) / (1000 * 60 * 60 * 24);
+                    hasActiveSubscription = daysSinceCreation > 7; // Plano ativo há mais de 7 dias
+                }
+
+                console.log('🔍 Histórico de uso do plano:', {
+                    hasPayments,
+                    hasAttendance,
+                    hasActiveSubscription,
+                    totalUsage: hasPayments || hasAttendance || hasActiveSubscription
+                });
+
+                return hasPayments || hasAttendance || hasActiveSubscription;
+            } catch (error) {
+                console.error('Erro ao verificar histórico:', error);
+                // Em caso de erro, assumir que tem histórico (mais seguro)
+                return true;
+            }
+        }
+
+        // Deactivate student plan (soft delete)
+        async function deactivateStudentPlan() {
+            try {
+                showToast('⏳ Desativando plano...', 'info');
+                
+                // Log da ação para auditoria
+                console.log('🔒 AUDITORIA: Iniciando desativação de plano', {
+                    studentId: currentEditingStudentId,
+                    timestamp: new Date().toISOString(),
+                    action: 'DEACTIVATE_PLAN',
+                    reason: 'Plano com histórico - preservando dados'
                 });
                 
-                if (response.ok) {
-                    showToast('✅ Plano cancelado com sucesso', 'success');
-                    // Reload the tab to reflect changes
+                const response = await fetch(`/api/students/${currentEditingStudentId}/subscription/deactivate`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: 'Desativado pelo administrador',
+                        deactivatedAt: new Date().toISOString(),
+                        keepHistory: true,
+                        auditLog: {
+                            action: 'DEACTIVATE_PLAN',
+                            performedBy: 'admin', // TODO: pegar user logado
+                            timestamp: new Date().toISOString(),
+                            preserveData: true
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ AUDITORIA: Plano desativado com sucesso', { 
+                        studentId: currentEditingStudentId,
+                        preservedData: true 
+                    });
+                    showToast('✅ Plano desativado com sucesso! Dados preservados para auditoria.', 'success');
+                    
+                    // Reload the plans tab to reflect changes
                     setTimeout(() => {
                         loadPlansTabContent();
                     }, 1000);
                 } else {
-                    throw new Error('Falha ao cancelar plano');
+                    throw new Error(data.message || 'Erro ao desativar plano');
                 }
-                
             } catch (error) {
-                console.error('Erro ao cancelar plano:', error);
-                showToast('❌ Funcionalidade de cancelamento em desenvolvimento', 'info');
+                console.error('❌ AUDITORIA: Erro ao desativar plano', {
+                    studentId: currentEditingStudentId,
+                    error: error.message
+                });
+                showToast('❌ Erro ao desativar plano: ' + error.message, 'error');
+            }
+        }
+
+        // Delete student plan permanently (hard delete)
+        async function deleteStudentPlan() {
+            try {
+                showToast('⏳ Excluindo plano permanentemente...', 'info');
+                
+                // Log da ação para auditoria
+                console.log('🗑️ AUDITORIA: Iniciando exclusão permanente de plano', {
+                    studentId: currentEditingStudentId,
+                    timestamp: new Date().toISOString(),
+                    action: 'DELETE_PLAN',
+                    reason: 'Plano sem histórico de uso'
+                });
+                
+                const response = await fetch(`/api/students/${currentEditingStudentId}/subscription`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: 'Exclusão permanente - plano não utilizado',
+                        confirmedDeletion: true,
+                        auditLog: {
+                            action: 'DELETE_PLAN',
+                            performedBy: 'admin', // TODO: pegar user logado
+                            timestamp: new Date().toISOString(),
+                            permanent: true,
+                            dataRemoved: true
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('🗑️ AUDITORIA: Plano excluído permanentemente', { 
+                        studentId: currentEditingStudentId,
+                        dataRemoved: true 
+                    });
+                    showToast('✅ Plano excluído permanentemente! Dados removidos do sistema.', 'success');
+                    
+                    // Reload the plans tab to reflect changes
+                    setTimeout(() => {
+                        loadPlansTabContent();
+                    }, 1000);
+                } else {
+                    throw new Error(data.message || 'Erro ao excluir plano');
+                }
+            } catch (error) {
+                console.error('❌ AUDITORIA: Erro ao excluir plano', {
+                    studentId: currentEditingStudentId,
+                    error: error.message
+                });
+                showToast('❌ Erro ao excluir plano: ' + error.message, 'error');
             }
         }
         
@@ -7830,6 +8034,112 @@ Confirma o cancelamento?`);
             // For now, show a detailed alert - can be enhanced to a modal later
             showToast('💡 Funcionalidade de detalhes do plano em desenvolvimento', 'info');
             console.log('Showing details for plan:', planId);
+        }
+
+        // Show plan management policies
+        function showPlanManagementPolicies() {
+            const modal = document.createElement('div');
+            modal.id = 'planPoliciesModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; 
+                align-items: center; justify-content: center; padding: 2rem;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, #1E293B, #0F172A); border-radius: 16px; 
+                            padding: 2rem; max-width: 600px; width: 100%; border: 1px solid #334155; 
+                            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3 style="color: #F8FAFC; margin: 0; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
+                            📋 Políticas de Gestão de Planos
+                        </h3>
+                        <button onclick="closePlanPoliciesModal()" 
+                                style="background: transparent; border: none; color: #94A3B8; cursor: pointer; font-size: 1.5rem; padding: 0.5rem;">
+                            ✕
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; gap: 1.5rem;">
+                        <!-- Planos Ativos -->
+                        <div style="background: rgba(16, 185, 129, 0.1); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                            <h4 style="color: #10B981; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                ✅ Exibição de Planos
+                            </h4>
+                            <ul style="color: #F8FAFC; margin: 0; padding-left: 1.5rem; line-height: 1.6;">
+                                <li>Apenas planos <strong>ATIVOS</strong> são exibidos no cadastro</li>
+                                <li>Planos inativos ficam ocultos mas mantidos no sistema</li>
+                                <li>Administradores podem reativar planos se necessário</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Exclusão vs Desativação -->
+                        <div style="background: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <h4 style="color: #EF4444; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                🗑️ Remoção de Planos
+                            </h4>
+                            <div style="display: grid; gap: 1rem;">
+                                <div style="background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                    <h5 style="color: #10B981; margin: 0 0 0.5rem 0; font-weight: 600;">✅ EXCLUSÃO PERMANENTE</h5>
+                                    <p style="color: #94A3B8; margin: 0; font-size: 0.875rem;">
+                                        Permitida apenas para planos <strong>nunca utilizados</strong>:<br>
+                                        • Sem pagamentos registrados<br>
+                                        • Sem aulas frequentadas<br>
+                                        • Assinatura ativa há menos de 7 dias
+                                    </p>
+                                </div>
+                                <div style="background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                    <h5 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-weight: 600;">📝 DESATIVAÇÃO APENAS</h5>
+                                    <p style="color: #94A3B8; margin: 0; font-size: 0.875rem;">
+                                        Obrigatória para planos <strong>com histórico</strong>:<br>
+                                        • Preserva dados para auditoria<br>
+                                        • Mantém histórico de pagamentos<br>
+                                        • Permite reativação futura
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Auditoria -->
+                        <div style="background: rgba(59, 130, 246, 0.1); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <h4 style="color: #3B82F6; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                                🔍 Conformidade e Auditoria
+                            </h4>
+                            <ul style="color: #F8FAFC; margin: 0; padding-left: 1.5rem; line-height: 1.6;">
+                                <li>Histórico de uso determina tipo de remoção</li>
+                                <li>Dados financeiros são sempre preservados</li>
+                                <li>Sistema previne perda acidental de dados</li>
+                                <li>Todas as ações são registradas em log</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <button onclick="closePlanPoliciesModal()" 
+                                style="background: #3B82F6; color: white; border: none; padding: 1rem 2rem; 
+                                       border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            Entendi
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close on outside click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closePlanPoliciesModal();
+                }
+            });
+        }
+        
+        // Close plan policies modal
+        function closePlanPoliciesModal() {
+            const modal = document.getElementById('planPoliciesModal');
+            if (modal) {
+                modal.remove();
+            }
         }
 
         function loadClassesTabContent() {
@@ -8067,8 +8377,10 @@ Confirma o cancelamento?`);
         
         console.log('🎯 Sistema pronto! Teste: testNavigation("students")');
         
-        // Apply showSection enhancement for knowledge base
-        enhanceShowSection();
+        // Apply showSection enhancement for knowledge base (check if function exists)
+        if (typeof enhanceShowSection === 'function') {
+            enhanceShowSection();
+        }
         
         // Payment plans loading function
         async function loadPaymentPlansList() {
@@ -8930,6 +9242,9 @@ Confirma o cancelamento?`);
         let allStudents = [];
         let filteredStudents = [];
         let currentView = 'table'; // 'table' or 'grid'
+        
+        // Make allStudents globally accessible
+        window.allStudents = allStudents;
 
         // Generate simple matricula
         function generateMatricula(studentId, index) {
@@ -8957,32 +9272,29 @@ Confirma o cancelamento?`);
                     
                     // Use students data directly (API already provides matricula)
                     allStudents = data.data;
+                    window.allStudents = allStudents; // Keep window reference updated
                     filteredStudents = [...allStudents];
                     updateStudentsStats();
                     updateStudentsDisplay();
                     
-                    // Setup event delegation after table is rendered (PERMANENT FIX)
-                    setTimeout(() => {
-                        setupStudentTableEventDelegation();
-                    }, 100);
+                    // Event delegation is now handled within updateStudentsDisplay
                 } else {
                     console.error('❌ Erro ao carregar estudantes:', data.message || 'Resposta sem dados');
                     console.error('❌ Resposta completa:', data);
                     allStudents = [];
+                    window.allStudents = allStudents; // Keep window reference updated
                     filteredStudents = [];
                     showStudentsEmptyState();
                 }
             } catch (error) {
                 console.error('❌ Erro de conexão ao carregar estudantes:', error);
                 allStudents = [];
+                window.allStudents = allStudents; // Keep window reference updated
                 filteredStudents = [];
                 showStudentsEmptyState();
             }
             
-            // Setup event delegation after loading students (PERMANENT FIX)
-            setTimeout(() => {
-                setupStudentTableEventDelegation();
-            }, 100);
+            // Event delegation is handled within updateStudentsDisplay when needed
         }
 
         // Switch between table and grid view
@@ -9032,10 +9344,8 @@ Confirma o cancelamento?`);
         function updateStudentsDisplay() {
             if (currentView === 'table') {
                 updateStudentsTable();
-                // Re-setup event delegation after table update (PERMANENT FIX)
-                setTimeout(() => {
-                    setupStudentTableEventDelegation();
-                }, 50);
+                // Setup event delegation only if needed (check done inside function)
+                setupStudentTableEventDelegation();
             } else {
                 updateStudentsGrid();
             }
@@ -9053,6 +9363,11 @@ Confirma o cancelamento?`);
                 return;
             }
             
+            // Check if already set up to avoid duplicates
+            if (tableBody.hasAttribute('data-delegation-setup')) {
+                return; // Already set up, skip
+            }
+            
             // Remove existing listeners to prevent duplicates
             tableBody.removeEventListener('click', handleStudentTableClick);
             tableBody.removeEventListener('dblclick', handleStudentTableDoubleClick);
@@ -9060,6 +9375,9 @@ Confirma o cancelamento?`);
             // Add event listeners with delegation
             tableBody.addEventListener('click', handleStudentTableClick);
             tableBody.addEventListener('dblclick', handleStudentTableDoubleClick);
+            
+            // Mark as set up
+            tableBody.setAttribute('data-delegation-setup', 'true');
             
             console.log('✅ Student table event delegation setup complete');
         }
@@ -12574,6 +12892,14 @@ Confirma o cancelamento?`);
     </div>
 
     <script>
+        // Utility function to reduce console noise in production
+        function logQuiet(message, ...args) {
+            // Only log important messages to reduce noise
+            if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+                console.log(message, ...args);
+            }
+        }
+
         // ==========================================
         // TECHNIQUES MANAGER FUNCTIONALITY
         // ==========================================
@@ -13860,21 +14186,19 @@ Confirma o cancelamento?`);
         // CENTRAL RAG SYSTEM - MEMORIA DOS AGENTES IA
         // ==========================================
         
-        // Initialize knowledge base and RAG chunks
-        const knowledgeBase = {
+        // Initialize RAG knowledge base and RAG chunks (renamed to avoid conflict)
+        const ragKnowledgeBase = {
             techniques: [],
             lessons: [],
             students: [],
             courses: []
         };
         
-        const ragChunks = [];
-        
         // Central RAG Service - Memory for all AI agents
         class CentralRAGService {
             constructor() {
-                this.knowledgeBase = knowledgeBase;
-                this.ragChunks = ragChunks;
+                this.knowledgeBase = ragKnowledgeBase;
+                this.ragChunks = window.ragChunks || [];
             }
             
             // Universal query method for all AI agents
@@ -16310,8 +16634,8 @@ Nível: ${item.level}
 
         // ===== FINANCIAL MODULE FUNCTIONS =====
         
-        // Global financial data
-        let allPlans = [];
+        // Global financial data (reuse existing allPlans variable)
+        // let allPlans = []; // Already declared above
         let allSubscriptions = [];
         let allPayments = [];
 

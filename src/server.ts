@@ -29,6 +29,7 @@ import activitiesRoutes from '@/routes/activities';
 import asaasSimpleRoutes from '@/routes/asaas-simple';
 import billingPlanRoutes from '@/routes/billingPlans';
 import techniqueRoutes from '@/routes/techniques';
+import { diagnosticRoutes } from '@/routes/diagnostic';
 
 const server = Fastify({
   logger: logger,
@@ -109,7 +110,7 @@ const start = async (): Promise<void> => {
     });
 
     // Serve dashboard at root
-    server.get('/', async (request, reply) => {
+    server.get('/', async (_, reply) => {
       return reply.sendFile('index.html');
     });
 
@@ -129,6 +130,7 @@ const start = async (): Promise<void> => {
     await server.register(asaasSimpleRoutes, { prefix: '/api/asaas' });
     await server.register(billingPlanRoutes);
     await server.register(techniqueRoutes);
+    await server.register(diagnosticRoutes);
 
     // Error handler
     server.setErrorHandler(errorHandler);
