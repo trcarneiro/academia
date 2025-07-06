@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Diagnóstico - Krav Maga Academy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0A0E1A;
+            color: #E2E8F0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .success { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10B981; }
+        .error { background: rgba(239, 68, 68, 0.1); border-left: 4px solid #EF4444; }
+        .warning { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #F59E0B; }
+        .info { background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3B82F6; }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .menu-test {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .menu-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .menu-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Diagnóstico do Sistema Krav Maga Academy</h1>
+        
+        <div class="test-section">
+            <h2>🌐 Teste de Conectividade</h2>
+            <button onclick="testConnectivity()">🔍 Testar Conectividade</button>
+            <div id="connectivity-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Teste de APIs</h2>
+            <button onclick="testAllAPIs()">🚀 Testar Todas as APIs</button>
+            <div id="api-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📱 Teste de Navegação</h2>
+            <p>Teste os menus principais:</p>
+            <div class="menu-test">
+                <button class="menu-btn" onclick="testNavigation('dashboard')">📊 Dashboard</button>
+                <button class="menu-btn" onclick="testNavigation('students')">👥 Alunos</button>
+                <button class="menu-btn" onclick="testNavigation('courses')">📚 Cursos</button>
+                <button class="menu-btn" onclick="testNavigation('classes')">🏫 Turmas</button>
+                <button class="menu-btn" onclick="testNavigation('attendance')">✅ Frequência</button>
+                <button class="menu-btn" onclick="testNavigation('evaluations')">📋 Avaliações</button>
+                <button class="menu-btn" onclick="testNavigation('financial')">💰 Financeiro</button>
+                <button class="menu-btn" onclick="testNavigation('reports')">📈 Relatórios</button>
+            </div>
+            <div id="navigation-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔧 Ações de Correção</h2>
+            <button onclick="fixStudentsLoading()">🔄 Corrigir Carregamento de Alunos</button>
+            <button onclick="resetToWorkingVersion()">⚡ Resetar para Versão Funcional</button>
+            <button onclick="clearCacheAndReload()">🧹 Limpar Cache e Recarregar</button>
+            <div id="fix-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Log de Diagnóstico</h2>
+            <pre id="diagnostic-log"></pre>
+        </div>
+    </div>
+
+    <script>
+        let diagnosticLog = '';
+        
+        function log(message) {
+            console.log(message);
+            diagnosticLog += new Date().toISOString() + ': ' + message + '\n';
+            document.getElementById('diagnostic-log').textContent = diagnosticLog;
+        }
+        
+        function addResult(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+        
+        async function testConnectivity() {
+            log('🔍 Iniciando teste de conectividade...');
+            const container = document.getElementById('connectivity-results');
+            container.innerHTML = '';
+            
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    addResult('connectivity-results', 'success', '✅ Servidor respondendo: ' + data.message);
+                    addResult('connectivity-results', 'info', '📊 Database: ' + data.database);
+                    log('✅ Conectividade OK');
+                } else {
+                    addResult('connectivity-results', 'error', '❌ Servidor com problemas: ' + data.status);
+                    log('❌ Servidor com problemas');
+                }
+            } catch (error) {
+                addResult('connectivity-results', 'error', '❌ Erro de conectividade: ' + error.message);
+                log('❌ Erro de conectividade: ' + error.message);
+            }
+        }
+        
+        async function testAllAPIs() {
+            log('🚀 Testando todas as APIs...');
+            const container = document.getElementById('api-results');
+            container.innerHTML = '';
+            
+            const apis = [
+                { name: 'Alunos', url: '/api/students', icon: '👥' },
+                { name: 'Cursos', url: '/api/courses', icon: '📚' },
+                { name: 'Turmas', url: '/api/classes', icon: '🏫' },
+                { name: 'Organizações', url: '/api/organizations', icon: '🏢' },
+                { name: 'Técnicas', url: '/api/techniques', icon: '🥋' },
+                { name: 'Planos Financeiros', url: '/api/billing-plans', icon: '💰' },
+                { name: 'Responsáveis', url: '/api/financial-responsibles', icon: '👨‍👩‍👧‍👦' }
+            ];
+            
+            for (const api of apis) {
+                try {
+                    log(`🔍 Testando API: ${api.name}`);
+                    const response = await fetch(api.url);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const count = Array.isArray(data.data) ? data.data.length : 'N/A';
+                        addResult('api-results', 'success', `✅ ${api.icon} ${api.name}: ${count} registros`);
+                        log(`✅ ${api.name}: OK (${count} registros)`);
+                    } else {
+                        addResult('api-results', 'warning', `⚠️ ${api.icon} ${api.name}: ${data.error || 'Resposta inválida'}`);
+                        log(`⚠️ ${api.name}: ${data.error}`);
+                    }
+                } catch (error) {
+                    addResult('api-results', 'error', `❌ ${api.icon} ${api.name}: ${error.message}`);
+                    log(`❌ ${api.name}: ${error.message}`);
+                }
+            }
+        }
+        
+        function testNavigation(page) {
+            log(`📱 Testando navegação para: ${page}`);
+            const container = document.getElementById('navigation-results');
+            
+            try {
+                // Simular clique no menu
+                if (parent && parent.window && parent.window.showSection) {
+                    parent.window.showSection(page);
+                    addResult('navigation-results', 'success', `✅ Navegação para ${page} funcionando`);
+                    log(`✅ Navegação para ${page}: OK`);
+                } else if (window.opener && window.opener.showSection) {
+                    window.opener.showSection(page);
+                    addResult('navigation-results', 'success', `✅ Navegação para ${page} funcionando`);
+                    log(`✅ Navegação para ${page}: OK`);
+                } else {
+                    // Tentar abrir diretamente
+                    window.open(`/?page=${page}`, '_blank');
+                    addResult('navigation-results', 'info', `ℹ️ Abrindo ${page} em nova aba`);
+                    log(`ℹ️ Abrindo ${page} em nova aba`);
+                }
+            } catch (error) {
+                addResult('navigation-results', 'error', `❌ Erro navegando para ${page}: ${error.message}`);
+                log(`❌ Erro navegando para ${page}: ${error.message}`);
+            }
+        }
+        
+        async function fixStudentsLoading() {
+            log('🔄 Iniciando correção do carregamento de alunos...');
+            const container = document.getElementById('fix-results');
+            
+            try {
+                // Teste direto da API de alunos
+                const response = await fetch('/api/students');
+                const data = await response.json();
+                
+                if (data.success) {
+                    addResult('fix-results', 'success', `✅ API de alunos funcionando: ${data.data.length} alunos encontrados`);
+                    
+                    // Tentar forçar atualização na página principal
+                    if (parent && parent.window && parent.window.loadData) {
+                        parent.window.loadData();
+                        addResult('fix-results', 'success', '✅ Dados recarregados na página principal');
+                    }
+                    
+                    log('✅ Correção de alunos: sucesso');
+                } else {
+                    addResult('fix-results', 'error', '❌ API de alunos retornou erro: ' + data.error);
+                    log('❌ API de alunos com erro: ' + data.error);
+                }
+            } catch (error) {
+                addResult('fix-results', 'error', '❌ Erro ao corrigir alunos: ' + error.message);
+                log('❌ Erro ao corrigir alunos: ' + error.message);
+            }
+        }
+        
+        function resetToWorkingVersion() {
+            log('⚡ Resetando para versão funcional...');
+            const container = document.getElementById('fix-results');
+            
+            addResult('fix-results', 'info', '🔄 Redirecionando para versão de backup...');
+            
+            // Tentar carregar backup
+            window.location.href = '/index-backup.html';
+        }
+        
+        function clearCacheAndReload() {
+            log('🧹 Limpando cache e recarregando...');
+            
+            // Limpar localStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Forçar reload sem cache
+            window.location.reload(true);
+        }
+        
+        // Auto-executar testes básicos
+        window.addEventListener('load', function() {
+            log('🚀 Diagnóstico iniciado automaticamente');
+            setTimeout(testConnectivity, 1000);
+        });
+    </script>
+</body>
+</html>

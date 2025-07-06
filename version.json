@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1751744745983,
+    "timestamp": "2025-07-05T19:45:45.983Z",
+    "description": "Implementação inicial da arquitetura modular - Sistema de isolamento implementado",
+    "files": {
+      "public/index.html": "/mnt/h/projetos/academia/backups/2025-07-05T19-45-45-984Z_index.html.backup",
+      "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-05T19-45-46-039Z_plans-manager.js.backup",
+      "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-05T19-45-46-045Z_plans-styles.css.backup"
+    }
+  },
+  {
+    "id": 1751744913513,
+    "timestamp": "2025-07-05T19:48:33.513Z",
+    "description": "Sistema de isolamento completo - CLAUDE.md e agents.md atualizados com protocolos de segurança",
+    "files": {
+      "public/index.html": "/mnt/h/projetos/academia/backups/2025-07-05T19-48-33-513Z_index.html.backup",
+      "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-05T19-48-33-573Z_plans-manager.js.backup",
+      "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-05T19-48-33-581Z_plans-styles.css.backup"
+    }
+  },
+  {
+    "id": 1751745118292,
+    "timestamp": "2025-07-05T19:51:58.292Z",
+    "description": "Fix: Corrigir conflito de função showSection duplicada",
+    "files": {
+      "public/index.html": "/mnt/h/projetos/academia/backups/2025-07-05T19-51-58-293Z_index.html.backup",
+      "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-05T19-51-58-349Z_plans-manager.js.backup",
+      "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-05T19-51-58-355Z_plans-styles.css.backup"
+    }
+  }
+]

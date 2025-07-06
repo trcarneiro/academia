@@ -22,10 +22,13 @@ import { pedagogicalRoutes } from '@/routes/pedagogical';
 import { coursesRoutes } from '@/routes/courses';
 import progressRoutes from '@/routes/progress';
 import financialResponsibleRoutes from '@/routes/financialResponsible';
+import financialRoutes from '@/routes/financial';
 import studentsRoutes from '@/routes/students';
 import organizationsRoutes from '@/routes/organizations';
 import activitiesRoutes from '@/routes/activities';
 import asaasSimpleRoutes from '@/routes/asaas-simple';
+import billingPlanRoutes from '@/routes/billingPlans';
+import techniqueRoutes from '@/routes/techniques';
 
 const server = Fastify({
   logger: logger,
@@ -119,10 +122,13 @@ const start = async (): Promise<void> => {
     await server.register(coursesRoutes, { prefix: '/api/courses-management' });
     await server.register(progressRoutes, { prefix: '/api' });
     await server.register(financialResponsibleRoutes, { prefix: '/api/financial-responsible' });
+    await server.register(financialRoutes, { prefix: '/api/financial' });
     await server.register(studentsRoutes, { prefix: '/api/students' });
     await server.register(organizationsRoutes, { prefix: '/api/organizations' });
     await server.register(activitiesRoutes, { prefix: '/api/activities' });
     await server.register(asaasSimpleRoutes, { prefix: '/api/asaas' });
+    await server.register(billingPlanRoutes);
+    await server.register(techniqueRoutes);
 
     // Error handler
     server.setErrorHandler(errorHandler);

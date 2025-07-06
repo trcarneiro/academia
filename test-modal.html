@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Modal</title>
+    <style>
+        body { background: #0A0E1A; color: white; padding: 2rem; }
+        .btn { background: #3B82F6; color: white; padding: 1rem; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Modal Functionality</h1>
+    <button class="btn" onclick="testModal()">Open Test Modal</button>
+    
+    <script>
+        function testModal() {
+            fetch('/')
+                .then(response => response.text())
+                .then(html => {
+                    // Check if modal exists
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const modal = tempDiv.querySelector('#addPlanModal');
+                    console.log('Modal found:', !!modal);
+                    console.log('Modal HTML:', modal ? modal.outerHTML.substring(0, 200) + '...' : 'NOT FOUND');
+                    
+                    // Check if function exists
+                    const scriptContent = html.match(/<script[\s\S]*?<\/script>/gi);
+                    const hasFunction = scriptContent && scriptContent.some(script => script.includes('switchPlanTab'));
+                    console.log('switchPlanTab function found:', hasFunction);
+                })
+                .catch(err => console.error('Error:', err));
+        }
+    </script>
+</body>
+</html>

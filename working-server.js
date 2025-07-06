@@ -1182,6 +1182,140 @@ server.get('/api/billing-plans', async (request, reply) => {
   }
 });
 
+// POST /api/billing-plans - Create new billing plan
+server.post('/api/billing-plans', async (request, reply) => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      courseId,
+      category = 'ADULT',
+      billingType = 'MONTHLY',
+      classesPerWeek = 2,
+      duration = 30,
+      isActive = true
+    } = request.body;
+
+    // Validate required fields
+    if (!name || !price) {
+      reply.status(400);
+      return {
+        success: false,
+        message: 'Name and price are required'
+      };
+    }
+
+    // Get organization ID
+    const org = await prisma.organization.findFirst();
+    if (!org) {
+      throw new Error('No organization found');
+    }
+
+    const plan = await prisma.billingPlan.create({
+      data: {
+        organizationId: org.id,
+        name,
+        description,
+        price: parseFloat(price),
+        courseId: courseId || null,
+        category,
+        billingType,
+        classesPerWeek: parseInt(classesPerWeek),
+        duration: parseInt(duration),
+        isActive
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    return {
+      success: true,
+      data: plan,
+      message: 'Billing plan created successfully'
+    };
+  } catch (error) {
+    console.error('❌ POST /api/billing-plans error:', error);
+    reply.status(500);
+    return {
+      success: false,
+      error: error.message,
+      message: 'Failed to create billing plan'
+    };
+  }
+});
+
+// DELETE /api/billing-plans/:id - Delete billing plan
+server.delete('/api/billing-plans/:id', async (request, reply) => {
+  try {
+    const { id } = request.params;
+    
+    console.log(`🗑️ Deleting billing plan: ${id}`);
+    
+    // Check if plan exists
+    const existingPlan = await prisma.billingPlan.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            subscriptions: true
+          }
+        }
+      }
+    });
+    
+    if (!existingPlan) {
+      reply.code(404);
+      return {
+        success: false,
+        error: 'Plan not found'
+      };
+    }
+    
+    // Check if plan has active subscriptions
+    if (existingPlan._count.subscriptions > 0) {
+      reply.code(400);
+      return {
+        success: false,
+        error: 'Cannot delete plan with active subscriptions',
+        message: `This plan has ${existingPlan._count.subscriptions} active subscription(s). Please cancel them first.`
+      };
+    }
+    
+    // Soft delete - deactivate the plan instead of hard delete
+    const deletedPlan = await prisma.billingPlan.update({
+      where: { id },
+      data: {
+        isActive: false,
+        updatedAt: new Date()
+      }
+    });
+    
+    console.log(`✅ Billing plan deactivated: ${deletedPlan.name}`);
+    
+    return {
+      success: true,
+      message: 'Plan deleted successfully',
+      data: { id: deletedPlan.id, name: deletedPlan.name }
+    };
+    
+  } catch (error) {
+    console.error('❌ Error deleting billing plan:', error);
+    reply.code(500);
+    return {
+      success: false,
+      error: 'Failed to delete plan',
+      message: error.message
+    };
+  }
+});
+
 // GET /api/subscriptions - Return empty array (no test data needed)
 server.get('/api/subscriptions', async (request, reply) => {
   try {

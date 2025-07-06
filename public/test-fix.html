@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test System Fix</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #1e293b; 
+            color: white; 
+        }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 8px; 
+        }
+        .success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #EF4444; }
+        .info { background: rgba(59, 130, 246, 0.2); border: 1px solid #3B82F6; }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563EB; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Krav Maga System Fix Test</h1>
+    
+    <div id="testResults"></div>
+    
+    <h2>Manual Tests</h2>
+    <button onclick="testMainPage()">🏠 Test Main Page</button>
+    <button onclick="testAPI()">🔌 Test API</button>
+    <button onclick="testNavigation()">🧭 Test Navigation</button>
+    <button onclick="testStudentData()">👥 Test Student Loading</button>
+    
+    <script>
+        const results = document.getElementById('testResults');
+        
+        function addResult(message, type) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        function testMainPage() {
+            addResult('🧪 Testing main page accessibility...', 'info');
+            
+            fetch('/')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ Main page loads successfully', 'success');
+                        return response.text();
+                    } else {
+                        addResult('❌ Main page failed to load', 'error');
+                    }
+                })
+                .then(html => {
+                    if (html && html.includes('showSection')) {
+                        addResult('✅ showSection function found in main page', 'success');
+                    } else {
+                        addResult('⚠️ showSection function not found', 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult('❌ Error loading main page: ' + error.message, 'error');
+                });
+        }
+        
+        function testAPI() {
+            addResult('🧪 Testing API endpoints...', 'info');
+            
+            const endpoints = [
+                '/api/students',
+                '/api/billing-plans',
+                '/api/subscriptions',
+                '/api/payments'
+            ];
+            
+            endpoints.forEach(endpoint => {
+                fetch(endpoint)
+                    .then(response => {
+                        if (response.ok) {
+                            addResult(`✅ ${endpoint} is accessible`, 'success');
+                            return response.json();
+                        } else {
+                            addResult(`❌ ${endpoint} failed (${response.status})`, 'error');
+                        }
+                    })
+                    .then(data => {
+                        if (data && data.success !== undefined) {
+                            addResult(`✅ ${endpoint} returns valid data structure`, 'success');
+                        }
+                    })
+                    .catch(error => {
+                        addResult(`❌ ${endpoint} error: ${error.message}`, 'error');
+                    });
+            });
+        }
+        
+        function testNavigation() {
+            addResult('🧪 Testing navigation functionality...', 'info');
+            
+            // Check if we can access the parent window (main page)
+            try {
+                const mainWindow = window.parent || window.opener;
+                if (mainWindow && mainWindow.showSection) {
+                    addResult('✅ showSection function is available', 'success');
+                    addResult('✅ Navigation should work properly', 'success');
+                } else {
+                    addResult('⚠️ showSection not accessible from test page', 'info');
+                    addResult('ℹ️ This is normal for test page - check main page directly', 'info');
+                }
+            } catch (error) {
+                addResult('ℹ️ Navigation test inconclusive from isolated test page', 'info');
+            }
+        }
+        
+        function testStudentData() {
+            addResult('🧪 Testing student data loading...', 'info');
+            
+            fetch('/api/students')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addResult(`✅ Student API working - Found ${data.data.length} students`, 'success');
+                        if (data.data.length > 0) {
+                            addResult('✅ Student data is available', 'success');
+                        } else {
+                            addResult('ℹ️ No students in database (normal for empty system)', 'info');
+                        }
+                    } else {
+                        addResult('❌ Student API returned error: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult('❌ Failed to load student data: ' + error.message, 'error');
+                });
+        }
+        
+        // Run automatic tests on load
+        window.onload = function() {
+            addResult('🚀 System Fix Test Started', 'info');
+            setTimeout(() => {
+                testMainPage();
+                setTimeout(() => testAPI(), 500);
+                setTimeout(() => testNavigation(), 1000);
+                setTimeout(() => testStudentData(), 1500);
+            }, 100);
+        };
+    </script>
+</body>
+</html>
