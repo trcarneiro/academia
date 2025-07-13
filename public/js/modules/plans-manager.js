@@ -35,11 +35,11 @@ window.PlansManager = (function() {
                     '/api/billing-plans'
                 ]);
                 
-                _availablePlans = response.data || this._getMockPlans();
+                _availablePlans = response.data || [];
                 return _availablePlans;
             } catch (error) {
-                console.warn('📡 APIs indisponíveis, usando dados mock');
-                _availablePlans = this._getMockPlans();
+                console.warn('📡 APIs indisponíveis, retornando array vazio (CLAUDE.md compliance)');
+                _availablePlans = [];
                 return _availablePlans;
             }
         },
@@ -81,43 +81,7 @@ window.PlansManager = (function() {
             throw new Error('Todas as APIs falharam');
         },
         
-        _getMockPlans() {
-            return [
-                {
-                    id: 'plan-basic-adult',
-                    name: 'Plano Básico Adulto',
-                    description: 'Ideal para iniciantes - 2 aulas por semana',
-                    category: 'ADULT',
-                    price: '150.00',
-                    billingType: 'MONTHLY',
-                    classesPerWeek: 2,
-                    isActive: true,
-                    features: ['2 aulas/semana', 'Treino básico', 'Acompanhamento']
-                },
-                {
-                    id: 'plan-premium-adult',
-                    name: 'Plano Premium Adulto',
-                    description: 'Acesso ilimitado com benefícios extras',
-                    category: 'ADULT',
-                    price: '280.00',
-                    billingType: 'MONTHLY',
-                    classesPerWeek: 0,
-                    isActive: true,
-                    features: ['Aulas ilimitadas', 'Personal Training', 'Nutrição', 'Congelamento']
-                },
-                {
-                    id: 'plan-child',
-                    name: 'Plano Infantil',
-                    description: 'Krav Maga Kids - 2 aulas por semana',
-                    category: 'CHILD',
-                    price: '120.00',
-                    billingType: 'MONTHLY',
-                    classesPerWeek: 2,
-                    isActive: true,
-                    features: ['2 aulas/semana', 'Metodologia infantil', 'Acompanhamento especializado']
-                }
-            ];
-        },
+        // _getMockPlans() method removed - CLAUDE.md compliance (no hardcoded data)
         
         _generatePlansHTML() {
             return `

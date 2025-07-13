@@ -28,5 +28,25 @@
       "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-05T19-51-58-349Z_plans-manager.js.backup",
       "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-05T19-51-58-355Z_plans-styles.css.backup"
     }
+  },
+  {
+    "id": 1752378385809,
+    "timestamp": "2025-07-13T03:46:25.809Z",
+    "description": "Backup antes da refatoração do sistema de carregamento de dados do aluno",
+    "files": {
+      "public/index.html": "/mnt/h/projetos/academia/backups/2025-07-13T03-46-25-811Z_index.html.backup",
+      "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-13T03-46-25-895Z_plans-manager.js.backup",
+      "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-13T03-46-25-936Z_plans-styles.css.backup"
+    }
+  },
+  {
+    "id": 1752403605425,
+    "timestamp": "2025-07-13T10:46:45.425Z",
+    "description": "Sistema de carregamento de dados refatorado - cursos e planos funcionando",
+    "files": {
+      "public/index.html": "/mnt/h/projetos/academia/backups/2025-07-13T10-46-45-426Z_index.html.backup",
+      "public/js/modules/plans-manager.js": "/mnt/h/projetos/academia/backups/2025-07-13T10-46-45-501Z_plans-manager.js.backup",
+      "public/css/modules/plans-styles.css": "/mnt/h/projetos/academia/backups/2025-07-13T10-46-45-534Z_plans-styles.css.backup"
+    }
   }
 ]

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Teste - Associações Hierárquicas</title>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0A0E1A 0%, #1E293B 100%);
+            color: #E2E8F0;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #10B981;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #94A3B8;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #475569;
+        }
+        
+        .section h3 {
+            color: #3B82F6;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #E5E7EB;
+            font-weight: 600;
+        }
+        
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #E5E7EB;
+            font-size: 1rem;
+        }
+        
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #9CA3AF;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #475569;
+            border-top: 2px solid #10B981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #FCA5A5;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .association-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+            border: 1px solid #10B981;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .course-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        
+        .class-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Sistema de Associações Hierárquicas</h1>
+            <p>Visualização das associações: Plano → Curso → Turma</p>
+        </div>
+        
+        <div class="grid">
+            <div class="section">
+                <h3>👤 Selecionar Aluno</h3>
+                <div class="form-group">
+                    <label class="form-label">Aluno</label>
+                    <select id="studentSelect" class="form-select" onchange="loadStudentAssociations()">
+                        <option value="">Carregando alunos...</option>
+                    </select>
+                </div>
+                
+                <div id="studentInfo" style="display: none;">
+                    <div class="result-box">
+                        <div id="studentInfoContent"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>📊 Estatísticas Rápidas</h3>
+                <div id="quickStats">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid #8B5CF6; border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="color: #8B5CF6; font-size: 1.5rem; font-weight: bold;" id="totalPlans">0</div>
+                            <div style="color: #CBD5E1; font-size: 0.75rem;">Planos</div>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="color: #3B82F6; font-size: 1.5rem; font-weight: bold;" id="totalCourses">0</div>
+                            <div style="color: #CBD5E1; font-size: 0.75rem;">Cursos</div>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; padding: 1rem; text-align: center;">
+                            <div style="color: #10B981; font-size: 1.5rem; font-weight: bold;" id="totalClasses">0</div>
+                            <div style="color: #CBD5E1; font-size: 0.75rem;">Turmas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section full-width">
+            <h3>🔗 Associações Hierárquicas</h3>
+            <div id="associationsContent">
+                <div class="loading">
+                    <p>Selecione um aluno para visualizar as associações</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="section">
+                <h3>📚 Cursos Detalhados</h3>
+                <div id="coursesDetailContent">
+                    <div class="loading">
+                        <p>Selecione um aluno para ver os cursos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>🕐 Turmas Detalhadas</h3>
+                <div id="classesDetailContent">
+                    <div class="loading">
+                        <p>Selecione um aluno para ver as turmas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variáveis globais
+        let currentStudentData = null;
+        let allStudents = [];
+        
+        // Carregar alunos quando a página carrega
+        document.addEventListener('DOMContentLoaded', loadStudents);
+        
+        async function loadStudents() {
+            try {
+                const response = await fetch('/api/students');
+                const data = await response.json();
+                
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '<option value="">Selecione um aluno...</option>';
+                
+                if (data.success && data.data) {
+                    allStudents = data.data;
+                    data.data.forEach(student => {
+                        const option = document.createElement('option');
+                        option.value = student.id;
+                        option.textContent = `${student.user?.firstName || ''} ${student.user?.lastName || ''} (${student.category || 'N/A'})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar alunos:', error);
+                document.getElementById('studentSelect').innerHTML = '<option value="">Erro ao carregar alunos</option>';
+            }
+        }
+        
+        async function loadStudentAssociations() {
+            const studentId = document.getElementById('studentSelect').value;
+            
+            if (!studentId) {
+                document.getElementById('studentInfo').style.display = 'none';
+                document.getElementById('associationsContent').innerHTML = '<div class="loading"><p>Selecione um aluno para visualizar as associações</p></div>';
+                document.getElementById('coursesDetailContent').innerHTML = '<div class="loading"><p>Selecione um aluno para ver os cursos</p></div>';
+                document.getElementById('classesDetailContent').innerHTML = '<div class="loading"><p>Selecione um aluno para ver as turmas</p></div>';
+                updateStats(0, 0, 0);
+                return;
+            }
+            
+            try {
+                // Mostrar loading
+                document.getElementById('associationsContent').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 1rem;">Carregando associações do aluno...</p>
+                    </div>
+                `;
+                
+                // Buscar dados do aluno com associações
+                const [studentResponse, classesResponse, coursesResponse, plansResponse] = await Promise.all([
+                    fetch(`/api/students/${studentId}`),
+                    fetch('/api/classes'),
+                    fetch('/api/courses'),
+                    fetch('/api/billing-plans')
+                ]);
+                
+                const studentData = await studentResponse.json();
+                const classesData = await classesResponse.json();
+                const coursesData = await coursesResponse.json();
+                const plansData = await plansResponse.json();
+                
+                if (!studentData.success) {
+                    throw new Error(studentData.message || 'Erro ao carregar dados do aluno');
+                }
+                
+                const student = studentData.data;
+                currentStudentData = {
+                    student,
+                    allClasses: classesData.success ? classesData.data : [],
+                    allCourses: coursesData.success ? coursesData.data : [],
+                    allPlans: plansData.success ? plansData.data : []
+                };
+                
+                // Processar associações
+                const associations = processAssociations(student, currentStudentData.allClasses, currentStudentData.allCourses, currentStudentData.allPlans);
+                
+                // Atualizar interface
+                displayStudentInfo(student);
+                displayAssociations(associations);
+                displayCoursesDetail(associations);
+                displayClassesDetail(associations);
+                updateStats(associations.plans.length, associations.courses.length, associations.classes.length);
+                
+            } catch (error) {
+                console.error('Erro ao carregar associações:', error);
+                document.getElementById('associationsContent').innerHTML = `
+                    <div class="error-box">
+                        <div style="font-weight: 700; margin-bottom: 0.5rem;">❌ Erro ao Carregar Associações</div>
+                        <div>${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function processAssociations(student, allClasses, allCourses, allPlans) {
+            const associations = {
+                plans: [],
+                courses: [],
+                classes: [],
+                hierarchy: []
+            };
+            
+            // Processar assinaturas de planos
+            if (student.subscriptions) {
+                student.subscriptions.forEach(sub => {
+                    if (sub.billingPlan) {
+                        associations.plans.push({
+                            subscription: sub,
+                            plan: sub.billingPlan
+                        });
+                    }
+                });
+            }
+            
+            // Processar matrículas
+            if (student.enrollments) {
+                student.enrollments.forEach(enrollment => {
+                    if (enrollment.course) {
+                        associations.courses.push({
+                            enrollment: enrollment,
+                            course: enrollment.course
+                        });
+                    }
+                    
+                    if (enrollment.class) {
+                        associations.classes.push({
+                            enrollment: enrollment,
+                            class: enrollment.class
+                        });
+                    }
+                });
+            }
+            
+            // Criar hierarquia
+            associations.plans.forEach(planAssoc => {
+                const planHierarchy = {
+                    plan: planAssoc.plan,
+                    subscription: planAssoc.subscription,
+                    courses: [],
+                    directClasses: []
+                };
+                
+                // Encontrar cursos relacionados ao plano
+                associations.courses.forEach(courseAssoc => {
+                    const course = courseAssoc.course;
+                    if (course.category === planAssoc.plan.category || course.level === planAssoc.plan.level) {
+                        const courseInPlan = {
+                            course: course,
+                            enrollment: courseAssoc.enrollment,
+                            classes: []
+                        };
+                        
+                        // Encontrar turmas do curso
+                        associations.classes.forEach(classAssoc => {
+                            if (classAssoc.class.courseId === course.id) {
+                                courseInPlan.classes.push({
+                                    class: classAssoc.class,
+                                    enrollment: classAssoc.enrollment
+                                });
+                            }
+                        });
+                        
+                        planHierarchy.courses.push(courseInPlan);
+                    }
+                });
+                
+                // Encontrar turmas diretas do plano
+                associations.classes.forEach(classAssoc => {
+                    const isInCourse = planHierarchy.courses.some(courseInPlan => 
+                        courseInPlan.classes.some(c => c.class.id === classAssoc.class.id)
+                    );
+                    
+                    if (!isInCourse && (classAssoc.class.category === planAssoc.plan.category || classAssoc.class.level === planAssoc.plan.level)) {
+                        planHierarchy.directClasses.push({
+                            class: classAssoc.class,
+                            enrollment: classAssoc.enrollment
+                        });
+                    }
+                });
+                
+                associations.hierarchy.push(planHierarchy);
+            });
+            
+            return associations;
+        }
+        
+        function displayStudentInfo(student) {
+            const content = document.getElementById('studentInfoContent');
+            content.innerHTML = `
+                <div style="display: grid; gap: 0.5rem;">
+                    <div style="font-weight: 600; color: #10B981; font-size: 1.1rem;">
+                        ${student.user?.firstName || ''} ${student.user?.lastName || ''}
+                    </div>
+                    <div style="color: #E5E7EB;">📧 ${student.user?.email || 'Email não informado'}</div>
+                    <div style="color: #94A3B8;">📱 ${student.user?.phone || 'Telefone não informado'}</div>
+                    <div style="color: #3B82F6;">🥋 Categoria: ${student.category || 'N/A'}</div>
+                    <div style="color: #F59E0B;">📊 Condição: ${student.physicalCondition || 'N/A'}</div>
+                </div>
+            `;
+            document.getElementById('studentInfo').style.display = 'block';
+        }
+        
+        function displayAssociations(associations) {
+            const content = document.getElementById('associationsContent');
+            
+            if (associations.hierarchy.length === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #6B7280;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+                        <p>Nenhuma associação encontrada para este aluno</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 1.5rem;">';
+            
+            associations.hierarchy.forEach((planHierarchy, index) => {
+                const plan = planHierarchy.plan;
+                const subscription = planHierarchy.subscription;
+                
+                html += `
+                    <div class="association-card">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(16, 185, 129, 0.3);">
+                            <div>
+                                <h4 style="color: #10B981; margin: 0; font-size: 1.2rem;">
+                                    💎 ${plan.name}
+                                </h4>
+                                <p style="color: #94A3B8; margin: 0.25rem 0;">
+                                    R$ ${parseFloat(plan.price || 0).toFixed(2)}/mês • ${plan.category} • ${subscription.status}
+                                </p>
+                            </div>
+                            <div style="text-align: right; color: #10B981; font-size: 0.8rem;">
+                                <div>${planHierarchy.courses.length} curso(s)</div>
+                                <div>${planHierarchy.courses.reduce((total, c) => total + c.classes.length, 0) + planHierarchy.directClasses.length} turma(s)</div>
+                            </div>
+                        </div>
+                        
+                        ${planHierarchy.courses.map(courseInPlan => `
+                            <div class="course-card">
+                                <h5 style="color: #3B82F6; margin: 0 0 0.5rem 0;">📚 ${courseInPlan.course.name}</h5>
+                                <p style="color: #E5E7EB; margin: 0 0 1rem 0; font-size: 0.9rem;">${courseInPlan.course.description || ''}</p>
+                                
+                                ${courseInPlan.classes.map(classInCourse => `
+                                    <div class="class-card">
+                                        <div style="color: #E5E7EB; font-weight: 500;">🕐 ${classInCourse.class.name}</div>
+                                        <div style="color: #9CA3AF; font-size: 0.8rem; margin-top: 0.25rem;">
+                                            📅 ${classInCourse.class.schedule || 'Horário flexível'}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                
+                                ${courseInPlan.classes.length === 0 ? `
+                                    <div style="color: #9CA3AF; font-style: italic; text-align: center; padding: 1rem;">
+                                        Curso teórico - sem turmas práticas
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                        
+                        ${planHierarchy.directClasses.length > 0 ? `
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                                <h5 style="color: #F59E0B; margin: 0 0 0.75rem 0;">🎯 Turmas Diretas do Plano</h5>
+                                ${planHierarchy.directClasses.map(directClass => `
+                                    <div class="class-card">
+                                        <div style="color: #E5E7EB; font-weight: 500;">🕐 ${directClass.class.name}</div>
+                                        <div style="color: #9CA3AF; font-size: 0.8rem; margin-top: 0.25rem;">
+                                            📅 ${directClass.class.schedule || 'Horário flexível'}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+        
+        function displayCoursesDetail(associations) {
+            const content = document.getElementById('coursesDetailContent');
+            
+            if (associations.courses.length === 0) {
+                content.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 2rem;">Nenhum curso encontrado</div>';
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 1rem;">';
+            
+            associations.courses.forEach(courseAssoc => {
+                const course = courseAssoc.course;
+                const enrollment = courseAssoc.enrollment;
+                
+                html += `
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; padding: 1rem;">
+                        <h5 style="color: #3B82F6; margin: 0 0 0.5rem 0;">📚 ${course.name}</h5>
+                        <p style="color: #E5E7EB; margin: 0 0 0.5rem 0; font-size: 0.85rem;">${course.description || ''}</p>
+                        <div style="color: #9CA3AF; font-size: 0.75rem;">
+                            Status: ${enrollment.status} • 
+                            Matrícula: ${new Date(enrollment.enrollmentDate).toLocaleDateString('pt-BR')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+        
+        function displayClassesDetail(associations) {
+            const content = document.getElementById('classesDetailContent');
+            
+            if (associations.classes.length === 0) {
+                content.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 2rem;">Nenhuma turma encontrada</div>';
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 1rem;">';
+            
+            associations.classes.forEach(classAssoc => {
+                const classData = classAssoc.class;
+                const enrollment = classAssoc.enrollment;
+                
+                html += `
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; padding: 1rem;">
+                        <h5 style="color: #10B981; margin: 0 0 0.5rem 0;">🕐 ${classData.name}</h5>
+                        <p style="color: #E5E7EB; margin: 0 0 0.5rem 0; font-size: 0.85rem;">${classData.description || ''}</p>
+                        <div style="color: #9CA3AF; font-size: 0.75rem;">
+                            📅 ${classData.schedule || 'Horário flexível'} • 
+                            👥 ${classData.capacity || 'Sem limite'} vagas • 
+                            Status: ${enrollment.status}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+        
+        function updateStats(plansCount, coursesCount, classesCount) {
+            document.getElementById('totalPlans').textContent = plansCount;
+            document.getElementById('totalCourses').textContent = coursesCount;
+            document.getElementById('totalClasses').textContent = classesCount;
+        }
+    </script>
+</body>
+</html>

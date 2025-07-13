@@ -1,580 +1,121 @@
-# 🤖 ORIENTAÇÕES PARA AGENTES IA - KRAV MAGA ACADEMY
+# System Architecture & Workflow v2.0
+Document ID: agents.md
+Last Updated: 07/12/2025
+System Status: STABLE & PROTECTED
 
-## 🛡️ **PROTOCOLO DE DESENVOLVIMENTO SEGURO - OBRIGATÓRIO**
+This document outlines the development workflow and architectural principles for this project. Its purpose is to ensure all development extends system capabilities while ensuring zero downtime and zero regressions. Adherence to these protocols is mandatory.
 
-### ⚠️ **ATENÇÃO CRÍTICA - LEIA ANTES DE QUALQUER ALTERAÇÃO**
+## 🚨 The Three Pillars of Development 🚨
+These are the non-negotiable, foundational rules for our architecture. Every line of code must conform to these three pillars.
 
-Este sistema possui uma **arquitetura modular protegida** implementada em 05/07/2025. **NUNCA** altere o código diretamente sem seguir os protocolos de segurança.
+### Pillar I: Isolated Modularity
+You must not modify the core system. All new functionality must be encapsulated in isolated modules. This is the primary method for protecting system stability.
 
-## 🔒 **REGRAS OBRIGATÓRIAS**
+*   **Path:** `/public/js/modules/`
+*   **CSS:** Isolated in `/css/modules/` with unique prefixes (e.g., `.module-name-isolated`).
+*   **Integration:** Use `window.ModuleLoader` with a fallback to the original function.
 
-### **1. 📦 SEMPRE USE MÓDULOS ISOLADOS**
+### Pillar II: API-First Data
+The system's state is managed via APIs. Direct manipulation of client-side storage for permanent data is strictly forbidden.
 
-#### **✅ CORRETO - Criar Novo Módulo:**
-```javascript
-// Em: /public/js/modules/nome-modulo.js
-window.NomeModulo = (function() {
-    'use strict';
-    
-    // Estado privado protegido
-    let _state = {};
-    
-    return {
-        version: '1.0.0',
-        init: function() {
-            console.log(`NomeModulo v${this.version} inicializado`);
-            return this;
-        },
-        // API pública...
-    };
-})();
-```
+*   **Primary Storage:** API endpoints are the single source of truth.
+*   **Hardcoded Data:** Absolutely forbidden. APIs return `{ success: true, data: [] }` for empty sets. The UI must handle this state.
+*   **localStorage:** Permitted only as a temporary fallback for offline capability, with an automatic synchronization mechanism.
 
-#### **❌ PROIBIDO - Alterar Sistema Principal:**
-```javascript
-// NUNCA faça isso:
-function alterarFuncaoExistente() {
-    // Alteração direta quebra o sistema
-}
-```
+### Pillar III: Full-Screen UI
+User experience must be consistent and predictable. The use of modals or popups for editing or creating data is forbidden.
 
-### **2. 🔄 WORKFLOW OBRIGATÓRIO**
+*   **Rule:** Every user form (create, edit, view details) must be on a dedicated, full-screen page.
+*   **Interaction:** Double-clicking a table row must navigate the user to the corresponding full-screen edit page.
 
-#### **ANTES DE QUALQUER ALTERAÇÃO:**
+## 🔒 Development Workflow Protocol (Mandatory)
+Follow this sequence for every change. No steps may be skipped.
+
+### 1. Create a Save Point (Pre-Commit)
+Before starting work, create a stable version point.
 ```bash
-# 1. SEMPRE criar backup
-node version-manager.js create "Descrição do que vai implementar"
-
-# 2. Verificar integridade
-node version-manager.js check
+# Describe the upcoming change
+node version-manager.js create "Starting implementation of Feature X"
 ```
 
-#### **DURANTE IMPLEMENTAÇÃO:**
-- ✅ Criar módulos em `/js/modules/`
-- ✅ CSS isolado em `/css/modules/`
-- ✅ Usar prefixos únicos (`.modulo-isolated`)
-- ✅ Implementar fallbacks para sistema original
+### 2. Implement Changes
+*   Create your isolated module (`.js` and `.css`).
+*   Write the code according to the Three Pillars.
+*   Integrate using the `ModuleLoader`.
 
-#### **APÓS IMPLEMENTAÇÃO:**
+### 3. Verify Your Work
+*   **Integrity Check:**
+    ```bash
+    node version-manager.js check
+    ```
+*   **Health Check:**
+    ```bash
+    curl http://localhost:3000/health
+    ```
+*   **Browser Test:** Open the developer console (F12). It must be free of JavaScript errors.
+
+### 4. Finalize Your Work (Post-Commit)
+After implementation and verification, create the final version point.
 ```bash
-# 1. Verificar se não quebrou
-node version-manager.js check
-
-# 2. Testar no browser (F12 = 0 erros)
-
-# 3. Criar versão estável
-node version-manager.js create "Funcionalidade implementada e testada"
+# Describe the completed work
+node version-manager.js create "Feature X implemented and tested"
 ```
 
-### **3. 🔌 INTEGRAÇÃO COM SISTEMA PRINCIPAL**
+## 🆘 Emergency & Rollback Procedure
+If you introduce an error (console error, failed check, broken UI), you must **immediately** initiate a rollback.
 
-#### **Padrão para Integrar Módulos:**
-```javascript
-// No sistema principal
-if (window.ModuleLoader && window.ModuleLoader.isModuleLoaded('NomeModulo')) {
-    // Usar módulo isolado
-    const modulo = window.NomeModulo.init();
-    modulo.render();
-} else {
-    // Fallback para sistema original
-    funcaoOriginal();
-}
-```
+1.  **List available stable versions:**
+    ```bash
+    node version-manager.js list
+    ```
+2.  **Revert to the last known stable version ID:**
+    ```bash
+    node version-manager.js rollback [VERSION_ID]
+    ```
+Stop all new development until the error is understood and resolved.
 
-### **4. 🎨 CSS ISOLADO OBRIGATÓRIO**
+## 📦 Core System Assets (Do Not Modify)
+*   **Protected Module: PlansManager v1.0.0**
+    *   **Status:** ✅ LOCKED & STABLE
+    *   **Function:** Manages billing plans.
+    *   **Location:** `/js/modules/plans-manager.js`
+    *   **To Extend:** Add new methods to its public API. Never modify its internal code.
+*   **Protected Module: ModuleLoader v1.0.0**
+    *   **Status:** ✅ LOCKED & STABLE
+    *   **Function:** Securely loads isolated modules.
+    *   **Location:** `/js/module-loader.js`
+*   **Protected Module: Core System**
+    *   **Status:** ✅ LOCKED & STABLE
+    *   **Function:** Main application entrypoint and fallbacks.
+    *   **Location:** `/public/index.html`
 
-```css
-/* Sempre usar prefixo do módulo */
-.nome-modulo-isolated {
-    /* Estilos base */
-}
-
-.nome-modulo-isolated .component {
-    /* Componentes específicos */
-}
-
-/* Proteção contra override */
-.nome-modulo-isolated * {
-    box-sizing: border-box;
-}
-```
-
-## 🚨 **PROTOCOLOS DE EMERGÊNCIA**
-
-### **Se Algo Quebrar:**
-```bash
-# Rollback imediato para última versão funcional
-node version-manager.js list
-node version-manager.js rollback [ID_DA_VERSAO_FUNCIONAL]
-```
-
-### **Se Houver Erro no Console:**
-1. **PARE imediatamente**
-2. Verifique logs do browser (F12)
-3. Faça rollback se necessário
-4. Investigue o erro antes de continuar
-
-## 📋 **MÓDULOS EXISTENTES E FUNCIONAIS**
-
-### **🔒 NÃO ALTERE ESTES MÓDULOS (ESTÃO FUNCIONANDO):**
-
-#### **1. PlansManager v1.0.0**
-- **Localização:** `/js/modules/plans-manager.js`
-- **CSS:** `/css/modules/plans-styles.css`
-- **Status:** ✅ FUNCIONAL E TESTADO
-- **Função:** Gestão de planos isolada
-- **Última versão estável:** 1751744745983
-
-#### **2. ModuleLoader v1.0.0**
-- **Localização:** `/js/module-loader.js`
-- **Status:** ✅ FUNCIONAL E TESTADO
-- **Função:** Carregamento seguro de módulos
-
-#### **3. Sistema Principal**
-- **Localização:** `/public/index.html`
-- **Status:** ✅ FUNCIONAL COM FALLBACKS
-- **Última versão estável:** 1751744745983
-
-## 🎯 **ORIENTAÇÕES ESPECÍFICAS POR TIPO DE TAREFA**
-
-### **💳 Alterações em Planos:**
-- ✅ Usar `PlansManager` existente
-- ✅ Adicionar métodos na API pública
-- ❌ NUNCA alterar sistema original de planos
-
-### **👥 Alterações em Alunos:**
-- ✅ Criar `StudentsManager` modular
-- ✅ Seguir padrão do `PlansManager`
-- ✅ Integrar com fallback
-
-### **📊 Nova Funcionalidade:**
-- ✅ Criar módulo isolado
-- ✅ Seguir padrão de versionamento
-- ✅ Documentar API pública
-- ✅ Implementar testes básicos
-
-### **🎨 Alterações de Interface:**
-- ✅ CSS em módulos isolados
-- ✅ Prefixos únicos obrigatórios
-- ❌ NUNCA alterar CSS global
-
-## 📊 **MONITORAMENTO OBRIGATÓRIO**
-
-### **Antes de Cada Commit:**
-```bash
-# Verificar integridade
-node version-manager.js check
-
-# Testar no browser
-curl http://localhost:3000/health
-
-# Console deve estar limpo (0 erros)
-```
-
-### **Métricas de Qualidade:**
-- ✅ Zero erros JavaScript no console
-- ✅ Todas as APIs retornando 200/304
-- ✅ Módulos carregando sem erro
-- ✅ Funcionalidades originais funcionando
-
-## 🔧 **FERRAMENTAS DISPONÍVEIS**
-
-### **1. Version Manager**
-```bash
-node version-manager.js create "Descrição"
-node version-manager.js list
-node version-manager.js rollback [ID]
-node version-manager.js check
-```
-
-### **2. Backup System**
-```javascript
-const backup = new BackupSystem();
-backup.createBackup('caminho/arquivo.js', 'descrição');
-```
-
-### **3. Module Loader**
-```javascript
-await ModuleLoader.loadModule('ModuleName', '/js/modules/module.js');
-await ModuleLoader.loadModuleCSS('/css/modules/module.css');
-```
-
-## 📚 **DOCUMENTAÇÃO COMPLETA**
-
-### **Arquitetura Detalhada:**
-- 📖 `/DESENVOLVIMENTO-SEGURO.md` - Manual completo
-- 🔧 `/version-manager.js` - Gerenciador de versões
-- 🛡️ `/backup-system.js` - Sistema de backup
-
-### **Exemplos Práticos:**
-- 📦 `/js/modules/plans-manager.js` - Exemplo de módulo
-- 🎨 `/css/modules/plans-styles.css` - Exemplo de CSS isolado
-
-## ⚡ **COMANDOS RÁPIDOS**
-
-```bash
-# Workflow completo seguro:
-node version-manager.js create "Nova feature X"
-# [fazer alterações em módulos]
-node version-manager.js check
-# [testar no browser]
-node version-manager.js create "Feature X implementada"
-
-# Emergência:
-node version-manager.js rollback [ID_ULTIMA_VERSAO_BOA]
-```
-
-## 🎯 **OBJETIVO FINAL**
-
-**ZERO DOWNTIME** - O sistema deve sempre funcionar, mesmo durante desenvolvimento. Toda alteração deve ser reversível e não deve quebrar funcionalidades existentes.
-
+## 🛠️ Toolchain & Reference Implementations
+*   **Version Manager (`version-manager.js`):** Your primary tool for creating secure save points and rollbacks.
+*   **Module Loader (`module-loader.js`):** Use `ModuleLoader.loadModule()` to safely integrate your code.
+*   **Example Module (`plans-manager.js`):** This is your golden standard for how a module should be structured, implemented, and documented.
+*   **Example CSS (`plans-styles.css`):** Your reference for creating properly isolated CSS.
 ---
 
-## 📊 **STATUS ATUAL DO SISTEMA**
-
-### **✅ FUNCIONANDO (NÃO ALTERE):**
-- Sistema principal com fallbacks
-- PlansManager modular
-- ModuleLoader
-- Sistema de backup/versionamento
-
-### **📦 VERSÃO ESTÁVEL ATUAL:**
-- **ID:** 1751744745983
-- **Data:** 05/07/2025
-- **Descrição:** "Implementação inicial da arquitetura modular - Sistema de isolamento implementado"
-
-### **🔧 PARA IMPLEMENTAR NOVAS FUNCIONALIDADES:**
-1. Siga o workflow obrigatório
-2. Crie módulos isolados
-3. Use versionamento
-4. Mantenha fallbacks
-
----
-
-**⚠️ IMPORTANTE:** Este documento deve ser seguido RIGOROSAMENTE. Qualquer desvio pode quebrar o sistema funcionando. Em caso de dúvida, sempre priorize a segurança e use os backups.
-
----
-
-*📝 Última atualização: 05/07/2025*  
-*🤖 Sistema modular implementado com sucesso*  
-*🛡️ Proteção ativa contra regressões*
-
----
-
-## 🚨 **PROBLEMAS CRÍTICOS IDENTIFICADOS E SOLUÇÕES**
-
-### **⚡ PROBLEMA: Alunos não carregando + Menus principais não funcionam**
-*Status: CRÍTICO - Identificado em 05/07/2025*
-
-#### **🔍 POSSÍVEIS CAUSAS:**
-1. **Servidor Backend não rodando** - `node dist/server-simple.js`
-2. **Erro JavaScript no frontend** - Verificar console F12
-3. **APIs falhando** - Testar `/api/health` e `/api/students`
-4. **CORS issues** - Verificar configuração de origem
-5. **Conflito de módulos** - PlansManager vs sistema original
-
-#### **🔧 DIAGNÓSTICO RÁPIDO:**
-```bash
-# 1. Verificar se servidor está rodando
-curl http://localhost:3000/health
-
-# 2. Testar API de alunos
-curl http://localhost:3000/api/students
-
-# 3. Verificar logs do servidor
-node dist/server-simple.js
-
-# 4. Verificar versão estável
-node version-manager.js list
-```
-
-#### **⚡ SOLUÇÕES IMEDIATAS:**
-1. **Rollback para versão estável:**
-   ```bash
-   node version-manager.js rollback 1751744745983
-   ```
-
-2. **Restart completo do servidor:**
-   ```bash
-   # Parar servidor
-   Ctrl+C
-   
-   # Rebuild
-   npm run build
-   
-   # Restart
-   node dist/server-simple.js
-   ```
-
-3. **Verificar módulos carregando:**
-   - Abrir F12 no browser
-   - Verificar se PlansManager está carregando
-   - Procurar erros JavaScript
-
-### **🚨 PROBLEMA CRÍTICO: Check-in por Matrícula Bloqueado**
-*Status: CRÍTICO - Sistema encontra aluno mas falha na validação*
-
-#### **🎯 CAUSA RAIZ:** 
-Sistema exige `StudentSubscription` ativa para qualquer check-in
-
-#### **🔧 SOLUÇÕES:**
-
-**1. SOLUÇÃO IMEDIATA (5 min):**
-```bash
-# Criar assinatura para aluno específico
-curl -X POST http://localhost:3000/api/students/KMA0001/quick-activate
-```
-
-**2. SOLUÇÃO ESTRUTURAL (Modo Básico):**
-Implementar modo de check-in básico sem validação financeira
-```javascript
-// Em server-simple.ts - adicionar flag allowBasicMode
-const basicMode = process.env.CHECKIN_BASIC_MODE === 'true';
-if (basicMode) {
-    // Permitir check-in sem validação de assinatura
-}
-```
-
-**3. VARIÁVEL DE AMBIENTE:**
-```bash
-# No .env
-CHECKIN_BASIC_MODE=true
-```
-
----
-
-## 📋 **PADRÕES OBRIGATÓRIOS DE INTERFACE**
-
-### **🎯 REGRA ANTI-MODAL:**
-**JAMAIS** criar modals para edições. SEMPRE usar telas full-screen.
-
-#### **✅ PADRÃO CORRETO:**
-1. **Duplo Clique:** Qualquer linha da tabela → Tela completa de edição
-2. **Tela Full-Screen:** Substituir modal por página completa
-3. **Navegação:** Botão "Voltar" para retornar à listagem
-4. **Consistência:** Seguir padrão das telas de Alunos e Planos
-
-### **🚫 PROIBIÇÃO ABSOLUTA DE DADOS HARDCODED**
-**JAMAIS** incluir dados de teste, simulados ou hardcoded.
-
-#### **🎯 REGRAS OBRIGATÓRIAS:**
-1. **APIs Vazias:** Retornar arrays vazios `{success: true, data: []}`
-2. **Sem Mock Data:** Nenhum dado fictício no JavaScript
-3. **Sem Fallbacks:** Não criar dados de exemplo quando API falha
-4. **Interface Limpa:** Sistema deve funcionar com dados vazios
-5. **Estados Vazios:** Mensagens apropriadas para "nenhum dado encontrado"
-
-#### **✅ PADRÃO CORRETO:**
-```javascript
-// CORRETO
-const response = await fetch('/api/billing-plans');
-const data = await response.json();
-if (data.success && data.data.length > 0) {
-    // Processar dados reais
-} else {
-    // Mostrar estado vazio
-    showEmptyState('Nenhum plano encontrado');
-}
-
-// PROIBIDO
-const mockData = [{ id: 1, name: 'Plano Demo' }]; // ❌ NUNCA FAZER
-```
-
----
-
-## 📊 **STATUS ATUAL DETALHADO DO SISTEMA**
-
-### **✅ MÓDULOS 100% FUNCIONAIS:**
-- **PlansManager v1.0.0** - Gestão de planos isolada ✅
-- **ModuleLoader v1.0.0** - Carregamento seguro ✅
-- **Sistema Principal** - Com fallbacks funcionando ✅
-- **Version Manager** - Controle de versões ✅
-- **Backup System** - Sistema de backup ✅
-- **Cadastro de Alunos** - CRUD completo ✅
-- **Cursos e Turmas** - Gestão acadêmica ✅
-- **Controle de Frequência** - Múltiplos métodos ✅
-- **Sistema de Avaliações** - Scoring e feedback ✅
-- **Responsáveis Financeiros** - CRUD completo ✅
-- **Planos de Pagamento** - Gestão financeira ✅
-
-### **🟡 MÓDULOS PARCIAIS:**
-- **Check-in por Matrícula** - 90% (bloqueado por validação)
-- **Desafios Semanais** - 70% (backend pronto, frontend pendente)
-- **Sistema de Progresso** - 85% (funcional, precisa gamificação)
-
-### **❌ MÓDULOS PENDENTES:**
-- **Autenticação JWT** - 0%
-- **Relatórios Avançados** - 0%
-- **Testes Automatizados** - 25%
-
----
-
-## 🔧 **PROCEDIMENTOS DE EMERGÊNCIA EXPANDIDOS**
-
-### **🚨 Se Sistema Não Carrega:**
-```bash
-# 1. Verificar processo
-ps aux | grep node
-
-# 2. Matar processos antigos
-pkill -f "node.*server"
-
-# 3. Verificar porta
-netstat -tulpn | grep :3000
-
-# 4. Rebuild completo
-npm run build
-
-# 5. Restart servidor
-node dist/server-simple.js
-```
-
-### **🚨 Se Menus Não Funcionam:**
-1. **Abrir F12 → Console**
-2. **Procurar erros JavaScript**
-3. **Verificar se módulos carregaram:**
-   ```javascript
-   console.log(window.ModuleLoader);
-   console.log(window.PlansManager);
-   ```
-4. **Se houver erro, fazer rollback:**
-   ```bash
-   node version-manager.js rollback 1751744745983
-   ```
-
-### **🚨 Se APIs Falham:**
-1. **Testar health check:**
-   ```bash
-   curl http://localhost:3000/health
-   ```
-2. **Verificar logs do servidor**
-3. **Verificar conexão com banco:**
-   ```bash
-   # No arquivo .env verificar DATABASE_URL
-   ```
-4. **Restart servidor se necessário**
-
----
-
-## 📚 **FUNCIONALIDADES AVANÇADAS IMPLEMENTADAS**
-
-### **📱 Múltiplos Métodos de Check-in:**
-1. **Manual/Checkbox** - ✅ 100% funcional
-2. **QR Code** - ✅ Backend 100%, Frontend 0%
-3. **Geolocalização** - ✅ Backend 80%, Frontend 0%
-4. **Por Matrícula** - ✅ Backend 90%, validação bloqueada
-5. **Por Nome** - ✅ Backend 70%, Frontend 0%
-6. **Reconhecimento Facial** - ⏳ Backend 20%
-7. **NFC Tags** - ⏳ Backend 20%
-
-### **💰 Sistema Financeiro Completo:**
-- **Responsáveis Financeiros** - CRUD completo
-- **Planos de Pagamento** - Por categoria e curso
-- **Matrícula Inteligente** - Associação automática
-- **Validação de Pagamentos** - Sistema robusto
-
-### **📊 Gestão Acadêmica Avançada:**
-- **42 Técnicas** catalogadas
-- **48 Planos de Aula** estruturados
-- **Sistema de Avaliações** com scoring
-- **Progresso Individual** por aluno
-- **Estatísticas em Tempo Real**
-
----
-
-## 🎯 **METODOLOGIA DE DESENVOLVIMENTO ATUALIZADA**
-
-### **🔥 REGRA FUNDAMENTAL:**
-> "POC Funcional Primeiro, Depois Melhorar"
-
-### **✅ ABORDAGEM CORRETA:**
-1. **POC Mínimo** - Versão básica que FUNCIONA
-2. **Teste no Browser** - Validar funcionamento real
-3. **Console Limpo** - Zero erros JavaScript
-4. **Backup Funcional** - Sempre manter versão que funciona
-5. **Iteração Incremental** - Melhorar após validação
-
-### **❌ ERROS A EVITAR:**
-- ❌ Complexidade prematura
-- ❌ Dependências externas sem teste
-- ❌ Debugging excessivo de libraries
-- ❌ Assumir que código funciona sem testar
-
-### **📝 CHECKLIST OBRIGATÓRIO:**
-- [ ] POC funcional criado
-- [ ] Testado no browser real
-- [ ] Console sem erros JavaScript
-- [ ] Navegação funcionando
-- [ ] Backup da versão anterior
-- [ ] Documentação atualizada
-
----
-
-## 🚨 **PROBLEMA: Fastify Schema Validation Error**
-*Status: RESOLVIDO - Identificado em 06/07/2025*
-
-#### **🔍 ERRO ESPECÍFICO:**
-```
-"code": "FST_ERR_SCH_VALIDATION_BUILD",
-"message": "Failed building the validation schema for GET: /api/billing-plans, due to error schema is invalid: data/required must be array"
-```
-
-#### **🎯 CAUSA RAIZ:** 
-Conflito entre Zod schemas e Fastify built-in validation schemas
-
-#### **🔧 SOLUÇÃO APLICADA:**
-1. **Simplificar schemas Fastify** - Remover definições complexas
-2. **Usar formato JSON Schema padrão** em vez de Zod objects
-3. **Manter Zod para validação interna** mas schemas Fastify simplificados
-
-#### **💻 IMPLEMENTAÇÃO:**
-```typescript
-// ✅ CORRETO - Schema simplificado
-schema: {
-  tags: ['Billing Plans'],
-  summary: 'Get all billing plans',
-  querystring: {
-    type: 'object',
-    properties: {
-      active: { type: 'string' },
-      category: { type: 'string' },
-      limit: { type: 'string' }
-    }
-  },
-  response: {
-    200: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean' },
-        data: { type: 'array' },
-        count: { type: 'number' },
-        message: { type: 'string' }
-      }
-    }
-  }
-}
-
-// ❌ PROBLEMÁTICO - Schema complexo que causa erro
-schema: {
-  querystring: BillingPlanQuerySchema, // Zod object direto
-  response: {
-    200: {
-      data: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: { /* definições complexas */ }
-        }
-      }
-    }
-  }
-}
-```
-
-#### **📋 PROTOCOLO PARA NOVOS ENDPOINTS:**
-1. **Sempre usar schemas JSON Schema padrão** no Fastify
-2. **Manter Zod para validação TypeScript** interna
-3. **Testar schema validation** antes de deploy
-4. **Verificar logs de startup** para erros de schema
-
----
+### 🚨 **Critical Refactoring Plan (Project Phoenix)**
+
+**Diagnosis:** The project has significant technical debt due to a monolithic structure (`index.html`) that violates our modularity and maintainability guidelines.
+
+**Objective:** Refactor the project into a modular, robust, and scalable architecture aligned with our development standards.
+
+**Critical Issues to Address:**
+1.  **Monolithic Structure:** All HTML, CSS, and JS currently reside in a single file.
+2.  **Global Scope Pollution:** Globally declared functions and variables are causing conflicts.
+3.  **Lack of Formal Tests:** The absence of unit and integration tests makes the system fragile.
+4.  **Disorganized Code:** Logic is duplicated and difficult to maintain.
+
+**Action Plan (To-Do):**
+-   [x] **1. Create Folder Structure:** Organize code into `public/css/` and `public/js/`.
+-   [ ] **2. Externalize CSS:** Move all styles to `public/css/style.css`.
+-   [ ] **3. Modularize JavaScript:**
+    -   [x] Create `public/js/api.js` for all `fetch` calls.
+    -   [x] Create `public/js/ui.js` for DOM manipulation and navigation.
+    -   [x] Create `public/js/main.js` as the entry point to initialize modules.
+    -   [x] Create modules by feature (e.g., `public/js/students.js`, `public/js/plans.js`).
+-   [ ] **4. Clean `index.html`:** Reduce it to a minimal skeleton that loads the CSS and JS files.
+-   [ ] **5. Implement Unit Tests:** Set up a testing framework (e.g., Jest) and write initial tests for API functions.
+-   [ ] **6. Adopt ES6 Modules:** Use `import`/`export` to manage dependencies between JS files.

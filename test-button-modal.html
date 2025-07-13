@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Modal - Botões</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .plan-option {
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(29, 78, 216, 0.05));
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-option:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+        }
+        
+        .btn-primary:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste dos Botões do Modal</h1>
+    <p>Abra o console do navegador (F12) para ver os logs de debug.</p>
+    
+    <button onclick="showTestModal()">🔧 Abrir Modal de Teste</button>
+    
+    <div id="testModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>✏️ Editar Plano do Aluno</h2>
+            <p><strong>Aluno:</strong> João da Silva (ID: test123)</p>
+            <p><strong>Plano Atual:</strong> Plano Básico - R$ 150,00</p>
+            
+            <h3>📋 Planos Disponíveis:</h3>
+            <div class="plans-list">
+                <div class="plan-option" data-plan-id="plan1" onclick="selectNewPlan('plan1', 'Plano Premium', '250.00', 'premium')">
+                    <h4>🥇 Plano Premium</h4>
+                    <p>R$ 250,00/mês</p>
+                    <p>Acesso completo + Personal Training</p>
+                </div>
+                
+                <div class="plan-option" data-plan-id="plan2" onclick="selectNewPlan('plan2', 'Plano Intermediário', '200.00', 'intermediate')">
+                    <h4>🥈 Plano Intermediário</h4>
+                    <p>R$ 200,00/mês</p>
+                    <p>Acesso completo às aulas</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+                <button class="btn-danger" onclick="console.log('🗑️ Remove button clicked!'); confirmRemovePlan()">
+                    🗑️ Remover Plano
+                </button>
+                
+                <button id="confirmPlanChangeBtn" class="btn-primary" onclick="console.log('✏️ Confirm change button clicked!'); confirmPlanChange()" disabled>
+                    ✏️ Selecione um Plano
+                </button>
+                
+                <button onclick="closeTestModal()" style="background: #6B7280; color: white;">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate global variables
+        window.currentEditingStudentId = 'test123';
+        window.selectedNewPlanId = null;
+        window.currentEditingSubscription = { id: 'sub123', planId: 'basic' };
+        
+        function showTestModal() {
+            console.log('🎯 [DEBUG] Opening test modal');
+            document.getElementById('testModal').style.display = 'block';
+        }
+        
+        function closeTestModal() {
+            console.log('❌ [DEBUG] Closing test modal');
+            document.getElementById('testModal').style.display = 'none';
+        }
+        
+        function selectNewPlan(planId, planName, planPrice, planCategory) {
+            console.log('🎯 [DEBUG] selectNewPlan called:', { planId, planName, planPrice, planCategory });
+            
+            // Clear previous selections
+            document.querySelectorAll('.plan-option').forEach(option => {
+                option.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+                option.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(29, 78, 216, 0.05))';
+            });
+            
+            // Highlight selected plan
+            const selectedOption = document.querySelector(`[data-plan-id="${planId}"]`);
+            if (selectedOption) {
+                selectedOption.style.borderColor = '#10B981';
+                selectedOption.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1))';
+                console.log('✅ [DEBUG] Plan option highlighted');
+            } else {
+                console.error('❌ [DEBUG] Plan option not found for planId:', planId);
+            }
+            
+            // Enable confirm button
+            const confirmBtn = document.getElementById('confirmPlanChangeBtn');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.style.cursor = 'pointer';
+                confirmBtn.style.opacity = '1';
+                confirmBtn.innerHTML = `Alterar para ${planName} (R$ ${parseFloat(planPrice).toFixed(2)})`;
+                console.log('✅ [DEBUG] Confirm button enabled');
+            } else {
+                console.error('❌ [DEBUG] Confirm button not found');
+            }
+            
+            // Store selected plan
+            window.selectedNewPlanId = planId;
+            console.log('✅ [DEBUG] Selected plan stored:', planId);
+        }
+        
+        function confirmPlanChange() {
+            console.log('🔄 [DEBUG] confirmPlanChange called - START');
+            console.log('🔄 [DEBUG] selectedNewPlanId:', window.selectedNewPlanId);
+            console.log('🔄 [DEBUG] currentEditingSubscription:', window.currentEditingSubscription);
+            console.log('🔄 [DEBUG] currentEditingStudentId:', window.currentEditingStudentId);
+            
+            if (!window.selectedNewPlanId || !window.currentEditingSubscription) {
+                console.error('❌ [DEBUG] Missing required data for plan change');
+                alert('❌ Erro: Dados de alteração não encontrados');
+                return;
+            }
+            
+            alert('✅ Plan change would be executed here!');
+            console.log('✅ [DEBUG] Plan change simulation successful');
+        }
+        
+        function confirmRemovePlan() {
+            console.log('🗑️ [DEBUG] confirmRemovePlan called');
+            console.log('🗑️ [DEBUG] currentEditingStudentId:', window.currentEditingStudentId);
+            
+            if (!window.currentEditingStudentId) {
+                console.error('❌ [DEBUG] No student ID available for plan removal');
+                alert('❌ Erro: ID do aluno não encontrado');
+                return;
+            }
+            
+            alert('🗑️ Plan removal confirmation would show here!');
+            console.log('✅ [DEBUG] Plan removal simulation successful');
+        }
+        
+        function showToast(message, type) {
+            console.log(`🍞 [TOAST] ${type.toUpperCase()}: ${message}`);
+            alert(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        console.log('🚀 [DEBUG] Test page loaded successfully!');
+        console.log('🎯 [DEBUG] Global variables initialized:', {
+            currentEditingStudentId: window.currentEditingStudentId,
+            selectedNewPlanId: window.selectedNewPlanId,
+            currentEditingSubscription: window.currentEditingSubscription
+        });
+    </script>
+</body>
+</html>

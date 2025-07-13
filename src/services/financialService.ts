@@ -160,10 +160,10 @@ export class FinancialService {
     // Criar customer no Asaas
     const asaasCustomerData: AsaasCustomerData = {
       name: `${student.user.firstName} ${student.user.lastName}`,
-      cpfCnpj: student.user.document || '',
+      cpfCnpj: '', // Documento não está disponível no schema atual
       email: student.user.email,
-      phone: student.user.phone || undefined,
-      mobilePhone: student.user.phone || undefined,
+      phone: student.user.phone || '',
+      mobilePhone: student.user.phone || '',
       externalReference: student.id
     };
 
@@ -263,16 +263,22 @@ export class FinancialService {
     const financialEntityId = student.financialResponsible?.id || studentId;
     const isFinancialResponsible = !!student.financialResponsible;
 
-    // Criar/buscar customer Asaas apropriado
-    let asaasCustomer;
-    if (isFinancialResponsible) {
-      asaasCustomer = await this.createOrUpdateAsaasCustomerForResponsible(student.financialResponsible!);
-    } else {
-      asaasCustomer = await this.createOrUpdateAsaasCustomer(studentId);
+    // Criar/buscar customer Asaas apropriado APENAS se Asaas estiver configurado
+    let asaasCustomer = null;
+    if (this.asaasService) {
+      try {
+        if (isFinancialResponsible) {
+          asaasCustomer = await this.createOrUpdateAsaasCustomerForResponsible(student.financialResponsible!);
+        } else {
+          asaasCustomer = await this.createOrUpdateAsaasCustomer(studentId);
+        }
+      } catch (error) {
+        console.warn('Asaas customer creation failed, continuing without:', error.message);
+      }
     }
 
     // Calcular próxima data de cobrança
-    const nextBillingDate = this.asaasService?.calculateDueDate(startDate, plan.billingType);
+    const nextBillingDate = this.asaasService?.calculateDueDate(startDate, plan.billingType) || this.calculateNextBillingDate(startDate, plan.billingType);
 
     // Criar subscription
     const subscription = await prisma.studentSubscription.create({
@@ -280,12 +286,13 @@ export class FinancialService {
         organizationId: this.organizationId,
         studentId,
         planId,
-        asaasCustomerId: asaasCustomer.id,
+        asaasCustomerId: asaasCustomer?.id || null,
         financialResponsibleId: isFinancialResponsible ? financialEntityId : null,
         currentPrice: customPrice || plan.price,
         billingType: plan.billingType,
         startDate,
-        nextBillingDate
+        nextBillingDate,
+        status: 'ACTIVE' as SubscriptionStatus
       },
       include: {
         student: { include: { user: true } },
@@ -294,10 +301,234 @@ export class FinancialService {
       }
     });
 
-    // Criar primeira cobrança
-    await this.createPaymentForSubscription(subscription.id);
+    // Criar primeira cobrança APENAS se Asaas estiver configurado
+    if (this.asaasService) {
+      try {
+        await this.createPaymentForSubscription(subscription.id);
+      } catch (error) {
+        console.warn('Payment creation failed, subscription created without payment:', (error as Error).message);
+      }
+    }
+
+    // Criar matrículas automáticas nos cursos do plano
+    await this.createAutomaticCourseEnrollments(studentId, planId);
 
     return subscription;
+  }
+
+  // Método auxiliar para calcular próxima data de cobrança sem Asaas
+  private calculateNextBillingDate(startDate: Date, billingType: BillingType): Date {
+    const nextDate = new Date(startDate);
+    
+    switch (billingType) {
+      case 'MONTHLY':
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        break;
+      case 'QUARTERLY':
+        nextDate.setMonth(nextDate.getMonth() + 3);
+        break;
+      case 'YEARLY':
+        nextDate.setFullYear(nextDate.getFullYear() + 1);
+        break;
+      case 'LIFETIME':
+        // For lifetime, no next billing
+        return new Date(2099, 11, 31); // Far future date
+      default:
+        nextDate.setMonth(nextDate.getMonth() + 1); // Default to monthly
+    }
+    
+    return nextDate;
+  }
+
+  // Criar matrículas automáticas nos cursos associados ao plano
+  private async createAutomaticCourseEnrollments(studentId: string, planId: string) {
+    try {
+      // Buscar plano com cursos associados
+      const plan = await prisma.billingPlan.findUnique({
+        where: { id: planId }
+      });
+
+      if (!plan || !plan.features) {
+        return;
+      }
+
+      // Extrair courseIds do plano
+      const features = plan.features as any;
+      let courseIds: string[] = [];
+      
+      if (features.courseIds && Array.isArray(features.courseIds)) {
+        courseIds = features.courseIds;
+      } else if (plan.courseId) {
+        courseIds = [plan.courseId];
+      }
+
+      if (courseIds.length === 0) {
+        console.log(`Plano ${planId} não possui cursos associados`);
+        return;
+      }
+
+      // Buscar dados do aluno
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+        include: { user: true }
+      });
+
+      if (!student) {
+        throw new Error('Student not found');
+      }
+
+      // Criar matrículas para cada curso
+      const enrollments = [];
+      for (const courseId of courseIds) {
+        try {
+          // Verificar se já existe matrícula
+          const existingEnrollment = await prisma.courseEnrollment.findFirst({
+            where: {
+              studentId: studentId,
+              courseId: courseId,
+              status: 'ACTIVE'
+            }
+          });
+
+          if (existingEnrollment) {
+            console.log(`Aluno ${studentId} já está matriculado no curso ${courseId}`);
+            continue;
+          }
+
+          // Buscar informações do curso
+          const course = await prisma.course.findUnique({
+            where: { id: courseId }
+          });
+
+          if (!course) {
+            console.warn(`Curso ${courseId} não encontrado`);
+            continue;
+          }
+
+          // Calcular data prevista de término
+          const expectedEndDate = new Date();
+          expectedEndDate.setDate(expectedEndDate.getDate() + (course.duration * 7));
+
+          // Criar matrícula
+          const enrollment = await prisma.courseEnrollment.create({
+            data: {
+              studentId: studentId,
+              courseId: courseId,
+              status: 'ACTIVE',
+              category: student.category,
+              gender: student.gender || 'MASCULINO',
+              enrolledAt: new Date(),
+              expectedEndDate: expectedEndDate
+            }
+          });
+
+          enrollments.push(enrollment);
+          console.log(`✅ Matrícula automática criada: Aluno ${studentId} no curso ${courseId}`);
+
+        } catch (courseError) {
+          console.error(`Erro ao criar matrícula no curso ${courseId}:`, courseError);
+        }
+      }
+
+      console.log(`✅ Criadas ${enrollments.length} matrículas automáticas para o aluno ${studentId}`);
+      return enrollments;
+
+    } catch (error) {
+      console.error('Erro ao criar matrículas automáticas:', error);
+      // Não relançar o erro para não quebrar a criação da subscription
+    }
+  }
+
+  // Aplicar matrículas automáticas para subscriptions existentes
+  async applyRetroactiveCourseEnrollments(studentId?: string) {
+    try {
+      // Buscar subscriptions ativas
+      const subscriptions = await prisma.studentSubscription.findMany({
+        where: {
+          organizationId: this.organizationId,
+          status: 'ACTIVE',
+          isActive: true,
+          ...(studentId && { studentId })
+        },
+        include: {
+          student: { include: { user: true } },
+          plan: true
+        }
+      });
+
+      console.log(`🔄 Processando ${subscriptions.length} subscriptions ativas para matrículas automáticas`);
+
+      let totalEnrollments = 0;
+      for (const subscription of subscriptions) {
+        try {
+          const enrollments = await this.createAutomaticCourseEnrollments(
+            subscription.studentId, 
+            subscription.planId
+          );
+          if (enrollments) {
+            totalEnrollments += enrollments.length;
+          }
+        } catch (error) {
+          console.error(`Erro ao processar subscription ${subscription.id}:`, error);
+        }
+      }
+
+      console.log(`✅ Processo concluído: ${totalEnrollments} matrículas criadas`);
+      return { processedSubscriptions: subscriptions.length, enrollmentsCreated: totalEnrollments };
+
+    } catch (error) {
+      console.error('Erro ao aplicar matrículas retroativas:', error);
+      throw error;
+    }
+  }
+
+  async updateSubscriptionPlan(subscriptionId: string, newPlanId: string, customPrice?: number) {
+    // Get current subscription
+    const subscription = await prisma.studentSubscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        student: { include: { user: true } },
+        plan: true,
+        asaasCustomer: true,
+        financialResponsible: true
+      }
+    });
+
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    // Get new plan
+    const newPlan = await prisma.billingPlan.findUnique({
+      where: { id: newPlanId }
+    });
+
+    if (!newPlan) {
+      throw new Error('New plan not found');
+    }
+
+    // Calculate next billing date based on new plan
+    const nextBillingDate = this.asaasService?.calculateDueDate(new Date(), newPlan.billingType) || this.calculateNextBillingDate(new Date(), newPlan.billingType);
+
+    // Update subscription
+    const updatedSubscription = await prisma.studentSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        planId: newPlanId,
+        currentPrice: customPrice || newPlan.price,
+        billingType: newPlan.billingType,
+        nextBillingDate,
+        updatedAt: new Date()
+      },
+      include: {
+        student: { include: { user: true } },
+        plan: true,
+        asaasCustomer: true,
+        financialResponsible: true
+      }
+    });
+
+    return updatedSubscription;
   }
 
   async createPaymentForSubscription(subscriptionId: string) {

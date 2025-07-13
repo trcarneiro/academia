@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { prisma } from '@/utils/database';
+import FinancialService from '../services/financialService';
 
 // Helper function to get organization ID dynamically
 async function getOrganizationId(): Promise<string> {
@@ -382,6 +383,395 @@ export default async function studentsRoutes(
       return {
         success: false,
         error: 'Failed to update student',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // POST /api/students/:id/subscription - Create subscription for student (Alternative route)
+  fastify.post('/:id/subscription', {
+    schema: {
+      description: 'Create subscription for student (Alternative route)',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      },
+      body: {
+        type: 'object',
+        required: ['planId'],
+        properties: {
+          planId: { type: 'string' },
+          startDate: { type: 'string', format: 'date-time' },
+          customPrice: { type: 'number' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      const { planId, startDate, customPrice } = request.body as any;
+      
+      const organizationId = await getOrganizationId();
+      
+      const financialService = new FinancialService(organizationId);
+      
+      const subscriptionData: any = {
+        studentId,
+        planId,
+        customPrice
+      };
+      
+      if (startDate) {
+        subscriptionData.startDate = new Date(startDate);
+      }
+      
+      const subscription = await financialService.createSubscription(subscriptionData);
+
+      return {
+        success: true,
+        data: subscription,
+        message: 'Subscription created successfully via alternative route'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to create subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // GET /api/students/:id/subscription - Get student subscription
+  fastify.get('/:id/subscription', {
+    schema: {
+      description: 'Get student subscription',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      
+      const subscription = await prisma.studentSubscription.findFirst({
+        where: { 
+          studentId,
+          status: 'ACTIVE'
+        },
+        include: {
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              billingType: true,
+              classesPerWeek: true,
+              isActive: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      if (!subscription) {
+        return {
+          success: true,
+          data: null,
+          message: 'No active subscription found for this student'
+        };
+      }
+
+      return {
+        success: true,
+        data: subscription,
+        message: 'Student subscription retrieved successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to retrieve subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // GET /api/students/:id/subscriptions - Get all student subscriptions
+  fastify.get('/:id/subscriptions', {
+    schema: {
+      description: 'Get all student subscriptions',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      
+      const subscriptions = await prisma.studentSubscription.findMany({
+        where: { studentId },
+        include: {
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              billingType: true,
+              classesPerWeek: true,
+              isActive: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return {
+        success: true,
+        data: subscriptions,
+        message: 'Student subscriptions retrieved successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to retrieve subscriptions',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // GET /api/students/:id/enrollments - Get student enrollments
+  fastify.get('/:id/enrollments', {
+    schema: {
+      description: 'Get student enrollments',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      
+      const enrollments = await prisma.courseEnrollment.findMany({
+        where: { studentId },
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              level: true,
+              isActive: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return {
+        success: true,
+        data: enrollments,
+        message: 'Student enrollments retrieved successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to retrieve enrollments',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // PUT /api/students/:id/subscription - Update student subscription
+  fastify.put('/:id/subscription', {
+    schema: {
+      description: 'Update student subscription',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      },
+      body: {
+        type: 'object',
+        required: ['planId'],
+        properties: {
+          planId: { type: 'string' },
+          customPrice: { type: 'number' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      const { planId, customPrice } = request.body as any;
+      
+      const organizationId = await getOrganizationId();
+      const financialService = new FinancialService(organizationId);
+
+      // Get current active subscription
+      const currentSubscription = await prisma.studentSubscription.findFirst({
+        where: { 
+          studentId,
+          status: 'ACTIVE'
+        }
+      });
+
+      if (!currentSubscription) {
+        reply.code(404);
+        return {
+          success: false,
+          error: 'No active subscription found for this student'
+        };
+      }
+
+      // Update subscription plan
+      const updatedSubscription = await financialService.updateSubscriptionPlan(
+        currentSubscription.id,
+        planId,
+        customPrice
+      );
+
+      return {
+        success: true,
+        data: updatedSubscription,
+        message: 'Student subscription updated successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to update subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // DELETE /api/students/:id/subscription - Cancel student subscription
+  fastify.delete('/:id/subscription', {
+    schema: {
+      description: 'Cancel student subscription',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      
+      // Get current active subscription
+      const currentSubscription = await prisma.studentSubscription.findFirst({
+        where: { 
+          studentId,
+          status: 'ACTIVE'
+        }
+      });
+
+      if (!currentSubscription) {
+        reply.code(404);
+        return {
+          success: false,
+          error: 'No active subscription found for this student'
+        };
+      }
+
+      // Cancel subscription
+      const cancelledSubscription = await prisma.studentSubscription.update({
+        where: { id: currentSubscription.id },
+        data: { 
+          status: 'CANCELLED',
+          isActive: false,
+          updatedAt: new Date()
+        },
+        include: {
+          student: { include: { user: true } },
+          plan: true
+        }
+      });
+
+      return {
+        success: true,
+        data: cancelledSubscription,
+        message: 'Student subscription cancelled successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to cancel subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // ENDPOINT TEMPORÁRIO: Aplicar matrículas automáticas retroativamente
+  fastify.post('/:id/apply-auto-enrollments', {
+    schema: {
+      description: 'Apply automatic course enrollments retroactively',
+      tags: ['Students'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id: studentId } = request.params as { id: string };
+      
+      const organizationId = await getOrganizationId();
+      const financialService = new FinancialService(organizationId);
+
+      const result = await financialService.applyRetroactiveCourseEnrollments(studentId);
+
+      return {
+        success: true,
+        data: result,
+        message: 'Automatic enrollments applied successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to apply automatic enrollments',
         message: error instanceof Error ? error.message : 'Unknown error'
       };
     }

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Teste - Sistema de Vinculação Automática</title>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0A0E1A 0%, #1E293B 100%);
+            color: #E2E8F0;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: #10B981;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #94A3B8;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #E5E7EB;
+            font-weight: 600;
+        }
+        
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #E5E7EB;
+            font-size: 1rem;
+        }
+        
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        .test-section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #475569;
+        }
+        
+        .test-section h3 {
+            color: #3B82F6;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #9CA3AF;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #475569;
+            border-top: 2px solid #10B981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #FCA5A5;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Sistema de Vinculação Automática</h1>
+            <p>Teste do sistema de cadastro de alunos com vinculação automática de turmas e cursos baseada no plano</p>
+        </div>
+        
+        <div class="grid">
+            <div class="test-section">
+                <h3>📋 1. Selecionar Plano</h3>
+                <div class="form-group">
+                    <label class="form-label">Plano de Pagamento</label>
+                    <select id="planSelect" class="form-select" onchange="loadPlanData()">
+                        <option value="">Carregando planos...</option>
+                    </select>
+                </div>
+                
+                <div id="planDetails" style="display: none;">
+                    <div class="result-box">
+                        <div id="planDetailsContent"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>👤 2. Dados do Aluno</h3>
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" id="studentName" class="form-input" placeholder="João Silva">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="studentEmail" class="form-input" placeholder="joao@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select id="studentCategory" class="form-select">
+                        <option value="ADULT">Adulto</option>
+                        <option value="INICIANTE1">Iniciante 1</option>
+                        <option value="INTERMEDIARIO1">Intermediário 1</option>
+                        <option value="AVANCADO1">Avançado 1</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div id="classesSection" class="test-section" style="display: none;">
+            <h3>🎯 3. Turmas (Baseadas no Plano)</h3>
+            <div id="classesContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando turmas...
+                </div>
+            </div>
+        </div>
+        
+        <div id="coursesSection" class="test-section" style="display: none;">
+            <h3>📚 4. Cursos (Baseados no Plano)</h3>
+            <div id="coursesContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando cursos...
+                </div>
+            </div>
+        </div>
+        
+        <div id="summarySection" class="test-section" style="display: none;">
+            <h3>💰 5. Resumo Final</h3>
+            <div id="summaryContent"></div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn btn-primary" onclick="createTestStudent()">
+                    🎯 Criar Aluno com Vinculação Automática
+                </button>
+            </div>
+        </div>
+        
+        <div id="resultSection" style="display: none;">
+            <div id="resultContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Variáveis globais
+        let selectedClasses = [];
+        let selectedCourses = [];
+        let currentPlanData = null;
+        
+        // Carregar planos quando a página carrega
+        document.addEventListener('DOMContentLoaded', loadPlans);
+        
+        async function loadPlans() {
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                
+                const select = document.getElementById('planSelect');
+                select.innerHTML = '<option value="">Selecione um plano...</option>';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(plan => {
+                        const option = document.createElement('option');
+                        option.value = plan.id;
+                        option.textContent = `${plan.name} - R$ ${parseFloat(plan.price || 0).toFixed(2)}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar planos:', error);
+                document.getElementById('planSelect').innerHTML = '<option value="">Erro ao carregar planos</option>';
+            }
+        }
+        
+        async function loadPlanData() {
+            const planId = document.getElementById('planSelect').value;
+            
+            if (!planId) {
+                document.getElementById('planDetails').style.display = 'none';
+                document.getElementById('classesSection').style.display = 'none';
+                document.getElementById('coursesSection').style.display = 'none';
+                document.getElementById('summarySection').style.display = 'none';
+                return;
+            }
+            
+            try {
+                // Buscar dados do plano
+                const [planResponse, classesResponse, coursesResponse] = await Promise.all([
+                    fetch(`/api/billing-plans/${planId}`),
+                    fetch('/api/classes'),
+                    fetch('/api/courses')
+                ]);
+                
+                const planData = await planResponse.json();
+                const classesData = await classesResponse.json();
+                const coursesData = await coursesResponse.json();
+                
+                if (planData.success && classesData.success && coursesData.success) {
+                    currentPlanData = {
+                        plan: planData.data,
+                        availableClasses: classesData.data.filter(cls => 
+                            cls.category === planData.data.category || 
+                            cls.level === planData.data.level
+                        ),
+                        availableCourses: coursesData.data.filter(course => 
+                            course.category === planData.data.category || 
+                            course.level === planData.data.level
+                        ),
+                        allClasses: classesData.data,
+                        allCourses: coursesData.data
+                    };
+                    
+                    displayPlanDetails();
+                    displayClasses();
+                    displayCourses();
+                    updateSummary();
+                    
+                    document.getElementById('planDetails').style.display = 'block';
+                    document.getElementById('classesSection').style.display = 'block';
+                    document.getElementById('coursesSection').style.display = 'block';
+                    document.getElementById('summarySection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+        }
+        
+        function displayPlanDetails() {
+            const content = document.getElementById('planDetailsContent');
+            const plan = currentPlanData.plan;
+            
+            content.innerHTML = `
+                <div style="display: grid; gap: 0.5rem;">
+                    <div style="font-weight: 600; color: #10B981; font-size: 1.1rem;">${plan.name}</div>
+                    <div style="color: #E5E7EB;">R$ ${parseFloat(plan.price || 0).toFixed(2)}/mês</div>
+                    <div style="color: #94A3B8; font-size: 0.9rem;">${plan.description || 'Sem descrição'}</div>
+                    <div style="color: #3B82F6; font-size: 0.85rem;">
+                        Categoria: ${plan.category} | Tipo: ${plan.billingType}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function displayClasses() {
+            const content = document.getElementById('classesContent');
+            const { availableClasses, allClasses } = currentPlanData;
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="color: #10B981; margin-bottom: 0.5rem;">✅ Incluídas no Plano (${availableClasses.length})</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${availableClasses.map(cls => `
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" value="${cls.id}" onchange="updateClassSelection()" checked style="accent-color: #10B981;">
+                                <div style="flex: 1;">
+                                    <div style="color: #10B981; font-weight: 600;">${cls.name}</div>
+                                    <div style="color: #9CA3AF; font-size: 0.85rem;">${cls.description || ''}</div>
+                                </div>
+                                <span style="background: #10B981; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Incluso</span>
+                            </label>
+                        `).join('')}
+                        ${availableClasses.length === 0 ? '<div style="color: #9CA3AF; font-style: italic; text-align: center; padding: 1rem;">Nenhuma turma específica incluída</div>' : ''}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #3B82F6; margin-bottom: 0.5rem;">➕ Avulsas - Adicional (${allClasses.filter(cls => !availableClasses.some(ac => ac.id === cls.id)).length})</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${allClasses.filter(cls => !availableClasses.some(ac => ac.id === cls.id)).map(cls => `
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" value="${cls.id}" onchange="updateClassSelection()" style="accent-color: #3B82F6;">
+                                <div style="flex: 1;">
+                                    <div style="color: #3B82F6; font-weight: 600;">${cls.name}</div>
+                                    <div style="color: #9CA3AF; font-size: 0.85rem;">${cls.description || ''}</div>
+                                </div>
+                                <span style="background: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">+R$ ${parseFloat(cls.additionalPrice || 0).toFixed(2)}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Marcar turmas incluídas como selecionadas
+            selectedClasses = availableClasses.map(cls => cls.id.toString());
+        }
+        
+        function displayCourses() {
+            const content = document.getElementById('coursesContent');
+            const { availableCourses, allCourses } = currentPlanData;
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="color: #10B981; margin-bottom: 0.5rem;">✅ Incluídos no Plano (${availableCourses.length})</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${availableCourses.map(course => `
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" value="${course.id}" onchange="updateCourseSelection()" checked style="accent-color: #10B981;">
+                                <div style="flex: 1;">
+                                    <div style="color: #10B981; font-weight: 600;">${course.name}</div>
+                                    <div style="color: #9CA3AF; font-size: 0.85rem;">${course.description || ''}</div>
+                                </div>
+                                <span style="background: #10B981; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Incluso</span>
+                            </label>
+                        `).join('')}
+                        ${availableCourses.length === 0 ? '<div style="color: #9CA3AF; font-style: italic; text-align: center; padding: 1rem;">Nenhum curso específico incluído</div>' : ''}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #3B82F6; margin-bottom: 0.5rem;">➕ Avulsos - Adicional (${allCourses.filter(course => !availableCourses.some(ac => ac.id === course.id)).length})</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${allCourses.filter(course => !availableCourses.some(ac => ac.id === course.id)).map(course => `
+                            <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" value="${course.id}" onchange="updateCourseSelection()" style="accent-color: #3B82F6;">
+                                <div style="flex: 1;">
+                                    <div style="color: #3B82F6; font-weight: 600;">${course.name}</div>
+                                    <div style="color: #9CA3AF; font-size: 0.85rem;">${course.description || ''}</div>
+                                </div>
+                                <span style="background: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">+R$ ${parseFloat(course.additionalPrice || 0).toFixed(2)}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // Marcar cursos incluídos como selecionados
+            selectedCourses = availableCourses.map(course => course.id.toString());
+        }
+        
+        function updateClassSelection() {
+            const checkboxes = document.querySelectorAll('#classesContent input[type="checkbox"]');
+            selectedClasses = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            updateSummary();
+        }
+        
+        function updateCourseSelection() {
+            const checkboxes = document.querySelectorAll('#coursesContent input[type="checkbox"]');
+            selectedCourses = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            if (!currentPlanData) return;
+            
+            const content = document.getElementById('summaryContent');
+            const { plan, availableClasses, availableCourses, allClasses, allCourses } = currentPlanData;
+            
+            // Calcular custos
+            const baseCost = parseFloat(plan.price || 0);
+            
+            const additionalClassesCost = selectedClasses.reduce((total, classId) => {
+                const classData = allClasses.find(cls => cls.id.toString() === classId);
+                if (classData && !availableClasses.some(ac => ac.id.toString() === classId)) {
+                    return total + parseFloat(classData.additionalPrice || 0);
+                }
+                return total;
+            }, 0);
+            
+            const additionalCoursesCost = selectedCourses.reduce((total, courseId) => {
+                const courseData = allCourses.find(course => course.id.toString() === courseId);
+                if (courseData && !availableCourses.some(ac => ac.id.toString() === courseId)) {
+                    return total + parseFloat(courseData.additionalPrice || 0);
+                }
+                return total;
+            }, 0);
+            
+            const totalCost = baseCost + additionalClassesCost + additionalCoursesCost;
+            
+            content.innerHTML = `
+                <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border: 1px solid #10B981; border-radius: 12px;">
+                    <div style="color: #10B981; font-weight: 700; margin-bottom: 1rem; font-size: 1.1rem;">💰 Resumo Financeiro</div>
+                    <div style="display: grid; gap: 0.5rem; color: #E5E7EB;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+                            <span>Plano Base (${plan.name}):</span>
+                            <span style="font-weight: 600; color: #10B981;">R$ ${baseCost.toFixed(2)}</span>
+                        </div>
+                        ${additionalClassesCost > 0 ? `
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+                                <span>Turmas Avulsas:</span>
+                                <span style="font-weight: 600; color: #3B82F6;">+R$ ${additionalClassesCost.toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+                        ${additionalCoursesCost > 0 ? `
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+                                <span>Cursos Avulsos:</span>
+                                <span style="font-weight: 600; color: #3B82F6;">+R$ ${additionalCoursesCost.toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.2rem; color: #10B981; padding: 0.75rem 0; background: rgba(16, 185, 129, 0.05); border-radius: 8px; padding-left: 1rem; padding-right: 1rem; margin-top: 0.5rem;">
+                            <span>Total:</span>
+                            <span>R$ ${totalCost.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 6px;">
+                        <div style="color: #3B82F6; font-size: 0.85rem;">
+                            📊 ${selectedClasses.length} turma(s) e ${selectedCourses.length} curso(s) selecionados
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function createTestStudent() {
+            const name = document.getElementById('studentName').value;
+            const email = document.getElementById('studentEmail').value;
+            const category = document.getElementById('studentCategory').value;
+            const planId = document.getElementById('planSelect').value;
+            
+            if (!name || !email || !planId) {
+                alert('Preencha nome, email e selecione um plano!');
+                return;
+            }
+            
+            const [firstName, ...lastNameParts] = name.split(' ');
+            const lastName = lastNameParts.join(' ');
+            
+            const formData = {
+                firstName,
+                lastName,
+                email,
+                phone: '(11) 99999-9999',
+                category,
+                billingPlanId: parseInt(planId),
+                selectedClasses: selectedClasses.map(id => parseInt(id)),
+                selectedCourses: selectedCourses.map(id => parseInt(id)),
+                planBasedSelection: {
+                    planId: parseInt(planId),
+                    includedClasses: currentPlanData.availableClasses.map(cls => cls.id),
+                    includedCourses: currentPlanData.availableCourses.map(course => course.id),
+                    additionalClasses: selectedClasses.filter(id => 
+                        !currentPlanData.availableClasses.some(cls => cls.id.toString() === id)
+                    ).map(id => parseInt(id)),
+                    additionalCourses: selectedCourses.filter(id => 
+                        !currentPlanData.availableCourses.some(course => course.id.toString() === id)
+                    ).map(id => parseInt(id))
+                }
+            };
+            
+            console.log('🎯 Criando aluno com dados:', formData);
+            
+            try {
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('resultContent').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Criando aluno com vinculação automática...
+                    </div>
+                `;
+                
+                const response = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('resultContent').innerHTML = `
+                        <div class="result-box">
+                            <div style="color: #10B981; font-weight: 700; margin-bottom: 1rem; font-size: 1.2rem;">
+                                ✅ Aluno Criado com Sucesso!
+                            </div>
+                            <div style="display: grid; gap: 0.5rem; color: #E5E7EB;">
+                                <div><strong>Nome:</strong> ${data.data.student.user.firstName} ${data.data.student.user.lastName}</div>
+                                <div><strong>Email:</strong> ${data.data.student.user.email}</div>
+                                <div><strong>Categoria:</strong> ${data.data.student.category}</div>
+                                <div><strong>Turmas Vinculadas:</strong> ${data.data.enrollmentSummary.classesEnrolled}</div>
+                                <div><strong>Cursos Vinculados:</strong> ${data.data.enrollmentSummary.coursesEnrolled}</div>
+                                <div><strong>Assinatura Criada:</strong> ${data.data.enrollmentSummary.subscriptionCreated ? '✅ Sim' : '❌ Não'}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error('Erro ao criar aluno:', error);
+                document.getElementById('resultContent').innerHTML = `
+                    <div class="error-box">
+                        <div style="font-weight: 700; margin-bottom: 0.5rem;">❌ Erro ao Criar Aluno</div>
+                        <div>${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

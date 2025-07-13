@@ -147,7 +147,7 @@ const getConfig = (): Config => {
       window: parseInt(process.env.RATE_LIMIT_WINDOW || '60000', 10),
     },
     cors: {
-      origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+      origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     },
   };
 };
