@@ -1,0 +1,346 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+# Your branch and 'origin/master' have diverged,
+# and have 1 and 3 different commits each, respectively.
+#
+# Changes to be committed:
+#	modified:   .claude/settings.local.json
+#	modified:   CLAUDE.md
+#	new file:   Captura de tela 2025-07-20 012131.png
+#	new file:   DASHBOARD_INTEGRATION_SUCCESS.md
+#	new file:   FINANCIAL_MODULE_ARCHITECTURE.md
+#	new file:   JAVASCRIPT_FIXES_REPORT.md
+#	new file:   PROJECT.md
+#	modified:   README.md
+#	new file:   RESTART-GUIDE.md
+#	new file:   TEST-GUIDE.md
+#	new file:   TEST-STUDENTS-PLANS-GUIDE.md
+#	new file:   auto-test-navigation.html
+#	new file:   backups/index-backup-2025-07-15-08-00-15.html
+#	new file:   check-org.js
+#	deleted:    dashboard-server.js
+#	new file:   data/courses.json
+#	new file:   data/lessons.json
+#	new file:   debug-courses.html
+#	new file:   debug-student-editor.html
+#	new file:   demo-courses-design.html
+#	renamed:    API_FIX_COMPLETED.md -> docs/API_FIX_COMPLETED.md
+#	new file:   docs/API_INTEGRATION_DOCUMENTATION.md
+#	new file:   docs/ATTENDANCE_MODULE_TECHNICAL.md
+#	new file:   docs/CLASSES_MODULE_TECHNICAL.md
+#	new file:   docs/COURSES_MODULE_README.md
+#	renamed:    COURSE_CREATION_ENHANCED.md -> docs/COURSE_CREATION_ENHANCED.md
+#	new file:   docs/DASHBOARD_INTEGRATION_SUCCESS.md
+#	renamed:    DASHBOARD_SUCCESS_REPORT.md -> docs/DASHBOARD_SUCCESS_REPORT.md
+#	new file:   docs/DEPENDENCY_MAP.md
+#	renamed:    DESENVOLVIMENTO-SEGURO.md -> docs/DESENVOLVIMENTO-SEGURO.md
+#	new file:   docs/ES_MODULE_MIGRATION.md
+#	renamed:    FINAL_API_FIX_REPORT.md -> docs/FINAL_API_FIX_REPORT.md
+#	renamed:    FINAL_API_IMPLEMENTATION_REPORT.md -> docs/FINAL_API_IMPLEMENTATION_REPORT.md
+#	renamed:    FINAL_STATUS.md -> docs/FINAL_STATUS.md
+#	renamed:    FINAL_SUCCESS_REPORT.md -> docs/FINAL_SUCCESS_REPORT.md
+#	renamed:    FIX_COMPLETED.md -> docs/FIX_COMPLETED.md
+#	renamed:    HIERARCHICAL_ASSOCIATIONS_COMPLETED.md -> docs/HIERARCHICAL_ASSOCIATIONS_COMPLETED.md
+#	new file:   docs/INDEX_ARCHITECTURE.md
+#	new file:   docs/JAVASCRIPT_FIXES_REPORT.md
+#	renamed:    KIOSK_README.md -> docs/KIOSK_README.md
+#	renamed:    MEMORY.md -> docs/MEMORY.md
+#	new file:   docs/MODULAR_ARCHITECTURE_DOCUMENTATION.md
+#	new file:   docs/MODULE_REFERENCE_GUIDE.md
+#	new file:   docs/PLANS_MODULE_DOCUMENTATION.md
+#	new file:   docs/PLANS_MODULE_TECHNICAL.md
+#	renamed:    PRODUCTION_API_CONFIG.md -> docs/PRODUCTION_API_CONFIG.md
+#	renamed:    PROMPT_MASTER_IA_PROOF.md -> docs/PROMPT_MASTER_IA_PROOF.md
+#	new file:   docs/Plans-Module-Technical-Documentation.md
+#	new file:   docs/SERVER_ARCHITECTURE.md
+#	renamed:    SETUP_STATUS.md -> docs/SETUP_STATUS.md
+#	new file:   docs/STUDENTS_MODULE_TECHNICAL.md
+#	new file:   docs/SUBSCRIPTION_ENDPOINT_DEBUG.md
+#	renamed:    SUCCESS_REPORT.md -> docs/SUCCESS_REPORT.md
+#	renamed:    SUPABASE_SETUP.md -> docs/SUPABASE_SETUP.md
+#	renamed:    SUPABASE_TROUBLESHOOTING.md -> docs/SUPABASE_TROUBLESHOOTING.md
+#	new file:   docs/SYSTEM_ARCHITECTURE.md
+#	new file:   docs/TROUBLESHOOTING_GUIDE.md
+#	new file:   docs/adr/002-courses-module-refactor.md
+#	renamed:    agents copy.md -> docs/agents copy.md
+#	renamed:    agents.md -> docs/agents.md
+#	new file:   docs/classes-module-technical-documentation.md
+#	new file:   docs/gemini.md
+#	new file:   docs/students-module-technical-documentation.md
+#	new file:   fix-courses-module-plan.md
+#	modified:   gemini.md
+#	new file:   jest.config.js
+#	new file:   mock-server.js
+#	modified:   package-lock.json
+#	new file:   package-test.json
+#	modified:   package.json
+#	modified:   prisma/schema.prisma
+#	new file:   prompt.txt
+#	new file:   public/checkpoint.html
+#	new file:   public/css/checkpoint.css
+#	new file:   public/css/classes.css
+#	new file:   public/css/components/toast.css
+#	new file:   public/css/core/components.css
+#	new file:   public/css/core/dashboard.css
+#	new file:   public/css/core/layout.css
+#	new file:   public/css/core/reset.css
+#	new file:   public/css/core/variables.css
+#	new file:   public/css/course-editor.css
+#	new file:   public/css/dashboard-enhanced.css
+#	new file:   public/css/dashboard.css
+#	new file:   public/css/modules/attendance.css
+#	new file:   public/css/modules/challenges.css
+#	new file:   public/css/modules/classes.css
+#	new file:   public/css/modules/course-editor-simple.css
+#	new file:   public/css/modules/course-editor.css
+#	new file:   public/css/modules/courses-new.css
+#	new file:   public/css/modules/courses-styles.css
+#	new file:   public/css/modules/courses.css
+#	new file:   public/css/modules/dashboard.css
+#	new file:   public/css/modules/evaluations.css
+#	new file:   public/css/modules/financial-responsibles.css
+#	new file:   public/css/modules/financial.css
+#	new file:   public/css/modules/instructors.css
+#	new file:   public/css/modules/knowledge-base.css
+#	new file:   public/css/modules/mats.css
+#	new file:   public/css/modules/plan-editor.css
+#	new file:   public/css/modules/plans.css
+#	new file:   public/css/modules/progress.css
+#	new file:   public/css/modules/settings.css
+#	new file:   public/css/modules/student-editor.css
+#	new file:   public/css/modules/students.css
+#	new file:   public/css/modules/units.css
+#	new file:   public/css/modules/view-course.css
+#	new file:   public/css/plans.css
+#	new file:   public/css/students.css
+#	modified:   public/css/style.css
+#	deleted:    public/dashboard-working.html
+#	new file:   public/data/rag-index.json
+#	new file:   public/index-backup-20250718-101702.html
+#	new file:   public/index-backup-conflict.html
+#	new file:   public/index-backup-pre-optimization.html
+#	modified:   public/index-backup.html
+#	new file:   public/index-before-cleanup.html
+#	new file:   public/index-clean.html
+#	new file:   public/index-enhanced-backup.html
+#	new file:   public/index-enhanced.html
+#	new file:   public/index-legacy.html
+#	new file:   public/index-optimized.html
+#	new file:   public/index-original-backup.html
+#	new file:   public/index-with-tabs.html
+#	new file:   public/index.html.backup
+#	new file:   public/js/attendance-inline.js
+#	new file:   public/js/checkpoint.js
+#	new file:   public/js/core/api-client-simple.js
+#	new file:   public/js/core/api-client.js
+#	new file:   public/js/core/app-simple.js
+#	new file:   public/js/core/app.js
+#	new file:   public/js/core/constants.js
+#	new file:   public/js/core/navigation-simple.js
+#	new file:   public/js/core/navigation.js
+#	new file:   public/js/core/utils.js
+#	new file:   public/js/course-creator.js
+#	new file:   public/js/course-editor.js
+#	modified:   public/js/courses.js
+#	new file:   public/js/dashboard-backup-20250718-102308.js
+#	new file:   public/js/dashboard-core.js.tmp.4663.1752546745987
+#	modified:   public/js/dashboard.js
+#	new file:   public/js/knowledge-base-inline.js
+#	new file:   public/js/knowledge-base.js
+#	new file:   public/js/modules/attendance.js
+#	new file:   public/js/modules/challenges.js
+#	new file:   public/js/modules/classes.js
+#	new file:   public/js/modules/course-editor-simple.js
+#	new file:   public/js/modules/course-editor.js
+#	new file:   public/js/modules/courses-clean.js
+#	new file:   public/js/modules/courses-final.js
+#	new file:   public/js/modules/courses-fixed.js
+#	new file:   public/js/modules/courses-manager.js
+#	new file:   public/js/modules/courses.js
+#	new file:   public/js/modules/courses.js.backup
+#	new file:   public/js/modules/dashboard-optimized.js
+#	new file:   public/js/modules/dashboard.js
+#	new file:   public/js/modules/evaluations.js
+#	new file:   public/js/modules/financial-responsibles.js
+#	new file:   public/js/modules/financial.js
+#	new file:   public/js/modules/instructors.js
+#	new file:   public/js/modules/knowledge-base.js
+#	new file:   public/js/modules/lesson-plans.js
+#	new file:   public/js/modules/lessons.js
+#	new file:   public/js/modules/mats.js
+#	new file:   public/js/modules/plan-editor.js
+#	new file:   public/js/modules/plans-simple-test.js
+#	new file:   public/js/modules/plans.js
+#	new file:   public/js/modules/progress.js
+#	new file:   public/js/modules/rag-data-connector.js
+#	new file:   public/js/modules/settings.js
+#	new file:   public/js/modules/student-editor-new.js
+#	new file:   public/js/modules/student-editor.js
+#	new file:   public/js/modules/students.js
+#	new file:   public/js/modules/units.js
+#	new file:   public/js/modules/view-course.js
+#	new file:   public/js/navigation.js
+#	new file:   public/js/plans-bridge.js
+#	new file:   public/js/settings-inline.js
+#	new file:   public/js/student-editor.js
+#	new file:   public/js/students-management.js
+#	modified:   public/js/students.js
+#	new file:   public/js/utils.js
+#	new file:   public/js/utils/dom-helpers.js
+#	new file:   public/js/utils/formatters.js
+#	deleted:    public/simple-dashboard.html
+#	new file:   public/test-courses-fix.html
+#	new file:   public/test-lesson-plans.html
+#	renamed:    dashboard.html -> public/test/dashboard.html
+#	new file:   public/test/financial-integration-test.html
+#	new file:   public/test/financial-tab-test.html
+#	new file:   public/test/modules/plan-editor.test.js
+#	new file:   public/test/modules/student-editor.test.js
+#	new file:   public/test/modules/students.test.js
+#	new file:   public/test/modules/test-runner.html
+#	new file:   public/test/students-plans-frontend.html
+#	renamed:    ultimate-dashboard.html -> public/test/ultimate-dashboard.html
+#	new file:   public/test/view-course-test.html
+#	new file:   public/views/attendance.html
+#	new file:   public/views/challenges.html
+#	new file:   public/views/class-editor.html
+#	new file:   public/views/classes.html
+#	new file:   public/views/course-editor-simple.html
+#	new file:   public/views/course-editor.html
+#	new file:   public/views/course-importer.html
+#	new file:   public/views/courses.html
+#	new file:   public/views/dashboard.html
+#	new file:   public/views/evaluations.html
+#	new file:   public/views/financial-responsibles.html
+#	new file:   public/views/financial-tab.html
+#	new file:   public/views/financial.html
+#	new file:   public/views/instructors.html
+#	new file:   public/views/knowledge-base.html
+#	new file:   public/views/lesson-plans.html
+#	new file:   public/views/lessons.html
+#	new file:   public/views/mats.html
+#	new file:   public/views/plan-editor.html
+#	new file:   public/views/plans.html
+#	new file:   public/views/progress.html
+#	new file:   public/views/settings.html
+#	new file:   public/views/student-editor-new.html
+#	new file:   public/views/student-editor.html
+#	new file:   public/views/student-editor.html_
+#	new file:   public/views/students.html
+#	new file:   public/views/technique-editor.html
+#	new file:   public/views/techniques.html
+#	new file:   public/views/units.html
+#	new file:   public/views/view-course.html
+#	new file:   restart-dev.ps1
+#	renamed:    asaas-import-simple.js -> scripts/asaas-import-simple.js
+#	renamed:    asaas-import.js -> scripts/asaas-import.js
+#	renamed:    backup-system.js -> scripts/backup-system.js
+#	renamed:    check-kma0001.js -> scripts/check-kma0001.js
+#	renamed:    check-system.js -> scripts/check-system.js
+#	renamed:    clean-academic-data.js -> scripts/clean-academic-data.js
+#	renamed:    clean-db.js -> scripts/clean-db.js
+#	renamed:    clean-simulation-data.js -> scripts/clean-simulation-data.js
+#	renamed:    diagnostic-test.js -> scripts/diagnostic-test.js
+#	renamed:    fix-kma0001.js -> scripts/fix-kma0001.js
+#	renamed:    krav-maga-course-seed.js -> scripts/krav-maga-course-seed.js
+#	new file:   scripts/run-all-tests.js
+#	renamed:    run-dashboard.sh -> scripts/run-dashboard.sh
+#	new file:   scripts/run-tests.js
+#	renamed:    seed-advanced-plans.js -> scripts/seed-advanced-plans.js
+#	new file:   scripts/seed-data.js
+#	renamed:    simple-endpoint-test.js -> scripts/simple-endpoint-test.js
+#	renamed:    simple-seed.js -> scripts/simple-seed.js
+#	renamed:    simple-test.js -> scripts/simple-test.js
+#	renamed:    simple-test.ps1 -> scripts/simple-test.ps1
+#	renamed:    start-server.bat -> scripts/start-server.bat
+#	renamed:    start-working-server.bat -> scripts/start-working-server.bat
+#	renamed:    start.sh -> scripts/start.sh
+#	renamed:    test-api-endpoints.js -> scripts/test-api-endpoints.js
+#	renamed:    test-api.ps1 -> scripts/test-api.ps1
+#	renamed:    test-apis.ps1 -> scripts/test-apis.ps1
+#	renamed:    test-associations.js -> scripts/test-associations.js
+#	new file:   scripts/test-attendance.ps1
+#	renamed:    test-auto-enrollment.js -> scripts/test-auto-enrollment.js
+#	renamed:    test-billing-query.js -> scripts/test-billing-query.js
+#	renamed:    test-button-modal.html -> scripts/test-button-modal.html
+#	new file:   scripts/test-complete.js
+#	renamed:    test-connection.js -> scripts/test-connection.js
+#	renamed:    test-course-creation.js -> scripts/test-course-creation.js
+#	new file:   scripts/test-courses.js
+#	renamed:    test-dashboard.py -> scripts/test-dashboard.py
+#	renamed:    test-db-connection.js -> scripts/test-db-connection.js
+#	renamed:    test-diagnostic-endpoints.js -> scripts/test-diagnostic-endpoints.js
+#	renamed:    test-endpoints.js -> scripts/test-endpoints.js
+#	renamed:    test-endpoints.ps1 -> scripts/test-endpoints.ps1
+#	renamed:    test-enrollment-direct.js -> scripts/test-enrollment-direct.js
+#	new file:   scripts/test-final-verification.js
+#	new file:   scripts/test-final.js
+#	new file:   scripts/test-frontend.js
+#	renamed:    test-kma0001-checkin.js -> scripts/test-kma0001-checkin.js
+#	renamed:    test-modal.html -> scripts/test-modal.html
+#	renamed:    test-navigation.html -> scripts/test-navigation.html
+#	renamed:    test-plan-enrollment.html -> scripts/test-plan-enrollment.html
+#	renamed:    test-production-apis.js -> scripts/test-production-apis.js
+#	new file:   scripts/test-quick.js
+#	renamed:    test-remove-plan.js -> scripts/test-remove-plan.js
+#	renamed:    test-simple.bat -> scripts/test-simple.bat
+#	new file:   scripts/test-simple.js
+#	renamed:    test-student-associations.html -> scripts/test-student-associations.html
+#	new file:   scripts/test-students-plans-complete.js
+#	new file:   scripts/test-students-plans-final.js
+#	new file:   scripts/test-students-plans-simple.js
+#	new file:   scripts/test-students-plans.js
+#	new file:   scripts/test-subscription-edit.js
+#	renamed:    test.js -> scripts/test.js
+#	deleted:    seed-data.js
+#	modified:   server-complete.js
+#	new file:   servers/attendance-fix.js
+#	new file:   servers/dashboard-server.js
+#	renamed:    kiosk-server.js -> servers/kiosk-server.js
+#	new file:   servers/server-complete.js
+#	new file:   servers/server-complete.js.backup
+#	renamed:    server-extensions.js -> servers/server-extensions.js
+#	renamed:    server-simple.js -> servers/server-simple.js
+#	new file:   servers/simple-dashboard-server.js
+#	renamed:    working-server.js -> servers/working-server.js
+#	modified:   simple-dashboard-server.js
+#	new file:   src/controllers/courseController.ts
+#	new file:   src/rag/document-indexer.js
+#	new file:   src/rag/index.js
+#	new file:   src/rag/init.js
+#	modified:   src/routes/billingPlans.ts
+#	new file:   src/routes/billing_plans.ts
+#	modified:   src/routes/courses.ts
+#	modified:   src/routes/diagnostic.ts
+#	modified:   src/routes/financial.ts
+#	modified:   src/server.ts
+#	new file:   src/services/courseService.ts
+#	modified:   src/services/financialService.ts
+#	modified:   src/types/index.ts
+#	modified:   src/utils/logger.ts
+#	new file:   test-attendance.ps1
+#	new file:   test-courses-complete.html
+#	new file:   test-courses-enhanced.html
+#	new file:   test-courses-final.html
+#	new file:   test-courses-fix.html
+#	new file:   test-courses-frontend.html
+#	new file:   test-courses.html
+#	new file:   test-navigation-auto.js
+#	new file:   test-server.js
+#	deleted:    test-simple.js
+#	new file:   test-student-navigation.html
+#	new file:   tests/README.md
+#	new file:   tests/integration/billing-plans-api.test.ts
+#	new file:   tests/integration/financial-module.test.ts
+#	new file:   tests/integration/financial-simple.test.js
+#	new file:   tests/integration/students-api.test.ts
+#	new file:   tests/integration/students-plans-backend.test.js
+#	new file:   tests/integration/students-plans.test.js
+#	new file:   tests/integration/view-course.test.js
+#	new file:   tests/setup.js
+#	new file:   tests/unit/financialService.test.ts
+#	modified:   version.json
+#

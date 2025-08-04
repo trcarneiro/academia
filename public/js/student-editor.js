@@ -36,7 +36,7 @@
 
         const observer = new MutationObserver((mutationsList, obs) => {
             // We are looking for the moment the form inputs are added to the DOM.
-            const nameInput = document.getElementById('student-firstName');
+            const nameInput = document.getElementById('student-name');
             if (nameInput && !populationAttempted) {
                 
                 // If input is empty but we have data, a race condition likely occurred.
@@ -81,33 +81,20 @@
     
     function switchPageTab(tabId) {
         console.log(`🔄 Switching to tab: ${tabId}`);
+        
+        // Update buttons
+        document.querySelectorAll('.editor-tab-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        
+        // Update content
+        document.querySelectorAll('.editor-tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === `${tabId}-tab`);
+        });
+        
         currentTab = tabId;
-
-        // Update button active states
-        document.querySelectorAll('.page-tab').forEach(button => {
-            button.classList.toggle('active', button.dataset.tab === tabId);
-        });
-
-        // Hide all tab content sections
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.style.display = 'none';
-        });
-
-        // Show the selected tab's content
-        const activeContent = document.getElementById(`${tabId}-content`);
-        if (activeContent) {
-            activeContent.style.display = 'block';
-        } else {
-            // Fallback for older structure if needed
-            const fallbackContent = document.getElementById(`${tabId}-tab`);
-            if (fallbackContent) {
-                fallbackContent.style.display = 'block';
-            } else {
-                console.error(`❌ Content for tab '${tabId}' not found.`);
-            }
-        }
-
-        // Load data for the newly activated tab
+        
+        // Load tab-specific data
         loadTabData(tabId);
     }
     
@@ -163,10 +150,10 @@
             
             if (result.success && result.data) {
                 currentStudent = result.data;
-                console.log('✅ Student loaded:', currentStudent.user.firstName);
+                console.log('✅ Student loaded:', currentStudent.name);
                 
                 populateStudentData(currentStudent);
-                updatePageTitle(`${currentStudent.user.firstName} ${currentStudent.user.lastName}`);
+                updatePageTitle(currentStudent.name);
                 hideLoadingState();
 
                 // Forcefully load the active tab data again now that we have the student
@@ -187,36 +174,52 @@
             return;
         }
 
+        // Use a minimal delay to ensure the DOM is ready for population.
         setTimeout(() => {
             console.log('📝 Populating form with student data (robustly):', student);
-
-            const user = student.user || {};
             
+            const user = student.user || {};
+            const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            const email = user.email || '';
+            const phone = user.phone || student.phone || '';
+            const birthDate = student.birthDate ? new Date(student.birthDate).toISOString().split('T')[0] : '';
+            const notes = student.notes || '';
+            const status = student.isActive ? 'ACTIVE' : 'INACTIVE';
+
+            // Direct DOM manipulation with verification
             const fields = {
-                'student-firstName': user.firstName || '',
-                'student-lastName': user.lastName || '',
-                'student-email': user.email || '',
-                'student-phone': user.phone || '',
-                'student-cpf': user.cpf || '',
-                'student-birthDate': user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
-                'student-gender': student.gender || 'MASCULINO',
-                'student-category': student.category || '',
-                'student-enrollmentDate': student.enrollmentDate ? new Date(student.enrollmentDate).toISOString().split('T')[0] : '',
-                'student-status': student.isActive ? 'true' : 'false',
-                'student-emergencyContact': student.emergencyContact || '',
-                'student-medicalConditions': student.medicalConditions || ''
+                'student-name': name,
+                'student-email': email,
+                'student-phone': phone,
+                'student-birth-date': birthDate,
+                'student-notes': notes,
+                'student-status': status
             };
 
+            let allFieldsFound = true;
             for (const [id, value] of Object.entries(fields)) {
                 const element = document.getElementById(id);
                 if (element) {
+                    console.log(`✅ Setting ${id} to: "${value}"`)
                     element.value = value;
+                    if (element.value !== value) {
+                         console.warn(`⚠️ Post-assignment check failed for ${id}. Value is now: "${element.value}"`)
+                    }
                 } else {
-                    console.warn(`⚠️ Field with ID '${id}' not found in the DOM.`);
+                    console.error(`❌ Field with ID '${id}' not found in the DOM.`);
+                    allFieldsFound = false;
                 }
             }
 
-        }, 100);
+            if(allFieldsFound) {
+                 console.log('✅ All fields populated successfully.');
+            } else {
+                 console.error('❌ Some form fields were not found. Population may be incomplete.');
+            }
+
+            updatePageTitle(name);
+
+        }, 100); // A 100ms delay is a safer bet than 0 for complex DOMs.
     }
     
     function updatePageTitle(studentName) {
@@ -266,33 +269,7 @@
     
     async function loadFinancialData() {
         console.log('💳 Loading financial data...');
-        const financialContent = document.getElementById('financial-content');
-        if (!financialContent) return;
-
-        try {
-            financialContent.innerHTML = await (await fetch('/views/financial-tab.html')).text();
-
-            const [subscriptionResponse, plansResponse] = await Promise.all([
-                fetch(`/api/students/${currentStudent.id}/subscription`),
-                fetch('/api/billing-plans')
-            ]);
-
-            const subscriptionResult = await subscriptionResponse.json();
-            const plansResult = await plansResponse.json();
-
-            if (subscriptionResult.success) {
-                renderCurrentSubscription(subscriptionResult.data);
-            }
-
-            if (plansResult.success) {
-                populateBillingPlans(plansResult.data);
-            }
-
-            setupFinancialTabEventListeners();
-        } catch (error) {
-            console.error('❌ Error loading financial data:', error);
-            financialContent.innerHTML = `<div class="error-state">Error loading financial data</div>`;
-        }
+        // TODO: Implement financial data loading
     }
     
     async function loadCoursesData() {
@@ -364,20 +341,15 @@
         try {
             showLoadingState('Salvando...');
             
+            // Collect form data
             const formData = {
-                user: {
-                    firstName: document.getElementById('student-firstName')?.value || '',
-                    lastName: document.getElementById('student-lastName')?.value || '',
-                    email: document.getElementById('student-email')?.value || '',
-                    phone: document.getElementById('student-phone')?.value || '',
-                    cpf: document.getElementById('student-cpf')?.value || '',
-                    birthDate: document.getElementById('student-birthDate')?.value || ''
-                },
-                gender: document.getElementById('student-gender')?.value || 'MASCULINO',
-                category: document.getElementById('student-category')?.value || '',
-                isActive: document.getElementById('student-status')?.value === 'true',
-                emergencyContact: document.getElementById('student-emergencyContact')?.value || '',
-                medicalConditions: document.getElementById('student-medicalConditions')?.value || ''
+                id: currentStudent.id,
+                name: document.getElementById('student-name')?.value || '',
+                email: document.getElementById('student-email')?.value || '',
+                phone: document.getElementById('student-phone')?.value || '',
+                'birthDate': document.getElementById('student-birth-date')?.value || '',
+                notes: document.getElementById('student-notes')?.value || '',
+                status: document.getElementById('student-status')?.value || 'ACTIVE'
             };
             
             console.log('📤 Sending data:', formData);
@@ -453,91 +425,6 @@
         } else {
             // Fallback to alert
             alert(message);
-        }
-    }
-
-    function renderCurrentSubscription(subscription) {
-        const container = document.getElementById('current-subscription');
-        if (!container) return;
-
-        if (subscription) {
-            container.innerHTML = `
-                <p><strong>Plano:</strong> ${subscription.plan.name}</p>
-                <p><strong>Status:</strong> ${subscription.status}</p>
-                <p><strong>Próxima cobrança:</strong> ${new Date(subscription.nextBillingDate).toLocaleDateString('pt-BR')}</p>
-            `;
-        } else {
-            container.innerHTML = `<p>Nenhuma assinatura ativa.</p>`;
-        }
-    }
-
-    function populateBillingPlans(plans) {
-        const select = document.getElementById('billing-plans');
-        if (!select) return;
-
-        plans.forEach(plan => {
-            const option = document.createElement('option');
-            option.value = plan.id;
-            option.textContent = `${plan.name} - R$${plan.price}`;
-            select.appendChild(option);
-        });
-    }
-
-    function setupFinancialTabEventListeners() {
-        const changePlanBtn = document.getElementById('change-plan-btn');
-        if (changePlanBtn) {
-            changePlanBtn.addEventListener('click', changeSubscription);
-        }
-
-        const cancelSubscriptionBtn = document.getElementById('cancel-subscription-btn');
-        if (cancelSubscriptionBtn) {
-            cancelSubscriptionBtn.addEventListener('click', cancelSubscription);
-        }
-    }
-
-    async function changeSubscription() {
-        const planId = document.getElementById('billing-plans').value;
-        if (!planId) {
-            showError('Selecione um plano.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/students/${currentStudent.id}/subscription`,
-                {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ planId })
-                });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess('Plano alterado com sucesso!');
-                loadFinancialData();
-            } else {
-                throw new Error(result.message || 'Erro ao alterar plano.');
-            }
-        } catch (error) {
-            showError(error.message);
-        }
-    }
-
-    async function cancelSubscription() {
-        if (!confirm('Tem certeza que deseja cancelar a assinatura?')) return;
-
-        try {
-            const response = await fetch(`/api/students/${currentStudent.id}/subscription`, { method: 'DELETE' });
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess('Assinatura cancelada com sucesso!');
-                loadFinancialData();
-            } else {
-                throw new Error(result.message || 'Erro ao cancelar assinatura.');
-            }
-        } catch (error) {
-            showError(error.message);
         }
     }
     
