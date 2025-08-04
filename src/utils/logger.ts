@@ -1,16 +1,21 @@
 import pino from 'pino';
-import { appConfig } from '@/config';
 
-const logger = pino({
-  level: appConfig.logging.level,
-  transport: appConfig.server.nodeEnv === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      ignore: 'pid,hostname',
-      translateTime: 'yyyy-mm-dd HH:MM:ss',
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const logger = pino(
+  isDevelopment ? {
+    level: process.env.LOG_LEVEL || 'info',
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        ignore: 'pid,hostname',
+        translateTime: 'yyyy-mm-dd HH:MM:ss',
+      },
     },
-  } : undefined,
-});
+  } : {
+    level: process.env.LOG_LEVEL || 'info',
+  }
+);
 
 export { logger };

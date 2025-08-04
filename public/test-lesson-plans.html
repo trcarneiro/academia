@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Lesson Plans Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Lesson Plans Navigation</h1>
+        <p>Click the button below to test navigation to the lesson-plans module:</p>
+        
+        <button class="test-button" onclick="testLessonPlansNavigation()">
+            Navigate to Lesson Plans
+        </button>
+        
+        <button class="test-button" onclick="clearLog()">
+            Clear Log
+        </button>
+        
+        <div id="log" class="log">
+            <div>Ready to test...</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div>Log cleared...</div>';
+        }
+
+        async function testLessonPlansNavigation() {
+            log('Testing navigation to lesson-plans module...');
+            
+            try {
+                // Test if MODULE_ROUTES exists
+                if (typeof MODULE_ROUTES === 'undefined') {
+                    log('❌ MODULE_ROUTES not found - running in test mode');
+                    
+                    // Simulate the navigation
+                    const route = '/views/lesson-plans.html';
+                    log(`📄 Attempting to load: ${route}`);
+                    
+                    const response = await fetch(route);
+                    if (response.ok) {
+                        log('✅ lesson-plans.html loaded successfully');
+                        const html = await response.text();
+                        log(`📄 HTML content length: ${html.length} characters`);
+                        
+                        // Test if lesson-plans.js exists
+                        const jsResponse = await fetch('/js/modules/lesson-plans.js');
+                        if (jsResponse.ok) {
+                            log('✅ lesson-plans.js loaded successfully');
+                        } else {
+                            log('❌ lesson-plans.js not found');
+                        }
+                    } else {
+                        log(`❌ Failed to load lesson-plans.html: ${response.status}`);
+                    }
+                } else {
+                    log('✅ MODULE_ROUTES found');
+                    log(`📍 Route for lesson-plans: ${MODULE_ROUTES['lesson-plans']}`);
+                    
+                    // Test actual navigation
+                    if (typeof navigateToModule === 'function') {
+                        log('🔄 Calling navigateToModule("lesson-plans")...');
+                        await navigateToModule('lesson-plans');
+                        log('✅ Navigation completed');
+                    } else {
+                        log('❌ navigateToModule function not found');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Check if MODULE_ROUTES is available
+        let MODULE_ROUTES;
+        fetch('/index.html')
+            .then(response => response.text())
+            .then(html => {
+                const match = html.match(/const MODULE_ROUTES = ({[^}]+})/);
+                if (match) {
+                    eval('MODULE_ROUTES = ' + match[1]);
+                    log('✅ MODULE_ROUTES loaded from index.html');
+                    log(`📍 Available routes: ${Object.keys(MODULE_ROUTES).join(', ')}`);
+                }
+            })
+            .catch(error => log(`❌ Failed to load MODULE_ROUTES: ${error.message}`));
+    </script>
+</body>
+</html>

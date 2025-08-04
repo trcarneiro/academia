@@ -68,7 +68,7 @@ let studentDataCache = {
  * Centralized function to set current editing student
  * This is the single source of truth for student state
  */
-export function setCurrentEditingStudent(studentId, studentData = null) {
+function setCurrentEditingStudent(studentId, studentData = null) {
     console.log('🎯 Setting current editing student:', studentId);
     
     // Clear cache when changing student
@@ -102,7 +102,7 @@ export function setCurrentEditingStudent(studentId, studentData = null) {
 /**
  * Get current editing student ID from any available source
  */
-export function getCurrentEditingStudentId() {
+function getCurrentEditingStudentId() {
     const studentId = currentEditingStudentId || 
                      window.currentEditingStudentId ||
                      document.getElementById('editStudentForm')?.dataset?.editingStudentId ||
@@ -133,7 +133,7 @@ function clearStudentDataCache() {
 /**
  * Load student subscription/plan data
  */
-export async function getCurrentStudentSubscription() {
+async function getCurrentStudentSubscription() {
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
         throw new Error('ID do aluno não encontrado');
@@ -166,7 +166,7 @@ export async function getCurrentStudentSubscription() {
 /**
  * Load student enrollments
  */
-export async function getCurrentStudentEnrollments() {
+async function getCurrentStudentEnrollments() {
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
         throw new Error('ID do aluno não encontrado');
@@ -197,7 +197,7 @@ export async function getCurrentStudentEnrollments() {
 /**
  * Load complete subscription details for current student
  */
-export async function getCurrentStudentSubscriptionDetails() {
+async function getCurrentStudentSubscriptionDetails() {
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
         throw new Error('ID do aluno não encontrado');
@@ -251,7 +251,7 @@ export async function getCurrentStudentSubscriptionDetails() {
 /**
  * Load courses from student's active plan with full details
  */
-export async function getCurrentStudentCourses() {
+async function getCurrentStudentCourses() {
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
         throw new Error('ID do aluno não encontrado');
@@ -369,7 +369,7 @@ export async function getCurrentStudentCourses() {
 /**
  * Load available classes for student
  */
-export async function getCurrentStudentClasses() {
+async function getCurrentStudentClasses() {
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
         throw new Error('ID do aluno não encontrado');
@@ -411,7 +411,7 @@ export async function getCurrentStudentClasses() {
 /**
  * Initializes all event listeners for the students section.
  */
-export function initStudentEventListeners() {
+function initStudentEventListeners() {
     // Search and View
     const studentSearch = document.getElementById('studentSearch');
     const tableViewBtn = document.getElementById('tableViewBtn');
@@ -642,14 +642,14 @@ async function handleStudentFormSubmit(event) {
  * Sets the student cache.
  * @param {Array} students - The array of student objects.
  */
-export function setAllStudents(students) {
+function setAllStudents(students) {
     allStudents = students;
 }
 
 /**
  * Loads and renders the students list dynamically from the API.
  */
-export async function loadAndRenderStudents() {
+async function loadAndRenderStudents() {
     console.log('🔄 [DEBUG] loadAndRenderStudents called - starting student data loading process...');
     console.log('🔄 Loading students from API...');
     
@@ -982,7 +982,7 @@ function updateStudentsCounter() {
  * Opens the dedicated full-page view for editing a student.
  * @param {string} studentId - The ID of the student to edit.
  */
-export async function openStudentEditPage(studentId) {
+async function openStudentEditPage(studentId) {
     try {
         console.log('🔄 Abrindo página de edição do aluno:', studentId);
         if (!studentId) {
@@ -1193,7 +1193,7 @@ function updateEditPageSidebar(student) {
  * Switches the visible tab on the student edit page.
  * @param {string} tabName - The name of the tab to switch to.
  */
-export function switchPageTab(tabName) {
+function switchPageTab(tabName) {
     document.querySelectorAll('.page-tab-content').forEach(tab => {
         tab.style.display = 'none';
     });
@@ -1281,7 +1281,7 @@ function updatePageFormProgress() {
 /**
  * Saves the edited student data.
  */
-export async function saveEditStudent() {
+async function saveEditStudent() {
     console.log('🔄 saveEditStudent called');
     
     // Use centralized state management
@@ -1333,7 +1333,7 @@ export async function saveEditStudent() {
  * This is a common pattern to avoid modals and use full-page navigation.
  * @param {string} studentId - The ID of the student to edit.
  */
-export function editStudent(studentId) {
+function editStudent(studentId) {
     openStudentEditPage(studentId);
 }
 
@@ -1482,7 +1482,7 @@ function createMiniClassCard(classItem) {
  * This is the main exported function that can be used by other modules.
  * @param {string} studentId - The ID of the student.
  */
-export async function loadStudentCourses(studentId = null) {
+async function loadStudentCourses(studentId = null) {
     console.log(`📚 Loading courses for student...`);
     
     // Use centralized state if no studentId provided
@@ -1667,7 +1667,7 @@ function closePaymentModal() {
 /**
  * 👤 PROFILE TAB - Dados pessoais e acadêmicos
  */
-export async function loadProfileTab() {
+async function loadProfileTab() {
     console.log('👤 Loading profile tab...');
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
@@ -1792,7 +1792,7 @@ export async function loadProfileTab() {
 /**
  * 💳 FINANCIAL TAB - Panorama financeiro completo
  */
-export async function loadFinancialTab() {
+async function loadFinancialTab() {
     console.log('💳 Loading financial tab...');
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
@@ -1965,7 +1965,7 @@ export async function loadFinancialTab() {
 /**
  * 📚 ENROLLMENTS TAB - Cursos baseados no plano ativo
  */
-export async function loadEnrollmentsTab() {
+async function loadEnrollmentsTab() {
     console.log('📚 Loading enrollments tab...');
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
@@ -2123,7 +2123,7 @@ export async function loadEnrollmentsTab() {
 /**
  * Legacy function for backward compatibility
  */
-export async function loadStudentCoursesTab() {
+async function loadStudentCoursesTab() {
     console.log('🔄 Redirecting to new enrollments tab...');
     return loadEnrollmentsTab();
 }
@@ -2131,7 +2131,7 @@ export async function loadStudentCoursesTab() {
 /**
  * 🏫 CLASSES TAB - Turmas específicas frequentadas
  */
-export async function loadClassesTab() {
+async function loadClassesTab() {
     console.log('🏫 Loading classes tab...');
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
@@ -2357,7 +2357,7 @@ export async function loadClassesTab() {
 /**
  * 📊 PROGRESS TAB - Evolução acadêmica e gamificação
  */
-export async function loadProgressTab() {
+async function loadProgressTab() {
     console.log('📊 Loading progress tab...');
     const studentId = getCurrentEditingStudentId();
     if (!studentId) {
@@ -2526,7 +2526,7 @@ export async function loadProgressTab() {
 /**
  * 🤖 INSIGHTS TAB - Dashboard IA  
  */
-export async function loadInsightsTab() {
+async function loadInsightsTab() {
     console.log('🤖 Loading insights tab...');
     const contentEl = document.getElementById('page-tab-insights') || document.getElementById('page-tab-ai-dashboard');
     if (!contentEl) {
@@ -2547,63 +2547,16 @@ export async function loadInsightsTab() {
 /**
  * Legacy function for backward compatibility
  */
-export async function loadStudentClassesTab() {
+async function loadStudentClassesTab() {
     console.log('🔄 Redirecting to new classes tab...');
     return loadClassesTab();
-                </div>
-            </div>
-        `;
-
-        // Load classes using centralized function
-        const classes = await getCurrentStudentClasses();
-        
-        if (!classes || classes.length === 0) {
-            contentEl.innerHTML = `
-                <div style="padding: 2rem; text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🏫</div>
-                    <div style="color: #94A3B8; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
-                        Nenhuma turma encontrada
-                    </div>
-                    <div style="color: #64748B; font-size: 0.875rem;">
-                        Este aluno não possui turmas disponíveis no momento.
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        // Render classes
-        renderStudentClasses(classes, contentEl);
-        
-    } catch (error) {
-        console.error('❌ Error loading classes tab:', error);
-        // Try to find the correct classes content element for error display
-        let contentEl = document.getElementById('page-tab-classes');
-        if (!contentEl) {
-            contentEl = document.getElementById('student-classes-content');
-        }
-        if (contentEl) {
-            contentEl.innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: #EF4444;">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
-                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Erro ao carregar turmas</div>
-                    <div style="font-size: 0.875rem; color: #94A3B8; margin-bottom: 1.5rem;">
-                        ${error.message}
-                    </div>
-                    <button onclick="loadStudentClassesTab()" 
-                            style="background: #3B82F6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
-                        🔄 Tentar novamente
-                    </button>
-                </div>
-            `;
-        }
-    }
 }
+
 
 /**
  * Simplified plans tab loader for HTML
  */
-export async function loadPlansTabContent() {
+async function loadPlansTabContent() {
     console.log('📋 Loading plans tab...');
     try {
         const studentId = getCurrentEditingStudentId();
@@ -3170,3 +3123,10 @@ window.loadClassesTab = loadClassesTab;
 window.loadProgressTab = loadProgressTab;
 window.loadInsightsTab = loadInsightsTab;
 window.STUDENT_TABS = STUDENT_TABS;
+
+// Global function to open the new student form/modal
+window.openNewStudentForm = function() {
+    // TODO: Replace with your actual form/modal logic
+    alert('Abrir formulário de novo aluno!');
+    // Example: document.getElementById('studentFormModal').style.display = 'block';
+};

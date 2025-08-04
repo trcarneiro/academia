@@ -1,0 +1,541 @@
+/* ==========================================
+   EVALUATIONS MODULE - ISOLATED CSS
+   ========================================== */
+
+/* Evaluations Container */
+.evaluations-isolated {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Evaluations Header */
+.evaluations-isolated .evaluations-header {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.evaluations-isolated .evaluations-header h2 {
+    color: #F8FAFC;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.evaluations-isolated .evaluations-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Filters and Sorting */
+.evaluations-isolated .evaluations-filters {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.evaluations-isolated .filter-group,
+.evaluations-isolated .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.evaluations-isolated .filter-group label,
+.evaluations-isolated .sort-group label {
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.evaluations-isolated .evaluation-filter,
+.evaluations-isolated .evaluation-sort {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #CBD5E1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.evaluations-isolated .evaluation-filter:hover,
+.evaluations-isolated .evaluation-sort:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.evaluations-isolated .evaluation-filter.active,
+.evaluations-isolated .evaluation-sort.active {
+    background: #3B82F6;
+    color: white;
+    border-color: #3B82F6;
+}
+
+/* Evaluations Grid */
+.evaluations-isolated .evaluations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.evaluations-isolated .evaluation-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.evaluations-isolated .evaluation-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Evaluation Card Header */
+.evaluations-isolated .evaluation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.evaluations-isolated .evaluation-student {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.evaluations-isolated .student-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #3B82F6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.evaluations-isolated .student-info h3 {
+    color: #F8FAFC;
+    font-size: 1.125rem;
+    margin: 0 0 0.25rem 0;
+}
+
+.evaluations-isolated .student-info p {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Status Badge */
+.evaluations-isolated .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.evaluations-isolated .status-badge.completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.evaluations-isolated .status-badge.pending {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.evaluations-isolated .status-badge.in_progress {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+}
+
+.evaluations-isolated .status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+/* Evaluation Content */
+.evaluations-isolated .evaluation-content {
+    margin-bottom: 1.5rem;
+}
+
+.evaluations-isolated .evaluation-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.evaluations-isolated .score-label {
+    color: #CBD5E1;
+    font-weight: 500;
+}
+
+.evaluations-isolated .score-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.evaluations-isolated .score-value.excellent {
+    color: #10B981;
+}
+
+.evaluations-isolated .score-value.good {
+    color: #3B82F6;
+}
+
+.evaluations-isolated .score-value.average {
+    color: #F59E0B;
+}
+
+.evaluations-isolated .score-value.poor {
+    color: #EF4444;
+}
+
+/* Evaluation Details */
+.evaluations-isolated .evaluation-details {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.evaluations-isolated .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.evaluations-isolated .detail-label {
+    color: #94A3B8;
+    font-size: 0.875rem;
+}
+
+.evaluations-isolated .detail-value {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Evaluation Notes */
+.evaluations-isolated .evaluation-notes {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.evaluations-isolated .notes-label {
+    color: #CBD5E1;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.evaluations-isolated .notes-content {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Evaluation Actions */
+.evaluations-isolated .evaluation-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.evaluations-isolated .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.evaluations-isolated .btn:hover {
+    transform: translateY(-1px);
+}
+
+.evaluations-isolated .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.evaluations-isolated .btn-primary {
+    background: #3B82F6;
+    color: white;
+}
+
+.evaluations-isolated .btn-primary:hover {
+    background: #2563EB;
+}
+
+.evaluations-isolated .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.evaluations-isolated .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.evaluations-isolated .btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.evaluations-isolated .btn-danger:hover {
+    background: #DC2626;
+}
+
+/* Statistics Cards */
+.evaluations-isolated .evaluations-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.evaluations-isolated .stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.evaluations-isolated .stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.evaluations-isolated .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3B82F6;
+    margin-bottom: 0.5rem;
+}
+
+.evaluations-isolated .stat-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Empty State */
+.evaluations-isolated .evaluations-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.evaluations-isolated .evaluations-empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.evaluations-isolated .evaluations-empty-state h3 {
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.evaluations-isolated .evaluations-empty-state p {
+    color: #94A3B8;
+    margin-bottom: 2rem;
+}
+
+/* Error State */
+.evaluations-isolated .evaluations-error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+}
+
+.evaluations-isolated .evaluations-error-state .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #EF4444;
+}
+
+.evaluations-isolated .evaluations-error-state h3 {
+    color: #EF4444;
+    margin-bottom: 0.5rem;
+}
+
+.evaluations-isolated .evaluations-error-state p {
+    color: #FCA5A5;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .evaluations-isolated {
+        padding: 0.5rem;
+    }
+    
+    .evaluations-isolated .evaluations-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .evaluations-isolated .evaluations-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .evaluations-isolated .evaluations-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .evaluations-isolated .filter-group,
+    .evaluations-isolated .sort-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .evaluations-isolated .evaluations-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .evaluations-isolated .evaluation-card {
+        padding: 1rem;
+    }
+    
+    .evaluations-isolated .evaluation-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .evaluations-isolated .evaluation-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .evaluations-isolated .evaluation-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .evaluations-isolated .evaluations-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .evaluations-isolated .evaluation-card {
+        padding: 1rem;
+    }
+    
+    .evaluations-isolated .evaluation-score {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .evaluations-isolated .detail-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+}
+
+/* Theme Support */
+.theme-light .evaluations-isolated .evaluation-card,
+.theme-light .evaluations-isolated .evaluations-header,
+.theme-light .evaluations-isolated .evaluations-filters,
+.theme-light .evaluations-isolated .stat-card {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .evaluations-isolated .student-info h3,
+.theme-light .evaluations-isolated .evaluations-header h2 {
+    color: #1F2937;
+}
+
+.theme-light .evaluations-isolated .detail-label,
+.theme-light .evaluations-isolated .notes-content {
+    color: #6B7280;
+}
+
+.theme-light .evaluations-isolated .detail-value,
+.theme-light .evaluations-isolated .score-label {
+    color: #374151;
+}
+
+/* Accessibility */
+.evaluations-isolated .evaluation-card:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+.evaluations-isolated .btn:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .evaluations-isolated .evaluations-actions,
+    .evaluations-isolated .evaluation-actions {
+        display: none;
+    }
+    
+    .evaluations-isolated .evaluation-card {
+        background: white;
+        border: 1px solid #ccc;
+        color: black;
+        break-inside: avoid;
+    }
+    
+    .evaluations-isolated .score-value {
+        color: #333 !important;
+    }
+}

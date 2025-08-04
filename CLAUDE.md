@@ -1,4 +1,4 @@
-# Contribution Guidelines v2.0
+]]# Contribution Guidelines v2.0
 Last Updated: 07/12/2025
 **Goal:** To ensure all code is secure, modular, and consistent. Adherence to these guidelines is essential for project stability. The full technical manual, `agents.md`, is the single source of truth for architecture and workflows.
 
@@ -48,6 +48,14 @@ Hardcoded data is considered a critical system vulnerability and is not allowed.
 *   The UI must gracefully handle empty states (e.g., displaying a "No data found" message). The API will return `{ success: true, data: [] }` in this case.
 *   `localStorage` is for temporary fallback only, as specified in `agents.md`.
 
+**🚨 MANDATORY API-FIRST IMPLEMENTATION:**
+*   **ALWAYS** verify existing APIs before creating any interface
+*   **NEVER** use placeholder data like "R$ 149,90", "Prof. Marcus Silva", "Turma 1", etc.
+*   **ALWAYS** implement loading states while fetching real data
+*   **ALWAYS** handle API errors gracefully with user-friendly messages
+*   **Example violation**: Using fixed values in student editor tabs (subscription, courses, classes)
+*   **Correct approach**: Fetch `/api/students/${id}/subscription`, `/api/students/${id}/courses`, etc.
+
 ### 4. Contexto e Consistência: Detalhes Importam
 Durante o desenvolvimento, sempre identifique e comunique melhorias de contexto necessárias.
 
@@ -72,6 +80,96 @@ Durante o desenvolvimento, sempre identifique e comunique melhorias de contexto 
 * **IDs Inconsistentes:** `data-tab="courses"` mas mostra "Assinatura" → Renomear para `data-tab="subscription"`
 * **Ícones Duplicados:** "📋 Planos" e "💳 Assinatura" em abas próximas → Diferenciação visual clara
 * **Funções Desalinhadas:** `getCurrentStudentCourses()` para mostrar assinatura → Criar `getCurrentStudentSubscriptionDetails()`
-* **Dados Inadequados:** Mostrar "cursos" na aba individual → Mostrar "assinatura pessoal + status de pagamento"
+* **Dados Inadequados:** Mostrar "cursos" nahttps://www.asaas.com/payment/list?filterDate=dueDate&dueDateStart=01%2F07%2F2025&dueDateFinish=31%2F07%2F2025&chargeType=&status%5BnotIn%5D=REFUNDED&status%5BnotIn%5D=REFUND_REQUESTED&status%5BnotIn%5D=CHARGEBACK aba individual → Mostrar "assinatura pessoal + status de pagamento"
 
 **Final Check:** Before submitting any code, re-read these guidelines. The quality of our project is measured by our ability to follow them perfectly. For all other details, consult `agents.md`.
+
+# Current Work Session Focus
+**Active Module:** Students Module
+**Last Updated:** 20/07/2025
+
+## 🚨 SERVIDOR ARQUITETURA
+**IMPORTANTE**: Sempre usar servidor principal TypeScript com dados reais.
+- **Comando**: `npm run dev` 
+- **Documentação**: `docs/SERVER_ARCHITECTURE.md`
+- **APIs**: PostgreSQL + Prisma (27 alunos reais)
+- **Swagger**: `http://localhost:3000/docs`
+
+## Files Currently Being Worked On
+
+### 🎯 Primary Working Files
+- **`public/js/modules/students.js`** - Módulo principal isolado (455 linhas, referência CLAUDE.md)
+- **`public/css/modules/students.css`** - CSS isolado com prefixo `.students-isolated`
+- **`public/views/student-editor.html`** - Editor full-screen (implementa "Uma Ação = Uma Tela")
+- **`public/views/students.html`** - Página principal de listagem
+
+### 🔧 Supporting Files
+- **`public/js/students-management.js`** - Sistema de associações hierárquicas
+- **`src/routes/students.ts`** - Rotas FastifyJS da API
+
+### 📋 Development Context
+- **Focus:** Trabalhar SOMENTE com estes arquivos do módulo Students
+- **Architecture:** Modular isolado em `/js/modules/` seguindo diretrizes CLAUDE.md
+- **UI Pattern:** Full-screen navigation, sem modais
+- **Data:** API-first, sem dados hardcoded
+
+### 🚨 Important Notes
+- **Arquivo legado** `public/js/students.js` (3.125 linhas) **NÃO está sendo usado** - foi substituído pelo módulo
+- **Razão:** Violava diretrizes (modais, monolítico, core file modification)
+- **Referência:** Módulo atual é implementação de referência das diretrizes CLAUDE.md
+
+## 🚨 CRITICAL API-FIRST ENFORCEMENT
+
+**BEFORE implementing ANY interface component:**
+1. **FIRST**: Check what APIs exist for that data
+2. **SECOND**: Implement data fetching with loading states
+3. **THIRD**: Handle empty states and errors
+4. **NEVER**: Use hardcoded placeholder data
+5. **ALWAYS**: Follow the pattern: fetch → populate → handle errors
+
+**Examples of FORBIDDEN hardcoded data:**
+- Fixed prices: "R$ 149,90"
+- Names: "Prof. Marcus Silva", "João Silva"
+- Dates: "01/06/2025"
+- Progress: "31% concluído"
+- Any mock content that should come from database
+
+**MANDATORY for ALL implementations:**
+- Loading spinners while fetching data
+- Empty state messages when no data exists
+- Error handling with user-friendly messages
+- API-first approach with real database integration
+
+## 🔍 CRITICAL: Always Check Existing Functionality
+
+### Pre-Implementation Verification Protocol
+**BEFORE creating ANY new module or recreating functionality:**
+
+1. **🔍 FIRST**: Search for existing implementations
+   ```bash
+   # Check for existing files
+   file_search: **/*module-name*
+   grep_search: "functionality keywords"
+   ```
+
+2. **📂 VERIFY**: Check all relevant directories
+   - `/public/js/modules/` - Isolated modules 
+   - `/public/js/` - Legacy implementations
+   - `/backups/` - Backup files
+   - `/public/views/` - HTML templates
+
+3. **⚠️ CRITICAL RULE**: Never recreate existing functionality
+   - If functionality exists and works → Use it
+   - If functionality exists but broken → Fix it
+   - If functionality doesn't exist → Create it
+
+### 🚨 Case Study: Student-Editor Incident (August 2025)
+**What Happened**: During course module development, student-editor functionality was accidentally recreated instead of using existing working implementation.
+
+**Root Cause**: Failed to verify that `public/js/modules/student-editor.js` already existed and was functional.
+
+**Impact**: Temporary loss of working navigation between students list and student editor.
+
+**Prevention**: Always run verification protocol before any new implementation.
+
+**Lesson**: The cardinal rule is **"Check first, implement second"** - existing working code is infinitely more valuable than new code.

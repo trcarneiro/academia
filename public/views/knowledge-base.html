@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Base de Conhecimento - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/knowledge-base.css">
+</head>
+<body>
+    <div class="knowledge-base-isolated">
+        <!-- Knowledge Base Header -->
+        <div class="kb-header">
+            <h2>🧠 Base de Conhecimento</h2>
+            <p>Central de documentos e recursos de treinamento</p>
+        </div>
+
+        <!-- Knowledge Base Actions -->
+        <div class="kb-actions">
+            <button class="kb-btn" onclick="openKnowledgeUploader()">
+                📁 Upload de Documentos
+            </button>
+            <button class="kb-btn secondary" onclick="reindexKnowledgeBase()">
+                🔄 Reindexar Base
+            </button>
+            <button class="kb-btn secondary" onclick="testRAGSystem()" style="background: rgba(16, 185, 129, 0.1); border-color: #10B981; color: #10B981;">
+                🧪 Testar RAG
+            </button>
+            <button class="kb-btn secondary" onclick="clearEntireKnowledgeBase()" style="background: rgba(239, 68, 68, 0.1); border-color: #EF4444; color: #EF4444;">
+                🗑️ Limpar Tudo
+            </button>
+            <button class="kb-btn secondary" onclick="clearChatHistory()" style="background: rgba(245, 158, 11, 0.1); border-color: #F59E0B; color: #F59E0B;">
+                🧹 Limpar Chat
+            </button>
+            <button class="kb-btn secondary" onclick="window.history.back()">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- Knowledge Base Stats -->
+        <div class="kb-stats">
+            <div class="kb-stat-card">
+                <div class="kb-stat-value" id="kb-total-items">0</div>
+                <div class="kb-stat-label">Total de Itens</div>
+            </div>
+            <div class="kb-stat-card">
+                <div class="kb-stat-value" id="kb-total-chunks">0</div>
+                <div class="kb-stat-label">Fragmentos RAG</div>
+            </div>
+            <div class="kb-stat-card">
+                <div class="kb-stat-value" id="kb-total-documents">0</div>
+                <div class="kb-stat-label">Documentos</div>
+            </div>
+        </div>
+
+        <!-- Knowledge Base Search -->
+        <div class="kb-search">
+            <h3>🔍 Pesquisar na Base</h3>
+            <input type="text" class="kb-search-input" placeholder="Digite sua pesquisa..." id="kb-search-input">
+        </div>
+        
+        <!-- Smart RAG Chat Interface -->
+        <div class="kb-smart-chat">
+            <h3>🤖 Assistente Inteligente</h3>
+            <div class="chat-interface">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-message system">
+                        <div class="message-content">
+                            👋 Olá! Sou o assistente inteligente da academia. Posso responder sobre:
+                            <ul>
+                                <li>💰 Situação financeira e alunos</li>
+                                <li>📚 Cursos e técnicas</li>
+                                <li>👥 Gestão de alunos</li>
+                                <li>📊 Relatórios e análises</li>
+                            </ul>
+                            Digite sua pergunta abaixo!
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="Faça uma pergunta sobre a academia..." id="chat-input">
+                    <button class="chat-send-btn" id="chat-send-btn">📤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Base Content -->
+        <div class="kb-content">
+            <h3>📚 Conteúdo da Base</h3>
+            <div id="kb-items-container">
+                <!-- Loading state -->
+                <div class="loading-skeleton" style="height: 100px; margin: 1rem 0;"></div>
+                <div class="loading-skeleton" style="height: 100px; margin: 1rem 0;"></div>
+                <div class="loading-skeleton" style="height: 100px; margin: 1rem 0;"></div>
+            </div>
+        </div>
+
+        <!-- Upload Area -->
+        <div class="kb-upload" id="kb-upload-area">
+            <div class="kb-upload-icon">📁</div>
+            <div class="kb-upload-text">Arraste arquivos aqui ou clique para fazer upload</div>
+            <div class="kb-upload-hint">Suporte para PDF, TXT, DOCX e outros formatos</div>
+        </div>
+    </div>
+
+    <!-- Knowledge Base Module will be loaded dynamically -->
+</body>
+</html>

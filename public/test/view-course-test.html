@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Visualizar Curso</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/core/reset.css">
+    <link rel="stylesheet" href="/css/core/variables.css">
+    <link rel="stylesheet" href="/css/core/dashboard.css">
+    
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="/css/modules/view-course.css">
+    
+    <!-- Components -->
+    <link rel="stylesheet" href="/css/components/toast.css">
+    
+    <style>
+        /* Test-specific styles */
+        .test-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .test-controls h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+        
+        .test-controls button {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .test-info {
+            background: #f8fafc;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .test-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+        }
+        
+        .test-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="view-course-isolated">
+    <!-- Test Controls -->
+    <div class="test-controls">
+        <h3>🧪 Test Controls</h3>
+        <button class="primary-button small" onclick="loadTestCourse()">Carregar Curso Teste</button>
+        <button class="secondary-button small" onclick="loadEmptyCourse()">Curso Vazio</button>
+        <button class="secondary-button small" onclick="simulateError()">Simular Erro</button>
+        <button class="secondary-button small" onclick="toggleLoading()">Toggle Loading</button>
+        <button class="secondary-button small" onclick="testResponsive()">Test Responsive</button>
+        <button class="secondary-button small" onclick="printTest()">Print Test</button>
+    </div>
+
+    <!-- Test Info -->
+    <div class="test-info">
+        <h4>🎯 Testando: Visualização de Curso</h4>
+        <p>Este é um ambiente de teste para validar a nova interface de visualização de curso. Use os controles à direita para testar diferentes estados e funcionalidades.</p>
+    </div>
+
+    <!-- Header -->
+    <header class="view-course-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="back-button" onclick="history.back()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <h1 id="course-title">Teste - Visualização de Curso</h1>
+            </div>
+            <div class="header-actions">
+                <button class="secondary-button" onclick="window.location.href='/views/courses.html'">
+                    <span>📚</span>
+                    <span>Todos os Cursos</span>
+                </button>
+                <button class="primary-button" id="edit-course-btn">
+                    <span>✏️</span>
+                    <span>Editar Curso</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="view-course-main">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-container">
+            <div class="spinner"></div>
+            <p>Carregando informações do curso...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">❌</div>
+            <h3>Erro ao carregar curso</h3>
+            <p id="errorMessage">Não foi possível carregar as informações do curso.</p>
+            <button class="primary-button" onclick="window.location.href='/views/courses.html'">
+                Voltar aos Cursos
+            </button>
+        </div>
+
+        <!-- Course Content -->
+        <div id="courseContent" class="course-content" style="display: none;">
+            <!-- Course Overview Card -->
+            <section class="course-overview-card">
+                <div class="course-header-info">
+                    <div class="course-badge-container">
+                        <span class="course-category-badge" id="course-category">-</span>
+                        <span class="course-status-badge" id="course-status">-</span>
+                    </div>
+                    <div class="course-actions">
+                        <button class="action-button secondary" onclick="toggleCourseStatus()">
+                            <span id="status-toggle-icon">🔒</span>
+                            <span id="status-toggle-text">Ativar/Desativar</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="course-details-grid">
+                    <div class="detail-card">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Duração</span>
+                            <span class="detail-value" id="course-duration">- semanas</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">👥</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Público-alvo</span>
+                            <span class="detail-value" id="course-target">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">📚</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Total de Aulas</span>
+                            <span class="detail-value" id="course-lessons-count">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">💪</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Total de Técnicas</span>
+                            <span class="detail-value" id="course-techniques-count">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Description Section -->
+            <section class="course-section">
+                <h2 class="section-title">Descrição do Curso</h2>
+                <div class="course-description-card">
+                    <p id="course-description" class="course-description-text">-</p>
+                </div>
+            </section>
+
+            <!-- Lessons Section -->
+            <section class="course-section">
+                <div class="section-header">
+                    <h2 class="section-title">Aulas do Curso</h2>
+                    <button class="primary-button small" onclick="addNewLesson()">
+                        <span>+</span>
+                        <span>Nova Aula</span>
+                    </button>
+                </div>
+                
+                <div id="lessonsContainer" class="lessons-container">
+                    <!-- Lessons will be loaded here -->
+                </div>
+                
+                <div id="emptyLessons" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📚</div>
+                    <h3>Nenhuma aula cadastrada</h3>
+                    <p>Adicione a primeira aula a este curso</p>
+                    <button class="primary-button" onclick="addNewLesson()">
+                        Adicionar Primeira Aula
+                    </button>
+                </div>
+            </section>
+
+            <!-- Techniques Section -->
+            <section class="course-section">
+                <div class="section-header">
+                    <h2 class="section-title">Técnicas do Curso</h2>
+                    <button class="primary-button small" onclick="addNewTechnique()">
+                        <span>+</span>
+                        <span>Nova Técnica</span>
+                    </button>
+                </div>
+                
+                <div id="techniquesContainer" class="techniques-container">
+                    <!-- Techniques will be loaded here -->
+                </div>
+                
+                <div id="emptyTechniques" class="empty-state" style="display: none;">
+                    <div class="empty-icon">💪</div>
+                    <h3>Nenhuma técnica cadastrada</h3>
+                    <p>Adicione as primeiras técnicas a este curso</p>
+                    <button class="primary-button" onclick="addNewTechnique()">
+                        Adicionar Primeira Técnica
+                    </button>
+                </div>
+            </section>
+
+            <!-- Course Stats -->
+            <section class="course-section">
+                <h2 class="section-title">Estatísticas do Curso</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="completion-rate">0%</div>
+                        <div class="stat-label">Taxa de Conclusão</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avg-progress">0%</div>
+                        <div class="stat-label">Progresso Médio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-students">0</div>
+                        <div class="stat-label">Alunos Matriculados</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Test data
+        const testCourse = {
+            id: 'test-course-001',
+            name: 'Krav Maga - Faixa Branca',
+            description: 'Curso completo de Krav Maga para iniciantes. Aprenda as técnicas fundamentais de defesa pessoal, incluindo golpes básicos, defesas contra ataques comuns, e técnicas de escape. Este curso é ideal para quem está começando sua jornada no Krav Maga e deseja construir uma base sólida de conhecimento e habilidades.',
+            level: 'BEGINNER',
+            duration: 12,
+            isActive: true,
+            totalLessons: 24,
+            totalTechniques: 48,
+            lessons: [
+                {
+                    id: 'lesson-001',
+                    name: 'Introdução ao Krav Maga',
+                    description: 'Conceitos básicos e filosofia do Krav Maga',
+                    order: 1,
+                    duration: 60,
+                    techniquesCount: 3
+                },
+                {
+                    id: 'lesson-002',
+                    name: 'Postura e Base',
+                    description: 'Postura correta e equilíbrio básico',
+                    order: 2,
+                    duration: 45,
+                    techniquesCount: 5
+                },
+                {
+                    id: 'lesson-003',
+                    name: 'Golpes Básicos',
+                    description: 'Socos diretos e cruzados',
+                    order: 3,
+                    duration: 90,
+                    techniquesCount: 8
+                }
+            ],
+            techniques: [
+                {
+                    id: 'tech-001',
+                    name: 'Soco Direto',
+                    description: 'Golpe direto com mão dominante',
+                    difficulty: 'Básico',
+                    category: 'Golpes'
+                },
+                {
+                    id: 'tech-002',
+                    name: 'Defesa de Soco',
+                    description: 'Bloqueio e contra-ataque',
+                    difficulty: 'Básico',
+                    category: 'Defesas'
+                },
+                {
+                    id: 'tech-003',
+                    name: 'Escape de Gravata',
+                    description: 'Técnica de escape quando agarrado pela gravata',
+                    difficulty: 'Intermediário',
+                    category: 'Escapes'
+                }
+            ]
+        };
+
+        // Test functions
+        function loadTestCourse() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const courseContent = document.getElementById('courseContent');
+            
+            loadingState.style.display = 'flex';
+            errorState.style.display = 'none';
+            courseContent.style.display = 'none';
+            
+            setTimeout(() => {
+                loadingState.style.display = 'none';
+                courseContent.style.display = 'block';
+                
+                // Populate course data
+                document.getElementById('course-title').textContent = testCourse.name;
+                document.getElementById('course-category').textContent = getLevelLabel(testCourse.level);
+                document.getElementById('course-category').className = `course-category-badge ${testCourse.level.toLowerCase()}`;
+                document.getElementById('course-status').textContent = testCourse.isActive ? 'Ativo' : 'Inativo';
+                document.getElementById('course-status').className = `course-status-badge ${testCourse.isActive ? '' : 'inactive'}`;
+                document.getElementById('course-duration').textContent = `${testCourse.duration} semanas`;
+                document.getElementById('course-target').textContent = getLevelLabel(testCourse.level);
+                document.getElementById('course-lessons-count').textContent = testCourse.totalLessons;
+                document.getElementById('course-techniques-count').textContent = testCourse.totalTechniques;
+                document.getElementById('course-description').textContent = testCourse.description;
+                
+                // Populate lessons
+                const lessonsContainer = document.getElementById('lessonsContainer');
+                const emptyLessons = document.getElementById('emptyLessons');
+                
+                if (testCourse.lessons && testCourse.lessons.length > 0) {
+                    lessonsContainer.innerHTML = '';
+                    emptyLessons.style.display = 'none';
+                    
+                    testCourse.lessons.forEach(lesson => {
+                        const lessonCard = createLessonCard(lesson);
+                        lessonsContainer.appendChild(lessonCard);
+                    });
+                } else {
+                    lessonsContainer.innerHTML = '';
+                    emptyLessons.style.display = 'block';
+                }
+                
+                // Populate techniques
+                const techniquesContainer = document.getElementById('techniquesContainer');
+                const emptyTechniques = document.getElementById('emptyTechniques');
+                
+                if (testCourse.techniques && testCourse.techniques.length > 0) {
+                    techniquesContainer.innerHTML = '';
+                    emptyTechniques.style.display = 'none';
+                    
+                    testCourse.techniques.forEach(technique => {
+                        const techniqueCard = createTechniqueCard(technique);
+                        techniquesContainer.appendChild(techniqueCard);
+                    });
+                } else {
+                    techniquesContainer.innerHTML = '';
+                    emptyTechniques.style.display = 'block';
+                }
+                
+                // Update stats
+                document.getElementById('completion-rate').textContent = '75%';
+                document.getElementById('avg-progress').textContent = '60%';
+                document.getElementById('total-students').textContent = '42';
+                
+            }, 1000);
+        }
+
+        function loadEmptyCourse() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const courseContent = document.getElementById('courseContent');
+            
+            loadingState.style.display = 'none';
+            errorState.style.display = 'none';
+            courseContent.style.display = 'block';
+            
+            document.getElementById('course-title').textContent = 'Curso Vazio';
+            document.getElementById('course-category').textContent = '-';
+            document.getElementById('course-status').textContent = '-';
+            document.getElementById('course-duration').textContent = '- semanas';
+            document.getElementById('course-target').textContent = '-';
+            document.getElementById('course-lessons-count').textContent = '0';
+            document.getElementById('course-techniques-count').textContent = '0';
+            document.getElementById('course-description').textContent = 'Este curso não possui descrição.';
+            
+            document.getElementById('lessonsContainer').innerHTML = '';
+            document.getElementById('emptyLessons').style.display = 'block';
+            
+            document.getElementById('techniquesContainer').innerHTML = '';
+            document.getElementById('emptyTechniques').style.display = 'block';
+            
+            document.getElementById('completion-rate').textContent = '0%';
+            document.getElementById('avg-progress').textContent = '0%';
+            document.getElementById('total-students').textContent = '0';
+        }
+
+        function simulateError() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const courseContent = document.getElementById('courseContent');
+            
+            loadingState.style.display = 'none';
+            courseContent.style.display = 'none';
+            errorState.style.display = 'flex';
+            document.getElementById('errorMessage').textContent = 'Erro simulado: Curso não encontrado ou servidor indisponível.';
+        }
+
+        function toggleLoading() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const courseContent = document.getElementById('courseContent');
+            
+            if (loadingState.style.display === 'flex') {
+                loadingState.style.display = 'none';
+                courseContent.style.display = 'block';
+            } else {
+                loadingState.style.display = 'flex';
+                errorState.style.display = 'none';
+                courseContent.style.display = 'none';
+            }
+        }
+
+        function testResponsive() {
+            const width = prompt('Enter width (px):', '375');
+            if (width) {
+                document.body.style.width = width + 'px';
+                document.body.style.margin = '0 auto';
+                document.body.style.border = '1px solid #ccc';
+            }
+        }
+
+        function printTest() {
+            window.print();
+        }
+
+        function getLevelLabel(level) {
+            const labels = {
+                'BEGINNER': 'Iniciante',
+                'INTERMEDIATE': 'Intermediário',
+                'ADVANCED': 'Avançado',
+                'EXPERT': 'Expert',
+                'MASTER': 'Master'
+            };
+            return labels[level] || level;
+        }
+
+        function createLessonCard(lesson) {
+            const card = document.createElement('div');
+            card.className = 'lesson-card';
+            card.innerHTML = `
+                <div class="lesson-header">
+                    <span class="lesson-order">Aula ${lesson.order}</span>
+                    <div class="lesson-actions">
+                        <button class="action-icon" onclick="editLesson('${lesson.id}')" title="Editar">✏️</button>
+                        <button class="action-icon" onclick="deleteLesson('${lesson.id}')" title="Excluir">🗑️</button>
+                    </div>
+                </div>
+                <h4 class="lesson-title">${lesson.name}</h4>
+                <p class="lesson-description">${lesson.description}</p>
+                <div class="lesson-meta">
+                    <span class="lesson-duration">${lesson.duration} min</span>
+                    <span class="lesson-techniques">${lesson.techniquesCount} técnicas</span>
+                </div>
+            `;
+            return card;
+        }
+
+        function createTechniqueCard(

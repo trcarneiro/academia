@@ -1,0 +1,133 @@
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1 class="dashboard-title">📊 Dashboard Geral</h1>
+            <div class="header-actions">
+                <button id="refreshDashboard" class="btn btn-primary">
+                    🔄 Atualizar
+                </button>
+                <span class="last-updated" id="lastUpdated">
+                    Carregando...
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="dashboard-nav">
+        <div class="nav-items">
+            <button class="nav-item active" onclick="navigateToModule('dashboard')">
+                📊 Dashboard
+            </button>
+            <button class="nav-item" onclick="navigateToModule('students')">
+                👥 Alunos
+            </button>
+            <button class="nav-item" onclick="navigateToModule('courses')">
+                📚 Cursos
+            </button>
+            <button class="nav-item" onclick="navigateToModule('attendance')">
+                📅 Frequência
+            </button>
+            <button class="nav-item" onclick="navigateToModule('financial')">
+                💰 Financeiro
+            </button>
+        </div>
+    </div>
+
+    <!-- Metrics Overview -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon">👥</div>
+            <div class="metric-content">
+                <div class="metric-value" id="totalStudents">--</div>
+                <div class="metric-label">Total de Alunos</div>
+                <div class="metric-change" id="studentsChange">...</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">✅</div>
+            <div class="metric-content">
+                <div class="metric-value" id="activeStudents">--</div>
+                <div class="metric-label">Alunos Ativos</div>
+                <div class="metric-change" id="activeChange">...</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">📚</div>
+            <div class="metric-content">
+                <div class="metric-value" id="totalCourses">--</div>
+                <div class="metric-label">Cursos Disponíveis</div>
+                <div class="metric-change" id="coursesChange">...</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">📅</div>
+            <div class="metric-content">
+                <div class="metric-value" id="todayAttendances">--</div>
+                <div class="metric-label">Presenças Hoje</div>
+                <div class="metric-change" id="attendanceChange">...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>⚡ Ações Rápidas</h3>
+        <div class="actions-grid">
+            <button class="action-btn" onclick="navigateToModule('students')" data-action="new-student">
+                <span class="action-icon">👤</span>
+                <span class="action-text">Novo Aluno</span>
+            </button>
+            <button class="action-btn" onclick="navigateToModule('attendance')" data-action="register-attendance">
+                <span class="action-icon">✅</span>
+                <span class="action-text">Registrar Presença</span>
+            </button>
+            <button class="action-btn" onclick="navigateToModule('financial')" data-action="new-payment">
+                <span class="action-icon">💳</span>
+                <span class="action-text">Novo Pagamento</span>
+            </button>
+            <button class="action-btn" onclick="navigateToModule('reporting')" data-action="reports">
+                <span class="action-icon">📊</span>
+                <span class="action-text">Relatórios</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h3>📈 Atividade Recente</h3>
+        <div id="activityList" class="activity-list">
+            <!-- Activity items will be loaded by JavaScript -->
+            <div class="activity-loading">
+                <div class="loading-spinner"></div>
+                <span>Carregando atividades...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="system-status">
+        <h3>🔧 Status do Sistema</h3>
+        <div class="status-grid">
+            <div class="status-item">
+                <span class="status-indicator" id="apiStatus">🔴</span>
+                <span class="status-label">API Status</span>
+                <span class="status-value" id="apiStatusText">Verificando...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator" id="dbStatus">🔴</span>
+                <span class="status-label">Database</span>
+                <span class="status-value" id="dbStatusText">Verificando...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-indicator" id="moduleStatus">🔴</span>
+                <span class="status-label">Módulos</span>
+                <span class="status-value" id="moduleStatusText">Verificando...</span>
+            </div>
+        </div>
+    </div>
+</div>

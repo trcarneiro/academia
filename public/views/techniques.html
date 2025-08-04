@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Técnicas - Krav Academy</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/modules/techniques.css">
+    
+    <style>
+        .techniques-isolated {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .techniques-header {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-button:hover {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .techniques-header h1 {
+            color: #F8FAFC;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .primary-button {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .primary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3B82F6;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #94A3B8;
+            font-size: 0.875rem;
+        }
+        
+        .filters-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-input, .filter-select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #F8FAFC;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+        
+        .search-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .techniques-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .technique-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .technique-card:hover {
+            border-color: #3B82F6;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+        }
+        
+        .technique-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .technique-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #F8FAFC;
+            margin: 0;
+        }
+        
+        .difficulty-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .difficulty-1 { background: #10B981; color: white; }
+        .difficulty-2 { background: #F59E0B; color: white; }
+        .difficulty-3 { background: #EF4444; color: white; }
+        .difficulty-4 { background: #8B5CF6; color: white; }
+        .difficulty-5 { background: #DC2626; color: white; }
+        
+        .technique-category {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .technique-description {
+            color: #94A3B8;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .technique-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        
+        .action-button {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-button:hover {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .action-button.delete-button {
+            border-color: #EF4444;
+            color: #EF4444;
+        }
+        
+        .action-button.delete-button:hover {
+            background: #EF4444;
+            color: white;
+        }
+        
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            color: #94A3B8;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            text-align: center;
+            color: #94A3B8;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            color: #F8FAFC;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="techniques-isolated">
+    <!-- Header -->
+    <header class="techniques-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="back-button" onclick="showDashboard()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <h1>🥋 Banco de Técnicas</h1>
+            </div>
+            <button class="primary-button" onclick="openTechniqueEditor()">
+                <span>+</span>
+                <span>Nova Técnica</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🥋</div>
+            <div class="stat-value" id="totalTechniques">0</div>
+            <div class="stat-label">Total de Técnicas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-value" id="basicTechniques">0</div>
+            <div class="stat-label">Básicas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🟡</div>
+            <div class="stat-value" id="intermediateTechniques">0</div>
+            <div class="stat-label">Intermediárias</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔴</div>
+            <div class="stat-value" id="advancedTechniques">0</div>
+            <div class="stat-label">Avançadas</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <input type="text" id="techniqueSearch" placeholder="🔍 Buscar técnicas..." class="search-input">
+        
+        <select id="categoryFilter" class="filter-select">
+            <option value="">Todas as Categorias</option>
+            <option value="DEFENSE">Defesa</option>
+            <option value="ATTACK">Ataque</option>
+            <option value="GRAPPLING">Grappling</option>
+            <option value="STRIKING">Striking</option>
+            <option value="CONDITIONING">Condicionamento</option>
+        </select>
+        
+        <select id="difficultyFilter" class="filter-select">
+            <option value="">Todas as Dificuldades</option>
+            <option value="1">Nível 1 - Básico</option>
+            <option value="2">Nível 2 - Intermediário</option>
+            <option value="3">Nível 3 - Avançado</option>
+            <option value="4">Nível 4 - Expert</option>
+            <option value="5">Nível 5 - Master</option>
+        </select>
+        
+        <button class="primary-button" onclick="clearFilters()">
+            🔄 Limpar Filtros
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-container">
+        <div class="spinner"></div>
+        <p>Carregando técnicas...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">🥋</div>
+        <h3>Nenhuma técnica encontrada</h3>
+        <p>Comece criando sua primeira técnica para o banco de posições</p>
+        <button class="primary-button" onclick="openTechniqueEditor()">
+            Criar Primeira Técnica
+        </button>
+    </div>
+
+    <!-- Techniques Container -->
+    <div id="techniquesContainer" class="techniques-container" style="display: none;">
+        <!-- Techniques will be loaded here -->
+    </div>
+
+    <!-- Script -->
+    <script>
+        class TechniquesModule {
+            constructor() {
+                this.techniques = [];
+                this.filteredTechniques = [];
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                await this.loadTechniques();
+            }
+
+            setupEventListeners() {
+                // Search
+                document.getElementById('techniqueSearch').addEventListener('input', (e) => {
+                    this.filterTechniques();
+                });
+
+                // Category filter
+                document.getElementById('categoryFilter').addEventListener('change', (e) => {
+                    this.filterTechniques();
+                });
+
+                // Difficulty filter
+                document.getElementById('difficultyFilter').addEventListener('change', (e) => {
+                    this.filterTechniques();
+                });
+            }
+
+            async loadTechniques() {
+                const loadingState = document.getElementById('loadingState');
+                const emptyState = document.getElementById('emptyState');
+                const container = document.getElementById('techniquesContainer');
+
+                try {
+                    loadingState.style.display = 'flex';
+                    
+                    const response = await fetch('/api/techniques');
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error(data.error || 'Erro ao carregar técnicas');
+                    }
+
+                    this.techniques = data.data || [];
+                    this.filteredTechniques = [...this.techniques];
+                    
+                    this.updateStats();
+                    
+                    if (this.techniques.length === 0) {
+                        loadingState.style.display = 'none';
+                        emptyState.style.display = 'flex';
+                        container.style.display = 'none';
+                        return;
+                    }
+
+                    this.renderTechniques();
+                    
+                    loadingState.style.display = 'none';
+                    emptyState.style.display = 'none';
+                    container.style.display = 'grid';
+                    
+                } catch (error) {
+                    console.error('Error loading techniques:', error);
+                    loadingState.style.display = 'none';
+                    emptyState.style.display = 'flex';
+                    container.style.display = 'none';
+                }
+            }
+
+            updateStats() {
+                document.getElementById('totalTechniques').textContent = this.techniques.length;
+                document.getElementById('basicTechniques').textContent = 
+                    this.techniques.filter(t => t.difficulty === 1).length;
+                document.getElementById('intermediateTechniques').textContent = 
+                    this.techniques.filter(t => t.difficulty >= 2 && t.difficulty <= 3).length;
+                document.getElementById('advancedTechniques').textContent = 
+                    this.techniques.filter(t => t.difficulty >= 4).length;
+            }
+
+            filterTechniques() {
+                const search = document.getElementById('techniqueSearch').value.toLowerCase();
+                const category = document.getElementById('categoryFilter').value;
+                const difficulty = document.getElementById('difficultyFilter').value;
+
+                this.filteredTechniques = this.techniques.filter(technique => {
+                    const matchesSearch = !search || 
+                        technique.name.toLowerCase().includes(search) ||
+                        (technique.description && technique.description.toLowerCase().includes(search));
+                    
+                    const matchesCategory = !category || technique.category === category;
+                    const matchesDifficulty = !difficulty || technique.difficulty == difficulty;
+
+                    return matchesSearch && matchesCategory && matchesDifficulty;
+                });
+
+                this.renderTechniques();
+            }
+
+            renderTechniques() {
+                const container = document.getElementById('techniquesContainer');
+                container.innerHTML = '';
+
+                this.filteredTechniques.forEach(technique => {
+                    const card = this.createTechniqueCard(technique);
+                    container.appendChild(card);
+                });
+            }
+
+            createTechniqueCard(technique) {
+                const card = document.createElement('div');
+                card.className = 'technique-card';
+                card.setAttribute('data-id', technique.id);
+
+                const categoryLabels = {
+                    'DEFENSE': 'Defesa',
+                    'ATTACK': 'Ataque', 
+                    'GRAPPLING': 'Grappling',
+                    'STRIKING': 'Striking',
+                    'CONDITIONING': 'Condicionamento'
+                };
+
+                card.innerHTML = `
+                    <div class="technique-header">
+                        <h3 class="technique-title">${this.escapeHtml(technique.name)}</h3>
+                        <span class="difficulty-badge difficulty-${technique.difficulty}">
+                            Nível ${technique.difficulty}
+                        </span>
+                    </div>
+                    <div class="technique-category">${categoryLabels[technique.category] || technique.category}</div>
+                    <p class="technique-description">${this.escapeHtml(technique.description || 'Sem descrição')}</p>
+                    <div class="technique-actions">
+                        <button class="action-button" onclick="editTechnique('${technique.id}')" title="Editar">
+                            ✏️
+                        </button>
+                        <button class="action-button delete-button" onclick="deleteTechnique('${technique.id}')" title="Deletar">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+
+                // Double click to edit
+                card.addEventListener('dblclick', () => {
+                    this.editTechnique(technique.id);
+                });
+
+                return card;
+            }
+
+            editTechnique(id) {
+                window.location.href = `/views/technique-editor.html?id=${id}`;
+            }
+
+            async deleteTechnique(id) {
+                if (!confirm('Tem certeza que deseja deletar esta técnica?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/techniques/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        await this.loadTechniques();
+                    } else {
+                        alert(data.error || 'Erro ao deletar técnica');
+                    }
+                } catch (error) {
+                    console.error('Error deleting technique:', error);
+                    alert('Erro ao deletar técnica');
+                }
+            }
+
+            clearFilters() {
+                document.getElementById('techniqueSearch').value = '';
+                document.getElementById('categoryFilter').value = '';
+                document.getElementById('difficultyFilter').value = '';
+                this.filterTechniques();
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Global functions
+        function openTechniqueEditor() {
+            window.location.href = '/views/technique-editor.html';
+        }
+
+        function editTechnique(id) {
+            window.location.href = `/views/technique-editor.html?id=${id}`;
+        }
+
+        function deleteTechnique(id) {
+            if (window.techniquesModule) {
+                window.techniquesModule.deleteTechnique(id);
+            }
+        }
+
+        function clearFilters() {
+            if (window.techniquesModule) {
+                window.techniquesModule.clearFilters();
+            }
+        }
+
+        // Initialize module
+        document.addEventListener('DOMContentLoaded', () => {
+            window.techniquesModule = new TechniquesModule();
+        });
+    </script>
+</body>
+</html>

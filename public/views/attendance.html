@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 Controle de Presença - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/attendance.css">
+</head>
+<body>
+    <div class="attendance-isolated">
+        <!-- Attendance Header -->
+        <div class="attendance-header">
+            <h3>📋 Controle de Presença</h3>
+            <div class="attendance-filters">
+                <button class="attendance-filter active" data-filter="all">Todos</button>
+                <button class="attendance-filter" data-filter="present">Presentes</button>
+                <button class="attendance-filter" data-filter="absent">Ausentes</button>
+            </div>
+        </div>
+
+        <!-- Attendance Stats -->
+        <div class="attendance-stats">
+            <div class="stat-card present">
+                <div class="stat-value" id="present-count">0</div>
+                <div class="stat-label">Presentes</div>
+            </div>
+            <div class="stat-card absent">
+                <div class="stat-value" id="absent-count">0</div>
+                <div class="stat-label">Ausentes</div>
+            </div>
+            <div class="stat-card rate">
+                <div class="stat-value" id="attendance-rate">0%</div>
+                <div class="stat-label">Taxa de Presença</div>
+            </div>
+        </div>
+
+        <!-- Attendance Actions -->
+        <div class="attendance-actions">
+            <button class="btn btn-primary" onclick="openCheckInModal()">
+                ➕ Registrar Presença
+            </button>
+            <button class="btn btn-secondary" onclick="exportAttendance()">
+                📊 Exportar Dados
+            </button>
+            <button class="btn btn-secondary" onclick="window.history.back()">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- Check-in Form -->
+        <div class="checkin-form" id="checkinForm" style="display: none;">
+            <h3>✅ Registrar Presença</h3>
+            <form id="checkInForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="studentId">Aluno</label>
+                        <select id="studentId" class="form-control" required>
+                            <option value="">Selecione um aluno</option>
+                            <!-- Options will be populated by the module -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="attendanceDate">Data</label>
+                        <input type="date" id="attendanceDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="attendanceTime">Horário</label>
+                        <input type="time" id="attendanceTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="attendanceStatus">Status</label>
+                        <select id="attendanceStatus" class="form-control" required>
+                            <option value="present">Presente</option>
+                            <option value="absent">Ausente</option>
+                            <option value="late">Atrasado</option>
+                            <option value="justified">Justificado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="attendanceNotes">Observações</label>
+                    <textarea id="attendanceNotes" class="form-control" rows="3" placeholder="Observações opcionais..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">✅ Registrar</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelCheckIn()">❌ Cancelar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Attendance Content -->
+        <div id="attendance-container">
+            <!-- Loading state -->
+            <div class="attendance-loading">
+                <div class="loading-spinner">⏳</div>
+                <p>Carregando dados de presença...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Module -->
+    <script src="/js/modules/attendance.js"></script>
+    <script>
+        // Initialize attendance when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📋 Attendance page loaded');
+            
+            // Set current date and time
+            const now = new Date();
+            const dateInput = document.getElementById('attendanceDate');
+            const timeInput = document.getElementById('attendanceTime');
+            
+            if (dateInput) {
+                dateInput.value = now.toISOString().split('T')[0];
+            }
+            
+            if (timeInput) {
+                timeInput.value = now.toTimeString().split(' ')[0].substring(0, 5);
+            }
+            
+            // Load attendance data if function exists
+            if (typeof loadAttendance === 'function') {
+                loadAttendance();
+            }
+            
+            // Load students for dropdown
+            loadStudentsForDropdown();
+        });
+        
+        function openCheckInModal() {
+            const form = document.getElementById('checkinForm');
+            if (form) {
+                form.style.display = 'block';
+                form.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        function cancelCheckIn() {
+            const form = document.getElementById('checkinForm');
+            if (form) {
+                form.style.display = 'none';
+                form.reset();
+            }
+        }
+        
+        async function loadStudentsForDropdown() {
+            try {
+                const response = await fetch('/api/students');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const select = document.getElementById('studentId');
+                        if (select) {
+                            select.innerHTML = '<option value="">Selecione um aluno</option>';
+                            result.data.forEach(student => {
+                                const option = document.createElement('option');
+                                option.value = student.id;
+                                option.textContent = `${student.nome} (${student.id})`;
+                                select.appendChild(option);
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+                // Add fallback options
+                const select = document.getElementById('studentId');
+                if (select) {
+                    select.innerHTML = `
+                        <option value="">Selecione um aluno</option>
+                        <option value="KMA0001">Maria Silva (KMA0001)</option>
+                        <option value="KMA0002">João Santos (KMA0002)</option>
+                        <option value="KMA0003">Ana Costa (KMA0003)</option>
+                    `;
+                }
+            }
+        }
+        
+        // Handle check-in form submission
+        document.getElementById('checkInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const attendanceRecord = {
+                studentId: formData.get('studentId') || document.getElementById('studentId').value,
+                date: `${formData.get('attendanceDate') || document.getElementById('attendanceDate').value}T${formData.get('attendanceTime') || document.getElementById('attendanceTime').value}:00.000Z`,
+                status: formData.get('attendanceStatus') || document.getElementById('attendanceStatus').value,
+                notes: formData.get('attendanceNotes') || document.getElementById('attendanceNotes').value
+            };
+            
+            if (typeof submitAttendance === 'function') {
+                submitAttendance(attendanceRecord);
+            }
+            
+            // Hide form after submission
+            cancelCheckIn();
+        });
+    </script>
+</body>
+</html>

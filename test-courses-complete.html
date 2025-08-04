@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Módulo Cursos</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/core/reset.css">
+    <link rel="stylesheet" href="/css/core/variables.css">
+    <link rel="stylesheet" href="/css/core/dashboard.css">
+    
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="/css/modules/courses.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Load courses view -->
+        <div id="coursesView"></div>
+    </div>
+
+    <script>
+        // Load the courses HTML fragment
+        fetch('/views/courses.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('coursesView').innerHTML = html;
+                
+                // Load and initialize the courses module
+                const script = document.createElement('script');
+                script.src = '/js/modules/courses.js';
+                document.head.appendChild(script);
+            })
+            .catch(error => {
+                console.error('Error loading courses view:', error);
+            });
+    </script>
+</body>
+</html>

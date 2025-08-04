@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 Avaliações - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/evaluations.css">
+</head>
+<body>
+    <div class="evaluations-isolated">
+        <!-- Evaluations Header -->
+        <div class="evaluations-header">
+            <h2>📝 Sistema de Avaliações</h2>
+            <div class="evaluations-actions">
+                <button class="btn btn-primary" onclick="createEvaluation()">
+                    ➕ Nova Avaliação
+                </button>
+                <button class="btn btn-secondary" onclick="exportEvaluations()">
+                    📊 Exportar Dados
+                </button>
+                <button class="btn btn-secondary" onclick="window.history.back()">
+                    ← Voltar
+                </button>
+            </div>
+        </div>
+
+        <!-- Content will be populated by the module -->
+        <div id="evaluations-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 200px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 150px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 100px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Evaluations Module -->
+    <script src="/js/modules/evaluations.js"></script>
+    <script>
+        // Initialize evaluations when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadEvaluations === 'function') {
+                loadEvaluations();
+            }
+        });
+    </script>
+</body>
+</html>

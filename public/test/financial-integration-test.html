@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Integrado - Módulo Financeiro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 1rem;
+        }
+        .test-result {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        .success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+        }
+        .mock-data {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .test-card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0.25rem;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste Integrado - Módulo Financeiro</h1>
+        
+        <div class="test-section">
+            <h2>📊 Status dos Testes</h2>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-section">
+                <h2>🔍 Testes de Frontend</h2>
+                <div id="frontend-tests"></div>
+                <button onclick="runFrontendTests()">Executar Testes Frontend</button>
+            </div>
+
+            <div class="test-section">
+                <h2>🔗 Testes de Backend</h2>
+                <div id="backend-tests"></div>
+                <button onclick="runBackendTests()">Executar Testes Backend</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Testes de Integração</h2>
+            <div id="integration-tests"></div>
+            <button onclick="runIntegrationTests()">Executar Testes de Integração</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Mock de Dados</h2>
+            <div class="mock-data" id="mock-data-display">
+                // Mock de dados para testes
+                const mockStudent = {
+                    id: 'test-student-001',
+                    name: 'João Silva',
+                    email: 'joao@test.com',
+                    category: 'ADULT'
+                };
+                
+                const mockPlans = [
+                    {
+                        id: 'plan-001',
+                        name: 'Plano Básico',
+                        price: 99.99,
+                        billingType: 'MONTHLY',
+                        category: 'ADULT'
+                    },
+                    {
+                        id: 'plan-002',
+                        name: 'Plano Premium',
+                        price: 199.99,
+                        billingType: 'MONTHLY',
+                        category: 'ADULT'
+                    }
+                ];
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Ferramentas de Teste</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="createTestStudent()">Criar Aluno de Teste</button>
+                <button onclick="createTestPlans()">Criar Planos de Teste</button>
+                <button onclick="testEnrollment()">Testar Inscrição</button>
+                <button onclick="runAllTests()">Executar Todos os Testes</button>
+                <button onclick="clearTestData()">Limpar Dados de Teste</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function addTestResult(message, type = 'success', section = 'test-results') {
+            const resultsDiv = document.getElementById(section);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(div);
+            testResults.push({ message, type, timestamp: new Date() });
+        }
+
+        async function runFrontendTests() {
+            const container = document.getElementById('frontend-tests');
+            container.innerHTML = '';
+            
+            addTestResult('🧪 Iniciando testes de frontend...', 'success', 'frontend-tests');
+            
+            // Test 1: Verificar se FinancialTab está definido
+            if (typeof FinancialTab !== 'undefined') {
+                addTestResult('✅ Módulo FinancialTab está definido', 'success', 'frontend-tests');
+            } else {
+                addTestResult('❌ Módulo FinancialTab não está definido', 'error', 'frontend-tests');
+            }
+            
+            // Test 2: Verificar métodos do FinancialTab
+            if (FinancialTab && typeof FinancialTab.render === 'function') {
+                addTestResult('✅ Método FinancialTab.render() está implementado', 'success', 'frontend-tests');
+            } else {
+                addTestResult('❌ Método FinancialTab.render() não encontrado', 'error', 'frontend-tests');
+            }
+            
+            if (FinancialTab && typeof FinancialTab.renderPlansList === 'function') {
+                addTestResult('✅ Método FinancialTab.renderPlansList() está implementado', 'success', 'frontend-tests');
+            } else {
+                addTestResult('❌ Método FinancialTab.renderPlansList() não encontrado', 'error', 'frontend-tests');
+            }
+            
+            if (FinancialTab && typeof FinancialTab.enrollInPlan === 'function') {
+                addTestResult('✅ Método FinancialTab.enrollInPlan() está implementado', 'success', 'frontend-tests');
+            } else {
+                addTestResult('❌ Método FinancialTab.enrollInPlan() não encontrado', 'error', 'frontend-tests');
+            }
+            
+            // Test 3: Verificar integração com API
+            try {
+                const response = await fetch('/api/billing-plans');
+                if (response.ok) {
+                    addTestResult('✅ API de planos está acessível', 'success', 'frontend-tests');
+                } else {
+                    addTestResult(`❌ API de planos retornou erro: ${response.status}`, 'error', 'frontend-tests');
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao conectar com API de planos: ${error.message}`, 'error', 'frontend-tests');
+            }
+            
+            addTestResult('✅ Testes de frontend concluídos', 'success', 'frontend-tests');
+        }
+
+        async function runBackendTests() {
+            const container = document.getElementById('backend-tests');
+            container.innerHTML = '';
+            
+            addTestResult('🧪 Iniciando testes de backend...', 'success', 'backend-tests');
+            
+            // Test 1: Verificar endpoint de planos
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addTestResult('✅ GET /api/billing-plans está funcionando', 'success', 'backend-tests');
+                    addTestResult(`📊 Encontrados ${data.data.length} planos`, 'success', 'backend-tests');
+                } else {
+                    addTestResult(`❌ Erro no endpoint de planos: ${data.error || 'Erro desconhecido'}`, 'error', 'backend-tests');
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao testar endpoint de planos: ${error.message}`, 'error', 'backend-tests');
+            }
+            
+            // Test 2: Verificar endpoint de assinaturas
+            try {
+                const response = await fetch('/api/students/test-student-001/subscriptions');
+                if (response.ok || response.status === 404) {
+                    addTestResult('✅ Endpoint de assinaturas está acessível', 'success', 'backend-tests');
+                } else {
+                    addTestResult(`❌ Erro no endpoint de assinaturas: ${response.status}`, 'error', 'backend-tests');
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao testar endpoint de assinaturas: ${error.message}`, 'error', 'backend-tests');
+            }
+            
+            // Test 3: Verificar estrutura dos dados
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    const plan = data.data[0];
+                    const requiredFields = ['id', 'name', 'price', 'billingType'];
+                    const missingFields = requiredFields.filter(field => !plan.hasOwnProperty(field));
+                    
+                    if (missingFields.length === 0) {
+                        addTestResult('✅ Estrutura dos dados de planos está correta', 'success', 'backend-tests');
+                    } else {
+                        addTestResult(`❌ Campos faltando nos dados de planos: ${missingFields.join(', ')}`, 'error', 'backend-tests');
+                    }
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao verificar estrutura dos dados: ${error.message}`, 'error', 'backend-tests');
+            }
+            
+            addTestResult('✅ Testes de backend concluídos', 'success', 'backend-tests');
+        }
+
+        async function runIntegrationTests() {
+            const container = document.getElementById('integration-tests');
+            container.innerHTML = '';
+            
+            addTestResult('🧪 Iniciando testes de integração...', 'success', 'integration-tests');
+            
+            // Test 1: Fluxo completo de inscrição
+            try {
+                // 1. Criar aluno de teste
+                const studentResponse = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: 'Teste',
+                        lastName: 'Integração',
+                        email: 'teste.integracao@example.com',
+                        category: 'ADULT'
+                    })
+                });
+                
+                if (studentResponse.ok) {
+                    const studentData = await studentResponse.json();
+                    const studentId = studentData.data.id;
+                    
+                    addTestResult(`✅ Aluno de teste criado: ${studentId}`, 'success', 'integration-tests');
+                    
+                    // 2. Buscar planos disponíveis
+                    const plansResponse = await fetch('/api/billing-plans');
+                    const plansData = await plansResponse.json();
+                    
+                    if (plansData.success && plansData.data.length > 0) {
+                        const planId = plansData.data[0].id;
+                        addTestResult(`✅ Plano encontrado para inscrição: ${planId}`, 'success', 'integration-tests');
+                        
+                        // 3. Criar assinatura
+                        const subscriptionResponse = await fetch(`/api/students/${studentId}/subscriptions`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                planId: planId,
+                                startDate: new Date().toISOString()
+                            })
+                        });
+                        
+                        if (subscriptionResponse.ok) {
+                            addTestResult('✅ Inscrição realizada com sucesso', 'success', 'integration-tests');
+                            
+                            // 4. Verificar assinatura criada
+                            const subscriptionsResponse = await fetch(`/api/students/${studentId}/subscriptions`);
+                            const subscriptionsData = await subscriptionsResponse.json();
+                            
+                            if (subscriptionsData.success && subscriptionsData.data.length > 0) {
+                                addTestResult('✅ Assinatura verificada com sucesso', 'success', 'integration-tests');
+                            }
+                        } else {
+                            addTestResult('❌ Erro ao criar assinatura', 'error', 'integration-tests');
+                        }
+                    }
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro no teste de integração: ${error.message}`, 'error', 'integration-tests');
+            }
+            
+            addTestResult('✅ Testes de integração concluídos', 'success', 'integration-tests');
+        }
+
+        async function createTestStudent() {
+            addTestResult('👤 Criando aluno de teste...', 'warning');
+            
+            try {
+                const response = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: 'Aluno',
+                        lastName: 'Teste',
+                        email: 'aluno.teste@example.com',
+                        category: 'ADULT',
+                        phone: '(11) 99999-9999'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addTestResult(`✅ Aluno de teste criado: ${data.data.id}`, 'success');
+                    localStorage.setItem('testStudentId', data.data.id);
+                } else {
+                    addTestResult(`❌ Erro ao criar aluno: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao criar aluno: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestPlans() {
+            addTestResult('📋 Criando planos de teste...', 'warning');
+            
+            // Note: This would typically be done via admin interface or seed data
+            addTestResult('⚠️ Planos devem ser criados via interface administrativa ou seed data', 'warning');
+            
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    addTestResult(`✅ Planos já existentes: ${data.data.length}`, 'success');
+                } else {
+                    addTestResult('❌ Nenhum plano encontrado. Execute o seed data.', 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao verificar planos: ${error.message}`, 'error');
+            }
+        }
+
+        async function testEnrollment() {
+            const studentId = localStorage.getItem('testStudentId');
+            if (!studentId) {
+                addTestResult('❌ Crie um aluno de teste primeiro', 'error');
+                return;
+            }
+            
+            addTestResult('🎯 Testando inscrição em plano...', 'warning');
+            
+            try {
+                const plansResponse = await fetch('/api/billing-plans');
+                const plansData = await plansResponse.json();
+                
+                if (plansData.success && plansData.data.length > 0) {
+                    const planId = plansData.data[0].id;
+                    
+                    const response = await fetch(`/api/students/${studentId}/subscriptions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            planId: planId,
+                            startDate: new Date().toISOString()
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        addTestResult('✅ Inscrição realizada com sucesso', 'success');
+                    } else {
+                        addTestResult(`❌ Erro na inscrição: ${data.error}`, 'error');
+                    }
+                }
+            } catch (error) {
+                addTestResult(`❌ Erro ao testar inscrição: ${error.message}`, 'error');
+            }
+        }
+
+        async function runAllTests() {
+            document.querySelectorAll('[id$="-tests"]').forEach(el => el.innerHTML = '');
+            document.getElementById('test-results').innerHTML = '';
+            
+            addTestResult('🚀 Executando todos os testes...', 'warning');
+            
+            await runFrontendTests();
+            await runBackendTests();
+            await runIntegrationTests();
+            
+            addTestResult('✅ Todos os testes concluídos', 'success');
+        }
+
+        function clearTestData() {
+            localStorage.removeItem('testStudentId');
+            addTestResult('🧹 Dados de teste limpos', 'success');
+        }
+
+        // Executar testes ao carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            addTestResult('🧪 Teste de integração financeira carregado', 'success');
+        });
+    </script>
+</body>
+</html>

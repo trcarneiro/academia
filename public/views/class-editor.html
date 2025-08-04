@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Turma - Academia</title>
+    <link rel="stylesheet" href="../css/classes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-button:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="classes.html" class="back-button">
+        <span>←</span> Voltar às Turmas
+    </a>
+
+    <!-- Container Principal -->
+    <div class="classes-isolated-container">
+        <!-- Page Header -->
+        <div class="classes-isolated-page-header">
+            <div class="classes-isolated-header-content">
+                <div class="classes-isolated-header-info">
+                    <h1 class="classes-isolated-title">🏫 <span id="editorTitle">Nova Turma</span></h1>
+                    <p class="classes-isolated-subtitle">Configure horários, arte marcial e cursos inclusos</p>
+                </div>
+                <div class="classes-isolated-header-actions">
+                    <button class="classes-isolated-btn classes-isolated-btn-secondary" onclick="cancelEdit()">
+                        <span>✕</span> Cancelar
+                    </button>
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="saveClass()">
+                        <span>💾</span> Salvar Turma
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="classes-isolated-data-table">
+            <form id="classForm" class="classes-isolated-form">
+                <input type="hidden" id="classId">
+                
+                <!-- Basic Information -->
+                <div class="classes-isolated-form-section">
+                    <h3 class="classes-isolated-section-title">📋 Informações Básicas</h3>
+                    <div class="classes-isolated-form-grid">
+                        <div class="classes-isolated-form-group">
+                            <label for="className" class="classes-isolated-form-label">Nome da Turma *</label>
+                            <input type="text" id="className" required class="classes-isolated-form-input" placeholder="Ex: Turma 3">
+                        </div>
+                        <div class="classes-isolated-form-group">
+                            <label for="classMartialArt" class="classes-isolated-form-label">Arte Marcial *</label>
+                            <select id="classMartialArt" required class="classes-isolated-form-select">
+                                <option value="">Selecione a arte marcial</option>
+                                <option value="KRAV_MAGA">🥊 Krav Maga</option>
+                                <option value="JIU_JITSU">🥋 Jiu-Jitsu</option>
+                                <option value="BOXING">👊 Boxe</option>
+                                <option value="MUAY_THAI">🦵 Muay Thai</option>
+                                <option value="KARATE">🥋 Karatê</option>
+                                <option value="TAEKWONDO">🦵 Taekwondo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="classes-isolated-form-grid">
+                        <div class="classes-isolated-form-group">
+                            <label for="classCapacity" class="classes-isolated-form-label">Capacidade Máxima</label>
+                            <input type="number" id="classCapacity" value="20" min="5" max="50" class="classes-isolated-form-input">
+                        </div>
+                        <div class="classes-isolated-form-group">
+                            <label for="classInstructor" class="classes-isolated-form-label">Instrutor Principal</label>
+                            <input type="text" id="classInstructor" class="classes-isolated-form-input" placeholder="Nome do instrutor">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Configuration -->
+                <div class="classes-isolated-form-section">
+                    <h3 class="classes-isolated-section-title">⏰ Configuração de Horários</h3>
+                    <div class="classes-isolated-schedule-grid">
+                        <div class="classes-isolated-schedule-card classes-isolated-card-blue">
+                            <h4 class="classes-isolated-card-title">Dias da Semana</h4>
+                            <div class="classes-isolated-checkbox-grid">
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classMon" class="classes-isolated-checkbox">
+                                    Segunda
+                                </label>
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classTue" class="classes-isolated-checkbox">
+                                    Terça
+                                </label>
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classWed" class="classes-isolated-checkbox">
+                                    Quarta
+                                </label>
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classThu" class="classes-isolated-checkbox">
+                                    Quinta
+                                </label>
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classFri" class="classes-isolated-checkbox">
+                                    Sexta
+                                </label>
+                                <label class="classes-isolated-checkbox-label">
+                                    <input type="checkbox" id="classSat" class="classes-isolated-checkbox">
+                                    Sábado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="classes-isolated-schedule-card classes-isolated-card-orange">
+                            <h4 class="classes-isolated-card-title">Horário</h4>
+                            <div class="classes-isolated-time-grid">
+                                <div class="classes-isolated-form-group">
+                                    <label class="classes-isolated-form-label">Início:</label>
+                                    <input type="time" id="classStartTime" value="18:00" class="classes-isolated-form-input">
+                                </div>
+                                <div class="classes-isolated-form-group">
+                                    <label class="classes-isolated-form-label">Fim:</label>
+                                    <input type="time" id="classEndTime" value="19:00" class="classes-isolated-form-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="classes-isolated-schedule-card classes-isolated-card-purple">
+                            <h4 class="classes-isolated-card-title">Data de Início</h4>
+                            <div class="classes-isolated-date-grid">
+                                <div class="classes-isolated-form-group">
+                                    <input type="date" id="classStartDate" class="classes-isolated-form-input">
+                                </div>
+                                <div class="classes-isolated-form-group">
+                                    <label class="classes-isolated-form-label">Duração (semanas):</label>
+                                    <input type="number" id="classDuration" value="24" min="4" max="52" class="classes-isolated-form-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Courses and Belts Included -->
+                <div class="classes-isolated-form-section">
+                    <h3 class="classes-isolated-section-title">🥋 Cursos/Faixas Inclusos na Turma</h3>
+                    <div class="classes-isolated-info-card">
+                        <h4 class="classes-isolated-info-title">💡 Conceito de Turma Multi-Faixa</h4>
+                        <p class="classes-isolated-info-text">
+                            Uma turma pode ter alunos de diferentes faixas treinando simultaneamente. Cada faixa segue seu próprio cronograma de técnicas, mas compartilha o mesmo horário e instrutor.
+                        </p>
+                    </div>
+                    <div class="classes-isolated-courses-grid">
+                        <div class="classes-isolated-course-card classes-isolated-course-blue">
+                            <label class="classes-isolated-course-label">
+                                <input type="checkbox" id="includeBranca" checked class="classes-isolated-checkbox">
+                                <span class="classes-isolated-course-name">🤍 Faixa Branca - Defesa Pessoal 1</span>
+                            </label>
+                            <div class="classes-isolated-course-details">
+                                48 aulas • Técnicas básicas de autodefesa • Duração: 24 semanas
+                            </div>
+                        </div>
+                        <div class="classes-isolated-course-card classes-isolated-course-yellow">
+                            <label class="classes-isolated-course-label">
+                                <input type="checkbox" id="includeAmarela" class="classes-isolated-checkbox">
+                                <span class="classes-isolated-course-name">💛 Faixa Amarela - Combinações</span>
+                            </label>
+                            <div class="classes-isolated-course-details">
+                                36 aulas • Combinações de golpes • Duração: 18 semanas
+                            </div>
+                        </div>
+                        <div class="classes-isolated-course-card classes-isolated-course-orange">
+                            <label class="classes-isolated-course-label">
+                                <input type="checkbox" id="includeLaranja" class="classes-isolated-checkbox">
+                                <span class="classes-isolated-course-name">🧡 Faixa Laranja - Defesas Avançadas</span>
+                            </label>
+                            <div class="classes-isolated-course-details">
+                                40 aulas • Defesas contra armas • Duração: 20 semanas
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="classes-isolated-form-actions">
+                    <button type="button" onclick="deleteClass()" id="deleteClassBtn" class="classes-isolated-btn classes-isolated-btn-danger" style="display: none;">
+                        <span>🗑️</span> Deletar Turma
+                    </button>
+                    <div class="classes-isolated-action-group">
+                        <button type="button" onclick="cancelEdit()" class="classes-isolated-btn classes-isolated-btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="classes-isolated-btn classes-isolated-btn-primary">
+                            <span>💾</span> Salvar Turma
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Module -->
+    <script src="../js/modules/classes.js"></script>
+    <script>
+        // Initialize form based on URL parameters
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const classId = urlParams.get('id');
+            const mode = urlParams.get('mode');
+            
+            if (classId && mode === 'edit') {
+                document.getElementById('editorTitle').textContent = `Editar Turma ${classId}`;
+                document.getElementById('classId').value = classId;
+                document.getElementById('deleteClassBtn').style.display = 'block';
+                loadClassData(classId);
+            } else {
+                document.getElementById('editorTitle').textContent = 'Nova Turma';
+            }
+        });
+    </script>
+</body>
+</html>

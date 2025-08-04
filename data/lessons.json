@@ -1,0 +1,37 @@
+[
+  {
+    "id": "lesson-001",
+    "title": "Introdução ao Krav Maga",
+    "courseId": "krav-maga-basic",
+    "duration": 60,
+    "level": "beginner",
+    "objectives": [
+      "Conceitos básicos de Krav Maga",
+      "Postura e guarda"
+    ],
+    "content": "Aula introdutória sobre os fundamentos do Krav Maga",
+    "materials": [
+      "Kimono",
+      "Protetor bucal"
+    ],
+    "active": true
+  },
+  {
+    "id": "lesson-002",
+    "title": "Defesa contra socos",
+    "courseId": "krav-maga-basic",
+    "duration": 90,
+    "level": "beginner",
+    "objectives": [
+      "Bloqueios básicos",
+      "Contra-ataques"
+    ],
+    "content": "Técnicas de defesa contra ataques de socos diretos",
+    "materials": [
+      "Kimono",
+      "Protetor bucal",
+      "Luvas"
+    ],
+    "active": true
+  }
+]

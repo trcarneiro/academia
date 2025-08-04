@@ -79,32 +79,7 @@ body {
             overflow-x: hidden;
         }
         
-        /* UX-Enhanced Dashboard Layout */
-        .dashboard-container {
-            display: grid;
-            grid-template-areas: 
-                "header header header"
-                "sidebar main widgets"
-                "sidebar main widgets";
-            grid-template-columns: 280px 1fr 320px;
-            grid-template-rows: 80px 1fr auto;
-            min-height: 100vh;
-            gap: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .dashboard-container.collapsed {
-            grid-template-columns: 80px 1fr 320px;
-        }
-        
-        .dashboard-container.mobile {
-            grid-template-areas: 
-                "header"
-                "main"
-                "widgets";
-            grid-template-columns: 1fr;
-            grid-template-rows: 80px 1fr auto;
-        }
+        /* Remove conflicting dashboard layout - handled in dashboard.css */
         
         /* UX-Enhanced Header */
         .dashboard-header {

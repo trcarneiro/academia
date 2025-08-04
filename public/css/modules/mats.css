@@ -1,0 +1,759 @@
+/* ==========================================
+   MATS MODULE - ISOLATED CSS
+   ========================================== */
+
+/* Mats Container */
+.mats-isolated {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Mats Header */
+.mats-isolated .mats-header {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mats-isolated .mats-header h2 {
+    color: #F8FAFC;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mats-isolated .mats-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Mats Stats */
+.mats-isolated .mats-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.mats-isolated .stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.mats-isolated .stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.mats-isolated .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #F59E0B;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .stat-value.active {
+    color: #F59E0B;
+}
+
+.mats-isolated .stat-value.completed {
+    color: #10B981;
+}
+
+.mats-isolated .stat-value.pending {
+    color: #EF4444;
+}
+
+.mats-isolated .stat-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Filters and Search */
+.mats-isolated .mats-filters {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.mats-isolated .filter-group,
+.mats-isolated .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mats-isolated .filter-group label,
+.mats-isolated .sort-group label {
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.mats-isolated .mat-filter,
+.mats-isolated .mat-sort {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #CBD5E1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.mats-isolated .mat-filter:hover,
+.mats-isolated .mat-sort:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.mats-isolated .mat-filter.active,
+.mats-isolated .mat-sort.active {
+    background: #F59E0B;
+    color: white;
+    border-color: #F59E0B;
+}
+
+.mats-isolated .search-group {
+    flex: 1;
+    max-width: 300px;
+}
+
+.mats-isolated .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #F8FAFC;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.mats-isolated .search-input::placeholder {
+    color: #94A3B8;
+}
+
+.mats-isolated .search-input:focus {
+    outline: none;
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* Mats Grid */
+.mats-isolated .mats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.mats-isolated .mat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.mats-isolated .mat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.mats-isolated .mat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.mats-isolated .mat-card.excellent::before {
+    background: linear-gradient(90deg, #10B981, #059669);
+}
+
+.mats-isolated .mat-card.good::before {
+    background: linear-gradient(90deg, #3B82F6, #2563EB);
+}
+
+.mats-isolated .mat-card.fair::before {
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.mats-isolated .mat-card.poor::before {
+    background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
+/* Mat Card Header */
+.mats-isolated .mat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mats-isolated .mat-info {
+    flex: 1;
+}
+
+.mats-isolated .mat-info h3 {
+    color: #F8FAFC;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mats-isolated .mat-location {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Condition Badge */
+.mats-isolated .condition-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.mats-isolated .condition-badge.excellent {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.mats-isolated .condition-badge.good {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+}
+
+.mats-isolated .condition-badge.fair {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.mats-isolated .condition-badge.poor {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+/* Mat Content */
+.mats-isolated .mat-content {
+    margin-bottom: 1.5rem;
+}
+
+.mats-isolated .mat-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.mats-isolated .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.mats-isolated .detail-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.mats-isolated .detail-value {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Mat Condition */
+.mats-isolated .mat-condition {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mats-isolated .condition-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .condition-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .condition-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.mats-isolated .condition-fill.excellent {
+    background: linear-gradient(90deg, #10B981, #059669);
+}
+
+.mats-isolated .condition-fill.good {
+    background: linear-gradient(90deg, #3B82F6, #2563EB);
+}
+
+.mats-isolated .condition-fill.fair {
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.mats-isolated .condition-fill.poor {
+    background: linear-gradient(90deg, #EF4444, #DC2626);
+}
+
+.mats-isolated .condition-text {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+/* Mat Maintenance */
+.mats-isolated .mat-maintenance {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mats-isolated .maintenance-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mats-isolated .maintenance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.mats-isolated .maintenance-label {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.mats-isolated .maintenance-value {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Mat Usage */
+.mats-isolated .mat-usage {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mats-isolated .usage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.mats-isolated .usage-hours {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.mats-isolated .usage-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+}
+
+.mats-isolated .usage-text {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+/* Mat Notes */
+.mats-isolated .mat-notes {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mats-isolated .notes-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .notes-content {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Mat Actions */
+.mats-isolated .mat-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.mats-isolated .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mats-isolated .btn:hover {
+    transform: translateY(-1px);
+}
+
+.mats-isolated .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.mats-isolated .btn-primary {
+    background: #F59E0B;
+    color: white;
+}
+
+.mats-isolated .btn-primary:hover {
+    background: #D97706;
+}
+
+.mats-isolated .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.mats-isolated .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.mats-isolated .btn-warning {
+    background: #F59E0B;
+    color: white;
+}
+
+.mats-isolated .btn-warning:hover {
+    background: #D97706;
+}
+
+.mats-isolated .btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.mats-isolated .btn-danger:hover {
+    background: #DC2626;
+}
+
+/* Empty State */
+.mats-isolated .mats-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.mats-isolated .mats-empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.mats-isolated .mats-empty-state h3 {
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .mats-empty-state p {
+    color: #94A3B8;
+    margin-bottom: 2rem;
+}
+
+/* Error State */
+.mats-isolated .mats-error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+}
+
+.mats-isolated .mats-error-state .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #EF4444;
+}
+
+.mats-isolated .mats-error-state h3 {
+    color: #EF4444;
+    margin-bottom: 0.5rem;
+}
+
+.mats-isolated .mats-error-state p {
+    color: #FCA5A5;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .mats-isolated {
+        padding: 0.5rem;
+    }
+    
+    .mats-isolated .mats-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .mats-isolated .mats-actions {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .mats-isolated .mats-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .mats-isolated .filter-group,
+    .mats-isolated .sort-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .mats-isolated .search-group {
+        max-width: none;
+    }
+    
+    .mats-isolated .mats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .mats-isolated .mat-card {
+        padding: 1.5rem;
+    }
+    
+    .mats-isolated .mat-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .mats-isolated .mat-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .mats-isolated .mat-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .mats-isolated .mat-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .mats-isolated .maintenance-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .mats-isolated .mats-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .mats-isolated .mat-card {
+        padding: 1rem;
+    }
+    
+    .mats-isolated .mat-info h3 {
+        font-size: 1.125rem;
+    }
+    
+    .mats-isolated .mat-details {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+}
+
+/* Theme Support */
+.theme-light .mats-isolated .mat-card,
+.theme-light .mats-isolated .mats-header,
+.theme-light .mats-isolated .mats-filters,
+.theme-light .mats-isolated .stat-card,
+.theme-light .mats-isolated .mat-condition,
+.theme-light .mats-isolated .mat-maintenance,
+.theme-light .mats-isolated .mat-usage,
+.theme-light .mats-isolated .mat-notes {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .mats-isolated .mat-info h3,
+.theme-light .mats-isolated .mats-header h2 {
+    color: #1F2937;
+}
+
+.theme-light .mats-isolated .detail-label,
+.theme-light .mats-isolated .condition-label,
+.theme-light .mats-isolated .maintenance-label,
+.theme-light .mats-isolated .notes-label {
+    color: #6B7280;
+}
+
+.theme-light .mats-isolated .detail-value,
+.theme-light .mats-isolated .maintenance-value {
+    color: #374151;
+}
+
+.theme-light .mats-isolated .mat-location,
+.theme-light .mats-isolated .condition-text,
+.theme-light .mats-isolated .usage-text,
+.theme-light .mats-isolated .notes-content {
+    color: #6B7280;
+}
+
+.theme-light .mats-isolated .condition-bar,
+.theme-light .mats-isolated .usage-bar {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .mats-isolated .search-input {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1F2937;
+}
+
+.theme-light .mats-isolated .search-input::placeholder {
+    color: #6B7280;
+}
+
+/* Accessibility */
+.mats-isolated .mat-card:focus-visible {
+    outline: 2px solid #F59E0B;
+    outline-offset: 2px;
+}
+
+.mats-isolated .btn:focus-visible {
+    outline: 2px solid #F59E0B;
+    outline-offset: 2px;
+}
+
+.mats-isolated .search-input:focus-visible {
+    outline: 2px solid #F59E0B;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .mats-isolated .mats-actions,
+    .mats-isolated .mat-actions {
+        display: none;
+    }
+    
+    .mats-isolated .mat-card {
+        background: white;
+        border: 1px solid #ccc;
+        color: black;
+        break-inside: avoid;
+    }
+    
+    .mats-isolated .condition-fill,
+    .mats-isolated .usage-fill {
+        background: #333 !important;
+    }
+    
+    .mats-isolated .mat-info h3 {
+        color: #000 !important;
+    }
+}

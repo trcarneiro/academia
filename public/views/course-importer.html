@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador de Cursos - Krav Academy</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    
+    <style>
+        .importer-isolated {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            background: #0F172A;
+        }
+        
+        .importer-header {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .importer-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6, #10B981);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-button:hover {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .importer-header h1 {
+            color: #F8FAFC;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .wizard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .wizard-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #64748B;
+            position: relative;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2rem;
+            height: 2px;
+            background: #334155;
+        }
+        
+        .step.active {
+            color: #3B82F6;
+        }
+        
+        .step.completed {
+            color: #10B981;
+        }
+        
+        .step.completed::after {
+            background: #10B981;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #334155;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .step.active .step-number {
+            background: #3B82F6;
+        }
+        
+        .step.completed .step-number {
+            background: #10B981;
+        }
+        
+        .wizard-content {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 3rem;
+            min-height: 500px;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .upload-zone {
+            border: 2px dashed #3B82F6;
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .upload-zone:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #2563EB;
+        }
+        
+        .upload-zone.dragover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #1D4ED8;
+        }
+        
+        .upload-zone input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #3B82F6;
+        }
+        
+        .upload-text {
+            font-size: 1.25rem;
+            color: #F8FAFC;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            color: #94A3B8;
+            font-size: 0.875rem;
+        }
+        
+        .file-info {
+            display: none;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #10B981;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .file-size {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        .parsing-results {
+            margin-top: 2rem;
+        }
+        
+        .parsed-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .parsed-section h3 {
+            color: #F8FAFC;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .lesson-preview {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lesson-title {
+            color: #3B82F6;
+            font-weight: 600;
+        }
+        
+        .lesson-duration {
+            color: #94A3B8;
+            font-size: 0.875rem;
+        }
+        
+        .lesson-objectives {
+            color: #E2E8F0;
+            font-size: 0.875rem;
+        }
+        
+        .course-metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metadata-field {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .metadata-field label {
+            display: block;
+            color: #94A3B8;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metadata-field input,
+        .metadata-field select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #F8FAFC;
+            font-size: 1rem;
+            padding: 0.25rem 0;
+        }
+        
+        .metadata-field input:focus,
+        .metadata-field select:focus {
+            outline: none;
+        }
+        
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #334155;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.2);
+            border: 1px solid #64748B;
+            color: #94A3B8;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.3);
+            color: #E2E8F0;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #F8FAFC;
+            max-width: 400px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+    </style>
+</head>
+<body class="importer-isolated">
+    <!-- Header -->
+    <header class="importer-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="back-button" onclick="showDashboard()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <h1>📚 Importador de Cursos</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Wizard Container -->
+    <div class="wizard-container">
+        <!-- Steps Indicator -->
+        <div class="wizard-steps">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Upload PDF</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Análise & Preview</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Configuração</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Importação</div>
+            </div>
+        </div>
+
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            <!-- Step 1: Upload PDF -->
+            <div class="step-content active" data-step="1">
+                <h2 style="color: #F8FAFC; margin-bottom: 2rem; text-align: center;">
+                    📄 Upload do Documento de Curso
+                </h2>
+                
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" id="pdfFile" accept=".pdf" onchange="handleFileSelect(this)">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Arraste seu PDF aqui ou clique para selecionar</div>
+                    <div class="upload-hint">
+                        Aceito: PDFs estruturados como "Agenda do Aluno Faixa Branca.pdf" (máx. 10MB)
+                    </div>
+                </div>
+                
+                <div class="file-info" id="fileInfo">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Analysis & Preview -->
+            <div class="step-content" data-step="2">
+                <h2 style="color: #F8FAFC; margin-bottom: 2rem; text-align: center;">
+                    🔍 Análise do Documento
+                </h2>
+                
+                <div id="analysisResults" class="parsing-results">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Step 3: Configuration -->
+            <div class="step-content" data-step="3">
+                <h2 style="color: #F8FAFC; margin-bottom: 2rem; text-align: center;">
+                    ⚙️ Configuração do Curso
+                </h2>
+                
+                <div class="course-metadata">
+                    <div class="metadata-field">
+                        <label>Nome do Curso</label>
+                        <input type="text" id="courseName" placeholder="Ex: Krav Maga - Faixa Branca">
+                    </div>
+                    
+                    <div class="metadata-field">
+                        <label>Categoria</label>
+                        <select id="courseCategory">
+                            <option value="ADULT">Adulto</option>
+                            <option value="TEEN">Adolescente</option>
+                            <option value="CHILD">Infantil</option>
+                        </select>
+                    </div>
+                    
+                    <div class="metadata-field">
+                        <label>Nível</label>
+                        <select id="courseLevel">
+                            <option value="BEGINNER">Iniciante</option>
+                            <option value="INTERMEDIATE">Intermediário</option>
+                            <option value="ADVANCED">Avançado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="metadata-field">
+                        <label>Duração (semanas)</label>
+                        <input type="number" id="courseDuration" value="24" min="1" max="52">
+                    </div>
+                    
+                    <div class="metadata-field">
+                        <label>Aulas por Semana</label>
+                        <input type="number" id="classesPerWeek" value="2" min="1" max="7">
+                    </div>
+                    
+                    <div class="metadata-field">
+                        <label>Arte Marcial</label>
+                        <select id="martialArtId">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="parsed-section">
+                    <h3>📋 Técnicas Mapeadas</h3>
+                    <div id="mappedTechniques">
+                        <!-- Mapped techniques will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Import -->
+            <div class="step-content" data-step="4">
+                <h2 style="color: #F8FAFC; margin-bottom: 2rem; text-align: center;">
+                    🚀 Importação do Curso
+                </h2>
+                
+                <div style="text-align: center;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="importProgress"></div>
+                    </div>
+                    
+                    <div id="importStatus" style="color: #94A3B8; margin-top: 1rem;">
+                        Pronto para importar...
+                    </div>
+                    
+                    <div id="importResults" style="margin-top: 2rem; display: none;">
+                        <!-- Import results will be shown here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Actions -->
+        <div class="wizard-actions">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                <span>←</span>
+                <span>Anterior</span>
+            </button>
+            
+            <div style="flex: 1;"></div>
+            
+            <button class="btn btn-primary" id="nextBtn" onclick="nextStep()" disabled>
+                <span>Próximo</span>
+                <span>→</span>
+            </button>
+            
+            <button class="btn btn-success" id="importBtn" onclick="importCourse()" style="display: none;">
+                <span>🚀</span>
+                <span>Importar Curso</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div id="loadingText">Processando documento...</div>
+        </div>
+    </div>
+
+    <script>
+        class CourseImporter {
+            constructor() {
+                this.currentStep = 1;
+                this.uploadedFile = null;
+                this.parsedData = null;
+                this.availableTechniques = [];
+                this.martialArts = [];
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                await this.loadMartialArts();
+                await this.loadTechniques();
+            }
+
+            setupEventListeners() {
+                // Drag and drop
+                const uploadZone = document.getElementById('uploadZone');
+                
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+                
+                uploadZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                });
+                
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFile(files[0]);
+                    }
+                });
+            }
+
+            async loadMartialArts() {
+                try {
+                    const response = await fetch('/api/martial-arts');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.martialArts = data.data;
+                        const select = document.getElementById('martialArtId');
+                        select.innerHTML = '<option value="">Selecione uma arte marcial</option>';
+                        
+                        this.martialArts.forEach(art => {
+                            const option = document.createElement('option');
+                            option.value = art.id;
+                            option.textContent = art.name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading martial arts:', error);
+                }
+            }
+
+            async loadTechniques() {
+                try {
+                    const response = await fetch('/api/techniques');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.availableTechniques = data.data;
+                    }
+                } catch (error) {
+                    console.error('Error loading techniques:', error);
+                }
+            }
+
+            handleFile(file) {
+                if (file.type !== 'application/pdf') {
+                    alert('Por favor, selecione um arquivo PDF');
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) { // 10MB
+                    alert('Arquivo muito grande. Máximo 10MB permitido.');
+                    return;
+                }
+
+                this.uploadedFile = file;
+                this.updateFileInfo(file);
+                this.enableNextButton();
+            }
+
+            updateFileInfo(file) {
+                const fileInfo = document.getElementById('fileInfo');
+                const fileName = document.getElementById('fileName');
+                const fileSize = document.getElementById('fileSize');
+                
+                fileName.textContent = file.name;
+                fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                fileInfo.style.display = 'block';
+            }
+
+            async analyzePDF() {
+                if (!this.uploadedFile) return;
+
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const loadingText = document.getElementById('loadingText');
+                
+                try {
+                    loadingOverlay.style.display = 'flex';
+                    loadingText.textContent = 'Processando PDF com RAG...';
+
+                    // First, process the PDF through the knowledge base RAG system
+                    await this.processWithRAG();
+                    
+                    loadingText.textContent = 'Analisando estrutura do curso...';
+                    
+                    // Then analyze for course structure
+                    await this.analyzeWithAI();
+
+                } catch (error) {
+                    console.error('Error analyzing PDF:', error);
+                    alert('Erro ao analisar PDF: ' + error.message);
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+
+            async processWithRAG() {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = async (e) => {
+                        try {
+                            const content = e.target.result;
+                            
+                            // Add to knowledge base for RAG processing
+                            const document = {
+                                id: `course_import_${Date.now()}`,
+                                title: this.uploadedFile.name,
+                                content: content,
+                                type: 'course_document',
+                                uploadDate: new Date().toISOString(),
+                                tags: ['curso', 'importacao', 'pdf']
+                            };
+                            
+                            // Use the existing RAG system
+                            if (window.addToKnowledgeBase) {
+                                window.addToKnowledgeBase(document);
+                                console.log('✅ PDF adicionado à base RAG');
+                            }
+                            
+                            this.documentContent = content;
+                            resolve();
+                            
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    reader.onerror = () => reject(new Error('Erro ao ler PDF'));
+                    reader.readAsText(this.uploadedFile);
+                });
+            }
+
+            async analyzeWithAI() {
+                if (!this.documentContent) return;
+
+                // Simulate AI analysis using the document content
+                const content = this.documentContent.toLowerCase();
+                
+                // Extract course information using pattern matching
+                const analysis = {
+                    title: this.extractTitle(content),
+                    weeks: this.extractWeeks(content),
+                    lessons: this.extractLessons(content),
+                    techniques: this.extractTechniques(content)
+                };
+
+                this.parsedData = analysis;
+                this.displayAnalysisResults();
+                this.populateConfigurationFromAnalysis();
+            }
+
+            extractTitle(content) {
+                // Look for title patterns
+                const titlePatterns = [
+                    /agenda\s+do\s+aluno\s+(.+)/i,
+                    /curso\s+(.+)/i,
+                    /faixa\s+(\w+)/i
+                ];
+                
+                for (const pattern of titlePatterns) {
+                    const match = content.match(pattern);
+                    if (match) {
+                        return `Krav Maga - ${match[1].trim().charAt(0).toUpperCase() + match[1].trim().slice(1)}`;
+                    }
+                }
+                
+                return this.uploadedFile.name.replace('.pdf', '');
+            }
+
+            extractWeeks(content) {
+                // Look for week references
+                const weekMatches = content.match(/semana\s+(\d+)/gi) || [];
+                const weekNumbers = weekMatches.map(match => parseInt(match.match(/\d+/)[0]));
+                return weekNumbers.length > 0 ? Math.max(...weekNumbers) : 24;
+            }
+
+            extractLessons(content) {
+                const lessons = [];
+                const lines = content.split('\n');
+                let currentWeek = 1;
+                let currentLesson = 1;
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    
+                    // Check for week indicators
+                    const weekMatch = line.match(/semana\s+(\d+)/i);
+                    if (weekMatch) {
+                        currentWeek = parseInt(weekMatch[1]);
+                        return;
+                    }
+                    
+                    // Check for lesson indicators
+                    if (line.includes('aula') || line.includes('treino') || line.includes('exercício')) {
+                        lessons.push({
+                            week: currentWeek,
+                            number: currentLesson++,
+                            content: line,
+                            duration: 60,
+                            objectives: [line.substring(0, 50) + '...']
+                        });
+                    }
+                });
+                
+                return lessons.length > 0 ? lessons : this.generateDefaultLessons();
+            }
+
+            generateDefaultLessons() {
+                const lessons = [];
+                for (let week = 1; week <= 24; week++) {
+                    for (let lesson = 1; lesson <= 2; lesson++) {
+                        lessons.push({
+                            week: week,
+                            number: (week - 1) * 2 + lesson,
+                            content: `Semana ${week} - Aula ${lesson}`,
+                            duration: 60,
+                            objectives: [`Objetivos da semana ${week}`]
+                        });
+                    }
+                }
+                return lessons;
+            }
+
+            extractTechniques(content) {
+                // Common Krav Maga techniques patterns
+                const techniquePatterns = [
+                    /defesa\s+contra\s+([^.\n]+)/gi,
+                    /ataque\s+([^.\n]+)/gi,
+                    /chute\s+([^.\n]+)/gi,
+                    /soco\s+([^.\n]+)/gi,
+                    /joelhada\s+([^.\n]+)/gi,
+                    /cotovelo\s+([^.\n]+)/gi,
+                    /esquiva\s+([^.\n]+)/gi,
+                    /bloqueio\s+([^.\n]+)/gi,
+                    /estrangulamento\s+([^.\n]+)/gi,
+                    /agarramento\s+([^.\n]+)/gi
+                ];
+                
+                const techniques = new Set();
+                
+                techniquePatterns.forEach(pattern => {
+                    const matches = content.match(pattern) || [];
+                    matches.forEach(match => {
+                        const technique = match.trim().charAt(0).toUpperCase() + match.trim().slice(1);
+                        if (technique.length > 5 && technique.length < 100) {
+                            techniques.add(technique);
+                        }
+                    });
+                });
+                
+                // Add some default techniques if none found
+                if (techniques.size === 0) {
+                    const defaultTechniques = [
+                        'Postura de combate básica',
+                        'Soco direto',
+                        'Defesa contra estrangulamento frontal',
+                        'Chute frontal',
+                        'Joelhada',
+                        'Esquiva lateral',
+                        'Bloqueio alto'
+                    ];
+                    defaultTechniques.forEach(t => techniques.add(t));
+                }
+                
+                return Array.from(techniques);
+            }
+
+            displayAnalysisResults() {
+                const container = document.getElementById('analysisResults');
+                const data = this.parsedData;
+
+                container.innerHTML = `
+                    <div class="parsed-section">
+                        <h3>📊 Informações Detectadas</h3>
+                        <p><strong>Título:</strong> ${data.title || 'Não detectado'}</p>
+                        <p><strong>Total de Semanas:</strong> ${data.weeks || 'Não detectado'}</p>
+                        <p><strong>Total de Aulas:</strong> ${data.lessons ? data.lessons.length : 'Não detectado'}</p>
+                        <p><strong>Técnicas Identificadas:</strong> ${data.techniques ? data.techniques.length : 'Não identificado'}</p>
+                    </div>
+
+                    <div class="parsed-section">
+                        <h3>📝 Preview das Aulas</h3>
+                        ${this.renderLessonsPreview()}
+                    </div>
+
+                    <div class="parsed-section">
+                        <h3>🥋 Técnicas Detectadas</h3>
+                        ${this.renderTechniquesPreview()}
+                    </div>
+                `;
+            }
+
+            renderLessonsPreview() {
+                if (!this.parsedData.lessons || this.parsedData.lessons.length === 0) {
+                    return '<p style="color: #94A3B8;">Nenhuma aula detectada</p>';
+                }
+
+                return this.parsedData.lessons.slice(0, 5).map(lesson => `
+                    <div class="lesson-preview">
+                        <div class="lesson-header">
+                            <div class="lesson-title">Semana ${lesson.week} - Aula ${lesson.number}</div>
+                            <div class="lesson-duration">${lesson.duration || 60} min</div>
+                        </div>
+                        <div class="lesson-objectives">${lesson.objectives ? lesson.objectives.join(', ') : 'Objetivos não detectados'}</div>
+                    </div>
+                `).join('') + (this.parsedData.lessons.length > 5 ? `<p style="color: #94A3B8; text-align: center; margin-top: 1rem;">E mais ${this.parsedData.lessons.length - 5} aulas...</p>` : '');
+            }
+
+            renderTechniquesPreview() {
+                if (!this.parsedData.techniques || this.parsedData.techniques.length === 0) {
+                    return '<p style="color: #94A3B8;">Nenhuma técnica detectada</p>';
+                }
+
+                return this.parsedData.techniques.slice(0, 10).map(technique => `
+                    <span style="display: inline-block; background: rgba(59, 130, 246, 0.2); color: #3B82F6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; margin: 0.25rem;">${technique}</span>
+                `).join('') + (this.parsedData.techniques.length > 10 ? `<p style="color: #94A3B8; text-align: center; margin-top: 1rem;">E mais ${this.parsedData.techniques.length - 10} técnicas...</p>` : '');
+            }
+
+            populateConfigurationFromAnalysis() {
+                if (!this.parsedData) return;
+
+                const data = this.parsedData;
+                
+                if (data.title) {
+                    document.getElementById('courseName').value = data.title;
+                }
+                
+                if (data.weeks) {
+                    document.getElementById('courseDuration').value = data.weeks;
+                }
+
+                // Map techniques to existing ones
+                this.mapTechniquesToDatabase();
+            }
+
+            mapTechniquesToDatabase() {
+                const mappedContainer = document.getElementById('mappedTechniques');
+                
+                if (!this.parsedData.techniques || this.parsedData.techniques.length === 0) {
+                    mappedContainer.innerHTML = '<p style="color: #94A3B8;">Nenhuma técnica para mapear</p>';
+                    return;
+                }
+
+                const mapped = this.parsedData.techniques.map(detectedTechnique => {
+                    // Enhanced mapping using RAG chunks if available
+                    let match = null;
+                    let confidence = 0.2;
+                    
+                    // First, try direct matching with existing techniques
+                    match = this.availableTechniques.find(dbTechnique => 
+                        dbTechnique.name.toLowerCase().includes(detectedTechnique.toLowerCase()) ||
+                        detectedTechnique.toLowerCase().includes(dbTechnique.name.toLowerCase())
+                    );
+                    
+                    if (match) {
+                        confidence = 0.8;
+                    } else {
+                        // Use RAG for semantic search if available
+                        if (window.searchRAGForTechnique) {
+                            const ragResult = window.searchRAGForTechnique(detectedTechnique, { maxResults: 5 });
+                            if (ragResult.success && ragResult.results.length > 0) {
+                                // Use the best match from enhanced RAG search
+                                const bestMatch = ragResult.results[0];
+                                match = this.extractTechniqueFromChunk(bestMatch);
+                                confidence = Math.min(bestMatch.score / 10, 0.9); // Normalize score
+                            }
+                        }
+                    }
+
+                    return {
+                        detected: detectedTechnique,
+                        mapped: match,
+                        confidence: confidence
+                    };
+                });
+
+                mappedContainer.innerHTML = mapped.map(item => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #334155;">
+                        <span style="color: #E2E8F0;">${item.detected}</span>
+                        ${item.mapped ? 
+                            `<span style="color: #10B981;">✓ ${item.mapped.name} (${Math.round(item.confidence * 100)}%)</span>` : 
+                            `<span style="color: #F59E0B;">⚠ Não mapeado - <button onclick="createNewTechnique('${item.detected}')" style="color: #3B82F6; background: none; border: none; cursor: pointer;">Criar Nova</button></span>`
+                        }
+                    </div>
+                `).join('');
+            }
+
+            // Note: searchRAGForTechnique is now provided by knowledge-base.js module
+
+            extractTechniqueFromChunk(chunk) {
+                // Try to extract technique information from RAG chunk
+                const content = chunk.content;
+                
+                // Look for existing techniques that match this chunk content
+                const match = this.availableTechniques.find(technique => 
+                    content.toLowerCase().includes(technique.name.toLowerCase())
+                );
+                
+                if (match) {
+                    return match;
+                }
+                
+                // Create a synthetic technique object
+                return {
+                    id: `rag_${chunk.id}`,
+                    name: chunk.sourceTitle || 'Técnica do RAG',
+                    description: content.substring(0, 200) + '...',
+                    category: 'DEFENSE', // Default category
+                    source: 'RAG'
+                };
+            }
+
+            // Global function for creating new techniques
+            createNewTechnique(techniqueName) {
+                const newTechniqueUrl = `/views/technique-editor.html?name=${encodeURIComponent(techniqueName)}&source=importer`;
+                window.open(newTechniqueUrl, '_blank');
+            }
+
+            async importCourse() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const loadingText = document.getElementById('loadingText');
+                const progressFill = document.getElementById('importProgress');
+                const importStatus = document.getElementById('importStatus');
+                
+                try {
+                    loadingOverlay.style.display = 'flex';
+                    loadingText.textContent = 'Importando curso...';
+                    
+                    // Simulate progress
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        progressFill.style.width = `${progress}%`;
+                        
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+                        }
+                    }, 200);
+
+                    const courseData = {
+                        name: document.getElementById('courseName').value,
+                        category: document.getElementById('courseCategory').value,
+                        level: document.getElementById('courseLevel').value,
+                        duration: parseInt(document.getElementById('courseDuration').value),
+                        classesPerWeek: parseInt(document.getElementById('classesPerWeek').value),
+                        martialArtId: document.getElementById('martialArtId').value,
+                        parsedData: this.parsedData
+                    };
+
+                    const formData = new FormData();
+                    formData.append('pdf', this.uploadedFile);
+                    formData.append('courseData', JSON.stringify(courseData));
+
+                    const response = await fetch('/api/courses/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.error || 'Erro na importação');
+                    }
+
+                    // Success
+                    importStatus.textContent = 'Curso importado com sucesso!';
+                    importStatus.style.color = '#10B981';
+                    
+                    document.getElementById('importResults').innerHTML = `
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; padding: 1.5rem; color: #10B981;">
+                            <h3 style="margin: 0 0 1rem 0;">✅ Importação Concluída</h3>
+                            <p><strong>Curso:</strong> ${data.data.course.name}</p>
+                            <p><strong>Aulas Geradas:</strong> ${data.data.lessonsCreated}</p>
+                            <p><strong>Técnicas Mapeadas:</strong> ${data.data.techniquesMapped}</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/views/courses.html'" style="margin-top: 1rem;">
+                                Ver Curso Criado
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('importResults').style.display = 'block';
+
+                    // Hide import button
+                    document.getElementById('importBtn').style.display = 'none';
+
+                } catch (error) {
+                    console.error('Error importing course:', error);
+                    importStatus.textContent = 'Erro na importação: ' + error.message;
+                    importStatus.style.color = '#EF4444';
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+
+            nextStep() {
+                if (this.currentStep === 1 && this.uploadedFile) {
+                    this.analyzePDF();
+                }
+
+                if (this.currentStep < 4) {
+                    this.currentStep++;
+                    this.updateStepDisplay();
+                }
+            }
+
+            previousStep() {
+                if (this.currentStep > 1) {
+                    this.currentStep--;
+                    this.updateStepDisplay();
+                }
+            }
+
+            updateStepDisplay() {
+                // Update step indicators
+                document.querySelectorAll('.step').forEach((step, index) => {
+                    const stepNumber = index + 1;
+                    step.classList.remove('active', 'completed');
+                    
+                    if (stepNumber < this.currentStep) {
+                        step.classList.add('completed');
+                    } else if (stepNumber === this.currentStep) {
+                        step.classList.add('active');
+                    }
+                });
+
+                // Update step content
+                document.querySelectorAll('.step-content').forEach((content, index) => {
+                    content.classList.remove('active');
+                    if (index + 1 === this.currentStep) {
+                        content.classList.add('active');
+                    }
+                });
+
+                // Update buttons
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                const importBtn = document.getElementById('importBtn');
+
+                prevBtn.style.display = this.currentStep > 1 ? 'flex' : 'none';
+                
+                if (this.currentStep === 4) {
+                    nextBtn.style.display = 'none';
+                    importBtn.style.display = 'flex';
+                } else {
+                    nextBtn.style.display = 'flex';
+                    importBtn.style.display = 'none';
+                    
+                    // Enable/disable next button based on step requirements
+                    if (this.currentStep === 1) {
+                        nextBtn.disabled = !this.uploadedFile;
+                    } else if (this.currentStep === 2) {
+                        nextBtn.disabled = !this.parsedData;
+                    } else {
+                        nextBtn.disabled = false;
+                    }
+                }
+            }
+
+            enableNextButton() {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        // Global functions
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                window.courseImporter.handleFile(input.files[0]);
+            }
+        }
+
+        function nextStep() {
+            window.courseImporter.nextStep();
+        }
+
+        function previousStep() {
+            window.courseImporter.previousStep();
+        }
+
+        function importCourse() {
+            window.courseImporter.importCourse();
+        }
+
+        function createNewTechnique(techniqueName) {
+            const newTechniqueUrl = `/views/technique-editor.html?name=${encodeURIComponent(techniqueName)}&source=importer`;
+            window.open(newTechniqueUrl, '_blank');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            window.courseImporter = new CourseImporter();
+            
+            // Load knowledge base module if not already loaded
+            if (!window.knowledgeBase && !window.loadingKnowledgeBase) {
+                window.loadingKnowledgeBase = true;
+                const script = document.createElement('script');
+                script.src = '/js/modules/knowledge-base.js';
+                script.onload = () => {
+                    console.log('✅ Knowledge Base module loaded for RAG integration');
+                    window.loadingKnowledgeBase = false;
+                };
+                document.head.appendChild(script);
+            }
+        });
+    </script>
+</body>
+</html>

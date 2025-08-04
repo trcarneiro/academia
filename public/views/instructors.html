@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Instrutores - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/instructors.css">
+</head>
+<body>
+    <div class="instructors-isolated">
+        <!-- Content will be populated by the module -->
+        <div id="instructors-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 120px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 80px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 300px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Instructors Module -->
+    <script src="/js/modules/instructors.js"></script>
+    <script>
+        // Initialize instructors when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🥋 Instructors page loaded');
+            
+            // Load instructors data if function exists
+            if (typeof loadInstructors === 'function') {
+                loadInstructors();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Turmas - Academia</title>
+    <link rel="stylesheet" href="../css/classes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-button:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="../index.html" class="back-button">
+        <span>←</span> Voltar ao Dashboard
+    </a>
+
+    <!-- Container Principal -->
+    <div class="classes-isolated-container">
+        <!-- Modern Page Header -->
+        <div class="classes-isolated-page-header">
+            <div class="classes-isolated-header-content">
+                <div class="classes-isolated-header-info">
+                    <h1 class="classes-isolated-title">🏫 Gestão de Turmas</h1>
+                    <p class="classes-isolated-subtitle">Arte marcial com múltiplos cursos/faixas em execução simultânea</p>
+                </div>
+                <div class="classes-isolated-header-actions">
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="createNewClass()">
+                        <span>➕</span> Nova Turma
+                    </button>
+                    <button class="classes-isolated-btn classes-isolated-btn-secondary" onclick="viewClassSchedule()">
+                        <span>📅</span> Cronograma
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="classes-isolated-stats-grid">
+                <div class="classes-isolated-stat-card">
+                    <div class="classes-isolated-stat-value" id="totalClassesCount">2</div>
+                    <div class="classes-isolated-stat-label">Turmas Ativas</div>
+                </div>
+                <div class="classes-isolated-stat-card">
+                    <div class="classes-isolated-stat-value" id="totalEnrolledStudents">6</div>
+                    <div class="classes-isolated-stat-label">Alunos Total</div>
+                </div>
+                <div class="classes-isolated-stat-card">
+                    <div class="classes-isolated-stat-value" id="activeBelts">3</div>
+                    <div class="classes-isolated-stat-label">Cursos Ativos</div>
+                </div>
+                <div class="classes-isolated-stat-card">
+                    <div class="classes-isolated-stat-value" id="attendanceRate">85%</div>
+                    <div class="classes-isolated-stat-label">Taxa Presença</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classes List -->
+        <div class="classes-isolated-data-table">
+            <div class="classes-isolated-table-header">
+                <div class="classes-isolated-table-title">🏫 Turmas em Andamento</div>
+                <div class="classes-isolated-table-actions">
+                    <select id="classStatusFilter" onchange="filterClasses()" class="classes-isolated-filter-select">
+                        <option value="all">Todas as Turmas</option>
+                        <option value="active">Ativas</option>
+                        <option value="finished">Finalizadas</option>
+                        <option value="paused">Pausadas</option>
+                    </select>
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="createNewClass()">
+                        <span>➕</span> Nova Turma
+                    </button>
+                </div>
+            </div>
+            
+            <div class="classes-isolated-table-container">
+                <table class="classes-isolated-table">
+                    <thead>
+                        <tr>
+                            <th>Turma</th>
+                            <th>Arte Marcial</th>
+                            <th>Horário</th>
+                            <th>Cursos Ativos</th>
+                            <th>Total Alunos</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classesTableBody">
+                        <tr>
+                            <td>
+                                <div class="classes-isolated-class-info">
+                                    <span class="classes-isolated-class-badge classes-isolated-badge-green">T1</span>
+                                    Turma 1
+                                </div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">Krav Maga</td>
+                            <td class="classes-isolated-text-secondary">
+                                <div>Ter/Qui - 18:00h</div>
+                                <div class="classes-isolated-text-small">Início: 01/06/2025</div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">
+                                <div class="classes-isolated-belt-tags">
+                                    <span class="classes-isolated-belt-tag classes-isolated-belt-white">🥋 Branca</span>
+                                    <span class="classes-isolated-belt-tag classes-isolated-belt-yellow">🥋 Amarela</span>
+                                </div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">
+                                <div class="classes-isolated-student-count">
+                                    <span class="classes-isolated-count-badge">4/20</span>
+                                    alunos
+                                </div>
+                            </td>
+                            <td>
+                                <span class="classes-isolated-status-badge classes-isolated-status-active">🟢 Ativa</span>
+                            </td>
+                            <td>
+                                <div class="classes-isolated-action-buttons">
+                                    <button onclick="viewClassDetails(1)" class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
+                                    <button onclick="manageClassSchedule(1)" class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="classes-isolated-class-info">
+                                    <span class="classes-isolated-class-badge classes-isolated-badge-purple">T2</span>
+                                    Turma 2
+                                </div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">Krav Maga</td>
+                            <td class="classes-isolated-text-secondary">
+                                <div>Seg/Qua - 19:00h</div>
+                                <div class="classes-isolated-text-small">Início: 01/06/2025</div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">
+                                <div class="classes-isolated-belt-tags">
+                                    <span class="classes-isolated-belt-tag classes-isolated-belt-white">🥋 Branca</span>
+                                </div>
+                            </td>
+                            <td class="classes-isolated-text-secondary">
+                                <div class="classes-isolated-student-count">
+                                    <span class="classes-isolated-count-badge">2/20</span>
+                                    alunos
+                                </div>
+                            </td>
+                            <td>
+                                <span class="classes-isolated-status-badge classes-isolated-status-active">🟢 Ativa</span>
+                            </td>
+                            <td>
+                                <div class="classes-isolated-action-buttons">
+                                    <button onclick="viewClassDetails(2)" class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
+                                    <button onclick="manageClassSchedule(2)" class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Today's Schedule & Weekly Stats -->
+        <div class="classes-isolated-bottom-grid">
+            <div class="classes-isolated-data-table">
+                <div class="classes-isolated-table-header">
+                    <div class="classes-isolated-table-title">📅 Aulas de Hoje</div>
+                    <div class="classes-isolated-table-actions">
+                        <span class="classes-isolated-text-secondary">03/07/2025</span>
+                    </div>
+                </div>
+                <div class="classes-isolated-today-schedule">
+                    <div class="classes-isolated-today-class">
+                        <div class="classes-isolated-class-header">
+                            <div class="classes-isolated-class-name">Turma 1 - Krav Maga</div>
+                            <span class="classes-isolated-time-badge">18:00</span>
+                        </div>
+                        <div class="classes-isolated-class-content">
+                            <div class="classes-isolated-belt-lessons">
+                                <div class="classes-isolated-lesson-card classes-isolated-lesson-white">
+                                    <div class="classes-isolated-lesson-title">🤍 Faixa Branca</div>
+                                    <div class="classes-isolated-lesson-description">Aula 16: Defesas vs Estrangulamento</div>
+                                </div>
+                                <div class="classes-isolated-lesson-card classes-isolated-lesson-yellow">
+                                    <div class="classes-isolated-lesson-title">💛 Faixa Amarela</div>
+                                    <div class="classes-isolated-lesson-description">Aula 8: Combinações de Golpes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="classes-isolated-class-footer">4 alunos confirmados (2 Branca + 2 Amarela)</div>
+                    </div>
+                    <div class="classes-isolated-empty-state">
+                        <div class="classes-isolated-empty-icon">📅</div>
+                        <p>Apenas 1 aula agendada para hoje</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="classes-isolated-data-table">
+                <div class="classes-isolated-table-header">
+                    <div class="classes-isolated-table-title">📊 Estatísticas Semanais</div>
+                </div>
+                <div class="classes-isolated-stats-content">
+                    <div class="classes-isolated-weekly-stats">
+                        <div class="classes-isolated-weekly-stat classes-isolated-stat-green">
+                            <div class="classes-isolated-weekly-value">87%</div>
+                            <div class="classes-isolated-weekly-label">Frequência Turma 1</div>
+                        </div>
+                        <div class="classes-isolated-weekly-stat classes-isolated-stat-purple">
+                            <div class="classes-isolated-weekly-value">83%</div>
+                            <div class="classes-isolated-weekly-label">Frequência Turma 2</div>
+                        </div>
+                    </div>
+                    
+                    <div class="classes-isolated-upcoming-evaluations">
+                        <h4 class="classes-isolated-section-title">Próximas Avaliações por Faixa</h4>
+                        <div class="classes-isolated-evaluation-list">
+                            <div>• Faixa Branca: Módulo 2 (Semana 20)</div>
+                            <div>• Faixa Amarela: Módulo 1 (Semana 10)</div>
+                            <div>• Faixa Laranja: Módulo 3 (Semana 30)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="classes-isolated-weekly-focus">
+                        <h4 class="classes-isolated-section-title">Foco Semanal por Faixa</h4>
+                        <div class="classes-isolated-focus-list">
+                            <div class="classes-isolated-focus-item classes-isolated-focus-white">🤍 Branca: Defesas vs Estrangulamento</div>
+                            <div class="classes-isolated-focus-item classes-isolated-focus-yellow">💛 Amarela: Combinações de Golpes</div>
+                            <div class="classes-isolated-focus-item classes-isolated-focus-orange">🧡 Laranja: Defesas vs Armas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Module -->
+    <script src="../js/modules/classes.js"></script>
+</body>
+</html>

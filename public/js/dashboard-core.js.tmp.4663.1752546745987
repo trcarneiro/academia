@@ -1,0 +1,29 @@
+// Main Dashboard JavaScript - Core functionality only
+
+// Utility function to reduce console noise in production
+function logQuiet(message, ...args) {
+    // Only log important messages to reduce noise
+    if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+        console.log(message, ...args);
+    }
+}
+
+// Sleep utility function
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Main initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modules
+    if (typeof loadAllStudents === 'function') {
+        loadAllStudents();
+    }
+    if (typeof initializeBeltSystems === 'function') {
+        initializeBeltSystems();
+    }
+});
+
+// Export utility functions to global scope
+window.logQuiet = logQuiet;
+window.sleep = sleep;

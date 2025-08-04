@@ -1,0 +1,116 @@
+<div class="financial-isolated">
+    <!-- Financial Header -->
+    <div class="financial-header">
+        <div class="header-content">
+            <h1 class="financial-title">💰 Gestão Financeira</h1>
+            <div class="header-actions">
+                <button onclick="goBack()" class="btn btn-secondary">
+                    ← Voltar ao Dashboard
+                </button>
+                <button id="refreshFinancial" class="btn btn-primary">
+                    🔄 Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="financial-overview">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">💳</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="totalRevenue">--</div>
+                    <div class="metric-label">Receita Total</div>
+                    <div class="metric-change positive" id="revenueChange">...</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="activeSubscriptions">--</div>
+                    <div class="metric-label">Assinaturas Ativas</div>
+                    <div class="metric-change" id="subscriptionsChange">...</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">⏰</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="pendingPayments">--</div>
+                    <div class="metric-label">Pagamentos Pendentes</div>
+                    <div class="metric-change negative" id="pendingChange">...</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">💡</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="monthlyGrowth">--</div>
+                    <div class="metric-label">Crescimento Mensal</div>
+                    <div class="metric-change" id="growthChange">...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="financial-actions">
+        <h3>⚡ Ações Rápidas</h3>
+        <div class="actions-grid">
+            <button class="action-btn" id="newSubscription">
+                <span class="action-icon">➕</span>
+                <span class="action-text">Nova Assinatura</span>
+            </button>
+            <button class="action-btn" id="registerPayment">
+                <span class="action-icon">💰</span>
+                <span class="action-text">Registrar Pagamento</span>
+            </button>
+            <button class="action-btn" id="generateReport">
+                <span class="action-icon">📊</span>
+                <span class="action-text">Relatório Financeiro</span>
+            </button>
+            <button class="action-btn" id="managePlans">
+                <span class="action-icon">📋</span>
+                <span class="action-text">Gerenciar Planos</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="recent-transactions">
+        <h3>💳 Transações Recentes</h3>
+        <div id="transactionsList" class="transactions-list">
+            <!-- Transactions will be loaded by JavaScript -->
+            <div class="transaction-loading">
+                <div class="loading-spinner"></div>
+                <span>Carregando transações...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Management -->
+    <div class="subscription-management">
+        <h3>📋 Gestão de Assinaturas</h3>
+        <div id="subscriptionsList" class="subscriptions-list">
+            <!-- Subscriptions will be loaded by JavaScript -->
+            <div class="subscription-loading">
+                <div class="loading-spinner"></div>
+                <span>Carregando assinaturas...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Plans -->
+    <div class="payment-plans">
+        <h3>💎 Planos de Pagamento</h3>
+        <div id="plansList" class="plans-list">
+            <!-- Plans will be loaded by JavaScript -->
+            <div class="plans-loading">
+                <div class="loading-spinner"></div>
+                <span>Carregando planos...</span>
+            </div>
+        </div>
+    </div>
+</div>

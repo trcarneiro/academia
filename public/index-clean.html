@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🥋 Krav Maga Academy - Dashboard</title>
+    
+    <style>
+        /* Base responsive styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Prevent zoom on inputs on iOS */
+        input, select, textarea {
+            font-size: 16px;
+        }
+        
+        /* Loading screen responsive */
+        .loading-dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        .loading-text {
+            color: #CBD5E1;
+            font-size: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .loading-dashboard {
+                padding: 1rem;
+            }
+            
+            .loading-text {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Prevent text selection on UI elements */
+        button, .nav-link, .quick-action-btn {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Touch-friendly buttons */
+        @media (max-width: 768px) {
+            button, .nav-link, .quick-action-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+    </style>
+
+    <!-- 🔌 CARREGADOR DE MÓDULOS ISOLADOS -->
+    <script>
+        window.ModuleLoader = {
+            loadedModules: new Map(),
+            isModuleLoaded: function(moduleName) {
+                return this.loadedModules.has(moduleName);
+            },
+            getLoadedModules: function() {
+                return Array.from(this.loadedModules.keys());
+            }
+        };
+    </script>
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+</head>
+<body>
+    <div id="app" style="width: 100%; height: 100vh; background: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif;">
+        <div id="content">
+            <!-- Loading State -->
+            <div id="loading" class="loading-dashboard">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Carregando Sistema...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORE MODULE LOADER -->
+    <script>
+        // Module routes configuration
+        const MODULE_ROUTES = {
+            'dashboard': '/dashboard-optimized.html',
+            'students': '/views/students.html',
+            'courses': '/views/courses.html',
+            'attendance': '/views/attendance.html',
+            'financial': '/views/financial.html',
+            'graduation': '/views/graduation.html',
+            'reporting': '/views/reporting.html',
+            'settings': '/views/settings.html',
+            'knowledge': '/views/knowledge.html',
+            'student-editor': '/views/student-editor.html'
+        };
+
+        // Global functions
+        window.navigateToModule = navigateToModule;
+        window.loadModule = loadModule;
+
+        // Navigation function
+        async function navigateToModule(moduleName) {
+            console.log('🔄 Navigating to:', moduleName, '->', MODULE_ROUTES[moduleName]);
+
+            const route = MODULE_ROUTES[moduleName];
+            if (!route) {
+                console.error('❌ Unknown module:', moduleName);
+                return;
+            }
+
+            await loadModuleContent(moduleName, route);
+        }
+
+        // Load module content
+        async function loadModuleContent(moduleName, route) {
+            console.log('🔧 Loading module content:', moduleName, route);
+
+            try {
+                const response = await fetch(route);
+                const html = await response.text();
+                console.log('📄 HTML loaded, length:', html.length);
+
+                const contentContainer = document.getElementById('content');
+                if (!contentContainer) {
+                    console.error('❌ Content container not found');
+                    return;
+                }
+                console.log('📍 Content container found:', !!contentContainer);
+
+                // Hide dashboard section if exists
+                const dashboardSection = document.getElementById('dashboard-section');
+                if (dashboardSection) {
+                    dashboardSection.style.display = 'none';
+                    console.log('👁️ Dashboard section hidden');
+                }
+
+                // Clear existing content and load new module
+                if (contentContainer.firstElementChild && contentContainer.firstElementChild.id !== 'loading') {
+                    contentContainer.removeChild(contentContainer.firstElementChild);
+                    console.log('🗑️ Existing module content removed');
+                }
+
+                // Insert new content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const newContent = tempDiv.firstElementChild;
+
+                if (newContent) {
+                    contentContainer.appendChild(newContent);
+                    console.log('✅ Module content loaded successfully');
+                } else {
+                    console.error('❌ Failed to extract content from HTML');
+                    return;
+                }
+
+                // Load module assets
+                await loadModuleAssets(moduleName);
+
+            } catch (error) {
+                console.error('❌ Error loading module:', error);
+            }
+        }
+
+        // Load module assets (CSS and JS)
+        async function loadModuleAssets(moduleName) {
+            console.log('🔌 Loading assets for module:', moduleName);
+
+            try {
+                // Load CSS
+                const cssPath = `/css/modules/${moduleName}.css`;
+                console.log('📄 Loading CSS:', cssPath);
+                
+                if (!document.querySelector(`link[href="${cssPath}"]`)) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = cssPath;
+                    document.head.appendChild(link);
+                    console.log('✅ CSS loaded:', cssPath);
+                }
+
+                // Load JS
+                const jsPath = `/js/modules/${moduleName}.js`;
+                console.log('🔧 Loading JS:', jsPath);
+                
+                if (!document.querySelector(`script[src="${jsPath}"]`)) {
+                    const script = document.createElement('script');
+                    script.src = jsPath;
+                    document.head.appendChild(script);
+                    console.log('✅ JS loaded:', jsPath);
+                }
+
+                console.log('✅ All assets loaded for module:', moduleName);
+
+            } catch (error) {
+                console.error('❌ Error loading assets:', error);
+            }
+        }
+
+        // Backward compatibility
+        function loadModule(moduleName) {
+            return navigateToModule(moduleName);
+        }
+
+        // Initialize app
+        function initializeApp() {
+            console.log('🚀 Initializing Clean Dashboard App...');
+            
+            // Hide loading and show dashboard by default
+            setTimeout(() => {
+                navigateToModule('dashboard');
+            }, 1000);
+        }
+
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+        
+        console.log('✅ Clean Dashboard Module Loader initialized');
+    </script>
+</body>
+</html>

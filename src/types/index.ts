@@ -10,22 +10,19 @@ export {
   CheckInMethod,
   EnrollmentStatus,
   EvaluationType,
-  EvaluationCategory,
+  EvaluationStatus,
   AchievementCategory,
   AchievementRarity,
   ChallengeType,
   ChallengeDifficulty,
   RecurringType,
-  CertificateType,
   BillingType,
   SubscriptionStatus,
   PaymentStatus,
   PaymentMethod,
+  CourseCategory,
   AttendanceTrend,
-  DropoutRisk,
-  GradingSystem,
-  SubscriptionPlan,
-  AIProvider
+  DropoutRisk
 } from '@prisma/client';
 
 // Authentication Types

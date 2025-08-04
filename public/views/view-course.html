@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Curso - Krav Academy</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/core/reset.css">
+    <link rel="stylesheet" href="/css/core/variables.css">
+    <link rel="stylesheet" href="/css/core/dashboard.css">
+    
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="/css/modules/view-course.css">
+    
+    <!-- Components -->
+    <link rel="stylesheet" href="/css/components/toast.css">
+    
+    <meta name="description" content="Visualização detalhada de curso - Krav Maga Academy">
+</head>
+<body class="view-course-isolated">
+    <!-- Header -->
+    <header class="view-course-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="back-button" onclick="history.back()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <h1 id="course-title">Carregando curso...</h1>
+            </div>
+            <div class="header-actions">
+                <button class="secondary-button" onclick="window.location.href='/views/courses.html'">
+                    <span>📚</span>
+                    <span>Todos os Cursos</span>
+                </button>
+                <button class="primary-button" id="edit-course-btn">
+                    <span>✏️</span>
+                    <span>Editar Curso</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="view-course-main">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-container">
+            <div class="spinner"></div>
+            <p>Carregando informações do curso...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">❌</div>
+            <h3>Erro ao carregar curso</h3>
+            <p id="errorMessage">Não foi possível carregar as informações do curso.</p>
+            <button class="primary-button" onclick="window.location.href='/views/courses.html'">
+                Voltar aos Cursos
+            </button>
+        </div>
+
+        <!-- Course Content -->
+        <div id="courseContent" class="course-content" style="display: none;">
+            <!-- Course Overview Card -->
+            <section class="course-overview-card">
+                <div class="course-header-info">
+                    <div class="course-badge-container">
+                        <span class="course-category-badge" id="course-category">-</span>
+                        <span class="course-status-badge" id="course-status">-</span>
+                    </div>
+                    <div class="course-actions">
+                        <button class="action-button secondary" onclick="toggleCourseStatus()">
+                            <span id="status-toggle-icon">🔒</span>
+                            <span id="status-toggle-text">Ativar/Desativar</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="course-details-grid">
+                    <div class="detail-card">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Duração</span>
+                            <span class="detail-value" id="course-duration">- semanas</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">👥</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Público-alvo</span>
+                            <span class="detail-value" id="course-target">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">📚</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Total de Aulas</span>
+                            <span class="detail-value" id="course-lessons-count">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-icon">💪</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Total de Técnicas</span>
+                            <span class="detail-value" id="course-techniques-count">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Description Section -->
+            <section class="course-section">
+                <h2 class="section-title">Descrição do Curso</h2>
+                <div class="course-description-card">
+                    <p id="course-description" class="course-description-text">-</p>
+                </div>
+            </section>
+
+            <!-- Lessons Section -->
+            <section class="course-section">
+                <div class="section-header">
+                    <h2 class="section-title">Aulas do Curso</h2>
+                    <button class="primary-button small" onclick="addNewLesson()">
+                        <span>+</span>
+                        <span>Nova Aula</span>
+                    </button>
+                </div>
+                
+                <div id="lessonsContainer" class="lessons-container">
+                    <!-- Lessons will be loaded here -->
+                </div>
+                
+                <div id="emptyLessons" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📚</div>
+                    <h3>Nenhuma aula cadastrada</h3>
+                    <p>Adicione a primeira aula a este curso</p>
+                    <button class="primary-button" onclick="addNewLesson()">
+                        Adicionar Primeira Aula
+                    </button>
+                </div>
+            </section>
+
+            <!-- Techniques Section -->
+            <section class="course-section">
+                <div class="section-header">
+                    <h2 class="section-title">Técnicas do Curso</h2>
+                    <button class="primary-button small" onclick="addNewTechnique()">
+                        <span>+</span>
+                        <span>Nova Técnica</span>
+                    </button>
+                </div>
+                
+                <div id="techniquesContainer" class="techniques-container">
+                    <!-- Techniques will be loaded here -->
+                </div>
+                
+                <div id="emptyTechniques" class="empty-state" style="display: none;">
+                    <div class="empty-icon">💪</div>
+                    <h3>Nenhuma técnica cadastrada</h3>
+                    <p>Adicione as primeiras técnicas a este curso</p>
+                    <button class="primary-button" onclick="addNewTechnique()">
+                        Adicionar Primeira Técnica
+                    </button>
+                </div>
+            </section>
+
+            <!-- Course Stats -->
+            <section class="course-section">
+                <h2 class="section-title">Estatísticas do Curso</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="completion-rate">0%</div>
+                        <div class="stat-label">Taxa de Conclusão</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avg-progress">0%</div>
+                        <div class="stat-label">Progresso Médio</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-students">0</div>
+                        <div class="stat-label">Alunos Matriculados</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="/js/modules/view-course.js"></script>
+</body>
+</html>

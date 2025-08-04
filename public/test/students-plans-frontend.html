@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes Frontend - Estudantes e Planos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Testes Frontend - Estudantes e Planos</h1>
+        
+        <div class="test-section">
+            <h3>Configuração</h3>
+            <button onclick="runAllTests()">Rodar Todos os Testes</button>
+            <button onclick="clearResults()">Limpar Resultados</button>
+            <div id="config-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Testes de API</h3>
+            <div id="api-tests"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Testes de Interface</h3>
+            <div id="ui-tests"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Testes de Integração</h3>
+            <div id="integration-tests"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Resumo</h3>
+            <div id="summary"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        function logResult(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+            
+            testResults.total++;
+            if (type === 'pass') testResults.passed++;
+            if (type === 'fail') testResults.failed++;
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <div class="test-result info">
+                    Total de Testes: ${testResults.total}
+                    <br>✅ Passou: ${testResults.passed}
+                    <br>❌ Falhou: ${testResults.failed}
+                    <br>📊 Taxa de Sucesso: ${Math.round((testResults.passed / testResults.total) * 100)}%
+                </div>
+            `;
+        }
+
+        function clearResults() {
+            ['api-tests', 'ui-tests', 'integration-tests', 'config-status', 'summary'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            testResults = { passed: 0, failed: 0, total: 0 };
+        }
+
+        async function testAPI(endpoint, description) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                logResult('api-tests', `✅ ${description} - OK (${data.data?.length || 0} registros)`, 'pass');
+                return data;
+            } catch (error) {
+                logResult('api-tests', `❌ ${description} - ${error.message}`, 'fail');
+                return null;
+            }
+        }
+
+        async function testUI() {
+            // Testar se os módulos estão carregados
+            const modules = ['students', 'plans', 'financial'];
+            
+            for (const module of modules) {
+                try {
+                    const response = await fetch(`/js/modules/${module}.js`);
+                    if (response.ok) {
+                        logResult('ui-tests', `✅ Módulo ${module}.js carregado`, 'pass');
+                    } else {
+                        logResult('ui-tests', `❌ Módulo ${module}.js não encontrado`, 'fail');
+                    }
+                } catch (error) {
+                    logResult('ui-tests', `❌ Erro ao carregar ${module}.js: ${error.message}`, 'fail');
+                }
+            }
+
+            // Testar se as views existem
+            const views = ['student-editor.html', 'plan-editor.html'];
+            for (const view of views) {
+                try {
+                    const response = await fetch(`/views/${view}`);
+                    if (response.ok) {
+                        logResult('ui-tests', `✅ View ${view} acessível`, 'pass');
+                    } else {
+                        logResult('ui-tests', `❌ View ${view} não encontrada`, 'fail');
+                    }
+                } catch (error) {
+                    logResult('ui-tests', `❌ Erro ao acessar ${view}: ${error.message}`, 'fail');
+                }
+            }
+        }
+
+        async function testIntegration() {
+            // Testar fluxo completo: criar estudante -> criar plano -> assinar plano
+            try {
+                // 1. Criar estudante de teste
+                const studentData = {
+                    firstName: 'Teste',
+                    lastName: 'Frontend',
+                    email: `teste_${Date.now()}@example.com`,
+                    category: 'ADULT'
+                };
+                
+                const studentResponse = await fetch(`${API_BASE}/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+                
+                if (!studentResponse.ok) throw new Error('Falha ao criar estudante');
+                const student = await studentResponse.json();
+                
+                logResult('integration-tests', `✅ Estudante criado: ${student.data.id}`, 'pass');
+
+                // 2. Criar plano de teste
+                const planData = {
+                    name: `Plano Teste ${Date.now()}`,
+                    price: 100,
+                    billingCycle: 'MONTHLY',
+                    description: 'Plano de teste'
+                };
+                
+                const planResponse = await fetch(`${API_BASE}/billing-plans`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(planData)
+                });
+                
+                if (!planResponse.ok) throw new Error('Falha ao criar plano');
+                const plan = await planResponse.json();
+                
+                logResult('integration-tests', `✅ Plano criado: ${plan.data.id}`, 'pass');
+
+                // 3. Assinar plano
+                const subscriptionResponse = await fetch(`${API_BASE}/students/${student.data.id}/subscriptions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        planId: plan.data.id,
+                        startDate: new Date().toISOString()
+                    })
+                });
+                
+                if (!subscriptionResponse.ok) throw new Error('Falha ao assinar plano');
+                
+                logResult('integration-tests', `✅ Assinatura criada com sucesso`, 'pass');
+
+                // Limpar dados de teste
+                await fetch(`${API_BASE}/students/${student.data.id}`, { method: 'DELETE' });
+                await fetch(`${API_BASE}/billing-plans/${plan.data.id}`, { method: 'DELETE' });
+                
+            } catch (error) {
+                logResult('integration-tests', `❌ Erro no fluxo integrado: ${error.message}`, 'fail');
+            }
+        }
+
+        async function checkServer() {
+            try {
+                const response = await fetch('http://localhost:3000/health');
+                if (response.ok) {
+                    logResult('config-status', '✅ Servidor está rodando', 'pass');
+                    return true;
+                } else {
+                    logResult('config-status', '❌ Servidor não está respondendo', 'fail');
+                    return false;
+                }
+            } catch (error) {
+                logResult('config-status', `❌ Erro ao conectar ao servidor: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            
+            const serverRunning = await checkServer();
+            if (!serverRunning) {
+                logResult('config-status', '💡 Inicie o servidor com: npm run dev', 'info');
+                return;
+            }
+
+            logResult('config-status', '📋 Iniciando testes...', 'info');
+
+            // Testes de API
+            await testAPI('/students', 'Listar estudantes');
+            await testAPI('/billing-plans', 'Listar planos');
+            await testAPI('/courses', 'Listar cursos');
+
+            // Testes de Interface
+            await testUI();
+
+            // Testes de Integração
+            await testIntegration();
+
+            logResult('config-status', '🎉 Testes concluídos!', 'info');
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            logResult('config-status', '📋 Pronto para testes - clique em "Rodar Todos os Testes"', 'info');
+        });
+    </script>
+</body>
+</html>

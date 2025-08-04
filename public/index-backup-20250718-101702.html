@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Academy Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <h1>🥋 KravMaga Pro</h1>
+            <p>Ultimate Academy Management</p>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="students">
+                    <span class="nav-icon">👥</span>
+                    <span>Gestão de Alunos</span>
+                    <span class="badge" id="students-count">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="curriculum">
+                    <span class="nav-icon">🎓</span>
+                    <span>Programas & Cursos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="plans">
+                    <span class="nav-icon">📋</span>
+                    <span>Planos</span>
+                    <span class="badge" id="plans-count">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="evaluation">
+                    <span class="nav-icon">📋</span>
+                    <span>Avaliações</span>
+                    <span class="badge" id="evaluations-count">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="financial">
+                    <span class="nav-icon">💰</span>
+                    <span>Financeiro</span>
+                    <span class="badge success">R$ 0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="analytics">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics & IA</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="communication">
+                    <span class="nav-icon">💬</span>
+                    <span>Comunicação</span>
+                    <span class="badge" id="messages-count">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="gamification">
+                    <span class="nav-icon">🏆</span>
+                    <span>Gamificação</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Configurações</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard -->
+        <div id="dashboardContent" class="content-section static-section active">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p>Visão geral da academia de Krav Maga</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-students">0</div>
+                    <div class="stat-label">Total de Alunos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="active-students">0</div>
+                    <div class="stat-label">Alunos Ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="attendance-rate">0%</div>
+                    <div class="stat-label">Taxa de Frequência</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">R$ 0</div>
+                    <div class="stat-label">Receita Mensal</div>
+                </div>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Atividades Recentes</div>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>Nenhuma atividade registrada hoje</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Students -->
+        <div id="studentsContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Gestão de Alunos</h1>
+                <p>Gerenciar cadastros e informações dos alunos</p>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Lista de Alunos</div>
+                    <button class="btn" id="addNewStudentBtn">➕ Novo Aluno</button>
+                </div>
+
+                <!-- Simple Search Bar -->
+                <div class="simple-search">
+                    <input type="text" 
+                           id="studentSearch" 
+                           class="search-input"
+                           placeholder="🔍 Buscar por nome, CPF, matrícula ou email..." 
+                           autocomplete="off">
+                    
+                    <div class="view-toggle">
+                        <button id="tableViewBtn" class="active">
+                            📋 Tabela
+                        </button>
+                        <button id="gridViewBtn">
+                            🎯 Cards
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Students Views Container -->
+                <div id="studentsContainer">
+                    <!-- Table View -->
+                    <div id="studentsTableView">
+                        <div class="empty-state" id="studentsTableEmpty">
+                            <div class="empty-icon">👥</div>
+                            <p>Nenhum aluno cadastrado no sistema</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Clique em "Novo Aluno" para começar</p>
+                        </div>
+                        <table class="table" id="studentsListTable" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Aluno</th>
+                                    <th>Email</th>
+                                    <th>Categoria</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <!-- Students will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Grid View (Cards) -->
+                    <div id="studentsCardsView" style="display: none;">
+                        <div class="empty-state" id="studentsCardsEmpty">
+                            <div class="empty-icon">👥</div>
+                            <p>Nenhum aluno cadastrado no sistema</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Clique em "Novo Aluno" para começar</p>
+                        </div>
+                        <div id="studentsCardsGrid" class="students-grid">
+                            <!-- Students cards will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Curriculum -->
+        <div id="curriculumContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Programas & Cursos</h1>
+                <p>Gerenciar currículos e programas de treinamento</p>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Cursos Disponíveis</div>
+                    <button class="btn">➕ Novo Curso</button>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">🎓</div>
+                    <p>Nenhum curso configurado</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Configure os programas de Krav Maga</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evaluation -->
+        <div id="evaluationContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Avaliações</h1>
+                <p>Sistema de avaliação e progressão dos alunos</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Avaliações Pendentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Avaliações Concluídas</div>
+                </div>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Próximas Avaliações</div>
+                    <button class="btn">➕ Nova Avaliação</button>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>Nenhuma avaliação agendada</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Financial -->
+        <div id="financialContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Financeiro</h1>
+                <p>Controle financeiro e pagamentos</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">R$ 0</div>
+                    <div class="stat-label">Receita Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">R$ 0</div>
+                    <div class="stat-label">Pagamentos Pendentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">R$ 0</div>
+                    <div class="stat-label">Receita Mensal</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Mensalidades em Dia</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics -->
+        <div id="analyticsContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Analytics & IA</h1>
+                <p>Relatórios e análises inteligentes</p>
+            </div>
+            
+            <div class="empty-state">
+                <div class="empty-icon">📈</div>
+                <p>Dados insuficientes para análise</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Cadastre alunos para gerar relatórios</p>
+            </div>
+        </div>
+        
+        <!-- Communication -->
+        <div id="communicationContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Comunicação</h1>
+                <p>Mensagens e notificações</p>
+            </div>
+            
+            <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <p>Nenhuma mensagem</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Sistema de comunicação limpo</p>
+            </div>
+        </div>
+        
+        <!-- Gamification -->
+        <div id="gamificationContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Gamificação</h1>
+                <p>Sistema de pontos e conquistas</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Conquistas Ativas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Pontos Distribuídos</div>
+                </div>
+            </div>
+            
+            <div class="empty-state">
+                <div class="empty-icon">🏆</div>
+                <p>Sistema de gamificação limpo</p>
+            </div>
+        </div>
+        
+        <!-- Settings -->
+        <div id="settingsContent" class="content-section static-section">
+            <div class="page-header">
+                <h1>Configurações</h1>
+                <p>Configurações gerais do sistema</p>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Configurações da Academia</div>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">⚙️</div>
+                    <p>Configurações padrão aplicadas</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Sistema configurado e funcionando</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container for dynamically loaded views -->
+        <div id="dynamic-view-container" style="display: none;"></div>
+    </main>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

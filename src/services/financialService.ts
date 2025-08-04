@@ -5,21 +5,21 @@ const prisma = new PrismaClient();
 
 export interface CreatePlanData {
   name: string;
-  description?: string;
-  category?: StudentCategory;
+  description?: string | undefined;
+  category?: StudentCategory | undefined;
   price: number;
   billingType: BillingType;
   classesPerWeek: number;
-  maxClasses?: number;
-  hasPersonalTraining?: boolean;
-  hasNutrition?: boolean;
+  maxClasses?: number | undefined;
+  hasPersonalTraining?: boolean | undefined;
+  hasNutrition?: boolean | undefined;
 }
 
 export interface CreateSubscriptionData {
   studentId: string;
   planId: string;
-  startDate?: Date;
-  customPrice?: number;
+  startDate?: Date | undefined;
+  customPrice?: number | undefined;
 }
 
 export interface StudentFinancialSummary {
@@ -29,23 +29,23 @@ export interface StudentFinancialSummary {
     email: string;
     category: StudentCategory;
   };
-  subscription?: {
+  subscription: {
     id: string;
     status: SubscriptionStatus;
     currentPrice: number;
     billingType: BillingType;
-    nextBillingDate?: Date;
-  };
-  asaasCustomer?: {
+    nextBillingDate?: Date | null;
+  } | null;
+  asaasCustomer: {
     id: string;
     asaasId: string;
-  };
+  } | null;
   recentPayments: Array<{
     id: string;
     amount: number;
     status: PaymentStatus;
     dueDate: Date;
-    paidDate?: Date;
+    paidDate?: Date | null;
   }>;
   totalPending: number;
   totalPaid: number;
@@ -53,7 +53,7 @@ export interface StudentFinancialSummary {
 }
 
 export class FinancialService {
-  private asaasService: AsaasService;
+  private asaasService?: AsaasService;
   private organizationId: string;
 
   constructor(organizationId: string, asaasApiKey?: string, isSandbox = true) {
@@ -278,7 +278,9 @@ export class FinancialService {
     }
 
     // Calcular próxima data de cobrança
-    const nextBillingDate = this.asaasService?.calculateDueDate(startDate, plan.billingType) || this.calculateNextBillingDate(startDate, plan.billingType);
+    const nextBillingDate = this.asaasService && plan.billingType !== 'LIFETIME' 
+      ? this.asaasService.calculateDueDate(startDate, plan.billingType as any) 
+      : this.calculateNextBillingDate(startDate, plan.billingType);
 
     // Criar subscription
     const subscription = await prisma.studentSubscription.create({
@@ -317,7 +319,7 @@ export class FinancialService {
   }
 
   // Método auxiliar para calcular próxima data de cobrança sem Asaas
-  private calculateNextBillingDate(startDate: Date, billingType: BillingType): Date {
+  private calculateNextBillingDate(startDate: Date, billingType: any): Date {
     const nextDate = new Date(startDate);
     
     switch (billingType) {
@@ -508,7 +510,9 @@ export class FinancialService {
     }
 
     // Calculate next billing date based on new plan
-    const nextBillingDate = this.asaasService?.calculateDueDate(new Date(), newPlan.billingType) || this.calculateNextBillingDate(new Date(), newPlan.billingType);
+    const nextBillingDate = this.asaasService && newPlan.billingType !== 'LIFETIME' 
+      ? this.asaasService.calculateDueDate(new Date(), newPlan.billingType as any) 
+      : this.calculateNextBillingDate(new Date(), newPlan.billingType);
 
     // Update subscription
     const updatedSubscription = await prisma.studentSubscription.update({
@@ -531,9 +535,45 @@ export class FinancialService {
     return updatedSubscription;
   }
 
-  async createPaymentForSubscription(subscriptionId: string) {
+  async updateSubscription(subscriptionId: string, data: {
+    startDate?: Date;
+    endDate?: Date;
+    status?: any;
+    customPrice?: number;
+  }) {
+    // Get current subscription
     const subscription = await prisma.studentSubscription.findUnique({
+      where: { id: subscriptionId }
+    });
+
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      ...data,
+      updatedAt: new Date()
+    };
+
+    // If we're changing the status to ACTIVE and it was previously not active,
+    // we might need to update the nextBillingDate
+    if (data.status === 'ACTIVE' && subscription.status !== 'ACTIVE') {
+      const plan = await prisma.billingPlan.findUnique({
+        where: { id: subscription.planId }
+      });
+      
+      if (plan) {
+        const nextBillingDate = this.asaasService?.calculateDueDate(new Date(), plan.billingType) || 
+                               this.calculateNextBillingDate(new Date(), plan.billingType);
+        updateData.nextBillingDate = nextBillingDate;
+      }
+    }
+
+    // Update subscription
+    const updatedSubscription = await prisma.studentSubscription.update({
       where: { id: subscriptionId },
+      data: updateData,
       include: {
         student: { include: { user: true } },
         plan: true,
@@ -542,8 +582,83 @@ export class FinancialService {
       }
     });
 
+    return updatedSubscription;
+  }
+
+  async deleteSubscription(subscriptionId: string) {
+    // Get subscription to verify it exists and get related data
+    const subscription = await prisma.studentSubscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        payments: true,
+        asaasCustomer: true
+      }
+    });
+
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    // Check if there are pending payments that need to be handled
+    const pendingPayments = subscription.payments.filter(
+      payment => payment.status === 'PENDING'
+    );
+
+    // If using Asaas integration, cancel any pending payments
+    if (this.asaasService && subscription.asaasCustomer) {
+      for (const payment of pendingPayments) {
+        if (payment.asaasPaymentId) {
+          try {
+            await this.asaasService.cancelPayment(payment.asaasPaymentId);
+          } catch (error) {
+            console.warn(`Failed to cancel Asaas payment ${payment.asaasPaymentId}:`, error);
+          }
+        }
+      }
+    }
+
+    // Update subscription status to CANCELLED instead of hard delete
+    // This preserves financial history for auditing purposes
+    const cancelledSubscription = await prisma.studentSubscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: 'CANCELLED',
+        endDate: new Date(),
+        updatedAt: new Date()
+      },
+      include: {
+        student: { include: { user: true } },
+        plan: true,
+        asaasCustomer: true,
+        financialResponsible: true
+      }
+    });
+
+    return cancelledSubscription;
+  }
+
+  async getSubscription(subscriptionId: string) {
+    return await prisma.studentSubscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        student: { include: { user: true } },
+        plan: true,
+        asaasCustomer: true,
+        financialResponsible: true
+      }
+    });
+  }
+
+  async createPaymentForSubscription(subscriptionId: string) {
+    const subscription = await this.getSubscription(subscriptionId);
+
     if (!subscription || !subscription.asaasCustomer) {
       throw new Error('Subscription or Asaas customer not found');
+    }
+
+    // Skip payment creation for LIFETIME subscriptions
+    if (subscription.billingType === 'LIFETIME') {
+      return null;
     }
 
     if (!this.asaasService) {
@@ -587,12 +702,15 @@ export class FinancialService {
       }
     });
 
-    // Atualizar próxima data de cobrança da subscription
-    const nextBilling = this.asaasService.calculateDueDate(dueDate, subscription.billingType);
-    await prisma.studentSubscription.update({
-      where: { id: subscriptionId },
-      data: { nextBillingDate: nextBilling }
-    });
+    // Atualizar próxima data de cobrança da subscription (skip for LIFETIME)
+    if (subscription.billingType !== 'LIFETIME') {
+      const validBillingType = subscription.billingType as 'MONTHLY'|'QUARTERLY'|'YEARLY';
+      const nextBilling = this.asaasService.calculateDueDate(dueDate, validBillingType);
+      await prisma.studentSubscription.update({
+        where: { id: subscriptionId },
+        data: { nextBillingDate: nextBilling }
+      });
+    }
 
     return payment;
   }
@@ -717,11 +835,11 @@ export class FinancialService {
         currentPrice: Number(activeSubscription.currentPrice),
         billingType: activeSubscription.billingType,
         nextBillingDate: activeSubscription.nextBillingDate
-      } : undefined,
+      } : null,
       asaasCustomer: student.asaasCustomer ? {
         id: student.asaasCustomer.id,
         asaasId: student.asaasCustomer.asaasId
-      } : undefined,
+      } : null,
       recentPayments: student.payments.map(p => ({
         id: p.id,
         amount: Number(p.amount),

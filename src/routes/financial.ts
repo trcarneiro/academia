@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { z } from 'zod';
-import FinancialService from '../services/financialService';
+import FinancialService, { CreatePlanData, CreateSubscriptionData } from '../services/financialService';
 import { StudentCategory, BillingType } from '@prisma/client';
 
 // Schemas de validação
@@ -143,7 +143,7 @@ export default async function financialRoutes(
       const financialService = new FinancialService(organizationId);
       
       const validatedData = createPlanSchema.parse(request.body);
-      const plan = await financialService.createPlan(validatedData);
+      const plan = await financialService.createPlan(validatedData as CreatePlanData);
 
       return {
         success: true,
@@ -234,7 +234,7 @@ export default async function financialRoutes(
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : undefined
       };
       
-      const subscription = await financialService.createSubscription(subscriptionData);
+      const subscription = await financialService.createSubscription(subscriptionData as CreateSubscriptionData);
 
       return {
         success: true,
@@ -246,6 +246,96 @@ export default async function financialRoutes(
       return {
         success: false,
         error: 'Failed to create subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // PUT /api/financial/subscriptions/:id - Atualizar assinatura
+  fastify.put('/subscriptions/:id', {
+    schema: {
+      description: 'Update student subscription',
+      tags: ['Financial'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' }
+        },
+        required: ['id']
+      },
+      body: {
+        type: 'object',
+        properties: {
+          startDate: { type: 'string', format: 'date-time' },
+          endDate: { type: 'string', format: 'date-time' },
+          status: { type: 'string' },
+          customPrice: { type: 'number' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
+      const financialService = new FinancialService(organizationId);
+      
+      const { id } = request.params as { id: string };
+      const updateData = request.body as any;
+      
+      // Convert date strings to Date objects
+      if (updateData.startDate) {
+        updateData.startDate = new Date(updateData.startDate);
+      }
+      if (updateData.endDate) {
+        updateData.endDate = new Date(updateData.endDate);
+      }
+      
+      const subscription = await financialService.updateSubscription(id, updateData);
+
+      return {
+        success: true,
+        data: subscription,
+        message: 'Subscription updated successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to update subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // DELETE /api/financial/subscriptions/:id - Cancelar/deletar assinatura
+  fastify.delete('/subscriptions/:id', {
+    schema: {
+      description: 'Delete student subscription',
+      tags: ['Financial'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
+      const financialService = new FinancialService(organizationId);
+      
+      const { id } = request.params as { id: string };
+      await financialService.deleteSubscription(id);
+
+      return {
+        success: true,
+        message: 'Subscription deleted successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to delete subscription',
         message: error instanceof Error ? error.message : 'Unknown error'
       };
     }

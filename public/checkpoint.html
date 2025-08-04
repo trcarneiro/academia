@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in Rápido - Academia</title>
+    <link rel="stylesheet" href="/css/checkpoint.css">
+</head>
+<body>
+    <div class="checkpoint-isolated">
+        <header class="checkpoint-header">
+            <button class="back-btn" onclick="window.history.back()">
+                ← Voltar
+            </button>
+            <h1>Check-in Rápido</h1>
+            <p>Digite a matrícula, nome ou CPF do aluno para registrar a presença.</p>
+        </header>
+
+        <!-- Simple Metrics -->
+        <div class="metric-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="total-students-checkin">0</div>
+                <div class="metric-label">Total de Alunos</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="active-students-checkin">0</div>
+                <div class="metric-label">Alunos Ativos</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="checkins-today">0</div>
+                <div class="metric-label">Check-ins Hoje</div>
+            </div>
+        </div>
+        
+        <!-- Visual Recognition Section -->
+        <div class="recognition-container">
+            <div class="recognition-header">
+                <h3>📸 Identificação Visual</h3>
+                <div class="recognition-controls">
+                    <button id="startCameraBtn" class="btn btn-primary">
+                        📸 Ativar Câmera
+                    </button>
+                    <button id="stopCameraBtn" class="btn btn-secondary" style="display: none;">
+                        ⏹️ Parar Câmera
+                    </button>
+                </div>
+            </div>
+            
+            <div class="camera-section" id="cameraSection" style="display: none;">
+                <div class="camera-container">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <canvas id="captureCanvas" style="display: none;"></canvas>
+                    <div class="camera-overlay">
+                        <div class="face-guide">
+                            <div class="guide-text">Posicione o rosto dentro do quadro</div>
+                        </div>
+                    </div>
+                    <div class="camera-status" id="cameraStatus">
+                        <span class="status-icon">🔴</span>
+                        <span class="status-text">Aguardando...</span>
+                    </div>
+                </div>
+                
+                <div class="identification-panel" id="identificationPanel" style="display: none;">
+                    <div class="identified-student">
+                        <div class="student-photo">
+                            <img id="studentPhoto" src="" alt="Foto do Aluno">
+                            <div class="photo-placeholder">📷</div>
+                        </div>
+                        <div class="student-data">
+                            <div class="student-name" id="identifiedName">-</div>
+                            <div class="student-matricula" id="identifiedMatricula">-</div>
+                            <div class="student-class" id="identifiedClass">-</div>
+                        </div>
+                        <div class="confidence-score">
+                            <div class="confidence-label">Confiança:</div>
+                            <div class="confidence-value" id="confidenceValue">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="identification-actions">
+                        <button id="confirmCheckinBtn" class="btn btn-success">
+                            ✅ Confirmar Check-in
+                        </button>
+                        <button id="rejectIdentificationBtn" class="btn btn-secondary">
+                            ❌ Não é este aluno
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Manual Search Section -->
+        <div class="search-container">
+            <div class="search-header">
+                <h3>🔍 Busca Manual</h3>
+                <p>Use se a identificação visual não funcionou</p>
+                <div class="test-info">
+                    <small>💡 <strong>Para testar:</strong> Use matrículas como <code>250001</code>, <code>250002</code>, ou nomes como <code>João</code>, <code>Maria</code></small>
+                </div>
+            </div>
+            <div class="search-input-container">
+                <input type="text" 
+                       id="checkinSearchInput" 
+                       class="search-input" 
+                       placeholder="🔍 Digite matrícula, nome ou CPF para check-in rápido..." 
+                       autocomplete="off">
+                <button id="clearSearchBtn" class="btn btn-secondary">
+                    🧹 Limpar
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table-header">
+                <h3>⚡ Check-in Rápido</h3>
+                <div class="results-counter">
+                    <span id="checkinResultsCount">0</span> resultado(s)
+                </div>
+            </div>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="checkinTableBody">
+                    <tr>
+                        <td colspan="4" class="empty-message">
+                            Digite acima para buscar alunos e fazer check-in
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div id="checkinLoadingState" class="loading-state" style="display: none;">
+                <p>🔍 Buscando alunos...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/checkpoint.js"></script>
+</body>
+</html>

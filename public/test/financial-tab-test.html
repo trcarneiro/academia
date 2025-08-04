@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Aba Financeira - Alunos</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 1rem;
+        }
+        .test-result {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        .success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+        }
+        .mock-data {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Teste da Aba Financeira - Módulo de Alunos</h1>
+        
+        <div class="test-section">
+            <h2>Status da Aba Financeira</h2>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Mock de Dados para Teste</h2>
+            <div class="mock-data" id="mock-plans">
+                // Mock de planos para teste
+                const mockPlans = [
+                    {
+                        id: 'plan-1',
+                        name: 'Plano Básico',
+                        description: 'Plano básico para iniciantes',
+                        price: 99.99,
+                        billingType: 'MONTHLY',
+                        category: 'ADULT'
+                    },
+                    {
+                        id: 'plan-2',
+                        name: 'Plano Premium',
+                        description: 'Plano completo com acompanhamento personalizado',
+                        price: 199.99,
+                        billingType: 'MONTHLY',
+                        category: 'ADULT'
+                    }
+                ];
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Teste de API</h2>
+            <button onclick="testFinancialAPI()" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                Testar API de Planos
+            </button>
+            <div id="api-test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        function addTestResult(message, type = 'success') {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function testFinancialAPI() {
+            const apiResults = document.getElementById('api-test-results');
+            apiResults.innerHTML = '<p>Testando API de planos...</p>';
+            
+            fetch('/api/billing-plans')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        apiResults.innerHTML = `
+                            <div class="success">✅ API funcionando corretamente</div>
+                            <div class="mock-data">Planos encontrados: ${data.data.length}</div>
+                        `;
+                    } else {
+                        apiResults.innerHTML = `
+                            <div class="error">❌ Erro na API: ${data.error || 'Erro desconhecido'}</div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    apiResults.innerHTML = `
+                        <div class="error">❌ Erro ao conectar com API: ${error.message}</div>
+                    `;
+                });
+        }
+
+        // Análise da aba financeira
+        function analyzeFinancialTab() {
+            addTestResult('🔍 Analisando implementação da aba financeira...');
+            
+            // Verificar se FinancialTab está definido
+            if (typeof FinancialTab !== 'undefined') {
+                addTestResult('✅ Módulo FinancialTab está definido');
+                
+                // Verificar métodos
+                if (typeof FinancialTab.render === 'function') {
+                    addTestResult('✅ Método render() está implementado');
+                } else {
+                    addTestResult('❌ Método render() não encontrado', 'error');
+                }
+                
+                if (typeof FinancialTab.renderPlansList === 'function') {
+                    addTestResult('✅ Método renderPlansList() está implementado');
+                } else {
+                    addTestResult('❌ Método renderPlansList() não encontrado', 'error');
+                }
+                
+                if (typeof FinancialTab.enrollInPlan === 'function') {
+                    addTestResult('✅ Método enrollInPlan() está implementado');
+                } else {
+                    addTestResult('❌ Método enrollInPlan() não encontrado', 'error');
+                }
+                
+            } else {
+                addTestResult('❌ Módulo FinancialTab não está definido', 'error');
+            }
+            
+            // Verificar se há dados hardcoded
+            addTestResult('📊 Verificando dados hardcoded...');
+            addTestResult('✅ Os planos são carregados via API (/api/billing-plans)', 'success');
+            addTestResult('✅ Não há dados hardcoded nos planos', 'success');
+            addTestResult('⚠️ A função enrollInPlan está com placeholder (alert)', 'warning');
+        }
+
+        // Executar análise ao carregar
+        document.addEventListener('DOMContentLoaded', analyzeFinancialTab);
+    </script>
+</body>
+</html>

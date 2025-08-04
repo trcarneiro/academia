@@ -10,7 +10,7 @@ let currentEditingCourse = null;
 /**
  * Initializes all event listeners for the courses section.
  */
-export function initCourseEventListeners() {
+function initCourseEventListeners() {
     // Search functionality
     const courseSearch = document.getElementById('courseSearch');
     if (courseSearch) courseSearch.addEventListener('input', handleCourseSearch);
@@ -44,7 +44,7 @@ export function initCourseEventListeners() {
 /**
  * Loads and renders the courses list dynamically from the API.
  */
-export async function loadAndRenderCourses() {
+async function loadAndRenderCourses() {
     console.log('🔄 Loading courses from API...');
     
     // Show loading state
@@ -655,23 +655,24 @@ function renderCourseProgress(progress) {
 }
 
 // Course action functions
+function openNewCourseForm() {
+    console.log('➕ Opening new course form...');
+    
+    // Clear any existing editing course ID
+    localStorage.removeItem('editingCourseId');
+    
+    // Navigate to course-editor for new course creation
+    navigateToModule('course-editor');
+}
+
 function editCourse(courseId) {
-    console.log('Editing course:', courseId);
-    // Load course data and open edit modal
-    fetch(`/api/courses/${courseId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.data) {
-                populateEditCourseModal(data.data);
-                openModal('editCourseModal');
-            } else {
-                window.showToast('Erro ao carregar dados do curso', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading course:', error);
-            window.showToast('Erro ao conectar com o servidor', 'error');
-        });
+    console.log('✏️ Editing course:', courseId);
+    
+    // Store course ID for course-editor to use
+    localStorage.setItem('editingCourseId', courseId);
+    
+    // Navigate to course-editor with the course ID
+    navigateToModule('course-editor', { courseId: courseId });
 }
 
 async function deleteCourse(courseId) {
@@ -755,7 +756,7 @@ function populateEditCourseModal(course) {
 /**
  * Initializes course form submissions to call loadAndRenderCourses after success.
  */
-export function initCourseFormHandlers() {
+function initCourseFormHandlers() {
     // Handle course creation form
     const addCourseForm = document.getElementById('addCourseForm');
     if (addCourseForm) {
@@ -851,11 +852,11 @@ export function initCourseFormHandlers() {
 }
 
 // Legacy function compatibility
-export function loadCourses() {
+function loadCourses() {
     return loadAndRenderCourses();
 }
 
-export function renderCourses(courses) {
+function renderCourses(courses) {
     return renderCoursesTable(courses);
 }
 
@@ -878,6 +879,7 @@ function closeModal(modalId) {
 window.refreshCourses = loadAndRenderCourses;
 window.exportCourses = exportCourses;
 window.openCourseModal = openCourseModal;
+window.openNewCourseForm = openNewCourseForm;
 window.editCourse = editCourse;
 window.deleteCourse = deleteCourse;
 window.openModal = openModal;

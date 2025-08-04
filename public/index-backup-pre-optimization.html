@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Krav Maga Academy - Dashboard</title>
+
+    <!-- 🔌 CARREGADOR DE MÓDULOS ISOLADOS - Inline para evitar cache issues -->
+    <script>
+        // Inline module loader to avoid 404 cache issues
+        window.ModuleLoader = {
+            loadedModules: new Map(),
+            isModuleLoaded: function(moduleName) {
+                return this.loadedModules.has(moduleName);
+            },
+            getLoadedModules: function() {
+                return Array.from(this.loadedModules.keys());
+            }
+        };
+
+    </script>
+
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="/css/modules/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/evaluations.css">
+    <link rel="stylesheet" href="/css/modules/progress.css">
+    <link rel="stylesheet" href="/css/modules/courses.css">
+    <link rel="stylesheet" href="/css/modules/knowledge-base.css">
+    <link rel="stylesheet" href="/css/modules/attendance.css">
+    <link rel="stylesheet" href="/css/modules/settings.css">
+    
+    <!-- JavaScript Modules -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/students-management.js"></script>
+    <script src="/js/students.js"></script>
+    <script src="/js/knowledge-base.js"></script>
+    <script src="/js/modules/dashboard.js"></script>
+    <script src="/js/modules/evaluations.js"></script>
+    <script src="/js/modules/progress.js"></script>
+    <script src="/js/modules/courses.js"></script>
+    <script src="/js/modules/knowledge-base.js"></script>
+    <script src="/js/modules/attendance.js"></script>
+    <script src="/js/modules/settings.js"></script>
+    <script src="/js/course-creator.js"></script>
+</head>
+<body>
+    <div class="dashboard-container" id="dashboardContainer">
+        <!-- Enhanced Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="header-title">
+                    <span>🥋</span>
+                    Krav Academy
+                </div>
+                <div class="header-ai-status">
+                    <span>🤖</span>
+                    5 Agentes Ativos
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="quick-action-btn" onclick="toggleSidebar()">
+                    ☰ Menu
+                </button>
+            </div>
+        </header>
+
+        <!-- Enhanced Sidebar -->
+        <aside class="dashboard-sidebar" id="dashboardSidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Gestão Principal</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-page="dashboard" data-ai-enabled="true">
+                                <span class="nav-icon">📊</span>
+                                Dashboard IA
+                            </button>
+                        </li>
+
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="students" data-ai-enabled="true">
+                                <span class="nav-icon">�</span>
+                                Gestão de Alunos
+                                <span class="badge success">INTEGRADO</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="classes" data-ai-enabled="true">
+                                <span class="nav-icon">🏫</span>
+                                Gestão de Turmas
+                                <span class="badge success">INTEGRADO</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="evaluations" data-ai-enabled="true">
+                                <span class="nav-icon">📝</span>
+                                Avaliações
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="progress">
+                                <span class="nav-icon">📈</span>
+                                Progresso
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="financial" data-ai-enabled="false">
+                                <span class="nav-icon">💰</span>
+                                Gestão Financeira
+                                <span class="badge info" id="financial-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="financial-responsibles" data-ai-enabled="false">
+                                <span class="nav-icon">👨‍👩‍👧‍👦</span>
+                                Responsáveis
+                                <span class="badge info" id="responsibles-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" onclick="window.open('/views/plans.html', '_blank')">
+                                <span class="nav-icon">📄</span>
+                                Planos da Academia
+                                <span class="badge info" id="plans-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="subscriptions" data-ai-enabled="true">
+                                <span class="nav-icon">💳</span>
+                                Assinaturas
+                                <span class="badge info" id="subscriptions-count">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Infraestrutura</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="units" data-ai-enabled="false">
+                                <span class="nav-icon">🏢</span>
+                                Unidades
+                                <span class="badge info" id="units-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="mats" data-ai-enabled="false">
+                                <span class="nav-icon">🥋</span>
+                                Tatames
+                                <span class="badge info" id="mats-count">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="instructors" data-ai-enabled="false">
+                                <span class="nav-icon">👨‍🏫</span>
+                                Professores
+                                <span class="badge info" id="instructors-count">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Agentes IA</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="course-creator" data-ai-enabled="true">
+                                <span class="nav-icon">🎓</span>
+                                Course Creator
+                                <span class="badge ai-powered">AI</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="lesson-planner" data-ai-enabled="true">
+                                <span class="nav-icon">📋</span>
+                                Lesson Planner
+                                <span class="badge ai-powered">AI</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="technique-auditor" data-ai-enabled="true">
+                                <span class="nav-icon">🔍</span>
+                                Tech Auditor
+                                <span class="badge ai-powered">AI</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="knowledge-base" data-ai-enabled="true">
+                                <span class="nav-icon">🧠</span>
+                                Base RAG
+                                <span class="badge success">RAG</span>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Ferramentas</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="student-portal">
+                                <span class="nav-icon">🎯</span>
+                                Portal do Aluno
+                                <span class="badge warning">NOVO</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="public-checkin">
+                                <span class="nav-icon">📟</span>
+                                Check-in Kiosk
+                                <span class="badge warning">KIOSK</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-page="settings">
+                                <span class="nav-icon">⚙️</span>
+                                Configurações
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Enhanced Main Content -->
+        <main class="dashboard-main" id="dashboardMain">
+            <!-- Dynamic Main Header -->
+            <div class="main-header">
+                <div>
+                    <h1 class="main-title" id="mainTitle">Dashboard</h1>
+                    <p class="main-subtitle" id="mainSubtitle">Sistema de gestão da academia</p>
+                </div>
+            </div>
+
+            <!-- Content Sections Container -->
+            <div id="contentContainer">
+                <!-- Dashboard -->
+                <div id="dashboard" class="content-section active">
+                    <!-- Enhanced Metrics Grid -->
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-students">4</div>
+                            <div class="metric-label">Total de Alunos</div>
+                            <div class="metric-trend positive">
+                                <span>↗</span> +2 este mês
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="active-students">4</div>
+                            <div class="metric-label">Alunos Ativos</div>
+                            <div class="metric-trend positive">
+                                <span>↗</span> 100% taxa
+                            </div>
+                        </div>
+                        <div class="metric-card" data-action="toggle-attendance-details" style="cursor: pointer;">
+                            <div class="metric-value" id="attendance-rate">85%</div>
+                            <div class="metric-label">Taxa de Frequência</div>
+                            <div class="metric-trend positive">
+                                <span>↗</span> +5% vs mês anterior
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #CBD5E1;">
+                                Clique para ver detalhes
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="current-lesson">15/48</div>
+                            <div class="metric-label">Progresso do Curso</div>
+                            <div class="metric-trend positive">
+                                <span>↗</span> 31% completo
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Cards -->
+                    <div class="smart-card">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📊</span> Atividades Recentes
+                        </h3>
+                        <div style="color: #CBD5E1; line-height: 1.6;">
+                            <p style="margin: 0.5rem 0;">🎯 <strong>Aula 15 - Defesas Básicas</strong> (Hoje)</p>
+                            <p style="margin: 0.5rem 0;">📝 <strong>Avaliação Maria Silva</strong> - 85.5% (Ontem)</p>
+                            <p style="margin: 0.5rem 0;">👤 <strong>Novo aluno: Carlos Rodrigues</strong> (2 dias atrás)</p>
+                            <p style="margin: 0.5rem 0;">🥋 <strong>Técnica dominada: Ana Oliveira</strong> - 5 técnicas (3 dias atrás)</p>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- Students -->
+        <div id="students" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">👥 Gestão de Alunos</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8;">Sistema completo de gestão de alunos</p>
+                    </div>
+                    <button onclick="window.location.href='/views/students.html'" class="btn btn-primary" style="background: linear-gradient(135deg, #3B82F6, #8B5CF6); padding: 0.75rem 1.5rem;">
+                        <span>➕</span> Novo Aluno
+                    </button>
+                </div>
+            </div>
+
+            <!-- Students Table -->
+            <div style="background: #1E293B; border-radius: 12px; padding: 1.5rem; border: 1px solid #374151;">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #374151;">
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Nome</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Email</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Telefone</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Turma</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Status</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Students will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses -->
+        <div id="courses" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📚 Gestão de Cursos</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Cadastro, edição e gestão de cursos acadêmicos</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="window.location.href='/views/courses.html'" style="background: linear-gradient(135deg, #059669, #10B981); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Curso
+                        </button>
+                        <button class="btn btn-secondary" onclick="openRAGCourseCreator()" style="padding: 0.75rem 1.5rem;">
+                            <span>🤖</span> Criar com IA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="totalCoursesCount">1</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Cursos Ativos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="totalLessonsCount">48</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Planos de Aula</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="totalTechniquesCount">42</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Técnicas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="courseProgressCount">31%</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Progresso</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course List Table -->
+            <div class="data-table" style="margin-bottom: 2rem;">
+                <div class="table-header">
+                    <div class="table-title">📚 Lista de Cursos</div>
+                    <div class="table-actions">
+                        <input type="text" id="courseSearch" placeholder="Buscar cursos..." style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; min-width: 250px; margin-right: 1rem;" oninput="filterCourses()">
+                        <button class="btn btn-secondary" onclick="refreshCourses()" style="margin-right: 0.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                        <button class="btn btn-success" onclick="exportCourses()" style="background: linear-gradient(135deg, #059669, #10B981);">
+                            <span>📊</span> Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container" style="overflow-x: auto;">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome do Curso</th>
+                                <th>Categoria</th>
+                                <th>Nível</th>
+                                <th>Total de Aulas</th>
+                                <th>Alunos</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-table-body">
+                            <!-- Course rows will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Classes (Turmas) -->
+        <div id="classes" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #FFFFFF, #F0FDF4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🏫 Gestão de Turmas</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #D1FAE5; font-size: 1.1rem;">Arte marcial com múltiplos cursos/faixas em execução simultânea</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="createNewClass()" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Nova Turma
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewClassSchedule()" style="padding: 0.75rem 1.5rem;">
+                            <span>📅</span> Cronograma
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalClassesCount">2</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Turmas Ativas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalEnrolledStudents">6</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Alunos Total</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="activeBelts">3</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Cursos Ativos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="attendanceRate">85%</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Taxa Presença</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes List -->
+            <div class="data-table" style="margin-bottom: 2rem;">
+                <div class="table-header">
+                    <div class="table-title">🏫 Turmas em Andamento</div>
+                    <div class="table-actions">
+                        <select id="classStatusFilter" onchange="filterClasses()" style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem; border-radius: 8px; margin-right: 1rem;">
+                            <option value="all">Todas as Turmas</option>
+                            <option value="active">Ativas</option>
+                            <option value="finished">Finalizadas</option>
+                            <option value="paused">Pausadas</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="createNewClass()">
+                            <span>➕</span> Nova Turma
+                        </button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #1E293B; border-bottom: 1px solid #374151;">
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Turma</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Arte Marcial</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Horário</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Cursos Ativos</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Total Alunos</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Status</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classesTableBody">
+                            <tr style="border-bottom: 1px solid #374151;">
+                                <td style="padding: 1rem; color: #F8FAFC; font-weight: 600;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">T1</span>
+                                        Turma 1
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">Krav Maga</td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div>Ter/Qui - 18:00h</div>
+                                    <div style="font-size: 0.75rem; color: #94A3B8;">Início: 01/06/2025</div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                                        <span style="background: #FFFFFF; color: #000; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">🥋 Branca</span>
+                                        <span style="background: #FDE047; color: #000; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">🥋 Amarela</span>
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="background: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">4/20</span>
+                                        alunos
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem;">
+                                    <span style="background: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🟢 Ativa</span>
+                                </td>
+                                <td style="padding: 1rem;">
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="viewClassDetails(1)" class="btn btn-small btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">👁️ Ver</button>
+                                        <button onclick="manageClassSchedule(1)" class="btn btn-small btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">📅 Agenda</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #374151;">
+                                <td style="padding: 1rem; color: #F8FAFC; font-weight: 600;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="background: #8B5CF6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">T2</span>
+                                        Turma 2
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">Krav Maga</td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div>Seg/Qua - 19:00h</div>
+                                    <div style="font-size: 0.75rem; color: #94A3B8;">Início: 01/06/2025</div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                                        <span style="background: #FFFFFF; color: #000; padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">🥋 Branca</span>
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem; color: #CBD5E1;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="background: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">2/20</span>
+                                        alunos
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem;">
+                                    <span style="background: #059669; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">🟢 Ativa</span>
+                                </td>
+                                <td style="padding: 1rem;">
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button onclick="viewClassDetails(2)" class="btn btn-small btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">👁️ Ver</button>
+                                        <button onclick="manageClassSchedule(2)" class="btn btn-small btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">📅 Agenda</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">📅 Aulas de Hoje</div>
+                        <div class="table-actions">
+                            <span style="color: #CBD5E1; font-size: 0.875rem;">03/07/2025</span>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="color: #F8FAFC; font-weight: 600;">Turma 1 - Krav Maga</div>
+                                    <span style="background: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">18:00</span>
+                                </div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem; margin-bottom: 0.75rem;">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        <div style="background: rgba(255, 255, 255, 0.1); padding: 0.5rem; border-radius: 6px; flex: 1; min-width: 120px;">
+                                            <div style="color: #FFFFFF; font-weight: 600; font-size: 0.75rem;">🤍 Faixa Branca</div>
+                                            <div style="color: #D1FAE5; font-size: 0.7rem;">Aula 16: Defesas vs Estrangulamento</div>
+                                        </div>
+                                        <div style="background: rgba(253, 224, 71, 0.2); padding: 0.5rem; border-radius: 6px; flex: 1; min-width: 120px;">
+                                            <div style="color: #FDE047; font-weight: 600; font-size: 0.75rem;">💛 Faixa Amarela</div>
+                                            <div style="color: #D1FAE5; font-size: 0.7rem;">Aula 8: Combinações de Golpes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="color: #94A3B8; font-size: 0.75rem;">4 alunos confirmados (2 Branca + 2 Amarela)</div>
+                            </div>
+                            <div style="text-align: center; color: #6B7280; padding: 2rem;">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📅</div>
+                                <p>Apenas 1 aula agendada para hoje</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">📊 Estatísticas Semanais</div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.25rem; color: #10B981; margin-bottom: 0.5rem;">87%</div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem;">Frequência Turma 1</div>
+                            </div>
+                            <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.25rem; color: #8B5CF6; margin-bottom: 0.5rem;">83%</div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem;">Frequência Turma 2</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: #F8FAFC; margin-bottom: 0.5rem; font-size: 0.875rem;">Próximas Avaliações por Faixa</h4>
+                            <div style="color: #CBD5E1; font-size: 0.875rem; line-height: 1.6;">
+                                <div>• Faixa Branca: Módulo 2 (Semana 20)</div>
+                                <div>• Faixa Amarela: Módulo 1 (Semana 10)</div>
+                                <div>• Faixa Laranja: Módulo 3 (Semana 30)</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 style="color: #F8FAFC; margin-bottom: 0.5rem; font-size: 0.875rem;">Foco Semanal por Faixa</h4>
+                            <div style="color: #CBD5E1; font-size: 0.875rem;">
+                                <div style="background: rgba(255, 255, 255, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.25rem;">🤍 Branca: Defesas vs Estrangulamento</div>
+                                <div style="background: rgba(253, 224, 71, 0.1); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.25rem;">💛 Amarela: Combinações de Golpes</div>
+                                <div style="background: rgba(251, 146, 60, 0.1); padding: 0.5rem; border-radius: 4px;">🧡 Laranja: Defesas vs Armas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="classCapacity" style="display: block; margin-bottom: 0.5rem; color: #CBD5E1; font-weight: 600;">Capacidade Máxima</label>
+                                <input type="number" id="classCapacity" value="20" min="5" max="50" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC;">
+                            </div>
+                            <div class="form-group">
+                                <label for="classInstructor" style="display: block; margin-bottom: 0.5rem; color: #CBD5E1; font-weight: 600;">Instrutor Principal</label>
+                                <input type="text" id="classInstructor" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC;" placeholder="Nome do instrutor">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Configuration -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>⏰</span> Configuração de Horários
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #3B82F6;">
+                                <h4 style="color: #3B82F6; margin: 0 0 0.5rem 0; font-size: 0.875rem;">Dias da Semana</h4>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classMon" style="margin: 0;">
+                                        Segunda
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classTue" style="margin: 0;">
+                                        Terça
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classWed" style="margin: 0;">
+                                        Quarta
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classThu" style="margin: 0;">
+                                        Quinta
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classFri" style="margin: 0;">
+                                        Sexta
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; font-size: 0.875rem;">
+                                        <input type="checkbox" id="classSat" style="margin: 0;">
+                                        Sábado
+                                    </label>
+                                </div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #F59E0B;">
+                                <h4 style="color: #F59E0B; margin: 0 0 0.5rem 0; font-size: 0.875rem;">Horário</h4>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="color: #CBD5E1; font-size: 0.875rem;">Início:</label>
+                                    <input type="time" id="classStartTime" value="18:00" style="width: 100%; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 6px; color: #F8FAFC;">
+                                    <label style="color: #CBD5E1; font-size: 0.875rem;">Fim:</label>
+                                    <input type="time" id="classEndTime" value="19:00" style="width: 100%; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 6px; color: #F8FAFC;">
+                                </div>
+                            </div>
+                            <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #8B5CF6;">
+                                <h4 style="color: #8B5CF6; margin: 0 0 0.5rem 0; font-size: 0.875rem;">Data de Início</h4>
+                                <input type="date" id="classStartDate" style="width: 100%; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 6px; color: #F8FAFC; margin-bottom: 0.5rem;">
+                                <label style="color: #CBD5E1; font-size: 0.875rem;">Duração (semanas):</label>
+                                <input type="number" id="classDuration" value="24" min="4" max="52" style="width: 100%; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 6px; color: #F8FAFC;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Courses and Belts Included -->
+                    <div class="form-section" style="margin-bottom: 2rem;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🥋</span> Cursos/Faixas Inclusos na Turma
+                        </h3>
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #10B981; margin-bottom: 1rem;">
+                            <h4 style="color: #10B981; margin: 0 0 0.5rem 0;">💡 Conceito de Turma Multi-Faixa</h4>
+                            <p style="color: #D1FAE5; font-size: 0.875rem; margin: 0; line-height: 1.5;">
+                                Uma turma pode ter alunos de diferentes faixas treinando simultaneamente. Cada faixa segue seu próprio cronograma de técnicas, mas compartilha o mesmo horário e instrutor.
+                            </p>
+                        </div>
+                        <div id="includedCoursesContainer" style="display: grid; gap: 1rem;">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #3B82F6;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="includeBranca" checked>
+                                    <span style="font-weight: 600;">🤍 Faixa Branca - Defesa Pessoal 1</span>
+                                </label>
+                                <div style="color: #94A3B8; font-size: 0.875rem; margin-left: 1.5rem;">
+                                    48 aulas • Técnicas básicas de autodefesa • Duração: 24 semanas
+                                </div>
+                            </div>
+                            <div style="background: rgba(253, 224, 71, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #FDE047;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="includeAmarela">
+                                    <span style="font-weight: 600;">💛 Faixa Amarela - Combinações</span>
+                                </label>
+                                <div style="color: #94A3B8; font-size: 0.875rem; margin-left: 1.5rem;">
+                                    36 aulas • Combinações de golpes • Duração: 18 semanas
+                                </div>
+                            </div>
+                            <div style="background: rgba(251, 146, 60, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #FB923C;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="includeLaranja">
+                                    <span style="font-weight: 600;">🧡 Faixa Laranja - Defesas Avançadas</span>
+                                </label>
+                                <div style="color: #94A3B8; font-size: 0.875rem; margin-left: 1.5rem;">
+                                    40 aulas • Defesas contra armas • Duração: 20 semanas
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #374151;">
+                        <button type="button" onclick="deleteClass()" id="deleteClassBtn" style="background: #DC2626; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: none;">
+                            <span>🗑️</span> Deletar Turma
+                        </button>
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="button"  style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                Cancelar
+                            </button>
+                            <button type="submit" style="background: linear-gradient(135deg, #059669, #10B981); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                <span>💾</span> Salvar Turma
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+                            <div style="margin-top: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #CBD5E1; font-weight: 600;">Descrição</label>
+                                <textarea id="planDescription" rows="3" style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; resize: vertical;" placeholder="Acesso ilimitado a múltiplas turmas e faixas..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Included Classes Selection -->
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: #F8FAFC; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>🏫</span> Turmas Incluídas no Plano
+                            </h3>
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #10B981; margin-bottom: 1rem;">
+                                <h4 style="color: #10B981; margin: 0 0 0.5rem 0;">💡 Auto-Atribuição de Turmas</h4>
+                                <p style="color: #D1FAE5; font-size: 0.875rem; margin: 0; line-height: 1.5;">
+                                    Quando um aluno receber este plano, será automaticamente inscrito nas turmas selecionadas abaixo. Turmas adicionais poderão ser incluídas manualmente depois.
+                                </p>
+                            </div>
+
+                            <div id="availableClassesForPlan" style="display: grid; gap: 1rem;">
+                                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #3B82F6;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; margin-bottom: 0.5rem;">
+                                        <input type="checkbox" id="planIncludeClass1" value="class1">
+                                        <span style="font-weight: 600;">🏫 Turma 1 - Krav Maga (Ter/Qui 18h)</span>
+                                    </label>
+                                    <div style="color: #94A3B8; font-size: 0.875rem; margin-left: 1.5rem;">
+                                        Faixas: Branca, Amarela • 4 alunos ativos • Capacidade: 20
+                                    </div>
+                                </div>
+                                <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #8B5CF6;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1; margin-bottom: 0.5rem;">
+                                        <input type="checkbox" id="planIncludeClass2" value="class2">
+                                        <span style="font-weight: 600;">🏫 Turma 2 - Krav Maga (Seg/Qua 19h)</span>
+                                    </label>
+                                    <div style="color: #94A3B8; font-size: 0.875rem; margin-left: 1.5rem;">
+                                        Faixas: Branca, Laranja • 2 alunos ativos • Capacidade: 20
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #374151;">
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="button"  style="background: #6B7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                    Cancelar
+                                </button>
+                                <button type="submit" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                    <span>💎</span> Criar Plano Premium
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluations -->
+        <div id="evaluations" class="content-section">
+            <div class="page-header">
+                <h1>Sistema de Avaliações</h1>
+                <p>Avaliações e desempenho dos alunos</p>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Avaliações Registradas</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p><strong>Maria Silva</strong></p>
+                    <p>• Aula 10: 85.5% de precisão</p>
+                    <p>• Status: AUTONOMIA</p>
+                    <p>• Técnicas avaliadas: 8</p>
+                    <br>
+                    <p><em>Outras avaliações serão exibidas aqui conforme forem registradas.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress" class="content-section">
+            <div class="page-header">
+                <h1>Progresso dos Alunos</h1>
+                <p>Acompanhamento de evolução individual</p>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Progresso Individual</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p><strong>Ana Oliveira</strong></p>
+                    <p>• Técnicas dominadas: 5</p>
+                    <p>• Pontos acumulados: 65</p>
+                    <p>• Desafios completados: 2</p>
+                    <br>
+                    <p><em>Outros progressos serão exibidos conforme registrados.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Module -->
+        <div id="financial" class="content-section">
+            <div class="page-header">
+                <h1>💰 Gestão Financeira</h1>
+                <p>Controle de recebimentos, gastos, fluxo de caixa e relatórios financeiros</p>
+            </div>
+
+            <!-- Financial Overview Cards -->
+            <div class="metric-grid" style="margin-bottom: 2rem;">
+                <div class="metric-card">
+                    <div class="metric-value" id="total-revenue">R$ 0</div>
+                    <div class="metric-label">Receita Total</div>
+                    <div class="metric-trend positive">
+                        <span>↗</span> +0% este mês
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="active-subscriptions">0</div>
+                    <div class="metric-label">Assinaturas Ativas</div>
+                    <div class="metric-trend positive">
+                        <span>↗</span> 100% pagamento
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="pending-payments">0</div>
+                    <div class="metric-label">Pendentes</div>
+                    <div class="metric-trend neutral">
+                        <span>→</span> 0 em atraso
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-plans">0</div>
+                    <div class="metric-label">Planos Ativos</div>
+                    <div class="metric-trend positive">
+                        <span>↗</span> Disponíveis
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Tabs -->
+            <div class="financial-tabs" style="margin-bottom: 2rem;">
+                <button class="financial-tab active" onclick="switchFinancialTab('revenues')">
+                    💰 Recebimentos
+                </button>
+                <button class="financial-tab" onclick="switchFinancialTab('expenses')">
+                    💸 Gastos
+                </button>
+                <button class="financial-tab" onclick="switchFinancialTab('payments')">
+                    💳 Pagamentos
+                </button>
+                <button class="financial-tab" onclick="switchFinancialTab('settings')">
+                    ⚙️ Configurações
+                </button>
+            </div>
+
+            <!-- Revenues Management -->
+            <div id="financial-revenues" class="financial-tab-content active">
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">💰 Controle de Recebimentos</div>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" >
+                                <span>➕</span>
+                                Novo Recebimento
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Aluno/Cliente</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenuesTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #CBD5E1; padding: 2rem;">
+                                    💰 Módulo de Recebimentos em desenvolvimento
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Expenses Management -->
+            <div id="financial-expenses" class="financial-tab-content" style="display: none;">
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">💸 Controle de Gastos</div>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" >
+                                <span>➕</span>
+                                Novo Gasto
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Próximo Vencimento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #CBD5E1; padding: 2rem;">
+                                    Nenhum gasto registrado
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payments Management -->
+            <div id="financial-payments" class="financial-tab-content" style="display: none;">
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">💳 Controle de Pagamentos</div>
+                    </div>
+
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Aluno</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Método</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #CBD5E1; padding: 2rem;">
+                                    Carregando pagamentos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Financial Settings -->
+            <div id="financial-settings" class="financial-tab-content" style="display: none;">
+                <div class="settings-section">
+                    <h3>⚙️ Configurações Financeiras</h3>
+
+                    <div class="form-group">
+                        <label>Integração de Pagamento</label>
+                        <select class="form-input">
+                            <option value="asaas">Asaas</option>
+                            <option value="stripe">Stripe</option>
+                            <option value="pagseguro">PagSeguro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Dias para Vencimento</label>
+                        <input type="number" class="form-input" value="5" min="1" max="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Multa por Atraso (%)</label>
+                        <input type="number" class="form-input" value="2" min="0" max="10" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Juros por Dia (%)</label>
+                        <input type="number" class="form-input" value="0.033" min="0" max="1" step="0.001">
+                    </div>
+
+                    <button class="btn btn-primary">Salvar Configurações</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenges -->
+        <div id="challenges" class="content-section">
+            <div class="page-header">
+                <h1>Desafios Semanais</h1>
+                <p>Sistema de desafios e gamificação</p>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Desafios Disponíveis</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p>• 24 desafios catalogados</p>
+                    <p>• Adaptados por categoria e gênero</p>
+                    <p>• Sistema de pontos integrado</p>
+                    <br>
+                    <p><em>Interface de desafios em desenvolvimento.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Base -->
+        <div id="knowledge-base" class="content-section">
+            <div class="page-header">
+                <h1>🧠 Base de Conhecimento</h1>
+                <p>Memória central dos agentes IA - Upload de documentos, textos, links e vídeos</p>
+            </div>
+
+            <div style="display: grid; gap: 1.5rem;">
+                <!-- Knowledge Base Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                        <div style="color: #8B5CF6; font-weight: bold; margin-bottom: 0.5rem;">📚 Documentos</div>
+                        <div style="color: #F8FAFC; font-size: 1.5rem; font-weight: bold;" id="knowledgeStatsDocuments">0</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981;">
+                        <div style="color: #10B981; font-weight: bold; margin-bottom: 0.5rem;">🕰️ Chunks RAG</div>
+                        <div style="color: #F8FAFC; font-size: 1.5rem; font-weight: bold;" id="knowledgeStatsChunks">0</div>
+                    </div>
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                        <div style="color: #3B82F6; font-weight: bold; margin-bottom: 0.5rem;">⏱️ Última Indexação</div>
+                        <div style="color: #F8FAFC; font-size: 0.875rem;" id="knowledgeStatsLastUpdate">Nunca</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                        <div style="color: #F59E0B; font-weight: bold; margin-bottom: 0.5rem;">⚙️ Status RAG</div>
+                        <div style="color: #F8FAFC; font-size: 0.875rem;" id="knowledgeStatsStatus">Vazio</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="openKnowledgeUploader()">
+                        <span>➕</span> Adicionar Conteúdo
+                    </button>
+                    <button class="btn btn-success" onclick="reindexKnowledgeBase()">
+                        <span>⚡</span> Reindexar Base
+                    </button>
+                    <button class="btn btn-secondary" onclick="searchKnowledgeBase()">
+                        <span>🔍</span> Buscar
+                    </button>
+                </div>
+
+                <!-- Knowledge Base Content -->
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">Conteúdo da Base de Conhecimento</div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="text" id="knowledgeSearchInput" placeholder="Buscar na base..." style="padding: 0.5rem; border-radius: 4px; border: 1px solid #374151; background: #1F2937; color: #F8FAFC; width: 200px;" onkeyup="if(event.key==='Enter') searchKnowledgeBase()">
+                            <button class="btn btn-sm btn-primary" onclick="searchKnowledgeBase()">🔍</button>
+                        </div>
+                    </div>
+                    <div id="knowledgeContentDisplay" style="min-height: 300px;">
+                        <div style="text-align: center; color: #9CA3AF; padding: 3rem;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">📚</div>
+                            <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Base de Conhecimento Vazia</div>
+                            <div style="font-size: 0.9rem;">Adicione documentos, textos, links ou vídeos para começar</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-primary" onclick="openKnowledgeUploader()">
+                                    ➕ Adicionar Primeiro Conteúdo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Responsibles -->
+        <div id="financial-responsibles" class="content-section">
+            <div class="page-header">
+                <h1>👨‍👩‍👧‍👦 Responsáveis Financeiros</h1>
+                <p>Gestão de responsáveis financeiros dos alunos</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalResponsibles">0</div>
+                    <div class="stat-label">Total de Responsáveis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeResponsibles">0</div>
+                    <div class="stat-label">Ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="studentsWithResponsibles">0</div>
+                    <div class="stat-label">Alunos com Responsável</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgStudentsPerResponsible">0</div>
+                    <div class="stat-label">Média p/ Responsável</div>
+                </div>
+            </div>
+
+            <!-- Search and Actions -->
+            <div class="simple-search">
+                <input type="text" 
+                       id="responsibleSearch" 
+                       class="search-input"
+                       placeholder="🔍 Buscar por nome, CPF, email..." 
+                       onkeyup="filterResponsibles()"
+                       autocomplete="off">
+
+                <button class="btn btn-primary" >
+                    <span>➕</span>
+                    Novo Responsável
+                </button>
+            </div>
+
+            <!-- Responsibles Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Lista de Responsáveis Financeiros</div>
+                </div>
+                <div class="responsibles-table-container">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF/CNPJ</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Relação</th>
+                                <th>Alunos</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responsiblesTableBody">
+                            <!-- Responsibles will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="responsiblesLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando responsáveis...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="responsiblesEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum responsável encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece adicionando o primeiro responsável financeiro</div>
+                        <button class="btn btn-primary" >
+                            <span>➕</span>
+                            Adicionar Primeiro Responsável
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plan Edit Page removed -->
+
+        <!-- Subscriptions Management -->
+        <div id="subscriptions" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #FFFFFF, #D1FAE5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">💳 Gestão de Assinaturas</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #D1FAE5; font-size: 1.1rem;">Gerencie assinaturas ativas dos alunos, planos contratados e status de pagamento</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary"  style="background: linear-gradient(135deg, #3B82F6, #1D4ED8); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Nova Assinatura
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadSubscriptionsList()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Total Assinaturas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="activeSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Ativas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="pendingSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Pendentes</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalSubscriptionRevenue">R$ 0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Receita Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="data-controls" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" id="subscriptionSearchInput" placeholder="🔍 Buscar por aluno, e-mail ou plano..." 
+                           style="width: 100%; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 12px; color: #F8FAFC; font-size: 0.875rem;"
+                           onkeyup="filterSubscriptions()">
+                </div>
+                <select id="subscriptionStatusFilter" onchange="filterSubscriptions()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todos Status</option>
+                    <option value="ACTIVE">Ativa</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="SUSPENDED">Suspensa</option>
+                    <option value="CANCELLED">Cancelada</option>
+                    <option value="EXPIRED">Expirada</option>
+                </select>
+                <select id="subscriptionPlanFilter" onchange="filterSubscriptions()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todos Planos</option>
+                </select>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <table class="data-table-content">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Plano</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Início</th>
+                            <th>Próximo Pagamento</th>
+                            <th>Método</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTableBody">
+                        <!-- Subscriptions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading States -->
+            <div id="subscriptionsLoadingState" class="loading-state">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">💳</div>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando assinaturas...</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                </div>
+            </div>
+            <div id="subscriptionsEmptyState" class="empty-state" style="display: none;">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhuma assinatura encontrada</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece criando a primeira assinatura</div>
+                    <button class="btn btn-primary" >
+                        <span>➕</span>
+                        Criar Primeira Assinatura
+                    </button>
+                </div>
+            </div>
+        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Start Date -->
+                            <div class="form-group">
+                                <label class="form-label">📅 Data de Início *</label>
+                                <input type="date" id="subscriptionStartDate" class="form-control" required>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="form-group">
+                                <label class="form-label">💳 Método de Pagamento *</label>
+                                <select id="subscriptionPaymentMethod" class="form-control" required>
+                                    <option value="">Selecione</option>
+                                    <option value="CREDIT_CARD">Cartão de Crédito</option>
+                                    <option value="DEBIT_CARD">Cartão de Débito</option>
+                                    <option value="PIX">PIX</option>
+                                    <option value="BANK_SLIP">Boleto Bancário</option>
+                                    <option value="CASH">Dinheiro</option>
+                                    <option value="BANK_TRANSFER">Transferência</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Payment Day -->
+                            <div class="form-group">
+                                <label class="form-label">📆 Dia do Pagamento</label>
+                                <select id="subscriptionPaymentDay" class="form-control">
+                                    <option value="">Auto (data de início)</option>
+                                    <option value="1">1</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="20">20</option>
+                                    <option value="25">25</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="form-group">
+                                <label class="form-label">📊 Status *</label>
+                                <select id="subscriptionStatus" class="form-control" required>
+                                    <option value="ACTIVE">Ativa</option>
+                                    <option value="PENDING">Pendente</option>
+                                    <option value="SUSPENDED">Suspensa</option>
+                                    <option value="CANCELLED">Cancelada</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="form-group">
+                            <label class="form-label">📝 Observações</label>
+                            <textarea id="subscriptionNotes" class="form-control" rows="3" placeholder="Observações sobre a assinatura..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" >Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Assinatura</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Units Management -->
+        <div id="units" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🏢 Gestão de Unidades</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre locais, endereços e capacidades das unidades da academia</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary"  style="background: linear-gradient(135deg, #059669, #10B981); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Nova Unidade
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadUnits()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="totalUnitsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Unidades</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="totalMatsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Tatames</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="totalCapacityCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Capacidade Total</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="activeClassesCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Turmas Ativas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Units Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Unidades</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar unidade..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="unitsSearchInput" onkeyup="searchUnits()">
+                        <button class="btn btn-secondary" onclick="exportUnitsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Tatames</th>
+                                <th>Capacidade</th>
+                                <th>Turmas</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitsTableBody">
+                            <!-- Units will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="unitsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🏢</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando unidades...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="unitsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏢</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhuma unidade encontrada</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando a primeira unidade da academia</div>
+                        <button class="btn btn-primary" >
+                            <span>➕</span>
+                            Criar Primeira Unidade
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mats Management -->
+        <div id="mats" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #8B5CF6, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🥋 Gestão de Tatames</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre espaços de treinamento, equipamentos e capacidades</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary"  style="background: linear-gradient(135deg, #7C3AED, #8B5CF6); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Tatame
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadMats()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="matsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Total Tatames</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="matsCapacity">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Capacidade Total</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="matsInUse">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Em Uso</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="matsAvailable">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Disponíveis</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter by Unit -->
+            <div style="background: #1E293B; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; border: 1px solid #334155;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <label style="color: #CBD5E1; font-weight: 600;">Filtrar por Unidade:</label>
+                    <select id="unitFilter" onchange="filterMatsByUnit()" style="background: #0F172A; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; min-width: 200px;">
+                        <option value="">Todas as Unidades</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <button class="btn btn-secondary" onclick="clearMatFilters()" style="padding: 0.5rem 1rem;">
+                        <span>🧹</span> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mats Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Tatames</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar tatame..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="matsSearchInput" onkeyup="searchMats()">
+                        <button class="btn btn-secondary" onclick="exportMatsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Unidade</th>
+                                <th>Capacidade</th>
+                                <th>Dimensões</th>
+                                <th>Equipamentos</th>
+                                <th>Turmas</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matsTableBody">
+                            <!-- Mats will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="matsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🥋</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando tatames...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="matsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🥋</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum tatame encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando o primeiro tatame</div>
+                        <button class="btn btn-primary" >
+                            <span>➕</span>
+                            Criar Primeiro Tatame
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructors Management -->
+        <div id="instructors" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #F59E0B, #EF4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">👨‍🏫 Gestão de Professores</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre instrutores, especializações e horários disponíveis</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary"  style="background: linear-gradient(135deg, #F59E0B, #EF4444); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Professor
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadInstructors()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="instructorsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Professores</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="instructorsActive">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Ativos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="instructorsWithClasses">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Com Turmas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="avgExperience">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Anos Experiência</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructors Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Professores</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar professor..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="instructorsSearchInput" onkeyup="searchInstructors()">
+                        <button class="btn btn-secondary" onclick="exportInstructorsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Especializações</th>
+                                <th>Artes Marciais</th>
+                                <th>Experiência</th>
+                                <th>Turmas</th>
+                                <th>Valor/Hora</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instructorsTableBody">
+                            <!-- Instructors will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="instructorsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍🏫</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando professores...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="instructorsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍🏫</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum professor encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando o primeiro professor</div>
+                        <button class="btn btn-primary" >
+                            <span>➕</span>
+                            Cadastrar Primeiro Professor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings" class="content-section">
+            <div class="page-header">
+                <h1>Configurações</h1>
+                <p>Configurações gerais do sistema</p>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Status do Sistema</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p>• Banco de dados: ✅ Conectado</p>
+                    <p>• APIs: ✅ 27 endpoints funcionais</p>
+                    <p>• Frontend: ✅ Interface responsiva</p>
+                    <p>• Dados: ✅ 4 alunos, 42 técnicas, 48 aulas</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Aluno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal - Complete Version -->
+
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem;">
+                                💾 Modificado há <span id="editStudentLastModified">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Tabs Navigation -->
+                <div style="padding: 0 2rem; background: #1E293B; border-bottom: 1px solid #334155;">
+                    <div style="display: flex; gap: 0;">
+                        <!-- Primary Tab (Edit) -->
+                        <button class="edit-tab-btn active primary" onclick="switchEditTab('edit')" data-tab="edit" 
+                                style="padding: 1rem 2rem; background: linear-gradient(135deg, #3B82F6, #1D4ED8); border: none; color: white; border-radius: 8px 8px 0 0; font-weight: 700; cursor: pointer; position: relative; z-index: 2; margin-right: 1rem;">
+                            ✏️ Editar Dados
+                        </button>
+                        <!-- Secondary Tabs (View) -->
+                        <div style="display: flex; gap: 0.25rem; align-items: end;">
+                            <button class="edit-tab-btn secondary" onclick="switchEditTab('overview')" data-tab="overview" 
+                                    style="padding: 0.75rem 1.25rem; background: transparent; border: none; color: #94A3B8; border-bottom: 2px solid transparent; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;">
+                                📋 Visão Geral
+                            </button>
+                            <button class="edit-tab-btn secondary" onclick="switchEditTab('academic')" data-tab="academic" 
+                                    style="padding: 0.75rem 1.25rem; background: transparent; border: none; color: #94A3B8; border-bottom: 2px solid transparent; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;">
+                                🎓 Acadêmico
+                            </button>
+                            <button class="edit-tab-btn secondary" onclick="switchEditTab('financial')" data-tab="financial" 
+                                    style="padding: 0.75rem 1.25rem; background: transparent; border: none; color: #94A3B8; border-bottom: 2px solid transparent; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;">
+                                💰 Financeiro
+                            </button>
+                            <button class="edit-tab-btn secondary" onclick="switchEditTab('progress')" data-tab="progress" 
+                                    style="padding: 0.75rem 1.25rem; background: transparent; border: none; color: #94A3B8; border-bottom: 2px solid transparent; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;">
+                                📈 Progresso
+                            </button>
+                            <button class="edit-tab-btn secondary" onclick="switchEditTab('activity')" data-tab="activity" 
+                                    style="padding: 0.75rem 1.25rem; background: transparent; border: none; color: #94A3B8; border-bottom: 2px solid transparent; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: all 0.2s;">
+                                📊 Atividades
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Contents -->
+                <div style="padding: 2rem;">
+                    <!-- Edit Tab -->
+                    <div id="edit-tab-edit" class="edit-tab-content">
+                        <!-- Progress Indicator -->
+                        <div style="background: #0F172A; padding: 1rem 2rem; margin: -2rem -2rem 2rem -2rem; border-bottom: 1px solid #334155;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h3 style="color: #F8FAFC; margin: 0; font-size: 1.1rem;">📝 Editando Perfil</h3>
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <div style="width: 8px; height: 8px; background: #10B981; border-radius: 50%;"></div>
+                                        <span style="color: #10B981; font-size: 0.875rem;">Dados salvos automaticamente</span>
+                                    </div>
+                                    <button type="button" onclick="autoFillDemo()" style="background: rgba(139, 92, 246, 0.1); border: 1px solid #8B5CF6; color: #8B5CF6; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                                        🎯 Preencher Demo
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="background: #1E293B; border-radius: 6px; height: 4px; overflow: hidden;">
+                                <div id="editFormProgress" style="background: linear-gradient(90deg, #3B82F6, #10B981); height: 100%; width: 20%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <form id="editStudentForm" onchange="updateFormProgress()">
+                            <input type="hidden" id="editStudentId" name="editStudentId">
+                            <input type="hidden" id="editUserId" name="editUserId">
+
+                            <!-- Step 1: Informações Pessoais -->
+                            <div class="form-section" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05)); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.875rem;">1</div>
+                                    <h3 style="color: #F8FAFC; margin: 0; font-size: 1.1rem;">👤 Dados Pessoais</h3>
+                                    <div style="flex: 1; height: 1px; background: linear-gradient(90deg, #3B82F6, transparent);"></div>
+                                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editFirstName">Nome *</label>
+                                <input type="text" id="editFirstName" name="editFirstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editLastName">Sobrenome *</label>
+                                <input type="text" id="editLastName" name="editLastName" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editEmail">Email *</label>
+                                <input type="email" id="editEmail" name="editEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPhone">Telefone</label>
+                                <input type="tel" id="editPhone" name="editPhone">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCpf">CPF</label>
+                                <input type="text" id="editCpf" name="editCpf" placeholder="000.000.000-00">
+                            </div>
+                            <div class="form-group">
+                                <label for="editBirthDate">Data de Nascimento</label>
+                                <input type="date" id="editBirthDate" name="editBirthDate">
+                            </div>
+                        </div>
+                    </div>
+
+                            </div>
+
+                            <!-- Step 2: Informações da Academia -->
+                            <div class="form-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(139, 92, 246, 0.05)); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10B981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.875rem;">2</div>
+                                    <h3 style="color: #F8FAFC; margin: 0; font-size: 1.1rem;">🥋 Academia</h3>
+                                    <div style="flex: 1; height: 1px; background: linear-gradient(90deg, #10B981, transparent);"></div>
+                                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCategory">Categoria *</label>
+                                <select id="editCategory" name="editCategory" required>
+                                    <option value="ADULT">Adulto</option>
+                                    <option value="INICIANTE1">Iniciante 1</option>
+                                    <option value="INICIANTE2">Iniciante 2</option>
+                                    <option value="MASTER1">Master 1</option>
+                                    <option value="MASTER2">Master 2</option>
+                                    <option value="MASTER3">Master 3</option>
+                                    <option value="HEROI1">Herói 1</option>
+                                    <option value="HEROI2">Herói 2</option>
+                                    <option value="HEROI3">Herói 3</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editGender">Gênero *</label>
+                                <select id="editGender" name="editGender" required>
+                                    <option value="MASCULINO">Masculino</option>
+                                    <option value="FEMININO">Feminino</option>
+                                    <option value="OUTRO">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editPhysicalCondition">Condição Física</label>
+                                <select id="editPhysicalCondition" name="editPhysicalCondition">
+                                    <option value="INICIANTE">Iniciante</option>
+                                    <option value="BASICO">Básico</option>
+                                    <option value="INTERMEDIARIO">Intermediário</option>
+                                    <option value="AVANCADO">Avançado</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEnrollmentDate">Data de Matrícula</label>
+                                <input type="date" id="editEnrollmentDate" name="editEnrollmentDate">
+                            </div>
+                        </div>
+                    </div>
+
+                            </div>
+
+                            <!-- Step 3: Informações Médicas -->
+                            <div class="form-section" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(245, 158, 11, 0.05)); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #EF4444, #DC2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.875rem;">3</div>
+                                    <h3 style="color: #F8FAFC; margin: 0; font-size: 1.1rem;">🏥 Saúde & Emergência</h3>
+                                    <div style="flex: 1; height: 1px; background: linear-gradient(90deg, #EF4444, transparent);"></div>
+                                </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="editMedicalConditions">Condições Médicas</label>
+                                <textarea id="editMedicalConditions" name="editMedicalConditions" rows="3" 
+                                          placeholder="Alergias, medicamentos, limitações físicas, etc."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editEmergencyContact">Contato de Emergência</label>
+                                <input type="text" id="editEmergencyContact" name="editEmergencyContact" 
+                                       placeholder="Nome e telefone">
+                            </div>
+                            <div class="form-group">
+                                <label for="editSpecialNeeds">Necessidades Especiais</label>
+                                <select id="editSpecialNeeds" name="editSpecialNeeds" multiple>
+                                    <option value="TEA">TEA (Autismo)</option>
+                                    <option value="TDAH">TDAH</option>
+                                    <option value="MobilidadeReduzida">Mobilidade Reduzida</option>
+                                    <option value="DeficienciaVisual">Deficiência Visual</option>
+                                    <option value="DeficienciaAuditiva">Deficiência Auditiva</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                            </div>
+
+                            <!-- Step 4: Status e Progresso (Read-only) -->
+                            <div class="form-section" id="editProgressSection" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05)); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(139, 92, 246, 0.2);">
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #8B5CF6, #7C3AED); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.875rem;">4</div>
+                                    <h3 style="color: #F8FAFC; margin: 0; font-size: 1.1rem;">📊 Estatísticas (Somente Leitura)</h3>
+                                    <div style="flex: 1; height: 1px; background: linear-gradient(90deg, #8B5CF6, transparent);"></div>
+                                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editTotalXP">XP Total</label>
+                                <input type="number" id="editTotalXP" name="editTotalXP" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="editGlobalLevel">Nível Global</label>
+                                <input type="number" id="editGlobalLevel" name="editGlobalLevel" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editCurrentStreak">Sequência Atual</label>
+                                <input type="number" id="editCurrentStreak" name="editCurrentStreak" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="editLastCheckinDate">Última Presença</label>
+                                <input type="datetime-local" id="editLastCheckinDate" name="editLastCheckinDate" readonly>
+                            </div>
+                        </div>
+                        </form>
+                    </div>
+
+                        </form>
+                    </div>
+
+                    <!-- Overview Tab -->
+                    <div id="edit-tab-overview" class="edit-tab-content" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <!-- Personal Summary -->
+                            <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                                <h4 style="color: #3B82F6; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>👤</span> Informações Pessoais
+                                </h4>
+                                <div style="display: grid; gap: 0.75rem; color: #CBD5E1;">
+                                    <div><strong>Nome:</strong> <span id="overviewFullName">-</span></div>
+                                    <div><strong>Email:</strong> <span id="overviewEmail">-</span></div>
+                                    <div><strong>Telefone:</strong> <span id="overviewPhone">-</span></div>
+                                    <div><strong>CPF:</strong> <span id="overviewCpf">-</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Academy Summary -->
+                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(139, 92, 246, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <h4 style="color: #10B981; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>🥋</span> Status Academia
+                                </h4>
+                                <div style="display: grid; gap: 0.75rem; color: #CBD5E1;">
+                                    <div><strong>Categoria:</strong> <span id="overviewCategory">-</span></div>
+                                    <div><strong>Status:</strong> <span id="overviewStatus">-</span></div>
+                                    <div><strong>Matrícula:</strong> <span id="overviewEnrollment">-</span></div>
+                                    <div><strong>Condição Física:</strong> <span id="overviewPhysical">-</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Academic Tab -->
+                    <div id="edit-tab-academic" class="edit-tab-content" style="display: none;">
+                        <div style="text-align: center; padding: 3rem; color: #6B7280;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">🎓</div>
+                            <p>Carregando informações acadêmicas...</p>
+                        </div>
+                    </div>
+
+                    <div id="edit-tab-classes" class="edit-tab-content" style="display: none;">
+                        <div style="text-align: center; padding: 3rem; color: #6B7280;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">🏫</div>
+                            <p>Carregando informações de turmas...</p>
+                        </div>
+                    </div>
+
+                    <!-- Progress Tab -->
+                    <div id="edit-tab-progress" class="edit-tab-content" style="display: none;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <!-- XP Stats -->
+                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(139, 92, 246, 0.3); text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">⭐</div>
+                                <div style="color: #8B5CF6; font-size: 1.5rem; font-weight: bold;" id="progressXP">1,250</div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem;">XP Total</div>
+                            </div>
+                            <!-- Level -->
+                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(16, 185, 129, 0.3); text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏆</div>
+                                <div style="color: #10B981; font-size: 1.5rem; font-weight: bold;" id="progressLevel">Nível 5</div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem;">Graduação</div>
+                            </div>
+                            <!-- Streak -->
+                            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(245, 158, 11, 0.3); text-align: center;">
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔥</div>
+                                <div style="color: #F59E0B; font-size: 1.5rem; font-weight: bold;" id="progressStreak">7 dias</div>
+                                <div style="color: #CBD5E1; font-size: 0.875rem;">Sequência</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Tab -->
+                    <div id="edit-tab-financial" class="edit-tab-content" style="display: none;">
+                        <!-- Current Plan Section -->
+                        <div style="margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="color: #F8FAFC; margin: 0; font-size: 1.25rem;">📋 Plano Atual</h3>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-secondary btn-sm" onclick="loadStudentFinancialTab()" style="padding: 0.5rem 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; color: #3B82F6; font-size: 0.875rem;">
+                                        🔄 Atualizar
+                                    </button>
+                                    <!-- Edit Student Plan button removed -->
+                                </div>
+                            </div>
+
+                            <div id="currentPlanContainer" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(29, 78, 216, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                                <div class="loading-state">
+                                    <div style="text-align: center; color: #94A3B8;">
+                                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📄</div>
+                                        <p>Carregando informações do plano...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <!-- Payment Status -->
+                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <h4 style="color: #10B981; margin: 0 0 1rem 0;">💳 Status Pagamento</h4>
+                                <div id="paymentStatusContainer" style="color: #CBD5E1;">
+                                    <div class="loading-state">
+                                        <div style="text-align: center; color: #94A3B8;">
+                                            <p>Carregando status...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment History -->
+                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(124, 58, 237, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(139, 92, 246, 0.2);">
+                                <h4 style="color: #8B5CF6; margin: 0 0 1rem 0;">📊 Histórico de Pagamentos</h4>
+                                <div id="paymentHistoryContainer" style="color: #CBD5E1; font-size: 0.875rem;">
+                                    <div class="loading-state">
+                                        <div style="text-align: center; color: #94A3B8;">
+                                            <p>Carregando histórico...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Available Plans for Upgrade -->
+                        <div style="margin-top: 2rem;">
+                            <h3 style="color: #F8FAFC; margin: 0 0 1rem 0; font-size: 1.25rem;">🚀 Planos Disponíveis para Upgrade</h3>
+                            <div id="availablePlansContainer" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(217, 119, 6, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                <div class="loading-state">
+                                    <div style="text-align: center; color: #94A3B8;">
+                                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⬆️</div>
+                                        <p>Carregando planos disponíveis...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Tab -->
+                    <div id="edit-tab-activity" class="edit-tab-content" style="display: none;">
+                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(29, 78, 216, 0.05)); border-radius: 12px; padding: 2rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <h4 style="color: #3B82F6; margin: 0 0 1rem 0;">📊 Frequência Recente</h4>
+                            <div style="color: #CBD5E1;">
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #374151;">
+                                    <span>02/07/2025 - Aula 15</span>
+                                    <span style="color: #10B981;">✅ Presente</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #374151;">
+                                    <span>27/06/2025 - Aula 14</span>
+                                    <span style="color: #10B981;">✅ Presente</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #374151;">
+                                    <span>25/06/2025 - Aula 13</span>
+                                    <span style="color: #EF4444;">❌ Ausente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" >
+                    Cancelar
+                </button>
+                <button type="button" id="saveEditStudentBtn" class="btn btn-primary" onclick="saveEditStudent()">
+                    💾 Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-input" id="responsibleEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-input" id="responsiblePhone" placeholder="(11) 99999-9999">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-input" id="responsibleBirthDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Relação</label>
+                            <select class="form-select" id="responsibleRelationType">
+                                <option value="">Selecione...</option>
+                                <option value="PARENT">Pai/Mãe</option>
+                                <option value="GUARDIAN">Responsável Legal</option>
+                                <option value="SPOUSE">Cônjuge</option>
+                                <option value="RELATIVE">Familiar</option>
+                                <option value="OTHER">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Endereço</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Endereço</label>
+                            <input type="text" class="form-input" id="responsibleAddress" placeholder="Rua, Avenida, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Número</label>
+                            <input type="text" class="form-input" id="responsibleAddressNumber" placeholder="123">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" class="form-input" id="responsibleComplement" placeholder="Apto, Bloco, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" class="form-input" id="responsibleNeighborhood">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" class="form-input" id="responsibleCity">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" id="responsibleState">
+                                <option value="">Selecione...</option>
+                                <option value="SP">São Paulo</option>
+                                <option value="RJ">Rio de Janeiro</option>
+                                <option value="MG">Minas Gerais</option>
+                                <option value="ES">Espírito Santo</option>
+                                <option value="SC">Santa Catarina</option>
+                                <option value="PR">Paraná</option>
+                                <option value="RS">Rio Grande do Sul</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">CEP</label>
+                            <input type="text" class="form-input" id="responsibleZipCode" placeholder="00000-000">
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Responsável</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-input" id="editResponsibleEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="tel" class="form-input" id="editResponsiblePhone">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-input" id="editResponsibleBirthDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Relação</label>
+                            <select class="form-select" id="editResponsibleRelationType">
+                                <option value="">Selecione...</option>
+                                <option value="PARENT">Pai/Mãe</option>
+                                <option value="GUARDIAN">Responsável Legal</option>
+                                <option value="SPOUSE">Cônjuge</option>
+                                <option value="RELATIVE">Familiar</option>
+                                <option value="OTHER">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+            </form>
+        </div>
+    </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-input" id="courseDescription" rows="3"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Nível</label>
+                        <select class="form-select" id="courseLevel" required>
+                            <option value="BEGINNER">Iniciante</option>
+                            <option value="INTERMEDIATE">Intermediário</option>
+                            <option value="ADVANCED">Avançado</option>
+                            <option value="EXPERT">Especialista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total de Aulas</label>
+                        <input type="number" class="form-input" id="courseTotalClasses" min="1" max="100" value="48" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Aulas por Semana</label>
+                        <input type="number" class="form-input" id="courseClassesPerWeek" min="1" max="7" value="2" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Duração (semanas)</label>
+                        <input type="number" class="form-input" id="courseDuration" min="1" max="52" value="24" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Idade Mínima</label>
+                        <input type="number" class="form-input" id="courseMinAge" min="5" max="100" value="16" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Idade Máxima</label>
+                        <input type="number" class="form-input" id="courseMaxAge" min="5" max="100">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Objetivos do Curso (um por linha)</label>
+                    <textarea class="form-input" id="courseObjectives" rows="4" 
+                        placeholder="Ex: Desenvolver técnicas básicas de defesa pessoal&#10;Melhorar condicionamento físico&#10;Aumentar autoconfiança"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Requisitos (um por linha)</label>
+                    <textarea class="form-input" id="courseRequirements" rows="3" 
+                        placeholder="Ex: Atestado médico&#10;Termo de responsabilidade&#10;Uniforme adequado"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Curso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-input" id="editCourseDescription" rows="3"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Nível</label>
+                        <select class="form-select" id="editCourseLevel" required>
+                            <option value="BEGINNER">Iniciante</option>
+                            <option value="INTERMEDIATE">Intermediário</option>
+                            <option value="ADVANCED">Avançado</option>
+                            <option value="EXPERT">Especialista</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total de Aulas</label>
+                        <input type="number" class="form-input" id="editCourseTotalClasses" min="1" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Aulas por Semana</label>
+                        <input type="number" class="form-input" id="editCourseClassesPerWeek" min="1" max="7" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Criar Assinatura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+                <div class="form-group">
+                    <label class="form-label">Objetivos da Aula</label>
+                    <textarea class="form-input" id="lessonObjectives" rows="2" 
+                        placeholder="Ex: Aprender técnica de soco direto, Praticar defesa contra estrangulamento"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Aquecimento (10-15 min)</label>
+                    <textarea class="form-input" id="lessonWarmUp" rows="3" 
+                        placeholder="Ex: Corrida leve, alongamento dinâmico, exercícios articulares"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Conteúdo Principal (30-40 min)</label>
+                    <textarea class="form-input" id="lessonMainContent" rows="4" 
+                        placeholder="Ex: Demonstração da técnica, prática em pares, aplicação em situações simuladas"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Desaquecimento (5-10 min)</label>
+                    <textarea class="form-input" id="lessonCoolDown" rows="2" 
+                        placeholder="Ex: Alongamento estático, respiração, relaxamento"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Equipamentos Necessários</label>
+                    <input type="text" class="form-input" id="lessonEquipment" 
+                        placeholder="Ex: Paos, luvas, colchonetes (separar por vírgula)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adaptações para Necessidades Especiais</label>
+                    <textarea class="form-input" id="lessonAdaptations" rows="2" 
+                        placeholder="Ex: Exercícios modificados para pessoas com mobilidade reduzida"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações e Notas</label>
+                    <textarea class="form-input" id="lessonNotes" rows="2" 
+                        placeholder="Ex: Enfatizar segurança, atenção especial ao alinhamento corporal"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" >Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Plano</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { showToast } from './js/ui.js';
+        window.showToast = showToast;
+    </script>
+    <!-- Attendance functions now loaded from attendance-inline.js -->
+    <script type="module" src="./js/main.js"></script>
+    <!-- Settings functions now loaded from settings-inline.js -->
+    <!-- Knowledge Base system now loaded from knowledge-base-inline.js -->
+
+                        <div style="background: rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="categoriesCount">8</div>
+                            <div style="color: #CBD5E1; font-size: 0.9rem;">Categorias</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.2); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="coursesUsingCount">2</div>
+                            <div style="color: #CBD5E1; font-size: 0.9rem;">Cursos Usando</div>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.2); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="reusedCount">15</div>
+                            <div style="color: #CBD5E1; font-size: 0.9rem;">Reutilizadas</div>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="text" id="techniqueSearch" placeholder="Buscar técnica..." 
+                                   style="padding: 0.5rem; border-radius: 6px; border: 1px solid #374151; background: rgba(55, 65, 81, 0.5); color: #F8FAFC; width: 300px;">
+                            <select id="categoryFilter" style="padding: 0.5rem; border-radius: 6px; border: 1px solid #374151; background: rgba(55, 65, 81, 0.5); color: #F8FAFC;">
+                                <option value="">Todas Categorias</option>
+                                <option value="STANCE">Postura</option>
+                                <option value="STRIKE">Golpes</option>
+                                <option value="DEFENSE">Defesa</option>
+                                <option value="GRAPPLING">Agarramento</option>
+                                <option value="COMBO">Combinação</option>
+                                <option value="MOVEMENT">Movimentação</option>
+                                <option value="SCENARIO">Cenário</option>
+                                <option value="CONDITIONING">Condicionamento</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" >
+                            <span>➕</span> Nova Técnica
+                        </button>
+                    </div>
+
+                    <!-- Techniques Table -->
+                    <div style="border: 1px solid #374151; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: rgba(55, 65, 81, 0.5);">
+                                <tr>
+                                    <th style="padding: 1rem; text-align: left; color: #F8FAFC; border-bottom: 1px solid #374151;">Nome</th>
+                                    <th style="padding: 1rem; text-align: left; color: #F8FAFC; border-bottom: 1px solid #374151;">Categoria</th>
+                                    <th style="padding: 1rem; text-align: left; color: #F8FAFC; border-bottom: 1px solid #374151;">Nível</th>
+                                    <th style="padding: 1rem; text-align: left; color: #F8FAFC; border-bottom: 1px solid #374151;">Usado em</th>
+                                    <th style="padding: 1rem; text-align: left; color: #F8FAFC; border-bottom: 1px solid #374151;">Pré-requisitos</th>
+                                    <th style="padding: 1rem; text-align: center; color: #F8FAFC; border-bottom: 1px solid #374151;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="techniquesTableBody" style="color: #CBD5E1;">
+                                <tr>
+                                    <td colspan="6" style="padding: 2rem; text-align: center;">
+                                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏳</div>
+                                        Carregando técnicas...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    <div class="form-group">
+                        <label for="techniqueDescription">Descrição</label>
+                        <textarea id="techniqueDescription" rows="3" placeholder="Descrição detalhada da técnica..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="techniqueInstructions">Instruções Passo a Passo</label>
+                        <textarea id="techniqueInstructions" rows="4" placeholder="1. Posição inicial...&#10;2. Movimento principal...&#10;3. Finalização..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="techniquePrerequisites">Pré-requisitos (opcional)</label>
+                        <input type="text" id="techniquePrerequisites" placeholder="Ex: Guarda de Boxe, Movimentação Básica">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="techniqueKeyPoints">Pontos-Chave</label>
+                        <textarea id="techniqueKeyPoints" rows="3" placeholder="Aspectos importantes para execução correta..."></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="techniqueEquipment">Equipamentos</label>
+                            <input type="text" id="techniqueEquipment" placeholder="Ex: Tatame, Pads, Luvas">
+                        </div>
+                        <div class="form-group">
+                            <label for="techniqueDuration">Duração (minutos)</label>
+                            <input type="number" id="techniqueDuration" min="1" max="60" value="10">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" >Cancelar</button>
+                <button class="btn btn-primary" onclick="saveTechnique()">
+                    <span>💾</span> Salvar Técnica
+                </button>
+            </div>
+        </div>
+    </div>
+
+                            <div id="beltInfo" style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6; display: none;">
+                                <div id="beltInfoContent"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RAG Status Indicator -->
+                    <div id="ragStatus" style="margin-bottom: 1rem;">
+                        <!-- RAG status will be populated dynamically -->
+                    </div>
+
+                    <!-- Course Basic Info -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📚 Informações do Curso</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="universalCourseTitle">Nome do Curso *</label>
+                                    <input type="text" id="universalCourseTitle" placeholder="Ex: Jiu-Jitsu Faixa Azul - Técnicas Avançadas" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="universalCourseDuration">Duração (semanas) *</label>
+                                    <input type="number" id="universalCourseDuration" value="20" min="4" max="52" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="universalCourseLevel">Nível de Dificuldade</label>
+                                    <select id="universalCourseLevel">
+                                        <option value="BEGINNER">⭐ Iniciante</option>
+                                        <option value="INTERMEDIATE">⭐⭐ Intermediário</option>
+                                        <option value="ADVANCED">⭐⭐⭐ Avançado</option>
+                                        <option value="EXPERT">⭐⭐⭐⭐ Expert</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lessonsPerWeekUniversal">Aulas por Semana</label>
+                                    <select id="lessonsPerWeekUniversal">
+                                        <option value="1">1 aula</option>
+                                        <option value="2" selected>2 aulas</option>
+                                        <option value="3">3 aulas</option>
+                                        <option value="4">4 aulas</option>
+                                        <option value="5">5 aulas</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="universalCourseObjectives">Objetivos do Curso</label>
+                                <textarea id="universalCourseObjectives" rows="3" placeholder="Descreva os objetivos principais do curso..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technique Selection -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">🥊 Seleção de Técnicas</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                                <h4 style="color: #3B82F6; margin-bottom: 0.5rem;">💡 Estratégia de Seleção</h4>
+                                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1;">
+                                        <input type="radio" name="selectionStrategy" value="reuse" checked>
+                                        <span>🔄 Reutilizar do Faixa Branca + Novas</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1;">
+                                        <input type="radio" name="selectionStrategy" value="fresh">
+                                        <span>🆕 Seleção Completamente Nova</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #CBD5E1;">
+                                        <input type="radio" name="selectionStrategy" value="custom">
+                                        <span>⚙️ Seleção Manual</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="techniqueSelectionArea" style="border: 1px solid #374151; border-radius: 8px; max-height: 300px; overflow-y: auto;">
+                                <div style="padding: 2rem; text-align: center; color: #CBD5E1;">
+                                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+                                    Carregando banco de técnicas para seleção...
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="color: #F59E0B; font-weight: bold;">Técnicas Selecionadas:</span>
+                                    <span id="selectedTechniquesCount" style="color: #F8FAFC;">0</span>
+                                </div>
+                                <div id="selectedTechniquesList" style="color: #CBD5E1; font-size: 0.9rem;">
+                                    Nenhuma técnica selecionada ainda
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Upload for Yellow Belt -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📄 Seu Modelo de Curso</h3>
+                        <div style="border: 2px dashed #374151; border-radius: 12px; padding: 2rem; text-align: center; background: rgba(55, 65, 81, 0.3);">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+                            <input type="file" id="courseModelFile" accept=".pdf,.doc,.docx,.txt,.md" 
+                                   style="display: none;" onchange="handleCourseModelUpload(event)">
+                            <button type="button" onclick="document.getElementById('yellowBeltModel').click()" 
+                                    style="background: #F59E0B; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-bottom: 1rem;">
+                                📎 Upload Modelo de Curso
+                            </button>
+                            <p style="color: #CBD5E1; font-size: 0.9rem;">
+                                Faça upload do seu modelo de curso (opcional)<br>
+                                A IA usará este documento para estruturar o curso
+                            </p>
+                            <div id="courseModelFileInfo" style="margin-top: 1rem;"></div>
+                        </div>
+                    </div>
+
+                    <!-- AI Configuration -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">🤖 Configuração da IA</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🎯 Gerar Planos de Aula</label>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="universalGeneratePlans" checked>
+                                    <span style="color: #CBD5E1;">Gerar automaticamente todos os planos</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🤖 Modelo IA</label>
+                                <select id="universalAiModel" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #374151; background: rgba(55, 65, 81, 0.5); color: #F8FAFC;">
+                                    <option value="claude-3">Claude 3 (Recomendado)</option>
+                                    <option value="gpt-4">GPT-4</option>
+                                    <option value="gemini">Gemini</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="color: #CBD5E1; font-size: 0.9rem;">
+                        ⏱️ Tempo estimado: 5-8 minutos
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" >Cancelar</button>
+                        <button class="btn btn-primary" onclick="createUniversalCourse()" id="createUniversalBtn">
+                            <span>🎭</span> Criar Curso
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="approveTechnique()" id="approveBtn">
+                    <span>✅</span> Aprovar
+                </button>
+                <button class="btn btn-warning" onclick="editTechnique()" id="editBtn" style="margin-left: 1rem;">
+                    <span>✏️</span> Editar
+                </button>
+                <button class="btn btn-danger" onclick="rejectTechnique()" id="rejectBtn" style="margin-left: 1rem;">
+                    <span>❌</span> Rejeitar
+                </button>
+                <button class="btn btn-secondary"  style="margin-left: 1rem;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+                    <div class="form-group">
+                        <label for="videoDescription">Descrição do Vídeo</label>
+                        <textarea id="videoDescription" rows="3" placeholder="Descreva o que está sendo demonstrado no vídeo..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="uploadVideo()" id="uploadVideoBtn">
+                    <span>🚀</span> Upload Vídeo
+                </button>
+                <button class="btn btn-secondary" >Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="documentTags">Tags (separadas por vírgula)</label>
+                            <input type="text" id="documentTags" placeholder="krav-maga, defesa-pessoal, iniciante, faixa-branca">
+                        </div>
+                    </div>
+
+                    <!-- Text Input Section -->
+                    <div id="textSection" class="upload-section" style="display: none;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📝 Adicionar Texto Manual</h3>
+                        <div class="form-group">
+                            <label for="textTitle">Título do Conteúdo *</label>
+                            <input type="text" id="textTitle" placeholder="Ex: Princípios Fundamentais do Krav Maga" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="textContent">Conteúdo *</label>
+                            <textarea id="textContent" rows="12" placeholder="Cole aqui seu conteúdo de texto, manuais, instruções, metodologias..." required></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="textCategory">Categoria</label>
+                                <select id="textCategory">
+                                    <option value="">Selecione</option>
+                                    <option value="METHODOLOGY">Metodologia</option>
+                                    <option value="TECHNIQUES">Técnicas</option>
+                                    <option value="THEORY">Teoria</option>
+                                    <option value="SAFETY">Segurança</option>
+                                    <option value="PROGRESSION">Progressão</option>
+                                    <option value="EVALUATION">Avaliação</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="textTags">Tags</label>
+                                <input type="text" id="textTags" placeholder="defesa, ataque, movimento">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Links Section -->
+                    <div id="linksSection" class="upload-section" style="display: none;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">🔗 Adicionar Links/URLs</h3>
+                        <div class="form-group">
+                            <label for="linkUrl">URL *</label>
+                            <input type="url" id="linkUrl" placeholder="https://exemplo.com/artigo-sobre-krav-maga" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="linkTitle">Título (opcional)</label>
+                            <input type="text" id="linkTitle" placeholder="Será extraído automaticamente se não preenchido">
+                        </div>
+                        <div class="form-group">
+                            <label for="linkDescription">Descrição</label>
+                            <textarea id="linkDescription" rows="3" placeholder="Breve descrição sobre o conteúdo do link"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="linkTags">Tags</label>
+                            <input type="text" id="linkTags" placeholder="artigo, externa, referência">
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                            <div style="color: #3B82F6; font-weight: bold; margin-bottom: 0.5rem;">ℹ️ Extração Automática</div>
+                            <div style="color: #CBD5E1; font-size: 0.9rem;">
+                                O sistema irá extrair automaticamente o texto do site e indexar o conteúdo.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- YouTube Section -->
+                    <div id="youtubeSection" class="upload-section" style="display: none;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📺 Vídeos do YouTube</h3>
+                        <div class="form-group">
+                            <label for="youtubeUrl">URL do YouTube *</label>
+                            <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="youtubeDescription">Descrição do Conteúdo</label>
+                            <textarea id="youtubeDescription" rows="3" placeholder="Descreva o que é abordado no vídeo"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="youtubeTags">Tags</label>
+                            <input type="text" id="youtubeTags" placeholder="video, demonstração, tutorial">
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                            <div style="color: #F59E0B; font-weight: bold; margin-bottom: 0.5rem;">🎯 Extração de Transcrição</div>
+                            <div style="color: #CBD5E1; font-size: 0.9rem;">
+                                O sistema irá extrair a transcrição automática do vídeo (se disponível) e indexar o conteúdo.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="uploadContent()" id="uploadContentBtn">
+                    <span>🚀</span> Adicionar à Base
+                </button>
+                <button class="btn btn-secondary" onclick="closeDocumentUploader()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+                        <input type="hidden" id="creationMode" value="">
+                    </div>
+
+                    <!-- Informações Básicas do Curso -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📚 Informações Básicas</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="courseTitle">Nome do Curso *</label>
+                                    <input type="text" id="courseTitle" placeholder="Ex: Krav Maga Faixa Preta - Instrutor" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="courseDuration">Duração (semanas) *</label>
+                                    <input type="number" id="courseDuration" min="1" max="52" value="24" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="courseLevel">Nível *</label>
+                                    <select id="courseLevel" required>
+                                        <option value="">Selecione</option>
+                                        <option value="INICIANTE">Iniciante</option>
+                                        <option value="INTERMEDIARIO">Intermediário</option>
+                                        <option value="AVANCADO">Avançado</option>
+                                        <option value="INSTRUTOR">Instrutor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="courseCategory">Categoria *</label>
+                                    <select id="courseCategory" required>
+                                        <option value="">Selecione</option>
+                                        <option value="ADULT">Adulto</option>
+                                        <option value="KIDS">Infantil</option>
+                                        <option value="TEEN">Adolescente</option>
+                                        <option value="SENIOR">Terceira Idade</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lessonsPerWeek">Aulas por Semana</label>
+                                    <select id="lessonsPerWeek">
+                                        <option value="1">1 aula</option>
+                                        <option value="2" selected>2 aulas</option>
+                                        <option value="3">3 aulas</option>
+                                        <option value="4">4 aulas</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="courseObjectives">Objetivos Principais</label>
+                                <textarea id="courseObjectives" rows="3" 
+                                          placeholder="Ex: Desenvolver habilidades de defesa pessoal, aumentar condicionamento físico, preparar instrutores..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload de Documentos -->
+                    <div class="form-section" id="documentSection" style="display: none;">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📁 Documentos e Contexto</h3>
+                        <div style="display: grid; gap: 1.5rem;">
+
+                            <!-- Templates Pré-definidos -->
+                            <div>
+                                <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🎯 Templates Disponíveis</label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                                    <button type="button" class="template-btn" onclick="loadTemplate('krav-maga-basic')" 
+                                            style="padding: 0.75rem; background: rgba(59, 130, 246, 0.2); border: 1px solid #3B82F6; border-radius: 8px; color: #3B82F6; cursor: pointer;">
+                                        🥋 Krav Maga Básico
+                                    </button>
+                                    <button type="button" class="template-btn" onclick="loadTemplate('self-defense')" 
+                                            style="padding: 0.75rem; background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; border-radius: 8px; color: #10B981; cursor: pointer;">
+                                        🛡️ Defesa Pessoal
+                                    </button>
+                                    <button type="button" class="template-btn" onclick="loadTemplate('instructor')" 
+                                            style="padding: 0.75rem; background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; border-radius: 8px; color: #F59E0B; cursor: pointer;">
+                                        👨‍🏫 Formação Instrutor
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Upload de Arquivos -->
+                            <div>
+                                <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">📎 Upload de Documentos</label>
+                                <div style="border: 2px dashed #374151; border-radius: 12px; padding: 2rem; text-align: center; background: rgba(55, 65, 81, 0.3);">
+                                    <div style="font-size: 2rem; margin-bottom: 1rem;">📁</div>
+                                    <input type="file" id="courseDocuments" multiple accept=".pdf,.doc,.docx,.txt,.md" 
+                                           style="display: none;" onchange="handleFileUpload(event)">
+                                    <button type="button" onclick="document.getElementById('courseDocuments').click()" 
+                                            style="background: #3B82F6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-bottom: 1rem;">
+                                        Selecionar Arquivos
+                                    </button>
+                                    <p style="color: #CBD5E1; font-size: 0.9rem;">
+                                        Aceita: PDF, DOC, DOCX, TXT, MD<br>
+                                        <strong>Sugestões:</strong> Curriculums, planos modelo, regulamentos, metodologias
+                                    </p>
+                                    <div id="uploadedFiles" style="margin-top: 1rem;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Contexto Adicional -->
+                            <div>
+                                <label for="additionalContext" style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">💭 Contexto Adicional</label>
+                                <textarea id="additionalContext" rows="4" 
+                                          placeholder="Informações específicas: metodologia preferida, restrições, adaptações necessárias, experiências anteriores, cultura da academia, etc."
+                                          style="width: 100%; padding: 1rem; background: rgba(55, 65, 81, 0.5); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações Avançadas -->
+                    <div class="form-section">
+                        <h3 style="color: #F8FAFC; margin-bottom: 1rem;">⚙️ Configurações Avançadas</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🎯 Gerar Planos de Aula</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" id="generateLessonPlans" checked>
+                                        <span style="color: #CBD5E1;">Gerar automaticamente todos os planos de aula</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🏆 Incluir Avaliações</label>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <input type="checkbox" id="includeEvaluations" checked>
+                                        <span style="color: #CBD5E1;">Criar sistema de avaliações e exames</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🧩 Adaptações Especiais</label>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.25rem; color: #CBD5E1; margin-right: 1rem;">
+                                            <input type="checkbox" name="adaptations" value="TEA">
+                                            <span>TEA</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.25rem; color: #CBD5E1; margin-right: 1rem;">
+                                            <input type="checkbox" name="adaptations" value="TDAH">
+                                            <span>TDAH</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.25rem; color: #CBD5E1;">
+                                            <input type="checkbox" name="adaptations" value="MOBILIDADE_REDUZIDA">
+                                            <span>Mobilidade Reduzida</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="aiModel" style="color: #F8FAFC; margin-bottom: 0.5rem; display: block;">🤖 Modelo de IA</label>
+                                    <select id="aiModel">
+                                        <option value="gpt-4">GPT-4 (Mais criativo)</option>
+                                        <option value="claude-3">Claude 3 (Mais estruturado)</option>
+                                        <option value="gemini">Gemini (Balanceado)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="color: #CBD5E1; font-size: 0.9rem;">
+                        ⏱️ Tempo estimado: 3-5 minutos
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" >Cancelar</button>
+                        <button class="btn btn-primary" onclick="generateCourseWithAI()" id="generateCourseBtn">
+                            <span>🎯</span> Gerar Curso Completo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    <div class="form-group">
+                        <label for="aiDifficulty">Nível de Dificuldade</label>
+                        <select id="aiDifficulty" required>
+                            <option value="1">⭐ Iniciante</option>
+                            <option value="2">⭐⭐ Intermediário</option>
+                            <option value="3">⭐⭐⭐ Avançado</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" >Cancelar</button>
+                <button class="btn btn-primary" onclick="generateLessonPlanWithAI()">
+                    <span>🤖</span> Gerar Plano com IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Main Dashboard JavaScript - Core functionality only
+        
+        // Utility function to reduce console noise in production
+        function logQuiet(message, ...args) {
+            // Only log important messages to reduce noise
+            if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+                console.log(message, ...args);
+            }
+        }
+
+        // Sleep utility function
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Main initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize modules
+            if (typeof loadAllStudents === 'function') {
+                loadAllStudents();
+            }
+            if (typeof initializeBeltSystems === 'function') {
+                initializeBeltSystems();
+            }
+        });
+
+        // Export utility functions to global scope
+        window.logQuiet = logQuiet;
+        window.sleep = sleep;
+    </script>
+    
+    <!-- Dashboard Controller removed - now using modular dashboard.js -->
+</body>
+</html>

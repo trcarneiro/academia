@@ -1,0 +1,587 @@
+/* ==========================================
+   PROGRESS MODULE - ISOLATED CSS
+   ========================================== */
+
+/* Progress Container */
+.progress-isolated {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Progress Header */
+.progress-isolated .progress-header {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-isolated .progress-header h2 {
+    color: #F8FAFC;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-isolated .progress-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Progress Stats */
+.progress-isolated .progress-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.progress-isolated .stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.progress-isolated .stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.progress-isolated .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3B82F6;
+    margin-bottom: 0.5rem;
+}
+
+.progress-isolated .stat-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Filters and Sorting */
+.progress-isolated .progress-filters {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.progress-isolated .filter-group,
+.progress-isolated .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-isolated .filter-group label,
+.progress-isolated .sort-group label {
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.progress-isolated .progress-filter,
+.progress-isolated .progress-sort {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #CBD5E1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.progress-isolated .progress-filter:hover,
+.progress-isolated .progress-sort:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.progress-isolated .progress-filter.active,
+.progress-isolated .progress-sort.active {
+    background: #3B82F6;
+    color: white;
+    border-color: #3B82F6;
+}
+
+/* Progress Grid */
+.progress-isolated .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.progress-isolated .progress-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.progress-isolated .progress-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Progress Card Header */
+.progress-isolated .progress-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-isolated .student-avatar {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.progress-isolated .avatar-text {
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.progress-isolated .student-info {
+    flex: 1;
+}
+
+.progress-isolated .student-name {
+    color: #F8FAFC;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.progress-isolated .student-id {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.progress-isolated .student-level {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.progress-isolated .student-level.beginner {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.progress-isolated .student-level.intermediate {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.progress-isolated .student-level.advanced {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+.progress-isolated .student-level.expert {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+}
+
+/* Progress Metrics */
+.progress-isolated .progress-metrics {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.progress-isolated .metric-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.progress-isolated .metric-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    min-width: 120px;
+}
+
+.progress-isolated .metric-number {
+    color: #F8FAFC;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.progress-isolated .metric-value {
+    color: #3B82F6;
+    font-weight: 600;
+    font-size: 1rem;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Progress Bar */
+.progress-isolated .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-isolated .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+    position: relative;
+}
+
+.progress-isolated .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Progress Timeline */
+.progress-isolated .progress-timeline {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.progress-isolated .timeline-header {
+    margin-bottom: 1rem;
+}
+
+.progress-isolated .timeline-title {
+    color: #CBD5E1;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.progress-isolated .timeline-items {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.progress-isolated .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progress-isolated .timeline-icon {
+    font-size: 1.125rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.progress-isolated .timeline-content {
+    flex: 1;
+}
+
+.progress-isolated .timeline-item .timeline-title {
+    color: #F8FAFC;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.125rem;
+}
+
+.progress-isolated .timeline-date {
+    color: #94A3B8;
+    font-size: 0.75rem;
+}
+
+/* Progress Actions */
+.progress-isolated .progress-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.progress-isolated .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.progress-isolated .btn:hover {
+    transform: translateY(-1px);
+}
+
+.progress-isolated .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.progress-isolated .btn-primary {
+    background: #3B82F6;
+    color: white;
+}
+
+.progress-isolated .btn-primary:hover {
+    background: #2563EB;
+}
+
+.progress-isolated .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.progress-isolated .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Empty State */
+.progress-isolated .progress-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.progress-isolated .progress-empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.progress-isolated .progress-empty-state h3 {
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.progress-isolated .progress-empty-state p {
+    color: #94A3B8;
+    margin-bottom: 2rem;
+}
+
+/* Error State */
+.progress-isolated .progress-error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+}
+
+.progress-isolated .progress-error-state .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #EF4444;
+}
+
+.progress-isolated .progress-error-state h3 {
+    color: #EF4444;
+    margin-bottom: 0.5rem;
+}
+
+.progress-isolated .progress-error-state p {
+    color: #FCA5A5;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .progress-isolated {
+        padding: 0.5rem;
+    }
+    
+    .progress-isolated .progress-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .progress-isolated .progress-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .progress-isolated .progress-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .progress-isolated .filter-group,
+    .progress-isolated .sort-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .progress-isolated .progress-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-isolated .progress-card {
+        padding: 1.5rem;
+    }
+    
+    .progress-isolated .metric-item {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .progress-isolated .metric-label {
+        min-width: auto;
+    }
+    
+    .progress-isolated .progress-bar {
+        order: 2;
+        width: 100%;
+    }
+    
+    .progress-isolated .metric-value {
+        order: 3;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-isolated .progress-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .progress-isolated .progress-card {
+        padding: 1rem;
+    }
+    
+    .progress-isolated .progress-card-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .progress-isolated .student-avatar {
+        align-self: center;
+    }
+    
+    .progress-isolated .progress-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .progress-isolated .progress-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Theme Support */
+.theme-light .progress-isolated .progress-card,
+.theme-light .progress-isolated .progress-header,
+.theme-light .progress-isolated .progress-filters,
+.theme-light .progress-isolated .stat-card,
+.theme-light .progress-isolated .progress-timeline {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .progress-isolated .student-name,
+.theme-light .progress-isolated .progress-header h2 {
+    color: #1F2937;
+}
+
+.theme-light .progress-isolated .metric-label,
+.theme-light .progress-isolated .timeline-title {
+    color: #6B7280;
+}
+
+.theme-light .progress-isolated .metric-number,
+.theme-light .progress-isolated .timeline-item .timeline-title {
+    color: #374151;
+}
+
+.theme-light .progress-isolated .progress-bar {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility */
+.progress-isolated .progress-card:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+.progress-isolated .btn:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .progress-isolated .progress-actions {
+        display: none;
+    }
+    
+    .progress-isolated .progress-card {
+        background: white;
+        border: 1px solid #ccc;
+        color: black;
+        break-inside: avoid;
+    }
+    
+    .progress-isolated .progress-fill {
+        background: #333 !important;
+    }
+    
+    .progress-isolated .student-name {
+        color: #000 !important;
+    }
+}

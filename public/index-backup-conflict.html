@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🥋 Krav Maga Academy - Dashboard</title>
+    
+    <style>
+        /* Base responsive styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Prevent zoom on inputs on iOS */
+        input, select, textarea {
+            font-size: 16px;
+        }
+        
+        /* Loading screen responsive */
+        .loading-dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        .loading-text {
+            color: #CBD5E1;
+            font-size: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .loading-dashboard {
+                padding: 1rem;
+            }
+            
+            .loading-text {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Prevent text selection on UI elements */
+        button, .nav-link, .quick-action-btn {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Touch-friendly buttons */
+        @media (max-width: 768px) {
+            button, .nav-link, .quick-action-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+    </style>
+
+    <!-- 🔌 CARREGADOR DE MÓDULOS ISOLADOS -->
+    <script>
+        window.ModuleLoader = {
+            loadedModules: new Map(),
+            isModuleLoaded: function(moduleName) {
+                return this.loadedModules.has(moduleName);
+            },
+            getLoadedModules: function() {
+                return Array.from(this.loadedModules.keys());
+            }
+        };
+    </script>
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+    <!-- CSS Modules - Lazy loaded -->
+    <link rel="stylesheet" href="/css/modules/dashboard.css">
+    
+    <!-- Core JavaScript -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/modules/dashboard-optimized.js"></script>
+</head>
+<body>
+    <!-- Dashboard Container - Populated by Dashboard Module -->
+    <div id="dashboardContainer" class="dashboard-container">
+        <!-- Loading state -->
+        <div class="loading-dashboard">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando Dashboard...</div>
+        </div>
+    </div>
+
+    <!-- Core Dashboard Initialization -->
+    <script>
+        // Utility functions
+        function logQuiet(message, ...args) {
+            if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+                console.log(message, ...args);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Navigation debounce to prevent multiple calls
+        let navigationTimeout = null;
+        let currentlyLoading = false;
+        
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.dashboard-sidebar, .sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+            
+            if (overlay) {
+                overlay.classList.toggle('active');
+            } else {
+                // Create overlay if it doesn't exist
+                const newOverlay = document.createElement('div');
+                newOverlay.className = 'sidebar-overlay active';
+                newOverlay.onclick = toggleSidebar;
+                document.body.appendChild(newOverlay);
+            }
+        }
+
+        // Show dashboard function
+        function showDashboard() {
+            const dashboardSection = document.getElementById('dashboard');
+            const moduleContent = document.querySelector('.module-content');
+            
+            if (moduleContent) {
+                moduleContent.remove();
+            }
+            
+            if (dashboardSection) {
+                dashboardSection.style.display = 'block';
+            }
+            
+            // Update navigation state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const dashboardLink = document.querySelector('[data-page="dashboard"]');
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+            
+            console.log('🏠 Returned to dashboard');
+        }
+
+        // Global navigation function
+        function navigateToModule(moduleName) {
+            // Prevent multiple rapid calls
+            if (currentlyLoading) {
+                console.log('⏳ Navigation already in progress, ignoring duplicate call');
+                return;
+            }
+            
+            // Clear any pending navigation
+            if (navigationTimeout) {
+                clearTimeout(navigationTimeout);
+            }
+            
+            const routes = {
+                'students': '/views/students.html',
+                'student-editor': '/views/student-editor.html',
+                'courses': '/views/courses.html',
+                'course-importer': '/views/course-importer.html',
+                'techniques': '/views/techniques.html',
+                'plans': '/views/plans.html',
+                'classes': '/views/classes.html',
+                'instructors': '/views/instructors.html',
+                'units': '/views/units.html',
+                'mats': '/views/mats.html',
+                'challenges': '/views/challenges.html',
+                'financial-responsibles': '/views/financial-responsibles.html',
+                'attendance': '/views/attendance.html',
+                'evaluations': '/views/evaluations.html',
+                'progress': '/views/progress.html',
+                'knowledge-base': '/views/knowledge-base.html',
+                'settings': '/views/settings.html'
+            };
+            
+            if (routes[moduleName]) {
+                console.log(`🔄 Navigating to: ${moduleName} -> ${routes[moduleName]}`);
+                
+                // Set loading flag
+                currentlyLoading = true;
+                
+                // Load content dynamically while keeping sidebar
+                loadModuleContent(moduleName, routes[moduleName]).finally(() => {
+                    currentlyLoading = false;
+                });
+            } else {
+                console.warn('Módulo não encontrado:', moduleName);
+            }
+        }
+        
+        // Ensure dashboard is fully loaded before navigation
+        async function ensureDashboardLoaded() {
+            let attempts = 0;
+            const maxAttempts = 20; // 10 seconds max
+            
+            while (attempts < maxAttempts) {
+                if (document.getElementById('contentContainer')) {
+                    console.log('✅ Dashboard loaded successfully');
+                    return true;
+                }
+                
+                console.log(`⏳ Waiting for dashboard... attempt ${attempts + 1}/${maxAttempts}`);
+                await sleep(500); // Wait 500ms
+                attempts++;
+            }
+            
+            console.error('❌ Dashboard failed to load after 10 seconds');
+            return false;
+        }
+        
+        // Load module content dynamically while keeping sidebar
+        async function loadModuleContent(moduleName, url) {
+            console.log('🔧 Loading module content:', moduleName, url);
+            
+            try {
+                // Ensure dashboard is fully loaded first
+                if (!document.getElementById('contentContainer')) {
+                    console.log('🔄 Dashboard not ready, waiting...');
+                    await ensureDashboardLoaded();
+                }
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                console.log('📄 HTML loaded, length:', html.length);
+                
+                // Parse the HTML to extract just the content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Get main content area - should be available now
+                const contentContainer = document.getElementById('contentContainer');
+                console.log('📍 Content container found:', !!contentContainer);
+                
+                if (!contentContainer) {
+                    console.error('❌ contentContainer still not found after waiting!');
+                    console.log('Available IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+                    
+                    // Fallback to direct navigation
+                    console.warn('⚠️ Falling back to direct navigation');
+                    window.location.href = url;
+                    return;
+                }
+                
+                // Hide dashboard content
+                const dashboardSection = document.getElementById('dashboard');
+                if (dashboardSection) {
+                    dashboardSection.style.display = 'none';
+                    console.log('👁️ Dashboard section hidden');
+                }
+                
+                // Remove any existing module content
+                const existingModule = document.querySelector('.module-content');
+                if (existingModule) {
+                    existingModule.remove();
+                    console.log('🗑️ Existing module content removed');
+                }
+                
+                // Ensure sidebar is always preserved
+                const sidebar = document.querySelector('.dashboard-sidebar, .sidebar');
+                if (!sidebar) {
+                    console.warn('⚠️ Sidebar not found, preserving navigation structure');
+                }
+                
+                // Create new module container
+                const moduleContainer = document.createElement('div');
+                moduleContainer.className = 'module-content content-section active';
+                moduleContainer.style.display = 'block';
+                
+                // Extract body content from the loaded view
+                const bodyContent = doc.body.innerHTML;
+                moduleContainer.innerHTML = bodyContent;
+                
+                // Append to content container
+                contentContainer.appendChild(moduleContainer);
+                console.log('✅ Module content loaded successfully');
+                
+                // Check if a module initialization function exists and call it
+                const initFunctionName = `initialize${moduleName.charAt(0).toUpperCase() + moduleName.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())}Module`;
+                console.log('🔍 Checking for initialization function:', initFunctionName);
+                
+                if (window[initFunctionName] && typeof window[initFunctionName] === 'function') {
+                    console.log('🚀 Calling module initialization function:', initFunctionName);
+                    try {
+                        // Wait a bit to ensure DOM elements are fully rendered
+                        setTimeout(() => {
+                            window[initFunctionName]();
+                        }, 50);
+                    } catch (error) {
+                        console.error('❌ Error initializing module:', error);
+                    }
+                } else {
+                    console.log('ℹ️ No initialization function found for module:', moduleName);
+                }
+                
+                // Execute scripts for specific modules (since SPA doesn't auto-execute scripts)
+                if (moduleName === 'student-editor') {
+                    console.log('🔧 Student-editor module will handle its own initialization');
+                    // Module handles its own initialization via student-editor.js
+                }
+                
+                // Update header title
+                const headerTitle = document.querySelector('.header-title');
+                if (headerTitle) {
+                    headerTitle.innerHTML = `<span>🥋</span> ${getModuleTitle(moduleName)}`;
+                }
+                
+                // Update navigation state
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Find and activate current module link
+                const activeLink = document.querySelector(`[onclick*="${moduleName}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+                
+                // Load module-specific assets
+                await loadModuleAssets(moduleName);
+                
+            } catch (error) {
+                console.error('❌ Error loading module content:', error);
+                // Fallback to direct navigation
+                console.log('🔄 Falling back to direct navigation');
+                window.location.href = url;
+            }
+        }
+        
+        // Get module title
+        function getModuleTitle(moduleName) {
+            const titles = {
+                'students': '👥 Gestão de Alunos',
+                'courses': '📚 Gestão de Cursos',
+                'course-importer': '📄 Importador de Cursos',
+                'techniques': '🥋 Banco de Técnicas',
+                'plans': '💳 Gestão de Planos',
+                'classes': '🏫 Gestão de Turmas',
+                'attendance': '✅ Controle de Presença',
+                'evaluations': '📝 Sistema de Avaliações',
+                'progress': '📈 Acompanhamento de Progresso',
+                'financial-responsibles': '💰 Responsáveis Financeiros',
+                'instructors': '👨‍🏫 Gestão de Instrutores',
+                'units': '🏢 Gestão de Unidades',
+                'challenges': '🏆 Desafios e Competições',
+                'mats': '🥋 Materiais e Equipamentos',
+                'knowledge-base': '📖 Base de Conhecimento',
+                'settings': '⚙️ Configurações'
+            };
+            return titles[moduleName] || moduleName;
+        }
+        
+        // Load module assets
+        async function loadModuleAssets(moduleName) {
+            console.log('🔌 Loading assets for module:', moduleName);
+            
+            // Load assets normally for all modules
+            
+            const loadPromises = [];
+            
+            // Load CSS - Force reload for dynamic content
+            const cssPath = `/css/modules/${moduleName}.css`;
+            const existingCSS = document.querySelector(`link[href="${cssPath}"]`);
+            
+            if (!existingCSS) {
+                console.log('📄 Loading CSS:', cssPath);
+                const cssPromise = new Promise((resolve, reject) => {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = cssPath;
+                    link.onload = () => {
+                        console.log('✅ CSS loaded:', cssPath);
+                        resolve();
+                    };
+                    link.onerror = () => {
+                        console.warn('⚠️ CSS failed to load:', cssPath);
+                        resolve(); // Don't fail on CSS errors
+                    };
+                    document.head.appendChild(link);
+                });
+                loadPromises.push(cssPromise);
+            } else {
+                console.log('📄 CSS already loaded:', cssPath);
+            }
+            
+            // Load JS
+            const jsPath = `/js/modules/${moduleName}.js`;
+            if (!document.querySelector(`script[src="${jsPath}"]`)) {
+                console.log('🔧 Loading JS:', jsPath);
+                const jsPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = jsPath;
+                    script.onload = () => {
+                        console.log('✅ JS loaded:', jsPath);
+                        
+                        // Initialize module if it has an init function
+                        if (window[`${moduleName}Module`] && window[`${moduleName}Module`].init) {
+                            console.log('🚀 Initializing module:', moduleName);
+                            window[`${moduleName}Module`].init();
+                        } else if (window[`initialize${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}Module`]) {
+                            console.log('🚀 Initializing module manually:', moduleName);
+                            window[`initialize${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}Module`]();
+                        } else if (moduleName === 'knowledge-base') {
+                            console.log('🚀 Initializing knowledge-base page:', moduleName);
+                            
+                            // Load RAG Data Connector as dependency
+                            const ragConnectorPromise = new Promise((resolve, reject) => {
+                                if (!document.querySelector('script[src="/js/modules/rag-data-connector.js"]')) {
+                                    const ragScript = document.createElement('script');
+                                    ragScript.src = '/js/modules/rag-data-connector.js';
+                                    ragScript.onload = () => {
+                                        console.log('✅ RAG Data Connector loaded');
+                                        resolve();
+                                    };
+                                    ragScript.onerror = () => {
+                                        console.warn('⚠️ RAG Data Connector failed to load');
+                                        resolve(); // Don't fail if connector doesn't load
+                                    };
+                                    document.head.appendChild(ragScript);
+                                } else {
+                                    resolve();
+                                }
+                            });
+                            
+                            // Initialize after dependencies are loaded
+                            ragConnectorPromise.then(() => {
+                                setTimeout(() => {
+                                    if (window.initializeKnowledgeBasePage) {
+                                        window.initializeKnowledgeBasePage();
+                                    } else {
+                                        console.warn('⚠️ Knowledge base page initialization function not found');
+                                    }
+                                }, 150); // Slightly longer delay for RAG connector
+                            });
+                        }
+                        
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.warn('⚠️ JS failed to load:', jsPath);
+                        resolve(); // Don't fail on JS errors
+                    };
+                    document.head.appendChild(script);
+                });
+                loadPromises.push(jsPromise);
+            }
+            
+            // Wait for all assets to load
+            await Promise.all(loadPromises);
+            console.log('✅ All assets loaded for module:', moduleName);
+        }
+
+        // Main initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Initializing Optimized Dashboard...');
+            
+            // Load dashboard content via module
+            if (typeof loadDashboard === 'function') {
+                loadDashboard();
+            } else {
+                console.warn('Dashboard module not loaded, retrying...');
+                setTimeout(() => {
+                    if (typeof loadDashboard === 'function') {
+                        loadDashboard();
+                    }
+                }, 100);
+            }
+        });
+
+        // Export utility functions
+        window.logQuiet = logQuiet;
+        window.sleep = sleep;
+        window.navigateToModule = navigateToModule;
+        window.loadModuleContent = loadModuleContent;
+        window.showDashboard = showDashboard;
+        
+        // Function to show dashboard
+        function showDashboard() {
+            // Remove any module content
+            const existingModule = document.querySelector('.module-content');
+            if (existingModule) {
+                existingModule.remove();
+            }
+            
+            // Show dashboard content
+            const dashboardSection = document.getElementById('dashboard');
+            if (dashboardSection) {
+                dashboardSection.style.display = 'block';
+            }
+            
+            // Reset header title
+            const headerTitle = document.querySelector('.header-title');
+            if (headerTitle) {
+                headerTitle.innerHTML = '<span>🥋</span> Krav Academy';
+            }
+            
+            // Update active navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.page === 'dashboard') {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Execute student editor scripts manually (SPA compatibility)
+        function executeStudentEditorScripts() {
+            console.log('🚀 Initializing Student Editor...');
+            
+            // Student editor variables and functions
+            let studentData = null;
+            let currentTab = 'profile';
+
+            // Get student ID from localStorage
+            function getStudentId() {
+                try {
+                    let navData = localStorage.getItem('editStudentData');
+                    if (!navData) {
+                        navData = localStorage.getItem('studentEditorMode');
+                    }
+                    
+                    if (navData) {
+                        const data = JSON.parse(navData);
+                        console.log('📋 Found navigation data:', data);
+                        return data.studentId;
+                    }
+                } catch (error) {
+                    console.error('Error getting student ID:', error);
+                }
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const idFromUrl = urlParams.get('id');
+                if (idFromUrl) {
+                    console.log('📋 Found student ID in URL:', idFromUrl);
+                    return idFromUrl;
+                }
+                
+                console.error('❌ No student ID found');
+                return null;
+            }
+
+            // Load student data
+            async function loadStudentData() {
+                const studentId = getStudentId();
+                if (!studentId) {
+                    console.error('No student ID found');
+                    document.getElementById('loadingState').innerHTML = '<p style="color: #ef4444;">❌ ID do aluno não encontrado</p>';
+                    return;
+                }
+
+                try {
+                    console.log('🔄 Loading student data for ID:', studentId);
+                    
+                    const response = await fetch(`/api/students/${studentId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to load student data');
+                    }
+                    
+                    studentData = result.data;
+                    console.log('✅ Student data loaded:', studentData);
+                    
+                    updateHeader();
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    renderCurrentTab();
+                    
+                } catch (error) {
+                    console.error('❌ Error loading student:', error);
+                    document.getElementById('loadingState').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                            <h3>❌ Erro ao carregar dados</h3>
+                            <p>${error.message}</p>
+                            <button onclick="loadStudentData()" style="margin-top: 1rem; background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                🔄 Tentar Novamente
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            // Update header
+            function updateHeader() {
+                if (!studentData) return;
+                
+                const user = studentData.user || {};
+                const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Aluno sem nome';
+                
+                const nameEl = document.getElementById('studentName');
+                const infoEl = document.getElementById('studentInfo');
+                if (nameEl) nameEl.textContent = name;
+                if (infoEl) infoEl.textContent = `ID: ${studentData.id} • Categoria: ${studentData.category || 'Não informado'}`;
+            }
+
+            // Switch tabs
+            window.switchTab = function(tabName) {
+                currentTab = tabName;
+                
+                document.querySelectorAll('.page-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    tab.style.background = 'transparent';
+                    tab.style.color = '#cbd5e1';
+                });
+                
+                const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                    activeTab.style.background = '#3b82f6';
+                    activeTab.style.color = 'white';
+                }
+                
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                const currentContent = document.getElementById(`${tabName}-content`);
+                if (currentContent) {
+                    currentContent.style.display = 'block';
+                }
+                
+                renderCurrentTab();
+            };
+
+            // Render current tab
+            function renderCurrentTab() {
+                if (!studentData) return;
+                
+                switch (currentTab) {
+                    case 'profile':
+                        renderProfile();
+                        break;
+                    case 'financial':
+                        renderFinancial();
+                        break;
+                    case 'courses':
+                        renderCourses();
+                        break;
+                    case 'progress':
+                        renderProgress();
+                        break;
+                    case 'attendance':
+                        renderAttendance();
+                        break;
+                }
+            }
+
+            // Render functions
+            function renderProfile() {
+                const container = document.getElementById('profile-content');
+                if (!container) return;
+                
+                const user = studentData.user || {};
+                
+                container.innerHTML = `
+                    <h3 style="margin-bottom: 1.5rem; color: #f8fafc;">👤 Dados Pessoais</h3>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Nome Completo</label>
+                        <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">${user.firstName || ''} ${user.lastName || ''}</div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Email</label>
+                        <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">${user.email || 'Não informado'}</div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Categoria</label>
+                        <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">${studentData.category || 'Não informado'}</div>
+                    </div>
+                `;
+            }
+
+            function renderFinancial() {
+                const container = document.getElementById('financial-content');
+                if (!container) return;
+                
+                const subscriptions = studentData.subscriptions || [];
+                const activeSubscription = subscriptions.find(sub => sub.status === 'ACTIVE');
+                
+                if (!activeSubscription) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: #cbd5e1;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+                            <h3 style="color: #f8fafc; margin-bottom: 1rem;">Nenhuma Assinatura Ativa</h3>
+                            <p>Este aluno não possui assinatura ativa no momento.</p>
+                            <button style="margin-top: 1.5rem; background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                ➕ Criar Assinatura
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const plan = activeSubscription.plan || {};
+                const startDate = activeSubscription.startDate ? new Date(activeSubscription.startDate).toLocaleDateString('pt-BR') : 'Não informado';
+                const nextPayment = activeSubscription.nextPaymentDate ? new Date(activeSubscription.nextPaymentDate).toLocaleDateString('pt-BR') : 'Não informado';
+                
+                // Calculate days until next payment
+                let daysUntilPayment = 'N/A';
+                if (activeSubscription.nextPaymentDate) {
+                    const today = new Date();
+                    const paymentDate = new Date(activeSubscription.nextPaymentDate);
+                    const diffTime = paymentDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    daysUntilPayment = diffDays > 0 ? `${diffDays} dias` : 'Vencido';
+                }
+                
+                // Status colors
+                const statusColor = activeSubscription.status === 'ACTIVE' ? '#10b981' : 
+                                  activeSubscription.status === 'PENDING' ? '#f59e0b' : '#ef4444';
+                
+                container.innerHTML = `
+                    <!-- Financial Overview Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Active Plan Card -->
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #10b981);"></div>
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">💎</div>
+                                <div>
+                                    <h4 style="margin: 0; color: #f8fafc; font-size: 1.1rem;">${plan.name || 'Plano Desconhecido'}</h4>
+                                    <p style="margin: 0; color: #cbd5e1; font-size: 0.875rem;">Plano Ativo</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 1.75rem; font-weight: 700; color: #10b981;">R$ ${plan.price || '0,00'}</div>
+                                    <div style="color: #cbd5e1; font-size: 0.875rem;">/${plan.billingCycle || 'mês'}</div>
+                                </div>
+                                <div style="padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.2); color: ${statusColor}; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                    ${activeSubscription.status}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Next Payment Card -->
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">📅</div>
+                                <div>
+                                    <h4 style="margin: 0; color: #f8fafc; font-size: 1.1rem;">Próximo Pagamento</h4>
+                                    <p style="margin: 0; color: #cbd5e1; font-size: 0.875rem;">${nextPayment}</p>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.25rem; font-weight: 600; color: #f59e0b;">${daysUntilPayment}</div>
+                        </div>
+                        
+                        <!-- Total Paid Card -->
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <div style="width: 48px; height: 48px; background: rgba(168, 85, 247, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">💰</div>
+                                <div>
+                                    <h4 style="margin: 0; color: #f8fafc; font-size: 1.1rem;">Total Pago</h4>
+                                    <p style="margin: 0; color: #cbd5e1; font-size: 0.875rem;">Valor acumulado</p>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.25rem; font-weight: 600; color: #a855f7;">R$ ${(plan.price * 12) || '0,00'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Detailed Information -->
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                        <h3 style="margin: 0 0 1.5rem 0; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                            📋 Detalhes da Assinatura
+                        </h3>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">ID da Assinatura</label>
+                                <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1); font-family: monospace;">${activeSubscription.id}</div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Data de Início</label>
+                                <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">${startDate}</div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Método de Pagamento</label>
+                                <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    ${activeSubscription.paymentMethod || 'Não informado'}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.5rem;">Ciclo de Cobrança</label>
+                                <div style="color: #cbd5e1; background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">
+                                    ${plan.billingCycle || 'Mensal'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Plan Features -->
+                        ${plan.description ? `
+                            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(148, 163, 184, 0.1);">
+                                <h4 style="margin: 0 0 1rem 0; color: #f8fafc;">📋 Benefícios do Plano</h4>
+                                <div style="color: #cbd5e1; line-height: 1.6;">${plan.description}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            📊 Ver Histórico de Pagamentos
+                        </button>
+                        <button style="background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            ✏️ Editar Assinatura
+                        </button>
+                        <button style="background: #f59e0b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            ⏸️ Pausar Assinatura
+                        </button>
+                        <button style="background: #ef4444; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            ❌ Cancelar Assinatura
+                        </button>
+                    </div>
+                `;
+            }
+
+            function renderCourses() {
+                const container = document.getElementById('courses-content');
+                if (!container) return;
+                
+                const enrollments = studentData.enrollments || [];
+                
+                if (enrollments.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: #cbd5e1;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                            <h3 style="color: #f8fafc; margin-bottom: 1rem;">Nenhum Curso Matriculado</h3>
+                            <p>Este aluno não está matriculado em nenhum curso no momento.</p>
+                            <button style="margin-top: 1.5rem; background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                ➕ Matricular em Curso
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Calculate overall statistics
+                let totalProgress = 0;
+                let completedCourses = 0;
+                let activeCourses = 0;
+                
+                enrollments.forEach(enrollment => {
+                    const course = enrollment.course || {};
+                    const progress = enrollment.lessonsCompleted && course.totalClasses 
+                        ? Math.round((enrollment.lessonsCompleted / course.totalClasses) * 100)
+                        : 0;
+                    
+                    totalProgress += progress;
+                    if (progress >= 100) completedCourses++;
+                    if (enrollment.status === 'ACTIVE') activeCourses++;
+                });
+                
+                const avgProgress = enrollments.length > 0 ? Math.round(totalProgress / enrollments.length) : 0;
+                
+                const coursesHTML = enrollments.map(enrollment => {
+                    const course = enrollment.course || {};
+                    const progress = enrollment.lessonsCompleted && course.totalClasses 
+                        ? Math.round((enrollment.lessonsCompleted / course.totalClasses) * 100)
+                        : 0;
+                    
+                    const statusColor = enrollment.status === 'ACTIVE' ? '#10b981' : 
+                                      enrollment.status === 'COMPLETED' ? '#3b82f6' : '#f59e0b';
+                    
+                    const progressColor = progress >= 80 ? '#10b981' : 
+                                        progress >= 50 ? '#f59e0b' : '#ef4444';
+                    
+                    return `
+                        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                            <!-- Progress indicator -->
+                            <div style="position: absolute; top: 0; left: 0; height: 4px; width: ${progress}%; background: ${progressColor}; transition: width 0.3s ease;"></div>
+                            
+                            <!-- Course Header -->
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 0.5rem 0; color: #f8fafc; font-size: 1.25rem; font-weight: 600;">
+                                        ${course.name || 'Curso sem nome'}
+                                    </h4>
+                                    <p style="margin: 0; color: #cbd5e1; font-size: 0.875rem;">
+                                        ${course.description || 'Sem descrição disponível'}
+                                    </p>
+                                </div>
+                                <div style="padding: 0.25rem 0.75rem; background: rgba(${statusColor === '#10b981' ? '16, 185, 129' : statusColor === '#3b82f6' ? '59, 130, 246' : '245, 158, 11'}, 0.2); color: ${statusColor}; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                    ${enrollment.status || 'ACTIVE'}
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Section -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="color: #cbd5e1; font-size: 0.875rem;">Progresso do Curso</span>
+                                    <span style="color: ${progressColor}; font-weight: 600; font-size: 0.875rem;">${progress}%</span>
+                                </div>
+                                <div style="background: rgba(148, 163, 184, 0.2); border-radius: 8px; height: 12px; overflow: hidden;">
+                                    <div style="background: ${progressColor}; height: 100%; width: ${progress}%; border-radius: 8px; transition: width 0.3s ease;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Stats -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                                <div style="text-align: center; background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                    <div style="font-size: 1.25rem; font-weight: 600; color: #3b82f6;">${enrollment.lessonsCompleted || 0}</div>
+                                    <div style="color: #cbd5e1; font-size: 0.75rem;">Aulas Concluídas</div>
+                                </div>
+                                <div style="text-align: center; background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                    <div style="font-size: 1.25rem; font-weight: 600; color: #10b981;">${course.totalClasses || 0}</div>
+                                    <div style="color: #cbd5e1; font-size: 0.75rem;">Total de Aulas</div>
+                                </div>
+                                <div style="text-align: center; background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                    <div style="font-size: 1.25rem; font-weight: 600; color: #f59e0b;">${course.totalClasses - (enrollment.lessonsCompleted || 0)}</div>
+                                    <div style="color: #cbd5e1; font-size: 0.75rem;">Restantes</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Course Details -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; font-size: 0.875rem;">Data de Matrícula</label>
+                                    <div style="color: #cbd5e1; font-size: 0.875rem;">
+                                        ${enrollment.enrolledAt ? new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR') : 'Não informado'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; font-size: 0.875rem;">Última Atividade</label>
+                                    <div style="color: #cbd5e1; font-size: 0.875rem;">
+                                        ${enrollment.lastAccess ? new Date(enrollment.lastAccess).toLocaleDateString('pt-BR') : 'Nunca acessado'}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                <button style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+                                    📊 Ver Detalhes
+                                </button>
+                                <button style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+                                    🎯 Continuar Curso
+                                </button>
+                                ${enrollment.status === 'ACTIVE' ? `
+                                    <button style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+                                        ⏸️ Pausar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = `
+                    <!-- Courses Overview Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem;">${enrollments.length}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Total de Cursos</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">${completedCourses}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Concluídos</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem;">${activeCourses}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Em Andamento</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #a855f7; margin-bottom: 0.5rem;">${avgProgress}%</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Progresso Médio</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Courses List -->
+                    <div>
+                        <h3 style="margin: 0 0 1.5rem 0; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                            📚 Cursos Matriculados
+                        </h3>
+                        ${coursesHTML}
+                    </div>
+                `;
+            }
+
+            function renderProgress() {
+                const container = document.getElementById('progress-content');
+                if (!container) return;
+                
+                const enrollments = studentData.enrollments || [];
+                
+                let totalProgress = 0;
+                let coursesCompleted = 0;
+                
+                if (enrollments.length > 0) {
+                    enrollments.forEach(enrollment => {
+                        const course = enrollment.course || {};
+                        const progress = enrollment.lessonsCompleted && course.totalClasses 
+                            ? Math.round((enrollment.lessonsCompleted / course.totalClasses) * 100)
+                            : 0;
+                        totalProgress += progress;
+                        if (progress >= 100) coursesCompleted++;
+                    });
+                    totalProgress = Math.round(totalProgress / enrollments.length);
+                }
+                
+                container.innerHTML = `
+                    <h3 style="margin-bottom: 1.5rem; color: #f8fafc;">📊 Progresso Geral</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem;">${totalProgress}%</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Progresso Geral</div>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">${coursesCompleted}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Cursos Concluídos</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderAttendance() {
+                const container = document.getElementById('attendance-content');
+                if (!container) return;
+                
+                const attendances = studentData.attendances || [];
+                
+                if (attendances.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: #cbd5e1;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+                            <h3 style="color: #f8fafc; margin-bottom: 1rem;">Nenhuma Frequência Registrada</h3>
+                            <p>Este aluno ainda não possui registros de frequência.</p>
+                            <button style="margin-top: 1.5rem; background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                ➕ Registrar Presença
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Calculate attendance statistics
+                const totalAttendances = attendances.length;
+                const thisMonth = new Date();
+                const thisMonthAttendances = attendances.filter(att => {
+                    const attDate = new Date(att.date || att.createdAt);
+                    return attDate.getMonth() === thisMonth.getMonth() && 
+                           attDate.getFullYear() === thisMonth.getFullYear();
+                }).length;
+                
+                const lastWeekAttendances = attendances.filter(att => {
+                    const attDate = new Date(att.date || att.createdAt);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return attDate >= weekAgo;
+                }).length;
+                
+                // Group by course
+                const attendancesByClass = {};
+                attendances.forEach(att => {
+                    const className = att.class?.name || att.class?.course?.name || 'Aula sem nome';
+                    if (!attendancesByClass[className]) {
+                        attendancesByClass[className] = [];
+                    }
+                    attendancesByClass[className].push(att);
+                });
+                
+                const attendancesList = attendances
+                    .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt))
+                    .slice(0, 10)
+                    .map(attendance => {
+                        const date = new Date(attendance.date || attendance.createdAt);
+                        const className = attendance.class?.name || attendance.class?.course?.name || 'Aula sem nome';
+                        const courseName = attendance.class?.course?.name || 'Curso não informado';
+                        
+                        return `
+                            <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">✅</div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 0.25rem 0; color: #f8fafc; font-size: 1.1rem;">${className}</h4>
+                                    <p style="margin: 0 0 0.25rem 0; color: #cbd5e1; font-size: 0.875rem;">${courseName}</p>
+                                    <p style="margin: 0; color: #94a3b8; font-size: 0.75rem;">${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="padding: 0.25rem 0.75rem; background: rgba(16, 185, 129, 0.2); color: #10b981; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                        PRESENTE
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                
+                container.innerHTML = `
+                    <!-- Attendance Overview Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">${totalAttendances}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Total de Presenças</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem;">${thisMonthAttendances}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Este Mês</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem;">${lastWeekAttendances}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Última Semana</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #a855f7; margin-bottom: 0.5rem;">${Object.keys(attendancesByClass).length}</div>
+                            <div style="color: #cbd5e1; font-size: 0.875rem;">Aulas Diferentes</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance by Class -->
+                    ${Object.keys(attendancesByClass).length > 0 ? `
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                            <h3 style="margin: 0 0 1.5rem 0; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                                📊 Frequência por Aula
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                                ${Object.entries(attendancesByClass).map(([className, classAttendances]) => `
+                                    <div style="background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem;">
+                                        <h4 style="margin: 0 0 0.5rem 0; color: #f8fafc; font-size: 0.9rem;">${className}</h4>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #10b981;">${classAttendances.length}</div>
+                                        <div style="color: #cbd5e1; font-size: 0.75rem;">presenças registradas</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Recent Attendances -->
+                    <div>
+                        <h3 style="margin: 0 0 1.5rem 0; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                            📅 Presenças Recentes
+                        </h3>
+                        ${attendancesList}
+                        
+                        ${attendances.length > 10 ? `
+                            <div style="text-align: center; margin-top: 1.5rem;">
+                                <button style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                                    📋 Ver Histórico Completo (${totalAttendances} registros)
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Initialize immediately
+            console.log('🔍 Debug localStorage contents:');
+            console.log('editStudentData:', localStorage.getItem('editStudentData'));
+            console.log('studentEditorMode:', localStorage.getItem('studentEditorMode'));
+            
+            setTimeout(loadStudentData, 500);
+        }
+        
+        // Global goBack function for compatibility
+        window.goBack = function() {
+            console.log('🔄 Global goBack called - navigating to students');
+            navigateToModule('students');
+        }
+        
+        console.log('✅ Optimized Dashboard initialized');
+    </script>
+</body>
+</html>

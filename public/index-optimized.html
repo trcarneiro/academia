@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Krav Maga Academy - Dashboard</title>
+
+    <!-- 🔌 CARREGADOR DE MÓDULOS ISOLADOS -->
+    <script>
+        window.ModuleLoader = {
+            loadedModules: new Map(),
+            isModuleLoaded: function(moduleName) {
+                return this.loadedModules.has(moduleName);
+            },
+            getLoadedModules: function() {
+                return Array.from(this.loadedModules.keys());
+            }
+        };
+    </script>
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+    <!-- CSS Modules - Lazy loaded -->
+    <link rel="stylesheet" href="/css/modules/dashboard.css">
+    
+    <!-- Core JavaScript -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/modules/dashboard-optimized.js"></script>
+    <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+    <!-- Dashboard Container - Populated by Dashboard Module -->
+    <div id="dashboardContainer" class="dashboard-container">
+        <!-- Loading state -->
+        <div class="loading-dashboard">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando Dashboard...</div>
+        </div>
+    </div>
+
+    <!-- Core Dashboard Initialization -->
+    <script>
+        // Utility functions
+        function logQuiet(message, ...args) {
+            if (message.includes('✅') || message.includes('❌') || message.includes('⚠️')) {
+                console.log(message, ...args);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Global navigation function
+        function navigateToModule(moduleName) {
+            const routes = {
+                'students': '/views/students.html',
+                'courses': '/views/courses.html',
+                'plans': '/views/plans.html',
+                'classes': '/views/classes.html',
+                'instructors': '/views/instructors.html',
+                'units': '/views/units.html',
+                'mats': '/views/mats.html',
+                'challenges': '/views/challenges.html',
+                'financial-responsibles': '/views/financial-responsibles.html',
+                'attendance': '/views/attendance.html',
+                'evaluations': '/views/evaluations.html',
+                'progress': '/views/progress.html',
+                'knowledge-base': '/views/knowledge-base.html',
+                'settings': '/views/settings.html'
+            };
+            
+            if (routes[moduleName]) {
+                window.location.href = routes[moduleName];
+            } else {
+                console.warn('Módulo não encontrado:', moduleName);
+            }
+        }
+
+        // Main initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Initializing Optimized Dashboard...');
+            
+            // Load dashboard content via module
+            if (typeof loadDashboard === 'function') {
+                loadDashboard();
+            } else {
+                console.warn('Dashboard module not loaded, retrying...');
+                setTimeout(() => {
+                    if (typeof loadDashboard === 'function') {
+                        loadDashboard();
+                    }
+                }, 100);
+            }
+        });
+
+        // Export utility functions
+        window.logQuiet = logQuiet;
+        window.sleep = sleep;
+        window.navigateToModule = navigateToModule;
+        
+        console.log('✅ Optimized Dashboard initialized');
+    </script>
+</body>
+</html>

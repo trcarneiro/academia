@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥋 Tatames - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/mats.css">
+</head>
+<body>
+    <div class="mats-isolated">
+        <!-- Content will be populated by the module -->
+        <div id="mats-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 120px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 80px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 300px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Mats Module -->
+    <script src="/js/modules/mats.js"></script>
+    <script>
+        // Initialize mats when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🥋 Mats page loaded');
+            
+            // Load mats data if function exists
+            if (typeof loadMats === 'function') {
+                loadMats();
+            }
+        });
+    </script>
+</body>
+</html>

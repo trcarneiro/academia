@@ -1,0 +1,87 @@
+<!-- Students Management Module -->
+<div class="students-isolated">
+    <!-- Header Section -->
+    <header class="students-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <span class="title-icon">👥</span>
+                Gestão de Alunos
+            </h1>
+            <p class="page-subtitle">Gerencie todos os alunos da academia</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openNewStudentForm()">
+                ➕ Novo Aluno
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats Section -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <div class="stat-value" id="totalStudents">0</div>
+                <div class="stat-label">Total de Alunos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="activeStudents">0</div>
+                <div class="stat-label">Ativos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏸️</div>
+            <div class="stat-content">
+                <div class="stat-value" id="inactiveStudents">0</div>
+                <div class="stat-label">Inativos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🆕</div>
+            <div class="stat-content">
+                <div class="stat-value" id="newStudents">0</div>
+                <div class="stat-label">Novos (30 dias)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="search-container">
+            <input type="text" id="studentSearch" placeholder="🔍 Buscar por nome, email, telefone, CPF ou matrícula..." class="search-input">
+        </div>
+        
+        <div class="filters-container">
+            <select id="statusFilter" class="filter-select">
+                <option value="">Todos os Status</option>
+                <option value="active">Ativos</option>
+                <option value="inactive">Inativos</option>
+            </select>
+            
+            <select id="planFilter" class="filter-select">
+                <option value="">Todos os Planos</option>
+            </select>
+            
+            <button id="clearFiltersBtn" class="btn btn-secondary">
+                🔄 Limpar Filtros
+            </button>
+        </div>
+        
+        <div class="view-controls">
+            <button id="gridViewBtn" class="view-btn active" title="Visualização em Grade">
+                ⊞ Grade
+            </button>
+            <button id="tableViewBtn" class="view-btn" title="Visualização em Tabela">
+                ≡ Tabela
+            </button>
+        </div>
+    </div>
+
+    <!-- Students Container -->
+    <div id="studentsContainer" class="students-container">
+        <!-- Content will be populated by the module -->
+    </div>
+</div>

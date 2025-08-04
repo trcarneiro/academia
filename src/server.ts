@@ -120,7 +120,7 @@ const start = async (): Promise<void> => {
     await server.register(classRoutes, { prefix: '/api/classes' });
     await server.register(analyticsRoutes, { prefix: '/api/analytics' });
     await server.register(pedagogicalRoutes, { prefix: '/api/pedagogical' });
-    await server.register(coursesRoutes, { prefix: '/api/courses-management' });
+    await server.register(coursesRoutes, { prefix: '/api/courses' });
     await server.register(progressRoutes, { prefix: '/api' });
     await server.register(financialResponsibleRoutes, { prefix: '/api/financial-responsible' });
     await server.register(financialRoutes, { prefix: '/api/financial' });
@@ -128,7 +128,7 @@ const start = async (): Promise<void> => {
     await server.register(organizationsRoutes, { prefix: '/api/organizations' });
     await server.register(activitiesRoutes, { prefix: '/api/activities' });
     await server.register(asaasSimpleRoutes, { prefix: '/api/asaas' });
-    await server.register(billingPlanRoutes);
+    await server.register(billingPlanRoutes, { prefix: '/api/billing-plans' });
     await server.register(techniqueRoutes);
     await server.register(diagnosticRoutes);
 

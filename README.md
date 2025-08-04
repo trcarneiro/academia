@@ -2,6 +2,20 @@
 
 A comprehensive multi-tenant SaaS platform for martial arts academy management with AI-powered features, gamification, and pedagogical modules.
 
+## 🚨 **SERVIDOR CORRETO**
+
+**SEMPRE USE O SERVIDOR PRINCIPAL:**
+```bash
+npm run dev
+```
+
+- ✅ **Dados Reais**: 27 alunos do PostgreSQL  
+- ✅ **APIs Completas**: TypeScript + Fastify + Prisma
+- ✅ **Swagger UI**: `http://localhost:3000/docs`
+- ✅ **Dashboard**: `http://localhost:3000/`
+
+**📖 Documentação Completa**: [docs/SERVER_ARCHITECTURE.md](docs/SERVER_ARCHITECTURE.md)
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -116,13 +130,76 @@ POST /api/pedagogical/enrollments
 }
 ```
 
+### Courses API
+```bash
+# Get all courses
+GET /api/courses
+# Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Krav Maga Fundamentals",
+      "description": "12-week beginner course",
+      "level": "BEGINNER",
+      "duration": 12,
+      "status": "active",
+      "lessons": [
+        {
+          "id": "uuid",
+          "title": "Basic Stances",
+          "duration": 60
+        }
+      ]
+    }
+  ]
+}
+
+# Get course details
+GET /api/courses/:id
+# Response:
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "name": "Krav Maga Fundamentals",
+    "description": "12-week beginner course",
+    "level": "BEGINNER",
+    "duration": 12,
+    "status": "active",
+    "lessons": [
+      {
+        "id": "uuid",
+        "title": "Basic Stances",
+        "duration": 60,
+        "techniques": [
+          {
+            "id": "uuid",
+            "name": "Front Kick",
+            "difficulty": "BASIC"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+# Error response
+{
+  "success": false,
+  "error": "Course not found",
+  "code": "COURSE_NOT_FOUND"
+}
+```
+
 ### Progress Tracking
 ```bash
 # Update technique progress
 POST /api/pedagogical/technique-progress
 {
   "enrollmentId": "uuid",
-  "techniqueId": "uuid", 
+  "techniqueId": "uuid",
   "status": "PROFICIENT",
   "accuracy": 85
 }

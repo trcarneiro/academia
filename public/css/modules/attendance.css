@@ -1,0 +1,414 @@
+/* ==========================================
+   ATTENDANCE MODULE - ISOLATED CSS
+   ========================================== */
+
+/* Attendance Container */
+.attendance-isolated {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Attendance Header */
+.attendance-isolated .attendance-header {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.attendance-isolated .attendance-header h3 {
+    color: #F8FAFC;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.attendance-isolated .attendance-filters {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(15, 23, 42, 0.5);
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.attendance-isolated .attendance-filter {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.attendance-isolated .attendance-filter:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+}
+
+.attendance-isolated .attendance-filter.active {
+    background: #3B82F6;
+    color: white;
+}
+
+/* Attendance Table */
+.attendance-isolated .attendance-table-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.attendance-isolated .attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.attendance-isolated .attendance-table th {
+    background: rgba(55, 65, 81, 0.5);
+    color: #F8FAFC;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.attendance-isolated .attendance-table td {
+    padding: 1rem;
+    color: #CBD5E1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attendance-isolated .attendance-table tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.attendance-isolated .attendance-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Student Name Column */
+.attendance-isolated .student-name {
+    color: #F8FAFC;
+    font-weight: 600;
+}
+
+/* Date and Time Columns */
+.attendance-isolated .attendance-date,
+.attendance-isolated .attendance-time {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* Status Column */
+.attendance-isolated .attendance-status {
+    text-align: center;
+}
+
+.attendance-isolated .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.attendance-isolated .status-badge.present {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.attendance-isolated .status-badge.absent {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+.attendance-isolated .status-badge.late {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.attendance-isolated .status-badge.justified {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8B5CF6;
+}
+
+/* Actions Column */
+.attendance-isolated .attendance-actions {
+    text-align: center;
+}
+
+.attendance-isolated .btn {
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.attendance-isolated .btn:hover {
+    background: #2563EB;
+    transform: translateY(-1px);
+}
+
+.attendance-isolated .btn.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.attendance-isolated .btn.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.attendance-isolated .btn.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.attendance-isolated .btn.btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.attendance-isolated .btn.btn-danger:hover {
+    background: #DC2626;
+}
+
+/* Main Actions */
+.attendance-isolated .attendance-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+/* Check-in Form */
+.attendance-isolated .checkin-form {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.attendance-isolated .checkin-form h3 {
+    color: #F8FAFC;
+    margin-bottom: 1rem;
+}
+
+.attendance-isolated .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.attendance-isolated .form-group label {
+    display: block;
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.attendance-isolated .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #F8FAFC;
+    font-size: 1rem;
+}
+
+.attendance-isolated .form-control::placeholder {
+    color: #94A3B8;
+}
+
+.attendance-isolated .form-control:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.attendance-isolated .form-control:disabled {
+    background: rgba(255, 255, 255, 0.02);
+    color: #64748B;
+    cursor: not-allowed;
+}
+
+.attendance-isolated .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.attendance-isolated .form-text {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Stats Cards */
+.attendance-isolated .attendance-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.attendance-isolated .stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.attendance-isolated .stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.attendance-isolated .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3B82F6;
+    margin-bottom: 0.5rem;
+}
+
+.attendance-isolated .stat-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.attendance-isolated .stat-card.present .stat-value {
+    color: #10B981;
+}
+
+.attendance-isolated .stat-card.absent .stat-value {
+    color: #EF4444;
+}
+
+.attendance-isolated .stat-card.rate .stat-value {
+    color: #8B5CF6;
+}
+
+/* Empty State */
+.attendance-isolated .attendance-empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #94A3B8;
+}
+
+.attendance-isolated .attendance-empty-state .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.attendance-isolated .attendance-empty-state h3 {
+    color: #CBD5E1;
+    margin-bottom: 0.5rem;
+}
+
+.attendance-isolated .attendance-empty-state p {
+    color: #94A3B8;
+    margin-bottom: 1.5rem;
+}
+
+/* Error State */
+.attendance-isolated .attendance-error-state {
+    text-align: center;
+    padding: 3rem;
+    color: #EF4444;
+}
+
+.attendance-isolated .attendance-error-state .error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.attendance-isolated .attendance-error-state h3 {
+    color: #EF4444;
+    margin-bottom: 0.5rem;
+}
+
+.attendance-isolated .attendance-error-state p {
+    color: #FCA5A5;
+    margin-bottom: 1.5rem;
+}
+
+/* Loading State */
+.attendance-isolated .attendance-loading {
+    text-align: center;
+    padding: 3rem;
+    color: #94A3B8;
+}
+
+.attendance-isolated .attendance-loading .loading-spinner {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .attendance-isolated {
+        padding: 0.5rem;
+    }
+    
+    .attendance-isolated .attendance-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .attendance-isolated .attendance-filters {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .attendance-isolated .attendance-table-container {
+        overflow-x: auto;
+    }
+    
+    .attendance-isolated .attendance-table {
+        min-width: 600px;
+    }
+    
+    .attendance-isolated .attendance-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .attendance-isolated .attendance-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .attendance-isolated .form-row {
+        grid-template-columns: 1fr;
+    }
+}

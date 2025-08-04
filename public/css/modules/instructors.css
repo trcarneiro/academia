@@ -1,0 +1,902 @@
+/* ==========================================
+   INSTRUCTORS MODULE - ISOLATED CSS
+   ========================================== */
+
+/* Instructors Container */
+.instructors-isolated {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Instructors Header */
+.instructors-isolated .instructors-header {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.instructors-isolated .instructors-header h2 {
+    color: #F8FAFC;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .instructors-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Instructors Stats */
+.instructors-isolated .instructors-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.instructors-isolated .stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.instructors-isolated .stat-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.instructors-isolated .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #DC2626;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .stat-value.active {
+    color: #10B981;
+}
+
+.instructors-isolated .stat-value.completed {
+    color: #3B82F6;
+}
+
+.instructors-isolated .stat-value.pending {
+    color: #F59E0B;
+}
+
+.instructors-isolated .stat-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Filters and Search */
+.instructors-isolated .instructors-filters {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.instructors-isolated .filter-group,
+.instructors-isolated .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .filter-group label,
+.instructors-isolated .sort-group label {
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.instructors-isolated .instructor-filter,
+.instructors-isolated .instructor-sort {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #CBD5E1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.instructors-isolated .instructor-filter:hover,
+.instructors-isolated .instructor-sort:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.instructors-isolated .instructor-filter.active,
+.instructors-isolated .instructor-sort.active {
+    background: #DC2626;
+    color: white;
+    border-color: #DC2626;
+}
+
+.instructors-isolated .search-group {
+    flex: 1;
+    max-width: 300px;
+}
+
+.instructors-isolated .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #F8FAFC;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.instructors-isolated .search-input::placeholder {
+    color: #94A3B8;
+}
+
+.instructors-isolated .search-input:focus {
+    outline: none;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+/* Instructors Grid */
+.instructors-isolated .instructors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.instructors-isolated .instructor-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.instructors-isolated .instructor-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.instructors-isolated .instructor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #DC2626, #B91C1C);
+}
+
+.instructors-isolated .instructor-card.active::before {
+    background: linear-gradient(90deg, #10B981, #059669);
+}
+
+.instructors-isolated .instructor-card.inactive::before {
+    background: linear-gradient(90deg, #6B7280, #4B5563);
+}
+
+.instructors-isolated .instructor-card.vacation::before {
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+/* Instructor Card Header */
+.instructors-isolated .instructor-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructors-isolated .instructor-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(220, 38, 38, 0.3);
+    flex-shrink: 0;
+}
+
+.instructors-isolated .instructor-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.instructors-isolated .instructor-info {
+    flex: 1;
+}
+
+.instructors-isolated .instructor-info h3 {
+    color: #F8FAFC;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .instructor-title {
+    color: #DC2626;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .instructor-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.instructors-isolated .instructor-contact span {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Status Badge */
+.instructors-isolated .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.instructors-isolated .status-badge.active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+.instructors-isolated .status-badge.inactive {
+    background: rgba(107, 114, 128, 0.2);
+    color: #6B7280;
+}
+
+.instructors-isolated .status-badge.vacation {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.instructors-isolated .status-badge.suspended {
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+}
+
+/* Instructor Content */
+.instructors-isolated .instructor-content {
+    margin-bottom: 1.5rem;
+}
+
+.instructors-isolated .instructor-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.instructors-isolated .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+}
+
+.instructors-isolated .detail-label {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .detail-value {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.instructors-isolated .detail-value.rating {
+    color: #F59E0B;
+}
+
+/* Belt Colors */
+.instructors-isolated .detail-value.belt-white {
+    color: #F8FAFC;
+}
+
+.instructors-isolated .detail-value.belt-yellow {
+    color: #FDE047;
+}
+
+.instructors-isolated .detail-value.belt-orange {
+    color: #FB923C;
+}
+
+.instructors-isolated .detail-value.belt-green {
+    color: #4ADE80;
+}
+
+.instructors-isolated .detail-value.belt-blue {
+    color: #60A5FA;
+}
+
+.instructors-isolated .detail-value.belt-brown {
+    color: #A78BFA;
+}
+
+.instructors-isolated .detail-value.belt-black-1,
+.instructors-isolated .detail-value.belt-black-2,
+.instructors-isolated .detail-value.belt-black-3,
+.instructors-isolated .detail-value.belt-black-4,
+.instructors-isolated .detail-value.belt-black-5 {
+    color: #1F2937;
+    background: linear-gradient(45deg, #F59E0B, #DC2626);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Instructor Rating */
+.instructors-isolated .instructor-rating {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.instructors-isolated .rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .rating-value {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.instructors-isolated .rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .star {
+    font-size: 1.25rem;
+}
+
+.instructors-isolated .star.full {
+    color: #F59E0B;
+}
+
+.instructors-isolated .star.half {
+    color: #F59E0B;
+}
+
+.instructors-isolated .star.empty {
+    color: #4B5563;
+}
+
+.instructors-isolated .rating-text {
+    color: #94A3B8;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+/* Instructor Specialties */
+.instructors-isolated .instructor-specialties {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.instructors-isolated .specialties-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .specialties-count {
+    background: rgba(220, 38, 38, 0.2);
+    color: #DC2626;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.instructors-isolated .specialties-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .specialty-tag {
+    background: rgba(220, 38, 38, 0.1);
+    color: #DC2626;
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* Instructor Schedule */
+.instructors-isolated .instructor-schedule {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.instructors-isolated .schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .schedule-hours {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3B82F6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.instructors-isolated .schedule-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.instructors-isolated .schedule-label {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .schedule-value {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Instructor Certifications */
+.instructors-isolated .instructor-certifications {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.instructors-isolated .certifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.instructors-isolated .certifications-count {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.instructors-isolated .certifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.instructors-isolated .certification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.instructors-isolated .certification-name {
+    color: #F8FAFC;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.instructors-isolated .certification-date {
+    color: #94A3B8;
+    font-size: 0.75rem;
+}
+
+/* Instructor Bio */
+.instructors-isolated .instructor-bio {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.instructors-isolated .bio-label {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .bio-content {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Instructor Actions */
+.instructors-isolated .instructor-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.instructors-isolated .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.instructors-isolated .btn:hover {
+    transform: translateY(-1px);
+}
+
+.instructors-isolated .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.instructors-isolated .btn-primary {
+    background: #DC2626;
+    color: white;
+}
+
+.instructors-isolated .btn-primary:hover {
+    background: #B91C1C;
+}
+
+.instructors-isolated .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+.instructors-isolated .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.instructors-isolated .btn-warning {
+    background: #F59E0B;
+    color: white;
+}
+
+.instructors-isolated .btn-warning:hover {
+    background: #D97706;
+}
+
+.instructors-isolated .btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.instructors-isolated .btn-danger:hover {
+    background: #DC2626;
+}
+
+/* Empty State */
+.instructors-isolated .instructors-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.instructors-isolated .instructors-empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.instructors-isolated .instructors-empty-state h3 {
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .instructors-empty-state p {
+    color: #94A3B8;
+    margin-bottom: 2rem;
+}
+
+/* Error State */
+.instructors-isolated .instructors-error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+}
+
+.instructors-isolated .instructors-error-state .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #EF4444;
+}
+
+.instructors-isolated .instructors-error-state h3 {
+    color: #EF4444;
+    margin-bottom: 0.5rem;
+}
+
+.instructors-isolated .instructors-error-state p {
+    color: #FCA5A5;
+    margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .instructors-isolated {
+        padding: 0.5rem;
+    }
+    
+    .instructors-isolated .instructors-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .instructors-isolated .instructors-actions {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .instructors-isolated .instructors-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .instructors-isolated .filter-group,
+    .instructors-isolated .sort-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .instructors-isolated .search-group {
+        max-width: none;
+    }
+    
+    .instructors-isolated .instructors-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .instructors-isolated .instructor-card {
+        padding: 1.5rem;
+    }
+    
+    .instructors-isolated .instructor-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .instructors-isolated .instructor-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .instructors-isolated .instructor-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .instructors-isolated .instructor-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .instructors-isolated .schedule-item,
+    .instructors-isolated .certification-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .instructors-isolated .instructors-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .instructors-isolated .instructor-card {
+        padding: 1rem;
+    }
+    
+    .instructors-isolated .instructor-info h3 {
+        font-size: 1.125rem;
+    }
+    
+    .instructors-isolated .instructor-details {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .instructors-isolated .specialties-list {
+        justify-content: center;
+    }
+}
+
+/* Theme Support */
+.theme-light .instructors-isolated .instructor-card,
+.theme-light .instructors-isolated .instructors-header,
+.theme-light .instructors-isolated .instructors-filters,
+.theme-light .instructors-isolated .stat-card,
+.theme-light .instructors-isolated .instructor-rating,
+.theme-light .instructors-isolated .instructor-specialties,
+.theme-light .instructors-isolated .instructor-schedule,
+.theme-light .instructors-isolated .instructor-certifications,
+.theme-light .instructors-isolated .instructor-bio {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .instructors-isolated .instructor-info h3,
+.theme-light .instructors-isolated .instructors-header h2 {
+    color: #1F2937;
+}
+
+.theme-light .instructors-isolated .detail-label,
+.theme-light .instructors-isolated .rating-header,
+.theme-light .instructors-isolated .specialties-header,
+.theme-light .instructors-isolated .schedule-header,
+.theme-light .instructors-isolated .certifications-header,
+.theme-light .instructors-isolated .bio-label {
+    color: #6B7280;
+}
+
+.theme-light .instructors-isolated .detail-value,
+.theme-light .instructors-isolated .certification-name,
+.theme-light .instructors-isolated .schedule-value {
+    color: #374151;
+}
+
+.theme-light .instructors-isolated .instructor-contact span,
+.theme-light .instructors-isolated .rating-text,
+.theme-light .instructors-isolated .schedule-label,
+.theme-light .instructors-isolated .certification-date,
+.theme-light .instructors-isolated .bio-content {
+    color: #6B7280;
+}
+
+.theme-light .instructors-isolated .search-input {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #1F2937;
+}
+
+.theme-light .instructors-isolated .search-input::placeholder {
+    color: #6B7280;
+}
+
+/* Accessibility */
+.instructors-isolated .instructor-card:focus-visible {
+    outline: 2px solid #DC2626;
+    outline-offset: 2px;
+}
+
+.instructors-isolated .btn:focus-visible {
+    outline: 2px solid #DC2626;
+    outline-offset: 2px;
+}
+
+.instructors-isolated .search-input:focus-visible {
+    outline: 2px solid #DC2626;
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .instructors-isolated .instructors-actions,
+    .instructors-isolated .instructor-actions {
+        display: none;
+    }
+    
+    .instructors-isolated .instructor-card {
+        background: white;
+        border: 1px solid #ccc;
+        color: black;
+        break-inside: avoid;
+    }
+    
+    .instructors-isolated .instructor-info h3,
+    .instructors-isolated .certification-name {
+        color: #000 !important;
+    }
+    
+    .instructors-isolated .instructor-photo {
+        border-color: #ccc;
+    }
+}

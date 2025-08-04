@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Courses Module</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0F172A;
+            color: #F8FAFC;
+            margin: 0;
+            padding: 2rem;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .test-results {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .test-item.success {
+            border-left: 4px solid #10B981;
+        }
+        .test-item.error {
+            border-left: 4px solid #EF4444;
+        }
+        .test-item.warning {
+            border-left: 4px solid #F59E0B;
+        }
+        .test-icon {
+            font-size: 1.5rem;
+        }
+        .courses-container {
+            min-height: 400px;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            background: #1E293B;
+        }
+        .loading {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 1.2rem;
+            margin: 2rem 0;
+        }
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            background: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 Teste do Módulo de Cursos</h1>
+            <p>Verificando se o módulo de cursos está funcionando corretamente</p>
+        </div>
+
+        <div class="test-results">
+            <h2>📊 Resultados dos Testes</h2>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="courses-container">
+            <h2>📚 Módulo de Cursos</h2>
+            <div id="courses" class="courses-isolated">
+                <div class="loading">Carregando cursos...</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn" onclick="refreshTest()">🔄 Atualizar Teste</button>
+            <button class="btn" onclick="checkConsole()">📋 Ver Console</button>
+        </div>
+    </div>
+
+    <script>
+        // Test results array
+        const testResults = [];
+
+        // Add test result
+        function addTestResult(message, type = 'success') {
+            const result = { message, type, timestamp: new Date().toLocaleTimeString() };
+            testResults.push(result);
+            
+            const resultsContainer = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-item ${type}`;
+            
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+            div.innerHTML = `
+                <span class="test-icon">${icon}</span>
+                <div>
+                    <strong>${message}</strong>
+                    <br><small>${result.timestamp}</small>
+                </div>
+            `;
+            
+            resultsContainer.appendChild(div);
+        }
+
+        // Test file existence
+        async function testFileExists(url, name) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    addTestResult(`${name} carregado com sucesso`, 'success');
+                    return true;
+                } else {
+                    addTestResult(`${name} não encontrado (status: ${response.status})`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addTestResult(`Erro ao carregar ${name}: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Test courses data loading
+        async function testCoursesData() {
+            try {
+                const response = await fetch('/data/courses.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    addTestResult(`Dados de cursos carregados: ${data.length} cursos`, 'success');
+                    
+                    // Show course details
+                    data.forEach(course => {
+                        addTestResult(`Curso: ${course.title} (${course.category})`, 'success');
+                    });
+                    
+                    return data;
+                } else {
+                    addTestResult(`Erro ao carregar dados de cursos: ${response.status}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                addTestResult(`Erro ao carregar dados: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // Test courses module
+        async function testCoursesModule() {
+            try {
+                // Load the courses module
+                const script = document.createElement('script');
+                script.src = '/js/modules/courses.js';
+                document.head.appendChild(script);
+                
+                // Wait for module to load
+                await new Promise(resolve => {
+                    script.onload = resolve;
+                    script.onerror = () => {
+                        addTestResult('Erro ao carregar courses.js', 'error');
+                        resolve();
+                    };
+                });
+                
+                // Check if global functions are available
+                if (typeof window.loadCourses === 'function') {
+                    addTestResult('Funções globais do módulo disponíveis', 'success');
+                    
+                    // Try to load courses
+                    setTimeout(() => {
+                        if (window.loadCourses) {
+                            window.loadCourses();
+                            addTestResult('Módulo de cursos inicializado', 'success');
+                        }
+                    }, 1000);
+                    
+                } else {
+                    addTestResult('Funções globais não disponíveis', 'warning');
+                }
+                
+            } catch (error) {
+                addTestResult(`Erro no módulo: ${error.message}`, 'error');
+            }
+        }
+
+        // Run all tests
+        async function runTests() {
+            document.getElementById('testResults').innerHTML = '';
+            testResults.length = 0;
+            
+            addTestResult('Iniciando testes do módulo de cursos...', 'success');
+            
+            // Test files
+            await testFileExists('/js/modules/courses.js', 'courses.js');
+            await testFileExists('/data/courses.json', 'courses.json');
+            
+            // Test data
+            const coursesData = await testCoursesData();
+            
+            // Test module
+            await testCoursesModule();
+            
+            addTestResult('Testes concluídos. Verifique o console para mais detalhes.', 'success');
+        }
+
+        // Refresh test
+        function refreshTest() {
+            runTests();
+        }
+
+        // Check console
+        function checkConsole() {
+            alert('Abra o console do navegador (F12) para ver logs detalhados');
+        }
+
+        // Run tests on load
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

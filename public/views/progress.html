@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📈 Progresso - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/progress.css">
+</head>
+<body>
+    <div class="progress-isolated">
+        <!-- Progress Header -->
+        <div class="progress-header">
+            <h2>📈 Progresso dos Alunos</h2>
+            <div class="progress-actions">
+                <button class="btn btn-primary" onclick="refreshProgress()">
+                    🔄 Atualizar
+                </button>
+                <button class="btn btn-secondary" onclick="exportProgress()">
+                    📊 Exportar
+                </button>
+                <button class="btn btn-secondary" onclick="window.history.back()">
+                    ← Voltar
+                </button>
+            </div>
+        </div>
+
+        <!-- Content will be populated by the module -->
+        <div id="progress-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 120px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 80px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 300px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Progress Module -->
+    <script src="/js/modules/progress.js"></script>
+    <script>
+        // Initialize progress when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadProgress === 'function') {
+                loadProgress();
+            }
+        });
+    </script>
+</body>
+</html>

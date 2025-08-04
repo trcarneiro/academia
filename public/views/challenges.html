@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Desafios - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/challenges.css">
+</head>
+<body>
+    <div class="challenges-isolated">
+        <!-- Content will be populated by the module -->
+        <div id="challenges-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 120px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 80px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 300px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Challenges Module -->
+    <script src="/js/modules/challenges.js"></script>
+    <script>
+        // Initialize challenges when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏆 Challenges page loaded');
+            
+            // Load challenges data if function exists
+            if (typeof loadChallenges === 'function') {
+                loadChallenges();
+            }
+        });
+    </script>
+</body>
+</html>

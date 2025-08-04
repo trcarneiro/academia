@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Aulas - Krav Maga Academy</title>
+</head>
+<body>
+    <div class="lessons-container">
+        <!-- Header -->
+        <div class="lessons-header">
+            <div class="lessons-header-content">
+                <h1>📚 Gerenciamento de Aulas</h1>
+                <p class="lessons-subtitle">Gerencie todas as aulas dos cursos</p>
+            </div>
+            <button class="btn btn-primary" onclick="navigateToModule('courses')">
+                ← Voltar aos Cursos
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="lessonsLoading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Carregando aulas...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="lessonsEmpty" class="empty-state" style="display: none;">
+            <div class="empty-icon">📚</div>
+            <h3>Nenhuma aula encontrada</h3>
+            <p>As aulas serão exibidas aqui quando forem criadas.</p>
+        </div>
+
+        <!-- Content -->
+        <div id="lessonsContent" class="lessons-content" style="display: none;">
+            <!-- Filters -->
+            <div class="lessons-filters">
+                <div class="filter-group">
+                    <label for="courseFilter">Curso</label>
+                    <select id="courseFilter" class="filter-select">
+                        <option value="">Todos os Cursos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="unitFilter">Unidade</label>
+                    <select id="unitFilter" class="filter-select">
+                        <option value="">Todas as Unidades</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">Todos</option>
+                        <option value="scheduled">Agendada</option>
+                        <option value="completed">Concluída</option>
+                        <option value="cancelled">Cancelada</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="searchFilter">Buscar</label>
+                    <input type="text" id="searchFilter" class="filter-input" placeholder="Buscar aula...">
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="lessons-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h3 id="totalLessons">0</h3>
+                        <p>Total de Aulas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <h3 id="completedLessons">0</h3>
+                        <p>Concluídas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-content">
+                        <h3 id="scheduledLessons">0</h3>
+                        <p>Agendadas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3 id="totalStudents">0</h3>
+                        <p>Alunos Ativos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lessons Grid -->
+            <div class="lessons-grid" id="lessonsGrid">
+                <!-- Lessons will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson Detail Modal -->
+    <div id="lessonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Detalhes da Aula</h2>
+                <button class="modal-close" onclick="closeLessonModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="lesson-details">
+                    <div class="detail-section">
+                        <h3>Informações da Aula</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Curso:</label>
+                                <span id="modalCourse"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Unidade:</label>
+                                <span id="modalUnit"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Aula #:</label>
+                                <span id="modalLessonNumber"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Título:</label>
+                                <span id="modalTitleDetail"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Data:</label>
+                                <span id="modalDate"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Horário:</label>
+                                <span id="modalTime"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Duração:</label>
+                                <span id="modalDuration"></span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Status:</label>
+                                <span id="modalStatus"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Técnicas da Aula</h3>
+                        <div id="modalTechniques" class="techniques-list">
+                            <!-- Techniques will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Alunos Presentes</h3>
+                        <div id="modalAttendance" class="attendance-list">
+                            <!-- Attendance will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Observações</h3>
+                        <p id="modalNotes"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeLessonModal()">Fechar</button>
+                <button class="btn btn-primary" onclick="editLesson()">Editar</button>
+                <button class="btn btn-danger" onclick="deleteLesson()">Excluir</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

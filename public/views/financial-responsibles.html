@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 Responsáveis Financeiros - Krav Maga Academy</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/financial-responsibles.css">
+</head>
+<body>
+    <div class="financial-responsibles-isolated">
+        <!-- Content will be populated by the module -->
+        <div id="financial-responsibles-content">
+            <!-- Loading state -->
+            <div class="loading-skeleton" style="height: 120px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 80px; margin: 2rem 0;"></div>
+            <div class="loading-skeleton" style="height: 300px; margin: 2rem 0;"></div>
+        </div>
+    </div>
+
+    <!-- Financial Responsibles Module -->
+    <script src="/js/modules/financial-responsibles.js"></script>
+    <script>
+        // Initialize financial responsibles when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('💳 Financial Responsibles page loaded');
+            
+            // Load financial responsibles data if function exists
+            if (typeof loadFinancialResponsibles === 'function') {
+                loadFinancialResponsibles();
+            }
+        });
+    </script>
+</body>
+</html>

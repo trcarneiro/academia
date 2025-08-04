@@ -50,7 +50,12 @@
       "Bash(git commit:*)",
       "Bash(git config:*)",
       "Bash(pgrep:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(mv:*)",
+      "Bash(PORT=3001 node servers/server-complete.js)",
+      "Bash(PORT=3000 node servers/server-complete.js)",
+      "Bash(taskkill:*)",
+      "Bash(NODE_ENV=development npx tsx --no-cache src/server.ts)"
     ],
     "deny": []
   }

@@ -1,0 +1,228 @@
+<!-- Course Editor Module -->
+<div class="course-editor-isolated">
+    <!-- Header Section -->
+    <header class="editor-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="title-section">
+                    <h1 id="editorTitle">
+                        <span class="title-icon">📝</span>
+                        <span id="titleText">Novo Curso</span>
+                    </h1>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn btn-back" onclick="goBack()">
+                    ← Voltar
+                </button>
+                <button class="header-btn btn-draft" onclick="saveDraft()" id="saveDraftBtn">
+                    💾 Salvar Rascunho
+                </button>
+                <button class="header-btn btn-save" onclick="saveCourse()" id="saveCourseBtn">
+                    ➕ Criar Curso
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Carregando editor...</div>
+    </div>
+
+    <!-- Editor Content -->
+    <div class="editor-main">
+        <div id="editorContent" class="form-container">
+            <!-- Basic Information Section -->
+            <section class="form-section">
+                <h2 class="section-title">📋 Informações Básicas</h2>
+                <div class="section-description">
+                    Configure as informações fundamentais do curso
+                </div>
+                <div class="form-grid two-columns">
+                    <div class="form-group">
+                        <label class="form-label" for="courseName">
+                            Nome do Curso <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-input" id="courseName" 
+                               placeholder="Ex: Krav Maga Faixa Branca - Defesa Pessoal 1" 
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseLevel">
+                            Nível/Graduação <span class="required">*</span>
+                        </label>
+                        <select class="form-select" id="courseLevel" required>
+                            <option value="">Selecione o nível</option>
+                            <option value="BEGINNER">Iniciante</option>
+                            <option value="INTERMEDIATE">Intermediário</option>
+                            <option value="ADVANCED">Avançado</option>
+                            <option value="EXPERT">Especialista</option>
+                            <option value="MASTER">Mestre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseTarget">
+                            Público-alvo <span class="required">*</span>
+                        </label>
+                        <select class="form-select" id="courseTarget" required>
+                            <option value="">Selecione o público</option>
+                            <option value="ADULTS">Adultos</option>
+                            <option value="TEENS">Adolescentes</option>
+                            <option value="KIDS">Crianças</option>
+                            <option value="SENIORS">Idosos</option>
+                            <option value="ALL">Todos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseDuration">
+                            Duração (semanas)
+                        </label>
+                        <input type="number" class="form-input" id="courseDuration" min="1" max="52" value="16">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="courseDescription">
+                            Descrição do Curso
+                        </label>
+                        <textarea class="form-textarea" id="courseDescription" rows="4" 
+                                  placeholder="Descrição detalhada do curso, metodologia e objetivos gerais..."></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="courseMethodology">
+                            Metodologia de Ensino
+                        </label>
+                        <textarea class="form-textarea" id="courseMethodology" rows="3" 
+                                  placeholder="Descreva a metodologia de ensino utilizada no curso..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Objectives Section -->
+            <section class="form-section">
+                <h2 class="section-title">🎯 Objetivos</h2>
+                <div class="section-description">
+                    Defina os objetivos gerais e específicos do curso
+                </div>
+                
+                <div class="objectives-section">
+                    <div class="objective-group">
+                        <h3>Objetivos Gerais</h3>
+                        <div id="generalObjectives" class="objectives-list">
+                            <div class="objective-item">
+                                <textarea placeholder="Descreva um objetivo geral do curso..."></textarea>
+                                <button type="button" class="remove-btn" onclick="removeObjective(this, 'general')">🗑️</button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-btn" onclick="addObjective('general')">
+                            + Adicionar Objetivo Geral
+                        </button>
+                    </div>
+                    
+                    <div class="objective-group">
+                        <h3>Objetivos Específicos</h3>
+                        <div id="specificObjectives" class="objectives-list">
+                            <div class="objective-item">
+                                <textarea placeholder="Descreva um objetivo específico do curso..."></textarea>
+                                <button type="button" class="remove-btn" onclick="removeObjective(this, 'specific')">🗑️</button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-btn" onclick="addObjective('specific')">
+                            + Adicionar Objetivo Específico
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resources Section -->
+            <section class="form-section">
+                <h2 class="section-title">📦 Recursos Necessários</h2>
+                <div class="section-description">
+                    Liste os equipamentos e materiais necessários para o curso
+                </div>
+                
+                <div class="resources-section">
+                    <div id="resourcesList" class="resources-list">
+                        <div class="resource-item">
+                            <input type="text" placeholder="Ex: Tatame, Luvas de boxe, Escudos...">
+                            <button type="button" class="remove-btn" onclick="removeResource(this)">🗑️</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-btn" onclick="addResource()">
+                        + Adicionar Recurso
+                    </button>
+                </div>
+            </section>
+
+            <!-- Evaluation Section -->
+            <section class="form-section">
+                <h2 class="section-title">📊 Sistema de Avaliação</h2>
+                <div class="section-description">
+                    Configure os critérios e métodos de avaliação do curso
+                </div>
+                
+                <div class="evaluation-section">
+                    <div class="evaluation-grid">
+                        <div class="eval-group">
+                            <h3>Critérios de Avaliação</h3>
+                            <div id="evaluationCriteria" class="eval-list">
+                                <div class="eval-item">
+                                    <input type="text" placeholder="Ex: Execução correta das técnicas">
+                                    <button type="button" class="remove-btn" onclick="removeEvalItem(this, 'criteria')">🗑️</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-btn" onclick="addEvalItem('criteria')">
+                                + Adicionar Critério
+                            </button>
+                        </div>
+                        
+                        <div class="eval-group">
+                            <h3>Métodos de Avaliação</h3>
+                            <div id="evaluationMethods" class="eval-list">
+                                <div class="eval-item">
+                                    <input type="text" placeholder="Ex: Avaliação prática individual">
+                                    <button type="button" class="remove-btn" onclick="removeEvalItem(this, 'methods')">🗑️</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-btn" onclick="addEvalItem('methods')">
+                                + Adicionar Método
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="eval-group full-width">
+                        <h3>Requisitos para Aprovação</h3>
+                        <textarea class="form-textarea" id="evaluationRequirements" rows="4" 
+                                  placeholder="Descreva os requisitos necessários para aprovação no curso..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Course Status -->
+            <section class="form-section">
+                <h2 class="section-title">⚙️ Configurações</h2>
+                <div class="section-description">
+                    Configure o status e outras opções do curso
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="courseStatus">
+                            Status do Curso
+                        </label>
+                        <select class="form-select" id="courseStatus">
+                            <option value="ACTIVE">Ativo</option>
+                            <option value="INACTIVE">Inativo</option>
+                            <option value="DRAFT">Rascunho</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

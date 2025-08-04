@@ -1,0 +1,20 @@
+[
+  {
+    "id": "krav-maga-basic",
+    "title": "Krav Maga Básico",
+    "targetAudience": "Iniciantes",
+    "duration": 24,
+    "category": "BEGINNER",
+    "active": true,
+    "description": "Curso fundamental de Krav Maga para iniciantes"
+  },
+  {
+    "id": "krav-maga-intermediate",
+    "title": "Krav Maga Intermediário",
+    "targetAudience": "Alunos com experiência",
+    "duration": 32,
+    "category": "INTERMEDIATE",
+    "active": true,
+    "description": "Curso intermediário com técnicas avançadas"
+  }
+]

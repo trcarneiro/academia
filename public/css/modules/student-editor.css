@@ -1,0 +1,243 @@
+/* Student Editor Module CSS */
+/* This file provides additional styles for the student-editor module */
+
+/* ==============================================
+   SUBSCRIPTION COURSES STYLES
+   ============================================== */
+
+.subscription-courses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.subscription-courses-list .course-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.subscription-courses-list .course-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.subscription-courses-list .course-info {
+    flex: 1;
+}
+
+.subscription-courses-list .course-status {
+    white-space: nowrap;
+}
+
+.subscription-courses-list .course-actions {
+    min-width: 120px;
+}
+
+.subscription-courses-list .course-actions button {
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.subscription-courses-list .course-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive design for course items */
+@media (max-width: 768px) {
+    .subscription-courses-list .course-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+    
+    .subscription-courses-list .course-actions {
+        width: 100%;
+    }
+    
+    .subscription-courses-list .course-actions button {
+        width: 100%;
+    }
+}
+
+/* Course enrollment status indicators */
+.course-item[data-enrolled="true"] {
+    border-left-color: #10b981 !important;
+}
+
+.course-item[data-primary="true"] {
+    border-left-color: #3b82f6 !important;
+    border-left-width: 6px !important;
+}
+
+.course-item[data-available="true"] {
+    border-left-color: #f59e0b !important;
+}
+
+.student-editor-isolated {
+    padding: 1rem;
+    background: var(--bg-color, #0F172A);
+    color: var(--text-color, #E2E8F0);
+    min-height: 100vh;
+}
+
+.student-editor-header {
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.student-editor-tabs {
+    display: flex;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    padding: 0.5rem;
+    border: 1px solid #334155;
+    margin-bottom: 2rem;
+}
+
+.student-editor-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: #CBD5E1;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.student-editor-tab:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60A5FA;
+}
+
+.student-editor-tab.active {
+    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    color: white;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.student-editor-content {
+    background: #1E293B;
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #334155;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.insight-card {
+    background: #1E293B;
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #3B82F6;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+}
+
+.insight-card.insight-warning {
+    border-left-color: #F59E0B;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.insight-card.insight-positive {
+    border-left-color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.insight-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.insight-content {
+    flex: 1;
+}
+
+.insight-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #E2E8F0;
+}
+
+.insight-message {
+    color: #94A3B8;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.insights-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #64748B;
+}
+
+.insights-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.insights-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #334155;
+}
+
+.insights-disclaimer {
+    color: #64748B;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Loading states */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-top: 3px solid #3B82F6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.students-isolated-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #64748B;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .student-editor-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .student-editor-content {
+        padding: 1rem;
+    }
+}

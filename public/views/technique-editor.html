@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Técnica - Krav Academy</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+    
+    <style>
+        .technique-editor-isolated {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            background: #0F172A;
+        }
+        
+        .editor-header {
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .back-button {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            color: #3B82F6;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-button:hover {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .editor-header h1 {
+            color: #F8FAFC;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .save-button {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        .form-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .form-section {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .form-section h2 {
+            color: #F8FAFC;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #E2E8F0;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #F8FAFC;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .difficulty-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .difficulty-option {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #94A3B8;
+        }
+        
+        .difficulty-option.selected {
+            border-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+        }
+        
+        .difficulty-1.selected { border-color: #10B981; background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .difficulty-2.selected { border-color: #F59E0B; background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        .difficulty-3.selected { border-color: #EF4444; background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+        .difficulty-4.selected { border-color: #8B5CF6; background: rgba(139, 92, 246, 0.2); color: #8B5CF6; }
+        .difficulty-5.selected { border-color: #DC2626; background: rgba(220, 38, 38, 0.2); color: #DC2626; }
+        
+        .prerequisites-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .prerequisite-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .prerequisite-item input {
+            flex: 1;
+        }
+        
+        .remove-prerequisite {
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .add-prerequisite {
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .instructions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .instruction-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        
+        .instruction-item textarea {
+            flex: 1;
+            min-height: 60px;
+        }
+        
+        .remove-instruction {
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .add-instruction {
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .media-upload {
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .media-upload:hover {
+            border-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .media-upload input {
+            display: none;
+        }
+        
+        .media-preview {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .xp-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #F8FAFC;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .difficulty-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .xp-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="technique-editor-isolated">
+    <!-- Header -->
+    <header class="editor-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="back-button" onclick="history.back()">
+                    <span>←</span>
+                    <span>Voltar</span>
+                </button>
+                <h1 id="pageTitle">🥋 Nova Técnica</h1>
+            </div>
+            <button class="save-button" onclick="saveTechnique()">
+                <span>💾</span>
+                <span>Salvar Técnica</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <!-- Left Column -->
+        <div class="left-column">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h2>📋 Informações Básicas</h2>
+                
+                <div class="form-group">
+                    <label for="name">Nome da Técnica *</label>
+                    <input type="text" id="name" required placeholder="Ex: Defesa contra estrangulamento frontal">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Descrição</label>
+                    <textarea id="description" placeholder="Descreva brevemente a técnica..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Categoria *</label>
+                    <select id="category" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="DEFENSE">Defesa</option>
+                        <option value="ATTACK">Ataque</option>
+                        <option value="GRAPPLING">Grappling</option>
+                        <option value="STRIKING">Striking</option>
+                        <option value="CONDITIONING">Condicionamento</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nível de Dificuldade *</label>
+                    <div class="difficulty-selector">
+                        <div class="difficulty-option difficulty-1" data-difficulty="1">
+                            <div>Nível 1</div>
+                            <small>Básico</small>
+                        </div>
+                        <div class="difficulty-option difficulty-2" data-difficulty="2">
+                            <div>Nível 2</div>
+                            <small>Iniciante+</small>
+                        </div>
+                        <div class="difficulty-option difficulty-3" data-difficulty="3">
+                            <div>Nível 3</div>
+                            <small>Intermediário</small>
+                        </div>
+                        <div class="difficulty-option difficulty-4" data-difficulty="4">
+                            <div>Nível 4</div>
+                            <small>Avançado</small>
+                        </div>
+                        <div class="difficulty-option difficulty-5" data-difficulty="5">
+                            <div>Nível 5</div>
+                            <small>Expert</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XP Configuration -->
+            <div class="form-section">
+                <h2>⭐ Sistema de XP</h2>
+                
+                <div class="xp-inputs">
+                    <div class="form-group">
+                        <label for="baseXP">XP Base</label>
+                        <input type="number" id="baseXP" value="10" min="1" max="100">
+                        <small style="color: #94A3B8;">XP ganha ao executar a técnica</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="masteryXP">XP de Maestria</label>
+                        <input type="number" id="masteryXP" value="100" min="50" max="1000">
+                        <small style="color: #94A3B8;">XP total para dominar a técnica</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="badgeIcon">Ícone do Badge</label>
+                    <input type="text" id="badgeIcon" placeholder="🥋" maxlength="2">
+                    <small style="color: #94A3B8;">Emoji que representa a técnica</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+            <!-- Prerequisites -->
+            <div class="form-section">
+                <h2>📚 Pré-requisitos</h2>
+                
+                <div id="prerequisitesContainer" class="prerequisites-container">
+                    <div class="prerequisite-item">
+                        <input type="text" placeholder="Ex: Stance básica de combate">
+                        <button type="button" class="remove-prerequisite" onclick="removePrerequisite(this)">🗑️</button>
+                    </div>
+                </div>
+                
+                <button type="button" class="add-prerequisite" onclick="addPrerequisite()">
+                    <span>+</span>
+                    <span>Adicionar Pré-requisito</span>
+                </button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="form-section">
+                <h2>📝 Instruções Passo-a-Passo</h2>
+                
+                <div id="instructionsContainer" class="instructions-container">
+                    <div class="instruction-item">
+                        <textarea placeholder="Passo 1: Descreva a execução..."></textarea>
+                        <button type="button" class="remove-instruction" onclick="removeInstruction(this)">🗑️</button>
+                    </div>
+                </div>
+                
+                <button type="button" class="add-instruction" onclick="addInstruction()">
+                    <span>+</span>
+                    <span>Adicionar Instrução</span>
+                </button>
+            </div>
+
+            <!-- Media Upload -->
+            <div class="form-section">
+                <h2>🎥 Mídia</h2>
+                
+                <div class="form-group">
+                    <label for="videoUrl">URL do Vídeo</label>
+                    <input type="url" id="videoUrl" placeholder="https://youtube.com/watch?v=...">
+                </div>
+                
+                <div class="form-group">
+                    <label>Imagem da Técnica</label>
+                    <div class="media-upload" onclick="document.getElementById('imageUpload').click()">
+                        <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(this)">
+                        <div id="uploadText">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                            <div>Clique para selecionar uma imagem</div>
+                            <small style="color: #94A3B8;">PNG, JPG até 5MB</small>
+                        </div>
+                        <img id="imagePreview" class="media-preview" style="display: none;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div>Salvando técnica...</div>
+        </div>
+    </div>
+
+    <script>
+        class TechniqueEditor {
+            constructor() {
+                this.techniqueId = this.getTechniqueIdFromUrl();
+                this.init();
+            }
+
+            getTechniqueIdFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('id');
+            }
+
+            async init() {
+                this.setupEventListeners();
+                
+                if (this.techniqueId) {
+                    document.getElementById('pageTitle').textContent = '🥋 Editar Técnica';
+                    await this.loadTechnique();
+                } else {
+                    // Check for URL parameters (new technique from importer)
+                    this.populateFromParams();
+                }
+            }
+
+            setupEventListeners() {
+                // Difficulty selector
+                document.querySelectorAll('.difficulty-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        document.querySelectorAll('.difficulty-option').forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                    });
+                });
+
+                // Remove empty prerequisites and instructions on load
+                this.cleanupEmptyFields();
+            }
+
+            async loadTechnique() {
+                try {
+                    const response = await fetch(`/api/techniques/${this.techniqueId}`);
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error(data.error || 'Technique not found');
+                    }
+
+                    const technique = data.data;
+                    this.populateForm(technique);
+                    
+                } catch (error) {
+                    console.error('Error loading technique:', error);
+                    alert('Erro ao carregar técnica: ' + error.message);
+                    history.back();
+                }
+            }
+
+            populateForm(technique) {
+                document.getElementById('name').value = technique.name || '';
+                document.getElementById('description').value = technique.description || '';
+                document.getElementById('category').value = technique.category || '';
+                document.getElementById('baseXP').value = technique.baseXP || 10;
+                document.getElementById('masteryXP').value = technique.masteryXP || 100;
+                document.getElementById('badgeIcon').value = technique.badgeIcon || '';
+                document.getElementById('videoUrl').value = technique.videoUrl || '';
+
+                // Select difficulty
+                if (technique.difficulty) {
+                    const difficultyOption = document.querySelector(`[data-difficulty="${technique.difficulty}"]`);
+                    if (difficultyOption) {
+                        difficultyOption.classList.add('selected');
+                    }
+                }
+
+                // Load prerequisites
+                if (technique.prerequisites && technique.prerequisites.length > 0) {
+                    this.clearContainer('prerequisitesContainer');
+                    technique.prerequisites.forEach(prereq => {
+                        this.addPrerequisite(prereq);
+                    });
+                }
+
+                // Load instructions
+                if (technique.instructions && technique.instructions.length > 0) {
+                    this.clearContainer('instructionsContainer');
+                    technique.instructions.forEach(instruction => {
+                        this.addInstruction(instruction);
+                    });
+                }
+
+                // Load image if exists
+                if (technique.imageUrl) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = technique.imageUrl;
+                    preview.style.display = 'block';
+                    document.getElementById('uploadText').style.display = 'none';
+                }
+            }
+
+            populateFromParams() {
+                const params = new URLSearchParams(window.location.search);
+                const name = params.get('name');
+                const source = params.get('source');
+
+                if (name) {
+                    document.getElementById('name').value = name;
+                    
+                    if (source === 'importer') {
+                        // Auto-fill some defaults for imported techniques
+                        document.getElementById('description').value = 'Técnica importada de documento de curso';
+                        document.getElementById('category').value = 'DEFENSE';
+                        
+                        // Select difficulty 1 by default
+                        const level1 = document.querySelector('[data-difficulty="1"]');
+                        if (level1) {
+                            level1.classList.add('selected');
+                        }
+
+                        // Add a default instruction
+                        this.clearContainer('instructionsContainer');
+                        this.addInstruction('Aguardando instruções detalhadas...');
+                        
+                        // Show a helper message
+                        const pageTitle = document.getElementById('pageTitle');
+                        pageTitle.innerHTML = '🥋 Nova Técnica (Importada)';
+                        
+                        // Add a notice
+                        const notice = document.createElement('div');
+                        notice.style.cssText = `
+                            background: rgba(59, 130, 246, 0.1);
+                            border: 1px solid #3B82F6;
+                            border-radius: 8px;
+                            padding: 1rem;
+                            margin-bottom: 2rem;
+                            color: #3B82F6;
+                            text-align: center;
+                        `;
+                        notice.innerHTML = '💡 Esta técnica foi detectada automaticamente. Complete os detalhes e salve.';
+                        
+                        const firstSection = document.querySelector('.form-section');
+                        firstSection.parentNode.insertBefore(notice, firstSection);
+                    }
+                }
+            }
+
+            clearContainer(containerId) {
+                document.getElementById(containerId).innerHTML = '';
+            }
+
+            addPrerequisite(value = '') {
+                const container = document.getElementById('prerequisitesContainer');
+                const item = document.createElement('div');
+                item.className = 'prerequisite-item';
+                item.innerHTML = `
+                    <input type="text" placeholder="Ex: Stance básica de combate" value="${value}">
+                    <button type="button" class="remove-prerequisite" onclick="removePrerequisite(this)">🗑️</button>
+                `;
+                container.appendChild(item);
+            }
+
+            addInstruction(value = '') {
+                const container = document.getElementById('instructionsContainer');
+                const item = document.createElement('div');
+                item.className = 'instruction-item';
+                item.innerHTML = `
+                    <textarea placeholder="Passo ${container.children.length + 1}: Descreva a execução...">${value}</textarea>
+                    <button type="button" class="remove-instruction" onclick="removeInstruction(this)">🗑️</button>
+                `;
+                container.appendChild(item);
+            }
+
+            removePrerequisite(button) {
+                button.parentElement.remove();
+            }
+
+            removeInstruction(button) {
+                button.parentElement.remove();
+            }
+
+            cleanupEmptyFields() {
+                // Remove empty prerequisites
+                const prereqInputs = document.querySelectorAll('#prerequisitesContainer input');
+                prereqInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        input.parentElement.remove();
+                    }
+                });
+
+                // Remove empty instructions
+                const instructionTextareas = document.querySelectorAll('#instructionsContainer textarea');
+                instructionTextareas.forEach(textarea => {
+                    if (!textarea.value.trim()) {
+                        textarea.parentElement.remove();
+                    }
+                });
+
+                // Ensure at least one empty field exists
+                if (document.querySelectorAll('#prerequisitesContainer .prerequisite-item').length === 0) {
+                    this.addPrerequisite();
+                }
+                
+                if (document.querySelectorAll('#instructionsContainer .instruction-item').length === 0) {
+                    this.addInstruction();
+                }
+            }
+
+            previewImage(input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('imagePreview');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        document.getElementById('uploadText').style.display = 'none';
+                    };
+                    
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            async saveTechnique() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                
+                try {
+                    // Validate required fields
+                    const name = document.getElementById('name').value.trim();
+                    const category = document.getElementById('category').value;
+                    const selectedDifficulty = document.querySelector('.difficulty-option.selected');
+
+                    if (!name) {
+                        alert('Nome da técnica é obrigatório');
+                        return;
+                    }
+
+                    if (!category) {
+                        alert('Categoria é obrigatória');
+                        return;
+                    }
+
+                    if (!selectedDifficulty) {
+                        alert('Nível de dificuldade é obrigatório');
+                        return;
+                    }
+
+                    loadingOverlay.style.display = 'flex';
+
+                    // Collect prerequisites
+                    const prerequisites = Array.from(document.querySelectorAll('#prerequisitesContainer input'))
+                        .map(input => input.value.trim())
+                        .filter(value => value.length > 0);
+
+                    // Collect instructions
+                    const instructions = Array.from(document.querySelectorAll('#instructionsContainer textarea'))
+                        .map(textarea => textarea.value.trim())
+                        .filter(value => value.length > 0);
+
+                    // Prepare technique data
+                    const techniqueData = {
+                        name,
+                        description: document.getElementById('description').value.trim(),
+                        category,
+                        difficulty: parseInt(selectedDifficulty.dataset.difficulty),
+                        prerequisites,
+                        instructions,
+                        baseXP: parseInt(document.getElementById('baseXP').value) || 10,
+                        masteryXP: parseInt(document.getElementById('masteryXP').value) || 100,
+                        badgeIcon: document.getElementById('badgeIcon').value.trim(),
+                        videoUrl: document.getElementById('videoUrl').value.trim()
+                    };
+
+                    // Save technique
+                    const url = this.techniqueId ? `/api/techniques/${this.techniqueId}` : '/api/techniques';
+                    const method = this.techniqueId ? 'PUT' : 'POST';
+
+                    const response = await fetch(url, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(techniqueData)
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.error || 'Erro ao salvar técnica');
+                    }
+
+                    // Success - redirect back
+                    history.back();
+
+                } catch (error) {
+                    console.error('Error saving technique:', error);
+                    alert('Erro ao salvar técnica: ' + error.message);
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+        }
+
+        // Global functions
+        function addPrerequisite() {
+            window.techniqueEditor.addPrerequisite();
+        }
+
+        function removePrerequisite(button) {
+            window.techniqueEditor.removePrerequisite(button);
+        }
+
+        function addInstruction() {
+            window.techniqueEditor.addInstruction();
+        }
+
+        function removeInstruction(button) {
+            window.techniqueEditor.removeInstruction(button);
+        }
+
+        function previewImage(input) {
+            window.techniqueEditor.previewImage(input);
+        }
+
+        function saveTechnique() {
+            window.techniqueEditor.saveTechnique();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            window.techniqueEditor = new TechniqueEditor();
+        });
+    </script>
+</body>
+</html>
