@@ -31,7 +31,7 @@ import asaasSimpleRoutes from '@/routes/asaas-simple';
 import billingPlanRoutes from '@/routes/billingPlans';
 import techniqueRoutes from '@/routes/techniques';
 import { diagnosticRoutes } from '@/routes/diagnostic';
-import { lessonPlansRoutes } from '@/routes/lessonPlans';
+import { lessonPlansRoutes } from './routes/lessonPlans';
 import planCoursesRoutes from '@/routes/planCourses';
 import assessmentsRoutes from '@/routes/assessments';
 import feedbackRoutes from '@/routes/feedback';
