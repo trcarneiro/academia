@@ -26,6 +26,10 @@ class ModularSystem {
             'settings': '/views/settings.html'
         };
         
+        // watchdog timers per module to detect hung loads
+        this.moduleWatchdogs = {};
+        this.moduleWatchdogTimeout = 5000; // ms
+        
         this.init();
     }
 
@@ -82,6 +86,25 @@ class ModularSystem {
 
     async navigateToModule(moduleName, queryParams = '') {
         console.log('🔄 Navigating to:', moduleName, queryParams ? 'with params: ' + queryParams : '');
+        
+        // If queryParams is an object, expose it as transient globals that modules can read on init.
+        // This lets modules prefer these params over localStorage/URL when being initialized by the loader.
+        try {
+            if (queryParams && typeof queryParams === 'object') {
+                // general env for any module
+                window.__MODULE_NAV_PARAMS = { module: moduleName, ...(queryParams || {}) };
+                // convenience alias for known modules
+                if (moduleName === 'student-editor') {
+                    window.__STUDENT_EDITOR_PARAMS = { ...(queryParams || {}) };
+                } else if (moduleName === 'course-editor') {
+                    window.__COURSE_EDITOR_PARAMS = { ...(queryParams || {}) };
+                }
+                // also support older code that expects __NAV_PARAMS
+                window.__NAV_PARAMS = { module: moduleName, ...(queryParams || {}) };
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not set module nav params globals', e);
+        }
         
         if (this.currentModule === moduleName) return;
         
@@ -195,7 +218,8 @@ class ModularSystem {
         // Load JS
         let jsPath = `/js/modules/${moduleName}.js`;
         if (moduleName === 'student-editor') {
-            jsPath = '/js/modules/student-editor/main.js';
+            // Correct path for student editor within students module folder
+            jsPath = '/js/modules/students/student-editor/student-editor.js';
         }
 
         if (!document.querySelector(`script[src="${jsPath}"]`)) {
@@ -219,6 +243,8 @@ class ModularSystem {
     }
 
     async initializeModule(moduleName) {
+        // clear watchdog on successful init
+        try { clearTimeout(this.moduleWatchdogs[moduleName]); } catch(e){}
         console.log(`✅ Module ${moduleName} JS loaded successfully`);
         if (moduleName === 'student-editor') {
             setTimeout(() => {
@@ -245,12 +271,42 @@ class ModularSystem {
         };
         const initFunctionName = initFunctions[moduleName];
         if (initFunctionName && typeof window[initFunctionName] === 'function') {
+            try { clearTimeout(this.moduleWatchdogs[moduleName]); } catch(e){}
             setTimeout(() => {
                 console.log(`🔧 Auto-inicializando ${moduleName} Module...`);
                 window[initFunctionName]();
             }, 100);
         } else if (initFunctionName && typeof window[initFunctionName] !== 'function') {
             console.warn(`⚠️ Função ${initFunctionName} não encontrada para módulo ${moduleName}`);
+        }
+    }
+
+    showModuleLoadError(moduleName) {
+        try {
+            const contentContainer = document.getElementById('mainContent');
+            if (!contentContainer) return;
+            // overlay message
+            const overlay = document.createElement('div');
+            overlay.className = 'module-load-error';
+            overlay.style.cssText = `padding:20px; background: #fff6f6; border:1px solid #fcc; border-radius:8px; max-width:720px; margin:2rem auto; text-align:center;`;
+            overlay.innerHTML = `
+                <h3 style="margin:0 0 0.5rem 0;">Falha ao carregar o módulo</h3>
+                <div style="color:#b91c1c; margin-bottom:1rem;">Não foi possível inicializar o módulo <strong>${moduleName}</strong>.</div>
+            `;
+            const btn = document.createElement('button');
+            btn.textContent = 'Recarregar módulo';
+            btn.style.cssText = 'padding:0.5rem 1rem; border-radius:6px; background:#2563eb; color:#fff; border:none; cursor:pointer;';
+            btn.addEventListener('click', () => {
+                // remove overlay and retry
+                overlay.remove();
+                this.navigateToModule(moduleName, {});
+            });
+            overlay.appendChild(btn);
+            // clear existing content and show overlay
+            contentContainer.innerHTML = '';
+            contentContainer.appendChild(overlay);
+        } catch (e) {
+            console.error('Erro ao exibir fallback de carregamento do módulo', e);
         }
     }
 

@@ -1,10 +1,9 @@
 (function() {
     'use strict';
-    
-    // Prevent double-initialization when loader also calls initializePlanEditor
-    if (window.__planEditorInitialized) return; 
-    window.__planEditorInitialized = true;
 
+    // Boot retry state (handles SPA view injection races)
+    let __planEditorBootAttempts = 0;
+    
     // Module state
     let currentPlan = null;
     let editMode = false;
@@ -27,36 +26,69 @@
     // New: State for Lesson Plans Tab (lazy init)
     let lessonPlansTabState = { initialized: false };
     
-    // Initialize module on DOM ready
-    document.addEventListener('DOMContentLoaded', function() {
-        initializePlanEditor();
-    });
+    // Initialize module when DOM is ready or immediately if already loaded
+    console.log('[PlanEditor] Boot scheduling, readyState:', document.readyState);
+    function __bootPlanEditor() {
+        try {
+            console.log('[PlanEditor] Boot invoked');
+            initializePlanEditor();
+        } catch (e) {
+            console.error('[PlanEditor] Boot error:', e);
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', __bootPlanEditor);
+    } else {
+        // DOM already loaded (SPA navigation). Initialize immediately.
+        __bootPlanEditor();
+    }
     
     // Module initialization
     async function initializePlanEditor() {
         console.log('🔧 Initializing Plan Editor Module...');
         
         try {
-            // Validate DOM is ready
-            const editorContainer = document.querySelector('.plan-editor-isolated') || 
-                                  document.querySelector('.plan-editor') || 
-                                  document.querySelector('[id*="plan"]') ||
-                                  document.body;
+            // Find a specific editor container; avoid using document.body as a guard target
+            const editorContainer =
+                document.querySelector('.plan-editor-isolated') ||
+                document.querySelector('.plan-editor') ||
+                document.getElementById('mainContent') ||
+                document.querySelector('#planEditorRoot') ||
+                document.querySelector('[data-module="plan-editor"]');
             
             if (!editorContainer) {
-                console.log('⚠️ Plan editor container not found, module may not be in editor view');
+                // DOM not yet injected; retry a few times
+                if (__planEditorBootAttempts < 20) {
+                    __planEditorBootAttempts++;
+                    console.log(`[PlanEditor] Editor container not ready (attempt ${__planEditorBootAttempts}), retrying...`);
+                    setTimeout(initializePlanEditor, 250);
+                    return;
+                } else {
+                    console.warn('[PlanEditor] Editor container not found after retries. Showing minimal fallback.');
+                    const loadingState = document.getElementById('loadingState');
+                    if (loadingState) loadingState.textContent = 'Falha ao iniciar o editor.';
+                    return;
+                }
+            }
+            
+            // Idempotent per-view guard on the actual editor container only
+            if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
+                console.log('[PlanEditor] Already initialized for this view, skipping re-init.');
                 return;
             }
+            if (editorContainer.dataset) editorContainer.dataset.initialized = 'true';
             
             console.log('✅ DOM validation passed - plan editor container found');
             
-            // Check if we're editing an existing plan
-            const editingPlanId = sessionStorage.getItem('editingPlanId');
+            // Check if we're editing an existing plan (sessionStorage or URL fallback)
+            const urlId = new URLSearchParams(window.location.search).get('id');
+            const storedId = sessionStorage.getItem('editingPlanId');
+            const editingPlanId = storedId || urlId;
             if (editingPlanId) {
                 console.log('🔄 Loading plan for editing:', editingPlanId);
                 editMode = true;
                 await loadPlanData(editingPlanId);
-                sessionStorage.removeItem('editingPlanId'); // Clean up
+                if (storedId) sessionStorage.removeItem('editingPlanId'); // Clean up if used
             } else {
                 // This is a new plan - hide loading and show form and tabs
                 console.log('🆕 Creating new plan');
@@ -100,12 +132,29 @@
         }
     }
     
+    // Utility: fetch with timeout to avoid infinite loaders when the API hangs
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            return res;
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                throw new Error('Tempo esgotado ao comunicar com o servidor. Tente novamente.');
+            }
+            throw err;
+        } finally {
+            clearTimeout(id);
+        }
+    }
+
     // Load plan data for editing
     async function loadPlanData(planId) {
         try {
-            const response = await fetch(`/api/billing-plans/${planId}`);
+            console.log('[PlanEditor] Fetching plan data...', planId);
+            const response = await fetchWithTimeout(`/api/billing-plans/${planId}`);
             const result = await response.json();
-            
             if (result.success) {
                 currentPlan = result.data;
                 populateForm(currentPlan);
@@ -115,15 +164,49 @@
             }
         } catch (error) {
             console.error('❌ Error loading plan data:', error);
-            showError('Erro ao carregar dados do plano: ' + error.message);
+            // Remove loader and show error fallback
+            const loadingState = document.getElementById('loadingState');
+            const mainContent = document.getElementById('mainContent');
+            if (loadingState) loadingState.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'none';
+            const errorContainer = document.getElementById('planEditorError') || document.createElement('div');
+            errorContainer.id = 'planEditorError';
+            errorContainer.className = 'plan-editor-error';
+            errorContainer.innerHTML = `
+                <div style='text-align:center;padding:2rem;'>
+                    <h2>Erro ao carregar dados do plano</h2>
+                    <p>${error.message || 'Falha desconhecida.'}</p>
+                    <button id='retryLoadPlanBtn' class='btn btn-primary'>Tentar novamente</button>
+                    <button id='backToPlansBtn' class='btn btn-secondary' style='margin-left:1rem;'>Voltar</button>
+                </div>
+            `;
+            document.body.appendChild(errorContainer);
+            document.getElementById('retryLoadPlanBtn').onclick = () => {
+                errorContainer.remove();
+                if (loadingState) loadingState.style.display = 'block';
+                if (mainContent) mainContent.style.display = 'none';
+                loadPlanData(planId);
+            };
+            document.getElementById('backToPlansBtn').onclick = () => {
+                window.goBackToPlans();
+            };
+            // Ensure tabs wrapper is shown so user can navigate other tabs if needed
+            const tabsNav = document.getElementById('planTabs');
+            const tabsPanels = document.getElementById('planTabPanels');
+            if (tabsNav) tabsNav.style.display = 'flex';
+            if (tabsPanels) tabsPanels.style.display = 'block';
+            // Keep edit mode and remember id for other operations (e.g., Courses tab) even if details failed
+            editMode = true;
+            currentPlan = { id: planId };
         }
     }
     
     // Load supporting data (courses, etc.)
     async function loadSupportingData() {
         try {
+            console.log('[PlanEditor] Fetching courses list...');
             // Load courses if needed
-            const coursesResponse = await fetch('/api/courses');
+            const coursesResponse = await fetchWithTimeout('/api/courses');
             if (coursesResponse.ok) {
                 const coursesResult = await coursesResponse.json();
                 allCourses = coursesResult.data || [];
@@ -802,6 +885,12 @@
     // Export to global scope for auto-initialization
     window.initializePlanEditor = initializePlanEditor;
     
+    // Ensure initialization is attempted even if loader misses DOMContentLoaded
+    try { __bootPlanEditor(); } catch (_) {}
+    // Extra safety: schedule another attempt shortly (handles late DOM injection)
+    setTimeout(() => { try { __bootPlanEditor(); } catch (_) {} }, 0);
+    setTimeout(() => { try { __bootPlanEditor(); } catch (_) {} }, 300);
+
     // Module loaded successfully
     console.log('📝 Plan Editor Module script loaded, initializePlanEditor available:', typeof window.initializePlanEditor);
     

@@ -63,4 +63,17 @@ export class ResponseHelper {
 
     return reply.status(200).send(response);
   }
+
+  // Helper to return a standard response when a requested frontend module/view is not found
+  static moduleNotFound(reply: FastifyReply, moduleName: string): FastifyReply {
+    const message = `Módulo desconhecido: ${moduleName}`;
+    const response = {
+      success: false,
+      error: 'MODULE_NOT_FOUND',
+      message,
+      timestamp: new Date().toISOString(),
+    } as any;
+
+    return reply.status(404).send(response);
+  }
 }

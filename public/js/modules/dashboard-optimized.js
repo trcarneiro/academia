@@ -1,24 +1,37 @@
 (function() {
     // Global module navigation handler
-    window.navigateToModule = function(moduleName) {
+    window.navigateToModule = function(moduleName, params) {
         const contentContainer = document.getElementById('contentContainer');
         if (!contentContainer) return;
 
+        // expose params to the destination module (transient)
+        try {
+            if (params && typeof params === 'object') {
+                window.__MODULE_NAV_PARAMS = { module: moduleName, ...(params || {}) };
+                if (moduleName === 'student-editor') window.__STUDENT_EDITOR_PARAMS = { ...(params || {}) };
+                window.__NAV_PARAMS = { module: moduleName, ...(params || {}) };
+            }
+        } catch(e) { console.warn('navigateToModule: could not set params', e); }
+
         let viewPath = '';
         let scriptPath = '';
+        let forceModuleType = false;
 
         switch (moduleName) {
             case 'students':
                 viewPath = '/views/students.html';
-                // corrected path: students module lives under /js/modules/student/index.js
-                scriptPath = '/js/modules/student/index.js';
+                scriptPath = '/js/modules/students/index.js';
+                break;
+            case 'student-editor':
+                viewPath = '/views/student-editor.html';
+                scriptPath = '/js/modules/students/student-editor/student-editor.js';
+                forceModuleType = true; // ES module with exports/imports
                 break;
             case 'plans':
                 viewPath = '/views/plans.html';
                 scriptPath = '/js/modules/plans.js';
                 break;
             case 'courses':
-                // courses module files live under /modules/courses
                 viewPath = '/modules/courses/courses.html';
                 scriptPath = '/modules/courses/courses-manager.js';
                 break;
@@ -53,6 +66,7 @@
             case 'techniques':
                 viewPath = '/modules/techniques/techniques.html';
                 scriptPath = '/modules/techniques/techniques.js';
+                forceModuleType = true; // ES module
                 break;
             case 'units':
                 viewPath = '/views/units.html';
@@ -86,6 +100,10 @@
                viewPath = '/views/lesson-plans.html';
                scriptPath = '/js/modules/lesson-plans.js';
                break;
+            case 'plan-editor':
+                viewPath = '/views/plan-editor.html';
+                scriptPath = '/js/modules/plan-editor.js';
+                break;
             default:
                 console.error('❌ Unknown module:', moduleName);
                 contentContainer.innerHTML = `<div class="error">Módulo desconhecido: ${moduleName}</div>`;
@@ -109,15 +127,25 @@
                     console.log('Loading script for module', moduleName, { viewPath, scriptPath });
                     const script = document.createElement('script');
                     script.src = scriptPath;
-                    // modules are deferred by default; use defer for classic scripts to avoid blocking
                     script.defer = true;
-                    if (scriptPath.includes('/modules/')) {
+                    if (forceModuleType || scriptPath.includes('/modules/')) {
                         script.type = 'module';
                     }
-                    script.onload = () => console.log('Module script loaded:', scriptPath);
+                    script.onload = () => {
+                        console.log('Module script loaded:', scriptPath);
+                        if (moduleName === 'student-editor') {
+                            // try to initialize editor
+                            setTimeout(() => {
+                                if (typeof window.initializeStudentEditor === 'function') {
+                                    window.initializeStudentEditor();
+                                } else {
+                                    console.warn('student-editor script loaded, but initializeStudentEditor not found');
+                                }
+                            }, 50);
+                        }
+                    };
                     script.onerror = (e) => {
                         console.error('Error loading module script:', scriptPath, e);
-                        // Fallback: navigate to the full view (helps debugging in dev)
                         try {
                             console.warn('Falling back to full-page view for debugging:', viewPath);
                             window.location.href = viewPath;
@@ -130,10 +158,12 @@
             })
             .catch(err => {
                 console.error('Erro ao carregar view:', viewPath, err);
-                contentContainer.innerHTML = `<div class="error">Erro ao carregar módulo: ${moduleName}</div>`;
+                contentContainer.innerHTML = `<div class=\"error\">Erro ao carregar módulo: ${moduleName}</div>`;
             });
     };
     'use strict';
+
+    console.log('📊 dashboard-optimized.js loaded');
     
     // Module state
     let dashboardData = {
@@ -152,10 +182,20 @@
     let updateInterval = null;
     let isInitialized = false;
     
-    // Initialize module on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeDashboardModule();
-    });
+    // Initialize module on page load (robust)
+    function bootstrapDashboard() {
+        try { initializeDashboardModule(); } catch (e) { console.error('❌ bootstrapDashboard failed', e); }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrapDashboard);
+    } else {
+        // DOM already parsed
+        bootstrapDashboard();
+    }
+    
+    // Remove old single-use listener if present
+    // document.addEventListener('DOMContentLoaded', function() { initializeDashboardModule(); });
     
     // Module initialization
     function initializeDashboardModule() {
