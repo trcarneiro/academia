@@ -166,6 +166,157 @@
             console.log('✅ Clear filters listener added');
         }
         
+        // Importação de Curso
+        const importCourseBtn = document.getElementById('importCourseBtn');
+        const importCourseFile = document.getElementById('importCourseFile');
+        importCourseBtn?.addEventListener('click', () => importCourseFile.click());
+        importCourseFile?.addEventListener('change', async () => {
+            if (!importCourseFile.files.length) return;
+            try {
+                const text = await importCourseFile.files[0].text();
+                const data = JSON.parse(text);
+                if (!data.name) return alert('JSON inválido: campo "name" obrigatório');
+                const resp = await fetch('/api/courses/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+                const j = await resp.json();
+                if (!resp.ok || !j.success) throw new Error(j.message || 'Falha ao importar curso');
+                alert('Curso importado com sucesso');
+                importCourseFile.value = '';
+            } catch(e){ alert('Erro na importação de curso: ' + (e.message || e)); }
+        });
+        // Importação de Técnicas/Atividades
+        const importActivitiesBtn = document.getElementById('importActivitiesBtn');
+        const importActivitiesFile = document.getElementById('importActivitiesFile');
+        importActivitiesBtn?.addEventListener('click', () => importActivitiesFile.click());
+        importActivitiesFile?.addEventListener('change', async () => {
+            if (!importActivitiesFile.files.length) return;
+            try {
+                const text = await importActivitiesFile.files[0].text();
+                const data = JSON.parse(text);
+                if (!Array.isArray(data)) return alert('JSON inválido: esperado array de técnicas/atividades');
+                let successCount = 0, failCount = 0;
+                for (const rawItem of data) {
+                    try {
+                        const title = (rawItem?.title || rawItem?.name || '').toString().trim();
+                        if (!title) { failCount++; continue; }
+                        
+                        // Map Portuguese types to enum values (only if needed)
+                        const typeMap = {
+                            'Postura': 'TECHNIQUE',
+                            'Soco': 'TECHNIQUE', 
+                            'Cotovelada': 'TECHNIQUE',
+                            'Chute': 'TECHNIQUE',
+                            'Combinação': 'TECHNIQUE',
+                            'Defesa Estrangulamento': 'TECHNIQUE',
+                            'Defesa Geral': 'TECHNIQUE',
+                            'Queda': 'DRILL',
+                            'Rolamento': 'DRILL'
+                        };
+                        
+                        // Map difficulty strings to integers (only if needed)
+                        const difficultyMap = {
+                            'Iniciante': 1,
+                            'Intermediário': 2,
+                            'Avançado': 3,
+                            'Especialista': 4,
+                            'Mestre': 5
+                        };
+                        
+                        // Use existing values if they're already in the correct format
+                        const validTypes = ['TECHNIQUE', 'STRETCH', 'DRILL', 'EXERCISE', 'GAME', 'CHALLENGE', 'ASSESSMENT'];
+                        const mappedType = validTypes.includes(rawItem?.type) ? rawItem.type : (typeMap[rawItem?.type] || 'TECHNIQUE');
+                        
+                        const mappedDifficulty = typeof rawItem?.difficulty === 'number' ? rawItem.difficulty : (difficultyMap[rawItem?.difficulty] || 1);
+                        
+                        // Handle refTechniqueId - convert array to single string or null
+                        let refTechniqueId = null;
+                        if (Array.isArray(rawItem?.refTechniqueId) && rawItem.refTechniqueId.length > 0) {
+                            refTechniqueId = rawItem.refTechniqueId[0]; // Take first element
+                        } else if (typeof rawItem?.refTechniqueId === 'string' && rawItem.refTechniqueId.trim()) {
+                            refTechniqueId = rawItem.refTechniqueId;
+                        }
+                        // Note: refTechniqueId will be null if the referenced technique doesn't exist
+                        // This avoids foreign key constraint errors during bulk import
+                        
+                        const payload = {
+                            id: rawItem.id,
+                            title,
+                            description: rawItem.description,
+                            type: mappedType,
+                            difficulty: mappedDifficulty,
+                            refTechniqueId: null, // Set to null to avoid foreign key errors during bulk import
+                            equipment: Array.isArray(rawItem?.equipment)
+                                ? rawItem.equipment
+                                : (rawItem?.equipment ? [rawItem.equipment] : []),
+                            adaptations: Array.isArray(rawItem?.adaptations)
+                                ? rawItem.adaptations
+                                : (rawItem?.adaptations ? [rawItem.adaptations] : []),
+                            safety: rawItem.safety,
+                            defaultParams: rawItem.defaultParams
+                        };
+                        const resp = await fetch('/api/activities', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const j = await resp.json().catch(() => ({ success: false }));
+                        if (resp.ok && j?.success) {
+                            successCount++;
+                        } else if (resp.status === 500 && (j?.message?.includes?.('Unique constraint') || j?.error?.includes?.('Unique constraint'))) {
+                            // Skip duplicates - already exists
+                            console.warn(`Skipping duplicate activity: ${rawItem.id}`);
+                        } else {
+                            failCount++;
+                            console.error(`Failed to import ${rawItem.id}:`, j?.error || j?.message || 'Unknown error');
+                        }
+                    } catch (_) {
+                        failCount++;
+                    }
+                }
+                alert(`Importação concluída: ${successCount} técnicas/atividades importadas, ${failCount} falhas.`);
+                importActivitiesFile.value = '';
+            } catch(e){ alert('Erro na importação de técnicas: ' + (e.message || e)); }
+        });
+        // Importação de Planos de Aula
+        const importPlansBtn = document.getElementById('importPlansBtn');
+        const importPlansFile = document.getElementById('importPlansFile');
+        importPlansBtn?.addEventListener('click', () => importPlansFile.click());
+        importPlansFile?.addEventListener('change', async () => {
+            if (!importPlansFile.files.length) return;
+            try {
+                const text = await importPlansFile.files[0].text();
+                const data = JSON.parse(text);
+                if (!Array.isArray(data)) return alert('JSON inválido: esperado array de planos de aula');
+
+                // Ensure a courseId is provided (globally or per item)
+                let defaultCourseId = null;
+                if (data.every(p => !p?.courseId)) {
+                    defaultCourseId = prompt('Informe o ID do curso (courseId) para associar os planos importados:');
+                    if (!defaultCourseId) {
+                        alert('Importação cancelada: é necessário informar o courseId.');
+                        importPlansFile.value = '';
+                        return;
+                    }
+                }
+
+                let successCount = 0, failCount = 0;
+                for (const rawPlan of data) {
+                    try {
+                        const title = (rawPlan?.title || rawPlan?.name || '').toString().trim();
+                        const courseId = rawPlan?.courseId || defaultCourseId;
+                        if (!title || !courseId) { failCount++; continue; }
+                        const planPayload = { ...rawPlan, title, courseId };
+                        const resp = await fetch('/api/lesson-plans/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(planPayload) });
+                        const j = await resp.json().catch(() => ({ success: false }));
+                        if (resp.ok && j?.success) successCount++; else failCount++;
+                    } catch (_) {
+                        failCount++;
+                    }
+                }
+                alert(`Importação concluída: ${successCount} planos de aula importados, ${failCount} falhas.`);
+                importPlansFile.value = '';
+            } catch(e){ alert('Erro na importação de planos: ' + (e.message || e)); }
+        });
+        
         console.log('✅ Event listeners setup completed');
     }
     
@@ -225,13 +376,89 @@
             return;
         }
         
+        // Adiciona botão de importação e modal
+        if (!document.getElementById('importCourseBtn')) {
+            const importBtn = document.createElement('button');
+            importBtn.id = 'importCourseBtn';
+            importBtn.className = 'btn btn-secondary';
+            importBtn.textContent = 'Importar Curso (JSON)';
+            importBtn.style.margin = '10px 0';
+            importBtn.onclick = showImportModal;
+            coursesGrid.parentElement.insertBefore(importBtn, coursesGrid);
+        }
+
+        if (!document.getElementById('importCourseModal')) {
+            const modal = document.createElement('div');
+            modal.id = 'importCourseModal';
+            modal.style.display = 'none';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.5)';
+            modal.style.zIndex = '9999';
+            modal.innerHTML = `
+                <div style="background:#fff;max-width:500px;margin:60px auto;padding:24px;border-radius:8px;box-shadow:0 2px 16px #0002;">
+                    <h3>Importar Curso via JSON</h3>
+                    <textarea id="importCourseTextarea" style="width:100%;height:180px;"></textarea>
+                    <div style="margin-top:12px;text-align:right;">
+                        <button id="importCourseCancelBtn" class="btn btn-light">Cancelar</button>
+                        <button id="importCourseSendBtn" class="btn btn-primary">Importar</button>
+                    </div>
+                    <div id="importCourseError" style="color:#c00;margin-top:8px;"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('importCourseCancelBtn').onclick = hideImportModal;
+            document.getElementById('importCourseSendBtn').onclick = importCourseJson;
+        }
+
         if (filteredCourses.length === 0) {
             coursesGrid.innerHTML = '<div class="no-results">Nenhum curso encontrado com os filtros aplicados.</div>';
             return;
         }
-        
+
         coursesGrid.innerHTML = filteredCourses.map(course => createCourseCardHTML(course)).join('');
         console.log('✅ Courses rendered successfully');
+
+        // Funções do modal
+        function showImportModal() {
+            document.getElementById('importCourseModal').style.display = 'block';
+            document.getElementById('importCourseTextarea').value = '';
+            document.getElementById('importCourseError').textContent = '';
+        }
+        function hideImportModal() {
+            document.getElementById('importCourseModal').style.display = 'none';
+        }
+        async function importCourseJson() {
+            const textarea = document.getElementById('importCourseTextarea');
+            const errorDiv = document.getElementById('importCourseError');
+            let json;
+            try {
+                json = JSON.parse(textarea.value);
+            } catch (e) {
+                errorDiv.textContent = 'JSON inválido.';
+                return;
+            }
+            errorDiv.textContent = '';
+            try {
+                const res = await fetch('/api/courses/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(json)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    hideImportModal();
+                    window.refreshCourses();
+                } else {
+                    errorDiv.textContent = result.message || 'Erro ao importar.';
+                }
+            } catch (e) {
+                errorDiv.textContent = 'Erro ao importar.';
+            }
+        }
     }
     
     // Create course card HTML - Following UI standards from CLAUDE.md

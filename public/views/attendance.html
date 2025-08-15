@@ -37,13 +37,13 @@
 
         <!-- Attendance Actions -->
         <div class="attendance-actions">
-            <button class="btn btn-primary" onclick="openCheckInModal()">
+            <button class="btn btn-primary" data-action="openCheckInModal" data-args='[]'>
                 ➕ Registrar Presença
             </button>
-            <button class="btn btn-secondary" onclick="exportAttendance()">
+            <button class="btn btn-secondary" data-action="exportAttendance" data-args='[]'>
                 📊 Exportar Dados
             </button>
-            <button class="btn btn-secondary" onclick="window.history.back()">
+            <button class="btn btn-secondary" data-action="window.history.back" data-args='[]'>
                 ← Voltar
             </button>
         </div>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">✅ Registrar</button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelCheckIn()">❌ Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-action="cancelCheckIn" data-args='[]'>❌ Cancelar</button>
                 </div>
             </form>
         </div>

@@ -1,120 +1,17 @@
-<div id="lessonPlansContainer">
-    <!-- Content will be dynamically loaded by lesson-plans.js -->
+<div id="lessonPlansContainer" class="lesson-plans-container">
+  <div class="lesson-plans-header">
+    <h2>Planos de Aula</h2>
+    <div>
+      <button class="btn btn-primary" id="lpSkeletonImport">Importar JSON</button>
+      <button class="btn btn-outline" id="lpSkeletonExport">Exportar</button>
+    </div>
+  </div>
+  <div class="lesson-plans-filters">
+    <select class="form-select" disabled>
+      <option>Carregando cursos...</option>
+    </select>
+  </div>
+  <div class="empty-state">
+    <p>Carregando planos de aula…</p>
+  </div>
 </div>
-
-<style>
-.lesson-plans-container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.lesson-plans-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.lesson-plans-header h2 {
-    margin: 0;
-    color: #333;
-    font-size: 28px;
-}
-
-.lesson-plans-filters {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.lesson-plans-filters .form-select {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    min-width: 200px;
-}
-
-.lesson-plans-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-}
-
-.empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px 20px;
-    background: #f8f9fa;
-    border-radius: 10px;
-    border: 2px dashed #dee2e6;
-}
-
-.empty-state p {
-    color: #6c757d;
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    transform: translateY(-1px);
-}
-
-.btn-outline {
-    background-color: transparent;
-    color: #007bff;
-    border: 1px solid #007bff;
-}
-
-.btn-outline:hover {
-    background-color: #007bff;
-    color: white;
-}
-
-.icon {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-@media (max-width: 768px) {
-    .lesson-plans-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-    
-    .lesson-plans-filters {
-        flex-direction: column;
-    }
-    
-    .lesson-plans-filters .form-select {
-        min-width: auto;
-    }
-    
-    .lesson-plans-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>

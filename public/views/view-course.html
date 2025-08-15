@@ -23,7 +23,7 @@
     <header class="view-course-header">
         <div class="header-content">
             <div class="header-left">
-                <button class="back-button" onclick="history.back()">
+                <button class="back-button" data-action="history.back" data-args='[]'>
                     <span>←</span>
                     <span>Voltar</span>
                 </button>
@@ -70,7 +70,7 @@
                         <span class="course-status-badge" id="course-status">-</span>
                     </div>
                     <div class="course-actions">
-                        <button class="action-button secondary" onclick="toggleCourseStatus()">
+                        <button class="action-button secondary" data-action="toggleCourseStatus" data-args='[]'>
                             <span id="status-toggle-icon">🔒</span>
                             <span id="status-toggle-text">Ativar/Desativar</span>
                         </button>
@@ -124,7 +124,7 @@
             <section class="course-section">
                 <div class="section-header">
                     <h2 class="section-title">Aulas do Curso</h2>
-                    <button class="primary-button small" onclick="addNewLesson()">
+                    <button class="primary-button small" data-action="addNewLesson" data-args='[]'>
                         <span>+</span>
                         <span>Nova Aula</span>
                     </button>
@@ -138,7 +138,7 @@
                     <div class="empty-icon">📚</div>
                     <h3>Nenhuma aula cadastrada</h3>
                     <p>Adicione a primeira aula a este curso</p>
-                    <button class="primary-button" onclick="addNewLesson()">
+                    <button class="primary-button" data-action="addNewLesson" data-args='[]'>
                         Adicionar Primeira Aula
                     </button>
                 </div>
@@ -148,7 +148,7 @@
             <section class="course-section">
                 <div class="section-header">
                     <h2 class="section-title">Técnicas do Curso</h2>
-                    <button class="primary-button small" onclick="addNewTechnique()">
+                    <button class="primary-button small" data-action="addNewTechnique" data-args='[]'>
                         <span>+</span>
                         <span>Nova Técnica</span>
                     </button>
@@ -162,7 +162,7 @@
                     <div class="empty-icon">💪</div>
                     <h3>Nenhuma técnica cadastrada</h3>
                     <p>Adicione as primeiras técnicas a este curso</p>
-                    <button class="primary-button" onclick="addNewTechnique()">
+                    <button class="primary-button" data-action="addNewTechnique" data-args='[]'>
                         Adicionar Primeira Técnica
                     </button>
                 </div>

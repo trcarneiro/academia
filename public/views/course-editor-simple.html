@@ -3,14 +3,14 @@
     <!-- Header Section -->
     <header class="editor-header">
         <div class="header-left">
-            <button class="back-button" onclick="goBack()">← Voltar</button>
+            <button class="back-button" data-action="goBack" data-args='[]'>← Voltar</button>
             <h1 class="page-title" id="editorTitle">
                 <span class="title-icon">📝</span>
                 <span id="titleText">Editor de Curso - Versão Teste</span>
             </h1>
         </div>
         <div class="header-actions">
-            <button class="btn btn-primary" onclick="saveCourseSimple()" id="saveCourseBtn">
+            <button class="btn btn-primary" data-action="saveCourseSimple" data-args='[]' id="saveCourseBtn">
                 💾 Salvar Curso
             </button>
         </div>
@@ -22,19 +22,18 @@
         <p>Carregando dados do curso...</p>
     </div>
 
-    <!-- Main Content -->
-    <main class="editor-content" id="courseEditorContent">
+    <!-- Added scroll wrapper -->
+    <div class="course-editor-scroll-wrapper">
+      <!-- Main Content -->
+      <main class="editor-content" id="courseEditorContent">
         <!-- Basic Course Information -->
         <section class="form-section">
             <h2>📋 Informações Básicas</h2>
-            
             <div class="form-row">
                 <div class="form-group">
                     <label for="courseName">Nome do Curso *</label>
-                    <input type="text" id="courseName" name="courseName" required 
-                           placeholder="Ex: Krav Maga Iniciante">
+                    <input type="text" id="courseName" name="courseName" required placeholder="Ex: Krav Maga Iniciante">
                 </div>
-                
                 <div class="form-group">
                     <label for="courseLevel">Nível *</label>
                     <select id="courseLevel" name="courseLevel" required>
@@ -45,32 +44,114 @@
                     </select>
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label for="courseDuration">Duração (semanas) *</label>
-                    <input type="number" id="courseDuration" name="courseDuration" 
-                           min="1" max="52" required placeholder="Ex: 12">
+                    <input type="number" id="courseDuration" name="courseDuration" min="1" max="52" required placeholder="Ex: 12">
                 </div>
-                
                 <div class="form-group">
                     <label for="coursePrice">Preço (R$)</label>
-                    <input type="number" id="coursePrice" name="coursePrice" 
-                           min="0" step="0.01" placeholder="Ex: 150.00">
+                    <input type="number" id="coursePrice" name="coursePrice" min="0" step="0.01" placeholder="Ex: 150.00">
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="courseDescription">Descrição do Curso</label>
-                <textarea id="courseDescription" name="courseDescription" 
-                          rows="4" placeholder="Descreva os objetivos e conteúdo do curso"></textarea>
+                <textarea id="courseDescription" name="courseDescription" rows="4" placeholder="Descreva os objetivos e conteúdo do curso"></textarea>
             </div>
+        </section>
+
+        <!-- Informações Gerais -->
+        <section class="form-section">
+            <h2>ℹ️ Informações Gerais do Curso</h2>
+            <div class="form-group">
+                <label for="infoTitulo">Título</label>
+                <input type="text" id="infoTitulo" name="infoTitulo" placeholder="Título completo do curso">
+            </div>
+            <div class="form-group">
+                <label for="infoDescricao">Descrição</label>
+                <textarea id="infoDescricao" name="infoDescricao" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="infoPublico">Público-alvo</label>
+                <input type="text" id="infoPublico" name="infoPublico" placeholder="Ex: Adultos, Iniciantes">
+            </div>
+            <div class="form-group">
+                <label for="infoDuracao">Duração</label>
+                <input type="text" id="infoDuracao" name="infoDuracao" placeholder="Ex: 24 semanas">
+            </div>
+            <div class="form-group">
+                <label for="infoMissao">Missão</label>
+                <textarea id="infoMissao" name="infoMissao" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="infoVisao">Visão</label>
+                <textarea id="infoVisao" name="infoVisao" rows="2"></textarea>
+            </div>
+        </section>
+
+        <!-- Objetivos -->
+        <section class="form-section">
+            <h2>🎯 Objetivos</h2>
+            <div class="form-group">
+                <label for="objGeral">Objetivo Geral</label>
+                <textarea id="objGeral" name="objGeral" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Objetivos Específicos</label>
+                <div id="objEspecificosList"></div>
+                <button type="button" class="btn btn-secondary" data-action="addObjEspecifico" data-args='[]'>+ Adicionar Objetivo Específico</button>
+            </div>
+        </section>
+
+        <!-- Estrutura do Curso -->
+        <section class="form-section">
+            <h2>🧩 Estrutura do Curso</h2>
+            <div class="form-group">
+                <label for="estrUnidades">Unidades</label>
+                <input type="text" id="estrUnidades" name="estrUnidades" placeholder="Separe por vírgula">
+            </div>
+            <div class="form-group">
+                <label for="estrNumTec">Número de Técnicas</label>
+                <input type="number" id="estrNumTec" name="estrNumTec" min="1">
+            </div>
+            <div class="form-group">
+                <label for="estrBlocos">Blocos</label>
+                <input type="text" id="estrBlocos" name="estrBlocos" placeholder="Ex: 6 blocos de 8 aulas">
+            </div>
+            <div class="form-group">
+                <label for="estrCategorias">Categorias</label>
+                <input type="text" id="estrCategorias" name="estrCategorias" placeholder="Separe por vírgula">
+            </div>
+            <div class="form-group">
+                <label for="estrNiveis">Níveis</label>
+                <textarea id="estrNiveis" name="estrNiveis" rows="2" placeholder="Ex: 1: ..., 2: ..."></textarea>
+            </div>
+        </section>
+
+        <!-- Requisitos -->
+        <section class="form-section">
+            <h2>✅ Requisitos</h2>
+            <div id="requisitosList"></div>
+            <button type="button" class="btn btn-secondary" data-action="addRequisito" data-args='[]'>+ Adicionar Requisito</button>
+        </section>
+
+        <!-- Técnicas -->
+        <section class="form-section">
+            <h2>🥋 Técnicas</h2>
+            <div id="tecnicasList"></div>
+            <button type="button" class="btn btn-secondary" data-action="addTecnica" data-args='[]'>+ Adicionar Técnica</button>
+        </section>
+
+        <!-- Cronograma -->
+        <section class="form-section">
+            <h2>📅 Cronograma</h2>
+            <div id="cronogramaList"></div>
+            <button type="button" class="btn btn-secondary" data-action="addCronogramaItem" data-args='[]'>+ Adicionar Aula ao Cronograma</button>
         </section>
 
         <!-- Status Section -->
         <section class="form-section">
             <h2>⚙️ Status e Configurações</h2>
-            
             <div class="form-row">
                 <div class="form-group">
                     <label for="courseStatus">Status do Curso</label>
@@ -80,7 +161,6 @@
                         <option value="draft">Rascunho</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
                     <label for="courseCategory">Categoria</label>
                     <select id="courseCategory" name="courseCategory">
@@ -96,14 +176,11 @@
 
         <!-- Form Actions -->
         <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="goBack()">
-                ↩️ Cancelar
-            </button>
-            <button type="button" class="btn btn-primary" onclick="saveCourseSimple()">
-                💾 Salvar Curso
-            </button>
+            <button type="button" class="btn btn-secondary" data-action="goBack" data-args='[]'>↩️ Cancelar</button>
+            <button type="button" class="btn btn-primary" data-action="saveCourseSimple" data-args='[]'>💾 Salvar Curso</button>
         </div>
-    </main>
+      </main>
+    </div>
 
     <!-- Success/Error Messages -->
     <div id="messageContainer" class="message-container" style="display: none;"></div>
@@ -117,6 +194,18 @@
     padding: 20px;
     background: #fff;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.course-editor-scroll-wrapper { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding-right: 4px; 
+}
+
+.editor-content { 
+    padding-bottom: 40px; 
 }
 
 .editor-header {

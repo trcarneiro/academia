@@ -10,15 +10,17 @@
         switch (moduleName) {
             case 'students':
                 viewPath = '/views/students.html';
-                scriptPath = '/js/modules/students.js';
+                // corrected path: students module lives under /js/modules/student/index.js
+                scriptPath = '/js/modules/student/index.js';
                 break;
             case 'plans':
                 viewPath = '/views/plans.html';
                 scriptPath = '/js/modules/plans.js';
                 break;
             case 'courses':
-                viewPath = '/views/courses.html';
-                scriptPath = '/js/modules/courses.js';
+                // courses module files live under /modules/courses
+                viewPath = '/modules/courses/courses.html';
+                scriptPath = '/modules/courses/courses-manager.js';
                 break;
             case 'knowledge-base':
                 viewPath = '/views/knowledge-base.html';
@@ -49,8 +51,8 @@
                 scriptPath = '/js/modules/course-importer.js';
                 break;
             case 'techniques':
-                viewPath = '/views/techniques.html';
-                scriptPath = '/js/modules/techniques.js';
+                viewPath = '/modules/techniques/techniques.html';
+                scriptPath = '/modules/techniques/techniques.js';
                 break;
             case 'units':
                 viewPath = '/views/units.html';
@@ -76,6 +78,10 @@
                 viewPath = '/views/settings.html';
                 scriptPath = '/js/modules/settings.js';
                 break;
+            case 'organizations':
+                viewPath = '/views/organizations.html';
+                scriptPath = '/js/modules/organizations.js';
+                break;
            case 'lesson-plans':
                viewPath = '/views/lesson-plans.html';
                scriptPath = '/js/modules/lesson-plans.js';
@@ -87,19 +93,43 @@
         }
 
         // Load HTML
+        console.log('navigateToModule ->', moduleName);
         fetch(viewPath)
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Failed to fetch view', viewPath, 'status=', response.status);
+                    throw new Error('View fetch failed: ' + response.status);
+                }
+                return response.text();
+            })
             .then(html => {
                 contentContainer.innerHTML = html;
                 // Load JS
                 if (scriptPath) {
+                    console.log('Loading script for module', moduleName, { viewPath, scriptPath });
                     const script = document.createElement('script');
                     script.src = scriptPath;
-                    script.async = true;
+                    // modules are deferred by default; use defer for classic scripts to avoid blocking
+                    script.defer = true;
+                    if (scriptPath.includes('/modules/')) {
+                        script.type = 'module';
+                    }
+                    script.onload = () => console.log('Module script loaded:', scriptPath);
+                    script.onerror = (e) => {
+                        console.error('Error loading module script:', scriptPath, e);
+                        // Fallback: navigate to the full view (helps debugging in dev)
+                        try {
+                            console.warn('Falling back to full-page view for debugging:', viewPath);
+                            window.location.href = viewPath;
+                        } catch (err) {
+                            console.error('Fallback navigation failed', err);
+                        }
+                    };
                     document.body.appendChild(script);
                 }
             })
             .catch(err => {
+                console.error('Erro ao carregar view:', viewPath, err);
                 contentContainer.innerHTML = `<div class="error">Erro ao carregar módulo: ${moduleName}</div>`;
             });
     };
@@ -193,6 +223,12 @@
                                     <span class="nav-icon">🏫</span>
                                     Gestão de Turmas
                                     <span class="badge success">INTEGRADO</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('organizations')" data-ai-enabled="true">
+                                    <span class="nav-icon">🏢</span>
+                                    Organizações
                                 </button>
                             </li>
                             <li class="nav-item">

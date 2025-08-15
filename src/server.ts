@@ -1,16 +1,17 @@
+// Register tsconfig path aliases at runtime
+import 'tsconfig-paths/register';
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
-import swagger from '@fastify/swagger';
-import swaggerUi from '@fastify/swagger-ui';
 import staticFiles from '@fastify/static';
 import path from 'path';
 
 import { appConfig } from '@/config';
 import { errorHandler } from '@/middlewares/error';
-import { logger } from '@/utils/logger';
+import { logger, fastifyLoggerOptions } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 
 // Routes
@@ -30,9 +31,14 @@ import asaasSimpleRoutes from '@/routes/asaas-simple';
 import billingPlanRoutes from '@/routes/billingPlans';
 import techniqueRoutes from '@/routes/techniques';
 import { diagnosticRoutes } from '@/routes/diagnostic';
+import { lessonPlansRoutes } from '@/routes/lessonPlans';
+import planCoursesRoutes from '@/routes/planCourses';
+import assessmentsRoutes from '@/routes/assessments';
+import feedbackRoutes from '@/routes/feedback';
+import gamificationRoutes from '@/routes/gamification';
 
 const server = Fastify({
-  logger: logger,
+  logger: fastifyLoggerOptions,
 });
 
 const start = async (): Promise<void> => {
@@ -59,35 +65,6 @@ const start = async (): Promise<void> => {
       },
     });
 
-    // Swagger documentation
-    await server.register(swagger, {
-      swagger: {
-        info: {
-          title: 'Krav Maga Academy API',
-          description: 'Sistema de gestão para academia de Krav Maga com IA integrada',
-          version: '1.0.0',
-        },
-        host: `${appConfig.server.host}:${appConfig.server.port}`,
-        schemes: ['http', 'https'],
-        consumes: ['application/json'],
-        produces: ['application/json'],
-        securityDefinitions: {
-          Bearer: {
-            type: 'apiKey',
-            name: 'Authorization',
-            in: 'header',
-          },
-        },
-      },
-    });
-
-    await server.register(swaggerUi, {
-      routePrefix: '/docs',
-      uiConfig: {
-        docExpansion: 'full',
-        deepLinking: false,
-      },
-    });
 
     // Serve static files
     await server.register(staticFiles, {
@@ -128,7 +105,12 @@ const start = async (): Promise<void> => {
     await server.register(organizationsRoutes, { prefix: '/api/organizations' });
     await server.register(activitiesRoutes, { prefix: '/api/activities' });
     await server.register(asaasSimpleRoutes, { prefix: '/api/asaas' });
-    await server.register(billingPlanRoutes, { prefix: '/api/billing-plans' });
+    await server.register(billingPlanRoutes); // exposes /api/billing-plans
+    await server.register(planCoursesRoutes, { prefix: '/api' });
+    await server.register(lessonPlansRoutes, { prefix: '/api/lesson-plans' });
+    await server.register(assessmentsRoutes, { prefix: '/api/assessments' });
+    await server.register(feedbackRoutes, { prefix: '/api/feedback' });
+    await server.register(gamificationRoutes, { prefix: '/api/gamification' });
     await server.register(techniqueRoutes);
     await server.register(diagnosticRoutes);
 
@@ -143,9 +125,6 @@ const start = async (): Promise<void> => {
 
     logger.info(
       `Server running at http://${appConfig.server.host}:${appConfig.server.port}`
-    );
-    logger.info(
-      `Swagger docs available at http://${appConfig.server.host}:${appConfig.server.port}/docs`
     );
   } catch (error) {
     logger.error({ error }, 'Failed to start server');

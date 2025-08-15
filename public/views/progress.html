@@ -13,13 +13,13 @@
         <div class="progress-header">
             <h2>📈 Progresso dos Alunos</h2>
             <div class="progress-actions">
-                <button class="btn btn-primary" onclick="refreshProgress()">
+                <button class="btn btn-primary" data-action="refreshProgress" data-args='[]'>
                     🔄 Atualizar
                 </button>
-                <button class="btn btn-secondary" onclick="exportProgress()">
+                <button class="btn btn-secondary" data-action="exportProgress" data-args='[]'>
                     📊 Exportar
                 </button>
-                <button class="btn btn-secondary" onclick="window.history.back()">
+                <button class="btn btn-secondary" data-action="window.history.back" data-args='[]'>
                     ← Voltar
                 </button>
             </div>

@@ -1,0 +1,109 @@
+<!-- Plans Management Module (migrated from /views/plans.html) -->
+<div class="plans-isolated">
+    <!-- Header Section -->
+    <header class="plans-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <span class="title-icon">💰</span>
+                Gestão de Planos
+            </h1>
+            <p class="page-subtitle">Gerencie todos os planos financeiros da academia</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" data-action="openNewPlanForm" data-args='[]'>
+                ➕ Novo Plano
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats Section -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <div class="stat-value" id="totalPlans">0</div>
+                <div class="stat-label">Total de Planos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="activePlans">0</div>
+                <div class="stat-label">Ativos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <div class="stat-value" id="totalSubscribers">0</div>
+                <div class="stat-label">Assinantes</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <div class="stat-value" id="monthlyRevenue">R$ 0</div>
+                <div class="stat-label">Receita Mensal</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="search-container">
+            <input type="text" id="planSearch" placeholder="🔍 Buscar por nome, categoria ou valor..." class="search-input">
+        </div>
+        
+        <div class="filters-container">
+            <select id="categoryFilter" class="filter-select">
+                <option value="">Todas as Categorias</option>
+                <option value="ADULT">👨 Adulto</option>
+                <option value="FEMALE">👩 Feminino</option>
+                <option value="SENIOR">👴 Senior</option>
+                <option value="CHILD">🧒 Infantil</option>
+                <option value="INICIANTE1">🥉 Iniciante 1</option>
+                <option value="INICIANTE2">🥉 Iniciante 2</option>
+                <option value="INICIANTE3">🥉 Iniciante 3</option>
+                <option value="HEROI1">🥈 Herói 1</option>
+                <option value="HEROI2">🥈 Herói 2</option>
+                <option value="HEROI3">🥈 Herói 3</option>
+                <option value="MASTER_1">🥇 Master 1</option>
+                <option value="MASTER_2">🥇 Master 2</option>
+                <option value="MASTER_3">🥇 Master 3</option>
+            </select>
+            
+            <select id="billingTypeFilter" class="filter-select">
+                <option value="">Todos os Tipos</option>
+                <option value="MONTHLY">💳 Mensal</option>
+                <option value="QUARTERLY">📊 Trimestral</option>
+                <option value="YEARLY">🗓️ Anual</option>
+                <option value="WEEKLY">📅 Semanal</option>
+                <option value="LIFETIME">♾️ Vitalício</option>
+            </select>
+            
+            <select id="statusFilter" class="filter-select">
+                <option value="">Todos os Status</option>
+                <option value="true">Ativos</option>
+                <option value="false">Inativos</option>
+            </select>
+            
+            <button id="clearFiltersBtn" class="btn btn-secondary">
+                🔄 Limpar Filtros
+            </button>
+        </div>
+        
+        <div class="view-controls">
+            <button id="gridViewBtn" class="view-btn active" title="Visualização em Grade">
+                ⊞ Grade
+            </button>
+            <button id="tableViewBtn" class="view-btn" title="Visualização em Tabela">
+                ≡ Tabela
+            </button>
+        </div>
+    </div>
+
+    <!-- Plans Container -->
+    <div id="plansContainer" class="plans-container">
+        <!-- Content will be populated by the module -->
+    </div>
+</div>

@@ -350,13 +350,13 @@
     <header class="editor-header">
         <div class="header-content">
             <div class="header-left">
-                <button class="back-button" onclick="history.back()">
+                <button class="back-button" data-action="history.back" data-args='[]'>
                     <span>←</span>
                     <span>Voltar</span>
                 </button>
                 <h1 id="pageTitle">🥋 Nova Técnica</h1>
             </div>
-            <button class="save-button" onclick="saveTechnique()">
+            <button class="save-button" data-action="saveTechnique" data-args='[]'>
                 <span>💾</span>
                 <span>Salvar Técnica</span>
             </button>
@@ -455,11 +455,11 @@
                 <div id="prerequisitesContainer" class="prerequisites-container">
                     <div class="prerequisite-item">
                         <input type="text" placeholder="Ex: Stance básica de combate">
-                        <button type="button" class="remove-prerequisite" onclick="removePrerequisite(this)">🗑️</button>
+                        <button type="button" class="remove-prerequisite" data-action="removePrerequisite" data-args='["this"]'>🗑️</button>
                     </div>
                 </div>
                 
-                <button type="button" class="add-prerequisite" onclick="addPrerequisite()">
+                <button type="button" class="add-prerequisite" data-action="addPrerequisite" data-args='[]'>
                     <span>+</span>
                     <span>Adicionar Pré-requisito</span>
                 </button>
@@ -472,11 +472,11 @@
                 <div id="instructionsContainer" class="instructions-container">
                     <div class="instruction-item">
                         <textarea placeholder="Passo 1: Descreva a execução..."></textarea>
-                        <button type="button" class="remove-instruction" onclick="removeInstruction(this)">🗑️</button>
+                        <button type="button" class="remove-instruction" data-action="removeInstruction" data-args='["this"]'>🗑️</button>
                     </div>
                 </div>
                 
-                <button type="button" class="add-instruction" onclick="addInstruction()">
+                <button type="button" class="add-instruction" data-action="addInstruction" data-args='[]'>
                     <span>+</span>
                     <span>Adicionar Instrução</span>
                 </button>
@@ -669,7 +669,7 @@
                 item.className = 'prerequisite-item';
                 item.innerHTML = `
                     <input type="text" placeholder="Ex: Stance básica de combate" value="${value}">
-                    <button type="button" class="remove-prerequisite" onclick="removePrerequisite(this)">🗑️</button>
+                    <button type="button" class="remove-prerequisite" data-action="removePrerequisite" data-args='["this"]'>🗑️</button>
                 `;
                 container.appendChild(item);
             }
@@ -680,7 +680,7 @@
                 item.className = 'instruction-item';
                 item.innerHTML = `
                     <textarea placeholder="Passo ${container.children.length + 1}: Descreva a execução...">${value}</textarea>
-                    <button type="button" class="remove-instruction" onclick="removeInstruction(this)">🗑️</button>
+                    <button type="button" class="remove-instruction" data-action="removeInstruction" data-args='["this"]'>🗑️</button>
                 `;
                 container.appendChild(item);
             }

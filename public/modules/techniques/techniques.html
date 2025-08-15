@@ -1,0 +1,23 @@
+<!-- Techniques module view - one action = one full-screen (CLAUDE.md)
+     Location: public/modules/techniques/techniques.html -->
+<link rel="stylesheet" href="/modules/techniques/techniques.css">
+
+<div id="techniques-root" class="techniques-isolated">
+  <header class="techniques-header">
+    <button id="techniques-back-btn" class="btn btn-light" style="display:none;">← Voltar</button>
+    <h1>Técnicas</h1>
+    <div class="techniques-actions">
+      <input id="techniques-search" placeholder="Pesquisar técnicas..." />
+      <button id="techniques-refresh" class="btn btn-secondary">Atualizar</button>
+      <button id="techniques-new" class="btn btn-primary">Nova Técnica</button>
+    </div>
+  </header>
+
+  <main id="techniques-list-page" class="techniques-page">
+    <div id="techniques-list" class="techniques-list"></div>
+  </main>
+
+  <main id="technique-detail-page" class="techniques-page" style="display:none;">
+    <article id="technique-detail" class="technique-detail"></article>
+  </main>
+</div>

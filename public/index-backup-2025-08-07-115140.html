@@ -1,0 +1,1674 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🥋 Krav Maga Academy - Dashboard</title>
+                      } else if (moduleName === 'course-editor' && typeof window.initializeCourseEditorModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Course Editor Module...');
+                            window.initializeCourseEditorModule();
+                        }, 100);  <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/dashboard.css">
+    <link rel="stylesheet" href="/css/enhanced-tabs.css">
+    
+    <!-- Loading Styles -->
+    <style>
+        .loading-dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 2rem;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3B82F6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" class="dashboard-container">
+        <!-- Loading state -->
+        <div id="loadingState" class="loading-dashboard">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando Dashboard...</div>
+=======
+                    </div>
+                    
+                    <button class="btn btn-primary">Salvar Configurações</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Challenges -->
+        <div id="challenges" class="content-section">
+            <div class="page-header">
+                <h1>Desafios Semanais</h1>
+                <p>Sistema de desafios e gamificação</p>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Desafios Disponíveis</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p>• 24 desafios catalogados</p>
+                    <p>• Adaptados por categoria e gênero</p>
+                    <p>• Sistema de pontos integrado</p>
+                    <br>
+                    <p><em>Interface de desafios em desenvolvimento.</em></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Knowledge Base -->
+        <div id="knowledge-base" class="content-section">
+            <div class="page-header">
+                <h1>🧠 Base de Conhecimento</h1>
+                <p>Memória central dos agentes IA - Upload de documentos, textos, links e vídeos</p>
+            </div>
+            
+            <div style="display: grid; gap: 1.5rem;">
+                <!-- Knowledge Base Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                        <div style="color: #8B5CF6; font-weight: bold; margin-bottom: 0.5rem;">📚 Documentos</div>
+                        <div style="color: #F8FAFC; font-size: 1.5rem; font-weight: bold;" id="knowledgeStatsDocuments">0</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981;">
+                        <div style="color: #10B981; font-weight: bold; margin-bottom: 0.5rem;">🕰️ Chunks RAG</div>
+                        <div style="color: #F8FAFC; font-size: 1.5rem; font-weight: bold;" id="knowledgeStatsChunks">0</div>
+                    </div>
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                        <div style="color: #3B82F6; font-weight: bold; margin-bottom: 0.5rem;">⏱️ Última Indexação</div>
+                        <div style="color: #F8FAFC; font-size: 0.875rem;" id="knowledgeStatsLastUpdate">Nunca</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                        <div style="color: #F59E0B; font-weight: bold; margin-bottom: 0.5rem;">⚙️ Status RAG</div>
+                        <div style="color: #F8FAFC; font-size: 0.875rem;" id="knowledgeStatsStatus">Vazio</div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="openKnowledgeUploader()">
+                        <span>➕</span> Adicionar Conteúdo
+                    </button>
+                    <button class="btn btn-success" onclick="reindexKnowledgeBase()">
+                        <span>⚡</span> Reindexar Base
+                    </button>
+                    <button class="btn btn-info" onclick="testRAGSystem()">
+                        <span>🗺️</span> Testar RAG
+                    </button>
+                    <button class="btn btn-secondary" onclick="searchKnowledgeBase()">
+                        <span>🔍</span> Buscar
+                    </button>
+                </div>
+                
+                <!-- Knowledge Base Content -->
+                <div class="data-table">
+                    <div class="table-header">
+                        <div class="table-title">Conteúdo da Base de Conhecimento</div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="text" id="knowledgeSearchInput" placeholder="Buscar na base..." style="padding: 0.5rem; border-radius: 4px; border: 1px solid #374151; background: #1F2937; color: #F8FAFC; width: 200px;" onkeyup="if(event.key==='Enter') searchKnowledgeBase()">
+                            <button class="btn btn-sm btn-primary" onclick="searchKnowledgeBase()">🔍</button>
+                        </div>
+                    </div>
+                    <div id="knowledgeContentDisplay" style="min-height: 300px;">
+                        <div style="text-align: center; color: #9CA3AF; padding: 3rem;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">📚</div>
+                            <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Base de Conhecimento Vazia</div>
+                            <div style="font-size: 0.9rem;">Adicione documentos, textos, links ou vídeos para começar</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-primary" onclick="openKnowledgeUploader()">
+                                    ➕ Adicionar Primeiro Conteúdo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Financial Responsibles -->
+        <div id="financial-responsibles" class="content-section">
+            <div class="page-header">
+                <h1>👨‍👩‍👧‍👦 Responsáveis Financeiros</h1>
+                <p>Gestão de responsáveis financeiros dos alunos</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalResponsibles">0</div>
+                    <div class="stat-label">Total de Responsáveis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeResponsibles">0</div>
+                    <div class="stat-label">Ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="studentsWithResponsibles">0</div>
+                    <div class="stat-label">Alunos com Responsável</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgStudentsPerResponsible">0</div>
+                    <div class="stat-label">Média p/ Responsável</div>
+                </div>
+            </div>
+
+            <!-- Search and Actions -->
+            <div class="simple-search">
+                <input type="text" 
+                       id="responsibleSearch" 
+                       class="search-input"
+                       placeholder="🔍 Buscar por nome, CPF, email..." 
+                       onkeyup="filterResponsibles()"
+                       autocomplete="off">
+                
+                <button class="btn btn-primary" onclick="openAddResponsibleModal()">
+                    <span>➕</span>
+                    Novo Responsável
+                </button>
+            </div>
+            
+            <!-- Responsibles Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Lista de Responsáveis Financeiros</div>
+                </div>
+                <div class="responsibles-table-container">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF/CNPJ</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Relação</th>
+                                <th>Alunos</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responsiblesTableBody">
+                            <!-- Responsibles will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="responsiblesLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando responsáveis...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="responsiblesEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum responsável encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece adicionando o primeiro responsável financeiro</div>
+                        <button class="btn btn-primary" onclick="openAddResponsibleModal()">
+                            <span>➕</span>
+                            Adicionar Primeiro Responsável
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Plans -->
+        <!-- Payment Plans Management -->
+        <div id="payment-plans" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #FFFFFF, #F3E8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📄 Planos da Academia</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #F3E8FF; font-size: 1.1rem;">Gerencie os planos de curso oferecidos pela academia - valores, categorias e condições</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openAddPlanModal()" style="background: linear-gradient(135deg, #059669, #10B981); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Plano
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadPaymentPlansList()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalPlansCount">0</div>
+                        <div style="font-size: 0.875rem; color: #F3E8FF;">Total Planos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="activePlansCount">0</div>
+                        <div style="font-size: 0.875rem; color: #F3E8FF;">Ativos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="avgPlanPrice">R$ 0</div>
+                        <div style="font-size: 0.875rem; color: #F3E8FF;">Valor Médio</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="monthlyPlansCount">0</div>
+                        <div style="font-size: 0.875rem; color: #F3E8FF;">Mensais</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="data-controls" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" id="planSearchInput" placeholder="🔍 Buscar planos..." 
+                           style="width: 100%; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 12px; color: #F8FAFC; font-size: 0.875rem;"
+                           onkeyup="filterPlans()">
+                </div>
+                <select id="categoryFilterSelect" onchange="filterPlans()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todas Categorias</option>
+                    <option value="ADULT">Adulto</option>
+                    <option value="CHILD">Infantil</option>
+                    <option value="SENIOR">Senior</option>
+                    <option value="FEMALE">Feminino</option>
+                </select>
+                <select id="billingTypeFilter" onchange="filterPlans()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todos Tipos</option>
+                    <option value="MONTHLY">Mensal</option>
+                    <option value="QUARTERLY">Trimestral</option>
+                    <option value="YEARLY">Anual</option>
+                    <option value="CREDIT_CARD_INSTALLMENT">Cartão Parcelado</option>
+                </select>
+                <button class="btn btn-primary" onclick="openAddPlanPage()" style="background: linear-gradient(135deg, #8B5CF6, #EC4899); padding: 0.75rem 1.5rem;">
+                    <span>➕</span> Novo Plano
+                </button>
+            </div>
+
+            <!-- Plans Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📄 Planos de Curso da Academia</div>
+                    <div class="table-actions">
+                        <span style="color: #CBD5E1; font-size: 0.875rem;" id="plansCountText">Carregando...</span>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #1E293B; border-bottom: 1px solid #374151;">
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Plano</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Curso</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Categoria</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Valor</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Tipo</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Aulas/Semana</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Status</th>
+                                <th style="padding: 1rem; text-align: left; color: #F8FAFC; font-weight: 600;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="plansTableBody">
+                            <!-- Plans will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="plansLoadingState" class="loading-state">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📄</div>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando planos...</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="plansEmptyState" class="empty-state" style="display: none;">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum plano encontrado</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece criando o primeiro plano de pagamento</div>
+                    <button class="btn btn-primary" onclick="openAddPlanPage()">
+                        <span>➕</span> Criar Primeiro Plano
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Plan Edit Page -->
+        <div id="plan-edit" class="content-section" style="display: none;">
+            <div class="page-header" style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #FFFFFF, #F3E8FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✏️ Editar Plano</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #F3E8FF; font-size: 1.1rem;" id="planEditSubtitle">Edite as informações do plano selecionado</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" onclick="backToPlans()" style="padding: 0.75rem 1.5rem;">
+                            <span>←</span> Voltar
+                        </button>
+                        <button class="btn btn-primary" onclick="savePlanChanges()" style="background: linear-gradient(135deg, #059669, #10B981); border: none; padding: 0.75rem 1.5rem;">
+                            <span>💾</span> Salvar
+                        </button>
+                        <button class="btn btn-secondary" onclick="testSavePlanDebug()" style="background: #6B7280; border: none; padding: 0.75rem 1.5rem; margin-left: 0.5rem;">
+                            <span>🧪</span> Teste Debug
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan Edit Form with Tabs -->
+            <div class="form-container" style="background: rgba(15, 23, 42, 0.6); border-radius: 16px; padding: 2rem; border: 1px solid rgba(51, 65, 85, 0.8);">
+                
+                <!-- Enhanced Tab Navigation - UX Optimized -->
+                <div class="plan-tabs">
+                    <div class="tab-progress" id="tabProgress" style="width: 25%;"></div>
+                    
+                    <button type="button" class="plan-tab active completed" onclick="switchPlanEditTab('basic')" data-tab="basic" data-step="1">
+                        <span class="tab-icon">📋</span>
+                        <span class="tab-text">Informações Básicas</span>
+                        <span class="step-counter">1</span>
+                    </button>
+                    
+                    <button type="button" class="plan-tab" onclick="switchPlanEditTab('courses')" data-tab="courses" data-step="2">
+                        <span class="tab-icon">🎓</span>
+                        <span class="tab-text">Cursos Associados</span>
+                        <span class="step-counter">2</span>
+                    </button>
+                    
+                    <button type="button" class="plan-tab" onclick="switchPlanEditTab('advanced')" data-tab="advanced" data-step="3">
+                        <span class="tab-icon">⚙️</span>
+                        <span class="tab-text">Configurações</span>
+                        <span class="step-counter">3</span>
+                    </button>
+                    
+                    <button type="button" class="plan-tab" onclick="switchPlanEditTab('preview')" data-tab="preview" data-step="4">
+                        <span class="tab-icon">👁️</span>
+                        <span class="tab-text">Preview</span>
+                        <span class="step-counter">4</span>
+                    </button>
+                </div>
+
+                <form id="planEditForm">
+                    <!-- Tab 1: Basic Information -->
+                    <div id="planEditTab-basic" class="plan-tab-content active">
+                        <div class="tab-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+                            <h3 style="color: #3B82F6; margin-bottom: 0.5rem; font-size: 1.5rem;">📋 Informações Básicas do Plano</h3>
+                            <p style="color: #94A3B8; margin: 0;">Configure os dados fundamentais do seu plano de pagamento</p>
+                        </div>
+                        
+                        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label class="form-label">Nome do Plano *</label>
+                                <input type="text" class="form-input" id="editPlanName" placeholder="Ex: Plano Premium Krav Maga" required>
+                                <small class="form-hint">🔄 Será gerado automaticamente baseado nos cursos selecionados</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Categoria *</label>
+                                <select class="form-select" id="editPlanCategory" required onchange="updatePlanEditPreview()">
+                                    <option value="">Selecione uma categoria...</option>
+                                    <option value="ADULT">👨 Adulto</option>
+                                    <option value="FEMALE">👩 Feminino</option>
+                                    <option value="SENIOR">👴 Senior/Idoso</option>
+                                    <option value="CHILD">🧒 Infantil/Criança</option>
+                                    <option value="INICIANTE1">🥉 Iniciante 1</option>
+                                    <option value="INICIANTE2">🥉 Iniciante 2</option>
+                                    <option value="INICIANTE3">🥉 Iniciante 3</option>
+                                    <option value="HEROI1">🥈 Herói 1</option>
+                                    <option value="HEROI2">🥈 Herói 2</option>
+                                    <option value="HEROI3">🥈 Herói 3</option>
+                                    <option value="MASTER_1">🥇 Master 1</option>
+                                    <option value="MASTER_2">🥇 Master 2</option>
+                                    <option value="MASTER_3">🥇 Master 3</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Valor do Plano *</label>
+                                <input type="number" class="form-input" id="editPlanPrice" step="0.01" placeholder="R$ 0,00" required>
+                                <small class="form-hint">💰 Insira o valor do plano conforme sua estratégia de preços</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Tipo de Cobrança *</label>
+                                <select class="form-select" id="editPlanBillingType" required onchange="updatePlanEditPreview()">
+                                    <option value="MONTHLY">💳 Mensal</option>
+                                    <option value="WEEKLY">📅 Semanal</option>
+                                    <option value="QUARTERLY">📊 Trimestral</option>
+                                    <option value="YEARLY">🗓️ Anual</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label">Descrição do Plano</label>
+                            <textarea class="form-input" id="editPlanDescription" rows="3" placeholder="Descrição detalhada dos benefícios e características do plano..."></textarea>
+                        </div>
+                        
+                        <div class="tab-navigation" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <div></div>
+                            <button type="button" class="btn btn-primary" onclick="switchPlanEditTab('courses')" style="min-width: 200px;">
+                                Próximo: Cursos Associados →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Associated Courses -->
+                    <div id="planEditTab-courses" class="plan-tab-content">
+                        <div class="tab-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+                            <h3 style="color: #3B82F6; margin-bottom: 0.5rem; font-size: 1.5rem;">🎓 Cursos Associados ao Plano</h3>
+                            <p style="color: #94A3B8; margin: 0;">Selecione todos os cursos que estarão inclusos neste plano</p>
+                            <div class="validation-alert" id="coursesValidationAlert" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; color: #EF4444; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                ⚠️ <strong>Atenção:</strong> É obrigatório selecionar pelo menos um curso para o plano.
+                            </div>
+                            <div class="success-alert" id="coursesSuccessAlert" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                ✅ <strong>Perfeito!</strong> Cursos selecionados para o plano.
+                            </div>
+                        </div>
+                        
+                        <div class="courses-selection-container">
+                            <div class="selection-header">
+                                <div class="selection-stats">
+                                    <span class="stat-badge" id="editCoursesSelectedCount">0 cursos selecionados</span>
+                                    <span class="stat-badge" id="editCoursesTotalCount">0 cursos disponíveis</span>
+                                </div>
+                                <div class="selection-actions">
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="selectAllEditCourses()">Selecionar Todos</button>
+                                    <button type="button" class="btn btn-sm btn-outline" onclick="clearAllEditCourses()">Limpar Seleção</button>
+                                </div>
+                            </div>
+                            
+                            <div class="courses-grid" id="editCoursesGrid">
+                                <!-- Courses will be loaded here dynamically -->
+                                <div class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Carregando cursos disponíveis...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-navigation" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <button type="button" class="btn btn-secondary" onclick="switchPlanEditTab('basic')" style="min-width: 200px;">
+                                ← Voltar: Informações Básicas
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="switchPlanEditTab('advanced')" style="min-width: 200px;">
+                                Próximo: Configurações →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 3: Advanced Configuration -->
+                    <div id="planEditTab-advanced" class="plan-tab-content">
+                        <div class="tab-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+                            <h3 style="color: #3B82F6; margin-bottom: 0.5rem; font-size: 1.5rem;">⚙️ Configurações Avançadas</h3>
+                            <p style="color: #94A3B8; margin: 0;">Configure recursos especiais e limitações do plano</p>
+                        </div>
+                        
+                        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label class="form-label">Aulas por Semana</label>
+                                <select class="form-select" id="editPlanClassesPerWeek" onchange="syncWeeklyClassesField()">
+                                    <option value="1">1 aula por semana</option>
+                                    <option value="2" selected>2 aulas por semana</option>
+                                    <option value="3">3 aulas por semana</option>
+                                    <option value="4">4 aulas por semana</option>
+                                    <option value="5">5 aulas por semana</option>
+                                    <option value="unlimited">♾️ Ilimitado</option>
+                                </select>
+                                <!-- Hidden field for JS compatibility -->
+                                <input type="hidden" id="editPlanWeeklyClasses" value="2">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Máximo de Aulas por Mês</label>
+                                <input type="number" class="form-input" id="editPlanMaxClasses" min="1" max="50" placeholder="Ex: 8 aulas">
+                                <small class="form-hint">Deixe em branco para ilimitado</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Duração do Plano (meses)</label>
+                                <input type="number" class="form-input" id="editPlanDuration" min="1" max="36" placeholder="Ex: 12 meses" value="12">
+                                <small class="form-hint">Duração em meses do plano</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Período de Carência (dias)</label>
+                                <input type="number" class="form-input" id="editPlanGracePeriod" min="0" max="30" placeholder="Ex: 5 dias" value="5">
+                                <small class="form-hint">Dias de carência para cancelamento</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Limite de Alunos</label>
+                                <input type="number" class="form-input" id="editPlanStudentLimit" min="1" placeholder="Ex: 50 alunos">
+                                <small class="form-hint">Deixe em branco para ilimitado</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Recursos Extras</label>
+                            <div class="extras-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanPersonalTraining"> 
+                                    💪 Personal Training
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanNutrition"> 
+                                    🥗 Plano Nutricional
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanAllModalities"> 
+                                    🥋 Todas Modalidades
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFreezeOption"> 
+                                    ❄️ Permite Congelar
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeatureAccess" checked> 
+                                    🔑 Acesso Total
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeatureEquipment"> 
+                                    🏋️ Equipamentos
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeaturePersonal"> 
+                                    💪 Personal Training
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeatureNutrition"> 
+                                    🥗 Nutricional
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeatureEvents" checked> 
+                                    🎉 Eventos
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanFeatureMaterial" checked> 
+                                    📚 Material Didático
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Configurações do Plano</label>
+                            <div class="extras-grid">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanIsActive" checked> 
+                                    ✅ Plano Ativo
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanAllowUpgrade" checked> 
+                                    📈 Permite Upgrade
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="editPlanAutoRenewal"> 
+                                    🔄 Renovação Automática
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-input" id="editPlanNotes" rows="3" placeholder="Observações adicionais sobre o plano..."></textarea>
+                        </div>
+                        
+                        <div class="tab-navigation" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <button type="button" class="btn btn-secondary" onclick="switchPlanEditTab('courses')" style="min-width: 200px;">
+                                ← Voltar: Cursos Associados
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="switchPlanEditTab('preview')" style="min-width: 200px;">
+                                Próximo: Preview →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 4: Preview -->
+                    <div id="planEditTab-preview" class="plan-tab-content">
+                        <div class="tab-header" style="text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(148, 163, 184, 0.2);">
+                            <h3 style="color: #3B82F6; margin-bottom: 0.5rem; font-size: 1.5rem;">👁️ Preview do Plano</h3>
+                            <p style="color: #94A3B8; margin: 0;">Visualize como o plano ficará antes de salvar</p>
+                        </div>
+                        
+                        <div id="editPlanPreview" class="preview-container">
+                            <div class="preview-card">
+                                <div class="preview-header">
+                                    <h4 id="editPreviewPlanName">Nome do Plano</h4>
+                                    <div class="preview-price" id="editPreviewPlanPrice">R$ 0,00</div>
+                                </div>
+                                <div class="preview-body">
+                                    <p id="editPreviewPlanDescription">Descrição do plano</p>
+                                    <div class="preview-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Categoria:</span>
+                                            <span class="detail-value" id="editPreviewCategory">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Tipo de Cobrança:</span>
+                                            <span class="detail-value" id="editPreviewBillingType">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Cursos Inclusos:</span>
+                                            <span class="detail-value" id="editPreviewCourses">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Aulas por Semana:</span>
+                                            <span class="detail-value" id="editPreviewClassesPerWeek">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-navigation" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(148, 163, 184, 0.2);">
+                            <button type="button" class="btn btn-secondary" onclick="switchPlanEditTab('advanced')" style="min-width: 200px;">
+                                ← Voltar: Configurações
+                            </button>
+                            <button type="button" class="btn btn-primary btn-large" onclick="savePlanChanges()" style="min-width: 200px;">
+                                💾 Salvar Plano
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="testSavePlanDebug()" style="min-width: 150px; margin-left: 1rem;">
+                                🧪 Teste Debug
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden legacy field for compatibility -->
+                    <select id="editPlanCourse" multiple style="display: none;"></select>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Subscriptions Management -->
+        <div id="subscriptions" class="content-section">
+            <!-- Modern Page Header -->
+            <div class="page-header" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #FFFFFF, #D1FAE5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">💳 Gestão de Assinaturas</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #D1FAE5; font-size: 1.1rem;">Gerencie assinaturas ativas dos alunos, planos contratados e status de pagamento</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openAddSubscriptionModal()" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Nova Assinatura
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadSubscriptionsList()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Total Assinaturas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="activeSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Ativas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="pendingSubscriptionsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Pendentes</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FFFFFF;" id="totalSubscriptionRevenue">R$ 0</div>
+                        <div style="font-size: 0.875rem; color: #D1FAE5;">Receita Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="data-controls" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" id="subscriptionSearchInput" placeholder="🔍 Buscar por aluno, e-mail ou plano..." 
+                           style="width: 100%; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 12px; color: #F8FAFC; font-size: 0.875rem;"
+                           onkeyup="filterSubscriptions()">
+                </div>
+                <select id="subscriptionStatusFilter" onchange="filterSubscriptions()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todos Status</option>
+                    <option value="ACTIVE">Ativa</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="SUSPENDED">Suspensa</option>
+                    <option value="CANCELLED">Cancelada</option>
+                    <option value="EXPIRED">Expirada</option>
+                </select>
+                <select id="subscriptionPlanFilter" onchange="filterSubscriptions()" 
+                        style="padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid #374151; border-radius: 8px; color: #F8FAFC; font-size: 0.875rem;">
+                    <option value="">Todos Planos</option>
+                </select>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <table class="data-table-content">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Plano</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Início</th>
+                            <th>Próximo Pagamento</th>
+                            <th>Método</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTableBody">
+                        <!-- Subscriptions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Loading States -->
+            <div id="subscriptionsLoadingState" class="loading-state">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">💳</div>
+                    <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando assinaturas...</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                </div>
+            </div>
+            <div id="subscriptionsEmptyState" class="empty-state" style="display: none;">
+                <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhuma assinatura encontrada</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece criando a primeira assinatura</div>
+                    <button class="btn btn-primary" onclick="openAddSubscriptionModal()">
+                        <span>➕</span>
+                        Criar Primeira Assinatura
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Subscription Modal -->
+        <div id="subscriptionModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="subscriptionModalTitle">➕ Nova Assinatura</h2>
+                    <button class="btn-close" onclick="closeSubscriptionModal()">&times;</button>
+                </div>
+                <form id="subscriptionForm">
+                    <div class="modal-body">
+                        <!-- Student Selection -->
+                        <div class="form-group">
+                            <label class="form-label">👤 Aluno *</label>
+                            <select id="subscriptionStudent" class="form-control" required>
+                                <option value="">Selecione um aluno</option>
+                            </select>
+                        </div>
+
+                        <!-- Plan Selection -->
+                        <div class="form-group">
+                            <label class="form-label">📄 Plano *</label>
+                            <select id="subscriptionPlan" class="form-control" required onchange="updateSubscriptionPlanDetails()">
+                                <option value="">Selecione um plano</option>
+                            </select>
+                        </div>
+
+                        <!-- Plan Details Display -->
+                        <div id="subscriptionPlanDetails" style="display: none; background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                            <h4 style="color: #3B82F6; margin-bottom: 0.5rem;">📋 Detalhes do Plano</h4>
+                            <div id="planDetailsContent"></div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Start Date -->
+                            <div class="form-group">
+                                <label class="form-label">📅 Data de Início *</label>
+                                <input type="date" id="subscriptionStartDate" class="form-control" required>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="form-group">
+                                <label class="form-label">💳 Método de Pagamento *</label>
+                                <select id="subscriptionPaymentMethod" class="form-control" required>
+                                    <option value="">Selecione</option>
+                                    <option value="CREDIT_CARD">Cartão de Crédito</option>
+                                    <option value="DEBIT_CARD">Cartão de Débito</option>
+                                    <option value="PIX">PIX</option>
+                                    <option value="BANK_SLIP">Boleto Bancário</option>
+                                    <option value="CASH">Dinheiro</option>
+                                    <option value="BANK_TRANSFER">Transferência</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Payment Day -->
+                            <div class="form-group">
+                                <label class="form-label">📆 Dia do Pagamento</label>
+                                <select id="subscriptionPaymentDay" class="form-control">
+                                    <option value="">Auto (data de início)</option>
+                                    <option value="1">1</option>
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="20">20</option>
+                                    <option value="25">25</option>
+                                    <option value="30">30</option>
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="form-group">
+                                <label class="form-label">📊 Status *</label>
+                                <select id="subscriptionStatus" class="form-control" required>
+                                    <option value="ACTIVE">Ativa</option>
+                                    <option value="PENDING">Pendente</option>
+                                    <option value="SUSPENDED">Suspensa</option>
+                                    <option value="CANCELLED">Cancelada</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="form-group">
+                            <label class="form-label">📝 Observações</label>
+                            <textarea id="subscriptionNotes" class="form-control" rows="3" placeholder="Observações sobre a assinatura..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeSubscriptionModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Assinatura</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Units Management -->
+        <div id="units" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🏢 Gestão de Unidades</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre locais, endereços e capacidades das unidades da academia</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openAddUnitModal()" style="background: linear-gradient(135deg, #059669, #10B981); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Nova Unidade
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadUnits()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="totalUnitsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Unidades</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="totalMatsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Tatames</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="totalCapacityCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Capacidade Total</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="activeClassesCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Turmas Ativas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Units Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Unidades</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar unidade..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="unitsSearchInput" onkeyup="searchUnits()">
+                        <button class="btn btn-secondary" onclick="exportUnitsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Tatames</th>
+                                <th>Capacidade</th>
+                                <th>Turmas</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitsTableBody">
+                            <!-- Units will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="unitsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🏢</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando unidades...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="unitsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏢</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhuma unidade encontrada</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando a primeira unidade da academia</div>
+                        <button class="btn btn-primary" onclick="openAddUnitModal()">
+                            <span>➕</span>
+                            Criar Primeira Unidade
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mats Management -->
+        <div id="mats" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #8B5CF6, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🥋 Gestão de Tatames</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre espaços de treinamento, equipamentos e capacidades</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openAddMatModal()" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Tatame
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadMats()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="matsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Total Tatames</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="matsCapacity">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Capacidade Total</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="matsInUse">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Em Uso</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="matsAvailable">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Disponíveis</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter by Unit -->
+            <div style="background: #1E293B; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; border: 1px solid #334155;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <label style="color: #CBD5E1; font-weight: 600;">Filtrar por Unidade:</label>
+                    <select id="unitFilter" onchange="filterMatsByUnit()" style="background: #0F172A; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; min-width: 200px;">
+                        <option value="">Todas as Unidades</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <button class="btn btn-secondary" onclick="clearMatFilters()" style="padding: 0.5rem 1rem;">
+                        <span>🧹</span> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mats Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Tatames</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar tatame..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="matsSearchInput" onkeyup="searchMats()">
+                        <button class="btn btn-secondary" onclick="exportMatsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Unidade</th>
+                                <th>Capacidade</th>
+                                <th>Dimensões</th>
+                                <th>Equipamentos</th>
+                                <th>Turmas</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matsTableBody">
+                            <!-- Mats will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="matsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">🥋</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando tatames...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="matsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🥋</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum tatame encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando o primeiro tatame</div>
+                        <button class="btn btn-primary" onclick="openAddMatModal()">
+                            <span>➕</span>
+                            Criar Primeiro Tatame
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructors Management -->
+        <div id="instructors" class="content-section">
+            <div class="page-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid rgba(148, 163, 184, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #F59E0B, #EF4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">👨‍🏫 Gestão de Professores</h1>
+                        <p style="margin: 0.5rem 0 0 0; color: #94A3B8; font-size: 1.1rem;">Administre instrutores, especializações e horários disponíveis</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openAddInstructorModal()" style="background: linear-gradient(135deg, #F59E0B, #EF4444); border: none; padding: 0.75rem 1.5rem;">
+                            <span>➕</span> Novo Professor
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadInstructors()" style="padding: 0.75rem 1.5rem;">
+                            <span>🔄</span> Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #F59E0B;" id="instructorsCount">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Professores</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10B981;" id="instructorsActive">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Ativos</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #3B82F6;" id="instructorsWithClasses">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Com Turmas</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #8B5CF6;" id="avgExperience">0</div>
+                        <div style="font-size: 0.875rem; color: #CBD5E1;">Anos Experiência</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructors Table -->
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">📋 Lista de Professores</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 Buscar professor..." 
+                               style="background: #1E293B; border: 1px solid #374151; color: #F8FAFC; padding: 0.5rem 1rem; border-radius: 8px; margin-right: 1rem;" 
+                               id="instructorsSearchInput" onkeyup="searchInstructors()">
+                        <button class="btn btn-secondary" onclick="exportInstructorsReport()">
+                            📊 Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table-content">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Especializações</th>
+                                <th>Artes Marciais</th>
+                                <th>Experiência</th>
+                                <th>Turmas</th>
+                                <th>Valor/Hora</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instructorsTableBody">
+                            <!-- Instructors will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="instructorsLoadingState" class="loading-state">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍🏫</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">Carregando professores...</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7;">Conectando com a base de dados</div>
+                    </div>
+                </div>
+                <div id="instructorsEmptyState" class="empty-state" style="display: none;">
+                    <div style="text-align: center; color: #CBD5E1; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍🏫</div>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Nenhum professor encontrado</div>
+                        <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem;">Comece cadastrando o primeiro professor</div>
+                        <button class="btn btn-primary" onclick="openAddInstructorModal()">
+                            <span>➕</span>
+                            Cadastrar Primeiro Professor
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings -->
+        <div id="settings" class="content-section">
+            <div class="page-header">
+                <h1>Configurações</h1>
+                <p>Configurações gerais do sistema</p>
+            </div>
+            
+            <div class="data-table">
+                <div class="table-header">
+                    <div class="table-title">Status do Sistema</div>
+                </div>
+                <div style="color: #CBD5E1;">
+                    <p>• Banco de dados: ✅ Conectado</p>
+                    <p>• APIs: ✅ 27 endpoints funcionais</p>
+                    <p>• Frontend: ✅ Interface responsiva</p>
+                    <p>• Dados: ✅ 4 alunos, 42 técnicas, 48 aulas</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Debug Button for Testing Modal -->
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 9999;">
+        <button onclick="openAddStudentModal()" style="background: #10B981; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;">
+            🧪 TESTE MODAL
+        </button>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Adicionar Novo Aluno</h2>
+                <button class="close-btn" onclick="closeModal('addStudentModal')">&times;</button>
+            </div>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" id="studentName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="studentEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input type="tel" class="form-input" id="studentPhone" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Nascimento</label>
+                    <input type="date" class="form-input" id="studentBirthDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gênero</label>
+                    <select class="form-select" id="studentGender" required>
+                        <option value="">Selecione...</option>
+                        <option value="MASCULINO">Masculino</option>
+                        <option value="FEMININO">Feminino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" id="studentCategory" required onchange="updateStudentPlanPreview()">
+                        <option value="">Selecione...</option>
+                        <option value="ADULT">Adulto</option>
+                        <option value="INICIANTE1">Iniciante 1</option>
+                        <option value="INICIANTE2">Iniciante 2</option>
+                        <option value="INTERMEDIARIO1">Intermediário 1</option>
+                        <option value="INTERMEDIARIO2">Intermediário 2</option>
+                        <option value="AVANCADO1">Avançado 1</option>
+                        <option value="AVANCADO2">Avançado 2</option>
+                        <option value="MASTER">Master</option>
+                        <option value="INSTRUCTOR">Instrutor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Turma</label>
+                    <select class="form-select" id="studentClass" required>
+                        <option value="">Selecione uma turma...</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Plano de Pagamento</label>
+                    <select class="form-select" id="studentBillingPlan" onchange="onPlanChange()">
+                        <option value="">Selecione um plano (opcional)</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <small style="color: #94A3B8; margin-top: 0.5rem; display: block;">
+                        Selecione um plano de pagamento ou deixe em branco para seleção automática
+                    </small>
+                </div>
+
+                <!-- Container para seleção de turmas baseada no plano -->
+                <div id="classesSelectionContainer" style="display: none;" class="form-group">
+                    <label class="form-label">🎯 Turmas</label>
+                    <!-- Conteúdo será preenchido dinamicamente -->
+                </div>
+
+                <!-- Container para seleção de cursos baseada no plano -->
+                <div id="coursesSelectionContainer" style="display: none;" class="form-group">
+                    <label class="form-label">📚 Cursos</label>
+                    <!-- Conteúdo será preenchido dinamicamente -->
+                </div>
+
+                <!-- Container para exibição do custo total -->
+                <div id="totalCostDisplay" style="display: none;" class="form-group">
+                    <!-- Conteúdo será preenchido dinamicamente -->
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Curso</label>
+                    <select class="form-select" id="studentCourse" onchange="updateStudentPlanPreview()">
+                        <option value="">Selecione um curso (opcional)</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Responsável Financeiro</label>
+                    <select class="form-select" id="studentFinancialResponsible">
+                        <option value="">Selecione um responsável (opcional)</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <small style="color: #94A3B8; margin-top: 0.5rem; display: block;">
+                        Selecione um responsável financeiro existente ou deixe em branco se o próprio aluno é responsável
+                    </small>
+                </div>
+                
+                <!-- Intelligent Plan Preview -->
+                <div id="studentPlanPreview" class="form-section" style="display: none;">
+                    <h3>💰 Plano Automático</h3>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #10B981;">
+                        <div style="color: #10B981; font-weight: bold; margin-bottom: 0.5rem;" id="previewStudentPlanName">Nome do Plano</div>
+                        <div style="color: #F8FAFC; font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;" id="previewStudentPlanPrice">R$ 0,00</div>
+                        <div style="color: #CBD5E1; font-size: 0.9rem;" id="previewStudentPlanDescription">Descrição do plano</div>
+                        <div style="color: #94A3B8; font-size: 0.8rem; margin-top: 0.5rem;">
+                            ✅ Matrícula automática no curso e plano será criada
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Aluno</button>
+                </div>
+            </form>
+>>>>>>> 4baaf1681e4ed17b2a6f9917d20253bed93ffb79
+        </div>
+    </div>
+
+    <!-- Core JavaScript -->
+    <script src="/js/modules/dashboard-optimized.js"></script>
+    <script src="/js/enhanced-tabs.js"></script>
+    
+    <!-- Navigation and utility functions -->
+    <script>
+        // Module Loader functionality
+        window.ModuleLoader = {
+            loadedModules: new Map(),
+            isModuleLoaded: function(moduleName) {
+                return this.loadedModules.has(moduleName);
+            },
+            getLoadedModules: function() {
+                return Array.from(this.loadedModules.keys());
+            }
+        };
+
+        // Map modules to their URLs
+        const moduleRoutes = {
+            'dashboard': '/views/dashboard.html',
+            'students': '/views/students.html',
+            'student-editor': '/views/student-editor.html', // Use the clean editor with best practices
+            'plans': '/views/plans.html',
+            'plan-editor': '/views/plan-editor.html',
+            'courses': '/views/courses.html',
+            'course-editor': '/views/course-editor.html', // Back to original
+            'financial': '/views/financial.html',
+            'administrative': '/views/administrative.html',
+            'operational': '/views/operational.html',
+            'pedagogical': '/views/pedagogical.html'
+        };
+
+        // Navigation function - Updated: 2025-08-01 14:30
+        async function navigateToModule(moduleName, queryParams = '') {
+            console.log('🔄 Navigating to:', moduleName, queryParams ? 'with params: ' + queryParams : '');
+            
+            // Store query parameters for module use
+            if (queryParams) {
+                window.history.replaceState(null, '', `?module=${moduleName}${queryParams}`);
+            }
+            
+            if (moduleName === 'dashboard') {
+                showDashboard();
+                return;
+            }
+
+            const route = moduleRoutes[moduleName];
+            if (!route) {
+                console.error('❌ Unknown module:', moduleName);
+                return;
+            }
+
+            await loadModuleContent(moduleName, route);
+        }
+
+        // Load module content
+        async function loadModuleContent(moduleName, url) {
+            console.log('🔧 Loading module content:', moduleName, url);
+
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                
+                // Extract body content from the HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const bodyContent = doc.body.innerHTML;
+                
+                console.log('📄 Extracted body content preview:', bodyContent.substring(0, 200) + '...');
+                
+                // Get main content area
+                const contentContainer = document.getElementById('contentContainer') || document.getElementById('dashboardContainer');
+                
+                if (!contentContainer) {
+                    console.error('❌ Content container not found');
+                    return;
+                }
+
+                // Hide dashboard content
+                const dashboardSection = document.getElementById('dashboard');
+                if (dashboardSection) {
+                    dashboardSection.style.display = 'none';
+                }
+
+                // Remove any existing module content
+                const existingModule = document.querySelector('.module-content');
+                if (existingModule) {
+                    existingModule.remove();
+                }
+
+                // Create new module container
+                const moduleContainer = document.createElement('div');
+                moduleContainer.className = 'module-content';
+                moduleContainer.innerHTML = bodyContent;
+
+                // Append to content container
+                contentContainer.appendChild(moduleContainer);
+
+                // Enhanced DOM readiness verification
+                await new Promise(resolve => {
+                    // Force multiple rendering cycles to ensure content is stable
+                    let cycles = 0;
+                    const maxCycles = 3;
+                    
+                    function checkAndWait() {
+                        cycles++;
+                        
+                        // Verify content is actually rendered
+                        const verifyContent = document.querySelector('.module-content');
+                        const hasContent = verifyContent && verifyContent.innerHTML.length > 100;
+                        
+                        console.log(`🔍 DOM cycle ${cycles}: Content length = ${hasContent ? verifyContent.innerHTML.length : 0}`);
+                        
+                        if (cycles >= maxCycles && hasContent) {
+                            resolve();
+                        } else {
+                            requestAnimationFrame(() => {
+                                if (cycles < maxCycles) {
+                                    checkAndWait();
+                                } else {
+                                    resolve();
+                                }
+                            });
+                        }
+                    }
+                    
+                    requestAnimationFrame(checkAndWait);
+                });
+
+                // Load module assets
+                await loadModuleAssets(moduleName);
+
+            } catch (error) {
+                console.error('❌ Error loading module:', error);
+            }
+        }
+
+        // Load module assets
+        async function loadModuleAssets(moduleName) {
+            console.log('🔌 Loading assets for module:', moduleName);
+
+            // Load CSS
+            const cssPath = `/css/modules/${moduleName}.css`;
+            if (!document.querySelector(`link[href="${cssPath}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssPath;
+                document.head.appendChild(link);
+            }
+
+            // Load JS
+            let jsPath = `/js/modules/${moduleName}.js`; // Changed to let
+            if (moduleName === 'student-editor') {
+                jsPath = '/js/modules/student-editor/main.js';
+            }
+            if (!document.querySelector(`script[src="${jsPath}"]`)) {
+                const script = document.createElement('script');
+                script.src = jsPath;
+                
+                // Para módulos ES6, usar type="module"
+                if (moduleName === 'student-editor') {
+                    script.type = 'module';
+                }
+                
+                script.onload = function() {
+                    console.log(`✅ Module ${moduleName} JS loaded successfully`);
+                    // Initialize module if initialization function exists
+                    if (moduleName === 'students' && typeof window.initializeStudentsModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Students Module...');
+                            window.initializeStudentsModule();
+                        }, 100);
+                    } else if (moduleName === 'student-editor') {
+                        // O módulo student-editor agora é ES6 e se inicializa automaticamente
+                        setTimeout(() => {
+                            console.log('🔧 Student Editor Module loaded (ES6)...');
+                        }, 200);
+                    } else if (moduleName === 'courses' && typeof window.initializeCoursesModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Courses Module...');
+                            window.initializeCoursesModule();
+                        }, 100);
+                    } else if (moduleName === 'course-editor' && typeof window.initializeCourseEditorSimpleModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Course Editor Simple Module...');
+                            window.initializeCourseEditorSimpleModule();
+                        }, 300);
+                    } else if (moduleName === 'plans' && typeof window.initializePlansModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Plans Module...');
+                            window.initializePlansModule();
+                        }, 100);
+                    } else if (moduleName === 'plan-editor' && typeof window.initializePlanEditor === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Plan Editor Module...');
+                            window.initializePlanEditor();
+                        }, 100);
+                    } else if (moduleName === 'lesson-plans' && typeof window.initializeLessonPlansModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Lesson Plans Module...');
+                            window.initializeLessonPlansModule();
+                        }, 100);
+                    } else if (moduleName === 'lessons' && typeof window.initializeLessonsModule === 'function') {
+                        setTimeout(() => {
+                            console.log('🔧 Auto-initializing Lessons Module...');
+                            window.initializeLessonsModule();
+                        }, 100);
+                    }
+                };
+                script.onerror = function() {
+                    console.error(`❌ Failed to load ${moduleName} JS module`);
+                };
+                document.head.appendChild(script);
+            } else {
+                // Module already loaded, check if needs initialization
+                if (moduleName === 'students' && typeof window.initializeStudentsModule === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Students Module...');
+                        window.initializeStudentsModule();
+                    }, 100);
+                } else if (moduleName === 'student-editor' && typeof window.initializeStudentEditor === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Student Editor Module...');
+                        window.initializeStudentEditor();
+                    }, 200);
+                } else if (moduleName === 'plans' && typeof window.initializePlansModule === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Plans Module...');
+                        window.initializePlansModule();
+                    }, 100);
+                } else if (moduleName === 'plan-editor' && typeof window.initializePlanEditor === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Plan Editor Module...');
+                        window.initializePlanEditor();
+                    }, 100);
+                } else if (moduleName === 'lesson-plans' && typeof window.initializeLessonPlansModule === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Lesson Plans Module...');
+                        window.initializeLessonPlansModule();
+                    }, 100);
+                } else if (moduleName === 'lessons' && typeof window.initializeLessonsModule === 'function') {
+                    setTimeout(() => {
+                        console.log('🔧 Re-initializing Lessons Module...');
+                        window.initializeLessonsModule();
+                    }, 100);
+                }
+            }
+        }
+
+        // Show dashboard function
+        function showDashboard() {
+            // Remove any module content
+            const existingModule = document.querySelector('.module-content');
+            if (existingModule) {
+                existingModule.remove();
+            }
+
+            // Show dashboard content
+            const dashboardSection = document.getElementById('dashboard');
+            if (dashboardSection) {
+                dashboardSection.style.display = 'block';
+            }
+
+            // Load dashboard if not already loaded
+            if (typeof loadDashboard === 'function') {
+                loadDashboard();
+            }
+        }
+
+        // Go back function for compatibility
+        window.goBack = function() {
+            console.log('🔄 Going back to dashboard');
+            showDashboard();
+        };
+
+        // Export navigation functions
+        window.navigateToModule = navigateToModule;
+        window.loadModule = navigateToModule; // Alias for compatibility
+        window.showDashboard = showDashboard;
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Initializing Dashboard...');
+            
+            // Wait a bit for dashboard module to load
+            setTimeout(() => {
+                if (typeof loadDashboard === 'function') {
+                    loadDashboard();
+                    console.log('✅ Dashboard initialized');
+                } else {
+                    console.warn('⚠️ Dashboard module not loaded, retrying...');
+                    setTimeout(() => {
+                        if (typeof loadDashboard === 'function') {
+                            loadDashboard();
+                            console.log('✅ Dashboard initialized (retry)');
+                        } else {
+                            console.error('❌ Dashboard module failed to load');
+                        }
+                    }, 500);
+                }
+            }, 100);
+        });
+
+        console.log('✅ Index initialized');
+        
+        // Função para abrir modal de adicionar aluno
+        window.openAddStudentModal = function() {
+            console.log('🔧 Opening add student modal...');
+            const modal = document.getElementById('addStudentModal');
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Previne scroll do body
+                console.log('✅ Modal opened');
+            } else {
+                console.error('❌ Modal addStudentModal not found');
+            }
+        };
+        
+        // Função para fechar modal
+        window.closeModal = function(modalId) {
+            console.log('🔧 Closing modal:', modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Restaura scroll do body
+                console.log('✅ Modal closed');
+            }
+        };
+    </script>
+</body>
+</html>

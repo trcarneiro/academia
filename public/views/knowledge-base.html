@@ -17,22 +17,22 @@
 
         <!-- Knowledge Base Actions -->
         <div class="kb-actions">
-            <button class="kb-btn" onclick="openKnowledgeUploader()">
+            <button class="kb-btn" data-action="openKnowledgeUploader" data-args='[]'>
                 📁 Upload de Documentos
             </button>
-            <button class="kb-btn secondary" onclick="reindexKnowledgeBase()">
+            <button class="kb-btn secondary" data-action="reindexKnowledgeBase" data-args='[]'>
                 🔄 Reindexar Base
             </button>
-            <button class="kb-btn secondary" onclick="testRAGSystem()" style="background: rgba(16, 185, 129, 0.1); border-color: #10B981; color: #10B981;">
+            <button class="kb-btn secondary" data-action="testRAGSystem" data-args='[]' style="background: rgba(16, 185, 129, 0.1); border-color: #10B981; color: #10B981;">
                 🧪 Testar RAG
             </button>
-            <button class="kb-btn secondary" onclick="clearEntireKnowledgeBase()" style="background: rgba(239, 68, 68, 0.1); border-color: #EF4444; color: #EF4444;">
+            <button class="kb-btn secondary" data-action="clearEntireKnowledgeBase" data-args='[]' style="background: rgba(239, 68, 68, 0.1); border-color: #EF4444; color: #EF4444;">
                 🗑️ Limpar Tudo
             </button>
-            <button class="kb-btn secondary" onclick="clearChatHistory()" style="background: rgba(245, 158, 11, 0.1); border-color: #F59E0B; color: #F59E0B;">
+            <button class="kb-btn secondary" data-action="clearChatHistory" data-args='[]' style="background: rgba(245, 158, 11, 0.1); border-color: #F59E0B; color: #F59E0B;">
                 🧹 Limpar Chat
             </button>
-            <button class="kb-btn secondary" onclick="window.history.back()">
+            <button class="kb-btn secondary" data-action="window.history.back" data-args='[]'>
                 ← Voltar
             </button>
         </div>

@@ -10,6 +10,9 @@
     let filteredPlans = [];
     let currentView = 'grid';
     let currentEditingPlanId = null;
+    // Prevent double-initialization when index and module both auto-init
+    let isInitialized = false;
+    let isInitializing = false;
     
     // Module constants
     const BILLING_TYPES = {
@@ -105,7 +108,7 @@
                 clearTimeout(timeout);
                 func(...args);
             };
-            clearTimeout(timeout);
+        clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
     }
@@ -115,6 +118,12 @@
     // ==============================================
     
     async function initializePlansModule() {
+        // Guard against double init (index + module auto-init)
+        if (isInitialized || isInitializing) {
+            console.log('↩️ Plans Module already initialized or initializing. Skipping.');
+            return;
+        }
+        isInitializing = true;
         console.log('🏗️ Initializing Plans Module...');
         
         try {
@@ -125,6 +134,7 @@
             const plansContainer = findModuleElement('.plans-isolated');
             if (!plansContainer) {
                 console.log('⚠️ Plans container not found');
+                isInitializing = false;
                 return;
             }
             
@@ -136,9 +146,12 @@
             // Load initial data
             await loadPlansData();
             
+            isInitialized = true;
+            isInitializing = false;
             console.log('✅ Plans Module initialized successfully');
             
         } catch (error) {
+            isInitializing = false;
             console.error('❌ Plans Module initialization failed:', error);
             showError('Falha ao inicializar módulo de planos. Tente recarregar a página.');
         }
@@ -327,7 +340,7 @@
     function renderPlans() {
         const container = findModuleElement('plansContainer', true);
         if (!container) {
-            console.error('❌ Plans container not found');
+            // Container not present (likely navigated away). Silently skip.
             return;
         }
         
@@ -357,7 +370,6 @@
                                 ${plan.isActive ? '✅' : '⏸️'}
                             </div>
                         </div>
-                        
                         <div class="plan-info">
                             <div class="plan-price">
                                 ${formatCurrency(plan.price)}
@@ -366,7 +378,6 @@
                                     ${BILLING_TYPES[plan.billingType]?.label || plan.billingType}
                                 </span>
                             </div>
-                            
                             <div class="plan-details">
                                 <div class="detail-item">
                                     <span class="detail-label">Categoria:</span>
@@ -375,21 +386,45 @@
                                         ${CATEGORIES[plan.category]?.label || plan.category}
                                     </span>
                                 </div>
-                                
                                 <div class="detail-item">
                                     <span class="detail-label">Aulas/Semana:</span>
                                     <span class="detail-value">${plan.classesPerWeek || 0}</span>
                                 </div>
-                                
                                 <div class="detail-item">
                                     <span class="detail-label">Assinantes:</span>
                                     <span class="detail-value">${plan.subscriberCount || 0}</span>
                                 </div>
                             </div>
-                            
                             ${plan.description ? `
                                 <div class="plan-description">
                                     ${plan.description}
+                                </div>
+                            ` : ''}
+                            ${plan.informacoes_gerais ? `
+                                <div class="plan-extra">
+                                    <strong>Informações Gerais:</strong><br>
+                                    <span><b>Título:</b> ${plan.informacoes_gerais.titulo || ''}</span><br>
+                                    <span><b>Público-alvo:</b> ${plan.informacoes_gerais.publico_alvo || ''}</span><br>
+                                    <span><b>Duração:</b> ${plan.informacoes_gerais.duracao || ''}</span><br>
+                                    <span><b>Missão:</b> ${plan.informacoes_gerais.missao || ''}</span><br>
+                                    <span><b>Visão:</b> ${plan.informacoes_gerais.visao || ''}</span>
+                                </div>
+                            ` : ''}
+                            ${plan.objetivos ? `
+                                <div class="plan-extra">
+                                    <strong>Objetivos:</strong><br>
+                                    <span><b>Geral:</b> ${plan.objetivos.geral || ''}</span><br>
+                                    <span><b>Específicos:</b> ${(plan.objetivos.especificos || []).join('<br>')}</span>
+                                </div>
+                            ` : ''}
+                            ${plan.estrutura_do_curso ? `
+                                <div class="plan-extra">
+                                    <strong>Estrutura do Curso:</strong><br>
+                                    <span><b>Unidades:</b> ${(plan.estrutura_do_curso.unidades || []).join(', ')}</span><br>
+                                    <span><b>Número de Técnicas:</b> ${plan.estrutura_do_curso.numero_de_tecnicas || ''}</span><br>
+                                    <span><b>Níveis:</b> ${Object.values(plan.estrutura_do_curso.niveis || {}).join('<br>')}</span><br>
+                                    <span><b>Blocos:</b> ${plan.estrutura_do_curso.blocos || ''}</span><br>
+                                    <span><b>Categorias:</b> ${(plan.estrutura_do_curso.categorias || []).join(', ')}</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -397,7 +432,6 @@
                 `).join('')}
             </div>
         `;
-        
         container.innerHTML = html;
     }
     
@@ -414,6 +448,7 @@
                             <th>Aulas/Sem</th>
                             <th>Assinantes</th>
                             <th>Status</th>
+                            <th>Extras</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -448,13 +483,17 @@
                                         ${plan.isActive ? '✅ Ativo' : '⏸️ Inativo'}
                                     </span>
                                 </td>
+                                <td>
+                                    ${plan.informacoes_gerais ? `<span><b>Informações Gerais:</b> ${plan.informacoes_gerais.titulo || ''}, ${plan.informacoes_gerais.publico_alvo || ''}</span><br>` : ''}
+                                    ${plan.objetivos ? `<span><b>Objetivos:</b> ${plan.objetivos.geral || ''}</span><br>` : ''}
+                                    ${plan.estrutura_do_curso ? `<span><b>Estrutura:</b> ${plan.estrutura_do_curso.unidades ? plan.estrutura_do_curso.unidades.join(', ') : ''}</span>` : ''}
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             </div>
         `;
-        
         container.innerHTML = html;
     }
     

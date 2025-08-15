@@ -302,16 +302,17 @@
     <header class="techniques-header">
         <div class="header-content">
             <div class="header-left">
-                <button class="back-button" onclick="showDashboard()">
+                <button id="techniques-back-btn" class="back-button" style="display:none;">
                     <span>←</span>
                     <span>Voltar</span>
                 </button>
                 <h1>🥋 Banco de Técnicas</h1>
             </div>
-            <button class="primary-button" onclick="openTechniqueEditor()">
-                <span>+</span>
-                <span>Nova Técnica</span>
-            </button>
+            <div class="techniques-actions">
+              <input id="techniques-search" placeholder="Pesquisar técnicas..." />
+              <button id="techniques-refresh" class="btn btn-secondary">Atualizar</button>
+              <button id="techniques-new" class="primary-button">Nova Técnica</button>
+            </div>
         </div>
     </header>
 
@@ -361,7 +362,7 @@
             <option value="5">Nível 5 - Master</option>
         </select>
         
-        <button class="primary-button" onclick="clearFilters()">
+        <button class="primary-button" data-action="clearFilters" data-args='[]'>
             🔄 Limpar Filtros
         </button>
     </div>
@@ -377,7 +378,7 @@
         <div class="empty-icon">🥋</div>
         <h3>Nenhuma técnica encontrada</h3>
         <p>Comece criando sua primeira técnica para o banco de posições</p>
-        <button class="primary-button" onclick="openTechniqueEditor()">
+        <button id="techniques-new-empty" class="primary-button">
             Criar Primeira Técnica
         </button>
     </div>
@@ -415,6 +416,26 @@
                 // Difficulty filter
                 document.getElementById('difficultyFilter').addEventListener('change', (e) => {
                     this.filterTechniques();
+                });
+
+                // Back button
+                document.getElementById('techniques-back-btn').addEventListener('click', () => {
+                    this.goBack();
+                });
+
+                // Refresh button
+                document.getElementById('techniques-refresh').addEventListener('click', () => {
+                    this.loadTechniques();
+                });
+
+                // New technique button
+                document.getElementById('techniques-new').addEventListener('click', () => {
+                    this.openTechniqueEditor();
+                });
+
+                // New technique button (empty state)
+                document.getElementById('techniques-new-empty').addEventListener('click', () => {
+                    this.openTechniqueEditor();
                 });
             }
 
@@ -521,10 +542,10 @@
                     <div class="technique-category">${categoryLabels[technique.category] || technique.category}</div>
                     <p class="technique-description">${this.escapeHtml(technique.description || 'Sem descrição')}</p>
                     <div class="technique-actions">
-                        <button class="action-button" onclick="editTechnique('${technique.id}')" title="Editar">
+                        <button class="action-button" data-action="editTechnique" data-args='["${technique.id}"]' title="Editar">
                             ✏️
                         </button>
-                        <button class="action-button delete-button" onclick="deleteTechnique('${technique.id}')" title="Deletar">
+                        <button class="action-button delete-button" data-action="deleteTechnique" data-args='["${technique.id}"]' title="Deletar">
                             🗑️
                         </button>
                     </div>
@@ -576,6 +597,14 @@
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            }
+
+            goBack() {
+                window.history.back();
+            }
+
+            openTechniqueEditor() {
+                window.location.href = '/views/technique-editor.html';
             }
         }
 

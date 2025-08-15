@@ -1,104 +1,53 @@
-/* Student Editor Module CSS */
-/* This file provides additional styles for the student-editor module */
+/* ============================================================================
+   STUDENT EDITOR - TAB SYSTEM WITHOUT OVERLAPPING - FIXED
+   ============================================================================ */
 
-/* ==============================================
-   SUBSCRIPTION COURSES STYLES
-   ============================================== */
-
-.subscription-courses-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.subscription-courses-list .course-item {
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.subscription-courses-list .course-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.subscription-courses-list .course-info {
-    flex: 1;
-}
-
-.subscription-courses-list .course-status {
-    white-space: nowrap;
-}
-
-.subscription-courses-list .course-actions {
-    min-width: 120px;
-}
-
-.subscription-courses-list .course-actions button {
-    transition: all 0.2s ease;
-    min-width: 100px;
-}
-
-.subscription-courses-list .course-actions button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Responsive design for course items */
-@media (max-width: 768px) {
-    .subscription-courses-list .course-item {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 1rem;
-    }
-    
-    .subscription-courses-list .course-actions {
-        width: 100%;
-    }
-    
-    .subscription-courses-list .course-actions button {
-        width: 100%;
-    }
-}
-
-/* Course enrollment status indicators */
-.course-item[data-enrolled="true"] {
-    border-left-color: #10b981 !important;
-}
-
-.course-item[data-primary="true"] {
-    border-left-color: #3b82f6 !important;
-    border-left-width: 6px !important;
-}
-
-.course-item[data-available="true"] {
-    border-left-color: #f59e0b !important;
-}
-
-.student-editor-isolated {
-    padding: 1rem;
-    background: var(--bg-color, #0F172A);
-    color: var(--text-color, #E2E8F0);
+/* Main container isolation */
+.students-isolated {
+    position: relative;
+    isolation: isolate;
     min-height: 100vh;
+    background: #0F172A;
+    color: #F8FAFC;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-.student-editor-header {
-    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+/* Page header */
+.page-header {
+    background: rgba(15, 23, 42, 0.8);
     border-radius: 16px;
     padding: 2rem;
     margin-bottom: 2rem;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid #334155;
+    backdrop-filter: blur(12px);
+    position: relative;
+    z-index: 50;
 }
 
-.student-editor-tabs {
+/* Tab container - prevents overlapping */
+.tab-container {
+    position: relative;
+    z-index: 40;
+    margin-bottom: 2rem;
+    clear: both;
+}
+
+/* Tab navigation - FIXED */
+.tab-navigation {
     display: flex;
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
     padding: 0.5rem;
     border: 1px solid #334155;
-    margin-bottom: 2rem;
+    position: relative;
+    z-index: 40;
+    flex-wrap: wrap;
+    gap: 0.25rem;
 }
 
-.student-editor-tab {
+.page-tab {
     flex: 1;
     padding: 0.75rem 1rem;
     background: transparent;
@@ -108,103 +57,235 @@
     font-weight: 600;
     transition: all 0.3s ease;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
 }
 
-.student-editor-tab:hover {
+.page-tab:hover:not(.active) {
     background: rgba(59, 130, 246, 0.1);
-    color: #60A5FA;
+    color: #3B82F6;
 }
 
-.student-editor-tab.active {
+.page-tab.active {
     background: linear-gradient(135deg, #3B82F6, #8B5CF6);
     color: white;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-}
-
-.student-editor-content {
-    background: #1E293B;
-    border-radius: 12px;
-    padding: 2rem;
-    border: 1px solid #334155;
-}
-
-.insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.insight-card {
-    background: #1E293B;
-    border-radius: 8px;
-    padding: 1rem;
-    border-left: 4px solid #3B82F6;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    transition: transform 0.2s ease;
-}
-
-.insight-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    z-index: 2;
 }
 
-.insight-card.insight-warning {
-    border-left-color: #F59E0B;
-    background: rgba(251, 191, 36, 0.1);
+/* Main content layout */
+.main-content {
+    display: grid;
+    grid-template-columns: 2fr 400px;
+    gap: 2rem;
+    position: relative;
+    isolation: isolate;
+    align-items: start;
 }
 
-.insight-card.insight-positive {
-    border-left-color: #10B981;
-    background: rgba(16, 185, 129, 0.1);
+/* Tab content container - KEY FOR NO OVERLAPPING - FIXED */
+.tab-content-container {
+    position: relative;
+    min-height: 600px;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 16px;
+    border: 1px solid #334155;
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 30;
 }
 
-.insight-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
+/* Individual tab content - ISOLATION CRITICAL - FIXED */
+.tab-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 2rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    overflow-y: auto;
+    background: transparent;
 }
 
-.insight-content {
-    flex: 1;
+.tab-content.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    z-index: 10;
 }
 
-.insight-title {
+/* Form sections */
+.form-section {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.form-section:hover {
+    border-color: #3B82F6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.form-section h4 {
+    color: #F8FAFC;
+    margin: 0 0 1.5rem 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-section h4 i {
+    color: #3B82F6;
+    font-size: 1.1rem;
+}
+
+/* Form grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    color: #E2E8F0;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #E2E8F0;
-}
-
-.insight-message {
-    color: #94A3B8;
     font-size: 0.9rem;
-    line-height: 1.4;
 }
 
-.insights-empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #64748B;
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    color: #F8FAFC;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.insights-empty-icon {
-    font-size: 3rem;
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Financial content specific styles */
+.subscription-card,
+.enrollment-card {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #334155;
     margin-bottom: 1rem;
 }
 
-.insights-footer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #334155;
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
-.insights-disclaimer {
-    color: #64748B;
-    font-size: 0.85rem;
-    line-height: 1.4;
+.status-active {
+    background: #10B981;
+    color: white;
+}
+
+.status-inactive {
+    background: #EF4444;
+    color: white;
+}
+
+.status-pending {
+    background: #F59E0B;
+    color: white;
+}
+
+/* Progress bar */
+.progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #10B981, #059669);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+/* Sidebar styles */
+#editPageSidebar {
+    position: relative;
+    z-index: 30;
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.sidebar-card {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #334155;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 30;
+}
+
+.sidebar-card:hover {
+    border-color: #3B82F6;
+    transform: translateY(-2px);
+}
+
+.sidebar-card h4 {
+    color: #F8FAFC;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
 }
 
 /* Loading states */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #CBD5E1;
+    min-height: 200px;
+}
+
 .loading-spinner {
     width: 40px;
     height: 40px;
@@ -212,7 +293,7 @@
     border-top: 3px solid #3B82F6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto;
+    margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -220,24 +301,138 @@
     100% { transform: rotate(360deg); }
 }
 
-.students-isolated-loading {
-    text-align: center;
+.error-state {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #F87171;
     padding: 2rem;
-    color: #64748B;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.empty-state {
+    background: rgba(107, 114, 128, 0.1);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    color: #9CA3AF;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Button styles */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(107, 114, 128, 0.3);
+    color: #E2E8F0;
+    border: 1px solid #374151;
+}
+
+.btn-secondary:hover {
+    background: rgba(107, 114, 128, 0.5);
+}
+
+.btn-outline {
+    background: transparent;
+    color: #CBD5E1;
+    border: 1px solid #374151;
+}
+
+.btn-outline:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-color: #3B82F6;
+}
+
+.btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #DC2626;
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr 300px;
+        gap: 1.5rem;
+    }
+    
+    .students-isolated {
+        padding: 1rem;
+    }
+}
+
 @media (max-width: 768px) {
-    .student-editor-tabs {
-        flex-direction: column;
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    #editPageSidebar {
+        order: -1;
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .tab-navigation {
+        flex-wrap: wrap;
         gap: 0.5rem;
     }
     
-    .insights-grid {
+    .page-tab {
+        min-width: 120px;
+        flex: 1 1 auto;
+    }
+    
+    .form-grid {
         grid-template-columns: 1fr;
     }
     
-    .student-editor-content {
+    .tab-content-container {
+        min-height: 400px;
+    }
+    
+    .page-header {
         padding: 1rem;
+    }
+    
+    .tab-content {
+        padding: 1rem;
+    }
+}
+
+/* Animation for fade in */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

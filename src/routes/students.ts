@@ -1,471 +1,277 @@
-import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
-import FinancialService from '../services/financialService';
+import { logger } from '@/utils/logger';
 
-// Helper function to get organization ID dynamically
-async function getOrganizationId(): Promise<string> {
-  const org = await prisma.organization.findFirst();
-  if (!org) {
-    throw new Error('No organization found');
-  }
-  return org.id;
-}
-
-// Helper function to generate a temporary password
-async function generateTempPassword(): Promise<string> {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-export default async function studentsRoutes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions
-) {
-  
-  // GET /api/students - List all students
-  fastify.get('/', {
-    schema: {
-      description: 'List all students',
-      tags: ['Students'],
-      querystring: {
-        type: 'object',
-        properties: {
-          limit: { type: 'number' },
-          offset: { type: 'number' },
-          category: { type: 'string' },
-          isActive: { type: 'boolean' }
-        }
-      }
-    }
-  }, async (request, reply) => {
+export default async function studentsRoutes(fastify: FastifyInstance) {
+  // Get all students
+  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = await getOrganizationId();
-      const { limit = 50, offset = 0, category, isActive } = request.query as any;
-      
-      const whereClause: any = {
-        organizationId
-      };
-      
-      if (category) {
-        whereClause.category = category;
-      }
-      
-      if (isActive !== undefined) {
-        whereClause.isActive = isActive;
-      }
-      
       const students = await prisma.student.findMany({
-        where: whereClause,
         include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true,
-              avatarUrl: true,
-              phone: true,
-              isActive: true
+          // Ensure user info is loaded for listing screen
+          user: true,
+          subscriptions: {
+            where: { status: 'ACTIVE' },
+            include: {
+              plan: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  billingType: true
+                }
+              }
             }
           },
-          financialResponsible: {
-            select: {
-              name: true,
-              email: true,
-              phone: true
-            }
+          attendances: {
+            take: 10,
+            orderBy: { createdAt: 'desc' }
           },
           _count: {
             select: {
               attendances: true,
-              evaluations: true,
-              progressions: true
+              subscriptions: true
             }
           }
         },
         orderBy: {
           createdAt: 'desc'
-        },
-        take: limit,
-        skip: offset
-      });
-
-      const totalCount = await prisma.student.count({
-        where: whereClause
-      });
-
-      return {
-        success: true,
-        data: students,
-        pagination: {
-          total: totalCount,
-          limit,
-          offset,
-          pages: Math.ceil(totalCount / limit)
         }
-      };
+      });
+
+      const studentsWithStats = students.map(student => {
+        const activeSubscription = student.subscriptions[0];
+        const totalAttendances = student._count.attendances;
+        // Adjust: no 'present' boolean in Attendance; use status === 'PRESENT' (or similar)
+        const presentAttendances = student.attendances?.filter(a => (a as any).status === 'PRESENT').length || 0;
+        const attendanceRate = totalAttendances > 0 ? Math.round((presentAttendances / totalAttendances) * 100) : 0;
+
+        return {
+          ...student,
+          activeSubscription,
+          stats: {
+            totalAttendances,
+            attendanceRate,
+            totalSubscriptions: student._count.subscriptions
+          }
+        };
+      });
+
+      return reply.send({
+        success: true,
+        data: studentsWithStats,
+        total: studentsWithStats.length
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error fetching students:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to fetch students',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to fetch students'
+      });
     }
   });
 
-  // GET /api/students/:id - Get student by ID
-  fastify.get('/:id', {
-    schema: {
-      description: 'Get student by ID',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' }
-        },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
+  // Get student by ID
+  fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
-      const { id } = request.params as { id: string };
-      
+      const { id } = request.params;
+
       const student = await prisma.student.findUnique({
         where: { id },
         include: {
           user: true,
-          financialResponsible: true,
+          subscriptions: {
+            include: {
+              plan: true
+            },
+            orderBy: { createdAt: 'desc' }
+          },
           attendances: {
             orderBy: { createdAt: 'desc' },
-            take: 10
-          },
-          evaluations: {
-            orderBy: { createdAt: 'desc' },
-            take: 5
-          },
-          progressions: {
-            orderBy: { createdAt: 'desc' },
-            take: 5
-          },
-          _count: {
-            select: {
-              attendances: true,
-              evaluations: true,
-              progressions: true
-            }
+            take: 50
           }
         }
       });
 
       if (!student) {
-        reply.code(404);
-        return {
+        return reply.code(404).send({
           success: false,
-          error: 'Student not found'
-        };
+          message: 'Student not found'
+        });
       }
 
-      return {
+      return reply.send({
         success: true,
         data: student
-      };
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error fetching student:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to fetch student',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to fetch student'
+      });
     }
   });
 
-  // POST /api/students - Create new student
-  fastify.post('/', {
-    schema: {
-      description: 'Create new student',
-      tags: ['Students'],
-      body: {
-        type: 'object',
-        required: ['firstName', 'lastName', 'email', 'category'],
-        properties: {
-          firstName: { type: 'string' },
-          lastName: { type: 'string' },
-          email: { type: 'string', format: 'email' },
-          phone: { type: 'string' },
-          category: { type: 'string' },
-          gender: { type: 'string' },
-          age: { type: 'number' },
-          emergencyContact: { type: 'string' },
-          medicalConditions: { type: 'string' },
-          financialResponsibleId: { type: 'string' }
-        }
-      }
-    }
-  }, async (request, reply) => {
+  // Create new student
+  fastify.post('/', async (request: FastifyRequest<{ Body: any }>, reply: FastifyReply) => {
     try {
-      const organizationId = await getOrganizationId();
-      const studentData = request.body as any;
-      
-      // Create user first
+      const body = request.body as any;
+
+      // Determine organization id (from body or first organization)
+      let orgId = body.organizationId as string | undefined;
+      if (!orgId) {
+        const firstOrg = await prisma.organization.findFirst();
+        if (!firstOrg) {
+          return reply.code(400).send({ success: false, message: 'Organization not found' });
+        }
+        orgId = firstOrg.id;
+      }
+
+      // Generate temporary password
+      const tempPassword = Math.random().toString(36).slice(-8);
+
+      // Name mapping: accept either {firstName,lastName} or {name}
+      let firstName = body.firstName as string | undefined;
+      let lastName = body.lastName as string | undefined;
+      if (!firstName && typeof body.name === 'string') {
+        const parts = body.name.trim().split(/\s+/);
+        firstName = parts.shift() || '';
+        lastName = parts.length ? parts.join(' ') : null as any;
+      }
+
+      // Normalize flags and optional fields
+      const isActive = body.isActive !== undefined
+        ? Boolean(body.isActive)
+        : (body.status ? String(body.status).toLowerCase() === 'active' : true);
+
+      // First create User
       const user = await prisma.user.create({
         data: {
-          organizationId,
-          email: studentData.email,
-          password: await generateTempPassword(),
-          firstName: studentData.firstName,
-          lastName: studentData.lastName,
-          phone: studentData.phone,
-          role: 'STUDENT'
+          firstName: firstName || '',
+          lastName: lastName || '',
+          email: body.email,
+          phone: body.phone || null,
+          password: tempPassword,
+          organizationId: orgId
         }
       });
 
-      // Create student
-      const student = await prisma.student.create({
-        data: {
-          organizationId,
-          userId: user.id,
-          category: studentData.category,
-          gender: studentData.gender,
-          age: studentData.age,
-          emergencyContact: studentData.emergencyContact,
-          medicalConditions: studentData.medicalConditions,
-          financialResponsibleId: studentData.financialResponsibleId
-        },
+      // Then create Student linked to User
+      const createData: any = {
+        userId: user.id,
+        category: body.category, // keep if enum exists; otherwise ignore at Prisma level
+        isActive,
+        organizationId: orgId
+      };
+
+      // Optional fields
+      if (body.birthDate) {
+        createData.birthDate = new Date(body.birthDate);
+      }
+      if (body.emergencyContact) {
+        createData.emergencyContact = body.emergencyContact;
+      }
+      if (body.address) {
+        createData.address = body.address;
+      }
+      if (body.medicalObservations || body.medicalConditions) {
+        createData.medicalConditions = body.medicalObservations || body.medicalConditions;
+      }
+
+      const result = await prisma.student.create({ 
+        data: createData,
         include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true
-            }
-          },
-          financialResponsible: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
+          user: true
         }
       });
 
-      return {
+      return reply.code(201).send({
         success: true,
-        data: student,
+        data: result,
         message: 'Student created successfully'
-      };
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error creating student:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to create student',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to create student'
+      });
     }
   });
 
-  // PUT /api/students/:id - Update student
-  fastify.put('/:id', {
-    schema: {
-      description: 'Update student',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' }
-        },
-        required: ['id']
-      },
-      body: {
-        type: 'object',
-        properties: {
-          firstName: { type: 'string' },
-          lastName: { type: 'string' },
-          email: { type: 'string', format: 'email' },
-          category: { type: 'string' },
-          emergencyContact: { type: 'string' },
-          isActive: { type: 'boolean' }
-        }
-      }
-    }
-  }, async (request, reply) => {
+  // Update student - CORRECTED VERSION
+  fastify.put('/:id', async (request: FastifyRequest<{ Params: { id: string }, Body: any }>, reply: FastifyReply) => {
     try {
-      const { id } = request.params as { id: string };
-      const updateData = request.body as any;
+      const { id } = request.params;
+      const body = request.body as any;
 
-      // Check if student exists
+      // First, find the student to get userId
       const existingStudent = await prisma.student.findUnique({
         where: { id },
         include: { user: true }
       });
 
       if (!existingStudent) {
-        reply.code(404);
-        return {
+        return reply.status(404).send({
           success: false,
           error: 'Student not found'
-        };
+        });
       }
 
-      // Prepare update data for user table
-      const userUpdateData: any = {};
-      if (updateData.firstName !== undefined) userUpdateData.firstName = updateData.firstName;
-      if (updateData.lastName !== undefined) userUpdateData.lastName = updateData.lastName;
-      if (updateData.email !== undefined) userUpdateData.email = updateData.email;
-
-      // Prepare update data for student table
-      const studentUpdateData: any = {};
-      if (updateData.category !== undefined) studentUpdateData.category = updateData.category;
-      if (updateData.emergencyContact !== undefined) studentUpdateData.emergencyContact = updateData.emergencyContact;
-      if (updateData.isActive !== undefined) studentUpdateData.isActive = updateData.isActive;
-
-      // Perform updates using transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Update user if there's user data to update
-        if (Object.keys(userUpdateData).length > 0) {
-          await tx.user.update({
-            where: { id: existingStudent.userId },
-            data: userUpdateData
-          });
+      // Update User model (personal data)
+      await prisma.user.update({
+        where: { id: existingStudent.userId },
+        data: {
+          firstName: body.firstName,
+          lastName: body.lastName,
+          email: body.email,
+          phone: body.phone
         }
-
-        // Update student if there's student data to update
-        if (Object.keys(studentUpdateData).length > 0) {
-          await tx.student.update({
-            where: { id },
-            data: studentUpdateData
-          });
-        }
-
-        // Return updated student with user data
-        return await tx.student.findUnique({
-          where: { id },
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-                avatarUrl: true,
-                phone: true,
-                isActive: true
-              }
-            },
-            financialResponsible: {
-              select: {
-                name: true,
-                email: true,
-                phone: true
-              }
-            },
-            _count: {
-              select: {
-                attendances: true,
-                evaluations: true,
-                progressions: true
-              }
-            }
-          }
-        });
       });
 
-      return {
-        success: true,
-        data: result,
-        message: 'Student updated successfully'
-      };
-    } catch (error) {
-      reply.code(500);
-      return {
-        success: false,
-        error: 'Failed to update student',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  });
-
-  // POST /api/students/:id/subscription - Create subscription for student (Alternative route)
-  fastify.post('/:id/subscription', {
-    schema: {
-      description: 'Create subscription for student (Alternative route)',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
+      // Update Student model (academic data only)
+      const student = await prisma.student.update({
+        where: { id },
+        data: {
+          category: body.category,
+          emergencyContact: body.emergencyContact,
+          medicalConditions: body.medicalConditions,
+          isActive: body.isActive
         },
-        required: ['id']
-      },
-      body: {
-        type: 'object',
-        required: ['planId'],
-        properties: {
-          planId: { type: 'string' },
-          startDate: { type: 'string', format: 'date-time' },
-          customPrice: { type: 'number' }
+        include: {
+          user: true,
+          subscriptions: {
+            include: {
+              plan: true
+            },
+            orderBy: { createdAt: 'desc' }
+          }
         }
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const { id: studentId } = request.params as { id: string };
-      const { planId, startDate, customPrice } = request.body as any;
-      
-      const organizationId = await getOrganizationId();
-      
-      const financialService = new FinancialService(organizationId);
-      
-      const subscriptionData: any = {
-        studentId,
-        planId,
-        customPrice
-      };
-      
-      if (startDate) {
-        subscriptionData.startDate = new Date(startDate);
-      }
-      
-      const subscription = await financialService.createSubscription(subscriptionData);
+      });
 
-      return {
+      return reply.send({
         success: true,
-        data: subscription,
-        message: 'Subscription created successfully via alternative route'
-      };
+        data: student,
+        message: 'Student updated successfully'
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error updating student:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to create subscription',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to update student'
+      });
     }
   });
 
-  // GET /api/students/:id/subscription - Get student subscription
-  fastify.get('/:id/subscription', {
-    schema: {
-      description: 'Get student subscription',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
-        },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
+  // Get student subscription info
+  fastify.get('/:id/subscription', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
-      const { id: studentId } = request.params as { id: string };
-      
+      const { id } = request.params;
+
       const subscription = await prisma.studentSubscription.findFirst({
-        where: { 
-          studentId,
+        where: {
+          studentId: id,
           status: 'ACTIVE'
         },
         include: {
@@ -477,303 +283,130 @@ export default async function studentsRoutes(
               price: true,
               billingType: true,
               classesPerWeek: true,
-              isActive: true
+              hasPersonalTraining: true,
+              hasNutrition: true,
+              allowFreeze: true,
+              features: true
             }
           }
         },
-        orderBy: {
-          createdAt: 'desc'
-        }
+        orderBy: { createdAt: 'desc' }
       });
 
-      if (!subscription) {
-        return {
-          success: true,
-          data: null,
-          message: 'No active subscription found for this student'
-        };
-      }
-
-      return {
+      return reply.send({
         success: true,
-        data: subscription,
-        message: 'Student subscription retrieved successfully'
-      };
+        data: subscription || null
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error fetching student subscription:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to retrieve subscription',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to fetch student subscription'
+      });
     }
   });
 
-  // GET /api/students/:id/subscriptions - Get all student subscriptions
-  fastify.get('/:id/subscriptions', {
-    schema: {
-      description: 'Get all student subscriptions',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
-        },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
+  // Get student enrollments info
+  fastify.get('/:id/enrollments', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
-      const { id: studentId } = request.params as { id: string };
-      
-      const subscriptions = await prisma.studentSubscription.findMany({
-        where: { studentId },
-        include: {
-          plan: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              price: true,
-              billingType: true,
-              classesPerWeek: true,
-              isActive: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
+      const { id } = request.params;
 
-      return {
-        success: true,
-        data: subscriptions,
-        message: 'Student subscriptions retrieved successfully'
-      };
-    } catch (error) {
-      reply.code(500);
-      return {
-        success: false,
-        error: 'Failed to retrieve subscriptions',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  });
-
-  // GET /api/students/:id/enrollments - Get student enrollments
-  fastify.get('/:id/enrollments', {
-    schema: {
-      description: 'Get student enrollments',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
+      // Note: This assumes you have an enrollment/course system
+      // You may need to adjust based on your actual schema
+      const enrollments = await (prisma as any).enrollment?.findMany?.({
+        where: { 
+          studentId: id,
+          status: 'ACTIVE'
         },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const { id: studentId } = request.params as { id: string };
-      
-      const enrollments = await prisma.courseEnrollment.findMany({
-        where: { studentId },
         include: {
           course: {
             select: {
               id: true,
               name: true,
               description: true,
+              category: true,
               level: true,
-              isActive: true
+              duration: true
             }
           }
         },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
+        orderBy: { enrolledAt: 'desc' }
+      }) || [];
 
-      return {
+      return reply.send({
         success: true,
-        data: enrollments,
-        message: 'Student enrollments retrieved successfully'
-      };
+        data: enrollments
+      });
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error fetching student enrollments:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to retrieve enrollments',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to fetch student enrollments'
+      });
     }
   });
 
-  // PUT /api/students/:id/subscription - Update student subscription
-  fastify.put('/:id/subscription', {
-    schema: {
-      description: 'Update student subscription',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
-        },
-        required: ['id']
-      },
-      body: {
-        type: 'object',
-        required: ['planId'],
-        properties: {
-          planId: { type: 'string' },
-          customPrice: { type: 'number' }
-        }
-      }
-    }
-  }, async (request, reply) => {
+  // Get student financial summary
+  fastify.get('/:id/financial-summary', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
-      const { id: studentId } = request.params as { id: string };
-      const { planId, customPrice } = request.body as any;
-      
-      const organizationId = await getOrganizationId();
-      const financialService = new FinancialService(organizationId);
+      const { id } = request.params;
 
-      // Get current active subscription
-      const currentSubscription = await prisma.studentSubscription.findFirst({
+      // Get subscription payments
+      const payments = await prisma.payment?.findMany({
         where: { 
-          studentId,
-          status: 'ACTIVE'
-        }
-      });
-
-      if (!currentSubscription) {
-        reply.code(404);
-        return {
-          success: false,
-          error: 'No active subscription found for this student'
-        };
-      }
-
-      // Update subscription plan
-      const updatedSubscription = await financialService.updateSubscriptionPlan(
-        currentSubscription.id,
-        planId,
-        customPrice
-      );
-
-      return {
-        success: true,
-        data: updatedSubscription,
-        message: 'Student subscription updated successfully'
-      };
-    } catch (error) {
-      reply.code(500);
-      return {
-        success: false,
-        error: 'Failed to update subscription',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  });
-
-  // DELETE /api/students/:id/subscription - Cancel student subscription
-  fastify.delete('/:id/subscription', {
-    schema: {
-      description: 'Cancel student subscription',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
-        },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const { id: studentId } = request.params as { id: string };
-      
-      // Get current active subscription
-      const currentSubscription = await prisma.studentSubscription.findFirst({
-        where: { 
-          studentId,
-          status: 'ACTIVE'
-        }
-      });
-
-      if (!currentSubscription) {
-        reply.code(404);
-        return {
-          success: false,
-          error: 'No active subscription found for this student'
-        };
-      }
-
-      // Cancel subscription
-      const cancelledSubscription = await prisma.studentSubscription.update({
-        where: { id: currentSubscription.id },
-        data: { 
-          status: 'CANCELLED',
-          isActive: false,
-          updatedAt: new Date()
+          subscription: {
+            studentId: id
+          }
         },
         include: {
-          student: { include: { user: true } },
-          plan: true
+          subscription: {
+            include: {
+              plan: {
+                select: {
+                  name: true,
+                  price: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { dueDate: 'desc' },
+        take: 20
+      }) || [];
+
+      // Calculate summary stats
+      // Adjust: no 'value' field; use 'amount' (Decimal) or numeric fallback.
+      const getAmount = (p: any) => {
+        const a = (p.amount as any);
+        if (typeof a === 'number') return a;
+        if (a && typeof a.toNumber === 'function') return a.toNumber();
+        if (a && typeof a === 'object' && 'value' in a) return Number((a as any).value) || 0;
+        return Number(a) || 0;
+      };
+      // Normalize status to string for safe comparison independent of enum type
+      const getStatus = (p: any) => String(p.status || '').toUpperCase();
+      const totalPaid = payments.filter(p => getStatus(p) === 'RECEIVED' || getStatus(p) === 'PAID').reduce((sum, p) => sum + getAmount(p), 0);
+      const totalPending = payments.filter(p => getStatus(p) === 'PENDING').reduce((sum, p) => sum + getAmount(p), 0);
+      const totalOverdue = payments.filter(p => getStatus(p) === 'OVERDUE' || getStatus(p) === 'LATE').reduce((sum, p) => sum + getAmount(p), 0);
+
+      return reply.send({
+        success: true,
+        data: {
+          payments,
+          summary: {
+            totalPaid,
+            totalPending,
+            totalOverdue,
+            lastPayment: payments.find(p => (p as any).status === 'RECEIVED' || (p as any).status === 'PAID')
+          }
         }
       });
-
-      return {
-        success: true,
-        data: cancelledSubscription,
-        message: 'Student subscription cancelled successfully'
-      };
     } catch (error) {
-      reply.code(500);
-      return {
+      logger.error('Error fetching student financial summary:', error);
+      return reply.code(500).send({
         success: false,
-        error: 'Failed to cancel subscription',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  });
-
-  // ENDPOINT TEMPORÁRIO: Aplicar matrículas automáticas retroativamente
-  fastify.post('/:id/apply-auto-enrollments', {
-    schema: {
-      description: 'Apply automatic course enrollments retroactively',
-      tags: ['Students'],
-      params: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' }
-        },
-        required: ['id']
-      }
-    }
-  }, async (request, reply) => {
-    try {
-      const { id: studentId } = request.params as { id: string };
-      
-      const organizationId = await getOrganizationId();
-      const financialService = new FinancialService(organizationId);
-
-      const result = await financialService.applyRetroactiveCourseEnrollments(studentId);
-
-      return {
-        success: true,
-        data: result,
-        message: 'Automatic enrollments applied successfully'
-      };
-    } catch (error) {
-      reply.code(500);
-      return {
-        success: false,
-        error: 'Failed to apply automatic enrollments',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+        message: 'Failed to fetch student financial summary'
+      });
     }
   });
 }

@@ -161,6 +161,81 @@ export default async function classRoutes(fastify: FastifyInstance) {
     handler: ClassController.generateQRCode,
   });
 
+  // === Class Activities runtime ===
+  const db: any = prisma as any;
+
+  // List activities for class
+  fastify.get('/:id/activities', { preHandler: [authenticateToken, allRoles] }, async (request, reply) => {
+    try {
+      const { id } = request.params as any;
+      const items = await db.classActivity.findMany({
+        where: { classId: id },
+        orderBy: { ord: 'asc' },
+        include: { activity: true }
+      });
+      return { success: true, data: items };
+    } catch (e) {
+      reply.code(500);
+      return { success: false, error: 'Failed to list class activities' };
+    }
+  });
+
+  // Replace activities for class
+  fastify.post('/:id/activities', { preHandler: [authenticateToken, instructorOrAdmin] }, async (request, reply) => {
+    try {
+      const { id } = request.params as any;
+      const body = (request.body as any) || {};
+      const items = Array.isArray(body.items) ? body.items : [];
+      await prisma.$transaction(async (tx) => {
+        const t: any = tx as any;
+        await t.classActivity.deleteMany({ where: { classId: id } });
+        if (items.length) {
+          await t.classActivity.createMany({
+            data: items.map((it: any, idx: number) => ({
+              classId: id,
+              activityId: it.activityId,
+              segment: it.segment || 'TECHNIQUE',
+              ord: typeof it.ord === 'number' ? it.ord : idx + 1,
+              paramsUsed: it.paramsUsed ?? null,
+              completed: !!it.completed,
+              adaptationsUsed: it.adaptationsUsed ?? null,
+            }))
+          });
+        }
+      });
+      return { success: true };
+    } catch (e) {
+      reply.code(500);
+      return { success: false, error: 'Failed to save class activities' };
+    }
+  });
+
+  // Mark activity as complete
+  fastify.post('/:id/activities/:itemId/complete', { preHandler: [authenticateToken, instructorOrAdmin] }, async (request, reply) => {
+    try {
+      const { id, itemId } = request.params as any;
+      const body = (request.body as any) || {};
+      // Ensure item belongs to class
+      const item = await db.classActivity.findFirst({ where: { id: itemId, classId: id } });
+      if (!item) {
+        reply.code(404);
+        return { success: false, error: 'Item not found' };
+      }
+      const updated = await db.classActivity.update({
+        where: { id: itemId },
+        data: {
+          completed: true,
+          paramsUsed: body.paramsUsed ?? item.paramsUsed ?? null,
+          adaptationsUsed: body.adaptationsUsed ?? item.adaptationsUsed ?? null,
+        }
+      });
+      return { success: true, data: updated };
+    } catch (e) {
+      reply.code(500);
+      return { success: false, error: 'Failed to complete class activity' };
+    }
+  });
+
   // Create new class (admin only)
   fastify.post('/', {
     schema: {

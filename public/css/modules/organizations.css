@@ -1,0 +1,174 @@
+/* organizations-isolated styles (legacy) */
+/* ...existing code... */
+
+/* Standardized dark theme styles for Organizations module */
+/* These use higher specificity to override inline page styles in organizations.html */
+
+.organizations-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: transparent;
+  color: #E2E8F0;
+  min-height: 100vh;
+}
+
+/* Header */
+.organizations-container .page-header {
+  background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.organizations-container .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.organizations-container .page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.organizations-container .title-icon { font-size: 1.75rem; }
+.organizations-container .page-description { color: #94A3B8; margin: 0.35rem 0 0 0; }
+
+/* Buttons (uses global .btn; add secondary variant here) */
+.organizations-container .btn-secondary {
+  background: rgba(100, 116, 139, 0.15);
+  color: #E2E8F0;
+  border: 1px solid #475569;
+}
+.organizations-container .btn-secondary:hover { background: rgba(100, 116, 139, 0.25); }
+
+/* Filters/Search as cards */
+.organizations-container .filters-section,
+.organizations-container .data-table-container {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.organizations-container .search-container { flex: 1; }
+.organizations-container .filters-container { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+/* Inputs */
+.organizations-container .search-input,
+.organizations-container .filter-select,
+.organizations-container input[type="text"],
+.organizations-container input[type="email"],
+.organizations-container input[type="tel"],
+.organizations-container input[type="url"],
+.organizations-container input[type="number"],
+.organizations-container textarea,
+.organizations-container select {
+  width: 100%;
+  background: #0F172A;
+  color: #E2E8F0;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+}
+
+.organizations-container .search-input::placeholder { color: #94A3B8; }
+.organizations-container input:focus,
+.organizations-container textarea:focus,
+.organizations-container select:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+}
+
+/* Data table uses global .data-table; add row hover color stronger */
+.organizations-container .data-table tbody tr:hover { background-color: #0B1220; }
+.organizations-container .actions-column { width: 160px; text-align: right; }
+
+/* Action buttons in table */
+.organizations-container .action-btn { 
+  padding: 0.45rem 0.75rem; 
+  border-radius: 8px; 
+  border: 1px solid #334155; 
+  background: rgba(59, 130, 246, 0.1); 
+  color: #93C5FD; 
+  cursor: pointer; 
+}
+.organizations-container .action-btn:hover { background: rgba(59, 130, 246, 0.2); }
+.organizations-container .action-btn.danger { background: rgba(239, 68, 68, 0.1); color: #FCA5A5; border-color: #4C1D1D; }
+.organizations-container .action-btn.danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* Empty and Loading states */
+.organizations-container .empty-state,
+.organizations-container .loading-state {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: #94A3B8;
+}
+
+.organizations-container .empty-state .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.organizations-container .loading-spinner { border-color: rgba(255,255,255,0.12); border-left-color: #3B82F6; }
+
+/* Modal */
+.organizations-container .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.organizations-container .modal-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.7); backdrop-filter: blur(2px); }
+.organizations-container .modal-content {
+  position: relative;
+  width: min(980px, 92vw);
+  max-height: 90vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  border: 1px solid #334155;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+
+.organizations-container .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #334155; }
+.organizations-container .modal-header h2 { margin: 0; color: #F8FAFC; font-size: 1.25rem; }
+.organizations-container .modal-close { background: transparent; border: 1px solid #334155; color: #94A3B8; border-radius: 8px; cursor: pointer; padding: 0.35rem 0.5rem; }
+.organizations-container .modal-close:hover { background: rgba(148, 163, 184, 0.08); }
+
+.organizations-container .modal-body { padding: 1.25rem; max-height: calc(90vh - 140px); overflow-y: auto; }
+.organizations-container .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.25rem; border-top: 1px solid #334155; background: rgba(15, 23, 42, 0.6); }
+
+/* Form layout */
+.organizations-container .form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
+.organizations-container .form-section { grid-column: span 6; background: rgba(2, 6, 23, 0.45); border: 1px solid #334155; border-radius: 12px; padding: 1rem; }
+.organizations-container .form-section h3 { margin: 0 0 0.75rem 0; color: #93C5FD; font-size: 1rem; }
+.organizations-container .form-group { margin-bottom: 0.85rem; }
+.organizations-container .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.organizations-container .checkbox-group { margin-top: 0.5rem; }
+.organizations-container .checkbox-label { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.organizations-container .checkbox-custom { width: 18px; height: 18px; border-radius: 6px; border: 1px solid #475569; display: inline-block; position: relative; }
+.organizations-container input[type="checkbox"]:checked + .checkbox-custom { background: #3B82F6; border-color: #3B82F6; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .organizations-container .form-section { grid-column: span 12; }
+  .organizations-container .form-row { grid-template-columns: 1fr; }
+}
+
+/* Legacy isolated table helpers retained (if used elsewhere) */
+.organizations-isolated-table { width: 100%; border-collapse: collapse; }
+.organizations-isolated-table th, .organizations-isolated-table td { padding: 8px 12px; border: 1px solid #334155; }
+.organizations-isolated-table th { background: #0B1220; color: #94A3B8; }
+.organizations-isolated-header { font-size: 1.25rem; margin-bottom: 1rem; color: #E2E8F0; }
+.organizations-isolated-empty { text-align: center; color: #94A3B8; margin: 2rem 0; }
+.organizations-isolated-actions { display: flex; gap: 0.5rem; }
+.organizations-isolated-btn { padding: 0.5rem 1rem; border: 1px solid #334155; border-radius: 8px; cursor: pointer; background: #0F172A; color: #E2E8F0; }
+.organizations-isolated-btn-primary { background: #3B82F6; color: #fff; border-color: #1D4ED8; }
+.organizations-isolated-btn-secondary { background: rgba(100,116,139,0.15); color: #E2E8F0; border-color: #475569; }
+.organizations-isolated-loading { text-align: center; margin: 2rem 0; color: #94A3B8; }

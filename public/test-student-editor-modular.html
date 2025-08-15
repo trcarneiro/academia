@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Student Editor Modular</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0F172A;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #10B981; }
+        .error { background: #EF4444; }
+        .info { background: #3B82F6; }
+        .loading { background: #F59E0B; }
+        #console {
+            background: #1E293B;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #475569;
+        }
+        button {
+            padding: 10px 20px;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Student Editor Modular</h1>
+    
+    <div class="status info">
+        <h3>📋 Status dos Componentes</h3>
+        <div id="statusContainer"></div>
+    </div>
+
+    <div>
+        <button onclick="testMainModule()">🚀 Testar Main Module</button>
+        <button onclick="testProfileTab()">👤 Testar Profile Tab</button>
+        <button onclick="testFinancialTab()">💳 Testar Financial Tab</button>
+        <button onclick="testConfig()">⚙️ Testar Config</button>
+        <button onclick="clearConsole()">🗑️ Limpar Console</button>
+    </div>
+
+    <div class="status">
+        <h3>📊 Console de Debug</h3>
+        <div id="console"></div>
+    </div>
+
+    <script type="module">
+        const statusContainer = document.getElementById('statusContainer');
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #94A3B8">[${timestamp}]</span> ${message}`;
+            consoleDiv.appendChild(logEntry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(component, status, message) {
+            const statusEl = document.getElementById(`status-${component}`) || document.createElement('div');
+            statusEl.id = `status-${component}`;
+            statusEl.innerHTML = `<strong>${component}:</strong> <span style="color: ${status === 'success' ? '#10B981' : status === 'error' ? '#EF4444' : '#F59E0B'}">${message}</span>`;
+            if (!document.getElementById(`status-${component}`)) {
+                statusContainer.appendChild(statusEl);
+            }
+        }
+
+        // Funções de teste globais
+        window.testMainModule = async function() {
+            log('🚀 Testando Main Module...');
+            try {
+                const { default: StudentEditor } = await import('./js/modules/student-editor/main.js');
+                updateStatus('Main Module', 'success', '✅ Carregado com sucesso');
+                log('✅ Main Module carregado com sucesso');
+            } catch (error) {
+                updateStatus('Main Module', 'error', '❌ Erro no carregamento');
+                log('❌ Erro ao carregar Main Module: ' + error.message);
+            }
+        };
+
+        window.testProfileTab = async function() {
+            log('👤 Testando Profile Tab...');
+            try {
+                const { ProfileTab } = await import('./js/modules/student-editor/profile-tab.js');
+                updateStatus('Profile Tab', 'success', '✅ Carregado com sucesso');
+                log('✅ Profile Tab carregado com sucesso');
+            } catch (error) {
+                updateStatus('Profile Tab', 'error', '❌ Erro no carregamento');
+                log('❌ Erro ao carregar Profile Tab: ' + error.message);
+            }
+        };
+
+        window.testFinancialTab = async function() {
+            log('💳 Testando Financial Tab...');
+            try {
+                const { FinancialTab } = await import('./js/modules/student-editor/financial-tab.js');
+                updateStatus('Financial Tab', 'success', '✅ Carregado com sucesso');
+                log('✅ Financial Tab carregado com sucesso');
+            } catch (error) {
+                updateStatus('Financial Tab', 'error', '❌ Erro no carregamento');
+                log('❌ Erro ao carregar Financial Tab: ' + error.message);
+            }
+        };
+
+        window.testConfig = async function() {
+            log('⚙️ Testando Config...');
+            try {
+                const config = await import('./js/modules/student-editor/config.js');
+                updateStatus('Config', 'success', '✅ Carregado com sucesso');
+                log('✅ Config carregado com sucesso');
+                log('📊 Configurações disponíveis: ' + Object.keys(config).join(', '));
+            } catch (error) {
+                updateStatus('Config', 'error', '❌ Erro no carregamento');
+                log('❌ Erro ao carregar Config: ' + error.message);
+            }
+        };
+
+        window.clearConsole = function() {
+            consoleDiv.innerHTML = '';
+            log('🗑️ Console limpo');
+        };
+
+        // Teste automático na inicialização
+        async function runAutoTests() {
+            log('🔄 Executando testes automáticos...');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testMainModule();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testProfileTab();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testFinancialTab();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            await testConfig();
+            
+            log('✅ Testes automáticos concluídos');
+        }
+
+        // Executar testes quando a página carregar
+        document.addEventListener('DOMContentLoaded', runAutoTests);
+    </script>
+</body>
+</html>

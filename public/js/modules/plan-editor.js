@@ -1,10 +1,31 @@
 (function() {
     'use strict';
     
+    // Prevent double-initialization when loader also calls initializePlanEditor
+    if (window.__planEditorInitialized) return; 
+    window.__planEditorInitialized = true;
+
     // Module state
     let currentPlan = null;
     let editMode = false;
     let allCourses = [];
+    
+    // State for Courses Tab
+    let coursesTabState = {
+        initialized: false,
+        planId: null,
+        loading: false,
+        available: [],
+        linked: [],
+        originalLinkedIds: new Set(),
+        selectedAvailable: new Set(),
+        selectedLinked: new Set(),
+        filterAvailable: '',
+        filterLinked: ''
+    };
+    
+    // New: State for Lesson Plans Tab (lazy init)
+    let lessonPlansTabState = { initialized: false };
     
     // Initialize module on DOM ready
     document.addEventListener('DOMContentLoaded', function() {
@@ -37,16 +58,21 @@
                 await loadPlanData(editingPlanId);
                 sessionStorage.removeItem('editingPlanId'); // Clean up
             } else {
-                // This is a new plan - hide loading and show form
+                // This is a new plan - hide loading and show form and tabs
                 console.log('🆕 Creating new plan');
                 editMode = false;
                 currentPlan = null;
                 
-                // Hide loading state and show form
                 const loadingState = document.getElementById('loadingState');
                 const mainContent = document.getElementById('mainContent');
+                const tabsNav = document.getElementById('planTabs');
+                const tabsPanels = document.getElementById('planTabPanels');
+                const coursesTabBtn = document.getElementById('coursesTabBtn');
                 if (loadingState) loadingState.style.display = 'none';
                 if (mainContent) mainContent.style.display = 'block';
+                if (tabsNav) tabsNav.style.display = 'flex';
+                if (tabsPanels) tabsPanels.style.display = 'block';
+                if (coursesTabBtn) coursesTabBtn.style.display = 'block';
                 
                 // Update page title for new plan
                 const pageTitle = document.querySelector('h1');
@@ -103,8 +129,19 @@
                 allCourses = coursesResult.data || [];
                 console.log('✅ Courses data loaded:', allCourses.length);
             }
+            // Always show the courses tab button after attempting to load courses
+            // The content and specific messages will be handled by plan-editor-courses-tab.js
+            const coursesTabBtn = document.getElementById('coursesTabBtn');
+            if (coursesTabBtn) {
+                coursesTabBtn.style.display = 'block';
+            }
         } catch (error) {
             console.warn('⚠️ Could not load supporting data:', error);
+            // Even if loading fails, show the tab so user is aware of its existence
+            const coursesTabBtn = document.getElementById('coursesTabBtn');
+            if (coursesTabBtn) {
+                coursesTabBtn.style.display = 'block';
+            }
         }
     }
     
@@ -138,15 +175,55 @@
         
         console.log('✅ Form populated with plan data');
 
-        // Hide loading state and show form
+        // Hide loading state and show content
         const loadingState = document.getElementById('loadingState');
+        const tabsNav = document.getElementById('planTabs');
+        const tabsPanels = document.getElementById('planTabPanels');
         const mainContent = document.getElementById('mainContent');
+        
         if (loadingState) loadingState.style.display = 'none';
+        if (tabsNav) tabsNav.style.display = 'flex';
+        if (tabsPanels) tabsPanels.style.display = 'block';
         if (mainContent) mainContent.style.display = 'block';
+        
+        // Ensure the Courses tab button is visible
+        const coursesTabBtn = document.getElementById('coursesTabBtn');
+        if (coursesTabBtn) {
+            console.log('[DEBUG] Aba Cursos encontrada, tornando-a visível.');
+            coursesTabBtn.style.display = 'block';
+        } else {
+            console.warn('[DEBUG] Aba Cursos NÃO encontrada ao tentar torná-la visível.');
+        }
     }
     
     // Setup event listeners
     function setupEventListeners() {
+        // Unified tab navigation logic
+        const tabsContainer = document.getElementById('planTabs');
+        if (tabsContainer) {
+            tabsContainer.addEventListener('click', (e) => {
+                const tab = e.target.closest('.plan-tab');
+                if (!tab) return;
+                const target = tab.dataset.tab;
+                if (!target) return;
+                // Remove 'active' from all tabs and panels
+                tabsContainer.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.plan-tab-panel').forEach(p => p.classList.remove('active'));
+                // Activate selected tab and panel
+                tab.classList.add('active');
+                const panel = document.querySelector('.plan-tab-panel[data-panel="' + target + '"]');
+                if (panel) panel.classList.add('active');
+                // If switching to courses, initialize if needed
+                if (target === 'courses') {
+                    initCoursesTab();
+                }
+                // If switching to lesson plans, lazy-load module and init
+                if (target === 'lesson-plans') {
+                    initLessonPlansTab();
+                }
+            });
+        }
+
         // Back button
         const backBtn = document.getElementById('backBtn');
         if (backBtn) {
@@ -161,7 +238,6 @@
 
         // Save button
         const form = document.getElementById('plan-form') || document.getElementById('planForm') || document.querySelector('form');
-        
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -179,8 +255,351 @@
                 deleteBtn.style.display = 'none';
             }
         }
-        
         console.log('✅ Event listeners setup completed');
+    }
+    
+    // Load and render courses for current plan
+    async function loadPlanCourses() {
+        if (!currentPlan?.id) return;
+        
+        try {
+            const response = await fetch(`/api/plans/${currentPlan.id}/courses`);
+            const result = await response.json();
+            
+            if (result.success) {
+                renderCourses(result.data || []);
+            }
+        } catch (error) {
+            console.error('Error loading plan courses:', error);
+        }
+    }
+    
+    // Render courses in the courses tab
+    function renderCourses(courses) {
+        const container = document.getElementById('coursesPanelContent');
+        if (!container) return;
+        
+        // Show loading state
+        const loadingEl = document.getElementById('coursesLoading');
+        const associationEl = document.getElementById('coursesAssociation');
+        
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (associationEl) associationEl.style.display = 'none';
+        
+        // Simulate loading delay
+        setTimeout(() => {
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (associationEl) associationEl.style.display = 'flex';
+            
+            // TODO: Implement actual course rendering logic
+            console.log('Rendering courses:', courses);
+        }, 500);
+    }
+    
+    // Courses Tab Functions (integrated from plan-editor-courses-tab.js)
+    
+    async function initCoursesTab() {
+        console.log('[CoursesTab] initCoursesTab() chamada. Estado inicializado:', coursesTabState.initialized);
+        // Only bind events once on first initialization
+        if (!coursesTabState.initialized) {
+            console.log('[CoursesTab] Primeira inicialização, configurando eventos...');
+            coursesTabState.initialized = true;
+            bindCoursesTabUIEvents();
+        }
+        
+        const panel = document.getElementById('coursesPanel');
+        if (!panel) {
+            console.warn('[CoursesTab] Painel de cursos não encontrado.');
+            return;
+        }
+        
+        const planId = getCurrentPlanId();
+        coursesTabState.planId = planId; // Store planId in state
+        console.log('[CoursesTab] ID do plano obtido:', planId);
+        
+        if (!planId) {
+            // Show message if no plan ID, even after initialization
+            console.log('[CoursesTab] Nenhum ID de plano encontrado, mostrando mensagem.');
+            panel.querySelector('#coursesPanelContent').innerHTML = '<div class=\"empty-state\">Salve o plano primeiro para associar cursos.</div>';
+            // Hide loading and association elements if they exist
+            const coursesLoading = document.getElementById('coursesLoading');
+            const coursesAssociation = document.getElementById('coursesAssociation');
+            const coursesDiffBar = document.getElementById('coursesDiffBar');
+            if (coursesLoading) coursesLoading.style.display = 'none';
+            if (coursesAssociation) coursesAssociation.style.display = 'none';
+            if (coursesDiffBar) coursesDiffBar.style.display = 'none';
+            return;
+        }
+        
+        // Load courses data if we have a plan ID
+        // Show loading state
+        console.log('[CoursesTab] ID de plano encontrado, iniciando carregamento de dados.');
+        const coursesLoading = document.getElementById('coursesLoading');
+        const coursesAssociation = document.getElementById('coursesAssociation');
+        if (coursesLoading) coursesLoading.style.display = 'block';
+        if (coursesAssociation) coursesAssociation.style.display = 'none';
+        
+        await loadCoursesTabData();
+    }
+
+    function getCurrentPlanId() {
+        // Use the currentPlan from the main module state if available
+        if (currentPlan && currentPlan.id) {
+            return currentPlan.id;
+        }
+        // Fallback to URL or sessionStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const idFromUrl = urlParams.get('id');
+        if (idFromUrl) return idFromUrl;
+        const idFromSession = sessionStorage.getItem('editingPlanId');
+        return idFromSession || null;
+    }
+
+    function bindCoursesTabUIEvents() {
+        const addBtn = document.getElementById('addCourseBtn');
+        const remBtn = document.getElementById('removeCourseBtn');
+        const searchAvail = document.getElementById('searchAvailableCourses');
+        const searchLinked = document.getElementById('searchLinkedCourses');
+        const saveBtn = document.getElementById('saveCoursesChangesBtn');
+        const discardBtn = document.getElementById('discardCoursesChangesBtn');
+
+        addBtn?.addEventListener('click', () => moveSelected('available'));
+        remBtn?.addEventListener('click', () => moveSelected('linked'));
+        searchAvail?.addEventListener('input', debounce(e => {
+            coursesTabState.filterAvailable = e.target.value.trim().toLowerCase();
+            renderCoursesTabLists();
+        }, 250));
+        searchLinked?.addEventListener('input', debounce(e => {
+            coursesTabState.filterLinked = e.target.value.trim().toLowerCase();
+            renderCoursesTabLists();
+        }, 250));
+        saveBtn?.addEventListener('click', saveCoursesTabDiff);
+        discardBtn?.addEventListener('click', discardCoursesTabChanges);
+    }
+
+    async function loadCoursesTabData() {
+        try {
+            console.log('[CoursesTab] Iniciando carregamento de dados de cursos...');
+            toggleCoursesTabLoading(true);
+            // Fetch ALL courses
+            console.log('[CoursesTab] Chamando API: GET /api/courses');
+            const allResp = await fetch('/api/courses');
+            const allJson = allResp.ok ? await allResp.json() : {
+                data: []
+            };
+            console.log('[CoursesTab] Resposta da API /api/courses:', allJson);
+            const allCourses = (allJson.data || []).filter(c => c.isActive !== false);
+            console.log('[CoursesTab] Cursos ativos encontrados:', allCourses.length, allCourses);
+
+            // Fetch linked courses
+            console.log(`[CoursesTab] Chamando API: GET /api/plans/${coursesTabState.planId}/courses`);
+            const linkedResp = await fetch(`/api/plans/${coursesTabState.planId}/courses`);
+            const linkedJson = linkedResp.ok ? await linkedResp.json() : {
+                data: []
+            };
+            console.log(`[CoursesTab] Resposta da API /api/plans/${coursesTabState.planId}/courses:`, linkedJson);
+            coursesTabState.linked = linkedJson.data || [];
+            coursesTabState.originalLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
+            console.log('[CoursesTab] Cursos já associados ao plano:', coursesTabState.linked.length, coursesTabState.linked);
+
+            // Available = all - linked
+            const linkedIds = new Set(coursesTabState.linked.map(c => c.id));
+            coursesTabState.available = allCourses.filter(c => !linkedIds.has(c.id));
+            console.log('[CoursesTab] Cursos disponíveis para associação:', coursesTabState.available.length, coursesTabState.available);
+
+            renderCoursesTabLists();
+            toggleCoursesTabLoading(false);
+            document.getElementById('coursesAssociation').style.display = 'flex';
+            console.log('[CoursesTab] Carregamento de dados de cursos concluído.');
+        } catch (err) {
+            console.error('[CoursesTab] Falha ao carregar associação de cursos', err);
+            showCoursesTabError('Erro ao carregar cursos: ' + err.message);
+            toggleCoursesTabLoading(false);
+        }
+    }
+
+    function renderCoursesTabLists() {
+        console.log('[CoursesTab] Iniciando renderização das listas de cursos...');
+        const availUl = document.getElementById('availableCoursesList');
+        const linkedUl = document.getElementById('linkedCoursesList');
+        if (!availUl || !linkedUl) {
+            console.warn('[CoursesTab] Elementos de lista não encontrados (availableCoursesList ou linkedCoursesList)');
+            return;
+        }
+
+        const availFiltered = coursesTabState.available.filter(c => !coursesTabState.filterAvailable || c.name.toLowerCase().includes(coursesTabState.filterAvailable));
+        const linkedFiltered = coursesTabState.linked.filter(c => !coursesTabState.filterLinked || c.name.toLowerCase().includes(coursesTabState.filterLinked));
+
+        console.log('[CoursesTab] Cursos disponíveis (filtrados):', availFiltered.length, availFiltered);
+        console.log('[CoursesTab] Cursos associados (filtrados):', linkedFiltered.length, linkedFiltered);
+
+        availUl.innerHTML = availFiltered.map(c => courseLi(c, 'available')).join('');
+        linkedUl.innerHTML = linkedFiltered.map(c => courseLi(c, 'linked')).join('');
+
+        console.log('[CoursesTab] HTML das listas atualizado.');
+
+        document.getElementById('availableCount').textContent = availFiltered.length;
+        document.getElementById('linkedCount').textContent = linkedFiltered.length;
+
+        document.getElementById('availableEmptyState').style.display = availFiltered.length ? 'none' : 'block';
+        document.getElementById('linkedEmptyState').style.display = linkedFiltered.length ? 'none' : 'block';
+
+        console.log('[CoursesTab] Estados vazios atualizados. Available empty:', !availFiltered.length, 'Linked empty:', !linkedFiltered.length);
+        
+        // Attach click handlers
+        availUl.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', () => toggleSelect(li, 'available'));
+        });
+        linkedUl.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', () => toggleSelect(li, 'linked'));
+        });
+
+        updateCoursesTabDiffBar();
+        console.log('[CoursesTab] Renderização das listas concluída.');
+    }
+
+    function toggleSelect(li, list) {
+        const id = li.dataset.id;
+        const set = list === 'available' ? coursesTabState.selectedAvailable : coursesTabState.selectedLinked;
+        if (set.has(id)) set.delete(id);
+        else set.add(id);
+        li.classList.toggle('selected');
+    }
+
+    function moveSelected(from) {
+        if (from === 'available') {
+            if (!coursesTabState.selectedAvailable.size) return;
+            const movingIds = new Set(coursesTabState.selectedAvailable);
+            const moving = coursesTabState.available.filter(c => movingIds.has(c.id));
+            coursesTabState.linked.push(...moving);
+            coursesTabState.available = coursesTabState.available.filter(c => !movingIds.has(c.id));
+            coursesTabState.selectedAvailable.clear();
+        } else {
+            if (!coursesTabState.selectedLinked.size) return;
+            const movingIds = new Set(coursesTabState.selectedLinked);
+            const moving = coursesTabState.linked.filter(c => movingIds.has(c.id));
+            coursesTabState.available.push(...moving);
+            coursesTabState.linked = coursesTabState.linked.filter(c => !movingIds.has(c.id));
+            coursesTabState.selectedLinked.clear();
+        }
+        renderCoursesTabLists();
+    }
+
+    function updateCoursesTabDiffBar() {
+        const currentLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
+        let added = [],
+            removed = [];
+        currentLinkedIds.forEach(id => {
+            if (!coursesTabState.originalLinkedIds.has(id)) added.push(id);
+        });
+        coursesTabState.originalLinkedIds.forEach(id => {
+            if (!currentLinkedIds.has(id)) removed.push(id);
+        });
+        const diffBar = document.getElementById('coursesDiffBar');
+        if (!added.length && !removed.length) {
+            diffBar.style.display = 'none';
+            markCoursesTabDirty(false);
+            return;
+        }
+        diffBar.style.display = 'flex';
+        const summary = [];
+        if (added.length) summary.push(`<span class='tag-added'>+${added.length} adicionados</span>`);
+        if (removed.length) summary.push(`<span class='tag-removed'>-${removed.length} removidos</span>`);
+        document.getElementById('diffSummary').innerHTML = summary.join(' | ');
+        markCoursesTabDirty(true);
+    }
+
+    function markCoursesTabDirty(isDirty) {
+        const tab = document.getElementById('coursesTabBtn');
+        if (!tab) return;
+        tab.classList.toggle('badge-dirty', isDirty);
+    }
+
+    function discardCoursesTabChanges() {
+        // Reset to original
+        const currentLinkedIds = new Set(coursesTabState.originalLinkedIds);
+        const all = [...coursesTabState.available, ...coursesTabState.linked];
+        coursesTabState.linked = all.filter(c => currentLinkedIds.has(c.id));
+        const linkedIds = new Set(coursesTabState.linked.map(c => c.id));
+        coursesTabState.available = all.filter(c => !linkedIds.has(c.id));
+        coursesTabState.selectedAvailable.clear();
+        coursesTabState.selectedLinked.clear();
+        renderCoursesTabLists();
+    }
+
+    async function saveCoursesTabDiff() {
+        try {
+            const currentLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
+            let add = [],
+                remove = [];
+            currentLinkedIds.forEach(id => {
+                if (!coursesTabState.originalLinkedIds.has(id)) add.push(id);
+            });
+            coursesTabState.originalLinkedIds.forEach(id => {
+                if (!currentLinkedIds.has(id)) remove.push(id);
+            });
+            if (!add.length && !remove.length) {
+                showCoursesTabSuccess('Nenhuma alteração para salvar');
+                return;
+            }
+            const resp = await fetch(`/api/plans/${coursesTabState.planId}/courses`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    add,
+                    remove
+                })
+            });
+            const json = await resp.json();
+            if (!resp.ok || !json.success) throw new Error(json.message || 'Falha ao salvar associações');
+            coursesTabState.originalLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
+            updateCoursesTabDiffBar();
+            showCoursesTabSuccess('Associações salvas');
+        } catch (err) {
+            console.error('Save diff error', err);
+            showCoursesTabError('Erro ao salvar associações: ' + err.message);
+        }
+    }
+
+    function toggleCoursesTabLoading(is) {
+        const l = document.getElementById('coursesLoading');
+        if (l) l.style.display = is ? 'block' : 'none';
+    }
+
+    function courseLi(course, list) {
+        const selectedSet = list === 'available' ? coursesTabState.selectedAvailable : coursesTabState.selectedLinked;
+        const selected = selectedSet.has(course.id);
+        return `<li data-id="${course.id}" class="${selected ? 'selected':''}"><span>${escapeHtml(course.name)}</span><span class="meta">${course.level||''}</span></li>`;
+    }
+
+    function debounce(fn, wait) {
+        let t;
+        return (...a) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...a), wait);
+        };
+    }
+    
+    function escapeHtml(str) {
+        return (str || '').replace(/[&<>\"']/g, c => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '\"': '&quot;',
+            '\'': '&#39;'
+        }[c] || c));
+    }
+
+    function showCoursesTabError(message) {
+        if (typeof showToast === 'function') showToast(message, 'error');
+        else alert('Erro: ' + message);
+    }
+    
+    function showCoursesTabSuccess(message) {
+        if (typeof showToast === 'function') showToast(message, 'success');
+        else alert('Sucesso: ' + message);
     }
     
     // Handle save plan
@@ -312,6 +731,50 @@
         }
     }
     
+    // Lazy load lesson-plans.js if needed and initialize
+    async function initLessonPlansTab() {
+        try {
+            if (!lessonPlansTabState.initialized) {
+                await ensureLessonPlansScript();
+                if (typeof window.initializeLessonPlansModule === 'function') {
+                    await window.initializeLessonPlansModule();
+                }
+                lessonPlansTabState.initialized = true;
+            }
+        } catch (err) {
+            showError('Erro ao carregar Planos de Aula: ' + (err?.message || err));
+        }
+    }
+
+    function ensureLessonPlansScript() {
+        return new Promise((resolve, reject) => {
+            // Ensure CSS for lesson-plans is present when loaded inside the editor tab
+            const cssHref = '/css/modules/lesson-plans.css';
+            if (!document.querySelector(`link[href="${cssHref}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssHref;
+                document.head.appendChild(link);
+            }
+
+            if (typeof window.initializeLessonPlansModule === 'function') return resolve();
+            const existing = document.querySelector('script[data-module="lesson-plans"]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve());
+                existing.addEventListener('error', (e) => reject(e));
+                return;
+            }
+            const s = document.createElement('script');
+            s.src = '../js/modules/lesson-plans.js';
+            s.async = true;
+            s.defer = false;
+            s.setAttribute('data-module', 'lesson-plans');
+            s.onload = () => resolve();
+            s.onerror = (e) => reject(new Error('Falha ao carregar lesson-plans.js'));
+            document.body.appendChild(s);
+        });
+    }
+
     // Utility functions
     function showError(message) {
         console.error('❌ Error:', message);

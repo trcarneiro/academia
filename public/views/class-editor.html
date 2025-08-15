@@ -60,10 +60,10 @@
                     <p class="classes-isolated-subtitle">Configure horários, arte marcial e cursos inclusos</p>
                 </div>
                 <div class="classes-isolated-header-actions">
-                    <button class="classes-isolated-btn classes-isolated-btn-secondary" onclick="cancelEdit()">
+                    <button class="classes-isolated-btn classes-isolated-btn-secondary" data-action="cancelEdit" data-args='[]'>
                         <span>✕</span> Cancelar
                     </button>
-                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="saveClass()">
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" data-action="saveClass" data-args='[]'>
                         <span>💾</span> Salvar Turma
                     </button>
                 </div>
@@ -211,11 +211,11 @@
 
                 <!-- Form Actions -->
                 <div class="classes-isolated-form-actions">
-                    <button type="button" onclick="deleteClass()" id="deleteClassBtn" class="classes-isolated-btn classes-isolated-btn-danger" style="display: none;">
+                    <button type="button" data-action="deleteClass" data-args='[]' id="deleteClassBtn" class="classes-isolated-btn classes-isolated-btn-danger" style="display: none;">
                         <span>🗑️</span> Deletar Turma
                     </button>
                     <div class="classes-isolated-action-group">
-                        <button type="button" onclick="cancelEdit()" class="classes-isolated-btn classes-isolated-btn-secondary">
+                        <button type="button" data-action="cancelEdit" data-args='[]' class="classes-isolated-btn classes-isolated-btn-secondary">
                             Cancelar
                         </button>
                         <button type="submit" class="classes-isolated-btn classes-isolated-btn-primary">

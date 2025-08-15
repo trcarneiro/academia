@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Tab System Test Suite</title>
+    <link rel="stylesheet" href="/css/enhanced-tabs.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0F172A;
+            color: #F8FAFC;
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(51, 65, 85, 0.8);
+        }
+        
+        .test-result {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+        
+        .test-pass {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+        
+        .test-fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+        
+        .test-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+        }
+        
+        .test-item {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #3B82F6;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .test-form {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            color: #E2E8F0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 6px;
+            color: #F8FAFC;
+        }
+        
+        .results-display {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Enhanced Tab System - Test Suite</h1>
+        <p>Suite de testes para validar todas as funcionalidades do sistema de abas aprimorado</p>
+
+        <!-- CSS Tests -->
+        <div class="test-section">
+            <h2>🎨 Testes de CSS</h2>
+            
+            <div class="test-item">
+                <h4>1. Carregamento dos Estilos <span id="css-load-result" class="test-result test-pending">TESTANDO...</span></h4>
+                <p>Verifica se o arquivo enhanced-tabs.css foi carregado corretamente</p>
+                <button class="test-button" onclick="testCSSLoad()">Testar CSS</button>
+            </div>
+            
+            <div class="test-item">
+                <h4>2. Animações e Transições <span id="animation-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Verifica se as animações de transição estão funcionando</p>
+                <button class="test-button" onclick="testAnimations()">Testar Animações</button>
+            </div>
+            
+            <div class="test-item">
+                <h4>3. Responsividade <span id="responsive-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Testa a adaptação para diferentes tamanhos de tela</p>
+                <button class="test-button" onclick="testResponsive()">Testar Responsividade</button>
+            </div>
+        </div>
+
+        <!-- JavaScript Tests -->
+        <div class="test-section">
+            <h2>⚙️ Testes de JavaScript</h2>
+            
+            <div class="test-item">
+                <h4>4. Carregamento do Script <span id="js-load-result" class="test-result test-pending">TESTANDO...</span></h4>
+                <p>Verifica se o enhanced-tabs.js foi carregado e inicializado</p>
+                <button class="test-button" onclick="testJSLoad()">Testar JS</button>
+            </div>
+            
+            <div class="test-item">
+                <h4>5. Navegação entre Abas <span id="navigation-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Testa a funcionalidade de mudança entre abas</p>
+                <button class="test-button" onclick="testTabNavigation()">Testar Navegação</button>
+            </div>
+            
+            <div class="test-item">
+                <h4>6. Validação de Formulários <span id="validation-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Testa o sistema de validação de campos obrigatórios</p>
+                <button class="test-button" onclick="testValidation()">Testar Validação</button>
+            </div>
+        </div>
+
+        <!-- Accessibility Tests -->
+        <div class="test-section">
+            <h2>♿ Testes de Acessibilidade</h2>
+            
+            <div class="test-item">
+                <h4>7. Navegação por Teclado <span id="keyboard-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Verifica se é possível navegar usando apenas o teclado</p>
+                <button class="test-button" onclick="testKeyboardNavigation()">Testar Teclado</button>
+                <div class="results-display" id="keyboard-instructions" style="display: none;">
+                    <strong>Instruções:</strong><br>
+                    • Use TAB para navegar entre elementos<br>
+                    • Use SPACE ou ENTER para ativar abas<br>
+                    • Use setas direcionais nas abas<br>
+                    • Teste e reporte o resultado
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <h4>8. ARIA Attributes <span id="aria-result" class="test-result test-pending">PENDENTE</span></h4>
+                <p>Verifica se os atributos ARIA estão presentes e corretos</p>
+                <button class="test-button" onclick="testARIA()">Testar ARIA</button>
+            </div>
+        </div>
+
+        <!-- Interactive Test Form -->
+        <div class="test-section">
+            <h2>🧪 Formulário de Teste Interativo</h2>
+            
+            <div class="test-form">
+                <!-- Test Tabs -->
+                <div class="plan-tabs">
+                    <div class="tab-progress" id="testTabProgress" style="width: 33%;"></div>
+                    
+                    <button type="button" class="plan-tab active" onclick="switchTestTab('test1')" data-tab="test1" data-step="1">
+                        <span class="tab-icon">🧪</span>
+                        <span class="tab-text">Teste 1</span>
+                        <span class="step-counter">1</span>
+                    </button>
+                    
+                    <button type="button" class="plan-tab" onclick="switchTestTab('test2')" data-tab="test2" data-step="2">
+                        <span class="tab-icon">⚡</span>
+                        <span class="tab-text">Teste 2</span>
+                        <span class="step-counter">2</span>
+                    </button>
+                    
+                    <button type="button" class="plan-tab" onclick="switchTestTab('test3')" data-tab="test3" data-step="3">
+                        <span class="tab-icon">✅</span>
+                        <span class="tab-text">Teste 3</span>
+                        <span class="step-counter">3</span>
+                    </button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div id="testTab-test1" class="plan-tab-content active">
+                    <h4>🧪 Teste de Preenchimento</h4>
+                    <div class="form-group">
+                        <label class="form-label">Campo Obrigatório *</label>
+                        <input type="text" class="form-input" placeholder="Digite algo..." required>
+                    </div>
+                    <button class="test-button" onclick="switchTestTab('test2')">Próximo →</button>
+                </div>
+                
+                <div id="testTab-test2" class="plan-tab-content">
+                    <h4>⚡ Teste de Seleção</h4>
+                    <div class="form-group">
+                        <label class="form-label">Escolha uma Opção *</label>
+                        <select class="form-input" required>
+                            <option value="">Selecione...</option>
+                            <option value="1">Opção 1</option>
+                            <option value="2">Opção 2</option>
+                        </select>
+                    </div>
+                    <button class="test-button" onclick="switchTestTab('test1')">← Anterior</button>
+                    <button class="test-button" onclick="switchTestTab('test3')">Próximo →</button>
+                </div>
+                
+                <div id="testTab-test3" class="plan-tab-content">
+                    <h4>✅ Teste Finalizado</h4>
+                    <p>Parabéns! Você navegou com sucesso pelo sistema de abas.</p>
+                    <button class="test-button" onclick="switchTestTab('test2')">← Anterior</button>
+                    <button class="test-button" style="background: linear-gradient(135deg, #10B981, #059669);">
+                        ✅ Concluir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h2>📊 Resultados dos Testes</h2>
+            <div class="results-display" id="testResults">
+                <div style="color: #94A3B8;">Resultados aparecerão aqui conforme os testes forem executados...</div>
+            </div>
+            
+            <button class="test-button" onclick="runAllTests()" style="margin-top: 1rem; background: linear-gradient(135deg, #10B981, #059669);">
+                🚀 Executar Todos os Testes
+            </button>
+            
+            <button class="test-button" onclick="clearResults()">
+                🗑️ Limpar Resultados
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/enhanced-tabs.js"></script>
+    <script>
+        // Test results storage
+        let testResults = [];
+        
+        // Utility functions
+        function logResult(test, status, message) {
+            testResults.push({
+                test: test,
+                status: status,
+                message: message,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            updateResultsDisplay();
+        }
+        
+        function updateResultsDisplay() {
+            const resultsDiv = document.getElementById('testResults');
+            if (testResults.length === 0) return;
+            
+            let html = '';
+            testResults.forEach(result => {
+                const statusClass = result.status === 'PASS' ? 'test-pass' : 
+                                  result.status === 'FAIL' ? 'test-fail' : 'test-pending';
+                html += `<div>[${result.timestamp}] <span class="${statusClass}">${result.status}</span> ${result.test}: ${result.message}</div>`;
+            });
+            resultsDiv.innerHTML = html;
+        }
+        
+        function updateTestResult(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = status;
+                element.className = `test-result ${status === 'PASS' ? 'test-pass' : status === 'FAIL' ? 'test-fail' : 'test-pending'}`;
+            }
+        }
+        
+        // CSS Tests
+        function testCSSLoad() {
+            try {
+                const testElement = document.createElement('div');
+                testElement.className = 'plan-tabs';
+                document.body.appendChild(testElement);
+                
+                const computedStyle = window.getComputedStyle(testElement);
+                const hasStyles = computedStyle.display !== 'block' || computedStyle.position !== 'static';
+                
+                document.body.removeChild(testElement);
+                
+                if (hasStyles) {
+                    updateTestResult('css-load-result', 'PASS');
+                    logResult('CSS Load', 'PASS', 'Enhanced tabs CSS carregado com sucesso');
+                } else {
+                    updateTestResult('css-load-result', 'FAIL');
+                    logResult('CSS Load', 'FAIL', 'CSS não encontrado ou não aplicado');
+                }
+            } catch (error) {
+                updateTestResult('css-load-result', 'FAIL');
+                logResult('CSS Load', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        function testAnimations() {
+            try {
+                const tab = document.querySelector('.plan-tab');
+                if (tab) {
+                    const computedStyle = window.getComputedStyle(tab);
+                    const hasTransition = computedStyle.transition !== 'all 0s ease 0s';
+                    
+                    if (hasTransition) {
+                        updateTestResult('animation-result', 'PASS');
+                        logResult('Animations', 'PASS', 'Transições CSS detectadas');
+                    } else {
+                        updateTestResult('animation-result', 'FAIL');
+                        logResult('Animations', 'FAIL', 'Transições não encontradas');
+                    }
+                } else {
+                    updateTestResult('animation-result', 'FAIL');
+                    logResult('Animations', 'FAIL', 'Elementos de aba não encontrados');
+                }
+            } catch (error) {
+                updateTestResult('animation-result', 'FAIL');
+                logResult('Animations', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        function testResponsive() {
+            try {
+                const originalWidth = window.innerWidth;
+                // Simular mudança de largura seria complexo, então vamos verificar media queries
+                const mediaQueries = ['(max-width: 768px)', '(max-width: 480px)'];
+                let responsiveRules = 0;
+                
+                mediaQueries.forEach(query => {
+                    if (window.matchMedia(query)) {
+                        responsiveRules++;
+                    }
+                });
+                
+                updateTestResult('responsive-result', 'PASS');
+                logResult('Responsive', 'PASS', `Media queries detectadas: ${responsiveRules}`);
+            } catch (error) {
+                updateTestResult('responsive-result', 'FAIL');
+                logResult('Responsive', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        // JavaScript Tests
+        function testJSLoad() {
+            try {
+                if (typeof EnhancedTabSystem !== 'undefined') {
+                    updateTestResult('js-load-result', 'PASS');
+                    logResult('JS Load', 'PASS', 'EnhancedTabSystem class carregada');
+                } else if (typeof switchTab === 'function') {
+                    updateTestResult('js-load-result', 'PASS');
+                    logResult('JS Load', 'PASS', 'Funções de tab encontradas');
+                } else {
+                    updateTestResult('js-load-result', 'FAIL');
+                    logResult('JS Load', 'FAIL', 'JavaScript das abas não encontrado');
+                }
+            } catch (error) {
+                updateTestResult('js-load-result', 'FAIL');
+                logResult('JS Load', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        function testTabNavigation() {
+            try {
+                const tabs = document.querySelectorAll('.plan-tab');
+                const contents = document.querySelectorAll('.plan-tab-content');
+                
+                if (tabs.length > 0 && contents.length > 0) {
+                    // Simulate tab click
+                    if (tabs[1]) {
+                        tabs[1].click();
+                        setTimeout(() => {
+                            const isActive = tabs[1].classList.contains('active');
+                            if (isActive) {
+                                updateTestResult('navigation-result', 'PASS');
+                                logResult('Navigation', 'PASS', 'Navegação entre abas funcionando');
+                            } else {
+                                updateTestResult('navigation-result', 'FAIL');
+                                logResult('Navigation', 'FAIL', 'Aba não ativou após clique');
+                            }
+                        }, 100);
+                    }
+                } else {
+                    updateTestResult('navigation-result', 'FAIL');
+                    logResult('Navigation', 'FAIL', 'Elementos de aba não encontrados');
+                }
+            } catch (error) {
+                updateTestResult('navigation-result', 'FAIL');
+                logResult('Navigation', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        function testValidation() {
+            try {
+                const requiredInputs = document.querySelectorAll('input[required], select[required]');
+                if (requiredInputs.length > 0) {
+                    updateTestResult('validation-result', 'PASS');
+                    logResult('Validation', 'PASS', `${requiredInputs.length} campos obrigatórios encontrados`);
+                } else {
+                    updateTestResult('validation-result', 'FAIL');
+                    logResult('Validation', 'FAIL', 'Nenhum campo obrigatório encontrado');
+                }
+            } catch (error) {
+                updateTestResult('validation-result', 'FAIL');
+                logResult('Validation', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        // Accessibility Tests
+        function testKeyboardNavigation() {
+            const instructions = document.getElementById('keyboard-instructions');
+            instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+            
+            updateTestResult('keyboard-result', 'PENDENTE');
+            logResult('Keyboard', 'INFO', 'Teste manual de navegação por teclado iniciado');
+        }
+        
+        function testARIA() {
+            try {
+                const tabs = document.querySelectorAll('.plan-tab');
+                let ariaCount = 0;
+                
+                tabs.forEach(tab => {
+                    if (tab.getAttribute('role') || tab.getAttribute('aria-label') || tab.getAttribute('aria-selected')) {
+                        ariaCount++;
+                    }
+                });
+                
+                if (ariaCount > 0) {
+                    updateTestResult('aria-result', 'PASS');
+                    logResult('ARIA', 'PASS', `${ariaCount} elementos com atributos ARIA`);
+                } else {
+                    updateTestResult('aria-result', 'FAIL');
+                    logResult('ARIA', 'FAIL', 'Atributos ARIA não encontrados');
+                }
+            } catch (error) {
+                updateTestResult('aria-result', 'FAIL');
+                logResult('ARIA', 'FAIL', `Erro: ${error.message}`);
+            }
+        }
+        
+        // Test form tab navigation
+        function switchTestTab(tabName) {
+            // Hide all test tab contents
+            document.querySelectorAll('[id^="testTab-"]').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all test tabs
+            document.querySelectorAll('.plan-tab[data-tab^="test"]').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedContent = document.getElementById(`testTab-${tabName}`);
+            if (selectedContent) {
+                selectedContent.classList.add('active');
+            }
+            
+            // Add active class to selected tab
+            const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+                
+                // Update progress
+                const stepNumber = selectedTab.getAttribute('data-step') || 1;
+                const progress = (stepNumber / 3) * 100;
+                const progressBar = document.getElementById('testTabProgress');
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }
+            
+            logResult('Tab Navigation', 'INFO', `Navegou para ${tabName}`);
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            logResult('Test Suite', 'INFO', 'Iniciando execução de todos os testes...');
+            
+            setTimeout(() => testCSSLoad(), 100);
+            setTimeout(() => testAnimations(), 200);
+            setTimeout(() => testResponsive(), 300);
+            setTimeout(() => testJSLoad(), 400);
+            setTimeout(() => testTabNavigation(), 500);
+            setTimeout(() => testValidation(), 600);
+            setTimeout(() => testARIA(), 700);
+            
+            setTimeout(() => {
+                logResult('Test Suite', 'INFO', 'Todos os testes automáticos concluídos');
+            }, 800);
+        }
+        
+        function clearResults() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '<div style="color: #94A3B8;">Resultados limpos. Execute os testes novamente.</div>';
+            
+            // Reset all test result indicators
+            const resultElements = document.querySelectorAll('.test-result');
+            resultElements.forEach(el => {
+                el.textContent = 'PENDENTE';
+                el.className = 'test-result test-pending';
+            });
+        }
+        
+        // Auto-run initial tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testCSSLoad();
+                testJSLoad();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

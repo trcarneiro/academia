@@ -60,10 +60,10 @@
                     <p class="classes-isolated-subtitle">Arte marcial com múltiplos cursos/faixas em execução simultânea</p>
                 </div>
                 <div class="classes-isolated-header-actions">
-                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="createNewClass()">
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" data-action="createNewClass" data-args='[]'>
                         <span>➕</span> Nova Turma
                     </button>
-                    <button class="classes-isolated-btn classes-isolated-btn-secondary" onclick="viewClassSchedule()">
+                    <button class="classes-isolated-btn classes-isolated-btn-secondary" data-action="viewClassSchedule" data-args='[]'>
                         <span>📅</span> Cronograma
                     </button>
                 </div>
@@ -101,7 +101,7 @@
                         <option value="finished">Finalizadas</option>
                         <option value="paused">Pausadas</option>
                     </select>
-                    <button class="classes-isolated-btn classes-isolated-btn-primary" onclick="createNewClass()">
+                    <button class="classes-isolated-btn classes-isolated-btn-primary" data-action="createNewClass" data-args='[]'>
                         <span>➕</span> Nova Turma
                     </button>
                 </div>
@@ -150,8 +150,8 @@
                             </td>
                             <td>
                                 <div class="classes-isolated-action-buttons">
-                                    <button onclick="viewClassDetails(1)" class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
-                                    <button onclick="manageClassSchedule(1)" class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
+                                    <button data-action="viewClassDetails" data-args='[1]' class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
+                                    <button data-action="manageClassSchedule" data-args='[1]' class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
                                 </div>
                             </td>
                         </tr>
@@ -183,8 +183,8 @@
                             </td>
                             <td>
                                 <div class="classes-isolated-action-buttons">
-                                    <button onclick="viewClassDetails(2)" class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
-                                    <button onclick="manageClassSchedule(2)" class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
+                                    <button data-action="viewClassDetails" data-args='[2]' class="classes-isolated-btn-small classes-isolated-btn-secondary">👁️ Ver</button>
+                                    <button data-action="manageClassSchedule" data-args='[2]' class="classes-isolated-btn-small classes-isolated-btn-primary">📅 Agenda</button>
                                 </div>
                             </td>
                         </tr>

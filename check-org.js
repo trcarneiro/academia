@@ -1,21 +1,26 @@
 const { PrismaClient } = require('@prisma/client');
-
 const prisma = new PrismaClient();
 
-async function main() {
-  const orgs = await prisma.organization.findMany();
-  console.log('Organizations:', orgs.length);
-  orgs.forEach(org => {
-    console.log(`- ${org.name} (${org.id})`);
-  });
-  
-  const courses = await prisma.course.findMany();
-  console.log('\nCourses:', courses.length);
-  courses.forEach(course => {
-    console.log(`- ${course.name} (org: ${course.organizationId})`);
-  });
+async function checkOrganization() {
+  try {
+    const organizations = await prisma.organization.findMany();
+    console.log('Organizations found:', organizations);
+    
+    const courses = await prisma.course.findMany({
+      include: { organization: true }
+    });
+    console.log('Courses with organizations:', courses.map(c => ({
+      id: c.id,
+      title: c.title,
+      orgId: c.organizationId,
+      orgName: c.organization?.name
+    })));
+    
+  } catch (error) {
+    console.error('Error:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+checkOrganization();

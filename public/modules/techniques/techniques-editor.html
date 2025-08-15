@@ -1,0 +1,72 @@
+<!-- Techniques editor full-screen page -->
+<link rel="stylesheet" href="/modules/techniques/techniques.css">
+
+<div id="technique-editor-root" class="techniques-isolated">
+  <header class="technique-editor-header">
+    <button id="technique-editor-back" class="btn btn-light">← Voltar</button>
+    <h1>Editor de Técnica</h1>
+  </header>
+
+  <main class="technique-editor-main">
+    <form id="technique-editor-form" class="technique-editor-form">
+      <div class="form-row">
+        <label class="form-label">Título <span class="required">*</span>
+          <input id="technique-title" name="title" required placeholder="Digite o título da técnica" />
+        </label>
+
+        <label class="form-label">Tipo
+          <select id="technique-type" name="type">
+            <option value="TECHNIQUE">Técnica</option>
+            <option value="DRILL">Drill</option>
+            <option value="EXERCISE">Exercício</option>
+            <option value="GAME">Jogo</option>
+          </select>
+        </label>
+
+        <label class="form-label">Dificuldade
+          <select id="technique-difficulty" name="difficulty">
+            <option value="">— Selecionar —</option>
+            <option value="1">1 - Básico</option>
+            <option value="2">2 - Intermediário</option>
+            <option value="3">3 - Avançado</option>
+            <option value="4">4 - Expert</option>
+            <option value="5">5 - Master</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="form-label">Descrição
+        <textarea id="technique-description" name="description" rows="6" placeholder="Descreva passos, observações e variações"></textarea>
+      </label>
+
+      <div class="form-row">
+        <label class="form-label">Equipamentos (separados por vírgula)
+          <input id="technique-equipment" name="equipment" placeholder="Ex: Colchonete, Luvas" />
+        </label>
+
+        <label class="form-label">Adaptações
+          <input id="technique-adaptations" name="adaptations" placeholder="Restrições ou variações" />
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Referência a técnica
+          <input id="technique-ref" name="refTechniqueId" placeholder="Digite ID ou título para buscar..." />
+        </label>
+
+        <label class="form-label">Cursos (associação) 
+          <select id="technique-courses" name="courses" multiple size="4"></select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <div id="technique-status" class="technique-status"></div>
+        <div class="actions-right">
+          <button id="technique-save" class="btn btn-primary" type="button">Salvar</button>
+          <button id="technique-save-close" class="btn btn-primary" type="button">Salvar e Fechar</button>
+          <button id="technique-cancel" class="btn btn-light" type="button">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

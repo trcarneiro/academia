@@ -1,0 +1,198 @@
+/* ========================================
+   STUDENT MODULE - RESPONSIVE IMPROVEMENTS
+   ======================================== */
+
+/* Mobile-First Responsive Design */
+@media (max-width: 768px) {
+    .students-container {
+        padding: 1rem;
+        margin: 0;
+    }
+    
+    .students-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .student-card {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .student-card .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .student-card .card-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .students-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+    
+    .search-bar,
+    .filter-group select,
+    .btn {
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+/* Student Editor Responsive */
+@media (max-width: 768px) {
+    .student-editor-container {
+        padding: 1rem;
+        margin: 0;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .page-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .page-tab {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Loading States */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Validation Styles */
+.form-field.error input,
+.form-field.error select,
+.form-field.error textarea {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.field-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.form-field.success input,
+.form-field.success select,
+.form-field.success textarea {
+    border-color: #28a745;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+.toast.info {
+    background-color: #17a2b8;
+}
+
+/* Table Improvements */
+@media (max-width: 992px) {
+    .students-table {
+        font-size: 0.875rem;
+    }
+    
+    .students-table th,
+    .students-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .students-table-container {
+        overflow-x: auto;
+    }
+    
+    .students-table {
+        min-width: 600px;
+    }
+}

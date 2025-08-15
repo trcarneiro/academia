@@ -6,375 +6,254 @@
     <title>Editor de Aluno - Academia Krav Maga</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/modules/students.css">
-    <style>
-        /* Enhanced UX Improvements */
-        .page-header {
-            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #3B82F6, #8B5CF6, #10B981);
-        }
-        
-        .tab-navigation {
-            display: flex;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 0.5rem;
-            border: 1px solid #334155;
-            position: relative;
-        }
-        
-        .page-tab {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            background: transparent;
-            color: #CBD5E1;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .page-tab.active {
-            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        
-        .page-tab:hover:not(.active) {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3B82F6;
-        }
-        
-        .form-section {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #334155;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .form-section:hover {
-            border-color: #3B82F6;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-        }
-        
-        .form-section h4 {
-            color: #F8FAFC;
-            margin: 0 0 1.5rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.1rem;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
-        .form-group {
-            position: relative;
-        }
-        
-        .form-group label {
-            color: #94A3B8;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-            display: block;
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: #F8FAFC;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .sidebar-card {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #334155;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-card:hover {
-            border-color: #3B82F6;
-            transform: translateY(-2px);
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(59, 130, 246, 0.3);
-            border-radius: 50%;
-            border-top-color: #3B82F6;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .error-state {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #F87171;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .empty-state {
-            background: rgba(107, 114, 128, 0.1);
-            border: 1px solid rgba(107, 114, 128, 0.3);
-            color: #9CA3AF;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.1);
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(90deg, #10B981, #059669);
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.6s ease;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .status-active {
-            background: #10B981;
-            color: white;
-        }
-        
-        .status-inactive {
-            background: #EF4444;
-            color: white;
-        }
-        
-        .status-pending {
-            background: #F59E0B;
-            color: white;
-        }
-        
-        @media (max-width: 768px) {
-            .page-header {
-                padding: 1rem;
-            }
-            
-            .page-header > div {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .tab-navigation {
-                flex-direction: column;
-            }
-            
-            .main-content {
-                display: block !important;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../css/modules/student-editor/styles.css">
 </head>
+
 <body>
-    <div class="students-isolated">
-        <!-- Page Header with Student Info -->
-        <div class="page-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 id="editPageStudentName" style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Carregando...</h1>
-                    <p id="editPageStudentId" style="margin: 0.5rem 0 0 0; color: #94A3B8;">ID: --</p>
-                    <p id="editPageStudentCategory" style="margin: 0.25rem 0 0 0; color: #94A3B8;">Categoria: --</p>
+    <div class="student-editor-container">
+        <!-- Header da Página -->
+        <header class="page-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1 id="editPageStudentName">Nome não informado</h1>
+                    <p>
+                        <span id="editPageStudentId">ID: --</span> • 
+                        <span id="editPageStudentCategory">Status: Indefinido</span>
+                    </p>
                 </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button id="back-to-list-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
-                        <span>←</span> Voltar
+                <div class="header-actions">
+                    <button id="back-to-list-btn" class="btn btn-secondary">
+                        <span class="icon">←</span>
+                        Voltar
                     </button>
-                    <button id="save-student-btn" class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #10B981); padding: 0.75rem 1.5rem;">
-                        <span>💾</span> Salvar Alterações
+                    <button id="save-student-btn" class="btn btn-primary">
+                        <span class="icon">💾</span>
+                        Salvar Alterações
                     </button>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Tab Navigation -->
-        <div class="tab-container" style="margin-bottom: 2rem;">
-            <div class="tab-navigation">
+        <!-- Navegação de Abas -->
+        <div class="tab-container">
+            <nav class="tab-navigation">
                 <button class="page-tab active" data-tab="profile">
-                    👤 Perfil
+                    <span class="tab-icon">👤</span>
+                    <span class="tab-text">Perfil</span>
                 </button>
                 <button class="page-tab" data-tab="financial">
-                    💳 Financeiro
+                    <span class="tab-icon">💳</span>
+                    <span class="tab-text">Assinaturas</span>
                 </button>
-                <button class="page-tab" data-tab="enrollments">
-                    📚 Cursos Matriculados
-                </button>
-                <button class="page-tab" data-tab="classes">
-                    🏫 Turmas Ativas
-                </button>
-                <button class="page-tab" data-tab="progress">
-                    📊 Progresso Geral
-                </button>
-                <button class="page-tab" data-tab="insights">
-                    🤖 Dashboard IA
-                </button>
-            </div>
+            </nav>
         </div>
 
-        <!-- Main Content Area -->
-        <div class="main-content" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-            <!-- Left Column - Form Container -->
-            <div>
-                <!-- Dynamic Form Container -->
-                <!-- Tab Content Containers -->
-                <div id="profile-content" class="tab-content active">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando perfil...</p>
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <!-- Aba de Perfil -->
+            <section id="profile-content" class="tab-content active">
+                <form class="student-form">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <span class="section-icon">📋</span>
+                            <h3>Informações Pessoais</h3>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="student-name">Nome Completo *</label>
+                                <input type="text" id="student-name" name="name" required 
+                                       placeholder="Digite o nome completo">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-email">Email *</label>
+                                <input type="email" id="student-email" name="email" required 
+                                       placeholder="exemplo@email.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-phone">Telefone</label>
+                                <input type="tel" id="student-phone" name="phone" 
+                                       placeholder="(11) 99999-9999">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-birth">Data de Nascimento</label>
+                                <input type="date" id="student-birth" name="birthDate">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-cpf">CPF</label>
+                                <input type="text" id="student-cpf" name="cpf" 
+                                       placeholder="000.000.000-00">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-status">Status *</label>
+                                <select id="student-status" name="status" required>
+                                    <option value="">Selecione o status</option>
+                                    <option value="active">Ativo</option>
+                                    <option value="inactive">Inativo</option>
+                                    <option value="suspended">Suspenso</option>
+                                    <option value="pending">Pendente</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div id="financial-content" class="tab-content" style="display: none;">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando dados financeiros...</p>
-                    </div>
-                </div>
-                
-                <div id="enrollments-content" class="tab-content" style="display: none;">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando matrículas...</p>
-                    </div>
-                </div>
-                
-                <div id="classes-content" class="tab-content" style="display: none;">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando turmas...</p>
-                    </div>
-                </div>
-                
-                <div id="progress-content" class="tab-content" style="display: none;">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando progresso...</p>
-                    </div>
-                </div>
-                
-                <div id="insights-content" class="tab-content" style="display: none;">
-                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
-                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
-                        <p>Carregando insights...</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Right Column - Sidebar -->
-            <div id="editPageSidebar">
-                <!-- Student Statistics -->
-                <div class="sidebar-card">
-                    <h4 style="color: #F8FAFC; margin: 0 0 1rem 0;">📊 Estatísticas</h4>
-                    <div class="stats-grid" style="display: grid; gap: 1rem;">
-                        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #CBD5E1;">Cursos Ativos:</span>
-                            <span id="sidebarActiveCourses" style="color: #10B981; font-weight: bold;">--</span>
+                    <div class="form-section">
+                        <div class="section-header">
+                            <span class="section-icon">📍</span>
+                            <h3>Contato e Endereço</h3>
                         </div>
-                        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #CBD5E1;">Turmas:</span>
-                            <span id="sidebarActiveClasses" style="color: #3B82F6; font-weight: bold;">--</span>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="student-whatsapp">WhatsApp</label>
+                                <input type="tel" id="student-whatsapp" name="whatsapp" 
+                                       placeholder="(11) 99999-9999">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="student-emergency">Contato de Emergência</label>
+                                <input type="text" id="student-emergency" name="emergencyContact" 
+                                       placeholder="Nome e telefone">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="student-address">Endereço Completo</label>
+                                <textarea id="student-address" name="address" rows="3" 
+                                          placeholder="Rua, número, bairro, cidade, CEP"></textarea>
+                            </div>
                         </div>
-                        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #CBD5E1;">Taxa Presença:</span>
-                            <span id="sidebarAttendanceRate" style="color: #F59E0B; font-weight: bold;">--</span>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <span class="section-icon">📝</span>
+                            <h3>Observações e Notas</h3>
                         </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="student-observations">Observações Médicas</label>
+                                <textarea id="student-observations" name="medicalObservations" rows="3" 
+                                          placeholder="Informações sobre o aluno, lesões, preferências, restrições, etc."></textarea>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="student-notes">Notas Internas</label>
+                                <textarea id="student-notes" name="internalNotes" rows="3" 
+                                          placeholder="Anotações internas sobre o aluno"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Aba Financeira -->
+            <section id="financial-content" class="tab-content">
+                <!-- Estado: Nenhuma Assinatura -->
+                <div id="noSubscriptionState" class="no-subscription-state" style="display: none;">
+                    <div class="empty-state">
+                        <div class="empty-icon">💳</div>
+                        <h6>Nenhuma assinatura ativa</h6>
+                        <p>Este aluno ainda não possui uma assinatura ativa.</p>
+                        <button type="button" class="btn btn-primary" data-action="createNewSubscription" data-args='[]'>
+                            <span class="icon">➕</span>
+                            Criar Nova Assinatura
+                        </button>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="sidebar-card">
-                    <h4 style="color: #F8FAFC; margin: 0 0 1rem 0;">⚡ Ações Rápidas</h4>
-                    <div class="actions-grid" style="display: grid; gap: 0.75rem;">
-                        <button onclick="generateStudentQR()" class="btn btn-outline" style="width: 100%; padding: 0.75rem; border: 1px solid #374151; background: transparent; color: #CBD5E1; border-radius: 8px;">
-                            📱 Gerar QR Code
+                <!-- Assinatura Atual -->
+                <div class="subscription-card current-subscription">
+                    <div class="subscription-header">
+                        <h5>Assinatura Atual</h5>
+                        <span class="status-badge status-active">Ativo</span>
+                    </div>
+                    
+                    <div class="subscription-info">
+                        <div class="info-item">
+                            <label>Plano</label>
+                            <p id="current-plan-name">Nenhum plano ativo</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Valor Mensal</label>
+                            <p id="current-plan-price">R$ 0,00</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Data de Vencimento</label>
+                            <p id="current-plan-due">--</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Status do Pagamento</label>
+                            <p id="current-payment-status">--</p>
+                        </div>
+                    </div>
+                    
+                    <div class="subscription-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" id="edit-subscription-btn">
+                            <span class="icon">✏️</span>
+                            Editar Assinatura
                         </button>
-                        <button onclick="exportStudentData()" class="btn btn-outline" style="width: 100%; padding: 0.75rem; border: 1px solid #374151; background: transparent; color: #CBD5E1; border-radius: 8px;">
-                            📊 Exportar Dados
-                        </button>
-                        <button onclick="sendNotification()" class="btn btn-outline" style="width: 100%; padding: 0.75rem; border: 1px solid #374151; background: transparent; color: #CBD5E1; border-radius: 8px;">
-                            📧 Enviar Notificação
+                        <button type="button" class="btn btn-danger btn-sm" id="cancel-subscription-btn">
+                            <span class="icon">❌</span>
+                            Cancelar Assinatura
                         </button>
                     </div>
                 </div>
-            </div>
+
+                <!-- Planos Disponíveis -->
+                <div class="available-plans">
+                    <h5>Planos Disponíveis</h5>
+                    <div class="plans-grid" id="available-plans-grid">
+                        <!-- Planos serão carregados dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Histórico de Pagamentos -->
+                <div class="payment-history">
+                    <h5>Histórico de Pagamentos</h5>
+                    <div class="history-table">
+                        <table id="payment-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Método</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Histórico será carregado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Loading -->
+    <div id="loadingState" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loadingStateMessage">Carregando...</p>
         </div>
     </div>
 
-    <!-- Loading State -->
-    <div id="loadingState" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="background: rgba(15, 23, 42, 0.9); padding: 2rem; border-radius: 12px; text-align: center; border: 1px solid #334155;">
-            <div style="color: #3B82F6; font-size: 2rem; margin-bottom: 1rem;">⏳</div>
-            <p style="color: #F8FAFC; margin: 0;">Carregando dados do aluno...</p>
-        </div>
-    </div>
-
-    
+    <!-- Scripts -->
+    <!-- Fix: load the correct Student Editor module path -->
+    <script type="module" src="../js/modules/student/student-editor/main.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', function() {
+        if (window.initializeStudentEditor) {
+          window.initializeStudentEditor();
+        }
+      });
+    </script>
 </body>
 </html>

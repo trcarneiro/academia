@@ -1,3 +1,12 @@
+/**
+ * Main.js - Sistema Principal
+ * Integração com Sistema Modular seguindo CLAUDE.md
+ */
+
+// Importar sistema modular
+import ModularSystem from './modular-system.js';
+
+// Importações existentes mantidas para compatibilidade
 import { showToast, toggleSidebar, showSection } from './ui.js';
 import { 
     loadAndRenderStudents, 

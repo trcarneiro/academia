@@ -13,7 +13,7 @@
                 <h1>📚 Gerenciamento de Aulas</h1>
                 <p class="lessons-subtitle">Gerencie todas as aulas dos cursos</p>
             </div>
-            <button class="btn btn-primary" onclick="navigateToModule('courses')">
+            <button class="btn btn-primary" data-action="navigateToModule" data-args='["courses"]'>
                 ← Voltar aos Cursos
             </button>
         </div>
@@ -106,7 +106,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Detalhes da Aula</h2>
-                <button class="modal-close" onclick="closeLessonModal()">&times;</button>
+                <button class="modal-close" data-action="closeLessonModal" data-args='[]'>&times;</button>
             </div>
             <div class="modal-body">
                 <div class="lesson-details">
@@ -169,9 +169,9 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeLessonModal()">Fechar</button>
-                <button class="btn btn-primary" onclick="editLesson()">Editar</button>
-                <button class="btn btn-danger" onclick="deleteLesson()">Excluir</button>
+                <button class="btn btn-secondary" data-action="closeLessonModal" data-args='[]'>Fechar</button>
+                <button class="btn btn-primary" data-action="editLesson" data-args='[]'>Editar</button>
+                <button class="btn btn-danger" data-action="deleteLesson" data-args='[]'>Excluir</button>
             </div>
         </div>
     </div>

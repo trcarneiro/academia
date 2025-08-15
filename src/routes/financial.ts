@@ -1,7 +1,8 @@
-import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import FinancialService, { CreatePlanData, CreateSubscriptionData } from '../services/financialService';
 import { StudentCategory, BillingType } from '@prisma/client';
+import { prisma } from '@/utils/database';
 
 // Schemas de validação
 const createPlanSchema = z.object({
@@ -39,8 +40,7 @@ const webhookSchema = z.object({
 });
 
 export default async function financialRoutes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions
+  fastify: FastifyInstance
 ) {
   
   // ==========================================
@@ -58,61 +58,22 @@ export default async function financialRoutes(
           category: { type: 'string', enum: Object.values(StudentCategory) },
           isActive: { type: 'boolean' }
         }
-      },
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean' },
-            data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  price: { type: 'number' },
-                  billingType: { type: 'string' },
-                  classesPerWeek: { type: 'number' },
-                  isActive: { type: 'boolean' },
-                  _count: {
-                    type: 'object',
-                    properties: {
-                      subscriptions: { type: 'number' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
+      // Derivar organização pelo primeiro registro existente (fallback sem auth)
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        return reply.code(400).send({ success: false, error: 'No organization found' });
+      }
+      const financialService = new FinancialService(org.id);
       const { category, isActive } = request.query as any;
-      const filters: any = {};
-      
-      if (category) filters.category = category;
-      if (isActive !== undefined) filters.isActive = isActive;
-
-      const plans = await financialService.listPlans(filters);
-
-      return {
-        success: true,
-        data: plans
-      };
+      const plans = await financialService.listPlans({ category, isActive });
+      return { success: true, data: plans };
     } catch (error) {
       reply.code(500);
-      return {
-        success: false,
-        error: 'Failed to fetch plans',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+      return { success: false, error: 'Failed to list plans' };
     }
   });
 
@@ -139,8 +100,12 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
+      // Derivar organização pelo primeiro registro existente (fallback sem auth)
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        return reply.code(400).send({ success: false, error: 'No organization found' });
+      }
+      const financialService = new FinancialService(org.id);
       
       const validatedData = createPlanSchema.parse(request.body);
       const plan = await financialService.createPlan(validatedData as CreatePlanData);
@@ -175,9 +140,12 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        reply.code(400);
+        return { success: false, error: 'No organization found' };
+      }
+      const financialService = new FinancialService(org.id);
       const { id } = request.params as { id: string };
       const plan = await financialService.getPlan(id);
 
@@ -225,15 +193,21 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
       const validatedData = createSubscriptionSchema.parse(request.body);
+      // Derivar organização pelo estudante
+      const student = await prisma.student.findUnique({
+        where: { id: validatedData.studentId },
+        select: { organizationId: true }
+      });
+      if (!student) {
+        reply.code(404);
+        return { success: false, error: 'Student not found' };
+      }
+      const financialService = new FinancialService(student.organizationId);
       const subscriptionData = {
         ...validatedData,
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : undefined
       };
-      
       const subscription = await financialService.createSubscription(subscriptionData as CreateSubscriptionData);
 
       return {
@@ -275,20 +249,17 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
       const { id } = request.params as { id: string };
+      // Derivar organização pela própria subscription
+      const sub = await prisma.studentSubscription.findUnique({ where: { id }, select: { organizationId: true } });
+      if (!sub) {
+        reply.code(404);
+        return { success: false, error: 'Subscription not found' };
+      }
+      const financialService = new FinancialService(sub.organizationId);
       const updateData = request.body as any;
-      
-      // Convert date strings to Date objects
-      if (updateData.startDate) {
-        updateData.startDate = new Date(updateData.startDate);
-      }
-      if (updateData.endDate) {
-        updateData.endDate = new Date(updateData.endDate);
-      }
-      
+      if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
+      if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
       const subscription = await financialService.updateSubscription(id, updateData);
 
       return {
@@ -321,10 +292,13 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
       const { id } = request.params as { id: string };
+      const sub = await prisma.studentSubscription.findUnique({ where: { id }, select: { organizationId: true } });
+      if (!sub) {
+        reply.code(404);
+        return { success: false, error: 'Subscription not found' };
+      }
+      const financialService = new FinancialService(sub.organizationId);
       await financialService.deleteSubscription(id);
 
       return {
@@ -356,10 +330,13 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
       const { studentId } = request.params as { studentId: string };
+      const student = await prisma.student.findUnique({ where: { id: studentId }, select: { organizationId: true } });
+      if (!student) {
+        reply.code(404);
+        return { success: false, error: 'Student not found' };
+      }
+      const financialService = new FinancialService(student.organizationId);
       const summary = await financialService.getStudentFinancialSummary(studentId);
 
       return {
@@ -396,9 +373,12 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        reply.code(400);
+        return { success: false, error: 'No organization found' };
+      }
+      const financialService = new FinancialService(org.id);
       const { startDate, endDate } = request.query as any;
       const validatedData = financialReportSchema.parse({ startDate, endDate });
       
@@ -448,8 +428,12 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '1'; // TODO: Get from webhook validation
-      const financialService = new FinancialService(organizationId);
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        reply.code(400);
+        return { success: false, error: 'No organization found' };
+      }
+      const financialService = new FinancialService(org.id);
       
       // TODO: Validate webhook signature
       const result = await financialService.processWebhook(request.body);
@@ -488,10 +472,13 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const organizationId = '483d891e-8080-4337-aaaf-e53e43f22e71'; // TODO: Get from auth context
-      const financialService = new FinancialService(organizationId);
-      
       const { id } = request.params as { id: string };
+      const sub = await prisma.studentSubscription.findUnique({ where: { id }, select: { organizationId: true } });
+      if (!sub) {
+        reply.code(404);
+        return { success: false, error: 'Subscription not found' };
+      }
+      const financialService = new FinancialService(sub.organizationId);
       const payment = await financialService.createPaymentForSubscription(id);
 
       return {

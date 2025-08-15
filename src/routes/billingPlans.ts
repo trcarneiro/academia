@@ -1,100 +1,70 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
-import { logger } from '@/utils/logger';
 
+// Backward compatibility route for frontend expecting /api/billing-plans
 export default async function billingPlanRoutes(fastify: FastifyInstance) {
-  // Get all billing plans
-  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
+  // GET /api/billing-plans - List billing plans
+  fastify.get('/api/billing-plans', async (_request, reply) => {
     try {
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        reply.code(400);
+        return { success: false, error: 'No organization found' };
+      }
+
       const plans = await prisma.billingPlan.findMany({
-        orderBy: {
-          createdAt: 'desc'
-        }
+        where: { organizationId: org.id },
+        include: {
+          _count: { select: { subscriptions: true } }
+        },
+        orderBy: { createdAt: 'desc' }
       });
 
-      return reply.send({
+      const data = plans.map((p: any) => ({
+        ...p,
+        subscriberCount: p._count?.subscriptions ?? 0
+      }));
+
+      return {
         success: true,
-        data: plans,
-        total: plans.length
-      });
+        data,
+        message: 'Billing plans retrieved successfully'
+      };
     } catch (error) {
-      logger.error('Error fetching billing plans:', error);
-      return reply.code(500).send({
+      reply.code(500);
+      return {
         success: false,
-        message: 'Failed to fetch billing plans'
-      });
+        error: 'Failed to fetch billing plans'
+      };
     }
   });
 
-  // Get billing plan by ID
-  fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+  // GET /api/billing-plans/:id - Get single billing plan
+  fastify.get('/api/billing-plans/:id', async (request, reply) => {
     try {
-      const { id } = request.params;
-
-      const plan = await prisma.billingPlan.findUnique({
-        where: { id }
-      });
-
+      const { id } = request.params as { id: string };
+      const plan = await prisma.billingPlan.findUnique({ where: { id } });
       if (!plan) {
-        return reply.code(404).send({
-          success: false,
-          message: 'Billing plan not found'
-        });
+        reply.code(404);
+        return { success: false, error: 'Plan not found' };
       }
-
-      return reply.send({
-        success: true,
-        data: plan
-      });
+      return { success: true, data: plan };
     } catch (error) {
-      logger.error('Error fetching billing plan:', error);
-      return reply.code(500).send({
-        success: false,
-        message: 'Failed to fetch billing plan'
-      });
+      reply.code(500);
+      return { success: false, error: 'Failed to fetch plan' };
     }
   });
 
-  // Create billing plan
-  fastify.post('/', async (request: FastifyRequest<{ Body: any }>, reply: FastifyReply) => {
+  // PUT /api/billing-plans/:id - Update billing plan
+  fastify.put('/api/billing-plans/:id', async (request, reply) => {
     try {
-      const data = request.body;
-      
-      // Add a default organizationId if not provided
-      if (!data.organizationId) {
-        // Get the first organization
-        const firstOrg = await prisma.organization.findFirst();
-        if (firstOrg) {
-          data.organizationId = firstOrg.id;
-        }
-      }
-
-      const plan = await prisma.billingPlan.create({
-        data: {
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          billingType: data.billingType,
-          organizationId: data.organizationId,
-          features: data.features || [],
-          classesPerWeek: data.classesPerWeek || 2,
-          hasPersonalTraining: data.hasPersonalTraining || false,
-          hasNutrition: data.hasNutrition || false,
-          allowFreeze: data.allowFreeze || true,
-          isActive: data.isActive !== undefined ? data.isActive : true
-        }
-      });
-
-      return reply.code(201).send({
-        success: true,
-        data: plan
-      });
+      const { id } = request.params as { id: string };
+      const body = request.body as any;
+      const plan = await prisma.billingPlan.update({ where: { id }, data: body });
+      return { success: true, data: plan, message: 'Plan updated successfully' };
     } catch (error) {
-      logger.error('Error creating billing plan:', error);
-      return reply.code(500).send({
-        success: false,
-        message: 'Failed to create billing plan'
-      });
+      reply.code(500);
+      return { success: false, error: 'Failed to update plan' };
     }
   });
 }

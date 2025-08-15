@@ -1,0 +1,612 @@
+<div class="organizations-container">
+    <!-- Header Section -->
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1 class="page-title">
+                    <span class="title-icon">🏢</span>
+                    <span class="title-text">Organizações</span>
+                </h1>
+                <p class="page-description">
+                    Gerencie as organizações do sistema
+                </p>
+            </div>
+            <div class="header-actions">
+                <button id="add-organization-btn" class="btn btn-primary">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">Nova Organização</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="search-container">
+            <input type="text" id="organization-search" placeholder="🔍 Buscar organizações..." class="search-input">
+        </div>
+        <div class="filters-container">
+            <select id="status-filter" class="filter-select">
+                <option value="">Todos os Status</option>
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+            </select>
+            <button id="clear-filters-btn" class="btn btn-secondary">
+                🧹 Limpar Filtros
+            </button>
+        </div>
+    </div>
+
+    <!-- Organizations List -->
+    <div class="organizations-list" id="organizations-container">
+        <!-- Loading state -->
+        <div id="loading-organizations" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Carregando organizações...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-organizations" class="empty-state" style="display: none;">
+            <div class="empty-icon">🏢</div>
+            <h3>Nenhuma organização encontrada</h3>
+            <p>Crie sua primeira organização para começar</p>
+            <button class="btn btn-primary" onclick="document.getElementById('add-organization-btn').click()">
+                ➕ Criar Primeira Organização
+            </button>
+        </div>
+
+        <!-- Organizations Table -->
+        <div id="organizations-table" class="data-table-container" style="display: none;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Slug</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Cidade</th>
+                        <th>Status</th>
+                        <th>Criado em</th>
+                        <th class="actions-column">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="organizations-tbody">
+                    <!-- Organizations will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Organization Editor Modal -->
+<div id="organization-modal" class="modal" style="display: none;">
+    <div class="modal-overlay" data-action="closeOrganizationModal" data-args='[]'></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">Nova Organização</h2>
+            <button class="modal-close" data-action="closeOrganizationModal" data-args='[]'>✕</button>
+        </div>
+        
+        <form id="organization-form" class="modal-body">
+            <div class="form-grid">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3>Informações Básicas</h3>
+                    
+                    <div class="form-group">
+                        <label for="org-name">Nome da Organização *</label>
+                        <input type="text" id="org-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="org-slug">Slug *</label>
+                        <input type="text" id="org-slug" name="slug" required>
+                        <small>Será usado na URL (ex: minha-academia)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="org-description">Descrição</label>
+                        <textarea id="org-description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3>Contato</h3>
+                    
+                    <div class="form-group">
+                        <label for="org-email">E-mail</label>
+                        <input type="email" id="org-email" name="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="org-phone">Telefone</label>
+                        <input type="tel" id="org-phone" name="phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="org-website">Website</label>
+                        <input type="url" id="org-website" name="website">
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="form-section">
+                    <h3>Endereço</h3>
+                    
+                    <div class="form-group">
+                        <label for="org-address">Endereço</label>
+                        <input type="text" id="org-address" name="address">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="org-city">Cidade</label>
+                            <input type="text" id="org-city" name="city">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="org-state">Estado</label>
+                            <input type="text" id="org-state" name="state">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="org-zipcode">CEP</label>
+                            <input type="text" id="org-zipcode" name="zipCode">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="org-country">País</label>
+                            <input type="text" id="org-country" name="country" value="Brazil">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="form-section">
+                    <h3>Configurações</h3>
+                    
+                    <div class="form-group">
+                        <label for="org-max-students">Máximo de Alunos</label>
+                        <input type="number" id="org-max-students" name="maxStudents" value="100" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="org-max-staff">Máximo de Funcionários</label>
+                        <input type="number" id="org-max-staff" name="maxStaff" value="10" min="1">
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="org-active" name="isActive" checked>
+                            <span class="checkbox-custom"></span>
+                            Organização Ativa
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-action="closeOrganizationModal" data-args='[]'>
+                Cancelar
+            </button>
+            <button type="submit" form="organization-form" class="btn btn-primary" id="save-organization-btn">
+                <span class="btn-icon">💾</span>
+                <span class="btn-text">Salvar Organização</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div id="loading-message">Processando...</div>
+    </div>
+</div>
+
+<!-- Organization-specific styles -->
+<style>
+.organizations-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.page-header {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.title-icon {
+    font-size: 2rem;
+}
+
+.page-description {
+    color: #6b7280;
+    margin: 0.5rem 0 0 0;
+    font-size: 1rem;
+}
+
+.filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.filters-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    font-size: 1rem;
+    min-width: 150px;
+}
+
+.organizations-list {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.data-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.actions-column {
+    width: 120px;
+    text-align: center;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.loading-state,
+.empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 1001;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #6b7280;
+}
+
+.modal-body {
+    padding: 2rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.form-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.form-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-group small {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 4px;
+    position: relative;
+}
+
+input[type="checkbox"]:checked + .checkbox-custom {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+.modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.loading-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-left: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .organizations-container {
+        padding: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        min-width: auto;
+    }
+    
+    .data-table-container {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        min-width: 700px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+}</style>

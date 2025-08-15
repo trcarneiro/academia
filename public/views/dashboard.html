@@ -17,20 +17,24 @@
     <!-- Navigation Menu -->
     <div class="dashboard-nav">
         <div class="nav-items">
-            <button class="nav-item active" onclick="navigateToModule('dashboard')">
+            <button class="nav-item active" data-action="navigateToModule" data-args='["dashboard"]'>
                 📊 Dashboard
             </button>
-            <button class="nav-item" onclick="navigateToModule('students')">
+            <button class="nav-item" data-action="navigateToModule" data-args='["students"]'>
                 👥 Alunos
             </button>
-            <button class="nav-item" onclick="navigateToModule('courses')">
+            <button class="nav-item" data-action="navigateToModule" data-args='["courses"]'>
                 📚 Cursos
             </button>
-            <button class="nav-item" onclick="navigateToModule('attendance')">
+            <button class="nav-item" data-action="navigateToModule" data-args='["attendance"]'>
                 📅 Frequência
             </button>
-            <button class="nav-item" onclick="navigateToModule('financial')">
+            <button class="nav-item" data-action="navigateToModule" data-args='["financial"]'>
                 💰 Financeiro
+            </button>
+            <!-- Forçado: Organizations sempre visível -->
+            <button class="nav-item" id="nav-organizations" data-action="navigateToModule" data-args='["organizations"]' style="display:block !important;">
+                🏢 Organizações
             </button>
         </div>
     </div>
@@ -78,19 +82,19 @@
     <div class="quick-actions">
         <h3>⚡ Ações Rápidas</h3>
         <div class="actions-grid">
-            <button class="action-btn" onclick="navigateToModule('students')" data-action="new-student">
+            <button class="action-btn" data-action="navigateToModule" data-args='["students"]' data-action="new-student">
                 <span class="action-icon">👤</span>
                 <span class="action-text">Novo Aluno</span>
             </button>
-            <button class="action-btn" onclick="navigateToModule('attendance')" data-action="register-attendance">
+            <button class="action-btn" data-action="navigateToModule" data-args='["attendance"]' data-action="register-attendance">
                 <span class="action-icon">✅</span>
                 <span class="action-text">Registrar Presença</span>
             </button>
-            <button class="action-btn" onclick="navigateToModule('financial')" data-action="new-payment">
+            <button class="action-btn" data-action="navigateToModule" data-args='["financial"]' data-action="new-payment">
                 <span class="action-icon">💳</span>
                 <span class="action-text">Novo Pagamento</span>
             </button>
-            <button class="action-btn" onclick="navigateToModule('reporting')" data-action="reports">
+            <button class="action-btn" data-action="navigateToModule" data-args='["reporting"]' data-action="reports">
                 <span class="action-icon">📊</span>
                 <span class="action-text">Relatórios</span>
             </button>

@@ -1,0 +1,64 @@
+/* Isolated styles for Techniques module - prefix: .techniques-isolated */
+.techniques-isolated { padding: 18px; font-family: Inter, system-ui, Arial, sans-serif; }
+.techniques-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.techniques-actions { display:flex; gap:8px; align-items:center; }
+.techniques-list { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:12px; margin-top:16px; }
+.technique-card { border:1px solid #e5e7eb; padding:12px; border-radius:8px; background:#fff; }
+.technique-card h3 { margin:0 0 8px 0; font-size:16px; }
+.technique-card p { margin:0; color:#374151; font-size:13px; }
+.technique-detail { padding:16px; background:#fff; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.04); }
+
+/* Sorting controls */
+.techniques-actions select#techniques-sort {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 14px;
+}
+
+.techniques-actions button#techniques-order-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pagination */
+.techniques-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.techniques-pagination .btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+#techniques-page-size {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+
+/* Info line */
+#techniques-info {
+  color: #6b7280;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* Loading / error states */
+.loading { text-align: center; color: #6b7280; padding: 12px; }
+.error { text-align: center; color: #b91c1c; padding: 12px; }

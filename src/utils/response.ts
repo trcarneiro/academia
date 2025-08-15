@@ -1,5 +1,4 @@
 import { FastifyReply } from 'fastify';
-import { ApiResponse, PaginatedResponse } from '@/types';
 
 export class ResponseHelper {
   static success<T>(
@@ -8,12 +7,12 @@ export class ResponseHelper {
     message?: string,
     statusCode: number = 200
   ): FastifyReply {
-    const response: ApiResponse<T> = {
+    const response = {
       success: true,
       data,
       message,
       timestamp: new Date().toISOString(),
-    };
+    } as any;
 
     return reply.status(statusCode).send(response);
   }
@@ -24,12 +23,12 @@ export class ResponseHelper {
     statusCode: number = 400,
     message?: string
   ): FastifyReply {
-    const response: ApiResponse = {
+    const response = {
       success: false,
       error,
       message,
       timestamp: new Date().toISOString(),
-    };
+    } as any;
 
     return reply.status(statusCode).send(response);
   }
@@ -43,8 +42,7 @@ export class ResponseHelper {
     message?: string
   ): FastifyReply {
     const totalPages = Math.ceil(total / limit);
-    
-    const paginatedResponse: PaginatedResponse<T> = {
+    const paginatedResponse = {
       items,
       pagination: {
         page,
@@ -54,14 +52,14 @@ export class ResponseHelper {
         hasNext: page < totalPages,
         hasPrev: page > 1,
       },
-    };
+    } as any;
 
-    const response: ApiResponse<PaginatedResponse<T>> = {
+    const response = {
       success: true,
       data: paginatedResponse,
       message,
       timestamp: new Date().toISOString(),
-    };
+    } as any;
 
     return reply.status(200).send(response);
   }

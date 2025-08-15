@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply, FastifyError } from 'fastify';
 import { Prisma } from '@prisma/client';
-import { ResponseHelper } from '@/utils/response';
-import { logger } from '@/utils/logger';
+import { ResponseHelper } from '../utils/response';
+import { logger } from '../utils/logger';
 
 export const errorHandler = (
   error: FastifyError,

@@ -1,0 +1,61 @@
+<!-- Full-screen Organization Editor (Isolated, no modal) -->
+<div class="organizations-editor-container organizations-isolated">
+  <header class="organizations-isolated-header">
+    <button class="organizations-isolated-btn organizations-isolated-btn-secondary" data-action="window.ModuleLoader.goBack" data-args='[]'>← Voltar</button>
+    <h1 id="editor-title">Organização</h1>
+  </header>
+  <form id="organization-editor-form" class="organizations-isolated-form">
+    <div class="organizations-isolated-form-section">
+      <label for="org-name">Nome *</label>
+      <input type="text" id="org-name" name="name" required>
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-slug">Slug *</label>
+      <input type="text" id="org-slug" name="slug" required>
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-description">Descrição</label>
+      <textarea id="org-description" name="description"></textarea>
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-email">E-mail</label>
+      <input type="email" id="org-email" name="email">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-phone">Telefone</label>
+      <input type="tel" id="org-phone" name="phone">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-city">Cidade</label>
+      <input type="text" id="org-city" name="city">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-state">Estado</label>
+      <input type="text" id="org-state" name="state">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-country">País</label>
+      <input type="text" id="org-country" name="country" value="Brazil">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-max-students">Máximo de Alunos</label>
+      <input type="number" id="org-max-students" name="maxStudents" value="100" min="1">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label for="org-max-staff">Máximo de Funcionários</label>
+      <input type="number" id="org-max-staff" name="maxStaff" value="10" min="1">
+    </div>
+    <div class="organizations-isolated-form-section">
+      <label class="checkbox-label">
+        <input type="checkbox" id="org-active" name="isActive" checked>
+        Organização Ativa
+      </label>
+    </div>
+    <div class="organizations-isolated-actions">
+      <button type="button" class="organizations-isolated-btn organizations-isolated-btn-secondary" data-action="window.ModuleLoader.goBack" data-args='[]'>Cancelar</button>
+      <button type="submit" class="organizations-isolated-btn organizations-isolated-btn-primary">Salvar</button>
+    </div>
+  </form>
+  <div id="organizations-isolated-loading" class="organizations-isolated-loading" style="display:none;">Salvando...</div>
+  <div id="organizations-isolated-error" class="organizations-isolated-empty" style="display:none;"></div>
+</div>

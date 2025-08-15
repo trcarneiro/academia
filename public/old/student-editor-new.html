@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Aluno - Academia Krav Maga</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/modules/students.css">
+    <link rel="stylesheet" href="../css/modules/student-editor.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="students-isolated">
+        <!-- Page Header with Student Info -->
+        <div class="page-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 id="editPageStudentName" style="margin: 0; font-size: 2rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Carregando...</h1>
+                    <p id="editPageStudentId" style="margin: 0.5rem 0 0 0; color: #94A3B8;">ID: --</p>
+                    <p id="editPageStudentCategory" style="margin: 0.25rem 0 0 0; color: #94A3B8;">Categoria: --</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="back-to-list-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+                        <span>←</span> Voltar
+                    </button>
+                    <button id="save-student-btn" class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #10B981); padding: 0.75rem 1.5rem;">
+                        <span>💾</span> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <div class="tab-navigation">
+                <button class="page-tab active" data-tab="profile">
+                    👤 Perfil
+                </button>
+                <button class="page-tab" data-tab="financial">
+                    💰 Financeiro
+                </button>
+                <button class="page-tab" data-tab="enrollments">
+                    📚 Cursos Matriculados
+                </button>
+                <button class="page-tab" data-tab="classes">
+                    🏫 Turmas Ativas
+                </button>
+                <button class="page-tab" data-tab="progress">
+                    📈 Progresso Geral
+                </button>
+                <button class="page-tab" data-tab="insights">
+                    🔍 Dashboard IA
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area - Full Width -->
+        <div class="main-content" style="width: 100vw; max-width: 100vw; padding: 1.5rem; margin: 0; box-sizing: border-box;">
+            <!-- Tab Content Container -->
+            <div class="tab-content-container" style="width: 100%; max-width: none; overflow: visible;">
+                <!-- Profile Tab Content -->
+                <div id="profile-content" class="tab-content active">
+                    <!-- Profile Form -->
+                    <form class="student-form" style="width: 100%; max-width: none; background: rgba(30, 41, 59, 0.7); border: 1px solid #475569; border-radius: 12px; padding: 2rem; box-sizing: border-box;">
+                        <!-- Informações Pessoais -->
+                        <section class="form-section" style="margin-bottom: 2.5rem;">
+                            <h3 class="section-title" style="color: #8B5CF6; margin: 0 0 1.5rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #475569; padding-bottom: 0.75rem;">
+                                👤 Informações Pessoais
+                            </h3>
+                            
+                            <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                                <div class="form-field">
+                                    <label for="studentName" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Nome Completo *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="studentName" 
+                                        name="name"
+                                        required
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="Digite o nome completo"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentEmail" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Email *
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        id="studentEmail" 
+                                        name="email"
+                                        required
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="exemplo@email.com"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentPhone" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Telefone
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="studentPhone" 
+                                        name="phone"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="(11) 99999-9999"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentBirthdate" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Data de Nascimento
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        id="studentBirthdate" 
+                                        name="birthdate"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentCPF" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        CPF
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="studentCPF" 
+                                        name="cpf"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="000.000.000-00"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentStatus" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Status *
+                                    </label>
+                                    <select 
+                                        id="studentStatus" 
+                                        name="status"
+                                        required
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                    >
+                                        <option value="">Selecione o status</option>
+                                        <option value="ativo">✅ Ativo</option>
+                                        <option value="inativo">⏸️ Inativo</option>
+                                        <option value="suspenso">⛔ Suspenso</option>
+                                        <option value="inadimplente">💰 Inadimplente</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Informações de Contato e Endereço -->
+                        <section class="form-section" style="margin-bottom: 2.5rem;">
+                            <h3 class="section-title" style="color: #8B5CF6; margin: 0 0 1.5rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #475569; padding-bottom: 0.75rem;">
+                                📍 Contato e Endereço
+                            </h3>
+                            
+                            <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                                <div class="form-field">
+                                    <label for="studentWhatsapp" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        WhatsApp
+                                    </label>
+                                    <input 
+                                        type="tel" 
+                                        id="studentWhatsapp" 
+                                        name="whatsapp"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="(11) 99999-9999"
+                                    >
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="studentEmergencyContact" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Contato de Emergência
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="studentEmergencyContact" 
+                                        name="emergencyContact"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; transition: border-color 0.2s ease;"
+                                        placeholder="Nome e telefone"
+                                    >
+                                </div>
+
+                                <div class="form-field" style="grid-column: 1 / -1;">
+                                    <label for="studentAddress" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Endereço Completo
+                                    </label>
+                                    <textarea 
+                                        id="studentAddress" 
+                                        name="address"
+                                        rows="2"
+                                        style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; resize: vertical; transition: border-color 0.2s ease;"
+                                        placeholder="Rua, número, bairro, cidade, CEP"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Observações e Notas -->
+                        <section class="form-section">
+                            <h3 class="section-title" style="color: #8B5CF6; margin: 0 0 1.5rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #475569; padding-bottom: 0.75rem;">
+                                📝 Observações e Notas
+                            </h3>
+                            
+                            <div class="form-field">
+                                <label for="studentNotes" style="display: block; color: #E2E8F0; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                    Notas Internas
+                                </label>
+                                <textarea 
+                                    id="studentNotes" 
+                                    name="notes"
+                                    rows="4"
+                                    style="width: 100%; padding: 0.875rem; border: 1px solid #64748B; background: #1E293B; color: #F1F5F9; border-radius: 8px; font-size: 0.875rem; box-sizing: border-box; resize: vertical; transition: border-color 0.2s ease;"
+                                    placeholder="Observações sobre o aluno, restrições médicas, preferências, etc."
+                                ></textarea>
+                            </div>
+                        </section>
+
+                        <!-- Ações do Formulário -->
+                        <div class="form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #475569; display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn-secondary" style="padding: 0.75rem 1.5rem; border: 1px solid #64748B; background: transparent; color: #CBD5E1; border-radius: 8px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s ease;">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-primary" style="padding: 0.75rem 1.5rem; border: none; background: linear-gradient(135deg, #3B82F6, #8B5CF6); color: white; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                                💾 Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Financial Tab Content - Enhanced -->
+                <div id="financial-content" class="tab-content">
+                    <div class="form-section" style="width: 100%; max-width: none; background: rgba(30, 41, 59, 0.7); border: 1px solid #475569; border-radius: 12px; padding: 2rem; box-sizing: border-box;">
+                        <h3 style="color: #8B5CF6; margin: 0 0 1.5rem 0; font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #475569; padding-bottom: 0.75rem;">
+                            💳 Gestão de Assinaturas
+                        </h3>
+
+                        <!-- Current Subscription Card -->
+                        <div id="currentSubscriptionCard" style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; width: 100%; box-sizing: border-box;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h5 style="color: #8B5CF6; margin: 0; font-size: 1.1rem;">📋 Plano Atual</h5>
+                                <span id="currentPlanStatus" style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold; background: #10B981; color: white;">ATIVO</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; width: 100%;">
+                                <div>
+                                    <label style="color: #94A3B8; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">Plano</label>
+                                    <p id="planName" style="color: #F8FAFC; margin: 0.25rem 0 0 0; font-size: 1.1rem; font-weight: 600;">Carregando...</p>
+                                </div>
+                                <div>
+                                    <label style="color: #94A3B8; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">Valor Mensal</label>
+                                    <p id="planPrice" style="color: #10B981; margin: 0.25rem 0 0 0; font-size: 1.1rem; font-weight: 600;">R$ --,--</p>
+                                </div>
+                                <div>
+                                    <label style="color: #94A3B8; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">Próximo Vencimento</label>
+                                    <p id="nextDueDate" style="color: #F59E0B; margin: 0.25rem 0 0 0; font-size: 1.1rem; font-weight: 600;">--/--/----</p>
+                                </div>
+                                <div>
+                                    <label style="color: #94A3B8; font-size: 0.75rem; text-transform: uppercase; font-weight: bold;">Status Pagamento</label>
+                                    <p id="paymentStatus" style="color: #F8FAFC; margin: 0.25rem 0 0 0; font-size: 1.1rem; font-weight: 600;">Em dia</p>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <button onclick="editCurrentSubscription()" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #3B82F6, #8B5CF6); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                    ✏️ Editar Assinatura
+                                </button>
+                                <button onclick="changeSubscriptionPlan()" style="padding: 0.75rem 1.5rem; background: transparent; color: #10B981; border: 1px solid #10B981; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                    🔄 Trocar Plano
+                                </button>
+                                <button onclick="cancelSubscription()" style="padding: 0.75rem 1.5rem; background: transparent; color: #EF4444; border: 1px solid #EF4444; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                    ❌ Cancelar Assinatura
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- No Subscription State -->
+                        <div id="noSubscriptionState" style="display: none; background: rgba(107, 114, 128, 0.1); border: 1px dashed #6B7280; border-radius: 12px; padding: 2rem; text-align: center; margin-bottom: 2rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                            <h5 style="color: #9CA3AF; margin: 0 0 1rem 0;">Nenhuma Assinatura Ativa</h5>
+                            <p style="color: #6B7280; margin: 0 0 1.5rem 0;">Este aluno não possui plano ativo no momento.</p>
+                            <button onclick="createNewSubscription()" style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                ➕ Criar Nova Assinatura
+                            </button>
+                        </div>
+
+                        <!-- Loading/Error States -->
+                        <div class="loading-state" id="financialLoading" style="display: none; text-align: center; padding: 3rem; color: #CBD5E1;">
+                            <div class="loading-spinner" style="margin: 0 auto 1rem; width: 40px; height: 40px; border: 3px solid #334155; border-top: 3px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p>Carregando dados financeiros...</p>
+                        </div>
+                        
+                        <div class="error-state" id="financialError" style="display: none; text-align: center; padding: 3rem; color: #EF4444;">
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                            <h3 style="color: #EF4444; margin: 0 0 1rem 0;">Serviço Temporariamente Indisponível</h3>
+                            <p style="color: #CBD5E1; margin: 0 0 1.5rem 0;">O sistema financeiro está em manutenção.</p>
+                            <button onclick="retryFinancialData()" style="padding: 0.75rem 1.5rem; border: 1px solid #EF4444; background: transparent; color: #EF4444; border-radius: 8px; cursor: pointer;">
+                                🔄 Tentar Novamente
+                            </button>
+                        </div>
+
+                        <!-- Available Plans -->
+                        <div id="availablePlansSection" style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; width: 100%; box-sizing: border-box;">
+                            <h5 style="color: #8B5CF6; margin: 0 0 1.5rem 0; font-size: 1.1rem;">💎 Planos Disponíveis</h5>
+                            
+                            <div id="availablePlans" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%;">
+                                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; padding: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <h6 style="color: #3B82F6; margin: 0; font-weight: bold;">Plano Básico</h6>
+                                        <span style="color: #10B981; font-weight: bold;">R$ 150,00</span>
+                                    </div>
+                                    <p style="color: #CBD5E1; font-size: 0.875rem; margin: 0 0 1rem 0;">2x por semana • Aulas em grupo</p>
+                                    <button onclick="selectPlan('basic')" style="width: 100%; padding: 0.5rem; background: transparent; color: #3B82F6; border: 1px solid #3B82F6; border-radius: 6px; cursor: pointer;">
+                                        Selecionar
+                                    </button>
+                                </div>
+                                
+                                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 8px; padding: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <h6 style="color: #10B981; margin: 0; font-weight: bold;">Plano Premium</h6>
+                                        <span style="color: #10B981; font-weight: bold;">R$ 250,00</span>
+                                    </div>
+                                    <p style="color: #CBD5E1; font-size: 0.875rem; margin: 0 0 1rem 0;">Ilimitado • Aulas + Personal</p>
+                                    <button onclick="selectPlan('premium')" style="width: 100%; padding: 0.5rem; background: transparent; color: #10B981; border: 1px solid #10B981; border-radius: 6px; cursor: pointer;">
+                                        Selecionar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enrollments Tab Content -->
+                <div id="enrollments-content" class="tab-content">
+                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
+                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+                        <p>Carregando matrículas...</p>
+                    </div>
+                </div>
+                
+                <!-- Classes Tab Content -->
+                <div id="classes-content" class="tab-content">
+                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
+                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+                        <p>Carregando turmas...</p>
+                    </div>
+                </div>
+                
+                <!-- Progress Tab Content -->
+                <div id="progress-content" class="tab-content">
+                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
+                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+                        <p>Carregando progresso...</p>
+                    </div>
+                </div>
+                
+                <!-- Insights Tab Content -->
+                <div id="insights-content" class="tab-content">
+                    <div class="loading-state" style="text-align: center; padding: 3rem; color: #CBD5E1;">
+                        <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+                        <p>Carregando insights...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="background: rgba(15, 23, 42, 0.9); padding: 2rem; border-radius: 12px; text-align: center; border: 1px solid #334155;">
+            <div style="color: #3B82F6; font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+            <p id="loadingStateMessage" style="color: #F8FAFC; margin: 0;">Carregando dados do aluno...</p>
+        </div>
+    </div>
+
+    <!-- Include JavaScript Module -->
+    <script src="../js/modules/student-editor.js"></script>
+    
+    <!-- Enhanced Financial Tab JavaScript -->
+    <script>
+        // Funções para gestão de assinaturas
+        function editCurrentSubscription() {
+            alert('🔧 Editar Assinatura\n\nAqui você poderá:\n• Alterar valor personalizado\n• Modificar data de vencimento\n• Ajustar condições especiais\n• Mudar forma de pagamento');
+        }
+
+        function changeSubscriptionPlan() {
+            alert('🔄 Trocar Plano\n\nEscolha um novo plano na seção "Planos Disponíveis" abaixo.\n\nA mudança será aplicada no próximo ciclo de cobrança.');
+        }
+
+        function cancelSubscription() {
+            if (confirm('⚠️ Cancelar Assinatura\n\nTem certeza que deseja cancelar a assinatura deste aluno?\n\nEsta ação pode ser revertida posteriormente.')) {
+                document.getElementById('currentPlanStatus').textContent = 'CANCELADO';
+                document.getElementById('currentPlanStatus').style.background = '#EF4444';
+                alert('✅ Assinatura cancelada com sucesso!\n\nO aluno manterá acesso até o final do período pago.');
+            }
+        }
+
+        function createNewSubscription() {
+            alert('➕ Criar Nova Assinatura\n\nSelecione um plano na seção "Planos Disponíveis" para começar.');
+        }
+
+        function selectPlan(planId) {
+            const planNames = {
+                'basic': 'Plano Básico - R$ 150,00',
+                'premium': 'Plano Premium - R$ 250,00'
+            };
+            
+            if (confirm(`📋 Confirmar Seleção\n\n${planNames[planId]}\n\nDeseja prosseguir com este plano?`)) {
+                alert(`✅ Plano selecionado!\n\nPróximos passos:\n• Definir data de início\n• Configurar forma de pagamento\n• Gerar primeira cobrança`);
+            }
+        }
+
+        function retryFinancialData() {
+            // Implementação do retry
+            setTimeout(() => {
+                document.getElementById('planName').textContent = 'Plano Premium';
+                document.getElementById('planPrice').textContent = 'R$ 250,00';
+                document.getElementById('nextDueDate').textContent = '15/02/2025';
+                document.getElementById('paymentStatus').textContent = 'Em dia';
+            }, 1000);
+        }
+
+        // CSS para animação de loading
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Auto-load financial data quando a aba for ativada
+        document.addEventListener('DOMContentLoaded', function() {
+            const financialTab = document.querySelector('[data-tab="financial"]');
+            if (financialTab) {
+                financialTab.addEventListener('click', function() {
+                    setTimeout(() => {
+                        // Simular dados de exemplo
+                        document.getElementById('planName').textContent = 'Plano Premium';
+                        document.getElementById('planPrice').textContent = 'R$ 250,00';
+                        document.getElementById('nextDueDate').textContent = '15/02/2025';
+                        document.getElementById('paymentStatus').textContent = 'Em dia';
+                    }, 500);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+            if (financialTab) {
+                financialTab.addEventListener('click', function() {
+                    setTimeout(() => {
+                        // Simular dados de exemplo
+                        document.getElementById('planName').textContent = 'Plano Premium';
+                        document.getElementById('planPrice').textContent = 'R$ 250,00';
+                        document.getElementById('nextDueDate').textContent = '15/02/2025';
+                        document.getElementById('paymentStatus').textContent = 'Em dia';
+                    }, 500);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+            const loading = document.getElementById('financialLoading');
+            const error = document.getElementById('financialError');
+            const form = document.getElementById('financialForm');
+            const notice = document.getElementById('offlineNotice');
+            
+            loading.style.display = 'none';
+            error.style.display = 'none';
+            form.style.display = 'block';
+            notice.style.display = 'block';
+
+            // Preencher campos com dados placeholder
+            document.getElementById('currentPlan').value = 'Dados indisponíveis';
+            document.getElementById('subscriptionStatus').value = 'Sistema offline';
+            document.getElementById('monthlyValue').value = 'Aguardando conexão';
+            document.getElementById('nextDueDate').value = 'Não disponível';
+        }
+
+        // Função para tentar carregar dados reais
+        async function loadRealFinancialData() {
+            const studentId = getStudentIdFromURL();
+            if (!studentId) throw new Error('Student ID not found');
+
+            const response = await fetch(`/api/students/${studentId}/subscription`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // Se chegou aqui, deu certo
+            const loading = document.getElementById('financialLoading');
+            const form = document.getElementById('financialForm');
+            
+            loading.style.display = 'none';
+            form.style.display = 'block';
+            
+            // Preencher dados reais
+            populateFinancialData(data);
+        }
+
+        // Função para popular dados financeiros
+        function populateFinancialData(data) {
+            document.getElementById('currentPlan').value = data.plan?.name || 'Nenhum plano ativo';
+            document.getElementById('subscriptionStatus').value = data.status || 'Sem assinatura';
+            document.getElementById('monthlyValue').value = data.plan?.price ? `R$ ${data.plan.price.toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('nextDueDate').value = data.nextDueDate ? new Date(data.nextDueDate).toLocaleDateString('pt-BR') : 'Não definido';
+        }
+
+        // Função para extrair student ID
+        function getStudentIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id') || localStorage.getItem('currentStudentId');
+        }
+
+        // Funções para ações financeiras
+        function createSubscription() {
+            alert('🚧 Funcionalidade de nova assinatura em desenvolvimento.\n\nEm breve você poderá criar assinaturas diretamente por aqui!');
+        }
+
+        function viewFinancialHistory() {
+            alert('🚧 Funcionalidade de histórico financeiro em desenvolvimento.\n\nEm breve você poderá visualizar todo o histórico de pagamentos!');
+        }
+
+        function generateBilling() {
+            alert('🚧 Funcionalidade de geração de cobrança em desenvolvimento.\n\nEm breve você poderá gerar cobranças manuais!');
+        }
+
+        // CSS para animação de loading
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Auto-load financial data quando a aba for ativada
+        document.addEventListener('DOMContentLoaded', function() {
+            const financialTab = document.querySelector('[data-tab="financial"]');
+            if (financialTab) {
+                financialTab.addEventListener('click', function() {
+                    setTimeout(async () => {
+                        if (document.getElementById('financialForm').style.display !== 'block') {
+                            try {
+                                await loadRealFinancialData();
+                            } catch (e) {
+                                console.warn('Auto-load failed, showing retry option:', e.message);
+                                setTimeout(() => {
+                                    const loading = document.getElementById('financialLoading');
+                                    const error = document.getElementById('financialError');
+                                    loading.style.display = 'none';
+                                    error.style.display = 'block';
+                                }, 1000);
+                            }
+                        }
+                    }, 100);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
