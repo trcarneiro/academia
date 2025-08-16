@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Plano - Academia</title>
+    
+    <!-- Sistema Base CSS -->
+    <link rel="stylesheet" href="../css/base/module-system.css">
+    
+    <!-- CSS específico do plan-editor -->
+    <link rel="stylesheet" href="../css/modules/plan-editor-standardized.css">
+</head>
+<body>
+    <!-- Plan Editor Module - Padronizado -->
+    <div class="plan-editor-isolated">
+        <div class="plan-editor-isolated-container module-isolated-base">
+            <!-- Loading State -->
+            <div id="loadingState" class="module-isolated-loading">
+                ⏳ Carregando dados do plano...
+            </div>
+            
+            <!-- Header Section -->
+            <div class="plan-editor-isolated-page-header module-isolated-header" id="mainContent" style="display: none;">
+                <div class="plan-editor-isolated-header-content">
+                    <div class="plan-editor-isolated-header-left">
+                        <h1 class="plan-editor-isolated-page-title">
+                            💰 Editar Plano
+                        </h1>
+                        <p class="plan-editor-isolated-page-subtitle">Configure todos os detalhes do plano financeiro</p>
+                    </div>
+                    <div class="plan-editor-isolated-header-actions">
+                        <button class="module-isolated-btn module-isolated-btn-secondary" id="backBtn">
+                            ← Voltar
+                        </button>
+                        <button class="module-isolated-btn module-isolated-btn-danger" id="deletePlanBtn" style="display: none;">
+                            🗑️ Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="plan-editor-tabs-nav" id="planTabs" style="display: none;">
+                <button class="plan-editor-tab module-isolated-btn active" data-tab="details">
+                    📝 Detalhes
+                </button>
+                <button class="plan-editor-tab module-isolated-btn" data-tab="courses" id="coursesTabBtn">
+                    📚 Cursos
+                </button>
+                <button class="plan-editor-tab module-isolated-btn" data-tab="lesson-plans">
+                    📋 Planos de Aula
+                </button>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="plan-editor-tab-panels" id="planTabPanels" style="display: none;">
+                
+                <!-- Details Panel -->
+                <div class="plan-editor-tab-panel plan-tab-panel active" data-panel="details">
+                    <div class="plan-editor-data-section module-isolated-data-section">
+                        <div class="plan-editor-section-header module-isolated-section-header">
+                            <h2 class="module-isolated-section-title">Informações Básicas</h2>
+                        </div>
+                        
+                        <div class="plan-editor-form-container">
+                            <form id="planForm" class="plan-editor-form">
+                                <div class="plan-editor-form-grid">
+                                    <div class="plan-editor-form-group">
+                                        <label for="planName" class="plan-editor-label">
+                                            Nome do Plano *
+                                        </label>
+                                        <input type="text" id="planName" name="planName" 
+                                               class="plan-editor-input" required 
+                                               placeholder="Ex: Plano Básico">
+                                    </div>
+                                    
+                                    <div class="plan-editor-form-group">
+                                        <label for="planPrice" class="plan-editor-label">
+                                            Valor (R$) *
+                                        </label>
+                                        <input type="number" step="0.01" id="planPrice" name="planPrice" 
+                                               class="plan-editor-input" required 
+                                               placeholder="150.00">
+                                    </div>
+                                    
+                                    <div class="plan-editor-form-group">
+                                        <label for="planBillingType" class="plan-editor-label">
+                                            Tipo de Cobrança *
+                                        </label>
+                                        <select id="planBillingType" name="planBillingType" 
+                                                class="plan-editor-select" required>
+                                            <option value="">Selecione...</option>
+                                            <option value="MONTHLY">Mensal</option>
+                                            <option value="QUARTERLY">Trimestral</option>
+                                            <option value="SEMIANNUAL">Semestral</option>
+                                            <option value="ANNUAL">Anual</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="plan-editor-form-group">
+                                        <label for="planClassesPerWeek" class="plan-editor-label">
+                                            Aulas por Semana
+                                        </label>
+                                        <input type="number" id="planClassesPerWeek" name="planClassesPerWeek" 
+                                               class="plan-editor-input" min="0" value="2"
+                                               placeholder="2">
+                                    </div>
+                                    
+                                    <div class="plan-editor-form-group">
+                                        <label for="planCategory" class="plan-editor-label">
+                                            Categoria
+                                        </label>
+                                        <select id="planCategory" name="planCategory" 
+                                                class="plan-editor-select">
+                                            <option value="">Selecione...</option>
+                                            <option value="basic">Básico</option>
+                                            <option value="premium">Premium</option>
+                                            <option value="vip">VIP</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="plan-editor-form-group plan-editor-form-group-full">
+                                    <label for="planDescription" class="plan-editor-label">
+                                        Descrição
+                                    </label>
+                                    <textarea id="planDescription" name="planDescription" 
+                                              class="plan-editor-textarea" rows="3"
+                                              placeholder="Descreva os benefícios do plano..."></textarea>
+                                </div>
+                                
+                                <!-- Optional Features -->
+                                <div class="plan-editor-features-section">
+                                    <h3 class="plan-editor-features-title">Recursos Adicionais</h3>
+                                    <div class="plan-editor-features-grid">
+                                        <label class="plan-editor-checkbox-group">
+                                            <input type="checkbox" id="hasPersonalTraining" name="hasPersonalTraining">
+                                            <span class="plan-editor-checkbox-label">Personal Training</span>
+                                        </label>
+                                        
+                                        <label class="plan-editor-checkbox-group">
+                                            <input type="checkbox" id="hasNutrition" name="hasNutrition">
+                                            <span class="plan-editor-checkbox-label">Acompanhamento Nutricional</span>
+                                        </label>
+                                        
+                                        <label class="plan-editor-checkbox-group">
+                                            <input type="checkbox" id="allowFreeze" name="allowFreeze">
+                                            <span class="plan-editor-checkbox-label">Permite Congelamento</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="plan-editor-form-actions">
+                                    <button type="submit" id="savePlanBtn" 
+                                            class="module-isolated-btn module-isolated-btn-primary">
+                                        💾 Salvar Plano
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Courses Panel -->
+                <div class="plan-editor-tab-panel plan-tab-panel" data-panel="courses" id="coursesPanel">
+                    <div class="plan-editor-data-section module-isolated-data-section">
+                        <div class="plan-editor-section-header module-isolated-section-header">
+                            <h2 class="module-isolated-section-title">Associação de Cursos</h2>
+                            <p class="plan-editor-section-subtitle">
+                                Selecione quais cursos estão inclusos neste plano
+                            </p>
+                        </div>
+                        
+                        <div id="coursesPanelContent" class="plan-editor-courses-content">
+                            <!-- Loading State -->
+                            <div id="coursesLoading" class="module-isolated-loading" style="display: none;">
+                                ⏳ Carregando cursos...
+                            </div>
+                            
+                            <!-- Courses Association Interface -->
+                            <div id="coursesAssociation" class="plan-editor-courses-association" style="display: none;">
+                                <!-- Available Courses -->
+                                <div class="plan-editor-courses-column">
+                                    <div class="plan-editor-courses-header">
+                                        <h3>Cursos Disponíveis</h3>
+                                        <span class="plan-editor-count-badge" id="availableCount">0</span>
+                                    </div>
+                                    <div class="plan-editor-courses-toolbar">
+                                        <input type="search" id="searchAvailableCourses" 
+                                               placeholder="Buscar cursos..." 
+                                               class="plan-editor-search-input">
+                                    </div>
+                                    <ul id="availableCoursesList" class="plan-editor-courses-list"></ul>
+                                    <div id="availableEmptyState" class="plan-editor-empty-state" style="display: none;">
+                                        📚 Nenhum curso disponível
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="plan-editor-courses-actions">
+                                    <button id="addCourseBtn" class="module-isolated-btn module-isolated-btn-primary">
+                                        ➡️ Adicionar
+                                    </button>
+                                    <button id="removeCourseBtn" class="module-isolated-btn module-isolated-btn-secondary">
+                                        ⬅️ Remover
+                                    </button>
+                                </div>
+                                
+                                <!-- Associated Courses -->
+                                <div class="plan-editor-courses-column">
+                                    <div class="plan-editor-courses-header">
+                                        <h3>Cursos do Plano</h3>
+                                        <span class="plan-editor-count-badge" id="linkedCount">0</span>
+                                    </div>
+                                    <div class="plan-editor-courses-toolbar">
+                                        <input type="search" id="searchLinkedCourses" 
+                                               placeholder="Buscar cursos..." 
+                                               class="plan-editor-search-input">
+                                    </div>
+                                    <ul id="linkedCoursesList" class="plan-editor-courses-list"></ul>
+                                    <div id="linkedEmptyState" class="plan-editor-empty-state" style="display: none;">
+                                        📝 Nenhum curso associado
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Changes Summary Bar -->
+                            <div id="coursesDiffBar" class="plan-editor-changes-bar" style="display: none;">
+                                <div class="plan-editor-changes-summary">
+                                    <span id="diffSummary"></span>
+                                </div>
+                                <div class="plan-editor-changes-actions">
+                                    <button id="discardCoursesChangesBtn" 
+                                            class="module-isolated-btn module-isolated-btn-secondary">
+                                        ↶ Descartar
+                                    </button>
+                                    <button id="saveCoursesChangesBtn" 
+                                            class="module-isolated-btn module-isolated-btn-primary">
+                                        💾 Salvar Alterações
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lesson Plans Panel -->
+                <div class="plan-editor-tab-panel plan-tab-panel" data-panel="lesson-plans">
+                    <div class="plan-editor-data-section module-isolated-data-section">
+                        <div class="plan-editor-section-header module-isolated-section-header">
+                            <h2 class="module-isolated-section-title">Planos de Aula</h2>
+                            <p class="plan-editor-section-subtitle">
+                                Configure os planos de aula para este plano financeiro
+                            </p>
+                        </div>
+                        
+                        <div class="module-isolated-empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div>Planos de aula em desenvolvimento</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/modules/plan-editor.js"></script>
+</body>
+</html>

@@ -173,3 +173,201 @@ Durante o desenvolvimento, sempre identifique e comunique melhorias de contexto 
 **Prevention**: Always run verification protocol before any new implementation.
 
 **Lesson**: The cardinal rule is **"Check first, implement second"** - existing working code is infinitely more valuable than new code.
+
+# 🎨 UI/UX Design Standards - Classes Module Reference
+
+## Design Philosophy: Modern Full-Width Layouts
+The Classes module (`classes.html` + `classes.css`) establishes our **official UI standard** for all modules. Every new module must follow these exact patterns for visual consistency.
+
+### 🏗️ Core Layout Architecture
+
+#### 1. Container Structure (Mandatory Pattern)
+```html
+<!-- Main container extending beyond left menu -->
+<div class="classes-isolated-container">
+    <!-- Page header with gradient background -->
+    <div class="classes-isolated-page-header">
+        <div class="classes-isolated-header-content">
+            <h1>Module Title</h1>
+            <p class="classes-isolated-header-subtitle">Module description</p>
+        </div>
+    </div>
+    
+    <!-- Statistics grid section -->
+    <div class="classes-isolated-stats-grid">
+        <!-- Stat cards here -->
+    </div>
+    
+    <!-- Main content area -->
+    <div class="classes-isolated-content">
+        <!-- Data tables, forms, etc. -->
+    </div>
+</div>
+```
+
+#### 2. CSS Isolation Standard (Follow Exactly)
+**Pattern**: `.module-name-isolated-element`
+- **Classes Module**: `.classes-isolated-*`
+- **Students Module**: `.students-isolated-*` 
+- **Courses Module**: `.courses-isolated-*`
+
+### 🎨 Visual Standards Reference
+
+#### Header Design (Gradient Background)
+```css
+.module-isolated-page-header {
+    background: linear-gradient(135deg, 
+        var(--primary-gradient-start) 0%, 
+        var(--primary-gradient-end) 100%);
+    padding: 2rem;
+    color: white;
+    margin: -2rem -2rem 2rem -2rem;
+}
+```
+
+#### Statistics Grid (4-Column Responsive)
+```css
+.module-isolated-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+```
+
+#### Data Tables (Modern Styling)
+```css
+.module-isolated-data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-background);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--table-shadow);
+}
+```
+
+### 🔧 Component Standards
+
+#### 1. Action Buttons (Primary Style)
+```html
+<button class="module-isolated-btn module-isolated-btn-primary" 
+        data-action="create">
+    <i class="fas fa-plus"></i>
+    Create New
+</button>
+```
+
+#### 2. Status Badges (Color System)
+```html
+<span class="module-isolated-status-badge module-isolated-status-active">
+    Active
+</span>
+```
+
+#### 3. Stat Cards (Information Display)
+```html
+<div class="module-isolated-stat-card">
+    <div class="module-isolated-stat-icon">
+        <i class="fas fa-icon"></i>
+    </div>
+    <div class="module-isolated-stat-info">
+        <span class="module-isolated-stat-number">42</span>
+        <span class="module-isolated-stat-label">Total Items</span>
+    </div>
+</div>
+```
+
+### 📱 Responsive Design Requirements
+
+#### Mobile-First Approach (Follow Exactly)
+```css
+/* Mobile (< 768px) */
+.module-isolated-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) {
+    .module-isolated-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop (> 1024px) */
+@media (min-width: 1024px) {
+    .module-isolated-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+```
+
+### 🎯 CSS Custom Properties (Standard Variables)
+```css
+:root {
+    /* Colors */
+    --primary-gradient-start: #667eea;
+    --primary-gradient-end: #764ba2;
+    --card-background: rgba(255, 255, 255, 0.95);
+    --text-primary: #2d3748;
+    --text-secondary: #718096;
+    
+    /* Effects */
+    --backdrop-filter: blur(10px) saturate(180%);
+    --table-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    
+    /* Spacing */
+    --container-padding: 2rem;
+    --section-spacing: 2rem;
+    --card-padding: 1.5rem;
+}
+```
+
+### 🚨 Implementation Rules
+
+#### Mandatory Requirements
+1. **Full-Width Layout**: Container must extend beyond left navigation menu
+2. **Gradient Header**: Every module page requires gradient header section
+3. **Stats Grid**: 4-column responsive statistics section (even if empty)
+4. **CSS Isolation**: Use unique prefix for all CSS classes
+5. **Mobile-First**: Responsive design starting from mobile (320px+)
+
+#### Layout Extension Pattern
+```css
+.module-isolated-container {
+    margin-left: -240px; /* Extend beyond sidebar */
+    padding-left: 260px;  /* Account for sidebar + spacing */
+    min-height: 100vh;
+}
+
+/* Mobile adjustment */
+@media (max-width: 768px) {
+    .module-isolated-container {
+        margin-left: 0;
+        padding-left: var(--container-padding);
+    }
+}
+```
+
+### 📋 Quality Checklist
+
+Before submitting any new module interface, verify:
+- [ ] Container extends beyond left menu (desktop)
+- [ ] Gradient header with title and subtitle
+- [ ] Responsive stats grid (4 columns desktop, 2 tablet, 1 mobile)
+- [ ] CSS isolation with module prefix
+- [ ] Custom properties for consistent styling
+- [ ] Mobile-first responsive breakpoints
+- [ ] Action buttons with data-action attributes
+- [ ] Status badges with consistent color system
+- [ ] Data tables with modern styling
+
+### 🎨 Reference Files
+- **HTML Structure**: `public/views/classes.html`
+- **CSS Standards**: `public/css/modules/classes.css`
+- **JavaScript Pattern**: `public/js/modules/classes.js`
+
+**Final Rule**: When in doubt about any UI decision, reference the Classes module. It is the single source of truth for our visual standards.

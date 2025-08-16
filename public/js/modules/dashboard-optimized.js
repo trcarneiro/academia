@@ -35,6 +35,10 @@
                 viewPath = '/modules/courses/courses.html';
                 scriptPath = '/modules/courses/courses-manager.js';
                 break;
+            case 'course-editor':
+                viewPath = '/modules/courses/course-editor.html';
+                scriptPath = '/js/modules/course-editor.js';
+                break;
             case 'knowledge-base':
                 viewPath = '/views/knowledge-base.html';
                 scriptPath = '/js/modules/knowledge-base.js';
@@ -66,6 +70,11 @@
             case 'techniques':
                 viewPath = '/modules/techniques/techniques.html';
                 scriptPath = '/modules/techniques/techniques.js';
+                forceModuleType = true; // ES module
+                break;
+            case 'activities':
+                viewPath = '/views/modules/activities.html';
+                scriptPath = '/js/modules/activities.js';
                 forceModuleType = true; // ES module
                 break;
             case 'units':
@@ -325,9 +334,9 @@
                                 </button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" onclick="navigateToModule('techniques')" data-ai-enabled="true">
-                                    <span class="nav-icon">🥋</span>
-                                    Banco de Técnicas
+                                <button class="nav-link" onclick="navigateToModule('activities')" data-ai-enabled="true">
+                                    <span class="nav-icon">📅</span>
+                                    Atividades
                                     <span class="badge success">NOVO</span>
                                 </button>
                             </li>

@@ -8,6 +8,29 @@
     let currentPlan = null;
     let editMode = false;
     let allCourses = [];
+
+    // Utility functions for visibility control using CSS classes
+    function showElement(element) {
+        if (element) {
+            element.classList.remove('hidden');
+            element.classList.add('show');
+        }
+    }
+
+    function hideElement(element) {
+        if (element) {
+            element.classList.remove('show');
+            element.classList.add('hidden');
+        }
+    }
+
+    function toggleElement(element, show) {
+        if (show) {
+            showElement(element);
+        } else {
+            hideElement(element);
+        }
+    }
     
     // State for Courses Tab
     let coursesTabState = {
@@ -100,11 +123,11 @@
                 const tabsNav = document.getElementById('planTabs');
                 const tabsPanels = document.getElementById('planTabPanels');
                 const coursesTabBtn = document.getElementById('coursesTabBtn');
-                if (loadingState) loadingState.style.display = 'none';
-                if (mainContent) mainContent.style.display = 'block';
-                if (tabsNav) tabsNav.style.display = 'flex';
-                if (tabsPanels) tabsPanels.style.display = 'block';
-                if (coursesTabBtn) coursesTabBtn.style.display = 'block';
+                hideElement(loadingState);
+                showElement(mainContent);
+                showElement(tabsNav);
+                showElement(tabsPanels);
+                showElement(coursesTabBtn);
                 
                 // Update page title for new plan
                 const pageTitle = document.querySelector('h1');
@@ -127,8 +150,8 @@
             // Hide loading state even on error
             const loadingState = document.getElementById('loadingState');
             const mainContent = document.getElementById('mainContent');
-            if (loadingState) loadingState.style.display = 'none';
-            if (mainContent) mainContent.style.display = 'block';
+            hideElement(loadingState);
+            showElement(mainContent);
         }
     }
     
@@ -167,8 +190,8 @@
             // Remove loader and show error fallback
             const loadingState = document.getElementById('loadingState');
             const mainContent = document.getElementById('mainContent');
-            if (loadingState) loadingState.style.display = 'none';
-            if (mainContent) mainContent.style.display = 'none';
+            hideElement(loadingState);
+            hideElement(mainContent);
             const errorContainer = document.getElementById('planEditorError') || document.createElement('div');
             errorContainer.id = 'planEditorError';
             errorContainer.className = 'plan-editor-error';
@@ -183,8 +206,8 @@
             document.body.appendChild(errorContainer);
             document.getElementById('retryLoadPlanBtn').onclick = () => {
                 errorContainer.remove();
-                if (loadingState) loadingState.style.display = 'block';
-                if (mainContent) mainContent.style.display = 'none';
+                showElement(loadingState);
+                hideElement(mainContent);
                 loadPlanData(planId);
             };
             document.getElementById('backToPlansBtn').onclick = () => {
@@ -193,8 +216,8 @@
             // Ensure tabs wrapper is shown so user can navigate other tabs if needed
             const tabsNav = document.getElementById('planTabs');
             const tabsPanels = document.getElementById('planTabPanels');
-            if (tabsNav) tabsNav.style.display = 'flex';
-            if (tabsPanels) tabsPanels.style.display = 'block';
+            showElement(tabsNav);
+            showElement(tabsPanels);
             // Keep edit mode and remember id for other operations (e.g., Courses tab) even if details failed
             editMode = true;
             currentPlan = { id: planId };
@@ -215,16 +238,12 @@
             // Always show the courses tab button after attempting to load courses
             // The content and specific messages will be handled by plan-editor-courses-tab.js
             const coursesTabBtn = document.getElementById('coursesTabBtn');
-            if (coursesTabBtn) {
-                coursesTabBtn.style.display = 'block';
-            }
+            showElement(coursesTabBtn);
         } catch (error) {
             console.warn('⚠️ Could not load supporting data:', error);
             // Even if loading fails, show the tab so user is aware of its existence
             const coursesTabBtn = document.getElementById('coursesTabBtn');
-            if (coursesTabBtn) {
-                coursesTabBtn.style.display = 'block';
-            }
+            showElement(coursesTabBtn);
         }
     }
     
@@ -264,16 +283,16 @@
         const tabsPanels = document.getElementById('planTabPanels');
         const mainContent = document.getElementById('mainContent');
         
-        if (loadingState) loadingState.style.display = 'none';
-        if (tabsNav) tabsNav.style.display = 'flex';
-        if (tabsPanels) tabsPanels.style.display = 'block';
-        if (mainContent) mainContent.style.display = 'block';
+        hideElement(loadingState);
+        showElement(tabsNav);
+        showElement(tabsPanels);
+        showElement(mainContent);
         
         // Ensure the Courses tab button is visible
         const coursesTabBtn = document.getElementById('coursesTabBtn');
         if (coursesTabBtn) {
             console.log('[DEBUG] Aba Cursos encontrada, tornando-a visível.');
-            coursesTabBtn.style.display = 'block';
+            showElement(coursesTabBtn);
         } else {
             console.warn('[DEBUG] Aba Cursos NÃO encontrada ao tentar torná-la visível.');
         }
@@ -332,10 +351,10 @@
         const deleteBtn = document.getElementById('deletePlanBtn');
         if (deleteBtn) {
             if (editMode && currentPlan) {
-                deleteBtn.style.display = 'inline-block';
+                showElement(deleteBtn);
                 deleteBtn.addEventListener('click', handleDeletePlan);
             } else {
-                deleteBtn.style.display = 'none';
+                hideElement(deleteBtn);
             }
         }
         console.log('✅ Event listeners setup completed');

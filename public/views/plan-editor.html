@@ -4,161 +4,183 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Editor de Plano</title>
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="stylesheet" href="../css/modules/plan-editor.css" />
-  <style>
-    /* Minimal tab and list styles (complement existing CSS) */
-    .plan-tabs { display:flex; gap:6px; margin:16px 0 8px; border-bottom:1px solid #e5e7eb; }
-    .plan-tab { padding:8px 12px; border:1px solid #e5e7eb; border-bottom:none; border-radius:8px 8px 0 0; background:#f3f4f6; cursor:pointer; font-weight:600; color:#374151; position:relative; }
-    .plan-tab.active { background:#fff; color:#111827; }
-    .plan-tab.badge-dirty::after { content:""; width:8px; height:8px; background:#ef4444; border-radius:999px; position:absolute; top:6px; right:-2px; }
-    .plan-tab-panels { background:#fff; border:1px solid #e5e7eb; border-radius:0 8px 8px 8px; padding:16px; }
-    /* Force visibility control even if external CSS conflicts */
-    .plan-tab-panels .plan-tab-panel { display:none !important; }
-    .plan-tab-panels .plan-tab-panel.active { display:block !important; }
-
-    .courses-association { display:flex; gap:16px; flex-wrap:wrap; }
-    .courses-col { flex:1 1 360px; min-width:300px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; background:#fafafa; display:flex; flex-direction:column; max-height:520px; }
-    .courses-col header { padding:10px 12px; background:#fff; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; font-weight:600; }
-    .courses-col .toolbar { padding:8px; border-bottom:1px solid #eee; }
-    .courses-col input[type="search"] { width:100%; padding:6px 8px; }
-    ul.course-list { list-style:none; margin:0; padding:0; overflow:auto; flex:1; background:#fff; }
-    ul.course-list li { padding:8px 10px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; gap:8px; cursor:pointer; }
-    ul.course-list li.selected { background:#e0f2fe; }
-    ul.course-list li .meta { margin-left:auto; font-size:12px; color:#6b7280; }
-    .assoc-actions { display:flex; flex-direction:column; justify-content:center; gap:10px; }
-    .save-diff-bar { margin-top:12px; padding:10px; border:1px solid #fde68a; background:#fffbeb; border-radius:8px; display:none; justify-content:space-between; }
-    .empty-state { padding:14px; text-align:center; color:#6b7280; }
-    .loading-inline { padding:10px; color:#374151; }
-  </style>
+  <!-- Sistema Base Padronizado -->
+  <link rel="stylesheet" href="../css/base/module-system.css" />
+  <link rel="stylesheet" href="../css/modules/plan-editor-padronizado.css" />
 </head>
 <body>
-  <div class="plan-editor container plan-editor-isolated">
-    <header class="page-header">
-      <div class="header-content">
-        <div>
-          <h1 id="pageTitle">Editar Plano</h1>
-          <p class="sub">Gerencie e edite os planos da academia</p>
-        </div>
-        <div class="header-actions">
-          <button id="backBtn" class="btn btn-secondary">← Voltar</button>
-        </div>
+  <!-- Container Base Padronizado -->
+  <div class="module-isolated-base">
+    <!-- Header Padronizado -->
+    <div class="module-isolated-header">
+      <h1 class="module-isolated-title">
+        <span class="module-isolated-icon">📋</span>
+        <span id="pageTitle">Editor de Planos</span>
+      </h1>
+      <div class="module-isolated-actions">
+        <button id="backBtn" class="module-isolated-btn-secondary">← Voltar</button>
       </div>
-    </header>
+    </div>
 
-    <div id="loadingState" class="loading-inline">Carregando dados do plano...</div>
+    <!-- Conteúdo Padronizado -->
+    <div class="module-isolated-content">
+      
+      <!-- Loading State -->
+      <div id="loadingState" class="module-isolated-loading">
+        <div class="module-isolated-loading-spinner"></div>
+        Carregando dados do plano...
+      </div>
 
-    <nav id="planTabs" class="plan-tabs" style="display:none;">
-      <div class="plan-tab active" data-tab="details">Detalhes</div>
-      <div class="plan-tab" data-tab="courses" id="coursesTabBtn">Cursos</div>
-      <div class="plan-tab" data-tab="lesson-plans" id="lessonPlansTabBtn">Planos de Aula</div>
-    </nav>
+      <!-- Sistema de Abas -->
+      <nav id="planTabs" class="plan-editor-tabs">
+        <div class="plan-editor-tab active" data-tab="details">📝 Detalhes</div>
+        <div class="plan-editor-tab" data-tab="courses" id="coursesTabBtn">📚 Cursos</div>
+        <div class="plan-editor-tab" data-tab="lesson-plans" id="lessonPlansTabBtn">📖 Planos de Aula</div>
+      </nav>
 
-    <section id="planTabPanels" class="plan-tab-panels" style="display:none;">
-      <!-- Details Tab -->
-      <div class="plan-tab-panel active" data-panel="details">
-        <main id="mainContent" style="display:none;">
-          <form id="plan-form">
-            <div class="form-section">
-              <h3>Informações Gerais</h3>
-              <div class="form-group">
-                <label for="planName">Nome do Plano</label>
-                <input type="text" id="planName" name="planName" required />
-              </div>
-              <div class="form-group">
-                <label for="planDescription">Descrição</label>
-                <textarea id="planDescription" name="planDescription" rows="3"></textarea>
-              </div>
-            </div>
-
-            <div class="form-section">
-              <h3>Detalhes</h3>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="planPrice">Preço (R$)</label>
-                  <input type="number" step="0.01" id="planPrice" name="planPrice" required />
+      <!-- Conteúdo das Abas -->
+      <section id="planTabPanels" class="plan-editor-tab-panels">
+        
+        <!-- Aba Detalhes -->
+        <div class="plan-editor-tab-panel active" data-panel="details">
+          <main id="mainContent">
+            <form id="plan-form" class="module-isolated-form">
+              
+              <div class="module-isolated-form-section">
+                <h3>ℹ️ Informações Gerais</h3>
+                <div class="module-isolated-form-group">
+                  <label class="module-isolated-label" for="planName">Nome do Plano</label>
+                  <input type="text" id="planName" name="planName" class="module-isolated-input" required />
                 </div>
-                <div class="form-group">
-                  <label for="planBillingType">Cobrança</label>
-                  <select id="planBillingType" name="planBillingType" required>
+                <div class="module-isolated-form-group">
+                  <label class="module-isolated-label" for="planDescription">Descrição</label>
+                  <textarea id="planDescription" name="planDescription" class="module-isolated-textarea" rows="3"></textarea>
+                </div>
+              </div>
+
+              <div class="module-isolated-form-section">
+                <h3>💰 Detalhes Financeiros</h3>
+                <div class="module-isolated-form-row">
+                  <div class="module-isolated-form-group">
+                    <label class="module-isolated-label" for="planPrice">Preço (R$)</label>
+                    <input type="number" step="0.01" id="planPrice" name="planPrice" class="module-isolated-input" required />
+                  </div>
+                  <div class="module-isolated-form-group">
+                    <label class="module-isolated-label" for="planBillingType">Cobrança</label>
+                    <select id="planBillingType" name="planBillingType" class="module-isolated-select" required>
+                      <option value="">Selecione</option>
+                      <option value="MONTHLY">Mensal</option>
+                      <option value="QUARTERLY">Trimestral</option>
+                      <option value="YEARLY">Anual</option>
+                      <option value="WEEKLY">Semanal</option>
+                    </select>
+                  </div>
+                  <div class="module-isolated-form-group">
+                    <label class="module-isolated-label" for="planClassesPerWeek">Aulas/semana</label>
+                    <input type="number" id="planClassesPerWeek" name="planClassesPerWeek" class="module-isolated-input" min="0" />
+                  </div>
+                </div>
+                <div class="module-isolated-form-group">
+                  <label class="module-isolated-label" for="planCategory">Categoria</label>
+                  <select id="planCategory" name="planCategory" class="module-isolated-select">
                     <option value="">Selecione</option>
-                    <option value="MONTHLY">Mensal</option>
-                    <option value="QUARTERLY">Trimestral</option>
-                    <option value="YEARLY">Anual</option>
-                    <option value="WEEKLY">Semanal</option>
+                    <option value="ADULT">Adulto</option>
+                    <option value="FEMALE">Feminino</option>
+                    <option value="SENIOR">Senior</option>
+                    <option value="CHILD">Infantil</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label for="planClassesPerWeek">Aulas/semana</label>
-                  <input type="number" id="planClassesPerWeek" name="planClassesPerWeek" min="0" />
+              </div>
+
+              <div class="module-isolated-form-actions">
+                <button type="button" id="deletePlanBtn" class="module-isolated-btn-danger">🗑️ Excluir</button>
+                <button type="submit" id="savePlanBtn" class="module-isolated-btn-primary">💾 Salvar</button>
+              </div>
+            </form>
+          </main>
+        </div>
+
+        <!-- Aba Cursos -->
+        <div class="plan-editor-tab-panel" data-panel="courses" id="coursesPanel">
+          <div class="plan-editor-courses-header">
+            <h3>📚 Cursos do Plano</h3>
+            <p class="plan-editor-help">Vincule cursos que os alunos deste plano terão acesso.</p>
+          </div>
+          
+          <div id="coursesPanelContent">
+            <div id="coursesLoading" class="module-isolated-loading">
+              <div class="module-isolated-loading-spinner"></div>
+              Carregando cursos...
+            </div>
+            
+            <div id="coursesAssociation" class="plan-editor-courses-association">
+              <div class="plan-editor-courses-col">
+                <div class="plan-editor-courses-header">
+                  <span>📋 Disponíveis</span>
+                  <span id="availableCount" class="plan-editor-count-badge">0</span>
+                </div>
+                <div class="plan-editor-courses-toolbar">
+                  <input type="search" id="searchAvailableCourses" class="module-isolated-input" placeholder="🔍 Filtrar cursos..." />
+                </div>
+                <ul id="availableCoursesList" class="plan-editor-course-list"></ul>
+                <div id="availableEmptyState" class="module-isolated-empty">
+                  <div class="module-isolated-empty-icon">📚</div>
+                  <div class="module-isolated-empty-title">Nenhum curso disponível</div>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="planCategory">Categoria</label>
-                <select id="planCategory" name="planCategory">
-                  <option value="">Selecione</option>
-                  <option value="ADULT">Adulto</option>
-                  <option value="FEMALE">Feminino</option>
-                  <option value="SENIOR">Senior</option>
-                  <option value="CHILD">Infantil</option>
-                </select>
+              
+              <div class="plan-editor-assoc-actions">
+                <button id="addCourseBtn" class="module-isolated-btn-primary">Adicionar →</button>
+                <button id="removeCourseBtn" class="module-isolated-btn-secondary">← Remover</button>
+              </div>
+              
+              <div class="plan-editor-courses-col">
+                <div class="plan-editor-courses-header">
+                  <span>✅ Associados</span>
+                  <span id="linkedCount" class="plan-editor-count-badge">0</span>
+                </div>
+                <div class="plan-editor-courses-toolbar">
+                  <input type="search" id="searchLinkedCourses" class="module-isolated-input" placeholder="🔍 Filtrar associados..." />
+                </div>
+                <ul id="linkedCoursesList" class="plan-editor-course-list"></ul>
+                <div id="linkedEmptyState" class="module-isolated-empty">
+                  <div class="module-isolated-empty-icon">📚</div>
+                  <div class="module-isolated-empty-title">Nenhum curso associado</div>
+                  <div class="module-isolated-empty-description">Adicione cursos da lista disponível</div>
+                </div>
               </div>
             </div>
-
-            <div class="form-actions">
-              <button type="button" id="deletePlanBtn" class="btn btn-danger">Excluir</button>
-              <button type="submit" id="savePlanBtn" class="btn btn-primary">Salvar</button>
-            </div>
-          </form>
-        </main>
-      </div>
-
-      <!-- Courses Tab -->
-      <div class="plan-tab-panel" data-panel="courses" id="coursesPanel">
-        <h3>Cursos do Plano</h3>
-        <p class="help">Vincule cursos que os alunos deste plano terão acesso.</p>
-        <div id="coursesPanelContent">
-          <div id="coursesLoading" class="loading-inline" style="display:none;">Carregando cursos...</div>
-          <div id="coursesAssociation" class="courses-association" style="display:none;">
-            <div class="courses-col">
-              <header>
-                <span>Disponíveis</span>
-                <span id="availableCount">0</span>
-              </header>
-              <div class="toolbar"><input type="search" id="searchAvailableCourses" placeholder="Filtrar..." /></div>
-              <ul id="availableCoursesList" class="course-list"></ul>
-              <div id="availableEmptyState" class="empty-state" style="display:none;">Nenhum curso disponível</div>
-            </div>
-            <div class="assoc-actions">
-              <button id="addCourseBtn" class="btn btn-secondary">Adicionar →</button>
-              <button id="removeCourseBtn" class="btn btn-secondary">← Remover</button>
-            </div>
-            <div class="courses-col">
-              <header>
-                <span>Associados</span>
-                <span id="linkedCount">0</span>
-              </header>
-              <div class="toolbar"><input type="search" id="searchLinkedCourses" placeholder="Filtrar..." /></div>
-              <ul id="linkedCoursesList" class="course-list"></ul>
-              <div id="linkedEmptyState" class="empty-state" style="display:none;">Nenhum curso associado</div>
-            </div>
-          </div>
-          <div id="coursesDiffBar" class="save-diff-bar">
-            <div><strong>Alterações pendentes:</strong> <span id="diffSummary"></span></div>
-            <div style="display:flex; gap:8px;">
-              <button id="discardCoursesChangesBtn" class="btn btn-light">Descartar</button>
-              <button id="saveCoursesChangesBtn" class="btn btn-primary">Salvar</button>
+            
+            <div id="coursesDiffBar" class="plan-editor-save-bar">
+              <div class="plan-editor-save-info">
+                <strong>⚠️ Alterações pendentes:</strong> 
+                <span id="diffSummary"></span>
+              </div>
+              <div class="plan-editor-save-actions">
+                <button id="discardCoursesChangesBtn" class="module-isolated-btn-secondary">❌ Descartar</button>
+                <button id="saveCoursesChangesBtn" class="module-isolated-btn-primary">💾 Salvar</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Lesson Plans Tab -->
-      <div class="plan-tab-panel" data-panel="lesson-plans" id="lessonPlansPanel">
-        <h3>Planos de Aula</h3>
-        <div id="lessonPlansContainer"></div>
-      </div>
-    </section>
+        <!-- Aba Planos de Aula -->
+        <div class="plan-editor-tab-panel" data-panel="lesson-plans" id="lessonPlansPanel">
+          <div class="plan-editor-courses-header">
+            <h3>📖 Planos de Aula</h3>
+            <p class="plan-editor-help">Gerencie os planos de aula associados a este plano.</p>
+          </div>
+          <div id="lessonPlansContainer" class="plan-editor-lesson-plans">
+            <div class="module-isolated-empty">
+              <div class="module-isolated-empty-icon">📖</div>
+              <div class="module-isolated-empty-title">Funcionalidade em desenvolvimento</div>
+              <div class="module-isolated-empty-description">Os planos de aula serão implementados em breve</div>
+            </div>
+          </div>
+        </div>
+        
+      </section>
+    </div>
   </div>
 
   <script src="../js/modules/plan-editor.js"></script>

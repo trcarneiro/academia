@@ -14,6 +14,7 @@
     
     // Module initialization - Following CLAUDE.md guidelines
     async function initializeCoursesModule() {
+        console.log('[Courses] initializeCoursesModule called');
         if (isInitialized) {
             console.log('ℹ️ Courses module already initialized, skipping...');
             return;
@@ -24,6 +25,7 @@
         try {
             // Check if we're on the courses page - Following students.js pattern
             const coursesContainer = document.getElementById('coursesContainer');
+            console.log('[Courses] coursesContainer found:', !!coursesContainer);
             if (!coursesContainer) {
                 console.log('ℹ️ Not on courses page, skipping courses module initialization');
                 return;
@@ -59,7 +61,6 @@
         console.log('📊 Loading initial courses data...');
         isLoading = true;
         showLoadingState();
-        
         try {
             const response = await fetch('/api/courses', {
                 method: 'GET',
@@ -67,34 +68,29 @@
                     'Content-Type': 'application/json',
                 }
             });
-            
+            console.log('[Courses] fetch /api/courses status:', response.status);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
             const result = await response.json();
-            console.log('📊 API Response:', result);
-            
+            console.log('[Courses] API Response:', result);
             if (result.success && Array.isArray(result.data)) {
                 allCourses = result.data;
                 filteredCourses = [...allCourses];
                 console.log('✅ Courses loaded successfully:', allCourses.length, 'courses');
-                
                 updateStats();
-                
                 if (allCourses.length === 0) {
-                    showEmptyState();
+                    showEmptyState('Nenhum curso cadastrado.');
                 } else {
                     renderCourses();
                     showCoursesContainer();
                 }
             } else {
-                throw new Error(result.error || 'Invalid API response format');
+                throw new Error(result.error || 'Formato de resposta da API inválido');
             }
-            
         } catch (error) {
             console.error('❌ Error loading courses:', error);
-            showError(`Erro ao carregar cursos: ${error.message}`);
+            showEmptyState('Erro ao carregar cursos: ' + error.message);
         } finally {
             isLoading = false;
             hideLoadingState();
@@ -512,16 +508,17 @@
         console.log('✅ Loading state hidden');
     }
     
-    function showEmptyState() {
+    function showEmptyState(msg) {
         const loadingState = document.getElementById('loadingState');
         const coursesContainer = document.getElementById('coursesContainer');
         const emptyState = document.getElementById('emptyState');
-        
         if (loadingState) loadingState.style.display = 'none';
         if (coursesContainer) coursesContainer.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'flex';
-        
-        console.log('📭 Empty state shown');
+        if (emptyState) {
+            emptyState.style.display = 'flex';
+            emptyState.textContent = msg || 'Nenhum curso encontrado.';
+        }
+        console.log('📭 Empty state shown:', msg);
     }
     
     function showCoursesContainer() {
@@ -631,12 +628,20 @@
     // Global functions for course actions
     window.openNewCourseForm = function() {
         console.log('➕ Opening new course form...');
-        navigateToModule('course-editor');
+        if (typeof window.navigateToModule === 'function') {
+            window.navigateToModule('course-editor');
+        } else {
+            window.location.href = '/modules/courses/course-editor.html';
+        }
     };
     
     window.viewCourse = function(courseId) {
         console.log('👁️ Viewing course:', courseId);
-        navigateToModule('course-editor', `?id=${courseId}&mode=view`);
+        if (typeof window.navigateToModule === 'function') {
+            window.navigateToModule('course-editor', `?id=${courseId}&mode=view`);
+        } else {
+            window.location.href = `/modules/courses/course-editor.html?id=${courseId}&mode=view`;
+        }
     };
     
     window.editCourse = function(courseId) {
@@ -649,7 +654,7 @@
         if (typeof window.navigateToModule === 'function') {
             window.navigateToModule('course-editor', `&id=${courseId}`);
         } else {
-            console.error('❌ Navigation function not available');
+            window.location.href = `/modules/courses/course-editor.html?id=${courseId}`;
         }
     };
     

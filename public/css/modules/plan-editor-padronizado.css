@@ -1,0 +1,510 @@
+/* PLAN EDITOR MODULE - Padronizado com Sistema Base */
+/* Usa as variáveis corretas do module-system.css */
+
+/* === SISTEMA DE ABAS === */
+.plan-editor-tabs {
+    display: flex !important;
+    gap: 8px !important;
+    margin: 1.5rem 0 0 !important;
+    border-bottom: 2px solid var(--border-light) !important;
+    padding-bottom: 0 !important;
+}
+
+.plan-editor-tab {
+    padding: 0.75rem 1.5rem !important;
+    border: 1px solid var(--border-light) !important;
+    border-bottom: none !important;
+    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    background: var(--bg-secondary) !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    position: relative !important;
+    transition: var(--transition-normal) !important;
+}
+
+.plan-editor-tab:hover {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.plan-editor-tab.active {
+    background: var(--bg-secondary) !important;
+    color: #10b981 !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.1) !important;
+}
+
+.plan-editor-tab.badge-dirty::after {
+    content: "" !important;
+    width: 8px !important;
+    height: 8px !important;
+    background: #ef4444 !important;
+    border-radius: 50% !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+}
+
+/* === PAINÉIS DAS ABAS === */
+.plan-editor-tab-panels {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius) !important;
+    padding: 2rem !important;
+    min-height: 400px !important;
+}
+
+.plan-editor-tab-panel {
+    display: none !important;
+}
+
+.plan-editor-tab-panel.active {
+    display: block !important;
+    animation: fadeIn 0.3s ease-in-out !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === HEADERS DE SEÇÕES === */
+.plan-editor-courses-header {
+    margin-bottom: 1.5rem !important;
+}
+
+.plan-editor-courses-header h3 {
+    margin: 0 0 0.5rem 0 !important;
+    color: var(--text-primary) !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+}
+
+.plan-editor-help {
+    margin: 0 !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.875rem !important;
+}
+
+/* === ASSOCIAÇÃO DE CURSOS === */
+.plan-editor-courses-association {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    gap: 1.5rem !important;
+    margin: 2rem 0 !important;
+    align-items: start !important;
+}
+
+.plan-editor-courses-col {
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--border-radius) !important;
+    background: var(--bg-primary) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 500px !important;
+    min-height: 300px !important;
+}
+
+.plan-editor-courses-col .plan-editor-courses-header {
+    padding: 1rem 1.25rem !important;
+    background: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 0 !important;
+}
+
+.plan-editor-count-badge {
+    background: #10b981 !important;
+    color: white !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+}
+
+.plan-editor-courses-toolbar {
+    padding: 1rem !important;
+    border-bottom: 1px solid var(--border-light) !important;
+}
+
+.plan-editor-course-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    background: var(--bg-secondary) !important;
+}
+
+.plan-editor-course-list li {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    cursor: pointer !important;
+    transition: var(--transition-normal) !important;
+}
+
+.plan-editor-course-list li:hover {
+    background: var(--bg-primary) !important;
+}
+
+.plan-editor-course-list li.selected {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border-left: 3px solid #10b981 !important;
+}
+
+.plan-editor-course-list li .meta {
+    margin-left: auto !important;
+    font-size: 0.75rem !important;
+    color: var(--text-secondary) !important;
+    text-align: right !important;
+}
+
+.plan-editor-course-list li:last-child {
+    border-bottom: none !important;
+}
+
+/* === AÇÕES DE ASSOCIAÇÃO === */
+.plan-editor-assoc-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+    padding: 1rem 0 !important;
+}
+
+.plan-editor-assoc-actions button {
+    min-width: 120px !important;
+}
+
+/* === BARRA DE SALVAMENTO === */
+.plan-editor-save-bar {
+    margin-top: 1.5rem !important;
+    padding: 1rem 1.25rem !important;
+    border: 1px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-radius: var(--border-radius) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+
+.plan-editor-save-info {
+    flex: 1 !important;
+    color: var(--text-primary) !important;
+}
+
+.plan-editor-save-actions {
+    display: flex !important;
+    gap: 0.75rem !important;
+}
+
+/* === PLANOS DE AULA === */
+.plan-editor-lesson-plans {
+    padding: 2rem !important;
+    text-align: center !important;
+}
+
+/* === RESPONSIVIDADE === */
+@media (max-width: 1024px) {
+    .plan-editor-courses-association {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .plan-editor-assoc-actions {
+        flex-direction: row !important;
+        justify-content: center !important;
+        order: -1 !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .plan-editor-courses-col {
+        max-height: 250px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .plan-editor-tab-panels {
+        padding: 1rem !important;
+    }
+    
+    .plan-editor-tabs {
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+    
+    .plan-editor-tab {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .plan-editor-save-bar {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+    
+    .plan-editor-save-actions {
+        justify-content: center !important;
+        width: 100% !important;
+    }
+}
+
+/* === OVERRIDE PARA COMPATIBILITY === */
+/* Força o estilo correto caso haja conflitos com CSS antigo */
+.module-isolated-base #loadingState {
+    display: block !important;
+    text-align: center !important;
+    padding: 2rem !important;
+    color: var(--text-secondary) !important;
+}
+
+.module-isolated-base #planTabs.plan-editor-tabs {
+    display: flex !important;
+}
+
+.module-isolated-base #planTabPanels.plan-editor-tab-panels {
+    display: block !important;
+}
+
+/* Força visibilidade dos formulários */
+.module-isolated-base #mainContent {
+    display: block !important;
+}
+
+.module-isolated-base .module-isolated-form {
+    background: var(--bg-secondary) !important;
+    padding: 0 !important;
+}
+
+.module-isolated-base .module-isolated-form-section {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.module-isolated-base .module-isolated-form-section h3 {
+    margin: 0 0 1rem 0 !important;
+    color: var(--text-primary) !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    padding-bottom: 0.5rem !important;
+}
+
+.module-isolated-base .module-isolated-form-group {
+    margin-bottom: 1rem !important;
+}
+
+.module-isolated-base .module-isolated-form-row {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.module-isolated-base .module-isolated-label {
+    display: block !important;
+    margin-bottom: 0.5rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 0.875rem !important;
+}
+
+.module-isolated-base .module-isolated-input,
+.module-isolated-base .module-isolated-select,
+.module-isolated-base .module-isolated-textarea {
+    width: 100% !important;
+    padding: 0.75rem !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--border-radius) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.875rem !important;
+    transition: var(--transition-normal) !important;
+    box-sizing: border-box !important;
+}
+
+.module-isolated-base .module-isolated-input:focus,
+.module-isolated-base .module-isolated-select:focus,
+.module-isolated-base .module-isolated-textarea:focus {
+    outline: none !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+.module-isolated-base .module-isolated-form-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+    padding: 1.5rem 0 0 !important;
+    border-top: 1px solid var(--border-light) !important;
+    margin-top: 2rem !important;
+}
+
+.module-isolated-base .module-isolated-btn-primary,
+.module-isolated-base .module-isolated-btn-secondary,
+.module-isolated-base .module-isolated-btn-danger {
+    padding: 0.75rem 1.5rem !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    cursor: pointer !important;
+    transition: var(--transition-normal) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.module-isolated-base .module-isolated-btn-primary {
+    background: #10b981 !important;
+    color: white !important;
+}
+
+.module-isolated-base .module-isolated-btn-primary:hover {
+    background: #059669 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.module-isolated-base .module-isolated-btn-secondary {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-light) !important;
+}
+
+.module-isolated-base .module-isolated-btn-secondary:hover {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-medium) !important;
+}
+
+.module-isolated-base .module-isolated-btn-danger {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+.module-isolated-base .module-isolated-btn-danger:hover {
+    background: #dc2626 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Ensure loading state is properly styled */
+.module-isolated-base .module-isolated-loading {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+    padding: 3rem !important;
+    color: var(--text-secondary) !important;
+    background: var(--bg-secondary) !important;
+    border-radius: var(--border-radius) !important;
+    margin: 1rem 0 !important;
+}
+
+.module-isolated-base .module-isolated-loading-spinner {
+    width: 24px !important;
+    height: 24px !important;
+    border: 3px solid var(--border-light) !important;
+    border-top: 3px solid #10b981 !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === CONTROLE DE VISIBILIDADE VIA JAVASCRIPT === */
+/* Estados iniciais - elementos visíveis por padrão para evitar tela branca */
+
+.module-isolated-base #loadingState.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #planTabs.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #planTabPanels.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #mainContent.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #coursesLoading.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #coursesAssociation.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #coursesDiffBar.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #availableEmptyState.hidden {
+    display: none !important;
+}
+
+.module-isolated-base #linkedEmptyState.hidden {
+    display: none !important;
+}
+
+/* Por padrão, alguns elementos devem ficar escondidos inicialmente */
+.module-isolated-base #coursesLoading {
+    display: none !important;
+}
+
+.module-isolated-base #coursesDiffBar {
+    display: none !important;
+}
+
+.module-isolated-base #availableEmptyState {
+    display: none !important;
+}
+
+.module-isolated-base #linkedEmptyState {
+    display: none !important;
+}
+
+/* Estados de loading - aparecem quando necessário */
+.module-isolated-base #coursesLoading.show {
+    display: flex !important;
+}
+
+.module-isolated-base #coursesDiffBar.show {
+    display: flex !important;
+}
+
+.module-isolated-base #availableEmptyState.show {
+    display: block !important;
+}
+
+.module-isolated-base #linkedEmptyState.show {
+    display: block !important;
+}
+
+/* Todas as outras regras são herdadas do module-system.css */

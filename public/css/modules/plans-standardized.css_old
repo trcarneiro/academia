@@ -1,0 +1,92 @@
+/* PLANS MODULE - Padronizado com Sistema Base */
+/* Importa automaticamente o module-system.css */
+
+/* Customizações específicas do módulo de planos */
+.plans-isolated .plans-isolated-page-header {
+    /* Mantém o gradiente verde específico dos planos */
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+/* Identificadores visuais específicos dos planos */
+.plans-isolated .plan-identification-letter {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    flex-shrink: 0 !important;
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #f8fafc !important;
+}
+
+.plans-isolated .plans-isolated-plan-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+
+.plans-isolated .plan-name {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin: 0 !important;
+}
+
+/* Badges específicos para planos */
+.plans-isolated .module-isolated-badge-premium {
+    background: rgba(147, 51, 234, 0.1) !important;
+    color: #7c3aed !important;
+}
+
+.plans-isolated .module-isolated-badge-basic {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #2563eb !important;
+}
+
+/* Customizações para valores monetários */
+.plans-isolated .plan-price {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    font-size: 1.1em !important;
+}
+
+/* Animações específicas para planos */
+.plans-isolated .module-isolated-stat-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 25px -3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Estados específicos */
+.plans-isolated .empty-state {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 3rem !important;
+    color: var(--text-muted) !important;
+    text-align: center !important;
+}
+
+.plans-isolated .empty-state-icon {
+    font-size: 3rem !important;
+    margin-bottom: 1rem !important;
+    opacity: 0.5 !important;
+}
+
+/* Loading específico para planos */
+.plans-isolated .loading-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10 !important;
+}
+
+/* Todas as outras regras são herdadas do module-system.css */

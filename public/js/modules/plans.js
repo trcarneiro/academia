@@ -338,9 +338,14 @@
     // ==============================================
     
     function renderPlans() {
-        const container = findModuleElement('plansContainer', true);
-        if (!container) {
-            // Container not present (likely navigated away). Silently skip.
+        // Always render table view to match turmas layout
+        renderTableView();
+    }
+    
+    function renderTableView() {
+        const tableBody = findModuleElement('plansTableBody', true);
+        if (!tableBody) {
+            console.log('⚠️ Plans table body not found');
             return;
         }
         
@@ -349,152 +354,69 @@
             return;
         }
         
-        if (currentView === 'grid') {
-            renderGridView(container);
-        } else {
-            renderTableView(container);
-        }
-    }
-    
-    function renderGridView(container) {
-        const html = `
-            <div class="plans-grid">
-                ${filteredPlans.map(plan => `
-                    <div class="plan-card" onclick="editPlan('${plan.id}')" title="Clique para editar">
-                        <div class="plan-header">
-                            <div class="plan-title">
-                                <span class="plan-icon">${CATEGORIES[plan.category]?.icon || '💰'}</span>
-                                <h3>${plan.name || 'Plano sem nome'}</h3>
-                            </div>
-                            <div class="plan-status ${plan.isActive ? 'active' : 'inactive'}">
-                                ${plan.isActive ? '✅' : '⏸️'}
-                            </div>
-                        </div>
-                        <div class="plan-info">
-                            <div class="plan-price">
-                                ${formatCurrency(plan.price)}
-                                <span class="billing-type">
-                                    ${BILLING_TYPES[plan.billingType]?.icon || '💳'} 
-                                    ${BILLING_TYPES[plan.billingType]?.label || plan.billingType}
-                                </span>
-                            </div>
-                            <div class="plan-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Categoria:</span>
-                                    <span class="detail-value">
-                                        ${CATEGORIES[plan.category]?.icon || ''} 
-                                        ${CATEGORIES[plan.category]?.label || plan.category}
-                                    </span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Aulas/Semana:</span>
-                                    <span class="detail-value">${plan.classesPerWeek || 0}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Assinantes:</span>
-                                    <span class="detail-value">${plan.subscriberCount || 0}</span>
-                                </div>
-                            </div>
-                            ${plan.description ? `
-                                <div class="plan-description">
-                                    ${plan.description}
-                                </div>
-                            ` : ''}
-                            ${plan.informacoes_gerais ? `
-                                <div class="plan-extra">
-                                    <strong>Informações Gerais:</strong><br>
-                                    <span><b>Título:</b> ${plan.informacoes_gerais.titulo || ''}</span><br>
-                                    <span><b>Público-alvo:</b> ${plan.informacoes_gerais.publico_alvo || ''}</span><br>
-                                    <span><b>Duração:</b> ${plan.informacoes_gerais.duracao || ''}</span><br>
-                                    <span><b>Missão:</b> ${plan.informacoes_gerais.missao || ''}</span><br>
-                                    <span><b>Visão:</b> ${plan.informacoes_gerais.visao || ''}</span>
-                                </div>
-                            ` : ''}
-                            ${plan.objetivos ? `
-                                <div class="plan-extra">
-                                    <strong>Objetivos:</strong><br>
-                                    <span><b>Geral:</b> ${plan.objetivos.geral || ''}</span><br>
-                                    <span><b>Específicos:</b> ${(plan.objetivos.especificos || []).join('<br>')}</span>
-                                </div>
-                            ` : ''}
-                            ${plan.estrutura_do_curso ? `
-                                <div class="plan-extra">
-                                    <strong>Estrutura do Curso:</strong><br>
-                                    <span><b>Unidades:</b> ${(plan.estrutura_do_curso.unidades || []).join(', ')}</span><br>
-                                    <span><b>Número de Técnicas:</b> ${plan.estrutura_do_curso.numero_de_tecnicas || ''}</span><br>
-                                    <span><b>Níveis:</b> ${Object.values(plan.estrutura_do_curso.niveis || {}).join('<br>')}</span><br>
-                                    <span><b>Blocos:</b> ${plan.estrutura_do_curso.blocos || ''}</span><br>
-                                    <span><b>Categorias:</b> ${(plan.estrutura_do_curso.categorias || []).join(', ')}</span>
-                                </div>
-                            ` : ''}
-                        </div>
+        const html = filteredPlans.map(plan => `
+            <tr onclick="editPlan('${plan.id}')" style="cursor: pointer;" title="Clique para editar">
+                <td>
+                    <div class="plan-id-cell">
+                        <div class="plan-id-badge">P${String(filteredPlans.indexOf(plan) + 1)}</div>
+                        <span class="plan-name">${plan.name || 'Plano sem nome'}</span>
                     </div>
-                `).join('')}
-            </div>
-        `;
-        container.innerHTML = html;
+                </td>
+                <td>
+                    <span class="plan-badge ${getCategoryClass(plan.category)}">
+                        ${CATEGORIES[plan.category]?.icon || '💰'} ${CATEGORIES[plan.category]?.label || plan.category}
+                    </span>
+                </td>
+                <td>
+                    <span>${getBillingSchedule(plan.billingType)}</span>
+                </td>
+                <td>
+                    <span class="plan-badge basic">
+                        ${BILLING_TYPES[plan.billingType]?.icon || '💳'} ${BILLING_TYPES[plan.billingType]?.label || plan.billingType}
+                    </span>
+                </td>
+                <td>
+                    <span class="plan-badge premium">${plan.subscriberCount || 0}</span> alunos
+                </td>
+                <td>
+                    <span class="status-badge ${plan.isActive ? 'active' : 'inactive'}">
+                        ${plan.isActive ? '✅ Ativa' : '⏸️ Inativa'}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="plans-isolated-btn plans-isolated-btn-small plans-isolated-btn-secondary" onclick="event.stopPropagation(); editPlan('${plan.id}')">
+                            👁️ Ver
+                        </button>
+                        <button class="plans-isolated-btn plans-isolated-btn-small plans-isolated-btn-primary" onclick="event.stopPropagation(); editPlan('${plan.id}')">
+                            📝 Agenda
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        
+        tableBody.innerHTML = html;
     }
     
-    function renderTableView(container) {
-        const html = `
-            <div class="plans-table-container">
-                <table class="plans-table">
-                    <thead>
-                        <tr>
-                            <th>Plano</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>Tipo</th>
-                            <th>Aulas/Sem</th>
-                            <th>Assinantes</th>
-                            <th>Status</th>
-                            <th>Extras</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filteredPlans.map(plan => `
-                            <tr onclick="editPlan('${plan.id}')" style="cursor: pointer;" title="Clique para editar">
-                                <td>
-                                    <div class="plan-name-cell">
-                                        <span class="plan-icon">${CATEGORIES[plan.category]?.icon || '💰'}</span>
-                                        <div>
-                                            <strong>${plan.name || 'Plano sem nome'}</strong>
-                                            ${plan.description ? `<br><small>${plan.description}</small>` : ''}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="category-badge">
-                                        ${CATEGORIES[plan.category]?.icon || ''} 
-                                        ${CATEGORIES[plan.category]?.label || plan.category}
-                                    </span>
-                                </td>
-                                <td class="price-cell">${formatCurrency(plan.price)}</td>
-                                <td>
-                                    <span class="billing-badge">
-                                        ${BILLING_TYPES[plan.billingType]?.icon || '💳'} 
-                                        ${BILLING_TYPES[plan.billingType]?.label || plan.billingType}
-                                    </span>
-                                </td>
-                                <td class="center">${plan.classesPerWeek || 0}</td>
-                                <td class="center">${plan.subscriberCount || 0}</td>
-                                <td>
-                                    <span class="status-badge ${plan.isActive ? 'active' : 'inactive'}">
-                                        ${plan.isActive ? '✅ Ativo' : '⏸️ Inativo'}
-                                    </span>
-                                </td>
-                                <td>
-                                    ${plan.informacoes_gerais ? `<span><b>Informações Gerais:</b> ${plan.informacoes_gerais.titulo || ''}, ${plan.informacoes_gerais.publico_alvo || ''}</span><br>` : ''}
-                                    ${plan.objetivos ? `<span><b>Objetivos:</b> ${plan.objetivos.geral || ''}</span><br>` : ''}
-                                    ${plan.estrutura_do_curso ? `<span><b>Estrutura:</b> ${plan.estrutura_do_curso.unidades ? plan.estrutura_do_curso.unidades.join(', ') : ''}</span>` : ''}
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-        container.innerHTML = html;
+    function getCategoryClass(category) {
+        const categoryClasses = {
+            'ADULT': 'premium',
+            'FEMALE': 'vip',
+            'SENIOR': 'basic',
+            'CHILD': 'premium'
+        };
+        return categoryClasses[category] || 'basic';
+    }
+    
+    function getBillingSchedule(billingType) {
+        const schedules = {
+            'MONTHLY': 'Seg/Qua - 18:00h início 01/06/2025',
+            'QUARTERLY': 'Ter/Qui - 19:00h início 01/06/2025',
+            'YEARLY': 'Sex/Sáb - 20:00h início 01/06/2025',
+            'WEEKLY': 'Ter/Sex - 17:00h início 01/06/2025'
+        };
+        return schedules[billingType] || 'Horário a definir';
     }
     
     // ==============================================
@@ -502,29 +424,30 @@
     // ==============================================
     
     function showLoadingState() {
-        const container = findModuleElement('plansContainer', true);
-        if (container) {
-            container.innerHTML = `
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>Carregando planos...</p>
-                </div>
+        const tableBody = findModuleElement('plansTableBody', true);
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="loading-state">
+                        <div class="spinner"></div>
+                        Carregando planos...
+                    </td>
+                </tr>
             `;
         }
     }
     
     function showEmptyState() {
-        const container = findModuleElement('plansContainer', true);
-        if (container) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">💰</div>
-                    <h3>Nenhum plano encontrado</h3>
-                    <p>Clique em "Novo Plano" para criar o primeiro plano ou ajuste os filtros.</p>
-                    <button class="btn btn-primary" onclick="openNewPlanForm()">
-                        ➕ Criar Primeiro Plano
-                    </button>
-                </div>
+        const tableBody = findModuleElement('plansTableBody', true);
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-icon">💰</div>
+                        <h3>Nenhum plano encontrado</h3>
+                        <p>Clique em "Novo Plano" para criar o primeiro plano.</p>
+                    </td>
+                </tr>
             `;
         }
     }

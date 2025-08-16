@@ -1,53 +1,92 @@
-// Frontend JS module for activities management
-// Reference: CLAUDE.md standards
+import ModuleLoader from '../../core/module-loader.js';
+import { showLoading, hideLoading } from '../../utils/loading.js';
+import { handleApiError } from '../../utils/error-handler.js';
 
-export async function fetchActivities() {
-  const res = await fetch('/api/activities');
-  if (!res.ok) throw new Error('Failed to fetch activities');
-  return res.json().then(r => r.data || []);
-}
+const ActivitiesModule = {
+  currentPage: 1,
+  pageSize: 10,
+  filterType: '',
 
-export async function fetchTechniques({ page = 1, pageSize = 50, q = '', sortField = '', sortOrder = '' } = {}) {
-  const params = new URLSearchParams();
-  params.set('type', 'TECHNIQUE');
-  params.set('page', String(page));
-  params.set('pageSize', String(pageSize));
-  if (q) params.set('q', q);
-  if (sortField) params.set('sortField', sortField);
-  if (sortOrder) params.set('sortOrder', sortOrder);
+  async init() {
+    this.setupEventListeners();
+    await this.loadActivities();
+  },
 
-  const res = await fetch('/api/activities?' + params.toString());
-  if (!res.ok) throw new Error('Failed to fetch techniques');
-  const j = await res.json().catch(() => ({}));
-  return {
-    items: j.data || [],
-    count: j.count || 0,
-    page: j.page || page,
-    pageSize: j.pageSize || pageSize
-  };
-}
+  setupEventListeners() {
+    document.getElementById('prev-page').addEventListener('click', () => this.changePage(-1));
+    document.getElementById('next-page').addEventListener('click', () => this.changePage(1));
+    document.getElementById('page-size').addEventListener('change', (e) => {
+      this.pageSize = parseInt(e.target.value);
+      this.loadActivities();
+    });
+    
+    // Novo listener para o filtro de tipo
+    document.getElementById('type-filter').addEventListener('change', (e) => {
+      this.filterType = e.target.value;
+      this.currentPage = 1; // Resetar para a primeira página
+      this.loadActivities();
+    });
+  },
 
-export async function createActivity(data) {
-  const res = await fetch('/api/activities', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
-}
+  async loadActivities() {
+    showLoading('#activities-table');
+    try {
+      // Adicionar parâmetro de filtro à URL
+      let url = `/api/activities?page=${this.currentPage}&limit=${this.pageSize}`;
+      if (this.filterType) url += `&type=${this.filterType}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const { data, total } = await response.json();
+      this.renderActivities(data);
+      this.renderPagination(total);
+    } catch (error) {
+      handleApiError(error, '#activities-container');
+    } finally {
+      hideLoading('#activities-table');
+    }
+  },
 
-export async function updateActivity(id, data) {
-  const res = await fetch(`/api/activities/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return res.json();
-}
+  renderActivities(activities) {
+    const tbody = document.querySelector('#activities-table tbody');
+    tbody.innerHTML = '';
 
-export async function deleteActivity(id) {
-  const res = await fetch(`/api/activities/${id}`, { method: 'DELETE' });
-  // some delete endpoints return 204 no content
-  if (res.status === 204) return { success: true };
-  return res.json();
-}
+    if (activities.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="activities-isolated-empty">Nenhuma atividade encontrada</td></tr>`;
+      return;
+    }
+
+    activities.forEach(activity => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${activity.title}</td>
+        <td>${activity.type}</td>
+        <td>${new Date(activity.date).toLocaleDateString()}</td>
+        <td>${activity.duration} minutos</td>
+        <td><span class="activities-isolated-status-badge">${activity.status}</span></td>
+      `;
+      row.addEventListener('dblclick', () => this.openEditor(activity.id));
+      tbody.appendChild(row);
+    });
+  },
+
+  renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / this.pageSize);
+    document.getElementById('current-page').textContent = this.currentPage;
+    document.getElementById('total-pages').textContent = totalPages;
+    document.getElementById('prev-page').disabled = this.currentPage === 1;
+    document.getElementById('next-page').disabled = this.currentPage === totalPages;
+  },
+
+  changePage(delta) {
+    this.currentPage += delta;
+    this.loadActivities();
+  },
+
+  openEditor(activityId) {
+    window.location.href = `/activity-editor?id=${activityId}`;
+  }
+};
+
+ModuleLoader.register('activities-module', ActivitiesModule);

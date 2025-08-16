@@ -1,0 +1,74 @@
+<div class="activities-isolated-container">
+  <div class="activities-isolated-page-header">
+    <button class="activities-isolated-back-btn" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </button>
+    <h1 id="editor-title">Nova Atividade</h1>
+  </div>
+
+  <div class="activities-isolated-content">
+    <form id="activity-form">
+      <div class="activities-isolated-form-group">
+        <label for="title">Título*</label>
+        <input type="text" id="title" name="title" required class="activities-isolated-input">
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="type">Tipo*</label>
+        <select id="type" name="type" required class="activities-isolated-select">
+          <option value="">Selecione...</option>
+          <option value="aula">Aula</option>
+          <option value="evento">Evento</option>
+          <option value="workshop">Workshop</option>
+        </select>
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="date">Data*</label>
+        <input type="date" id="date" name="date" required class="activities-isolated-input"
+               min="{{ currentDate }}">
+        <small class="activities-isolated-error" id="date-error" style="display:none">
+          Data deve ser futura
+        </small>
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="duration">Duração (minutos)*</label>
+        <input type="number" id="duration" name="duration" min="15" max="480" 
+               required class="activities-isolated-input">
+      </div>
+
+      <button type="submit" class="activities-isolated-btn activities-isolated-btn-primary">
+        Salvar Atividade
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Definir data mínima como hoje
+  document.getElementById('date').min = new Date().toISOString().split('T')[0];
+  
+  document.getElementById('activity-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const dateInput = document.getElementById('date');
+    const dateError = document.getElementById('date-error');
+    const selectedDate = new Date(dateInput.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Validação de data futura
+    if (selectedDate < today) {
+      dateError.style.display = 'block';
+      dateInput.focus();
+      return;
+    }
+    dateError.style.display = 'none';
+    
+    // Resto da lógica de submissão...
+    console.log('Formulário válido, enviando dados...');
+  });
+});
+</script>

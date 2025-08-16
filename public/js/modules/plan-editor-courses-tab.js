@@ -3,6 +3,29 @@
   // Courses Tab Module for Plan Editor
   // Relies on plan-editor.js setting current plan + exposing hooks.
 
+  // Utility functions for visibility control using CSS classes
+  function showElement(element) {
+      if (element) {
+          element.classList.remove('hidden');
+          element.classList.add('show');
+      }
+  }
+
+  function hideElement(element) {
+      if (element) {
+          element.classList.remove('show');
+          element.classList.add('hidden');
+      }
+  }
+
+  function toggleElement(element, show) {
+      if (show) {
+          showElement(element);
+      } else {
+          hideElement(element);
+      }
+  }
+
   let state = {
     initialized:false,
     planId:null,
@@ -23,9 +46,9 @@
   function setupTabActivation(){
     const tabsContainer = document.getElementById('planTabs');
     if(!tabsContainer) return;
-    tabsContainer.style.display='flex';
+    showElement(tabsContainer);
     const panelsContainer = document.getElementById('planTabPanels');
-    if(panelsContainer) panelsContainer.style.display='block';
+    showElement(panelsContainer);
 
     tabsContainer.addEventListener('click', (e)=>{
       const tab = e.target.closest('.plan-tab');
@@ -63,9 +86,9 @@
       const coursesLoading = document.getElementById('coursesLoading');
       const coursesAssociation = document.getElementById('coursesAssociation');
       const coursesDiffBar = document.getElementById('coursesDiffBar');
-      if (coursesLoading) coursesLoading.style.display = 'none';
-      if (coursesAssociation) coursesAssociation.style.display = 'none';
-      if (coursesDiffBar) coursesDiffBar.style.display = 'none';
+      hideElement(coursesLoading);
+      hideElement(coursesAssociation);
+      hideElement(coursesDiffBar);
       return;
     }
     
@@ -73,8 +96,8 @@
     // Show loading state
     const coursesLoading = document.getElementById('coursesLoading');
     const coursesAssociation = document.getElementById('coursesAssociation');
-    if (coursesLoading) coursesLoading.style.display = 'block';
-    if (coursesAssociation) coursesAssociation.style.display = 'none';
+    showElement(coursesLoading);
+    hideElement(coursesAssociation);
     
     await loadCoursesData();
   }
@@ -125,7 +148,7 @@
 
       renderLists();
       toggleLoading(false);
-      document.getElementById('coursesAssociation').style.display='flex';
+      showElement(document.getElementById('coursesAssociation'));
     } catch(err){
       console.error('Failed load courses association', err);
       showError('Erro ao carregar cursos: '+err.message);
@@ -147,8 +170,8 @@
     document.getElementById('availableCount').textContent = availFiltered.length;
     document.getElementById('linkedCount').textContent = linkedFiltered.length;
 
-    document.getElementById('availableEmptyState').style.display = availFiltered.length? 'none':'block';
-    document.getElementById('linkedEmptyState').style.display = linkedFiltered.length? 'none':'block';
+    toggleElement(document.getElementById('availableEmptyState'), !availFiltered.length);
+    toggleElement(document.getElementById('linkedEmptyState'), !linkedFiltered.length);
 
     // Attach click handlers
     availUl.querySelectorAll('li').forEach(li=>{
@@ -199,8 +222,8 @@
     currentLinkedIds.forEach(id=>{ if(!state.originalLinkedIds.has(id)) added.push(id); });
     state.originalLinkedIds.forEach(id=>{ if(!currentLinkedIds.has(id)) removed.push(id); });
     const diffBar = document.getElementById('coursesDiffBar');
-    if(!added.length && !removed.length){ diffBar.style.display='none'; markTabDirty(false); return; }
-    diffBar.style.display='flex';
+    if(!added.length && !removed.length){ hideElement(diffBar); markTabDirty(false); return; }
+    showElement(diffBar);
     const summary = [];
     if(added.length) summary.push(`<span class='tag-added'>+${added.length} adicionados</span>`);
     if(removed.length) summary.push(`<span class='tag-removed'>-${removed.length} removidos</span>`);
@@ -251,7 +274,7 @@
 
   function toggleLoading(is){
     const l = document.getElementById('coursesLoading');
-    if(l) l.style.display = is? 'block':'none';
+    toggleElement(l, is);
   }
 
   function debounce(fn, wait){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),wait); }; }

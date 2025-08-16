@@ -1,0 +1,264 @@
+/**
+ * 🎨 ESTILOS ISOLADOS - GESTÃO DE PLANOS
+ * Versão: 1.0.0 - Estável
+ * Último update: 05/07/2025
+ * 
+ * ⚠️ ATENÇÃO: Estilos testados e funcionais
+ * Use prefixo .plans-container-isolated para evitar conflitos
+ */
+
+/* 🔒 Container principal isolado */
+.plans-container-isolated {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #334155;
+    margin: 1rem 0;
+}
+
+/* 📋 Header do módulo */
+.plans-container-isolated .plans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.plans-container-isolated .plans-header h3 {
+    color: #F8FAFC;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* 🔍 Filtros isolados */
+.plans-container-isolated .plans-filters {
+    display: flex;
+    gap: 1rem;
+}
+
+.plans-container-isolated .plans-filters select {
+    background: #1E293B;
+    border: 1px solid #475569;
+    color: #F8FAFC;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.plans-container-isolated .plans-filters select:hover {
+    border-color: #3B82F6;
+}
+
+.plans-container-isolated .plans-filters select:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 📊 Grid de planos */
+.plans-container-isolated .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* 💳 Cards de planos isolados */
+.plans-container-isolated .plan-card-isolated {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+    border: 2px solid #475569;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.plans-container-isolated .plan-card-isolated::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3B82F6, #10B981);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.plans-container-isolated .plan-card-isolated:hover {
+    transform: translateY(-4px);
+    border-color: #3B82F6;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.plans-container-isolated .plan-card-isolated:hover::before {
+    transform: scaleX(1);
+}
+
+/* 📝 Header do card */
+.plans-container-isolated .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.plans-container-isolated .plan-header h4 {
+    color: #F8FAFC;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.plans-container-isolated .plan-price {
+    color: #10B981;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 1rem;
+}
+
+/* 📄 Descrição do plano */
+.plans-container-isolated .plan-description {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+/* ✅ Features do plano */
+.plans-container-isolated .plan-features {
+    margin-bottom: 1.5rem;
+}
+
+.plans-container-isolated .plan-features div {
+    color: #CBD5E1;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.plans-container-isolated .plan-features div::before {
+    content: '✓';
+    color: #10B981;
+    font-weight: bold;
+}
+
+/* 🎯 Botão de seleção */
+.plans-container-isolated .plan-select-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.plans-container-isolated .plan-select-btn:hover {
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.plans-container-isolated .plan-select-btn:active {
+    transform: translateY(0);
+}
+
+/* 📱 Responsividade */
+@media (max-width: 768px) {
+    .plans-container-isolated {
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .plans-container-isolated .plans-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .plans-container-isolated .plans-filters {
+        justify-content: stretch;
+    }
+    
+    .plans-container-isolated .plans-filters select {
+        flex: 1;
+    }
+    
+    .plans-container-isolated .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* 🎨 Animações isoladas */
+@keyframes plans-fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes plans-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.plans-container-isolated .plan-card-isolated {
+    animation: plans-fadeIn 0.3s ease-out;
+}
+
+/* 🏷️ Estados especiais */
+.plans-container-isolated .plan-card-isolated[data-selected="true"] {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+}
+
+.plans-container-isolated .plan-card-isolated[data-selected="true"]::before {
+    background: linear-gradient(90deg, #10B981, #059669);
+    transform: scaleX(1);
+}
+
+/* 📊 Loading states */
+.plans-container-isolated .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: #94A3B8;
+}
+
+.plans-container-isolated .error {
+    text-align: center;
+    padding: 2rem;
+    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* 🔒 Proteção contra override */
+.plans-container-isolated * {
+    box-sizing: border-box;
+}
+
+/* 📝 Documentação visual */
+.plans-container-isolated::after {
+    content: 'PlansManager v1.0.0';
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-size: 0.6rem;
+    color: rgba(148, 163, 184, 0.3);
+    pointer-events: none;
+}
