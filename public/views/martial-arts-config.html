@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Artes Marciais - Configuração</title>
+    <link rel="stylesheet" href="/css/base/module-system.css">
+    <style>
+        .config-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .modalidade-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .modalidade-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .modalidade-icon {
+            font-size: 2rem;
+            min-width: 3rem;
+            text-align: center;
+        }
+        
+        .modalidade-info {
+            flex: 1;
+        }
+        
+        .modalidade-nome {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .modalidade-origem {
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+        
+        .graduacoes-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .graduacao-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .config-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .config-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #F8FAFC;
+        }
+    </style>
+</head>
+<body class="module-isolated-base">
+    <div class="config-container">
+        <div class="module-isolated-header">
+            <div class="module-isolated-header-content">
+                <div class="module-isolated-icon">🥋</div>
+                <div>
+                    <h1 class="module-isolated-title">Configuração de Artes Marciais</h1>
+                    <p class="module-isolated-subtitle">Sistema flexível para diferentes modalidades</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2 class="config-title">🏛️ Configuração da Academia</h2>
+            <div id="academiaInfo">
+                <p>Carregando configuração...</p>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2 class="config-title">🥋 Modalidades Disponíveis</h2>
+            <div id="modalidadesList">
+                <p>Carregando modalidades...</p>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2 class="config-title">🌍 Modalidades por Origem</h2>
+            <div id="modalidadesByOrigin">
+                <p>Carregando...</p>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2 class="config-title">⚙️ Configuração Personalizada</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="academiaNome">Nome da Academia:</label>
+                    <input type="text" id="academiaNome" class="module-isolated-input" placeholder="Academia de Artes Marciais">
+                </div>
+                <div class="form-group">
+                    <label for="modalidadePrincipal">Modalidade Principal:</label>
+                    <select id="modalidadePrincipal" class="module-isolated-input">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="permitirMultiplas"> 
+                        Permitir múltiplas modalidades
+                    </label>
+                </div>
+                <div class="form-group">
+                    <button id="salvarConfig" class="module-isolated-button module-isolated-button-primary">
+                        Salvar Configuração
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/config/martial-arts-config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar carregamento da configuração
+            setTimeout(initConfigPage, 100);
+        });
+
+        function initConfigPage() {
+            renderAcademiaInfo();
+            renderModalidades();
+            renderModalidadesByOrigin();
+            setupForm();
+        }
+
+        function renderAcademiaInfo() {
+            const config = window.MartialArtsConfig.getAcademiaConfig();
+            const container = document.getElementById('academiaInfo');
+            
+            container.innerHTML = `
+                <div class="modalidade-card">
+                    <div class="modalidade-icon">🏛️</div>
+                    <div class="modalidade-info">
+                        <div class="modalidade-nome">${config.nome}</div>
+                        <div class="modalidade-origem">Modalidades Ativas: ${config.modalidades.join(', ')}</div>
+                        <div style="margin-top: 0.5rem;">
+                            <span style="color: ${config.cores.primaria};">●</span> Cor Primária: ${config.cores.primaria}
+                            <span style="margin-left: 1rem; color: ${config.cores.secundaria};">●</span> Cor Secundária: ${config.cores.secundaria}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderModalidades() {
+            const modalidades = window.MartialArtsConfig.getAllModalidades();
+            const container = document.getElementById('modalidadesList');
+            
+            container.innerHTML = modalidades.map(modalidade => `
+                <div class="modalidade-card">
+                    <div class="modalidade-icon">${modalidade.icon}</div>
+                    <div class="modalidade-info">
+                        <div class="modalidade-nome" style="color: ${modalidade.cor};">${modalidade.nome}</div>
+                        <div class="modalidade-origem">Origem: ${modalidade.origem}</div>
+                        <div class="graduacoes-list">
+                            ${modalidade.graduacoes.map((grad, i) => 
+                                `<span class="graduacao-badge" style="background: ${modalidade.cor}; opacity: ${1 - (i * 0.1)};">${grad}</span>`
+                            ).join('')}
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #94A3B8;">
+                            Categorias: ${modalidade.categorias.join(', ')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderModalidadesByOrigin() {
+            const modalidades = window.MartialArtsConfig.getAllModalidades();
+            const byOrigin = modalidades.reduce((acc, modalidade) => {
+                if (!acc[modalidade.origem]) acc[modalidade.origem] = [];
+                acc[modalidade.origem].push(modalidade);
+                return acc;
+            }, {});
+
+            const container = document.getElementById('modalidadesByOrigin');
+            
+            container.innerHTML = Object.keys(byOrigin).map(origem => `
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: #F8FAFC; margin-bottom: 0.5rem;">${origem}</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${byOrigin[origem].map(modalidade => `
+                            <span style="
+                                background: ${modalidade.cor}; 
+                                color: white; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 6px; 
+                                font-size: 0.9rem;
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                            ">
+                                ${modalidade.icon} ${modalidade.nome}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupForm() {
+            const modalidades = window.MartialArtsConfig.getAllModalidades();
+            const select = document.getElementById('modalidadePrincipal');
+            
+            // Preencher select de modalidades
+            select.innerHTML = '<option value="">Selecione...</option>' + 
+                modalidades.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+
+            // Carregar valores atuais
+            const config = window.MartialArtsConfig.getAcademiaConfig();
+            document.getElementById('academiaNome').value = config.nome;
+            document.getElementById('modalidadePrincipal').value = config.modalidades[0] || '';
+            document.getElementById('permitirMultiplas').checked = config.modalidades.length > 1;
+
+            // Setup botão salvar
+            document.getElementById('salvarConfig').addEventListener('click', function() {
+                const novaConfig = {
+                    nome: document.getElementById('academiaNome').value,
+                    modalidades: [document.getElementById('modalidadePrincipal').value],
+                    permitirMultiplas: document.getElementById('permitirMultiplas').checked
+                };
+
+                window.MartialArtsConfig.setAcademiaConfig(novaConfig);
+                alert('Configuração salva com sucesso!');
+                
+                // Recarregar página para mostrar mudanças
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+    </script>
+</body>
+</html>

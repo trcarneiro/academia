@@ -72,6 +72,18 @@
                 scriptPath = '/modules/techniques/techniques.js';
                 forceModuleType = true; // ES module
                 break;
+            case 'martial-arts':
+                viewPath = '/views/martial-arts.html';
+                scriptPath = '/js/modules/martial-arts.js';
+                break;
+            case 'graduations':
+                viewPath = '/views/graduations.html';
+                scriptPath = '/js/modules/graduations.js';
+                break;
+            case 'belt-system':
+                viewPath = '/views/belt-system.html';
+                scriptPath = '/js/modules/belt-system.js';
+                break;
             case 'activities':
                 viewPath = '/views/modules/activities.html';
                 scriptPath = '/js/modules/activities.js';
@@ -100,6 +112,10 @@
             case 'settings':
                 viewPath = '/views/settings.html';
                 scriptPath = '/js/modules/settings.js';
+                break;
+            case 'martial-arts-config':
+                viewPath = '/views/martial-arts-config.html';
+                scriptPath = '/js/config/martial-arts-config.js';
                 break;
             case 'organizations':
                 viewPath = '/views/organizations.html';
@@ -172,7 +188,7 @@
     };
     'use strict';
 
-    console.log('📊 dashboard-optimized.js loaded');
+    console.log('📊 Sistema de Gestão de Artes Marciais - Dashboard carregado');
     
     // Module state
     let dashboardData = {
@@ -208,7 +224,7 @@
     
     // Module initialization
     function initializeDashboardModule() {
-        console.log('📊 Initializing Optimized Dashboard Module...');
+        console.log('📊 Inicializando Sistema de Gestão de Artes Marciais...');
         
         if (isInitialized) {
             console.log('⚠️ Dashboard module already initialized');
@@ -345,6 +361,42 @@
                 </div>
 
                 <div class="sidebar-section">
+                    <div class="sidebar-title">Modalidades & Técnicas</div>
+                    <nav>
+                        <ul class="nav-menu">
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('techniques')" data-ai-enabled="true">
+                                    <span class="nav-icon">⚔️</span>
+                                    Técnicas
+                                    <span class="badge success">IA</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('martial-arts')" data-ai-enabled="true">
+                                    <span class="nav-icon">🥋</span>
+                                    Modalidades
+                                    <span class="badge info" id="martial-arts-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('graduations')" data-ai-enabled="true">
+                                    <span class="nav-icon">🏅</span>
+                                    Graduações
+                                    <span class="badge info" id="graduations-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('belt-system')" data-ai-enabled="true">
+                                    <span class="nav-icon">🎗️</span>
+                                    Sistema de Faixas
+                                    <span class="badge warning">NOVO</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="sidebar-section">
                     <div class="sidebar-title">Infraestrutura</div>
                     <nav>
                         <ul class="nav-menu">
@@ -419,6 +471,13 @@
                                     Configurações
                                 </button>
                             </li>
+                            <li class="nav-item">
+                                <button class="nav-link" onclick="navigateToModule('martial-arts-config')">
+                                    <span class="nav-icon">🥋</span>
+                                    Config. Modalidades
+                                    <span class="badge success">NOVO</span>
+                                </button>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -431,7 +490,7 @@
                     <div class="header-left">
                         <div class="header-title">
                             <span>🥋</span>
-                            Krav Academy
+                            Academia de Artes Marciais
                         </div>
                         <div class="header-ai-status">
                             <span>🤖</span>
@@ -527,6 +586,14 @@
                     <button class="action-btn info" onclick="navigateToModule('courses')">
                         <span class="action-icon">📚</span>
                         <span>Novo Curso</span>
+                    </button>
+                    <button class="action-btn secondary" onclick="navigateToModule('techniques')">
+                        <span class="action-icon">⚔️</span>
+                        <span>Nova Técnica</span>
+                    </button>
+                    <button class="action-btn success" onclick="navigateToModule('graduations')">
+                        <span class="action-icon">🏅</span>
+                        <span>Avaliar Graduação</span>
                     </button>
                 </div>
             </div>
@@ -1194,12 +1261,67 @@
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
+                cursor: pointer;
+            }
+            
+            .action-btn.primary {
+                background: rgba(59, 130, 246, 0.1);
+                border-color: #3B82F6;
+                color: #3B82F6;
+            }
+            
+            .action-btn.success {
+                background: rgba(16, 185, 129, 0.1);
+                border-color: #10B981;
+                color: #10B981;
+            }
+            
+            .action-btn.warning {
+                background: rgba(245, 158, 11, 0.1);
+                border-color: #F59E0B;
+                color: #F59E0B;
+            }
+            
+            .action-btn.info {
+                background: rgba(14, 165, 233, 0.1);
+                border-color: #0EA5E9;
+                color: #0EA5E9;
+            }
+            
+            .action-btn.secondary {
+                background: rgba(107, 114, 128, 0.1);
+                border-color: #6B7280;
+                color: #6B7280;
             }
             
             .action-btn:hover {
-                background: rgba(59, 130, 246, 0.2);
                 transform: translateY(-1px);
                 box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+            
+            .action-btn.primary:hover {
+                background: rgba(59, 130, 246, 0.2);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+            
+            .action-btn.success:hover {
+                background: rgba(16, 185, 129, 0.2);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            
+            .action-btn.warning:hover {
+                background: rgba(245, 158, 11, 0.2);
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }
+            
+            .action-btn.info:hover {
+                background: rgba(14, 165, 233, 0.2);
+                box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            }
+            
+            .action-btn.secondary:hover {
+                background: rgba(107, 114, 128, 0.2);
+                box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
             }
             
             .recent-activity {
@@ -1485,6 +1607,6 @@
         }
     }
     
-    console.log('✅ Optimized Dashboard Module loaded');
+    console.log('✅ Sistema de Gestão de Artes Marciais carregado');
     
 })();
