@@ -1,0 +1,38 @@
+[
+  {
+    "type": "TECHNIQUE",
+    "title": "Postura Básica de Combate",
+    "description": "Postura fundamental para defesa pessoal, com pés afastados na largura dos ombros e mãos protegendo o rosto",
+    "equipment": ["Espelho", "Colchonete"],
+    "safety": "Manter equilíbrio, não forçar articulações",
+    "adaptations": ["Pode ser feita sentado para pessoas com mobilidade reduzida"],
+    "difficulty": 1
+  },
+  {
+    "type": "TECHNIQUE", 
+    "title": "Soco Direto",
+    "description": "Técnica básica de soco com rotação do punho e extensão completa do braço",
+    "equipment": ["Saco de pancada", "Bandagens"],
+    "safety": "Aquecer punhos e braços antes de executar",
+    "adaptations": ["Iniciar com movimentos lentos", "Usar luvas acolchoadas"],
+    "difficulty": 2
+  },
+  {
+    "type": "DRILL",
+    "title": "Aquecimento Dinâmico",
+    "description": "Sequência de movimentos para preparar o corpo para o treino",
+    "equipment": [],
+    "safety": "Não fazer movimentos bruscos",
+    "adaptations": ["Reduzir intensidade conforme necessário"],
+    "difficulty": 1
+  },
+  {
+    "type": "EXERCISE",
+    "title": "Flexões de Braço",
+    "description": "Exercício para fortalecimento de braços, peito e core",
+    "equipment": ["Colchonete"],
+    "safety": "Manter alinhamento corporal correto",
+    "adaptations": ["Flexão com joelhos apoiados", "Flexão na parede"],
+    "difficulty": 2
+  }
+]

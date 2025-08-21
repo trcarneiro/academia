@@ -1,0 +1,297 @@
+<!-- Quick Add Student Form - UX Professional Demo -->
+<div class="quick-add-form-demo" style="display: none;" id="quick-add-demo">
+    <div class="form-overlay">
+        <div class="form-modal">
+            <header class="modal-header">
+                <h2>Cadastro Rápido de Aluno</h2>
+                <button class="close-btn" onclick="closeQuickAdd()">&times;</button>
+            </header>
+            
+            <form class="quick-form" id="quick-student-form">
+                <div class="form-sections">
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span class="section-icon">⚡</span>
+                            Informações Essenciais
+                        </h3>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="quick-name" class="required">Nome Completo</label>
+                                <input type="text" 
+                                       id="quick-name" 
+                                       name="name"
+                                       class="form-control"
+                                       placeholder="Digite o nome completo"
+                                       required
+                                       autocomplete="name">
+                                <div class="field-error" id="quick-name-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quick-email" class="required">Email</label>
+                                <input type="email" 
+                                       id="quick-email" 
+                                       name="email"
+                                       class="form-control"
+                                       placeholder="email@exemplo.com"
+                                       required
+                                       autocomplete="email">
+                                <div class="field-error" id="quick-email-error"></div>
+                                <div class="form-help">Será usado para login e comunicações</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quick-phone">Telefone/WhatsApp</label>
+                                <input type="tel" 
+                                       id="quick-phone" 
+                                       name="phone"
+                                       class="form-control"
+                                       placeholder="(11) 99999-9999"
+                                       autocomplete="tel">
+                                <div class="field-error" id="quick-phone-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quick-plan">Plano Inicial</label>
+                                <select id="quick-plan" name="plan" class="form-control">
+                                    <option value="">Sem plano (por enquanto)</option>
+                                    <option value="basic">Básico - R$ 89/mês</option>
+                                    <option value="premium">Premium - R$ 149/mês</option>
+                                    <option value="vip">VIP - R$ 299/mês</option>
+                                </select>
+                                <div class="form-help">Pode ser alterado posteriormente</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-secondary-form" onclick="closeQuickAdd()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-form btn-primary-form" id="save-quick-student">
+                        💾 Salvar Aluno
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal específico para demo */
+.form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.form-modal {
+    background: #ffffff !important;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 24px 32px 16px 32px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 1.5rem !important;
+    font-weight: 600;
+    color: #1e293b !important;
+    margin: 0;
+}
+
+.close-btn {
+    background: none !important;
+    border: none !important;
+    font-size: 2rem !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #f1f5f9 !important;
+    color: #374151 !important;
+}
+
+.quick-form .form-sections {
+    padding: 24px 32px 0 32px;
+}
+
+.quick-form .form-actions {
+    margin: 0;
+    border-radius: 0 0 20px 20px;
+}
+
+@media (max-width: 768px) {
+    .form-overlay {
+        padding: 10px;
+    }
+    
+    .form-modal {
+        max-height: 95vh;
+    }
+    
+    .modal-header {
+        padding: 16px 20px 12px 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.25rem !important;
+    }
+    
+    .quick-form .form-sections {
+        padding: 16px 20px 0 20px;
+    }
+    
+    .quick-form .form-actions {
+        padding: 16px 20px;
+    }
+}
+</style>
+
+<script>
+// Funções para demonstração da UX
+function showQuickAddDemo() {
+    const demo = document.getElementById('quick-add-demo');
+    if (demo) {
+        demo.style.display = 'block';
+        // Focar no primeiro campo
+        setTimeout(() => {
+            document.getElementById('quick-name')?.focus();
+        }, 100);
+    }
+}
+
+function closeQuickAdd() {
+    const demo = document.getElementById('quick-add-demo');
+    if (demo) {
+        demo.style.display = 'none';
+    }
+}
+
+// Validação em tempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quick-student-form');
+    if (form) {
+        // Validação de email em tempo real
+        const emailField = document.getElementById('quick-email');
+        if (emailField) {
+            emailField.addEventListener('blur', function() {
+                const email = this.value.trim();
+                const errorEl = document.getElementById('quick-email-error');
+                
+                if (email && !isValidEmail(email)) {
+                    this.classList.add('invalid');
+                    errorEl.textContent = 'Por favor, digite um email válido';
+                } else {
+                    this.classList.remove('invalid');
+                    errorEl.textContent = '';
+                    if (email) {
+                        this.classList.add('valid');
+                    }
+                }
+            });
+        }
+        
+        // Máscara para telefone
+        const phoneField = document.getElementById('quick-phone');
+        if (phoneField) {
+            phoneField.addEventListener('input', function() {
+                this.value = formatPhone(this.value);
+            });
+        }
+        
+        // Submit do formulário
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('save-quick-student');
+            
+            // Simular loading
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Salvando...';
+            
+            setTimeout(() => {
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = '✅ Salvo!';
+                
+                setTimeout(() => {
+                    closeQuickAdd();
+                    submitBtn.textContent = '💾 Salvar Aluno';
+                    form.reset();
+                    
+                    // Mostrar notificação de sucesso
+                    showSuccessNotification('Aluno cadastrado com sucesso!');
+                }, 1000);
+            }, 2000);
+        });
+    }
+});
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function formatPhone(phone) {
+    const numbers = phone.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+        return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    }
+    return phone;
+}
+
+function showSuccessNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        z-index: 10000;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    `;
+    notification.innerHTML = `✅ ${message}`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>

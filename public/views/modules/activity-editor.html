@@ -10,44 +10,215 @@
     <form id="activity-form">
       <input type="hidden" id="activity-id">
       
-      <div class="activities-isolated-form-group">
-        <label for="title">Título*</label>
-        <input type="text" id="title" name="title" required class="activities-isolated-input">
+      <div class="activities-isolated-form-row">
+        <div class="activities-isolated-form-group">
+          <label for="title">Título*</label>
+          <input type="text" id="title" name="title" required class="activities-isolated-input">
+        </div>
+
+        <div class="activities-isolated-form-group">
+          <label for="type">Tipo*</label>
+          <select id="type" name="type" required class="activities-isolated-select">
+            <option value="">Selecione...</option>
+            <option value="TECHNIQUE">Técnica</option>
+            <option value="STRETCH">Alongamento</option>
+            <option value="DRILL">Drill</option>
+            <option value="EXERCISE">Exercício</option>
+            <option value="GAME">Jogo</option>
+            <option value="CHALLENGE">Desafio</option>
+            <option value="ASSESSMENT">Avaliação</option>
+          </select>
+        </div>
       </div>
 
-      <div class="activities-isolated-form-group">
-        <label for="type">Tipo*</label>
-        <select id="type" name="type" required class="activities-isolated-select">
-          <option value="">Selecione...</option>
-          <option value="aula">Aula</option>
-          <option value="evento">Evento</option>
-          <option value="workshop">Workshop</option>
-        </select>
-      </div>
+      <div class="activities-isolated-form-row">
+        <div class="activities-isolated-form-group">
+          <label for="difficulty">Dificuldade (1-5)</label>
+          <input type="number" id="difficulty" name="difficulty" min="1" max="5"
+                 class="activities-isolated-input">
+          <small class="activities-isolated-help">1 = Muito Fácil, 5 = Muito Difícil</small>
+        </div>
 
-      <div class="activities-isolated-form-group">
-        <label for="date">Data*</label>
-        <input type="date" id="date" name="date" required class="activities-isolated-input"
-               min="{{ currentDate }}">
-        <small class="activities-isolated-error" id="date-error" style="display:none">
-          Data deve ser futura
-        </small>
-      </div>
-
-      <div class="activities-isolated-form-group">
-        <label for="duration">Duração (minutos)*</label>
-        <input type="number" id="duration" name="duration" min="15" max="480"
-               required class="activities-isolated-input">
+        <div class="activities-isolated-form-group">
+          <label for="refTechniqueId">Técnica Relacionada</label>
+          <select id="refTechniqueId" name="refTechniqueId" class="activities-isolated-select">
+            <option value="">Nenhuma</option>
+            <!-- Opções serão carregadas dinamicamente -->
+          </select>
+        </div>
       </div>
 
       <div class="activities-isolated-form-group">
         <label for="description">Descrição</label>
-        <textarea id="description" name="description" class="activities-isolated-textarea"></textarea>
+        <textarea id="description" name="description" rows="4" 
+                  placeholder="Descreva os objetivos e como executar a atividade..."
+                  class="activities-isolated-textarea"></textarea>
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="equipment">Equipamentos Necessários</label>
+        <input type="text" id="equipment" name="equipment" 
+               placeholder="Ex: tatame, luvas, escudo (separados por vírgula)"
+               class="activities-isolated-input">
+        <small class="activities-isolated-help">Separe múltiplos equipamentos por vírgula</small>
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="safety">Observações de Segurança</label>
+        <textarea id="safety" name="safety" rows="3"
+                  placeholder="Cuidados especiais, contraindicações, etc..."
+                  class="activities-isolated-textarea"></textarea>
+      </div>
+
+      <div class="activities-isolated-form-group">
+        <label for="adaptations">Adaptações Possíveis</label>
+        <input type="text" id="adaptations" name="adaptations"
+               placeholder="Ex: reduzir intensidade, usar proteção extra (separados por vírgula)"
+               class="activities-isolated-input">
+        <small class="activities-isolated-help">Separe múltiplas adaptações por vírgula</small>
       </div>
 
       <div class="activities-isolated-form-actions">
         <button type="submit" class="activities-isolated-btn activities-isolated-btn-primary">
-          Salvar Atividade
+          💾 Salvar Atividade
+        </button>
+        <button type="button" id="delete-btn" class="activities-isolated-btn activities-isolated-btn-danger" style="display:none">
+          🗑️ Excluir Atividade
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import { ActivitiesService } from '/js/modules/activities-service.js';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activityId = urlParams.get('id');
+    const form = document.getElementById('activity-form');
+    const deleteBtn = document.getElementById('delete-btn');
+    const titleElement = document.getElementById('editor-title');
+
+    // Configurar feedback se disponível
+    if (window.feedback) {
+      console.log('🟢 Feedback utilities disponível');
+    }
+    
+    // Carregar atividade existente se houver ID
+    if (activityId) {
+      try {
+        const response = await ActivitiesService.get(activityId);
+        const activity = response.data || response;
+        populateForm(activity);
+        titleElement.textContent = 'Editar Atividade';
+        deleteBtn.style.display = 'block';
+      } catch (error) {
+        console.error('Erro ao carregar atividade:', error);
+        window.feedback?.showError?.('Falha ao carregar dados da atividade') || 
+        alert('Falha ao carregar dados da atividade');
+      }
+    }
+
+    // Configurar evento de exclusão
+    deleteBtn.addEventListener('click', async () => {
+      if (confirm('Tem certeza que deseja excluir esta atividade?')) {
+        try {
+          window.feedback?.setButtonLoading?.(deleteBtn, true);
+          
+          await ActivitiesService.delete(activityId);
+          window.feedback?.showSuccess?.('Atividade excluída com sucesso!') ||
+          alert('Atividade excluída com sucesso!');
+          history.back();
+        } catch (error) {
+          console.error('Erro ao excluir atividade:', error);
+          window.feedback?.showError?.('Falha ao excluir atividade') ||
+          alert('Falha ao excluir atividade');
+        } finally {
+          window.feedback?.setButtonLoading?.(deleteBtn, false);
+        }
+      }
+    });
+
+    // Configurar envio do formulário
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      
+      // Evita duplo envio
+      if (submitBtn.disabled) return;
+
+      // Coletar dados do formulário
+      const formData = new FormData(form);
+      const activityData = {
+        title: formData.get('title'),
+        type: formData.get('type'),
+        description: formData.get('description') || '',
+        difficulty: formData.get('difficulty') ? parseInt(formData.get('difficulty')) : null,
+        refTechniqueId: formData.get('refTechniqueId') || null,
+        safety: formData.get('safety') || '',
+        equipment: formData.get('equipment') ? 
+          formData.get('equipment').split(',').map(s => s.trim()).filter(s => s) : [],
+        adaptations: formData.get('adaptations') ? 
+          formData.get('adaptations').split(',').map(s => s.trim()).filter(s => s) : []
+      };
+
+      // Validação básica
+      if (!activityData.title || !activityData.type) {
+        window.feedback?.showError?.('Título e tipo são obrigatórios') ||
+        alert('Título e tipo são obrigatórios');
+        return;
+      }
+
+      // Loading state
+      window.feedback?.setButtonLoading?.(submitBtn, true);
+
+      try {
+        let response;
+        if (activityId) {
+          response = await ActivitiesService.update(activityId, activityData);
+          window.feedback?.showSuccess?.('Atividade atualizada com sucesso!') ||
+          alert('Atividade atualizada com sucesso!');
+        } else {
+          response = await ActivitiesService.create(activityData);
+          window.feedback?.showSuccess?.('Atividade criada com sucesso!') ||
+          alert('Atividade criada com sucesso!');
+        }
+        
+        // Voltar após sucesso
+        setTimeout(() => history.back(), 1000);
+      } catch (error) {
+        console.error('Erro ao salvar atividade:', error);
+        const errorMessage = error?.message || 'Falha ao salvar atividade';
+        window.feedback?.showError?.(errorMessage) ||
+        alert(errorMessage);
+      } finally {
+        window.feedback?.setButtonLoading?.(submitBtn, false);
+      }
+    });
+
+    function populateForm(activity) {
+      document.getElementById('activity-id').value = activity.id || '';
+      document.getElementById('title').value = activity.title || '';
+      document.getElementById('type').value = activity.type || '';
+      document.getElementById('description').value = activity.description || '';
+      document.getElementById('difficulty').value = activity.difficulty || '';
+      document.getElementById('refTechniqueId').value = activity.refTechniqueId || '';
+      document.getElementById('safety').value = activity.safety || '';
+      
+      // Equipamentos como array para string
+      if (activity.equipment && Array.isArray(activity.equipment)) {
+        document.getElementById('equipment').value = activity.equipment.join(', ');
+      }
+      
+      // Adaptações como array para string
+      if (activity.adaptations && Array.isArray(activity.adaptations)) {
+        document.getElementById('adaptations').value = activity.adaptations.join(', ');
+      }
+    }
+  });
+</script>
         </button>
         <button type="button" id="delete-btn" class="activities-isolated-btn activities-isolated-btn-danger" style="display:none">
           Excluir Atividade

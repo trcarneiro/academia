@@ -1,0 +1,174 @@
+<!-- Students Management Module - Guidelines.MD Compliant -->
+<div class="students-module">
+    <!-- Header Section -->
+    <header class="module-header">
+        <div class="header-left">
+            <h1 class="page-title">
+                <span class="title-icon">👥</span>
+                Alunos
+            </h1>
+            <p class="page-subtitle">Gerencie os estudantes da academia</p>
+        </div>
+        <div class="header-actions">
+            <button id="add-student-btn" class="btn-form btn-primary-form" onclick="window.addNewStudent()">
+                + Novo Aluno
+            </button>
+        </div>
+    </header>
+
+    <!-- Search and Filters Section -->
+    <section class="search-filters-section">
+        <div class="search-container">
+            <div class="form-group">
+                <label for="students-search" class="sr-only">Buscar alunos</label>
+                <input type="text" 
+                       id="students-search" 
+                       class="form-control"
+                       placeholder="🔍 Buscar por nome, email ou telefone..."
+                       autocomplete="off">
+            </div>
+            
+            <div class="filter-group">
+                <div class="form-group">
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter" class="form-control">
+                        <option value="">Todos os status</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category-filter">Categoria</label>
+                    <select id="category-filter" class="form-control">
+                        <option value="">Todas as categorias</option>
+                        <option value="REGULAR">Regular</option>
+                        <option value="VIP">VIP</option>
+                        <option value="STUDENT">Estudante</option>
+                        <option value="SENIOR">Senior</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button id="clear-filters-btn" class="btn-form btn-secondary-form">
+                        🧹 Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <div class="stat-value" id="totalStudents">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="activeStudents">0</div>
+                <div class="stat-label">Ativos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-content">
+                <div class="stat-value" id="inactiveStudents">0</div>
+                <div class="stat-label">Inativos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💳</div>
+            <div class="stat-content">
+                <div class="stat-value" id="subscribedStudents">0</div>
+                <div class="stat-label">Com Assinatura</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="view-controls">
+        <div class="view-options">
+            <button class="view-btn active" data-view="table">
+                <span class="view-icon">📋</span>
+                Tabela
+            </button>
+            <button class="view-btn" data-view="grid">
+                <span class="view-icon">⚏</span>
+                Cards
+            </button>
+        </div>
+        
+        <div class="results-info">
+            <span id="results-count">0 estudantes encontrados</span>
+        </div>
+    </div>
+
+    <!-- Students Table Container -->
+    <div class="table-container" id="students-table-container">
+        <div class="table-header">
+            <h3 class="table-title">Lista de Estudantes</h3>
+            <div class="table-actions">
+                <button class="btn-form btn-secondary-form" onclick="window.exportStudents()">
+                    📊 Exportar
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th>Categoria</th>
+                        <th>Última Atividade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="students-table-body">
+                    <!-- Conteúdo será preenchido dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Students Grid Container -->
+    <div class="grid-container" id="students-grid-container" style="display: none;">
+        <div class="students-grid" id="students-grid">
+            <!-- Conteúdo será preenchido dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" id="loading-state" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Carregando estudantes...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="empty-state" style="display: none;">
+        <div class="empty-icon">👥</div>
+        <h3>Nenhum estudante encontrado</h3>
+        <p>Adicione o primeiro estudante para começar a gerenciar sua academia.</p>
+        <button class="btn-form btn-primary-form" onclick="window.addNewStudent()">
+            + Adicionar Primeiro Estudante
+        </button>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" id="error-state" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <h3>Erro ao carregar estudantes</h3>
+        <p id="error-message">Não foi possível carregar a lista de estudantes.</p>
+        <button class="btn-form btn-primary-form" onclick="window.loadStudents()">
+            🔄 Tentar Novamente
+        </button>
+    </div>
+</div>

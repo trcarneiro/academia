@@ -1,6 +1,13 @@
 (function() {
     'use strict';
 
+    // Idempotent init guard for validator and re-entrancy
+    if (window.__planEditorInitialized) {
+        console.log('[PlanEditor] Already initialized, skipping.');
+        return;
+    }
+    window.__planEditorInitialized = true;
+
     // Boot retry state (handles SPA view injection races)
     let __planEditorBootAttempts = 0;
     
@@ -8,6 +15,41 @@
     let currentPlan = null;
     let editMode = false;
     let allCourses = [];
+
+    // Safe feedback helpers using shared utils if available
+    const FE = {
+        toast: (m,t) => (window.feedback?.toast ? window.feedback.toast(m,t) : alert((t==='error'?'Erro: ':'') + (m||''))),
+        error: (m) => (window.feedback?.showError ? window.feedback.showError(m) : alert('Erro: '+(m||''))),
+        success: (m) => (window.feedback?.showSuccess ? window.feedback.showSuccess(m) : alert('Sucesso: '+(m||''))),
+        setBtnLoading: (b,l) => (window.feedback?.setButtonLoading ? window.feedback.setButtonLoading(b,l) : (b&&(b.disabled=l))),
+        inlineError: (sel,m) => (window.feedback?.setInlineError ? window.feedback.setInlineError(sel,m) : console.warn('InlineError:',m))
+    };
+
+    // Guidelines.MD: Module API helper
+    const PlansAPI = (typeof window.createModuleAPI === 'function') ? window.createModuleAPI('Plans') : null;
+
+    // --- New: Collect and normalize form data ---
+    function collectFormData() {
+        const get = (id) => (document.getElementById(id)?.value ?? '').toString().trim();
+        const name = get('planName');
+        const description = get('planDescription');
+        const category = get('planCategory');
+        const priceStr = get('planPrice').replace(',', '.');
+        const billingType = get('planBillingType');
+        const classesPerWeekStr = get('planClassesPerWeek');
+
+        const price = priceStr === '' ? NaN : Number(priceStr);
+        const classesPerWeek = classesPerWeekStr === '' ? null : parseInt(classesPerWeekStr, 10);
+
+        return {
+            name,
+            description,
+            category,
+            price,
+            billingType,
+            ...(classesPerWeek !== null && !Number.isNaN(classesPerWeek) ? { classesPerWeek } : {})
+        };
+    }
 
     // Utility functions for visibility control using CSS classes
     function showElement(element) {
@@ -25,11 +67,7 @@
     }
 
     function toggleElement(element, show) {
-        if (show) {
-            showElement(element);
-        } else {
-            hideElement(element);
-        }
+        if (show) { showElement(element); } else { hideElement(element); }
     }
     
     // State for Courses Tab
@@ -45,9 +83,6 @@
         filterAvailable: '',
         filterLinked: ''
     };
-    
-    // New: State for Lesson Plans Tab (lazy init)
-    let lessonPlansTabState = { initialized: false };
     
     // Initialize module when DOM is ready or immediately if already loaded
     console.log('[PlanEditor] Boot scheduling, readyState:', document.readyState);
@@ -77,7 +112,8 @@
                 document.querySelector('.plan-editor') ||
                 document.getElementById('mainContent') ||
                 document.querySelector('#planEditorRoot') ||
-                document.querySelector('[data-module="plan-editor"]');
+                document.querySelector('[data-module="plan-editor"]') ||
+                document.querySelector('.module-isolated-base');
             
             if (!editorContainer) {
                 // DOM not yet injected; retry a few times
@@ -99,25 +135,35 @@
                 console.log('[PlanEditor] Already initialized for this view, skipping re-init.');
                 return;
             }
-            if (editorContainer.dataset) editorContainer.dataset.initialized = 'true';
+            if (editorContainer.dataset) {
+                editorContainer.dataset.initialized = 'true';
+                // Mark as active for validator
+                try {
+                    editorContainer.id = editorContainer.id || 'planEditorContainer';
+                    editorContainer.dataset.module = 'plan-editor';
+                    editorContainer.dataset.active = 'true';
+                    editorContainer.classList.add('module-isolated-container','module-active');
+                } catch(_){}
+            }
             
             console.log('✅ DOM validation passed - plan editor container found');
             
-            // Check if we're editing an existing plan (sessionStorage or URL fallback)
-            const urlId = new URLSearchParams(window.location.search).get('id');
+            // Check if we're editing an existing plan (session from router supports deep routes)
             const storedId = (window.EditingSession && window.EditingSession.getEditingPlanId && window.EditingSession.getEditingPlanId()) || null;
-            const editingPlanId = storedId || urlId;
+            // Hash deep route fallback: #plan-editor/<id>
+            const hash = (location.hash||'').replace(/^#/,'');
+            const parts = hash.split('/');
+            const hashId = parts[0]==='plan-editor' && parts[1] ? decodeURIComponent(parts[1]) : null;
+            const editingPlanId = storedId || hashId;
             if (editingPlanId) {
                 console.log('🔄 Loading plan for editing:', editingPlanId);
                 editMode = true;
                 await loadPlanData(editingPlanId);
-                if (storedId && window.EditingSession && window.EditingSession.clearEditingPlanId) window.EditingSession.clearEditingPlanId(); // Clean up if used
+                if (storedId && window.EditingSession?.clearEditingPlanId) window.EditingSession.clearEditingPlanId();
             } else {
-                // This is a new plan - hide loading and show form and tabs
                 console.log('🆕 Creating new plan');
                 editMode = false;
                 currentPlan = null;
-                
                 const loadingState = document.getElementById('loadingState');
                 const mainContent = document.getElementById('mainContent');
                 const tabsNav = document.getElementById('planTabs');
@@ -128,12 +174,10 @@
                 showElement(tabsNav);
                 showElement(tabsPanels);
                 showElement(coursesTabBtn);
-                
-                // Update page title for new plan
-                const pageTitle = document.querySelector('h1');
-                if (pageTitle) {
-                    pageTitle.textContent = 'Adicionar Novo Plano';
-                }
+                // Focus first input for a11y
+                requestAnimationFrame(()=>{ document.getElementById('planName')?.focus(); });
+                const pageTitle = document.querySelector('#pageTitle, h1');
+                if (pageTitle) pageTitle.textContent = 'Adicionar Novo Plano';
             }
             
             // Load supporting data
@@ -145,9 +189,8 @@
             console.log('✅ Plan Editor Module initialized successfully');
         } catch (error) {
             console.error('❌ Error initializing plan editor module:', error);
-            showError('Erro ao inicializar editor de planos: ' + error.message);
+            FE.error('Erro ao inicializar editor de planos: ' + (error?.message||error));
             
-            // Hide loading state even on error
             const loadingState = document.getElementById('loadingState');
             const mainContent = document.getElementById('mainContent');
             hideElement(loadingState);
@@ -155,41 +198,43 @@
         }
     }
     
-    // Utility: fetch with timeout to avoid infinite loaders when the API hangs
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+    // Utility: fetch with timeout
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeoutMs);
         try {
             const res = await fetch(url, { ...options, signal: controller.signal });
             return res;
         } catch (err) {
-            if (err.name === 'AbortError') {
-                throw new Error('Tempo esgotado ao comunicar com o servidor. Tente novamente.');
-            }
+            if (err.name === 'AbortError') throw new Error('Tempo esgotado ao comunicar com o servidor. Tente novamente.');
             throw err;
-        } finally {
-            clearTimeout(id);
+        } finally { clearTimeout(id); }
+    }
+
+    // Parse API error body/text
+    async function parseApiError(resp){
+        try {
+            const ct = resp.headers.get('content-type')||'';
+            if (ct.includes('application/json')){
+                const j = await resp.json();
+                return j?.message || JSON.stringify(j);
+            } else {
+                const t = await resp.text();
+                return t || `${resp.status} ${resp.statusText}`;
+            }
+        } catch(e){
+            return `${resp.status} ${resp.statusText}`;
         }
     }
 
-    // Load plan data for editing
+    // Load plan data for editing (migrated to ModuleAPIHelper when available)
     async function loadPlanData(planId) {
-        try {
-            console.log('[PlanEditor] Fetching plan data...', planId);
-            const response = await fetchWithTimeout(`/api/billing-plans/${planId}`);
-            const result = await response.json();
-            if (result.success) {
-                currentPlan = result.data;
-                populateForm(currentPlan);
-                console.log('✅ Plan data loaded for editing');
-            } else {
-                throw new Error(result.message || 'Failed to load plan data');
-            }
-        } catch (error) {
+        const loadingState = document.getElementById('loadingState');
+        const mainContent = document.getElementById('mainContent');
+        const tabsNav = document.getElementById('planTabs');
+        const tabsPanels = document.getElementById('planTabPanels');
+        const onErr = (error) => {
             console.error('❌ Error loading plan data:', error);
-            // Remove loader and show error fallback
-            const loadingState = document.getElementById('loadingState');
-            const mainContent = document.getElementById('mainContent');
             hideElement(loadingState);
             hideElement(mainContent);
             const errorContainer = document.getElementById('planEditorError') || document.createElement('div');
@@ -198,66 +243,89 @@
             errorContainer.innerHTML = `
                 <div style='text-align:center;padding:2rem;'>
                     <h2>Erro ao carregar dados do plano</h2>
-                    <p>${error.message || 'Falha desconhecida.'}</p>
-                    <button id='retryLoadPlanBtn' class='btn btn-primary'>Tentar novamente</button>
-                    <button id='backToPlansBtn' class='btn btn-secondary' style='margin-left:1rem;'>Voltar</button>
+                    <p>${(error?.message)||'Falha desconhecida.'}</p>
+                    <button id='retryLoadPlanBtn' class='module-isolated-btn-primary'>Tentar novamente</button>
+                    <button id='backToPlansBtn' class='module-isolated-btn-secondary' style='margin-left:1rem;'>Voltar</button>
                 </div>
             `;
-            document.body.appendChild(errorContainer);
+            document.getElementById('module-container')?.appendChild(errorContainer);
             document.getElementById('retryLoadPlanBtn').onclick = () => {
                 errorContainer.remove();
                 showElement(loadingState);
                 hideElement(mainContent);
                 loadPlanData(planId);
             };
-            document.getElementById('backToPlansBtn').onclick = () => {
-                window.goBackToPlans();
-            };
-            // Ensure tabs wrapper is shown so user can navigate other tabs if needed
-            const tabsNav = document.getElementById('planTabs');
-            const tabsPanels = document.getElementById('planTabPanels');
+            document.getElementById('backToPlansBtn').onclick = () => { window.goBackToPlans(); };
             showElement(tabsNav);
             showElement(tabsPanels);
-            // Keep edit mode and remember id for other operations (e.g., Courses tab) even if details failed
             editMode = true;
             currentPlan = { id: planId };
-        }
-    }
-    
-    // Load supporting data (courses, etc.)
-    async function loadSupportingData() {
+        };
+
         try {
-            console.log('[PlanEditor] Fetching courses list...');
-            // Load courses if needed
-            const coursesResponse = await fetchWithTimeout('/api/courses');
-            if (coursesResponse.ok) {
-                const coursesResult = await coursesResponse.json();
-                allCourses = coursesResult.data || [];
-                console.log('✅ Courses data loaded:', allCourses.length);
+            if (PlansAPI?.fetchWithStates) {
+                await PlansAPI.fetchWithStates(`/api/billing-plans/${encodeURIComponent(planId)}`, {
+                    loadingElement: loadingState,
+                    targetElement: mainContent,
+                    onLoading: () => { showElement(loadingState); hideElement(mainContent); hideElement(tabsNav); hideElement(tabsPanels); },
+                    onSuccess: (data) => { currentPlan = data; populateForm(currentPlan); },
+                    onError: (err) => onErr(err),
+                    onEmpty: () => onErr(new Error('Plano não encontrado.'))
+                });
+            } else {
+                // Fallback
+                console.log('[PlanEditor] Fetching plan data (fallback)...', planId);
+                const response = await fetchWithTimeout(`/api/billing-plans/${encodeURIComponent(planId)}`);
+                if (!response.ok){
+                    const msg = await parseApiError(response);
+                    throw new Error(msg);
+                }
+                const result = await response.json();
+                if (result?.success) {
+                    currentPlan = result.data;
+                    populateForm(currentPlan);
+                    console.log('✅ Plan data loaded for editing');
+                } else {
+                    throw new Error(result?.message || 'Falha ao carregar dados do plano');
+                }
             }
-            // Always show the courses tab button after attempting to load courses
-            // The content and specific messages will be handled by plan-editor-courses-tab.js
-            const coursesTabBtn = document.getElementById('coursesTabBtn');
+        } catch (error) { onErr(error); }
+    }
+
+    // Load supporting data (courses, etc.) using ModuleAPIHelper when available
+    async function loadSupportingData() {
+        const coursesTabBtn = document.getElementById('coursesTabBtn');
+        try {
+            if (PlansAPI?.fetchWithStates) {
+                await PlansAPI.fetchWithStates('/api/courses', {
+                    onSuccess: (data) => { allCourses = data || []; },
+                    onError: (err) => { console.warn('⚠️ Could not load supporting data:', err); }
+                });
+            } else {
+                console.log('[PlanEditor] Fetching courses list (fallback)...');
+                const coursesResponse = await fetchWithTimeout('/api/courses');
+                if (coursesResponse.ok) {
+                    const coursesResult = await coursesResponse.json();
+                    allCourses = coursesResult.data || [];
+                }
+            }
             showElement(coursesTabBtn);
         } catch (error) {
             console.warn('⚠️ Could not load supporting data:', error);
-            // Even if loading fails, show the tab so user is aware of its existence
-            const coursesTabBtn = document.getElementById('coursesTabBtn');
             showElement(coursesTabBtn);
         }
     }
     
     // Populate form with plan data
     function populateForm(plan) {
-        const form = document.getElementById('planForm') || document.querySelector('form');
+        const form = document.getElementById('plan-form') || document.getElementById('planForm') || document.querySelector('form');
         if (!form) return;
         
-        // Populate basic fields
         const fields = {
             'planName': plan.name,
             'planDescription': plan.description,
             'planCategory': plan.category,
-            'planPrice': plan.price,
+            'planPrice': (plan.price?.value ?? plan.price),
             'planBillingType': plan.billingType,
             'planClassesPerWeek': plan.classesPerWeek
         };
@@ -269,15 +337,14 @@
             }
         });
         
-        // Update page title if editing
-        const pageTitle = document.querySelector('h1');
-        if (pageTitle) {
-            pageTitle.textContent = editMode ? 'Editar Plano' : 'Adicionar Novo Plano';
-        }
+        const pageTitle = document.querySelector('#pageTitle, h1');
+        if (pageTitle) pageTitle.textContent = editMode ? 'Editar Plano' : 'Adicionar Novo Plano';
+
+        // Focus first field when data is ready
+        requestAnimationFrame(()=>{ document.getElementById('planName')?.focus(); });
         
         console.log('✅ Form populated with plan data');
 
-        // Hide loading state and show content
         const loadingState = document.getElementById('loadingState');
         const tabsNav = document.getElementById('planTabs');
         const tabsPanels = document.getElementById('planTabPanels');
@@ -288,71 +355,115 @@
         showElement(tabsPanels);
         showElement(mainContent);
         
-        // Ensure the Courses tab button is visible
         const coursesTabBtn = document.getElementById('coursesTabBtn');
-        if (coursesTabBtn) {
-            console.log('[DEBUG] Aba Cursos encontrada, tornando-a visível.');
-            showElement(coursesTabBtn);
-        } else {
-            console.warn('[DEBUG] Aba Cursos NÃO encontrada ao tentar torná-la visível.');
-        }
+        if (coursesTabBtn) showElement(coursesTabBtn);
+        else console.warn('[DEBUG] Aba Cursos não encontrada.');
     }
     
+    // Safe back navigation to Plans module
+    function navigateBackToPlans() {
+        try { window.EditingSession?.clearEditingPlanId?.(); } catch (_) {}
+        // Prefer router if exposed, else fallback to hash
+        try {
+            if (window.router && typeof window.router.navigateTo === 'function') {
+                window.router.navigateTo('plans');
+            } else {
+                location.hash = 'plans';
+            }
+        } catch (_) {
+            location.hash = 'plans';
+        }
+        // Try to refresh/reinitialize the Plans module after navigation
+        setTimeout(() => {
+            try { window.initializePlansModule?.(); } catch (_) {}
+            try { window.loadAndShowPlans?.(); } catch (_) {}
+        }, 200);
+    }
+
+    // Expose for any external callers expecting this name
+    window.goBackToPlans = navigateBackToPlans;
+
+    function getActivePanelKey(){
+        const active = document.querySelector('.plan-editor-tab-panel.active');
+        return active?.dataset?.panel || 'details';
+    }
+
+    function hasPendingCoursesDiff(){
+        try{
+            const currentLinkedIds = new Set(coursesTabState.linked.map(c => String(c.id)));
+            let pending = false;
+            currentLinkedIds.forEach(id => { if (!coursesTabState.originalLinkedIds.has(id)) pending = true; });
+            if (!pending) {
+                coursesTabState.originalLinkedIds.forEach(id => { if (!currentLinkedIds.has(id)) pending = true; });
+            }
+            return pending;
+        }catch(_){ return false; }
+    }
+
+    function handlePrimarySave(){
+        const panel = getActivePanelKey();
+        if (panel === 'courses'){
+            if (hasPendingCoursesDiff()) return saveCoursesTabDiff();
+            if (window.feedback?.showInfo) window.feedback.showInfo('Nada para salvar.');
+            return;
+        }
+        return handleSavePlan();
+    }
+
     // Setup event listeners
     function setupEventListeners() {
         // Unified tab navigation logic
         const tabsContainer = document.getElementById('planTabs');
         if (tabsContainer) {
             tabsContainer.addEventListener('click', (e) => {
-                const tab = e.target.closest('.plan-tab');
+                const tab = e.target.closest('.plan-editor-tab');
                 if (!tab) return;
                 const target = tab.dataset.tab;
                 if (!target) return;
-                // Remove 'active' from all tabs and panels
-                tabsContainer.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.plan-tab-panel').forEach(p => p.classList.remove('active'));
-                // Activate selected tab and panel
+                tabsContainer.querySelectorAll('.plan-editor-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.plan-editor-tab-panel').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
-                const panel = document.querySelector('.plan-tab-panel[data-panel="' + target + '"]');
+                const panel = document.querySelector('.plan-editor-tab-panel[data-panel="' + target + '"]');
                 if (panel) panel.classList.add('active');
-                // If switching to courses, initialize if needed
-                if (target === 'courses') {
-                    initCoursesTab();
-                }
-                // If switching to lesson plans, lazy-load module and init
-                if (target === 'lesson-plans') {
-                    initLessonPlansTab();
-                }
-            });
+                if (target === 'courses') initCoursesTab();
+            }, { once: false });
         }
 
         // Back button
         const backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.addEventListener('click', function() {
-                if (typeof window.navigateToModule === 'function') {
-                    window.navigateToModule('plans');
-                } else {
-                    window.history.back();
-                }
-            });
+        if (backBtn && !backBtn.dataset.bound) {
+            backBtn.dataset.bound = 'true';
+            backBtn.addEventListener('click', () => navigateBackToPlans());
         }
 
-        // Save button
+        // Save button (form submit)
         const form = document.getElementById('plan-form') || document.getElementById('planForm') || document.querySelector('form');
-        if (form) {
+        if (form && !form.dataset.bound) {
+            form.dataset.bound = 'true';
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 handleSavePlan();
             });
         }
 
+        // Header save routes to primary save (details or courses diff)
+        const headerSaveBtn = document.getElementById('savePlanHeaderBtn');
+        if (headerSaveBtn && !headerSaveBtn.dataset.bound) {
+            headerSaveBtn.dataset.bound = 'true';
+            headerSaveBtn.addEventListener('click', function() {
+                handlePrimarySave();
+            });
+        }
+
         // Delete button - only show if editing
         const deleteBtn = document.getElementById('deletePlanBtn');
         if (deleteBtn) {
-            if (editMode && currentPlan) {
+            if (editMode) {
                 showElement(deleteBtn);
-                deleteBtn.addEventListener('click', handleDeletePlan);
+                if (!deleteBtn.dataset.bound) {
+                    deleteBtn.dataset.bound = 'true';
+                    deleteBtn.addEventListener('click', handleDeletePlan);
+                }
             } else {
                 hideElement(deleteBtn);
             }
@@ -445,14 +556,22 @@
     }
 
     function getCurrentPlanId() {
-        // Use the currentPlan from the main module state if available
-        if (currentPlan && currentPlan.id) {
-            return currentPlan.id;
+        // Prefer current loaded plan
+        if (currentPlan && currentPlan.id) return currentPlan.id;
+        // From EditingSession (provided by router)
+        if (window.EditingSession && typeof window.EditingSession.getEditingPlanId === 'function') {
+            const s = window.EditingSession.getEditingPlanId();
+            if (s) return s;
         }
-        // Fallback to URL or sessionStorage
+        // From deep hash: #plan-editor/<id>
+        const raw = (location.hash || '').replace(/^#/, '');
+        const [seg0, seg1] = raw.split('/');
+        if (seg0 === 'plan-editor' && seg1) return decodeURIComponent(seg1);
+        // Fallback to URLSearchParams
         const urlParams = new URLSearchParams(window.location.search);
         const idFromUrl = urlParams.get('id');
         if (idFromUrl) return idFromUrl;
+        // Legacy session storage
         const idFromSession = sessionStorage.getItem('editingPlanId');
         return idFromSession || null;
     }
@@ -479,92 +598,122 @@
         discardBtn?.addEventListener('click', discardCoursesTabChanges);
     }
 
+    // Courses Tab: Load and render using ModuleAPIHelper
     async function loadCoursesTabData() {
         try {
             console.log('[CoursesTab] Iniciando carregamento de dados de cursos...');
-            toggleCoursesTabLoading(true);
-            // Fetch ALL courses
-            console.log('[CoursesTab] Chamando API: GET /api/courses');
-            const allResp = await fetch('/api/courses');
-            const allJson = allResp.ok ? await allResp.json() : {
-                data: []
+            const coursesLoading = document.getElementById('coursesLoading');
+            const coursesAssociation = document.getElementById('coursesAssociation');
+            const target = document.getElementById('coursesPanelContent');
+
+            const buildLists = (allList, linkedList) => {
+                const allNorm = (Array.isArray(allList) ? allList : []).map(normalizeCourse).filter(Boolean);
+                let linkedNorm = [];
+                if (Array.isArray(linkedList) && linkedList.length && (typeof linkedList[0] === 'string' || typeof linkedList[0] === 'number')) {
+                    const idSet = new Set(linkedList.map(v => String(v)));
+                    linkedNorm = allNorm.filter(c => idSet.has(String(c.id)));
+                } else {
+                    linkedNorm = (Array.isArray(linkedList) ? linkedList : []).map(normalizeCourse).filter(Boolean).map(c => {
+                        if (c.name) return c;
+                        const found = allNorm.find(ac => String(ac.id) === String(c.id));
+                        return found || c;
+                    });
+                }
+                const effectiveAll = allNorm.filter(c => c.isActive !== false);
+                const linkedIds = new Set(linkedNorm.map(c => String(c.id)));
+                coursesTabState.linked = linkedNorm;
+                coursesTabState.originalLinkedIds = new Set(Array.from(linkedIds));
+                coursesTabState.available = effectiveAll.filter(c => !linkedIds.has(String(c.id)));
+                renderCoursesTabLists();
+                toggleCoursesTabLoading(false);
+                if (coursesAssociation) coursesAssociation.style.display = 'flex';
+                console.log('[CoursesTab] Dados prontos. all:', effectiveAll.length, 'linked:', linkedNorm.length, 'available:', coursesTabState.available.length);
             };
-            console.log('[CoursesTab] Resposta da API /api/courses:', allJson);
-            const allCourses = (allJson.data || []).filter(c => c.isActive !== false);
-            console.log('[CoursesTab] Cursos ativos encontrados:', allCourses.length, allCourses);
 
-            // Fetch linked courses
-            console.log(`[CoursesTab] Chamando API: GET /api/plans/${coursesTabState.planId}/courses`);
-            const linkedResp = await fetch(`/api/plans/${coursesTabState.planId}/courses`);
-            const linkedJson = linkedResp.ok ? await linkedResp.json() : {
-                data: []
-            };
-            console.log(`[CoursesTab] Resposta da API /api/plans/${coursesTabState.planId}/courses:`, linkedJson);
-            coursesTabState.linked = linkedJson.data || [];
-            coursesTabState.originalLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
-            console.log('[CoursesTab] Cursos já associados ao plano:', coursesTabState.linked.length, coursesTabState.linked);
+            if (PlansAPI?.fetchWithStates) {
+                let allCoursesRaw = [];
+                await PlansAPI.fetchWithStates('/api/courses', {
+                    loadingElement: coursesLoading,
+                    targetElement: target,
+                    onLoading: () => { toggleCoursesTabLoading(true); if (coursesAssociation) coursesAssociation.style.display = 'none'; },
+                    onSuccess: (data) => { allCoursesRaw = Array.isArray(data) ? data : []; },
+                    onError: (err) => { showCoursesTabError('Erro ao carregar cursos: ' + (err?.message||err)); }
+                });
 
-            // Available = all - linked
-            const linkedIds = new Set(coursesTabState.linked.map(c => c.id));
-            coursesTabState.available = allCourses.filter(c => !linkedIds.has(c.id));
-            console.log('[CoursesTab] Cursos disponíveis para associação:', coursesTabState.available.length, coursesTabState.available);
+                let linkedRaw = [];
+                await PlansAPI.fetchWithStates(`/api/plans/${coursesTabState.planId}/courses`, {
+                    // Do NOT pass targetElement here to avoid EMPTY state wiping the panel
+                    onSuccess: (data) => { linkedRaw = Array.isArray(data) ? data : []; },
+                    onEmpty: () => { linkedRaw = []; }
+                });
 
-            renderCoursesTabLists();
-            toggleCoursesTabLoading(false);
-            document.getElementById('coursesAssociation').style.display = 'flex';
-            console.log('[CoursesTab] Carregamento de dados de cursos concluído.');
+                buildLists(allCoursesRaw, linkedRaw);
+            } else {
+                // Fallback to fetch
+                toggleCoursesTabLoading(true);
+                const allResp = await fetch('/api/courses');
+                const allJson = allResp.ok ? await allResp.json() : { data: [] };
+                const allRaw = Array.isArray(allJson?.data) ? allJson.data : [];
+
+                const linkedResp = await fetch(`/api/plans/${coursesTabState.planId}/courses`);
+                const linkedJson = linkedResp.ok ? await linkedResp.json() : { data: [] };
+                const linkedRaw = Array.isArray(linkedJson?.data) ? linkedJson.data : [];
+
+                buildLists(allRaw, linkedRaw);
+            }
         } catch (err) {
             console.error('[CoursesTab] Falha ao carregar associação de cursos', err);
-            showCoursesTabError('Erro ao carregar cursos: ' + err.message);
+            showCoursesTabError('Erro ao carregar cursos: ' + (err?.message||err));
             toggleCoursesTabLoading(false);
         }
     }
 
+    // Helper: normalize different course shapes into a unified object
+    function normalizeCourse(raw) {
+        if (!raw) return null;
+        // Detect nested course object
+        const nested = raw.course || raw.Course || null;
+        const id = raw.id ?? raw.courseId ?? raw.uuid ?? raw._id ?? nested?.id ?? nested?.courseId;
+        const name = raw.name ?? raw.title ?? nested?.name ?? nested?.title ?? '';
+        const level = raw.level ?? nested?.level ?? '';
+        const status = raw.status ?? nested?.status ?? null;
+        const isActive = (status != null)
+            ? (String(status).toUpperCase() !== 'INACTIVE')
+            : ((raw.isActive ?? nested?.isActive) !== false);
+        return id ? { id: String(id), name, level, status, isActive } : null;
+    }
+
     function renderCoursesTabLists() {
-        console.log('[CoursesTab] Iniciando renderização das listas de cursos...');
         const availUl = document.getElementById('availableCoursesList');
         const linkedUl = document.getElementById('linkedCoursesList');
-        if (!availUl || !linkedUl) {
-            console.warn('[CoursesTab] Elementos de lista não encontrados (availableCoursesList ou linkedCoursesList)');
-            return;
-        }
+        if (!availUl || !linkedUl) return;
 
-        const availFiltered = coursesTabState.available.filter(c => !coursesTabState.filterAvailable || c.name.toLowerCase().includes(coursesTabState.filterAvailable));
-        const linkedFiltered = coursesTabState.linked.filter(c => !coursesTabState.filterLinked || c.name.toLowerCase().includes(coursesTabState.filterLinked));
-
-        console.log('[CoursesTab] Cursos disponíveis (filtrados):', availFiltered.length, availFiltered);
-        console.log('[CoursesTab] Cursos associados (filtrados):', linkedFiltered.length, linkedFiltered);
+        const availFiltered = coursesTabState.available.filter(c => !coursesTabState.filterAvailable || (c.name||'').toLowerCase().includes(coursesTabState.filterAvailable));
+        const linkedFiltered = coursesTabState.linked.filter(c => !coursesTabState.filterLinked || (c.name||'').toLowerCase().includes(coursesTabState.filterLinked));
 
         availUl.innerHTML = availFiltered.map(c => courseLi(c, 'available')).join('');
         linkedUl.innerHTML = linkedFiltered.map(c => courseLi(c, 'linked')).join('');
 
-        console.log('[CoursesTab] HTML das listas atualizado.');
+        const availableCount = document.getElementById('availableCount');
+        const linkedCount = document.getElementById('linkedCount');
+        if (availableCount) availableCount.textContent = String(availFiltered.length);
+        if (linkedCount) linkedCount.textContent = String(linkedFiltered.length);
 
-        document.getElementById('availableCount').textContent = availFiltered.length;
-        document.getElementById('linkedCount').textContent = linkedFiltered.length;
+        const availableEmpty = document.getElementById('availableEmptyState');
+        const linkedEmpty = document.getElementById('linkedEmptyState');
+        if (availableEmpty) availableEmpty.style.display = availFiltered.length ? 'none' : 'block';
+        if (linkedEmpty) linkedEmpty.style.display = linkedFiltered.length ? 'none' : 'block';
 
-        document.getElementById('availableEmptyState').style.display = availFiltered.length ? 'none' : 'block';
-        document.getElementById('linkedEmptyState').style.display = linkedFiltered.length ? 'none' : 'block';
-
-        console.log('[CoursesTab] Estados vazios atualizados. Available empty:', !availFiltered.length, 'Linked empty:', !linkedFiltered.length);
-        
-        // Attach click handlers
-        availUl.querySelectorAll('li').forEach(li => {
-            li.addEventListener('click', () => toggleSelect(li, 'available'));
-        });
-        linkedUl.querySelectorAll('li').forEach(li => {
-            li.addEventListener('click', () => toggleSelect(li, 'linked'));
-        });
+        availUl.querySelectorAll('li').forEach(li => li.addEventListener('click', () => toggleSelect(li, 'available')));
+        linkedUl.querySelectorAll('li').forEach(li => li.addEventListener('click', () => toggleSelect(li, 'linked')));
 
         updateCoursesTabDiffBar();
-        console.log('[CoursesTab] Renderização das listas concluída.');
     }
 
     function toggleSelect(li, list) {
         const id = li.dataset.id;
-        const set = list === 'available' ? coursesTabState.selectedAvailable : coursesTabState.selectedLinked;
-        if (set.has(id)) set.delete(id);
-        else set.add(id);
+        const set = (list === 'available') ? coursesTabState.selectedAvailable : coursesTabState.selectedLinked;
+        if (set.has(id)) set.delete(id); else set.add(id);
         li.classList.toggle('selected');
     }
 
@@ -589,39 +738,36 @@
 
     function updateCoursesTabDiffBar() {
         const currentLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
-        let added = [],
-            removed = [];
-        currentLinkedIds.forEach(id => {
-            if (!coursesTabState.originalLinkedIds.has(id)) added.push(id);
-        });
-        coursesTabState.originalLinkedIds.forEach(id => {
-            if (!currentLinkedIds.has(id)) removed.push(id);
-        });
+        const added = [], removed = [];
+        currentLinkedIds.forEach(id => { if (!coursesTabState.originalLinkedIds.has(id)) added.push(id); });
+        coursesTabState.originalLinkedIds.forEach(id => { if (!currentLinkedIds.has(id)) removed.push(id); });
         const diffBar = document.getElementById('coursesDiffBar');
+        if (!diffBar) return;
         if (!added.length && !removed.length) {
             diffBar.style.display = 'none';
             markCoursesTabDirty(false);
             return;
         }
         diffBar.style.display = 'flex';
-        const summary = [];
-        if (added.length) summary.push(`<span class='tag-added'>+${added.length} adicionados</span>`);
-        if (removed.length) summary.push(`<span class='tag-removed'>-${removed.length} removidos</span>`);
-        document.getElementById('diffSummary').innerHTML = summary.join(' | ');
+        const diffSummary = document.getElementById('diffSummary');
+        if (diffSummary) {
+            const summary = [];
+            if (added.length) summary.push(`<span class='tag-added'>+${added.length} adicionados</span>`);
+            if (removed.length) summary.push(`<span class='tag-removed'>-${removed.length} removidos</span>`);
+            diffSummary.innerHTML = summary.join(' | ');
+        }
         markCoursesTabDirty(true);
     }
 
     function markCoursesTabDirty(isDirty) {
         const tab = document.getElementById('coursesTabBtn');
-        if (!tab) return;
-        tab.classList.toggle('badge-dirty', isDirty);
+        if (tab) tab.classList.toggle('badge-dirty', !!isDirty);
     }
 
     function discardCoursesTabChanges() {
-        // Reset to original
-        const currentLinkedIds = new Set(coursesTabState.originalLinkedIds);
+        const original = new Set(coursesTabState.originalLinkedIds);
         const all = [...coursesTabState.available, ...coursesTabState.linked];
-        coursesTabState.linked = all.filter(c => currentLinkedIds.has(c.id));
+        coursesTabState.linked = all.filter(c => original.has(c.id));
         const linkedIds = new Set(coursesTabState.linked.map(c => c.id));
         coursesTabState.available = all.filter(c => !linkedIds.has(c.id));
         coursesTabState.selectedAvailable.clear();
@@ -629,296 +775,182 @@
         renderCoursesTabLists();
     }
 
-    async function saveCoursesTabDiff() {
-        try {
-            const currentLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
-            let add = [],
-                remove = [];
-            currentLinkedIds.forEach(id => {
-                if (!coursesTabState.originalLinkedIds.has(id)) add.push(id);
-            });
-            coursesTabState.originalLinkedIds.forEach(id => {
-                if (!currentLinkedIds.has(id)) remove.push(id);
-            });
-            if (!add.length && !remove.length) {
-                showCoursesTabSuccess('Nenhuma alteração para salvar');
-                return;
-            }
-            const resp = await fetch(`/api/plans/${coursesTabState.planId}/courses`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    add,
-                    remove
-                })
-            });
-            const json = await resp.json();
-            if (!resp.ok || !json.success) throw new Error(json.message || 'Falha ao salvar associações');
-            coursesTabState.originalLinkedIds = new Set(coursesTabState.linked.map(c => c.id));
-            updateCoursesTabDiffBar();
-            showCoursesTabSuccess('Associações salvas');
-        } catch (err) {
-            console.error('Save diff error', err);
-            showCoursesTabError('Erro ao salvar associações: ' + err.message);
-        }
-    }
-
-    function toggleCoursesTabLoading(is) {
+    function toggleCoursesTabLoading(isLoading) {
         const l = document.getElementById('coursesLoading');
-        if (l) l.style.display = is ? 'block' : 'none';
+        if (l) l.style.display = isLoading ? 'block' : 'none';
     }
 
     function courseLi(course, list) {
         const selectedSet = list === 'available' ? coursesTabState.selectedAvailable : coursesTabState.selectedLinked;
-        const selected = selectedSet.has(course.id);
-        return `<li data-id="${course.id}" class="${selected ? 'selected':''}"><span>${escapeHtml(course.name)}</span><span class="meta">${course.level||''}</span></li>`;
+        const selected = selectedSet.has(String(course.id));
+        return `<li data-id="${course.id}" class="${selected ? 'selected' : ''}"><span>${escapeHtml(course.name)}</span><span class="meta">${course.level||''}</span></li>`;
     }
 
     function debounce(fn, wait) {
-        let t;
-        return (...a) => {
-            clearTimeout(t);
-            t = setTimeout(() => fn(...a), wait);
-        };
+        let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), wait); };
     }
-    
+
     function escapeHtml(str) {
-        return (str || '').replace(/[&<>\"']/g, c => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '\"': '&quot;',
-            '\'': '&#39;'
-        }[c] || c));
+        return (String(str||'')).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]||c));
     }
 
     function showCoursesTabError(message) {
-        if (typeof showToast === 'function') showToast(message, 'error');
+        if (window.feedback?.toast) window.feedback.toast(message, 'error');
         else alert('Erro: ' + message);
     }
-    
+
     function showCoursesTabSuccess(message) {
-        if (typeof showToast === 'function') showToast(message, 'success');
+        if (window.feedback?.toast) window.feedback.toast(message, 'success');
         else alert('Sucesso: ' + message);
     }
-    
-    // Handle save plan
+
+    // Save diff of course associations
+    async function saveCoursesTabDiff() {
+        try {
+            if (!coursesTabState.planId) {
+                showCoursesTabError('Salve o plano primeiro para associar cursos.');
+                return;
+            }
+            const btn = document.getElementById('saveCoursesChangesBtn');
+            if (btn && window.feedback?.setButtonLoading) window.feedback.setButtonLoading(btn, true);
+
+            const currentLinkedIds = new Set(coursesTabState.linked.map(c => String(c.id)));
+            const added = [];
+            const removed = [];
+            currentLinkedIds.forEach(id => { if (!coursesTabState.originalLinkedIds.has(id)) added.push(id); });
+            coursesTabState.originalLinkedIds.forEach(id => { if (!currentLinkedIds.has(id)) removed.push(id); });
+
+            if (!added.length && !removed.length) {
+                showCoursesTabSuccess('Nada para salvar.');
+                return;
+            }
+
+            const endpoint = `/api/plans/${coursesTabState.planId}/courses`;
+            const payload = { add: added, remove: removed };
+
+            if (PlansAPI?.saveWithFeedback) {
+                await PlansAPI.saveWithFeedback(endpoint, payload, {
+                    method: 'POST',
+                    onSuccess: () => {
+                        coursesTabState.originalLinkedIds = new Set(Array.from(currentLinkedIds));
+                        document.getElementById('coursesDiffBar')?.style && (document.getElementById('coursesDiffBar').style.display = 'none');
+                        markCoursesTabDirty(false);
+                        showCoursesTabSuccess('Associações salvas com sucesso.');
+                    },
+                    onError: (err) => {
+                        showCoursesTabError('Falha ao salvar associações: ' + (err?.message||err));
+                    }
+                });
+            } else {
+                const resp = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!resp.ok) {
+                    const msg = await resp.text().catch(() => 'Erro ao salvar associações.');
+                    throw new Error(msg || `HTTP ${resp.status}`);
+                }
+                coursesTabState.originalLinkedIds = new Set(Array.from(currentLinkedIds));
+                document.getElementById('coursesDiffBar')?.style && (document.getElementById('coursesDiffBar').style.display = 'none');
+                markCoursesTabDirty(false);
+                showCoursesTabSuccess('Associações salvas com sucesso.');
+            }
+        } catch (e) {
+            showCoursesTabError('Falha ao salvar associações: ' + (e?.message || e));
+        } finally {
+            const btn = document.getElementById('saveCoursesChangesBtn');
+            if (btn && window.feedback?.setButtonLoading) window.feedback.setButtonLoading(btn, false);
+        }
+    }
+
+    // Re-add: Save/Delete handlers using API helper
     async function handleSavePlan() {
-        console.log('💾 Saving plan...');
-        
+        const saveBtn = document.getElementById('savePlanBtn');
+        const headerSaveBtn = document.getElementById('savePlanHeaderBtn');
+        FE.setBtnLoading(saveBtn, true);
+        FE.setBtnLoading(headerSaveBtn, true);
         try {
             const formData = collectFormData();
-            if (!formData) return;
-            
-            const url = editMode && currentPlan ? 
-                `/api/billing-plans/${currentPlan.id}` : 
-                '/api/billing-plans';
-            
-            const method = editMode && currentPlan ? 'PUT' : 'POST';
-            
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showSuccess(editMode ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!');
-                
-                if (editMode) {
-                    // If editing, refresh the current plan data
-                    await loadPlanData(currentPlan.id);
-                } else {
-                    // If creating a new plan, stay in the editor and load the created record without full navigation
-                    if (result.data && result.data.id) {
-                        // Update currentPlan and switch to edit mode
-                        currentPlan = result.data;
-                        editMode = true;
+            if (!formData || !formData.name || !isFinite(formData.price) || formData.price < 0 || !formData.billingType) {
+                FE.error('Falha ao salvar. Verifique os campos e tente novamente.');
+                return;
+            }
+            const isEdit = editMode && currentPlan && currentPlan.id;
+            const endpoint = isEdit ? `/api/billing-plans/${encodeURIComponent(currentPlan.id)}` : '/api/billing-plans';
+            const method = isEdit ? 'PUT' : 'POST';
 
-                        // Update URL to reflect editing state without triggering a reload
-                        try {
-                            const newUrl = `/views/plan-editor.html?id=${currentPlan.id}`;
-                            window.history.replaceState({}, '', newUrl);
-                        } catch (e) {
-                            // ignore history errors
-                        }
-
-                        // Load the newly created plan data into the editor
-                        await loadPlanData(currentPlan.id);
-                    } else {
-                        // Fallback if new plan ID is not returned
-                        showError('Plano criado, mas ID não retornado. Atualize a página.');
+            if (PlansAPI?.saveWithFeedback) {
+                await PlansAPI.saveWithFeedback(endpoint, formData, {
+                    method,
+                    onSuccess: () => {
+                        FE.success(isEdit ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!');
+                        setTimeout(()=>{ try { window.router?.navigateTo?.('plans'); } catch(_) {} location.hash = 'plans'; try { window.loadAndShowPlans?.(); } catch(_) {} }, 250);
+                    },
+                    onError: (err) => {
+                        FE.error(String(err?.message || 'Erro ao salvar plano.'));
+                        FE.inlineError('#mainContent', String(err?.message || 'Erro ao salvar'));
                     }
-                }
+                });
             } else {
-                throw new Error(result.message || 'Failed to save plan');
+                const resp = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                if (!resp.ok) {
+                    const msg = await (async()=>{try{const c=resp.headers.get('content-type')||'';return c.includes('json')? (await resp.json()).message : await resp.text();}catch{return '';}})();
+                    throw new Error(msg || (resp.status===500 ? 'Falha ao salvar. Verifique os campos e tente novamente.' : 'Erro ao salvar plano'));
+                }
+                FE.success(isEdit ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!');
+                setTimeout(()=>{ try { window.router?.navigateTo?.('plans'); } catch(_) {} location.hash = 'plans'; try { window.loadAndShowPlans?.(); } catch(_) {} }, 250);
             }
         } catch (error) {
             console.error('❌ Error saving plan:', error);
-            showError('Erro ao salvar plano: ' + error.message);
+            FE.error(String(error?.message || error || 'Falha ao salvar.'));
+            FE.inlineError('#mainContent', String(error?.message || 'Erro ao salvar'));
+        } finally {
+            FE.setBtnLoading(saveBtn, false);
+            FE.setBtnLoading(headerSaveBtn, false);
         }
-    }
-    
-    // Collect form data
-    function collectFormData() {
-        const form = document.getElementById('plan-form') || document.getElementById('planForm') || document.querySelector('form');
-        if (!form) {
-            showError('Formulário não encontrado');
-            return null;
-        }
-        
-        const formData = new FormData(form);
-        const data = {};
-        
-        // Required fields
-        const requiredFields = ['planName', 'planPrice', 'planBillingType'];
-        for (const field of requiredFields) {
-            const value = formData.get(field);
-            if (!value) {
-                showError(`Campo obrigatório não preenchido: ${field}`);
-                return null;
-            }
-        }
-        
-        // Collect all form data
-        data.name = formData.get('planName');
-        data.description = formData.get('planDescription');
-        data.category = formData.get('planCategory');
-        data.price = parseFloat(formData.get('planPrice'));
-        data.billingType = formData.get('planBillingType');
-        data.classesPerWeek = parseInt(formData.get('planClassesPerWeek')) || 2;
-        
-        // Optional fields
-        data.hasPersonalTraining = formData.get('hasPersonalTraining') === 'on';
-        data.hasNutrition = formData.get('hasNutrition') === 'on';
-        data.allowFreeze = formData.get('allowFreeze') === 'on';
-        
-        console.log('📋 Form data collected:', data);
-        return data;
     }
 
-    // Handle delete plan
     async function handleDeletePlan() {
-        if (!editMode || !currentPlan) {
-            showError('Nenhum plano selecionado para excluir.');
-            return;
-        }
-
-        if (!confirm(`Tem certeza que deseja excluir o plano "${currentPlan.name}"?`)) {
-            return;
-        }
-
-        console.log('🗑️ Deleting plan...');
-
+        if (!editMode || !currentPlan) { FE.error('Nenhum plano selecionado para excluir.'); return; }
+        if (!confirm(`Tem certeza que deseja excluir o plano "${currentPlan.name||''}"? Esta ação não pode ser desfeita.`)) return;
+        const delBtn = document.getElementById('deletePlanBtn');
+        FE.setBtnLoading(delBtn, true);
         try {
-            const response = await fetch(`/api/billing-plans/${currentPlan.id}`, {
-                method: 'DELETE'
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess('Plano excluído com sucesso!');
-                setTimeout(() => {
-                    if (typeof window.navigateToModule === 'function') {
-                        window.navigateToModule('plans');
-                    } else {
-                        window.location.href = '/views/plans.html';
+            const endpoint = `/api/billing-plans/${encodeURIComponent(currentPlan.id)}`;
+            if (PlansAPI?.saveWithFeedback) {
+                await PlansAPI.saveWithFeedback(endpoint, null, {
+                    method: 'DELETE',
+                    onSuccess: () => {
+                        FE.success('Plano excluído com sucesso!');
+                        setTimeout(()=>{ try { window.router?.navigateTo?.('plans'); } catch(_) {} location.hash = 'plans'; try { window.loadAndShowPlans?.(); } catch(_) {} }, 250);
+                    },
+                    onError: (err) => {
+                        FE.error(String(err?.message || 'Erro ao excluir plano.'));
+                        FE.inlineError('#mainContent', String(err?.message || 'Erro ao excluir plano.'));
                     }
-                }, 1500);
+                });
             } else {
-                throw new Error(result.message || 'Failed to delete plan');
+                const resp = await fetch(endpoint, { method: 'DELETE' });
+                if (!resp.ok) {
+                    const msg = await (async()=>{try{const c=resp.headers.get('content-type')||'';return c.includes('json')? (await resp.json()).message : await resp.text();}catch{return '';}})();
+                    throw new Error(msg || (resp.status===400 ? 'Plano vinculado a alunos. Remova vínculos antes de excluir.' : 'Erro ao excluir plano'));
+                }
+                FE.success('Plano excluído com sucesso!');
+                setTimeout(()=>{ try { window.router?.navigateTo?.('plans'); } catch(_) {} location.hash = 'plans'; try { window.loadAndShowPlans?.(); } catch(_) {} }, 250);
             }
         } catch (error) {
             console.error('❌ Error deleting plan:', error);
-            showError('Erro ao excluir plano: ' + error.message);
-        }
-    }
-    
-    // Lazy load lesson-plans.js if needed and initialize
-    async function initLessonPlansTab() {
-        try {
-            if (!lessonPlansTabState.initialized) {
-                await ensureLessonPlansScript();
-                if (typeof window.initializeLessonPlansModule === 'function') {
-                    await window.initializeLessonPlansModule();
-                }
-                lessonPlansTabState.initialized = true;
-            }
-        } catch (err) {
-            showError('Erro ao carregar Planos de Aula: ' + (err?.message || err));
+            FE.error(String(error?.message || error || 'Erro ao excluir plano.'));
+            FE.inlineError('#mainContent', String(error?.message || 'Erro ao excluir plano.'));
+        } finally {
+            FE.setBtnLoading(delBtn, false);
         }
     }
 
-    function ensureLessonPlansScript() {
-        return new Promise((resolve, reject) => {
-            // Ensure CSS for lesson-plans is present when loaded inside the editor tab
-            const cssHref = '/css/modules/lesson-plans.css';
-            if (!document.querySelector(`link[href="${cssHref}"]`)) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = cssHref;
-                document.head.appendChild(link);
-            }
-
-            if (typeof window.initializeLessonPlansModule === 'function') return resolve();
-            const existing = document.querySelector('script[data-module="lesson-plans"]');
-            if (existing) {
-                existing.addEventListener('load', () => resolve());
-                existing.addEventListener('error', (e) => reject(e));
-                return;
-            }
-            const s = document.createElement('script');
-            s.src = '../js/modules/lesson-plans.js';
-            s.async = true;
-            s.defer = false;
-            s.setAttribute('data-module', 'lesson-plans');
-            s.onload = () => resolve();
-            s.onerror = (e) => reject(new Error('Falha ao carregar lesson-plans.js'));
-            document.body.appendChild(s);
-        });
-    }
-
-    // Utility functions
-    function showError(message) {
-        console.error('❌ Error:', message);
-        alert('Erro: ' + message);
-    }
-    
-    function showSuccess(message) {
-        console.log('✅ Success:', message);
-        if (typeof showToast === 'function') {
-            showToast(message, 'success');
-        } else {
-            alert('Sucesso: ' + message);
-        }
-    }
-    
-    // Global functions for navigation
-    window.goBackToPlans = function() {
-        if (typeof window.navigateToModule === 'function') {
-            window.navigateToModule('plans');
-        } else {
-            window.location.href = '/views/plans.html';
-        }
-    };
-    
     // Export to global scope for auto-initialization
     window.initializePlanEditor = initializePlanEditor;
     
     // Ensure initialization is attempted even if loader misses DOMContentLoaded
     try { __bootPlanEditor(); } catch (_) {}
-    // Extra safety: schedule another attempt shortly (handles late DOM injection)
     setTimeout(() => { try { __bootPlanEditor(); } catch (_) {} }, 0);
     setTimeout(() => { try { __bootPlanEditor(); } catch (_) {} }, 300);
 
-    // Module loaded successfully
     console.log('📝 Plan Editor Module script loaded, initializePlanEditor available:', typeof window.initializePlanEditor);
-    
 })();

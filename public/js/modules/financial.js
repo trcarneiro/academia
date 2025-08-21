@@ -3,6 +3,35 @@
     
     console.log('💰 Financial Module Starting...');
     
+    // ==============================================
+    // API CLIENT INTEGRATION - GUIDELINES.MD COMPLIANCE
+    // ==============================================
+    
+    // Aguardar API Client estar disponível
+    function waitForAPIClient() {
+        return new Promise((resolve) => {
+            if (window.createModuleAPI) {
+                resolve();
+            } else {
+                const checkAPI = setInterval(() => {
+                    if (window.createModuleAPI) {
+                        clearInterval(checkAPI);
+                        resolve();
+                    }
+                }, 100);
+            }
+        });
+    }
+    
+    // Criar instância do API helper quando disponível
+    let financialAPI = null;
+    
+    async function initializeAPI() {
+        await waitForAPIClient();
+        financialAPI = window.createModuleAPI('Financial');
+        console.log('🌐 Financial API helper inicializado com Guidelines.MD compliance');
+    }
+    
     // Financial module state
     let financialData = {
         subscriptions: [],
@@ -13,12 +42,15 @@
     };
     
     // Initialize financial module
-    function initializeFinancialModule() {
+    async function initializeFinancialModule() {
         console.log('🔧 Initializing Financial Module...');
         
         try {
+            // Inicializar API primeiro
+            await initializeAPI();
+            
             setupEventListeners();
-            loadFinancialData();
+            await loadFinancialData();
             console.log('✅ Financial Module initialized successfully');
         } catch (error) {
             console.error('❌ Error initializing Financial Module:', error);
@@ -43,32 +75,34 @@
     
     // Load financial data from API
     async function loadFinancialData() {
-        console.log('📡 Loading financial data...');
+        console.log('📡 Loading financial data with standardized API Client...');
         
         try {
+            // Garantir que API Client está disponível
+            if (!financialAPI) {
+                await initializeAPI();
+            }
+            
             // Show loading states
             showLoadingStates();
             
-            // Load financial data - using existing APIs
-            const [subscriptionsResponse, plansResponse] = await Promise.all([
-                fetch('/api/financial/subscriptions'),
-                fetch('/api/billing-plans')
+            // Load financial data using standardized API Client
+            const [subscriptionsResult, plansResult] = await Promise.all([
+                financialAPI.fetchWithStates('/api/financial/subscriptions', {
+                    onSuccess: (data) => {
+                        financialData.subscriptions = data || [];
+                        console.log('✅ Subscriptions loaded:', data?.length || 0);
+                    },
+                    onError: (error) => console.error('❌ Subscriptions error:', error)
+                }),
+                financialAPI.fetchWithStates('/api/billing-plans', {
+                    onSuccess: (data) => {
+                        financialData.plans = data || [];
+                        console.log('✅ Plans loaded:', data?.length || 0);
+                    },
+                    onError: (error) => console.error('❌ Plans error:', error)
+                })
             ]);
-            
-            // Process responses
-            if (subscriptionsResponse.ok) {
-                const subscriptionsResult = await subscriptionsResponse.json();
-                if (subscriptionsResult.success) {
-                    financialData.subscriptions = subscriptionsResult.data || [];
-                }
-            }
-            
-            if (plansResponse.ok) {
-                const plansResult = await plansResponse.json();
-                if (plansResult.success) {
-                    financialData.plans = plansResult.data || [];
-                }
-            }
             
             // Calculate metrics
             calculateMetrics();
@@ -77,7 +111,7 @@
             updateFinancialDisplay();
             
             financialData.lastUpdated = new Date();
-            console.log('✅ Financial data loaded successfully');
+            console.log('✅ Financial data loaded successfully with Guidelines.MD compliance');
             
         } catch (error) {
             console.error('❌ Error loading financial data:', error);

@@ -1,160 +1,418 @@
-/* Lesson Plans Module Styles - system dark layout */
+/**
+ * Lesson Plans List CSS - Guidelines.MD Compliant
+ * Following the module-isolated-container pattern
+ */
 
-.lesson-plans-container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --primary-blue: #3b82f6;
-  --success-green: #10b981;
-  --warning-yellow: #f59e0b;
-  --error-red: #ef4444;
-  --surface-dark: rgba(30, 41, 59, 0.5);
-  --surface-darker: rgba(30, 41, 59, 0.7);
-  --border-light: rgba(148, 163, 184, 0.15);
-  --hover-bg: rgba(59, 130, 246, 0.05);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  color: var(--text-primary);
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* ============================================== 
+   MODULE CONTAINER & ISOLATION
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    line-height: 1.6;
+    color: #f8fafc;
+    background: #0f172a;
+    min-height: 100vh;
+    padding: 1rem;
+    overflow-x: hidden;
 }
 
-.lesson-plans-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-light);
+/* ============================================== 
+   MODULE HEADER
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .module-header {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
-.lesson-plans-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 24px;
-  font-weight: 700;
+.module-isolated-container[data-module="lesson-plans"] .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
 }
 
-.lesson-plans-filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+.module-isolated-container[data-module="lesson-plans"] .module-title {
+    color: #3b82f6;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.lesson-plans-filters .form-select,
-.lesson-plans-filters select {
-  padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  font-size: 14px;
-  min-width: 200px;
-  color: var(--text-primary);
+.module-isolated-container[data-module="lesson-plans"] .module-subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin: 0.5rem 0 0 0;
 }
 
-.lesson-plans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+/* ============================================== 
+   STATISTICS CARDS
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .module-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 48px 20px;
-  background: rgba(30, 41, 59, 0.35);
-  border-radius: 10px;
-  border: 2px dashed var(--border-light);
+.module-isolated-container[data-module="lesson-plans"] .stat-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    transition: all 0.3s ease;
 }
 
-.empty-state p { color: var(--text-secondary); font-size: 16px; margin-bottom: 16px; }
-
-/* Buttons */
-.btn {
-  padding: 10px 16px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .1s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.module-isolated-container[data-module="lesson-plans"] .stat-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-2px);
 }
 
-.btn-primary { background-color: var(--primary-blue); color: #fff; }
-.btn-primary:hover { background-color: #2563eb; transform: translateY(-1px); }
-
-.btn-outline {
-  background-color: transparent;
-  color: var(--primary-blue);
-  border-color: var(--primary-blue);
-}
-.btn-outline:hover { background-color: var(--primary-blue); color: #fff; }
-
-.btn-light { background: rgba(30, 41, 59, 0.35); color: var(--text-primary); border-color: var(--border-light); }
-.btn-light:hover { background: rgba(30, 41, 59, 0.5); }
-
-.icon { font-size: 16px; font-weight: 600; }
-
-/* Cards */
-.lp-card {
-  background: var(--surface-dark);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.2);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-}
-.lp-card:hover {
-  background: var(--surface-darker);
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+.module-isolated-container[data-module="lesson-plans"] .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
 }
 
-.lp-card-head { padding: 14px 16px 0; display: flex; justify-content: space-between; align-items: center; }
-.lp-title { font-weight: 600; color: var(--text-primary); }
-.lp-sub { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
-.lp-card-body { padding: 8px 16px; color: var(--text-secondary); min-height: 44px; }
-.lp-card-actions { padding: 10px 16px 14px; display: flex; gap: 8px; justify-content: flex-end; }
-
-/* Activities layout */
-.lp-activities { padding: 10px 0; }
-.lp-activities-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
-.lp-plan-title { font-weight: 600; font-size: 18px; color: var(--text-primary); }
-.lp-actions button[disabled] { opacity: .5; cursor: not-allowed; }
-
-.lp-activities-layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
-.lp-catalog, .lp-items { background: var(--surface-dark); border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; }
-.lp-section-title { font-weight: 600; color: var(--text-secondary); margin: 2px 0 10px; }
-.lp-catalog-search input { width: 100%; padding: 8px 10px; background: rgba(15,23,42,.8); border: 1px solid var(--border-light); border-radius: 8px; color: var(--text-primary); }
-
-.lp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow: auto; }
-.lp-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: 10px; background: rgba(15, 23, 42, 0.6); }
-.lp-row-title { font-weight: 600; color: var(--text-primary); }
-.lp-row-sub { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
-.lp-item-actions .btn-light { padding: 6px 8px; }
-
-.droppable { min-height: 120px; }
-
-/* Select styling inside items */
-.lp-row select {
-  padding: 6px 8px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border-light);
-  color: var(--text-primary);
-  border-radius: 8px;
-  font-size: 12px;
+.module-isolated-container[data-module="lesson-plans"] .stat-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .lesson-plans-grid { grid-template-columns: 1fr; }
-  .lesson-plans-filters { flex-direction: column; }
-  .lesson-plans-filters .form-select { min-width: auto; }
-  .lesson-plans-header { flex-direction: column; align-items: stretch; gap: 12px; }
-  .lp-activities-layout { grid-template-columns: 1fr; }
+/* ============================================== 
+   FILTERS SECTION
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .module-filters {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .filter-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .filter-label {
+    color: #f8fafc;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .filter-input,
+.module-isolated-container[data-module="lesson-plans"] .filter-select {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #f8fafc;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .filter-input:focus,
+.module-isolated-container[data-module="lesson-plans"] .filter-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ============================================== 
+   DATA TABLE
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .module-isolated-table {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .data-table th {
+    background: rgba(15, 23, 42, 0.8);
+    color: #3b82f6;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    color: #f8fafc;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .table-row:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* ============================================== 
+   LESSON PLAN INFO
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .lesson-plan-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .lesson-title {
+    font-weight: 600;
+    color: #f8fafc;
+    font-size: 1rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .lesson-course {
+    color: #3b82f6;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .lesson-description {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================== 
+   STATUS BADGES
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .status-level-1 {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .status-level-2 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .status-level-3 {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .status-level-4 {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .status-level-5 {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================== 
+   DIFFICULTY DISPLAY
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .difficulty-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .difficulty-stars {
+    color: #fbbf24;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* ============================================== 
+   DURATION DISPLAY
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .duration-display {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ============================================== 
+   ACTION BUTTONS
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ============================================== 
+   PAGINATION
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .module-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 0 0 12px 12px;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.module-isolated-container[data-module="lesson-plans"] .pagination-info {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .pagination-current {
+    color: #f8fafc;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* ============================================== 
+   EMPTY STATE
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: #94a3b8;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .empty-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .empty-subtitle {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+/* ============================================== 
+   LOADING STATE
+   ============================================== */
+
+.module-isolated-container[data-module="lesson-plans"] .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.module-isolated-container[data-module="lesson-plans"] .loading-text {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ============================================== 
+   RESPONSIVE DESIGN
+   ============================================== */
+
+@media (max-width: 768px) {
+    .module-isolated-container[data-module="lesson-plans"] .header-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .module-isolated-container[data-module="lesson-plans"] .filter-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .module-isolated-container[data-module="lesson-plans"] .module-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .module-isolated-container[data-module="lesson-plans"] .data-table {
+        font-size: 0.8rem;
+    }
+    
+    .module-isolated-container[data-module="lesson-plans"] .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .module-isolated-container[data-module="lesson-plans"] .module-pagination {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
 }

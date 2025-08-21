@@ -28,10 +28,13 @@ export default async function planCoursesRoutes(app: FastifyInstance) {
           where: { planId: id },
           include: { course: true },
         });
-        const courses: CourseView[] = (links as Array<{ course: CourseView }>)
-          .map((l) => l.course)
-          .filter((c) => c && (c.isActive ?? true));
-        return reply.send({ success: true, data: courses });
+        if (links.length) {
+          const courses: CourseView[] = (links as Array<{ course: CourseView }>)
+            .map((l) => l.course)
+            .filter((c) => c && (c.isActive ?? true));
+          return reply.send({ success: true, data: courses });
+        }
+        // If there are no links, fall back to JSON features
       }
 
       // Fallback: association stored in billingPlan.features.courseIds (JSON)
@@ -52,7 +55,7 @@ export default async function planCoursesRoutes(app: FastifyInstance) {
         orderBy: { name: 'asc' },
       });
 
-      const activeCourses = courses.filter((c: any) => c.isActive !== false);
+      const activeCourses = (courses as any[]).filter((c: any) => c.isActive !== false);
       return reply.send({ success: true, data: activeCourses });
     } catch (error: any) {
       request.log.error({ err: error }, 'Failed to fetch courses for plan');
@@ -88,6 +91,21 @@ export default async function planCoursesRoutes(app: FastifyInstance) {
             }
           }
         });
+
+        // Mirror into features.courseIds so both strategies stay consistent
+        try {
+          const existing = await (prisma as any).planCourse.findMany({
+            where: { planId: id },
+            select: { courseId: true },
+          });
+          const nextIds = Array.from(new Set((existing as Array<{ courseId: string }>).map((r) => String(r.courseId))));
+          const prevFeatures: any = (planExists as any).features || {};
+          const updatedFeatures = { ...prevFeatures, courseIds: nextIds };
+          await prisma.billingPlan.update({ where: { id }, data: { features: updatedFeatures } });
+        } catch (mirrorErr) {
+          request.log.warn({ err: mirrorErr }, 'Could not mirror plan-course links into features.courseIds');
+        }
+
         return reply.send({ success: true, message: 'Associações atualizadas' });
       }
 

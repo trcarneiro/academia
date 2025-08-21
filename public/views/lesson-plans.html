@@ -1,17 +1,368 @@
-<div id="lessonPlansContainer" class="lesson-plans-container">
-  <div class="lesson-plans-header">
-    <h2>Planos de Aula</h2>
-    <div>
-      <button class="btn btn-primary" id="lpSkeletonImport">Importar JSON</button>
-      <button class="btn btn-outline" id="lpSkeletonExport">Exportar</button>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos de Aula - Academia</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/modules/lesson-plans.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="lessonPlansContainer" class="lesson-plans-container lesson-plans-isolated">`
+        <!-- Header -->
+        <div class="lesson-plans-header">
+            <h1 class="lesson-plans-title">Planos de Aula</h1>
+            <button class="create-lesson-plan-btn" id="create-lesson-plan-btn">
+                <i class="fas fa-plus"></i>
+                Novo Plano de Aula
+            </button>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="lesson-plans-search">
+            <form id="search-form" class="search-form">
+                <div class="search-input-group">
+                    <label class="search-label" for="search-q">Buscar</label>
+                    <input type="text" id="search-q" name="q" class="search-input" placeholder="Título ou descrição...">
+                </div>
+                <div class="search-input-group">
+                    <label class="search-label" for="search-course">Curso</label>
+                    <select id="search-course" name="courseId" class="search-select course-select">
+                        <option value="">Todos os cursos</option>
+                    </select>
+                </div>
+                <div class="search-input-group">
+                    <label class="search-label" for="search-level">Nível</label>
+                    <select id="search-level" name="level" class="search-select">
+                        <option value="">Todos os níveis</option>
+                        <option value="1">Nível 1</option>
+                        <option value="2">Nível 2</option>
+                        <option value="3">Nível 3</option>
+                        <option value="4">Nível 4</option>
+                        <option value="5">Nível 5</option>
+                    </select>
+                </div>
+                <div class="search-input-group">
+                    <label class="search-label">&nbsp;</label>
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i>
+                        Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="lesson-plans-table-container">
+            <table class="lesson-plans-table">
+                <thead class="lesson-plans-table-header">
+                    <tr>
+                        <th>Plano de Aula</th>
+                        <th>Número</th>
+                        <th>Semana</th>
+                        <th>Dificuldade</th>
+                        <th>Duração</th>
+                        <th>Nível</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lesson-plans-tbody" class="lesson-plans-table-body">
+                    <!-- Content will be loaded here -->
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="lesson-plans-pagination">
+                <div class="pagination-info">
+                    <span id="page-info">Página 1 de 1</span>
+                </div>
+                <div class="pagination-nav">
+                    <button id="prev-page" class="pagination-button">
+                        <i class="fas fa-chevron-left"></i>
+                        Anterior
+                    </button>
+                    <button id="next-page" class="pagination-button">
+                        Próxima
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="lesson-plans-filters">
-    <select class="form-select" disabled>
-      <option>Carregando cursos...</option>
-    </select>
-  </div>
-  <div class="empty-state">
-    <p>Carregando planos de aula…</p>
-  </div>
-</div>
+
+    <!-- Create Lesson Plan Modal -->
+    <div id="create-lesson-plan-modal" class="lesson-plan-modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container">
+            <div class="modal-panel modal-large">
+                <button class="modal-close" onclick="lessonPlansModule.hideCreateModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h3 class="modal-title">Criar Novo Plano de Aula</h3>
+                </div>
+                <div class="modal-body">
+                    <form id="create-lesson-plan-form" class="lesson-plan-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="create-course">Curso</label>
+                                <select id="create-course" name="courseId" class="form-select course-select" required>
+                                    <option value="">Selecione um curso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="create-title">Título</label>
+                                <input type="text" id="create-title" name="title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="create-lesson-number">Número da Aula</label>
+                                <input type="number" id="create-lesson-number" name="lessonNumber" class="form-input" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="create-week-number">Semana</label>
+                                <input type="number" id="create-week-number" name="weekNumber" class="form-input" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-unit">Unidade</label>
+                                <input type="text" id="create-unit" name="unit" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-level">Nível</label>
+                                <select id="create-level" name="level" class="form-select">
+                                    <option value="1">Nível 1</option>
+                                    <option value="2">Nível 2</option>
+                                    <option value="3">Nível 3</option>
+                                    <option value="4">Nível 4</option>
+                                    <option value="5">Nível 5</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-duration">Duração (min)</label>
+                                <input type="number" id="create-duration" name="duration" class="form-input" value="60" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-difficulty">Dificuldade</label>
+                                <select id="create-difficulty" name="difficulty" class="form-select">
+                                    <option value="1">⭐ Muito Fácil</option>
+                                    <option value="2">⭐⭐ Fácil</option>
+                                    <option value="3">⭐⭐⭐ Médio</option>
+                                    <option value="4">⭐⭐⭐⭐ Difícil</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Muito Difícil</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="create-description">Descrição</label>
+                                <textarea id="create-description" name="description" class="form-textarea" rows="3"></textarea>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="create-objectives">Objetivos (um por linha)</label>
+                                <textarea id="create-objectives" name="objectives" class="form-textarea" rows="4" placeholder="Digite cada objetivo em uma linha"></textarea>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="create-equipment">Equipamentos (um por linha)</label>
+                                <textarea id="create-equipment" name="equipment" class="form-textarea" rows="3" placeholder="Digite cada equipamento em uma linha"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-video-url">URL do Vídeo</label>
+                                <input type="url" id="create-video-url" name="videoUrl" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="create-thumbnail-url">URL da Miniatura</label>
+                                <input type="url" id="create-thumbnail-url" name="thumbnailUrl" class="form-input">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" form="create-lesson-plan-form" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Criar Plano de Aula
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="lessonPlansModule.hideCreateModal()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Lesson Plan Modal -->
+    <div id="edit-lesson-plan-modal" class="lesson-plan-modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container">
+            <div class="modal-panel modal-large">
+                <button class="modal-close" onclick="lessonPlansModule.hideEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h3 class="modal-title">Editar Plano de Aula</h3>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-lesson-plan-form" class="lesson-plan-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required" for="edit-course">Curso</label>
+                                <select id="edit-course" name="courseId" class="form-select course-select" required>
+                                    <option value="">Selecione um curso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="edit-title">Título</label>
+                                <input type="text" id="edit-title" name="title" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="edit-lesson-number">Número da Aula</label>
+                                <input type="number" id="edit-lesson-number" name="lessonNumber" class="form-input" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required" for="edit-week-number">Semana</label>
+                                <input type="number" id="edit-week-number" name="weekNumber" class="form-input" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-unit">Unidade</label>
+                                <input type="text" id="edit-unit" name="unit" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-level">Nível</label>
+                                <select id="edit-level" name="level" class="form-select">
+                                    <option value="1">Nível 1</option>
+                                    <option value="2">Nível 2</option>
+                                    <option value="3">Nível 3</option>
+                                    <option value="4">Nível 4</option>
+                                    <option value="5">Nível 5</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-duration">Duração (min)</label>
+                                <input type="number" id="edit-duration" name="duration" class="form-input" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-difficulty">Dificuldade</label>
+                                <select id="edit-difficulty" name="difficulty" class="form-select">
+                                    <option value="1">⭐ Muito Fácil</option>
+                                    <option value="2">⭐⭐ Fácil</option>
+                                    <option value="3">⭐⭐⭐ Médio</option>
+                                    <option value="4">⭐⭐⭐⭐ Difícil</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Muito Difícil</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="edit-description">Descrição</label>
+                                <textarea id="edit-description" name="description" class="form-textarea" rows="3"></textarea>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="edit-objectives">Objetivos (um por linha)</label>
+                                <textarea id="edit-objectives" name="objectives" class="form-textarea" rows="4"></textarea>
+                            </div>
+                            <div class="form-group form-group-full">
+                                <label class="form-label" for="edit-equipment">Equipamentos (um por linha)</label>
+                                <textarea id="edit-equipment" name="equipment" class="form-textarea" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-video-url">URL do Vídeo</label>
+                                <input type="url" id="edit-video-url" name="videoUrl" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="edit-thumbnail-url">URL da Miniatura</label>
+                                <input type="url" id="edit-thumbnail-url" name="thumbnailUrl" class="form-input">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" form="edit-lesson-plan-form" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="lessonPlansModule.hideEditModal()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Lesson Plan Modal -->
+    <div id="view-lesson-plan-modal" class="lesson-plan-modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container">
+            <div class="modal-panel modal-large">
+                <button class="modal-close" onclick="document.getElementById('view-lesson-plan-modal').classList.add('hidden')">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header">
+                    <h3 class="modal-title">Visualizar Plano de Aula</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="view-section">
+                            <div class="view-section-title">Título</div>
+                            <div class="view-section-content" id="view-title">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Curso</div>
+                            <div class="view-section-content" id="view-course">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Número da Aula</div>
+                            <div class="view-section-content" id="view-lesson-number">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Semana</div>
+                            <div class="view-section-content" id="view-week-number">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Duração</div>
+                            <div class="view-section-content" id="view-duration">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Nível</div>
+                            <div class="view-section-content" id="view-level">-</div>
+                        </div>
+                        <div class="view-section">
+                            <div class="view-section-title">Dificuldade</div>
+                            <div class="view-section-content" id="view-difficulty">-</div>
+                        </div>
+                        <div class="view-section form-group-full">
+                            <div class="view-section-title">Descrição</div>
+                            <div class="view-section-content" id="view-description">-</div>
+                        </div>
+                        <div class="view-section form-group-full">
+                            <div class="view-section-title">Objetivos</div>
+                            <ul class="view-list" id="view-objectives">
+                                <li>Nenhum objetivo definido</li>
+                            </ul>
+                        </div>
+                        <div class="view-section form-group-full">
+                            <div class="view-section-title">Equipamentos</div>
+                            <ul class="view-list" id="view-equipment">
+                                <li>Nenhum equipamento definido</li>
+                            </ul>
+                        </div>
+                        <div class="view-section form-group-full">
+                            <div class="view-section-title">Atividades</div>
+                            <div id="view-activities">
+                                <p class="text-sm text-gray-500">Nenhuma atividade adicionada</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('view-lesson-plan-modal').classList.add('hidden')">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/utils/toast.js"></script>
+    <script src="../js/utils/modal.js"></script>
+    <script src="../js/services/api-service.js"></script>
+    <script src="../js/services/courses-service.js"></script>
+    <script src="../js/services/activities-service.js"></script>
+    <script src="../js/modules/lesson-plans.js"></script>
+</body>
+</html>

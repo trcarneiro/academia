@@ -3,6 +3,21 @@
     
     console.log('📚 Courses Module - Starting...');
     
+    // ==============================================
+    // API CLIENT INTEGRATION (Guidelines.MD)
+    // ==============================================
+    
+    const coursesAPI = window.createModuleAPI ? window.createModuleAPI('Courses') : null;
+    // Optional endpoints helper (fallback when factory is not present)
+    const endpoints = (window.createEndpoints && window.createEndpoints('/api/courses')) || {
+        base: '/api/courses',
+        list: '/api/courses',
+        byId: (id) => `/api/courses/${id}`,
+        import: '/api/courses/import',
+        activities: '/api/activities',
+        lessonPlansImport: '/api/lesson-plans/import'
+    };
+
     // Module state
     let allCourses = [];
     let filteredCourses = [];
@@ -30,6 +45,13 @@
                 console.log('ℹ️ Not on courses page, skipping courses module initialization');
                 return;
             }
+
+            // Mark module as active for validator/compliance
+            try {
+                coursesContainer.setAttribute('data-module', 'courses');
+                coursesContainer.setAttribute('data-active', 'true');
+                coursesContainer.classList.add('module-active');
+            } catch(_) {}
             
             console.log('✅ DOM validation passed - coursesContainer found');
             
@@ -283,34 +305,97 @@
                 const data = JSON.parse(text);
                 if (!Array.isArray(data)) return alert('JSON inválido: esperado array de planos de aula');
 
-                // Ensure a courseId is provided (globally or per item)
+                // Verificar se todos os planos têm courseId ou solicitar um global
                 let defaultCourseId = null;
-                if (data.every(p => !p?.courseId)) {
-                    defaultCourseId = prompt('Informe o ID do curso (courseId) para associar os planos importados:');
-                    if (!defaultCourseId) {
-                        alert('Importação cancelada: é necessário informar o courseId.');
+                const plansWithoutCourse = data.filter(p => !p?.courseId);
+                
+                if (plansWithoutCourse.length > 0) {
+                    // Mostrar lista de cursos disponíveis para seleção
+                    const coursesResponse = await fetch('/api/courses');
+                    const coursesResult = await coursesResponse.json();
+                    
+                    if (coursesResult.success && coursesResult.data.length > 0) {
+                        // Criar modal customizado para seleção de curso
+                        defaultCourseId = await showCourseSelectionModal(coursesResult.data, plansWithoutCourse.length);
+                        
+                        if (!defaultCourseId) {
+                            alert('Importação cancelada: é necessário associar os planos a um curso.');
+                            importPlansFile.value = '';
+                            return;
+                        }
+                    } else {
+                        alert('Nenhum curso encontrado. Crie um curso primeiro antes de importar planos de aula.');
                         importPlansFile.value = '';
                         return;
                     }
                 }
 
                 let successCount = 0, failCount = 0;
-                for (const rawPlan of data) {
+                const errors = [];
+                
+                for (let i = 0; i < data.length; i++) {
+                    const rawPlan = data[i];
                     try {
                         const title = (rawPlan?.title || rawPlan?.name || '').toString().trim();
                         const courseId = rawPlan?.courseId || defaultCourseId;
-                        if (!title || !courseId) { failCount++; continue; }
-                        const planPayload = { ...rawPlan, title, courseId };
-                        const resp = await fetch('/api/lesson-plans/import', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(planPayload) });
+                        
+                        if (!title) { 
+                            failCount++; 
+                            errors.push(`Plano ${i + 1}: título é obrigatório`);
+                            continue; 
+                        }
+                        
+                        if (!courseId) { 
+                            failCount++; 
+                            errors.push(`Plano ${i + 1}: courseId é obrigatório`);
+                            continue; 
+                        }
+                        
+                        const planPayload = { 
+                            ...rawPlan, 
+                            title, 
+                            courseId,
+                            lessonNumber: rawPlan.lessonNumber || (i + 1),
+                            weekNumber: rawPlan.weekNumber || Math.ceil((i + 1) / 2)
+                        };
+                        
+                        const resp = await fetch('/api/lesson-plans/import', { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify(planPayload) 
+                        });
+                        
                         const j = await resp.json().catch(() => ({ success: false }));
-                        if (resp.ok && j?.success) successCount++; else failCount++;
-                    } catch (_) {
+                        
+                        if (resp.ok && j?.success) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                            errors.push(`Plano ${i + 1}: ${j?.error || 'erro desconhecido'}`);
+                        }
+                    } catch (e) {
                         failCount++;
+                        errors.push(`Plano ${i + 1}: ${e.message || 'erro de processamento'}`);
                     }
                 }
-                alert(`Importação concluída: ${successCount} planos de aula importados, ${failCount} falhas.`);
+                
+                let message = `Importação concluída: ${successCount} planos importados, ${failCount} falhas.`;
+                if (errors.length > 0 && errors.length <= 5) {
+                    message += '\n\nErros:\n' + errors.join('\n');
+                } else if (errors.length > 5) {
+                    message += '\n\nPrimeiros 5 erros:\n' + errors.slice(0, 5).join('\n') + '\n...';
+                }
+                
+                alert(message);
                 importPlansFile.value = '';
-            } catch(e){ alert('Erro na importação de planos: ' + (e.message || e)); }
+                
+                // Recarregar dados se houve sucesso
+                if (successCount > 0) {
+                    await loadInitialData();
+                }
+            } catch(e) { 
+                alert('Erro na importação de planos: ' + (e.message || e)); 
+            }
         });
         
         console.log('✅ Event listeners setup completed');
@@ -701,5 +786,166 @@
     };
     
     console.log('📚 Courses Module - Loaded');
-    
+
+    // Auto-initialize when DOM is ready or on hash changes (SPA friendly)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            try { initializeCoursesModule(); } catch (_) {}
+        });
+    } else {
+        // DOM already ready
+        setTimeout(() => { try { initializeCoursesModule(); } catch (_) {} }, 0);
+    }
+    window.addEventListener('hashchange', () => {
+        // Attempt init on route changes if not initialized and container exists
+        if (!isInitialized && document.getElementById('coursesContainer')) {
+            try { initializeCoursesModule(); } catch (_) {}
+        }
+    });
+
+    // Função para mostrar modal de seleção de curso
+    function showCourseSelectionModal(courses, plansCount) {
+        return new Promise((resolve) => {
+            // Criar modal
+            const modal = document.createElement('div');
+            modal.className = 'course-selection-modal-overlay';
+            modal.innerHTML = `
+                <div class="course-selection-modal">
+                    <div class="modal-header">
+                        <h3>Selecionar Curso para Planos de Aula</h3>
+                        <p>${plansCount} planos não têm curso associado. Selecione um curso:</p>
+                    </div>
+                    <div class="modal-body">
+                        <select id="courseSelector" class="course-selector">
+                            <option value="">-- Selecione um curso --</option>
+                            ${courses.map(c => `<option value="${c.id}">${c.name} (${c.level || 'N/A'})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="confirmCourse" class="btn btn-primary">Confirmar</button>
+                        <button id="cancelCourse" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            `;
+
+            // Estilos do modal
+            const style = document.createElement('style');
+            style.textContent = `
+                .course-selection-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    backdrop-filter: blur(4px);
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .course-selection-modal {
+                    background: white;
+                    border-radius: 12px;
+                    max-width: 500px;
+                    width: 100%;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+                    color: #1e293b;
+                }
+                .course-selection-modal .modal-header {
+                    padding: 24px 24px 16px 24px;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+                .course-selection-modal .modal-header h3 {
+                    margin: 0 0 8px 0;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                }
+                .course-selection-modal .modal-header p {
+                    margin: 0;
+                    color: #64748b;
+                    font-size: 0.875rem;
+                }
+                .course-selection-modal .modal-body {
+                    padding: 24px;
+                }
+                .course-selection-modal .course-selector {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    background: white;
+                }
+                .course-selection-modal .modal-footer {
+                    padding: 16px 24px 24px 24px;
+                    display: flex;
+                    gap: 12px;
+                    justify-content: flex-end;
+                }
+                .course-selection-modal .btn {
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .course-selection-modal .btn-primary {
+                    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+                    color: white;
+                }
+                .course-selection-modal .btn-primary:hover {
+                    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+                }
+                .course-selection-modal .btn-secondary {
+                    background: #f1f5f9;
+                    color: #475569;
+                }
+                .course-selection-modal .btn-secondary:hover {
+                    background: #e2e8f0;
+                }
+            `;
+
+            document.head.appendChild(style);
+            document.body.appendChild(modal);
+
+            // Event listeners
+            const confirmBtn = modal.querySelector('#confirmCourse');
+            const cancelBtn = modal.querySelector('#cancelCourse');
+            const selector = modal.querySelector('#courseSelector');
+
+            confirmBtn.addEventListener('click', () => {
+                const selectedCourseId = selector.value;
+                if (!selectedCourseId) {
+                    alert('Por favor, selecione um curso.');
+                    return;
+                }
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+                resolve(selectedCourseId);
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+                resolve(null);
+            });
+
+            // Fechar com ESC
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(modal);
+                    document.head.removeChild(style);
+                    document.removeEventListener('keydown', handleEsc);
+                    resolve(null);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            // Focar no select
+            setTimeout(() => selector.focus(), 100);
+        });
+    }
 })();

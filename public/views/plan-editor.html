@@ -18,6 +18,7 @@
         <span id="pageTitle">Editor de Planos</span>
       </h1>
       <div class="module-isolated-actions">
+        <button id="savePlanHeaderBtn" type="button" class="module-isolated-btn-primary">💾 Salvar</button>
         <button id="backBtn" class="module-isolated-btn-secondary">← Voltar</button>
       </div>
     </div>
@@ -35,7 +36,6 @@
       <nav id="planTabs" class="plan-editor-tabs">
         <div class="plan-editor-tab active" data-tab="details">📝 Detalhes</div>
         <div class="plan-editor-tab" data-tab="courses" id="coursesTabBtn">📚 Cursos</div>
-        <div class="plan-editor-tab" data-tab="lesson-plans" id="lessonPlansTabBtn">📖 Planos de Aula</div>
       </nav>
 
       <!-- Conteúdo das Abas -->
@@ -157,24 +157,9 @@
                 <span id="diffSummary"></span>
               </div>
               <div class="plan-editor-save-actions">
-                <button id="discardCoursesChangesBtn" class="module-isolated-btn-secondary">❌ Descartar</button>
-                <button id="saveCoursesChangesBtn" class="module-isolated-btn-primary">💾 Salvar</button>
+                <button id="discardCoursesChangesBtn" class="module-isolated-btn-secondary" type="button">❌ Descartar</button>
+                <button id="saveCoursesChangesBtn" class="module-isolated-btn-primary" type="button">💾 Salvar</button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Aba Planos de Aula -->
-        <div class="plan-editor-tab-panel" data-panel="lesson-plans" id="lessonPlansPanel">
-          <div class="plan-editor-courses-header">
-            <h3>📖 Planos de Aula</h3>
-            <p class="plan-editor-help">Gerencie os planos de aula associados a este plano.</p>
-          </div>
-          <div id="lessonPlansContainer" class="plan-editor-lesson-plans">
-            <div class="module-isolated-empty">
-              <div class="module-isolated-empty-icon">📖</div>
-              <div class="module-isolated-empty-title">Funcionalidade em desenvolvimento</div>
-              <div class="module-isolated-empty-description">Os planos de aula serão implementados em breve</div>
             </div>
           </div>
         </div>
@@ -183,6 +168,6 @@
     </div>
   </div>
 
-  <script src="../js/modules/plan-editor.js"></script>
+  <!-- Removed duplicate script include; SPA router loads plan-editor.js -->
 </body>
 </html>

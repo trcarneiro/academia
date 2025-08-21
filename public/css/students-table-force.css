@@ -1,0 +1,295 @@
+/**
+ * STUDENTS TABLE FORCE OVERRIDE
+ * Força aplicação dos estilos da tabela de alunos
+ */
+
+/* ==========================================================================
+   ACTION GROUPS AND BUTTONS
+   ========================================================================== */
+
+/* Action group horizontal layout */
+.action-group-horizontal {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
+
+.action-group-horizontal .btn-form {
+    margin: 0 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    flex-wrap: wrap !important;
+}
+
+.header-actions .action-group-horizontal {
+    margin-left: auto !important;
+}
+
+/* Editor Header Layout */
+.editor-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 1.5rem 2rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.header-main {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    gap: 2rem !important;
+}
+
+.student-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.student-info h1 {
+    margin: 0 0 0.5rem 0 !important;
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+.student-meta {
+    display: flex !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+}
+
+.header-actions {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    margin-left: auto !important;
+}
+
+/* Editor action bar */
+.action-bar-right .action-group-horizontal {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-main {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+    }
+    
+    .header-actions {
+        justify-content: flex-end !important;
+        margin-left: 0 !important;
+    }
+    
+    .action-group-horizontal {
+        flex-wrap: wrap !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .action-group-horizontal {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    .action-group-horizontal .btn-form {
+        width: 100% !important;
+    }
+}
+
+/* Reset total da tabela de estudantes */
+.students-module,
+.students-module * {
+    box-sizing: border-box !important;
+}
+
+/* Força layout da tabela */
+.students-module .table-wrapper {
+    background: #ffffff !important;
+    border-radius: 0 0 16px 16px !important;
+    overflow: hidden !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+}
+
+.students-module .students-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Headers da tabela */
+.students-module .students-table thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+.students-module .students-table th {
+    background: #f8fafc !important;
+    padding: 16px 20px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: #374151 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+}
+
+/* Cells da tabela */
+.students-module .students-table td {
+    padding: 16px 20px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 0.875rem !important;
+    color: #374151 !important;
+    vertical-align: middle !important;
+}
+
+/* Hover effect */
+.students-module .students-table tbody tr {
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.students-module .students-table tbody tr:hover {
+    background: #f8fafc !important;
+    transform: scale(1.001) !important;
+}
+
+.students-module .students-table tbody tr:hover td {
+    color: #1e293b !important;
+}
+
+/* Avatar styling */
+.students-module .name-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.students-module .avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.students-module .avatar-placeholder {
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+.students-module .full-name {
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    line-height: 1.2 !important;
+}
+
+.students-module .student-id {
+    font-size: 0.75rem !important;
+    color: #64748b !important;
+    font-family: monospace !important;
+}
+
+/* Status badges */
+.students-module .status-badge {
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.students-module .status-badge.status-active {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+}
+
+.students-module .status-badge.status-inactive {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white !important;
+}
+
+/* Category badges */
+.students-module .category-badge {
+    padding: 4px 8px !important;
+    border-radius: 12px !important;
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.students-module .category-badge.category-vip {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+    color: white !important;
+    border-color: #f59e0b !important;
+}
+
+/* Action buttons */
+.students-module .action-buttons {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.students-module .btn-action {
+    padding: 6px 10px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+}
+
+.students-module .btn-action:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.students-module .btn-edit:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+    color: white !important;
+}
+
+/* Links styling */
+.students-module .email-link,
+.students-module .phone-link {
+    color: #4f46e5 !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+}
+
+.students-module .email-link:hover,
+.students-module .phone-link:hover {
+    color: #7c3aed !important;
+    text-decoration: underline !important;
+}

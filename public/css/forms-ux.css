@@ -1,0 +1,825 @@
+/**
+ * FORMULÁRIOS UX PROFISSIONAIS - Academia System
+ * Design focado na usabilidade dos professores
+ * FORÇA ABSOLUTA: Sobrescreve qualquer estilo anterior
+ */
+
+/* ==========================================================================
+   FORM SYSTEM - UX PROFESSIONAL
+   ========================================================================== */
+
+/* Reset para formulários */
+.students-module form,
+.students-module input,
+.students-module textarea,
+.students-module select,
+.students-module button,
+.student-editor-module form,
+.student-editor-module input,
+.student-editor-module textarea,
+.student-editor-module select,
+.student-editor-module button {
+    background: unset !important;
+    background-image: unset !important;
+    box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   FORM CONTAINERS
+   ========================================================================== */
+
+.form-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 24px;
+    background: #f8fafc !important;
+    min-height: calc(100vh - 200px);
+}
+
+.form-section {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.form-section:hover {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.1);
+}
+
+.section-title {
+    font-size: 1.25rem !important;
+    font-weight: 600;
+    color: #1e293b !important;
+    margin: 0 0 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.section-icon {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================================================
+   FORM GRID LAYOUT
+   ========================================================================== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group.half-width {
+    grid-column: span 1;
+}
+
+/* ==========================================================================
+   LABELS PROFISSIONAIS
+   ========================================================================== */
+
+.form-group label {
+    font-size: 0.875rem !important;
+    font-weight: 600;
+    color: #374151 !important;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-group label.required::after {
+    content: "*";
+    color: #ef4444 !important;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.form-group label .help-icon {
+    font-size: 0.75rem;
+    color: #64748b;
+    cursor: help;
+    padding: 2px;
+}
+
+/* ==========================================================================
+   INPUTS MODERNOS E FUNCIONAIS
+   ========================================================================== */
+
+.form-control,
+.form-input,
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500;
+    color: #1e293b !important;
+    background: #ffffff !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.form-control:focus,
+.form-input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: #4f46e5 !important;
+    background: #fefefe !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px);
+}
+
+.form-control:hover,
+.form-input:hover,
+input:hover,
+textarea:hover,
+select:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Placeholders profissionais */
+.form-control::placeholder,
+.form-input::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #94a3b8 !important;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Estados de validação */
+.form-control.valid,
+.form-input.valid,
+input.valid {
+    border-color: #10b981 !important;
+    background: #f0fdf4 !important;
+}
+
+.form-control.invalid,
+.form-input.invalid,
+input.invalid {
+    border-color: #ef4444 !important;
+    background: #fef2f2 !important;
+}
+
+/* ==========================================================================
+   TEXTAREAS EXPANDIDAS
+   ========================================================================== */
+
+textarea {
+    min-height: 120px !important;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+textarea.auto-resize {
+    resize: none;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   SELECTS CUSTOMIZADOS
+   ========================================================================== */
+
+select {
+    cursor: pointer !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'%3e%3c/path%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 40px !important;
+}
+
+select:focus {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'%3e%3c/path%3e%3c/svg%3e") !important;
+}
+
+/* ==========================================================================
+   VALIDATION ERRORS CLAROS
+   ========================================================================== */
+
+.field-error {
+    font-size: 0.8rem !important;
+    color: #ef4444 !important;
+    font-weight: 500;
+    margin-top: 4px;
+    padding-left: 4px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.field-error:not(:empty)::before {
+    content: "⚠️";
+    font-size: 0.75rem;
+}
+
+.field-success {
+    font-size: 0.8rem !important;
+    color: #10b981 !important;
+    font-weight: 500;
+    margin-top: 4px;
+    padding-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.field-success::before {
+    content: "✅";
+    font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   BUTTONS DE AÇÃO PROFISSIONAIS
+   ========================================================================== */
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 16px 16px;
+    margin-top: 32px;
+}
+
+.btn-form {
+    padding: 12px 24px !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    min-width: 120px !important;
+    justify-content: center !important;
+}
+
+.btn-primary-form {
+    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary-form:hover {
+    background: linear-gradient(135deg, #6366f1, #7c3aed) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+}
+
+.btn-secondary-form {
+    background: #f8fafc !important;
+    color: #374151 !important;
+    border: 2px solid #e2e8f0 !important;
+}
+
+.btn-secondary-form:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-1px);
+}
+
+.btn-danger-form {
+    background: #ef4444 !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger-form:hover {
+    background: #dc2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Loading states para botões */
+.btn-form.loading {
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.btn-form.loading::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+/* ==========================================================================
+   FORM TABS NAVIGATION
+   ========================================================================== */
+
+.tab-navigation {
+    display: flex;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px 12px 0 0;
+    padding: 4px;
+    margin: 24px 24px 0 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-btn {
+    flex: 1 !important;
+    padding: 14px 20px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+
+.tab-btn:hover {
+    background: #f8fafc !important;
+    color: #374151 !important;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+.tab-icon {
+    font-size: 1.1rem;
+}
+
+.tab-text {
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   PROGRESS INDICATOR
+   ========================================================================== */
+
+.progress-indicator {
+    background: #ffffff !important;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e2e8f0 !important;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.8rem !important;
+    color: #64748b !important;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .form-sections {
+        padding: 16px;
+        gap: 20px;
+    }
+    
+    .form-section {
+        padding: 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .btn-form {
+        width: 100%;
+    }
+    
+    .tab-navigation {
+        margin: 16px 16px 0 16px;
+        padding: 2px;
+    }
+    
+    .tab-btn {
+        padding: 10px 12px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .tab-text {
+        display: none;
+    }
+    
+    .tab-icon {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .form-control,
+    .form-input,
+    input,
+    textarea,
+    select {
+        font-size: 16px !important; /* Previne zoom no iOS */
+    }
+    
+    .section-title {
+        font-size: 1.1rem !important;
+    }
+    
+    .form-section {
+        padding: 16px;
+    }
+}
+
+/* ==========================================================================
+   LOADING STATES PARA FORMULÁRIOS
+   ========================================================================== */
+
+.form-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.form-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    z-index: 10;
+}
+
+.form-loading::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ==========================================================================
+   SEARCH AND FILTERS SECTIONS
+   ========================================================================== */
+
+.search-filters-section {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 0 24px 24px 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px 16px 24px;
+    background: #f8fafc !important;
+}
+
+.view-options {
+    display: flex;
+    gap: 4px;
+    background: #ffffff !important;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.view-btn {
+    padding: 8px 16px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.view-btn:hover {
+    background: #f8fafc !important;
+    color: #374151 !important;
+}
+
+.view-btn.active {
+    background: #4f46e5 !important;
+    color: white !important;
+    box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);
+}
+
+.view-icon {
+    font-size: 1rem;
+}
+
+.results-info {
+    font-size: 0.875rem !important;
+    color: #64748b !important;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   EMPTY AND ERROR STATES
+   ========================================================================== */
+
+.empty-state,
+.error-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    margin: 0 24px;
+}
+
+.empty-icon,
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.empty-state h3,
+.error-state h3 {
+    font-size: 1.25rem !important;
+    color: #1e293b !important;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.empty-state p,
+.error-state p {
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN PARA SEARCH
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .search-filters-section {
+        margin: 0 16px 16px 16px;
+        padding: 16px;
+    }
+    
+    .filter-group {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .view-controls {
+        padding: 0 16px 12px 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .view-options {
+        justify-content: center;
+    }
+    
+    .results-info {
+        text-align: center;
+    }
+    
+    .empty-state,
+    .error-state {
+        margin: 0 16px;
+        padding: 40px 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .view-btn {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .view-btn .view-icon {
+        font-size: 0.9rem;
+    }
+    
+    .empty-icon,
+    .error-icon {
+        font-size: 3rem;
+    }
+    
+    .search-container {
+        gap: 16px;
+    }
+}
+
+.form-control:focus-visible,
+.form-input:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.btn-form:focus-visible {
+    outline: 2px solid #4f46e5 !important;
+    outline-offset: 2px !important;
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .form-control,
+    .form-input,
+    input,
+    textarea,
+    select {
+        border-width: 3px !important;
+    }
+    
+    .btn-form {
+        border: 2px solid currentColor !important;
+    }
+}
+
+/* ==========================================================================
+   TOOLTIPS E HELP TEXT
+   ========================================================================== */
+
+.form-help {
+    font-size: 0.8rem !important;
+    color: #64748b !important;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.form-help.success {
+    color: #10b981 !important;
+}
+
+.form-help.warning {
+    color: #f59e0b !important;
+}
+
+/* Tooltip container */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b !important;
+    color: white !important;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.tooltip-container:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #1e293b;
+}

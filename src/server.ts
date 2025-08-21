@@ -11,8 +11,15 @@ import path from 'path';
 
 import { appConfig } from '@/config';
 import { errorHandler } from '@/middlewares/error';
-import { logger, fastifyLoggerOptions } from '@/utils/logger';
+import logger, { fastifyLoggerOptions } from '@/utils/logger';
 import { prisma } from '@/utils/database';
+
+function normalizePlugin(mod: any, name: string): any {
+  if (typeof mod === 'function') return mod as any;
+  if (mod && typeof mod.default === 'function') return mod.default as any;
+  const type = mod === null ? 'null' : typeof mod;
+  throw Object.assign(new Error(`Invalid Fastify plugin for ${name}. Expected function, got ${type}.`), { plugin: name, received: mod });
+}
 
 // Routes
 import authRoutes from '@/routes/auth';
@@ -30,123 +37,67 @@ import activitiesRoutes from '@/routes/activities';
 import asaasSimpleRoutes from '@/routes/asaas-simple';
 import billingPlanRoutes from '@/routes/billingPlans';
 import techniqueRoutes from '@/routes/techniques';
-import { diagnosticRoutes } from '@/routes/diagnostic';
 import { lessonPlansRoutes } from './routes/lessonPlans';
 import planCoursesRoutes from '@/routes/planCourses';
 import assessmentsRoutes from '@/routes/assessments';
 import feedbackRoutes from '@/routes/feedback';
 import gamificationRoutes from '@/routes/gamification';
 
-const server = Fastify({
-  logger: fastifyLoggerOptions,
-});
+const server = Fastify({ logger: fastifyLoggerOptions });
 
 const start = async (): Promise<void> => {
   try {
-    // Register plugins
-    await server.register(helmet, {
-      contentSecurityPolicy: false,
-    });
+    await server.register(normalizePlugin(helmet, 'helmet'), { contentSecurityPolicy: false } as any);
+    await server.register(normalizePlugin(cors, 'cors'), { origin: appConfig.cors.origin, credentials: true } as any);
+    await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
+    await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
 
-    await server.register(cors, {
-      origin: appConfig.cors.origin,
-      credentials: true,
-    });
+    await server.register(normalizePlugin(staticFiles, 'static'), { root: path.join(__dirname, '..', 'public'), prefix: '/' } as any);
 
-    await server.register(rateLimit, {
-      max: appConfig.rateLimit.max,
-      timeWindow: appConfig.rateLimit.window,
-    });
-
-    await server.register(jwt, {
-      secret: appConfig.jwt.secret,
-      sign: {
-        expiresIn: appConfig.jwt.expiresIn,
-      },
-    });
-
-
-    // Serve static files
-    await server.register(staticFiles, {
-      root: path.join(__dirname, '..', 'public'),
-      prefix: '/',
-    });
-
-    // Health check
     server.get('/health', async () => {
-      try {
-        await prisma.$queryRaw`SELECT 1`;
-        return {
-          status: 'healthy',
-          timestamp: new Date().toISOString(),
-          database: 'connected',
-        };
-      } catch (error) {
-        throw new Error('Database connection failed');
-      }
+      try { await prisma.$queryRaw`SELECT 1`; return { status: 'healthy', timestamp: new Date().toISOString(), database: 'connected' }; }
+      catch { throw new Error('Database connection failed'); }
     });
 
-    // Serve dashboard at root
-    server.get('/', async (_, reply) => {
-      return reply.sendFile('index.html');
-    });
+    server.get('/', async (_: any, reply: any) => reply.sendFile('index.html'));
 
-    // Register routes
-    await server.register(authRoutes, { prefix: '/api/auth' });
-    await server.register(attendanceRoutes, { prefix: '/api/attendance' });
-    await server.register(classRoutes, { prefix: '/api/classes' });
-    await server.register(analyticsRoutes, { prefix: '/api/analytics' });
-    await server.register(pedagogicalRoutes, { prefix: '/api/pedagogical' });
-    await server.register(coursesRoutes, { prefix: '/api/courses' });
-    await server.register(progressRoutes, { prefix: '/api' });
-    await server.register(financialResponsibleRoutes, { prefix: '/api/financial-responsible' });
-    await server.register(financialRoutes, { prefix: '/api/financial' });
-    await server.register(studentsRoutes, { prefix: '/api/students' });
-    await server.register(organizationsRoutes, { prefix: '/api/organizations' });
-    await server.register(activitiesRoutes, { prefix: '/api/activities' });
-    await server.register(asaasSimpleRoutes, { prefix: '/api/asaas' });
-    await server.register(billingPlanRoutes); // exposes /api/billing-plans
-    await server.register(planCoursesRoutes, { prefix: '/api' });
-    await server.register(lessonPlansRoutes, { prefix: '/api/lesson-plans' });
-    await server.register(assessmentsRoutes, { prefix: '/api/assessments' });
-    await server.register(feedbackRoutes, { prefix: '/api/feedback' });
-    await server.register(gamificationRoutes, { prefix: '/api/gamification' });
-    await server.register(techniqueRoutes);
-    await server.register(diagnosticRoutes);
+    await server.register(normalizePlugin(authRoutes, 'authRoutes'), { prefix: '/api/auth' } as any);
+    await server.register(normalizePlugin(attendanceRoutes, 'attendanceRoutes'), { prefix: '/api/attendance' } as any);
+    await server.register(normalizePlugin(classRoutes, 'classRoutes'), { prefix: '/api/classes' } as any);
+    await server.register(normalizePlugin(analyticsRoutes, 'analyticsRoutes'), { prefix: '/api/analytics' } as any);
+    await server.register(normalizePlugin(pedagogicalRoutes, 'pedagogicalRoutes'));
+    await server.register(normalizePlugin(coursesRoutes, 'coursesRoutes'), { prefix: '/api/courses' } as any);
+    await server.register(normalizePlugin(progressRoutes, 'progressRoutes'), { prefix: '/api' } as any);
+    await server.register(normalizePlugin(financialResponsibleRoutes, 'financialResponsibleRoutes'), { prefix: '/api/financial-responsible' } as any);
+    await server.register(normalizePlugin(financialRoutes, 'financialRoutes'), { prefix: '/api/financial' } as any);
+    await server.register(normalizePlugin(studentsRoutes, 'studentsRoutes'), { prefix: '/api/students' } as any);
+    await server.register(normalizePlugin(organizationsRoutes, 'organizationsRoutes'), { prefix: '/api/organizations' } as any);
+    await server.register(normalizePlugin(activitiesRoutes, 'activitiesRoutes'), { prefix: '/api/activities' } as any);
+    await server.register(normalizePlugin(asaasSimpleRoutes, 'asaasSimpleRoutes'), { prefix: '/api/asaas' } as any);
+    await server.register(normalizePlugin(billingPlanRoutes, 'billingPlanRoutes'));
+    await server.register(normalizePlugin(planCoursesRoutes, 'planCoursesRoutes'), { prefix: '/api' } as any);
+    await server.register(normalizePlugin(lessonPlansRoutes, 'lessonPlansRoutes'), { prefix: '/api/lesson-plans' } as any);
+    await server.register(normalizePlugin(assessmentsRoutes, 'assessmentsRoutes'), { prefix: '/api/assessments' } as any);
+    await server.register(normalizePlugin(feedbackRoutes, 'feedbackRoutes'), { prefix: '/api/feedback' } as any);
+    await server.register(normalizePlugin(gamificationRoutes, 'gamificationRoutes'), { prefix: '/api/gamification' } as any);
+    await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
 
-    // Error handler
     server.setErrorHandler(errorHandler);
 
-    // Start server
-    await server.listen({
-      port: appConfig.server.port,
-      host: appConfig.server.host,
-    });
-
-    logger.info(
-      `Server running at http://${appConfig.server.host}:${appConfig.server.port}`
-    );
+    await server.listen({ port: appConfig.server.port, host: appConfig.server.host });
+    logger.info(`Server running at http://${appConfig.server.host}:${appConfig.server.port}`);
   } catch (error) {
     logger.error({ error }, 'Failed to start server');
     process.exit(1);
   }
 };
 
-// Graceful shutdown
 const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
 signals.forEach((signal) => {
   process.on(signal, async () => {
     logger.info(`Received ${signal}, shutting down gracefully`);
-    
-    try {
-      await prisma.$disconnect();
-      await server.close();
-      logger.info('Server closed successfully');
-      process.exit(0);
-    } catch (error) {
-      logger.error({ error }, 'Error during shutdown');
-      process.exit(1);
-    }
+    try { await prisma.$disconnect(); await server.close(); logger.info('Server closed successfully'); process.exit(0); }
+    catch (error) { logger.error({ error }, 'Error during shutdown'); process.exit(1); }
   });
 });
 

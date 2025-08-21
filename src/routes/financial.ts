@@ -285,7 +285,8 @@ export default async function financialRoutes(
       params: {
         type: 'object',
         properties: {
-          id: { type: 'string', format: 'uuid' }
+          // Accept any non-empty string; handler will resolve 404 if not found
+          id: { type: 'string', minLength: 1 }
         },
         required: ['id']
       }

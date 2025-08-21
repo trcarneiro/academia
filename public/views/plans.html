@@ -1,56 +1,98 @@
-<div class="module-view plans-isolated-container" id="plansContainer">
-    <h2>Gestão de Planos</h2>
-    
-    <div class="toolbar">
-        <button id="btn-new-plan" class="plans-isolated-btn-primary" onclick="window.openNewPlanForm()">
-            <i>➕</i> Novo Plano
-        </button>
-        <div class="plans-isolated-search-box">
-            <input type="text" placeholder="Buscar plano..." id="planSearch">
-            <button id="btn-search-plans">🔍</button>
-        </div>
-    </div>
+<div class="module-isolated-container" id="plansContainer" data-module="plans">
+    <!-- Breadcrumb -->
+    <nav class="module-isolated-breadcrumb" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="#dashboard" class="module-isolated-link">Home</a></li>
+            <li aria-current="page">Planos</li>
+        </ol>
+    </nav>
 
-    <div class="plans-stats">
-        <div class="plans-isolated-stat-card">
-            <div class="value" id="totalPlans">0</div>
-            <div class="label">Planos Cadastrados</div>
-        </div>
-        <div class="plans-isolated-stat-card">
-            <div class="value" id="activePlans">0</div>
-            <div class="label">Planos Ativos</div>
-        </div>
-        <div class="plans-isolated-stat-card">
-            <div class="value" id="totalSubscribers">0</div>
-            <div class="label">Alunos Vinculados</div>
-        </div>
-    </div>
+    <!-- Header conforme Guidelines.MD - Full Screen + Navigation Visible -->
+    <header class="module-isolated-header" role="banner">
+        <h1 class="module-isolated-text-2xl module-isolated-font-bold module-isolated-text-primary module-isolated-mb-sm">
+            Gestão de Planos
+        </h1>
+        <p class="module-isolated-text-secondary" id="plans-subtitle">
+            Gerencie planos de treinamento, categorias e vinculações com alunos
+        </p>
+    </header>
 
-    <div class="plans-list">
-        <table class="plans-isolated-table">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Categoria</th>
-                    <th>Agenda</th>
-                    <th>Pagamento</th>
-                    <th>Alunos</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="plansTableBody">
-                <tr>
-                    <td colspan="7" class="plans-isolated-loading-state">
-                        <div class="spinner"></div>
-                        Carregando planos...
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <div class="module-isolated-content" role="main">
+        <!-- Toolbar conforme Guidelines.MD -->
+        <div class="module-isolated-toolbar module-isolated-mb-lg">
+            <button id="btn-new-plan" class="module-isolated-btn-primary" aria-label="Criar novo plano" onclick="window.openNewPlanForm && window.openNewPlanForm()">
+                ➕ Novo Plano
+            </button>
+            <div class="module-isolated-search module-isolated-flex module-isolated-gap-sm" role="search">
+                <input type="text" 
+                       placeholder="Buscar plano por nome ou categoria..." 
+                       id="planSearch"
+                       class="module-isolated-input" aria-label="Buscar planos">
+                <button id="btn-search-plans" class="module-isolated-btn-secondary" aria-label="Buscar planos">
+                    🔍 Buscar
+                </button>
+            </div>
+        </div>
 
-    <div class="plan-editor" id="plan-editor-container" style="display:none">
-        <!-- Editor de planos será injetado aqui -->
+        <!-- Student subscription context (rendered dynamically if studentId is present) -->
+        <div class="module-isolated-card module-isolated-mb-lg" id="student-subscription-context" style="display:none" aria-live="polite"></div>
+
+        <!-- Stats Cards conforme Guidelines.MD -->
+        <div class="module-isolated-grid module-isolated-mb-lg" role="region" aria-label="Resumo dos Planos">
+            <div class="module-isolated-stat-card">
+                <div class="module-isolated-stat-number stat-skeleton" id="totalPlans">—</div>
+                <div class="module-isolated-stat-label">Planos Cadastrados</div>
+            </div>
+            <div class="module-isolated-stat-card">
+                <div class="module-isolated-stat-number stat-skeleton" id="activePlans">—</div>
+                <div class="module-isolated-stat-label">Planos Ativos</div>
+            </div>
+            <div class="module-isolated-stat-card">
+                <div class="module-isolated-stat-number stat-skeleton" id="totalSubscribers">—</div>
+                <div class="module-isolated-stat-label">Alunos Vinculados</div>
+            </div>
+            <div class="module-isolated-stat-card">
+                <div class="module-isolated-stat-number stat-skeleton" id="revenueTotal">—</div>
+                <div class="module-isolated-stat-label">Receita Estimada</div>
+            </div>
+        </div>
+
+        <!-- Table conforme Guidelines.MD -->
+        <div class="module-isolated-card">
+            <table class="module-isolated-table" aria-label="Tabela de Planos">
+                <thead>
+                    <tr>
+                        <th scope="col">Nome do Plano</th>
+                        <th scope="col">Categoria</th>
+                        <th scope="col">Agenda/Horários</th>
+                        <th scope="col">Valor Mensal</th>
+                        <th scope="col">Alunos</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="plansTableBody">
+                    <tr>
+                        <td colspan="7">
+                            <div class="module-isolated-loading">
+                                <div class="module-isolated-spinner" aria-hidden="true"></div>
+                                Carregando planos...
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Editor de planos (Full-Screen conforme Guidelines.MD) -->
+        <div class="module-isolated-card module-isolated-mt-lg" id="plan-editor-container" style="display:none">
+            <div class="module-isolated-card-header">
+                <h3 class="module-isolated-card-title">Editor de Plano</h3>
+                <p class="module-isolated-card-subtitle">Preencha as informações do plano de treinamento</p>
+            </div>
+            <div class="module-isolated-card-body" id="plan-editor-content">
+                <!-- Editor será injetado aqui via JavaScript -->
+            </div>
+        </div>
     </div>
 </div>

@@ -13,9 +13,17 @@
             <button class="btn btn-primary" data-action="openNewCourseForm" data-args='[]'>
                 ➕ Novo Curso
             </button>
-            <button class="btn btn-secondary" id="importCourseBtn">Importar Curso (JSON)</button>
-            <button class="btn btn-secondary" id="importActivitiesBtn">Importar Técnicas/Atividades (JSON)</button>
-            <button class="btn btn-secondary" id="importPlansBtn">Importar Planos de Aula (JSON)</button>
+            <div class="import-buttons-group">
+                <button class="btn btn-import" id="importCourseBtn">
+                    📥 Importar Curso
+                </button>
+                <button class="btn btn-import" id="importActivitiesBtn">
+                    🏃 Importar Atividades
+                </button>
+                <button class="btn btn-import" id="importPlansBtn">
+                    📚 Importar Planos de Aula
+                </button>
+            </div>
             <input type="file" id="importCourseFile" accept="application/json" style="display:none" />
             <input type="file" id="importActivitiesFile" accept="application/json" style="display:none" />
             <input type="file" id="importPlansFile" accept="application/json" style="display:none" />

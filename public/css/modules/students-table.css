@@ -1,0 +1,341 @@
+/**
+ * Students Module - CSS Otimizado para Tabela
+ * Foco em layout de tabela limpo e responsivo
+ */
+
+/* ==========================================================================
+   CONTAINER PRINCIPAL
+   ========================================================================== */
+
+.students-isolated-root {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ==========================================================================
+   HEADER E TOOLBAR
+   ========================================================================== */
+
+.students-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.students-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.students-search {
+    flex: 1;
+    max-width: 400px;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.students-search:focus {
+    outline: none;
+    border-color: #007cba;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(0, 124, 186, 0.1);
+}
+
+.students-count {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   LISTA/TABELA DE ALUNOS - FORMATO TABELA
+   ========================================================================== */
+
+.students-list {
+    display: grid;
+    gap: 1px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Header da tabela */
+.students-table-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 200px 150px 120px 100px;
+    background: #f8f9fa;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.students-table-header > div {
+    display: flex;
+    align-items: center;
+}
+
+/* Cards de aluno em formato de linha de tabela */
+.student-card {
+    display: grid;
+    grid-template-columns: 60px 1fr 200px 150px 120px 100px;
+    background: white;
+    padding: 15px 20px;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    min-height: 70px;
+}
+
+.student-card:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.student-card:focus {
+    outline: 2px solid #007cba;
+    outline-offset: -2px;
+}
+
+.student-card.active {
+    background: #e3f2fd;
+    border-left: 4px solid #007cba;
+}
+
+/* Avatar */
+.student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Informações principais */
+.student-body {
+    display: contents;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.student-meta {
+    font-size: 14px;
+    color: #666;
+}
+
+.student-plan {
+    font-size: 14px;
+    padding: 4px 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.student-status {
+    text-align: center;
+}
+
+.student-footer {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+}
+
+/* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
+
+.students-status-active {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+}
+
+.students-status-inactive {
+    background: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+}
+
+.students-status-suspended {
+    background: #ffc107;
+    color: #212529;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+}
+
+/* ==========================================================================
+   ESTADOS ESPECIAIS
+   ========================================================================== */
+
+.students-skeleton {
+    display: grid;
+    gap: 1px;
+    background: #f0f0f0;
+}
+
+.student-card.skeleton {
+    background: #f8f9fa;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.student-card.skeleton .student-avatar {
+    background: #dee2e6;
+}
+
+.student-card.skeleton .student-name,
+.student-card.skeleton .student-meta,
+.student-card.skeleton .student-footer {
+    background: #dee2e6;
+    height: 12px;
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.students-empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+}
+
+.empty-illustration {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.empty-text {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.students-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.students-error-actions {
+    margin-top: 15px;
+}
+
+.students-retry {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.students-retry:hover {
+    background: #c82333;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .students-isolated-root {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    .students-toolbar {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .students-search {
+        max-width: none;
+    }
+    
+    .students-table-header,
+    .student-card {
+        grid-template-columns: 50px 1fr 80px;
+        padding: 12px 15px;
+    }
+    
+    /* Ocultar colunas em mobile */
+    .students-table-header > div:nth-child(3),
+    .students-table-header > div:nth-child(4),
+    .students-table-header > div:nth-child(5),
+    .student-card > div:nth-child(3),
+    .student-card > div:nth-child(4),
+    .student-card > div:nth-child(5) {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .students-table-header,
+    .student-card {
+        grid-template-columns: 40px 1fr;
+        padding: 10px;
+    }
+    
+    .student-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .student-name {
+        font-size: 14px;
+    }
+    
+    .student-meta {
+        font-size: 12px;
+    }
+}

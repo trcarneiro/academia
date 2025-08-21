@@ -1,6 +1,7 @@
 ﻿import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import FinancialService from '@/services/financialService';
 
 export default async function studentsRoutes(fastify: FastifyInstance) {
   // Get all students
@@ -407,6 +408,59 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         success: false,
         message: 'Failed to fetch student financial summary'
       });
+    }
+  });
+
+  // Add alias route for attendance history expected by frontend
+  fastify.get('/:id/attendances', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+
+      const attendances = await prisma.attendance.findMany({
+        where: { studentId: id },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+      });
+
+      return reply.send({
+        success: true,
+        data: attendances
+      });
+    } catch (error) {
+      logger.error('Error fetching student attendances:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student attendances'
+      });
+    }
+  });
+
+  // Alias: Cancel active subscription by student ID
+  fastify.delete('/:id/subscription', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+      const sub = await prisma.studentSubscription.findFirst({
+        where: { studentId: id, status: 'ACTIVE' },
+        select: { id: true, organizationId: true }
+      });
+
+      if (!sub) {
+        return reply.code(404).send({ success: false, error: 'No active subscription found for this student' });
+      }
+
+      const financialService = new FinancialService(sub.organizationId);
+      await financialService.deleteSubscription(sub.id);
+
+      return reply.send({ success: true, message: 'Subscription deleted successfully' });
+    } catch (error) {
+      logger.error('Error cancelling student subscription:', error);
+      return reply.code(500).send({ success: false, message: 'Failed to cancel student subscription' });
     }
   });
 }

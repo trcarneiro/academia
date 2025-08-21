@@ -1,14 +1,23 @@
 /**
- * @fileoverview API Client Utility
- * @version 1.0.0
- * @description HTTP client wrapper with error handling and retry logic
+ * API Client Centralizado - Guidelines.MD Compliance
+ * Padroniza acesso à API para todos os módulos
+ * @version 2.0
+ * @date 2025-08-17
  */
 
+// Estados padrão para UI (Guidelines.MD requirement)
+const UI_STATES = {
+    LOADING: 'loading',
+    SUCCESS: 'success', 
+    ERROR: 'error',
+    EMPTY: 'empty'
+};
+
 // ==============================================
-// API CLIENT
+// API CLIENT PRINCIPAL
 // ==============================================
 
-export class ApiClient {
+class ApiClient {
     constructor(baseURL = '', options = {}) {
         this.baseURL = baseURL;
         this.defaultOptions = {
@@ -56,7 +65,7 @@ export class ApiClient {
     }
 
     /**
-     * Main request method
+     * Main request method with Guidelines.MD response normalization
      */
     async request(method, url, data = null, options = {}) {
         const config = { ...this.defaultOptions, ...options };
@@ -68,7 +77,7 @@ export class ApiClient {
             const cachedData = this.cache.get(cacheKey);
             if (!this.isCacheExpired(cachedData.timestamp, config.cacheTTL || 300000)) {
                 console.log('📋 Using cached response for:', url);
-                return cachedData.data;
+                return this.normalizeResponse(cachedData.data);
             }
         }
 
@@ -87,7 +96,7 @@ export class ApiClient {
                     });
                 }
 
-                return response;
+                return this.normalizeResponse(response);
             } catch (error) {
                 lastError = error;
                 
@@ -102,6 +111,42 @@ export class ApiClient {
         }
 
         throw lastError;
+    }
+
+    /**
+     * Normaliza resposta da API (Guidelines.MD compliance)
+     */
+    normalizeResponse(response) {
+        // Se resposta já está no formato padrão Guidelines.MD
+        if (response && typeof response === 'object' && 'success' in response) {
+            return {
+                success: response.success,
+                data: response.data || null,
+                message: response.message || '',
+                pagination: response.pagination || null,
+                meta: response.meta || null
+            };
+        }
+
+        // Se response tem propriedade data que indica sucesso
+        if (response && response.data !== undefined) {
+            return {
+                success: true,
+                data: response.data,
+                message: response.message || 'Success',
+                pagination: response.pagination || null,
+                meta: response.meta || null
+            };
+        }
+
+        // Normalizar resposta simples
+        return {
+            success: true,
+            data: response,
+            message: 'Success',
+            pagination: null,
+            meta: null
+        };
     }
 
     /**
@@ -131,23 +176,26 @@ export class ApiClient {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new ApiError(
-                    `HTTP ${response.status}: ${response.statusText}`,
-                    response.status,
-                    url
-                );
+                // Parse error body to extract server message when available
+                let serverMsg = '';
+                try {
+                    const ct = response.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) {
+                        const j = await response.json();
+                        serverMsg = j?.message || JSON.stringify(j);
+                    } else if (ct.includes('text/')) {
+                        serverMsg = await response.text();
+                    }
+                } catch (_) {}
+                const msg = serverMsg || `HTTP ${response.status}: ${response.statusText}`;
+                throw new ApiError(msg, response.status, url);
             }
 
             const responseData = await this.parseResponse(response);
             
             console.log(`✅ ${method} ${url} completed successfully`);
             
-            return {
-                success: true,
-                data: responseData,
-                status: response.status,
-                headers: response.headers
-            };
+            return responseData;
 
         } catch (error) {
             clearTimeout(timeoutId);
@@ -244,10 +292,150 @@ export class ApiClient {
 }
 
 // ==============================================
+// MODULE API HELPER - Guidelines.MD Pattern
+// ==============================================
+
+class ModuleAPIHelper {
+    constructor(moduleName, apiClient) {
+        this.moduleName = moduleName;
+        this.api = apiClient;
+        this.currentRequests = new Set();
+    }
+
+    /**
+     * Buscar dados com UI states automáticos (Guidelines.MD compliance)
+     */
+    async fetchWithStates(endpoint, options = {}) {
+        const { 
+            loadingElement,
+            targetElement,
+            onLoading,
+            onSuccess,
+            onError,
+            onEmpty
+        } = options;
+
+        try {
+            // Estado: Loading
+            this._setState(UI_STATES.LOADING, { loadingElement, onLoading });
+            
+            const result = await this.api.get(endpoint);
+            
+            if (!result.success) {
+                throw new Error(result.message || 'API returned error');
+            }
+
+            const data = result.data;
+
+            // Estado: Empty ou Success
+            if (!data || (Array.isArray(data) && data.length === 0)) {
+                this._setState(UI_STATES.EMPTY, { targetElement, onEmpty });
+            } else {
+                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data });
+            }
+
+            return result;
+
+        } catch (error) {
+            console.error(`❌ ${this.moduleName} fetch error:`, error);
+            this._setState(UI_STATES.ERROR, { targetElement, onError, error });
+            throw error;
+        }
+    }
+
+    /**
+     * Salvar dados com feedback automático
+     */
+    async saveWithFeedback(endpoint, data, options = {}) {
+        const { method = 'POST', onSuccess, onError } = options;
+
+        try {
+            console.log(`💾 ${this.moduleName} saving data...`);
+            
+            const result = await this.api[method.toLowerCase()](endpoint, data);
+            
+            if (onSuccess) onSuccess(result.data);
+            console.log(`✅ ${this.moduleName} data saved successfully`);
+            
+            return result;
+
+        } catch (error) {
+            console.error(`❌ ${this.moduleName} save error:`, error);
+            if (onError) onError(error);
+            throw error;
+        }
+    }
+
+    /**
+     * Aplicar estado na UI (Guidelines.MD compliance)
+     */
+    _setState(state, options = {}) {
+        const { loadingElement, targetElement, onLoading, onSuccess, onError, onEmpty, data, error } = options;
+
+        switch (state) {
+            case UI_STATES.LOADING:
+                if (onLoading) onLoading();
+                if (loadingElement) this._showLoading(loadingElement);
+                break;
+
+            case UI_STATES.SUCCESS:
+                if (onSuccess) onSuccess(data);
+                break;
+
+            case UI_STATES.ERROR:
+                if (onError) onError(error);
+                if (targetElement) this._showError(targetElement, error);
+                break;
+
+            case UI_STATES.EMPTY:
+                if (onEmpty) onEmpty();
+                if (targetElement) this._showEmpty(targetElement);
+                break;
+        }
+    }
+
+    _showLoading(element) {
+        if (element) {
+            element.innerHTML = `
+                <div class="module-isolated-loading-state">
+                    <div class="module-isolated-spinner"></div>
+                    <span>Carregando ${this.moduleName.toLowerCase()}...</span>
+                </div>
+            `;
+        }
+    }
+
+    _showError(element, error) {
+        if (element) {
+            element.innerHTML = `
+                <div class="module-isolated-error-state">
+                    <span class="module-isolated-error-icon">❌</span>
+                    <span class="module-isolated-error-message">${error?.message || 'Erro ao carregar dados'}</span>
+                    <button onclick="location.reload()" class="module-isolated-btn-secondary module-isolated-btn-sm">
+                        🔄 Tentar novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    _showEmpty(element) {
+        if (element) {
+            element.innerHTML = `
+                <div class="module-isolated-empty-state">
+                    <span class="module-isolated-empty-icon">📭</span>
+                    <span class="module-isolated-empty-message">Nenhum ${this.moduleName.toLowerCase()} encontrado</span>
+                </div>
+            `;
+        }
+    }
+}
+
+// ==============================================
 // API ERROR CLASS
 // ==============================================
 
-export class ApiError extends Error {
+class ApiError extends Error {
     constructor(message, status = 0, url = '') {
         super(message);
         this.name = 'ApiError';
@@ -273,7 +461,35 @@ export class ApiError extends Error {
 }
 
 // ==============================================
-// DEFAULT EXPORT
+// INSTÂNCIA GLOBAL E HELPERS
 // ==============================================
 
-export default ApiClient;
+// Instância global da API
+const apiClient = new ApiClient();
+
+// Exposição global (Guidelines.MD compliance)
+if (typeof window !== 'undefined') {
+    window.ApiClient = ApiClient;
+    window.ApiError = ApiError;
+    window.ModuleAPIHelper = ModuleAPIHelper;
+    window.apiClient = apiClient;
+    window.UI_STATES = UI_STATES;
+
+    // Helper factory para módulos
+    window.createModuleAPI = function(moduleName) {
+        return new ModuleAPIHelper(moduleName, apiClient);
+    };
+
+    console.log('🌐 API Client carregado - Guidelines.MD compliance');
+}
+
+// ==============================================
+// DEFAULT EXPORT (removed for browser usage)
+// ==============================================
+
+// Removed ESM exports to avoid SyntaxError in non-module script loading.
+// The API is exposed via globals on window (ApiClient, ApiError, ModuleAPIHelper, UI_STATES, apiClient).
+// If module exports are needed in build tools, add a separate ESM build file.
+
+// export default ApiClient;
+// export { ApiClient, ApiError, ModuleAPIHelper, UI_STATES };

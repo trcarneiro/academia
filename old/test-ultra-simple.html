@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plans - Ultra Simple</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .debug {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .test-buttons {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+        
+        .test-buttons button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .test-buttons button:hover {
+            background: #005a87;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-buttons">
+        <button onclick="loadAndShowPlans()">🔄 Recarregar</button>
+        <button onclick="testAPI()">🧪 Test API</button>
+        <button onclick="clearDebug()">🧹 Clear</button>
+    </div>
+    
+    <div id="debug" class="debug">
+        Aguardando carregamento...<br>
+    </div>
+    
+    <div id="app">
+        <!-- Conteúdo será inserido aqui automaticamente -->
+    </div>
+
+    <!-- Script ultra simples -->
+    <script src="public/js/modules/plans-ultra-simple.js"></script>
+
+    <script>
+        // Debug simples
+        const debug = document.getElementById('debug');
+        
+        function addDebug(message) {
+            const time = new Date().toLocaleTimeString();
+            debug.innerHTML += `[${time}] ${message}<br>`;
+            debug.scrollTop = debug.scrollHeight;
+        }
+        
+        function clearDebug() {
+            debug.innerHTML = 'Debug limpo...<br>';
+        }
+        
+        // Interceptar console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addDebug(args.join(' '));
+        };
+        
+        // Test API function
+        async function testAPI() {
+            addDebug('🧪 Testando API...');
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                addDebug('✅ API OK: ' + JSON.stringify(data));
+            } catch (error) {
+                addDebug('❌ API Error: ' + error.message);
+            }
+        }
+        
+        // Monitor loading
+        addDebug('🚀 Página carregada');
+        
+        // Check if script loaded
+        setTimeout(() => {
+            if (typeof loadAndShowPlans === 'function') {
+                addDebug('✅ Script carregado com sucesso');
+            } else {
+                addDebug('❌ Script não carregado');
+            }
+        }, 500);
+    </script>
+</body>
+</html>

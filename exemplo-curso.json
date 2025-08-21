@@ -1,0 +1,50 @@
+{
+  "name": "Krav Maga Iniciante",
+  "description": "Curso básico de Krav Maga para iniciantes, focado em técnicas fundamentais de defesa pessoal",
+  "level": "BEGINNER",
+  "duration": 8,
+  "classesPerWeek": 2,
+  "totalClasses": 16,
+  "category": "ADULT",
+  "objectives": {
+    "general": [
+      "Desenvolver habilidades básicas de defesa pessoal",
+      "Melhorar condicionamento físico",
+      "Aumentar consciência situacional"
+    ],
+    "specific": [
+      "Dominar postura de combate",
+      "Aprender técnicas básicas de socos",
+      "Praticar defesas contra estrangulamentos",
+      "Desenvolver reflexos de escape"
+    ]
+  },
+  "requirements": [
+    "Atestado médico",
+    "Idade mínima de 16 anos",
+    "Roupas confortáveis para exercícios"
+  ],
+  "techniques": [
+    {
+      "name": "Postura Básica de Combate",
+      "weekNumber": 1,
+      "lessonNumber": 1,
+      "orderIndex": 1,
+      "isRequired": true
+    },
+    {
+      "name": "Soco Direto",
+      "weekNumber": 1,
+      "lessonNumber": 2,
+      "orderIndex": 2,
+      "isRequired": true
+    },
+    {
+      "name": "Defesa Estrangulamento Frontal",
+      "weekNumber": 2,
+      "lessonNumber": 3,
+      "orderIndex": 3,
+      "isRequired": true
+    }
+  ]
+}

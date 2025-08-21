@@ -94,9 +94,46 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
       const body = request.body as any;
       const plan = await prisma.billingPlan.update({ where: { id }, data: body });
       return { success: true, data: plan, message: 'Plan updated successfully' };
-    } catch (error) {
+    } catch (error: any) {
+      // Prisma P2025: Record not found
+      if (error?.code === 'P2025') {
+        reply.code(404);
+        return { success: false, error: 'Plan not found' };
+      }
       reply.code(500);
       return { success: false, error: 'Failed to update plan' };
+    }
+  });
+
+  // DELETE /api/billing-plans/:id - Delete billing plan
+  fastify.delete('/api/billing-plans/:id', async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      // Check existence
+      const existing = await prisma.billingPlan.findUnique({ where: { id } });
+      if (!existing) {
+        reply.code(404);
+        return { success: false, error: 'Plan not found' };
+      }
+
+      // Prevent delete if there are subscriptions
+      const subCount = await prisma.studentSubscription.count({ where: { planId: id } });
+      if (subCount > 0) {
+        reply.code(409);
+        return { success: false, error: 'Cannot delete plan with active subscriptions', subscriptions: subCount };
+      }
+
+      await prisma.billingPlan.delete({ where: { id } });
+      return { success: true, message: 'Plan deleted successfully' };
+    } catch (error: any) {
+      // Prisma P2003: Foreign key constraint failed
+      if (error?.code === 'P2003') {
+        reply.code(409);
+        return { success: false, error: 'Cannot delete plan due to existing references' };
+      }
+      reply.code(500);
+      return { success: false, error: 'Failed to delete plan' };
     }
   });
 }

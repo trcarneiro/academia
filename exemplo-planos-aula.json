@@ -1,0 +1,101 @@
+[
+  {
+    "title": "Introdução ao Krav Maga",
+    "description": "Aula introdutória sobre os princípios básicos do Krav Maga",
+    "lessonNumber": 1,
+    "weekNumber": 1,
+    "unit": "Fundamentos",
+    "level": 1,
+    "duration": 60,
+    "difficulty": 1,
+    "objectives": [
+      "Compreender os princípios do Krav Maga",
+      "Aprender postura básica",
+      "Desenvolver consciência situacional"
+    ],
+    "equipment": ["Colchonetes", "Espelho"],
+    "activities": ["Aquecimento", "Postura básica", "Exercícios de equilíbrio"],
+    "warmup": {
+      "duration": 10,
+      "exercises": ["Corrida estacionária", "Alongamento dinâmico", "Rotações articulares"]
+    },
+    "techniques": {
+      "primary": ["Postura básica de combate"],
+      "secondary": ["Movimentação básica"]
+    },
+    "simulations": {
+      "scenarios": ["Situação de confronto básica"],
+      "duration": 15
+    },
+    "cooldown": {
+      "duration": 10,
+      "exercises": ["Alongamento estático", "Respiração relaxante"]
+    }
+  },
+  {
+    "title": "Técnicas de Soco Básicas",
+    "description": "Aprendizado das técnicas fundamentais de socos no Krav Maga",
+    "lessonNumber": 2,
+    "weekNumber": 1,
+    "unit": "Fundamentos",
+    "level": 1,
+    "duration": 60,
+    "difficulty": 2,
+    "objectives": [
+      "Dominar o soco direto",
+      "Aprender combinações básicas",
+      "Desenvolver coordenação"
+    ],
+    "equipment": ["Saco de pancada", "Bandagens", "Luvas"],
+    "activities": ["Soco direto", "Combinações", "Treino no saco"],
+    "warmup": {
+      "duration": 10,
+      "exercises": ["Aquecimento de punhos", "Movimentação lateral"]
+    },
+    "techniques": {
+      "primary": ["Soco direto", "Jab cross"],
+      "secondary": ["Gancho básico"]
+    },
+    "simulations": {
+      "scenarios": ["Defesa contra agressor frontal"],
+      "duration": 20
+    },
+    "cooldown": {
+      "duration": 10,
+      "exercises": ["Alongamento de braços", "Relaxamento muscular"]
+    }
+  },
+  {
+    "title": "Defesas Contra Estrangulamentos",
+    "description": "Técnicas de defesa contra ataques de estrangulamento",
+    "lessonNumber": 3,
+    "weekNumber": 2,
+    "unit": "Defesas Básicas",
+    "level": 2,
+    "duration": 60,
+    "difficulty": 3,
+    "objectives": [
+      "Aprender defesas contra estrangulamento frontal",
+      "Praticar contra-ataques",
+      "Desenvolver reflexos de escape"
+    ],
+    "equipment": ["Colchonetes", "Parceiro de treino"],
+    "activities": ["Defesa estrangulamento", "Contra-ataques", "Simulações"],
+    "warmup": {
+      "duration": 15,
+      "exercises": ["Aquecimento completo", "Exercícios de pescoço"]
+    },
+    "techniques": {
+      "primary": ["Defesa estrangulamento frontal", "Defesa estrangulamento lateral"],
+      "secondary": ["Contra-ataque com joelho", "Escape e fuga"]
+    },
+    "simulations": {
+      "scenarios": ["Ataque de estrangulamento em situações variadas"],
+      "duration": 25
+    },
+    "cooldown": {
+      "duration": 10,
+      "exercises": ["Alongamento de pescoço", "Relaxamento geral"]
+    }
+  }
+]

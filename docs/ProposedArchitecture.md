@@ -1,53 +1,77 @@
-# 🚀 Proposed Architecture - Sistema de Gestão Academia
+# Proposed Architecture - Academia System v2.0
 
-## 📋 **VISÃO GERAL DAS PROPOSTAS**
+## 🎯 Design System Centralizado (Conforme Guidelines.MD)
 
-Baseado na análise do `CurrentArchitecture.md` e seguindo rigorosamente o workflow do `Guidelines.MD`, proponho melhorias para evolução do sistema.
-
-### **Contexto da Proposta**
-- **Origem**: Solicitação de recuperação de dashboard + análise completa via Guidelines.MD
-- **Status Atual**: Sistema funcionando com arquitetura moderna já implementada
-- **Objetivo**: Melhorias incrementais mantendo estabilidade
+### **Objetivo Principal**
+Implementar sistema de design baseado rigorosamente nos padrões do [`Guidelines.MD`](Guidelines.MD), garantindo:
+- ✅ **Modularity**: Estilos isolados `.module-isolated-*`
+- ✅ **API-First**: Dados via API, estados loading/empty/error
+- ✅ **Full-Screen UI**: Sem modals, navegação visível
+- ✅ **Responsividade**: 1/2/4 colunas conforme Guidelines.MD
 
 ---
 
-## 🔧 **PROPOSTAS DE MELHORIA**
+## � **IMPLEMENTAÇÃO PROPOSTA**
 
-### **1. Sistema de Backup e Versionamento** 🔄
-**Prioridade**: ALTA (prevenir futuras "perdas")
+### **1. Design System Centralizado** 🎨
+**Prioridade**: ALTA (Conformidade Guidelines.MD)
 
-**Problema Identificado**: 
-- Usuário reportou "perda" de alterações do dashboard
-- Falta de sistema automático de backup
-- Version control manual sem automação
+**Estrutura Nova**:
+```
+public/
+├── css/
+│   ├── design-system/       # NOVO: Sistema centralizado
+│   │   ├── tokens.css       # Variáveis Guidelines.MD
+│   │   ├── components.css   # Componentes reutilizáveis
+│   │   └── utilities.css    # Classes utilitárias
+│   ├── dashboard/           # Existente
+│   └── modules/             # Existente - usará design-system
+```
 
-**Solução Proposta**:
-```javascript
-// Implementar em: public/js/utils/auto-backup.js
-class AutoBackupSystem {
-    // Backup automático a cada modificação significativa
-    // Integração com version-manager.js existente
-    // Notificações de alterações salvas
+**Tokens CSS (Guidelines.MD Compliance)**:
+```css
+:root {
+    /* Guidelines.MD Variables */
+    --primary-gradient-start: #667eea;
+    --primary-gradient-end: #764ba2;
+    --card-background: rgba(255, 255, 255, 0.95);
+    --table-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    
+    /* Academia Extended */
+    --primary-color: #667eea;
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
 }
 ```
 
-**Arquivos Afetados**:
-- `public/js/utils/auto-backup.js` (NOVO)
-- `version-manager.js` (MODIFICAR - adicionar auto-triggers)
-- `public/js/modules/dashboard-optimized.js` (INTEGRAR backup hooks)
+**Componentes (Guidelines.MD Compliance)**:
+```css
+/* Botões Guidelines.MD */
+.module-isolated-btn-primary {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    /* ... */
+}
+
+/* Status Guidelines.MD */
+.module-isolated-status-active {
+    background: var(--success-color);
+    /* ... */
+}
+
+/* Cards Guidelines.MD */
+.module-isolated-card {
+    background: var(--card-background);
+    box-shadow: var(--table-shadow);
+    /* ... */
+}
+```
 
 ---
 
-### **2. Sistema de Recovery Interface** 🛡️
-**Prioridade**: MÉDIA (UX improvement)
-
-**Proposta**:
-- Interface para visualizar versões anteriores
-- Restore point com preview das diferenças
-- Histórico visual de alterações
-
-**Implementação**:
-```
+### **2. Migração Módulo Plans (Exemplo)** 📋
 /public/views/system-recovery.html (NOVO)
 /public/js/modules/system-recovery.js (NOVO)
 /public/css/modules/system-recovery.css (NOVO)

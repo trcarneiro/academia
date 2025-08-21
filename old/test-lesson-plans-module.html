@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Módulo de Planos de Aula</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="/css/modules/lesson-plans-styles.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 0.75rem 1.5rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .lesson-plans-container {
+            min-height: 600px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .log-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .log-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #60a5fa;
+        }
+        
+        .log-content {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Test Header -->
+        <div class="test-header">
+            <h1>
+                <i class="fas fa-clipboard-list"></i>
+                Teste do Módulo de Planos de Aula
+            </h1>
+            <p>Teste das funcionalidades de listagem e edição de planos de aula</p>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="test-controls">
+            <button class="test-btn" onclick="testOpenList()">
+                <i class="fas fa-list"></i>
+                Abrir Lista
+            </button>
+            <button class="test-btn" onclick="testNewPlan()">
+                <i class="fas fa-plus"></i>
+                Novo Plano
+            </button>
+            <button class="test-btn" onclick="testEditPlan()">
+                <i class="fas fa-edit"></i>
+                Editar Plano (ID: 1)
+            </button>
+            <button class="test-btn" onclick="testViewPlan()">
+                <i class="fas fa-eye"></i>
+                Visualizar Plano (ID: 1)
+            </button>
+            <button class="test-btn" onclick="testLegacyCompatibility()">
+                <i class="fas fa-check"></i>
+                Testar Compatibilidade
+            </button>
+            <button class="test-btn secondary" onclick="clearContainer()">
+                <i class="fas fa-times"></i>
+                Limpar
+            </button>
+        </div>
+        
+        <!-- Container for the module -->
+        <div id="lessonPlansContainer" class="lesson-plans-container"></div>
+        
+        <!-- Console Log -->
+        <div class="log-container">
+            <div class="log-title">
+                <i class="fas fa-terminal"></i>
+                Console Log
+            </div>
+            <div id="logContent" class="log-content"></div>
+        </div>
+    </div>
+
+    <!-- Mock API for testing -->
+    <script>
+        // Mock API client
+        window.createModuleAPI = function(moduleName) {
+            console.log(`🌐 Mock API created for module: ${moduleName}`);
+            
+            return {
+                async fetchWithStates(url, options = {}) {
+                    console.log(`📡 Mock fetch: ${url}`);
+                    logToConsole(`Mock fetch: ${url}`);
+                    
+                    // Simulate API delay
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    if (url.includes('/api/courses')) {
+                        return {
+                            success: true,
+                            data: [
+                                { id: '1', name: 'Krav Maga Iniciante' },
+                                { id: '2', name: 'Krav Maga Intermediário' },
+                                { id: '3', name: 'Krav Maga Avançado' }
+                            ]
+                        };
+                    }
+                    
+                    if (url.includes('/api/lesson-plans')) {
+                        if (url.includes('/1')) {
+                            // Single lesson plan
+                            return {
+                                success: true,
+                                data: {
+                                    id: '1',
+                                    title: 'Técnicas Básicas de Defesa',
+                                    description: 'Introdução às técnicas fundamentais',
+                                    courseId: '1',
+                                    lessonNumber: 1,
+                                    weekNumber: 1,
+                                    level: 1,
+                                    duration: 60,
+                                    difficulty: 2,
+                                    objectives: 'Aprender postura básica e movimentos de defesa',
+                                    techniques: 'Postura de guarda, bloqueios básicos, esquivas',
+                                    equipment: 'Luvas de treino',
+                                    warmupDuration: 10,
+                                    mainContentDuration: 40,
+                                    cooldownDuration: 10,
+                                    notes: 'Atenção especial aos iniciantes'
+                                }
+                            };
+                        } else {
+                            // List of lesson plans
+                            return {
+                                success: true,
+                                data: [
+                                    {
+                                        id: '1',
+                                        title: 'Técnicas Básicas de Defesa',
+                                        description: 'Introdução às técnicas fundamentais',
+                                        courseId: '1',
+                                        course: { name: 'Krav Maga Iniciante' },
+                                        lessonNumber: 1,
+                                        weekNumber: 1,
+                                        level: 1,
+                                        duration: 60,
+                                        difficulty: 2
+                                    },
+                                    {
+                                        id: '2',
+                                        title: 'Movimentos de Ataque',
+                                        description: 'Técnicas ofensivas básicas',
+                                        courseId: '1',
+                                        course: { name: 'Krav Maga Iniciante' },
+                                        lessonNumber: 2,
+                                        weekNumber: 2,
+                                        level: 1,
+                                        duration: 60,
+                                        difficulty: 3
+                                    }
+                                ]
+                            };
+                        }
+                    }
+                    
+                    return { success: false, error: 'Endpoint não implementado no mock' };
+                },
+                
+                async saveWithFeedback(url, data, options = {}) {
+                    console.log(`💾 Mock save: ${url}`, data);
+                    logToConsole(`Mock save: ${url} - ${options.method || 'POST'}`);
+                    
+                    // Simulate API delay
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    return {
+                        success: true,
+                        data: {
+                            id: data?.id || Date.now().toString(),
+                            ...data
+                        }
+                    };
+                }
+            };
+        };
+        
+        // Console logging
+        function logToConsole(message) {
+            const logContent = document.getElementById('logContent');
+            const time = new Date().toLocaleTimeString();
+            logContent.innerHTML += `[${time}] ${message}<br>`;
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+        
+        // Test functions
+        function testOpenList() {
+            logToConsole('🔄 Testing: Open lesson plans list');
+            if (window.openLessonPlansList) {
+                window.openLessonPlansList();
+            } else {
+                logToConsole('❌ openLessonPlansList function not available');
+            }
+        }
+        
+        function testNewPlan() {
+            logToConsole('🔄 Testing: New lesson plan editor');
+            if (window.openLessonPlanEditor) {
+                window.openLessonPlanEditor();
+            } else {
+                logToConsole('❌ openLessonPlanEditor function not available');
+            }
+        }
+        
+        function testEditPlan() {
+            logToConsole('🔄 Testing: Edit lesson plan (ID: 1)');
+            if (window.openLessonPlanEditor) {
+                window.openLessonPlanEditor('1');
+            } else {
+                logToConsole('❌ openLessonPlanEditor function not available');
+            }
+        }
+        
+        function testViewPlan() {
+            logToConsole('🔄 Testing: View lesson plan (ID: 1)');
+            if (window.viewLessonPlan) {
+                window.viewLessonPlan('1');
+            } else {
+                logToConsole('❌ viewLessonPlan function not available');
+            }
+        }
+        
+        function testLegacyCompatibility() {
+            console.log('🧪 Testing Legacy Compatibility...');
+            
+            // Test if lessonPlansModule exists on window
+            if (window.lessonPlansModule) {
+                console.log('✅ window.lessonPlansModule exists');
+                
+                // Test available methods
+                const methods = ['hideCreateModal', 'hideEditModal', 'showCreateModal', 'showEditModal'];
+                methods.forEach(method => {
+                    if (typeof window.lessonPlansModule[method] === 'function') {
+                        console.log(`✅ ${method} is available`);
+                    } else {
+                        console.log(`❌ ${method} is missing`);
+                    }
+                });
+                
+                // Test calling methods safely
+                try {
+                    window.lessonPlansModule.showCreateModal();
+                    console.log('✅ showCreateModal executed successfully');
+                } catch (e) {
+                    console.log('❌ showCreateModal error:', e.message);
+                }
+                
+            } else {
+                console.log('❌ window.lessonPlansModule not found');
+            }
+            
+            // Test SPA router alias
+            if (typeof initializeLessonPlansModule === 'function') {
+                console.log('✅ initializeLessonPlansModule alias exists');
+            } else {
+                console.log('❌ initializeLessonPlansModule alias missing');
+            }
+        }
+
+        function clearContainer() {
+            logToConsole('🧹 Clearing container');
+            document.getElementById('lessonPlansContainer').innerHTML = '';
+        }
+        
+        function testLegacyCompatibility() {
+            logToConsole('🔄 Testing: Legacy compatibility (lessonPlansModule)');
+            if (window.lessonPlansModule) {
+                logToConsole('✅ lessonPlansModule is available');
+                logToConsole('Methods: ' + Object.keys(window.lessonPlansModule).join(', '));
+            } else {
+                logToConsole('❌ lessonPlansModule not available');
+            }
+        }
+        
+        // Override console.log to show in our log area
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToConsole(args.join(' '));
+        };
+        
+        // Initial log
+        logToConsole('✅ Test page loaded - Ready for testing');
+    </script>
+
+    <!-- Load the lesson plans module -->
+    <script src="/js/modules/lesson-plans.js"></script>
+    
+    <script>
+        // Initialize after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            logToConsole('📚 Lesson plans module loaded');
+            
+            // Test auto-initialization
+            setTimeout(() => {
+                logToConsole('🔄 Testing auto-initialization...');
+                testOpenList();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

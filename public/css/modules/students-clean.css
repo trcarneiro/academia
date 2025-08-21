@@ -1,0 +1,328 @@
+/**
+ * Students Module - Academia System Minimalista
+ * Design limpo e funcional para professores
+ */
+
+/* ==========================================================================
+   STUDENTS MODULE MINIMALISTA
+   ========================================================================== */
+
+/* Module Container Limpo */
+.students-module {
+    background: #f8fafc;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* Module Header Simplificado */
+.students-module .module-header {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.students-module .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.students-module .page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.students-module .title-icon {
+    font-size: 1.5rem;
+}
+
+.students-module .page-subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.students-module .header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.students-module .btn-primary {
+    background: #4f46e5;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.students-module .btn-primary:hover {
+    background: #6366f1;
+    transform: translateY(-1px);
+}
+
+/* Statistics Grid Simplificado */
+.students-module .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 0 24px 24px;
+}
+
+.students-module .stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.students-module .stat-card:hover {
+    border-color: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.students-module .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.students-module .stat-content {
+    color: #1e293b;
+}
+
+.students-module .stat-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #4f46e5;
+}
+
+.students-module .stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+/* Students Table Container Limpo */
+.students-module .table-container {
+    margin: 0 24px 24px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.students-module .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+}
+
+.students-module .table-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.students-module .students-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.students-module .students-table th {
+    background: #f8fafc;
+    color: #1e293b;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.students-module .students-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    color: #1e293b;
+}
+
+.students-module .students-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.students-module .status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.students-module .status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.students-module .status-inactive {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.students-module .action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 2px;
+}
+
+.students-module .btn-edit {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.students-module .btn-edit:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+.students-module .btn-delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.students-module .btn-delete:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Loading States */
+.students-module .loading-state {
+    padding: 40px;
+    text-align: center;
+    color: #64748b;
+}
+
+.students-module .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top: 2px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.students-module .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.students-module .empty-state h3 {
+    font-size: 1.125rem;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.students-module .empty-state p {
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .students-module .stats-grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px 16px;
+    }
+    
+    .students-module .module-header {
+        margin: 16px;
+        padding: 16px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .students-module .header-actions {
+        width: 100%;
+    }
+    
+    .students-module .btn-primary {
+        width: 100%;
+    }
+    
+    .students-module .table-container {
+        margin: 0 16px 16px;
+    }
+    
+    .students-module .students-table {
+        font-size: 0.8rem;
+    }
+    
+    .students-module .students-table th,
+    .students-module .students-table td {
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .students-module .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .students-module .stat-card {
+        padding: 16px;
+    }
+    
+    .students-module .stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+    }
+    
+    .students-module .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .students-module .action-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+}

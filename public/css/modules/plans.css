@@ -1,104 +1,360 @@
-/* Estilos isolados para o módulo de planos */
-.plans-isolated-container {
-    padding: 20px;
+/**
+ * Plans Module - Academia System
+ * Migrado para Design System (Guidelines.MD compliance)
+ * Usa componentes centralizados + customizações específicas
+ */
+
+/* ==========================================================================
+   CUSTOMIZAÇÕES ESPECÍFICAS DO MÓDULO PLANS
+   ========================================================================== */
+
+/* Loading state customizado para tabela de planos */
+.plans-loading-row {
+    text-align: center;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    color: var(--text-secondary);
 }
 
-.plans-isolated-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    box-shadow: var(--plans-isolated-table-shadow);
-}
-
-.plans-isolated-table th, .plans-isolated-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid var(--plans-isolated-border-color);
-}
-
-.plans-isolated-table th {
-    background-color: var(--plans-isolated-header-bg);
-    font-weight: 600;
-}
-
-.plans-isolated-table tr:hover {
-    background-color: var(--plans-isolated-row-hover);
-}
-
-.plans-isolated-btn-primary {
-    background-color: var(--plans-isolated-primary);
+/* States específicos para planos */
+.plans-status-draft {
+    background: var(--warning-color);
     color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
 }
 
-.plans-isolated-btn-primary:hover {
-    background-color: var(--plans-isolated-primary-dark);
+.plans-status-published {
+    background: var(--success-color);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
 }
 
-.plans-isolated-search-box {
+.plans-status-archived {
+    background: var(--text-muted);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Badge para número de alunos */
+.plans-student-count {
+    background: var(--info-color);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    min-width: 24px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Valor monetário com destaque */
+.plans-price {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary-color);
+    font-size: var(--font-size-lg);
+}
+
+/* Ações da tabela */
+.plans-actions {
     display: flex;
-    gap: 10px;
+    gap: var(--spacing-sm);
+    align-items: center;
 }
 
-.plans-isolated-search-box input {
-    padding: 8px 12px;
-    border: 1px solid var(--plans-isolated-border-color);
-    border-radius: 4px;
-    width: 300px;
-}
-
-:root {
-    --plans-isolated-primary: #4361ee;
-    --plans-isolated-primary-dark: #3f37c9;
-    --plans-isolated-border-color: #e0e0e0;
-    --plans-isolated-header-bg: #f5f7fb;
-    --plans-isolated-row-hover: #f9f9f9;
-    --plans-isolated-table-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-
-/* Estados de carregamento e erro */
-.plans-isolated-loading-state {
-    text-align: center;
-    padding: 40px 0;
-}
-
-.plans-isolated-loading-state .spinner {
-    border: 4px solid rgba(0,0,0,0.1);
-    border-top: 4px solid var(--plans-isolated-primary);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.plans-isolated-error-state {
-    text-align: center;
-    padding: 40px 0;
-    color: #e74c3c;
-}
-
-.plans-isolated-error-state button {
-    background: var(--plans-isolated-primary);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
+.plans-action-btn {
+    background: none;
+    border: 1px solid var(--border-light);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    margin-top: 10px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
 }
 
-.plans-isolated-empty-state {
+.plans-action-btn:hover {
+    background: var(--background-secondary);
+    border-color: var(--border-medium);
+}
+
+.plans-action-btn.edit {
+    color: var(--info-color);
+    border-color: var(--info-color);
+}
+
+.plans-action-btn.edit:hover {
+    background: var(--info-color);
+    color: white;
+}
+
+.plans-action-btn.delete {
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+.plans-action-btn.delete:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Empty state customizado */
+.plans-empty-state {
     text-align: center;
-    padding: 40px 0;
-    color: #7f8c8d;
+    padding: var(--spacing-3xl);
+    color: var(--text-secondary);
+}
+
+.plans-empty-state-icon {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.5;
+}
+
+.plans-empty-state-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.plans-empty-state-description {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Form específico para criação/edição de planos */
+.plans-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.plans-form-section {
+    background: var(--background-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.plans-form-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Agenda/Schedule specific styles */
+.plans-schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+}
+
+.plans-schedule-day {
+    text-align: center;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-sm);
+}
+
+.plans-schedule-day:hover {
+    background: var(--background-secondary);
+}
+
+.plans-schedule-day.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Responsividade específica para planos */
+@media (max-width: 768px) {
+    .plans-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .plans-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    
+    .plans-action-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Esconder colunas menos importantes em mobile */
+    .plans-table-mobile-hidden {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .plans-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ==========================================================================
+   ANIMAÇÕES ESPECÍFICAS
+   ========================================================================== */
+
+@keyframes plansSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.plans-row-enter {
+    animation: plansSlideIn 0.3s ease-out;
+}
+
+/* DS Buttons for Plans (high contrast AA) */
+.module-isolated-btn-primary,
+.module-isolated-btn-secondary,
+.module-isolated-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    line-height: 1;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+}
+
+.module-isolated-btn-primary {
+    background: var(--ds-color-primary-600, #4f46e5);
+    color: #fff;
+    border-color: var(--ds-color-primary-700, #4338ca);
+}
+.module-isolated-btn-primary:hover,
+.module-isolated-btn-primary:focus {
+    background: var(--ds-color-primary-700, #4338ca);
+    border-color: var(--ds-color-primary-800, #3730a3);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+}
+.module-isolated-btn-primary:disabled {
+    background: var(--ds-color-primary-300, #a5b4fc);
+    border-color: var(--ds-color-primary-300, #a5b4fc);
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.module-isolated-btn-secondary {
+    background: var(--background-secondary, #0b1220);
+    color: var(--text-primary, #e5e7eb);
+    border-color: var(--border-medium, #334155);
+}
+.module-isolated-btn-secondary:hover,
+.module-isolated-btn-secondary:focus {
+    background: var(--background-elevated, #0f172a);
+    border-color: var(--text-secondary, #94a3b8);
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.35);
+}
+/* Stat skeleton for loading state */
+.stat-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #e2e2e2 50%, #f3f3f3 75%);
+    color: #bdbdbd !important;
+    border-radius: 6px;
+    min-width: 48px;
+    min-height: 32px;
+    animation: skeleton-loading 1.2s infinite linear;
+}
+@keyframes skeleton-loading {
+    0% { background-position: -100px 0; }
+    100% { background-position: 100px 0; }
+}
+
+/* Error toast for plans */
+.module-isolated-toast-error {
+    background: #b91c1c;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    padding: 16px 24px;
+    max-width: 320px;
+    z-index: 9999;
+}
+
+/* Button improvements: contrast, hit area, accessibility */
+.module-isolated-btn-primary {
+    background: var(--ds-color-primary-700);
+    color: #fff;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 44px;
+    min-height: 44px;
+    transition: background .2s;
+}
+.module-isolated-btn-primary:hover, .module-isolated-btn-primary:focus {
+    background: var(--ds-color-primary-900);
+    outline: 2px solid var(--ds-color-primary-800);
+}
+.module-isolated-btn-secondary {
+    background: #fff;
+    color: var(--ds-color-primary-900);
+    border: 2px solid var(--ds-color-primary-400);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 44px;
+    min-height: 44px;
+    transition: border .2s, color .2s;
+}
+.module-isolated-btn-secondary:hover, .module-isolated-btn-secondary:focus {
+    border-color: var(--ds-color-primary-700);
+    color: var(--ds-color-primary-900);
+    outline: 2px solid var(--ds-color-primary-800);
+}
+.module-isolated-btn-danger {
+    background: var(--ds-color-danger-700);
+    color: #fff;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 44px;
+    min-height: 44px;
+    transition: background .2s;
+}
+.module-isolated-btn-danger:hover, .module-isolated-btn-danger:focus {
+    background: var(--ds-color-danger-900);
+    outline: 2px solid var(--ds-color-danger-800);
 }

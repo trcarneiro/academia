@@ -1,0 +1,111 @@
+/**
+ * FORÇA ABSOLUTA - CSS Reset para Design Minimalista
+ * Este arquivo sobrescreve qualquer estilo anterior com !important
+ */
+
+/* Reset total para evitar qualquer conflito */
+* {
+    background: unset !important;
+    background-image: unset !important;
+}
+
+body {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.6 !important;
+}
+
+/* Força o design minimalista */
+.top-bar,
+.header,
+.main-header {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.sidebar,
+.main-sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+.nav-link,
+.menu-item {
+    color: #64748b !important;
+    background: transparent !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #64748b !important;
+}
+
+.nav-link:hover,
+.menu-item:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
+}
+
+.nav-link.active,
+.menu-item.active {
+    background: #4f46e5 !important;
+    color: white !important;
+    -webkit-text-fill-color: white !important;
+}
+
+.main-content,
+.content-area,
+#content {
+    background: #f8fafc !important;
+}
+
+.page-title,
+h1, h2, h3 {
+    color: #1e293b !important;
+    background: transparent !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #1e293b !important;
+}
+
+.card,
+.dashboard-card,
+.stat-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stat-value {
+    color: #4f46e5 !important;
+    background: transparent !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #4f46e5 !important;
+}
+
+.btn-primary {
+    background: #4f46e5 !important;
+    color: white !important;
+}
+
+/* Remove qualquer efeito especial anterior */
+.glass-effect,
+.glassmorphism,
+.ultra-modern,
+.neon-glow,
+.gradient-text {
+    background: unset !important;
+    background-image: unset !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    color: inherit !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: inherit !important;
+}

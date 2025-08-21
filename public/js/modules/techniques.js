@@ -38,7 +38,7 @@ export async function initializeTechniquesModule() {
   }
 
   listEl?.addEventListener('click', (e) => {
-    const card = (e.target as HTMLElement).closest('.technique-card');
+    const card = e.target.closest('.technique-card');
     if (!card) return;
     const id = card.getAttribute('data-id');
     if (id) showDetail(id);

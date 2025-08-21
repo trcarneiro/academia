@@ -1,0 +1,87 @@
+/**
+ * Design System - Academia System
+ * Sistema de design centralizado conforme Guidelines.MD
+ * Imports ordenados por dependência
+ */
+
+/* Base Tokens - Variáveis CSS obrigatórias */
+@import './tokens.css';
+
+/* Componentes Reutilizáveis - Guidelines.MD compliance */
+@import './components.css';
+
+/* Utilitários para Composição Rápida */
+@import './utilities.css';
+
+/**
+ * Design System Initialization
+ * Configurações globais que não conflitam com módulos existentes
+ */
+
+/* Reset mínimo para consistência */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Base typography para elementos que usam o design system */
+.module-isolated-container,
+.module-isolated-card,
+.module-isolated-header,
+.module-isolated-content {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: var(--line-height-normal);
+}
+
+/* Focus states consistentes */
+.module-isolated-input:focus,
+.module-isolated-textarea:focus,
+.module-isolated-select:focus,
+.module-isolated-btn-primary:focus,
+.module-isolated-btn-secondary:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Smooth scroll para âncoras */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Print styles */
+@media print {
+    .module-isolated-container {
+        background: white !important;
+        box-shadow: none !important;
+    }
+    
+    .module-isolated-btn-primary,
+    .module-isolated-btn-secondary {
+        background: white !important;
+        color: black !important;
+        border: 1px solid black !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .module-isolated-card {
+        border: 2px solid var(--border-dark);
+    }
+    
+    .module-isolated-btn-primary {
+        border: 2px solid var(--primary-color);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

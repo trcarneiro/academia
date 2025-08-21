@@ -1,276 +1,674 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { prisma } from '@/utils/database';
 import { z } from 'zod';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Helper function to get organization ID
+async function getOrganizationId(): Promise<string> {
+  const org = await prisma.organization.findFirst();
+  if (!org) {
+    throw new Error('No organization found');
+  }
+  return org.id;
+}
 
-// Função para obter o ID da organização (simulado por enquanto)
-const getOrganizationId = (request: FastifyRequest): string => {
-  // Em um app real, isso viria do token JWT do usuário autenticado
-  // request.user.organizationId
-  return '0fef3e41-018d-4cd2-afbc-bbfe81baa90b'; // Academia Teste
-};
-
-// Esquema de validação para criação de lesson plan
-const createLessonPlanSchema = z.object({
-  courseId: z.string().uuid(),
-  title: z.string().min(1, 'O título do plano de aula é obrigatório'),
+// Validation schemas
+const lessonPlanSchema = z.object({
+  courseId: z.string().min(1, 'Curso é obrigatório').uuid('ID do curso deve ser um UUID válido'),
+  title: z.string().min(1, 'Título é obrigatório'),
   description: z.string().optional(),
-  lessonNumber: z.number().int().positive('O número da aula deve ser um número positivo'),
-  weekNumber: z.number().int().positive('O número da semana deve ser um número positivo'),
+  lessonNumber: z.number().int().positive('Número da aula deve ser positivo'),
+  weekNumber: z.number().int().positive('Número da semana deve ser positivo'),
   unit: z.string().optional(),
   level: z.number().int().min(1).max(5).default(1),
-  warmup: z.any(), // JSON
-  techniques: z.any(), // JSON
-  simulations: z.any(), // JSON
-  cooldown: z.any(), // JSON
-  mentalModule: z.any().optional(), // JSON
-  tacticalModule: z.string().optional(),
-  adaptations: z.any().optional(), // JSON
-  duration: z.number().int().positive('A duração deve ser um número positivo').default(60),
+  duration: z.number().int().positive('Duração deve ser positiva').default(60),
   difficulty: z.number().int().min(1).max(5).default(1),
   objectives: z.array(z.string()).default([]),
   equipment: z.array(z.string()).default([]),
   activities: z.array(z.string()).default([]),
-  videoUrl: z.string().url().optional(),
-  thumbnailUrl: z.string().url().optional(),
+  warmup: z.any().optional(),
+  techniques: z.any().optional(),
+  simulations: z.any().optional(),
+  cooldown: z.any().optional(),
+  mentalModule: z.any().optional(),
+  tacticalModule: z.string().optional(),
+  adaptations: z.any().optional(),
+  videoUrl: z.string().url().optional().or(z.literal('')),
+  thumbnailUrl: z.string().url().optional().or(z.literal('')),
 });
 
-// Esquema de validação para atualização (todos os campos são opcionais)
-const updateLessonPlanSchema = createLessonPlanSchema.partial();
+const updateLessonPlanSchema = lessonPlanSchema.partial();
 
 export const lessonPlanController = {
-  // Listar todos os lesson plans de um curso
-  async listByCourse(request: FastifyRequest<{ Params: { courseId: string } }>, reply: FastifyReply) {
+  // GET /api/lesson-plans - List all lesson plans
+  async getAll(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const organizationId = getOrganizationId(request);
-      const { courseId } = request.params;
+      const organizationId = await getOrganizationId();
+      const query = request.query as any || {};
       
-      // Verificar se o curso pertence à organização
-      const course = await prisma.course.findFirst({
-        where: { id: courseId, organizationId },
-      });
-      
-      if (!course) {
-        return reply.status(404).send({ success: false, error: 'Curso não encontrado' });
-      }
-      
-      const lessonPlans = await prisma.lessonPlan.findMany({
-        where: { courseId },
-        orderBy: { lessonNumber: 'asc' },
-      });
-      
-      reply.send({ success: true, data: lessonPlans });
-    } catch (error) {
-      reply.status(500).send({ success: false, error: 'Erro ao buscar planos de aula' });
-    }
-  },
-
-  // Obter um lesson plan específico por ID
-  async show(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    try {
-      const organizationId = getOrganizationId(request);
-      const { id } = request.params;
-      
-      const lessonPlan = await prisma.lessonPlan.findFirst({
-        where: { 
-          id,
-          course: { organizationId }
-        },
-      });
-
-      if (!lessonPlan) {
-        return reply.status(404).send({ success: false, error: 'Plano de aula não encontrado' });
+      // Filters
+      const where: any = { course: { organizationId } };
+      if (query.courseId) where.courseId = query.courseId;
+      if (query.level) where.level = parseInt(query.level);
+      if (query.q) {
+        where.OR = [
+          { title: { contains: query.q, mode: 'insensitive' } },
+          { description: { contains: query.q, mode: 'insensitive' } }
+        ];
       }
 
-      reply.send({ success: true, data: lessonPlan });
-    } catch (error) {
-      reply.status(500).send({ success: false, error: 'Erro ao buscar plano de aula' });
-    }
-  },
+      // Pagination
+      const page = Math.max(1, parseInt(query.page, 10) || 1);
+      const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize, 10) || 20));
+      const skip = (page - 1) * pageSize;
 
-  // Criar um novo lesson plan
-  async create(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const organizationId = getOrganizationId(request);
-      const input = createLessonPlanSchema.parse(request.body);
+      // Sorting
+      const sortField = String(query.sortField || '').trim();
+      const sortOrder = String((query.sortOrder || 'asc')).toLowerCase() === 'desc' ? 'desc' : 'asc';
+      const allowedSortFields: Record<string, any> = {
+        'lessonNumber': { lessonNumber: sortOrder },
+        'weekNumber': { weekNumber: sortOrder },
+        'title': { title: sortOrder },
+        'createdAt': { createdAt: sortOrder }
+      };
+      const orderBy = allowedSortFields[sortField] || { lessonNumber: 'asc' };
 
-      // Verificar se o curso pertence à organização
-      const course = await prisma.course.findFirst({
-        where: { id: input.courseId, organizationId },
-      });
-      
-      if (!course) {
-        return reply.status(404).send({ success: false, error: 'Curso não encontrado' });
-      }
-
-      // Validar se já existe um lesson plan com o mesmo número de aula para este curso
-      const existingLessonPlan = await prisma.lessonPlan.findFirst({
-        where: { 
-          courseId: input.courseId,
-          lessonNumber: input.lessonNumber
-        },
-      });
-      
-      if (existingLessonPlan) {
-        return reply.status(409).send({ success: false, error: 'Já existe um plano de aula com este número para este curso' });
-      }
-
-      const newLessonPlan = await prisma.lessonPlan.create({
-        data: {
-          ...input,
-          // Garantir que campos obrigatórios estejam presentes
-          warmup: input.warmup ?? [],
-          techniques: input.techniques ?? [],
-          simulations: input.simulations ?? [],
-          cooldown: input.cooldown ?? [],
-          // Tratar campos opcionais que podem ser undefined
-          description: input.description ?? null,
-          unit: input.unit ?? null,
-          mentalModule: input.mentalModule ?? null,
-          tacticalModule: input.tacticalModule ?? null,
-          adaptations: input.adaptations ?? null,
-          videoUrl: input.videoUrl ?? null,
-          thumbnailUrl: input.thumbnailUrl ?? null,
-        },
-      });
-
-      reply.status(201).send({ success: true, data: newLessonPlan });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ success: false, error: error.flatten().fieldErrors });
-      }
-      reply.status(500).send({ success: false, error: 'Erro ao criar plano de aula' });
-    }
-  },
-
-  // Atualizar um lesson plan existente
-  async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
-    try {
-      const organizationId = getOrganizationId(request);
-      const { id } = request.params;
-      const input = updateLessonPlanSchema.parse(request.body);
-
-      // Verificar se o lesson plan pertence à organização
-      const lessonPlan = await prisma.lessonPlan.findFirst({
-        where: { 
-          id,
-          course: { organizationId }
-        },
-      });
-      
-      if (!lessonPlan) {
-        return reply.status(404).send({ success: false, error: 'Plano de aula não encontrado' });
-      }
-
-      // Se o número da aula for alterado, validar se já existe outro lesson plan com o novo número
-      if (input.lessonNumber && input.lessonNumber !== lessonPlan.lessonNumber) {
-        const existingLessonPlan = await prisma.lessonPlan.findFirst({
-          where: { 
-            courseId: lessonPlan.courseId,
-            lessonNumber: input.lessonNumber,
-            NOT: { id }
+      const [lessonPlans, count] = await Promise.all([
+        prisma.lessonPlan.findMany({
+          where,
+          include: {
+            course: {
+              select: { id: true, name: true, level: true }
+            },
+            activityItems: {
+              include: {
+                activity: {
+                  select: { id: true, title: true, type: true, difficulty: true }
+                }
+              },
+              orderBy: { ord: 'asc' }
+            }
           },
-        });
-        
-        if (existingLessonPlan) {
-          return reply.status(409).send({ success: false, error: 'Já existe um plano de aula com este número para este curso' });
-        }
-      }
+          orderBy,
+          skip,
+          take: pageSize
+        }),
+        prisma.lessonPlan.count({ where })
+      ]);
 
-      // Remover campos que não podem ser atualizados
-      const { courseId, ...updateData } = input;
-      
-      // Preparar dados para atualização, tratando campos opcionais
-      const preparedUpdateData: any = {};
-      
-      // Campos que podem ser atualizados diretamente
-      if (updateData.title !== undefined) preparedUpdateData.title = updateData.title;
-      if (updateData.description !== undefined) preparedUpdateData.description = updateData.description ?? null;
-      if (updateData.lessonNumber !== undefined) preparedUpdateData.lessonNumber = updateData.lessonNumber;
-      if (updateData.weekNumber !== undefined) preparedUpdateData.weekNumber = updateData.weekNumber;
-      if (updateData.unit !== undefined) preparedUpdateData.unit = updateData.unit ?? null;
-      if (updateData.level !== undefined) preparedUpdateData.level = updateData.level;
-      if (updateData.warmup !== undefined) preparedUpdateData.warmup = updateData.warmup;
-      if (updateData.techniques !== undefined) preparedUpdateData.techniques = updateData.techniques;
-      if (updateData.simulations !== undefined) preparedUpdateData.simulations = updateData.simulations;
-      if (updateData.cooldown !== undefined) preparedUpdateData.cooldown = updateData.cooldown;
-      if (updateData.mentalModule !== undefined) preparedUpdateData.mentalModule = updateData.mentalModule ?? null;
-      if (updateData.tacticalModule !== undefined) preparedUpdateData.tacticalModule = updateData.tacticalModule ?? null;
-      if (updateData.adaptations !== undefined) preparedUpdateData.adaptations = updateData.adaptations ?? null;
-      if (updateData.duration !== undefined) preparedUpdateData.duration = updateData.duration;
-      if (updateData.difficulty !== undefined) preparedUpdateData.difficulty = updateData.difficulty;
-      if (updateData.objectives !== undefined) preparedUpdateData.objectives = updateData.objectives;
-      if (updateData.equipment !== undefined) preparedUpdateData.equipment = updateData.equipment;
-      if (updateData.activities !== undefined) preparedUpdateData.activities = updateData.activities;
-      if (updateData.videoUrl !== undefined) preparedUpdateData.videoUrl = updateData.videoUrl ?? null;
-      if (updateData.thumbnailUrl !== undefined) preparedUpdateData.thumbnailUrl = updateData.thumbnailUrl ?? null;
-      
-      const updatedLessonPlan = await prisma.lessonPlan.update({
-        where: { id },
-        data: preparedUpdateData,
+      return reply.send({
+        success: true,
+        data: lessonPlans,
+        count,
+        page,
+        pageSize,
+        totalPages: Math.ceil(count / pageSize)
       });
-      
-      reply.send({ success: true, data: updatedLessonPlan });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ success: false, error: error.flatten().fieldErrors });
-      }
-      reply.status(500).send({ success: false, error: 'Erro ao atualizar plano de aula' });
+      console.error('Get lesson plans error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao buscar planos de aula'
+      });
     }
   },
 
-  // Deletar um lesson plan
-  async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+  // GET /api/lesson-plans/:id - Get single lesson plan
+  async getById(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = getOrganizationId(request);
       const { id } = request.params;
-      
-      // Verificar se o lesson plan pertence à organização
+      const organizationId = await getOrganizationId();
+
       const lessonPlan = await prisma.lessonPlan.findFirst({
         where: { 
           id,
           course: { organizationId }
         },
-      });
-      
-      if (!lessonPlan) {
-        return reply.status(404).send({ success: false, error: 'Plano de aula não encontrado' });
-      }
-      
-      await prisma.lessonPlan.delete({
-        where: { id },
-      });
-      
-      reply.status(204).send(); // Resposta sem conteúdo
-    } catch (error) {
-      reply.status(500).send({ success: false, error: 'Erro ao deletar plano de aula' });
-    }
-  },
-  
-  // Listar todos os lesson plans
-  async list(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const organizationId = getOrganizationId(request);
-      
-      const lessonPlans = await prisma.lessonPlan.findMany({
-        where: { 
-          course: { organizationId }
-        },
-        orderBy: { createdAt: 'desc' },
         include: {
           course: {
-            select: {
-              id: true,
-              name: true,
-            }
+            select: { id: true, name: true, level: true }
+          },
+          activityItems: {
+            include: {
+              activity: {
+                select: { id: true, title: true, type: true, difficulty: true, description: true }
+              }
+            },
+            orderBy: { ord: 'asc' }
           }
         }
       });
-      
-      reply.send({ success: true, data: lessonPlans });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: lessonPlan
+      });
     } catch (error) {
-      reply.status(500).send({ success: false, error: 'Erro ao buscar planos de aula' });
+      console.error('Get lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao buscar plano de aula'
+      });
     }
   },
+
+  // POST /api/lesson-plans - Create lesson plan
+  async create(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      console.log('📋 Creating lesson plan with body:', request.body);
+      
+      const validation = lessonPlanSchema.safeParse(request.body);
+      if (!validation.success) {
+        console.error('❌ Validation failed:', validation.error.errors);
+        return reply.status(400).send({
+          success: false,
+          error: validation.error.errors?.[0]?.message || 'Dados inválidos',
+          details: validation.error.errors
+        });
+      }
+
+      const data = validation.data;
+      console.log('✅ Validated data:', data);
+      console.log('🎓 Course ID from data:', data.courseId);
+      
+      const organizationId = await getOrganizationId();
+
+      // Verify course exists and belongs to organization
+      const course = await prisma.course.findFirst({
+        where: { id: data.courseId, organizationId }
+      });
+
+      if (!course) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Curso não encontrado'
+        });
+      }
+
+      // Check for duplicate lesson number in course
+      const existing = await prisma.lessonPlan.findFirst({
+        where: {
+          courseId: data.courseId,
+          lessonNumber: data.lessonNumber
+        }
+      });
+
+      if (existing) {
+        return reply.status(409).send({
+          success: false,
+          error: 'Já existe uma aula com este número neste curso'
+        });
+      }
+
+      const lessonPlan = await prisma.lessonPlan.create({
+        data: {
+          ...data,
+          description: data.description ?? null,
+          unit: data.unit ?? null,
+          mentalModule: data.mentalModule ?? null,
+          tacticalModule: data.tacticalModule ?? null,
+          adaptations: data.adaptations ?? null,
+          videoUrl: data.videoUrl ?? null,
+          thumbnailUrl: data.thumbnailUrl ?? null,
+          warmup: data.warmup || {},
+          techniques: data.techniques || {},
+          simulations: data.simulations || {},
+          cooldown: data.cooldown || {}
+        },
+        include: {
+          course: {
+            select: { id: true, name: true, level: true }
+          }
+        }
+      });
+
+      return reply.status(201).send({
+        success: true,
+        data: lessonPlan,
+        message: 'Plano de aula criado com sucesso'
+      });
+    } catch (error) {
+      console.error('Create lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao criar plano de aula'
+      });
+    }
+  },
+
+  // PUT /api/lesson-plans/:id - Update lesson plan
+  async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params;
+      const validation = updateLessonPlanSchema.safeParse(request.body);
+      
+      if (!validation.success) {
+        return reply.status(400).send({
+          success: false,
+          error: validation.error.errors?.[0]?.message || 'Dados inválidos'
+        });
+      }
+
+      const data = validation.data;
+      const organizationId = await getOrganizationId();
+
+      // Verify lesson plan exists and belongs to organization
+      const existing = await prisma.lessonPlan.findFirst({
+        where: { 
+          id,
+          course: { organizationId }
+        }
+      });
+
+      if (!existing) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      // Check for lesson number conflicts if being updated
+      if (data.lessonNumber && data.lessonNumber !== existing.lessonNumber) {
+        const conflict = await prisma.lessonPlan.findFirst({
+          where: {
+            courseId: existing.courseId,
+            lessonNumber: data.lessonNumber,
+            NOT: { id }
+          }
+        });
+
+        if (conflict) {
+          return reply.status(409).send({
+            success: false,
+            error: 'Já existe uma aula com este número neste curso'
+          });
+        }
+      }
+
+      // Prepare update data, filtering out undefined values and excluding courseId
+      const { courseId, ...updateData } = data;
+      const cleanUpdateData = Object.fromEntries(
+        Object.entries(updateData).map(([key, value]) => [
+          key,
+          value === undefined ? null : value
+        ])
+      );
+
+      const lessonPlan = await prisma.lessonPlan.update({
+        where: { id },
+        data: cleanUpdateData,
+        include: {
+          course: {
+            select: { id: true, name: true, level: true }
+          },
+          activityItems: {
+            include: {
+              activity: {
+                select: { id: true, title: true, type: true }
+              }
+            },
+            orderBy: { ord: 'asc' }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: lessonPlan,
+        message: 'Plano de aula atualizado com sucesso'
+      });
+    } catch (error) {
+      console.error('Update lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao atualizar plano de aula'
+      });
+    }
+  },
+
+  // DELETE /api/lesson-plans/:id - Delete lesson plan
+  async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params;
+      const organizationId = await getOrganizationId();
+
+      // Verify lesson plan exists and belongs to organization
+      const existing = await prisma.lessonPlan.findFirst({
+        where: { 
+          id,
+          course: { organizationId }
+        }
+      });
+
+      if (!existing) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      // Check if lesson plan is being used in classes
+      const classCount = await prisma.class.count({
+        where: { lessonPlanId: id }
+      });
+
+      if (classCount > 0) {
+        return reply.status(409).send({
+          success: false,
+          error: 'Não é possível excluir plano de aula que está sendo usado em aulas'
+        });
+      }
+
+      await prisma.lessonPlan.delete({
+        where: { id }
+      });
+
+      return reply.status(204).send();
+    } catch (error) {
+      console.error('Delete lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao excluir plano de aula'
+      });
+    }
+  },
+
+  // GET /api/lesson-plans/:id/activities - Get lesson plan activities
+  async getActivities(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params;
+      const organizationId = await getOrganizationId();
+
+      const lessonPlan = await prisma.lessonPlan.findFirst({
+        where: { 
+          id,
+          course: { organizationId }
+        },
+        include: {
+          activityItems: {
+            include: {
+              activity: true
+            },
+            orderBy: { ord: 'asc' }
+          }
+        }
+      });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: lessonPlan.activityItems
+      });
+    } catch (error) {
+      console.error('Get lesson plan activities error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao buscar atividades do plano de aula'
+      });
+    }
+  },
+
+  // POST /api/lesson-plans/:id/activities - Add activity to lesson plan
+  async addActivity(request: FastifyRequest<{ 
+    Params: { id: string }, 
+    Body: { activityId: string, segment: string, ord?: number } 
+  }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params;
+      const { activityId, segment, ord } = request.body;
+      const organizationId = await getOrganizationId();
+
+      // Verify lesson plan exists
+      const lessonPlan = await prisma.lessonPlan.findFirst({
+        where: { 
+          id,
+          course: { organizationId }
+        }
+      });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      // Verify activity exists
+      const activity = await prisma.activity.findFirst({
+        where: { 
+          id: activityId,
+          organizationId 
+        }
+      });
+
+      if (!activity) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Atividade não encontrada'
+        });
+      }
+
+      // Get next order if not provided
+      const nextOrd = ord || (await prisma.lessonPlanActivity.count({
+        where: { lessonPlanId: id }
+      })) + 1;
+
+      const lessonPlanActivity = await prisma.lessonPlanActivity.create({
+        data: {
+          lessonPlanId: id,
+          activityId,
+          segment: segment as any,
+          ord: nextOrd
+        },
+        include: {
+          activity: {
+            select: { id: true, title: true, type: true, difficulty: true }
+          }
+        }
+      });
+
+      return reply.status(201).send({
+        success: true,
+        data: lessonPlanActivity,
+        message: 'Atividade adicionada ao plano de aula'
+      });
+    } catch (error) {
+      console.error('Add activity to lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao adicionar atividade ao plano de aula'
+      });
+    }
+  },
+
+  // DELETE /api/lesson-plans/:id/activities/:activityId - Remove activity from lesson plan
+  async removeActivity(request: FastifyRequest<{ 
+    Params: { id: string, activityId: string } 
+  }>, reply: FastifyReply) {
+    try {
+      const { id, activityId } = request.params;
+      const organizationId = await getOrganizationId();
+
+      // Verify lesson plan exists
+      const lessonPlan = await prisma.lessonPlan.findFirst({
+        where: { 
+          id,
+          course: { organizationId }
+        }
+      });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      // Remove activity from lesson plan
+      const deleted = await prisma.lessonPlanActivity.deleteMany({
+        where: {
+          lessonPlanId: id,
+          activityId
+        }
+      });
+
+      if (deleted.count === 0) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Atividade não encontrada no plano de aula'
+        });
+      }
+
+      return reply.status(204).send();
+    } catch (error) {
+      console.error('Remove activity from lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao remover atividade do plano de aula'
+      });
+    }
+  },
+
+  // POST /api/lesson-plans/import - Import lesson plan
+  async import(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const body = request.body as any;
+      const organizationId = await getOrganizationId();
+
+      // Validate required fields
+      const title = body.title?.toString().trim();
+      const courseId = body.courseId?.toString().trim();
+      
+      if (!title) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Título é obrigatório'
+        });
+      }
+
+      if (!courseId) {
+        return reply.status(400).send({
+          success: false,
+          error: 'ID do curso é obrigatório'
+        });
+      }
+
+      // Verify course exists and belongs to organization
+      const course = await prisma.course.findFirst({
+        where: { 
+          id: courseId,
+          organizationId
+        }
+      });
+
+      if (!course) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Curso não encontrado'
+        });
+      }
+
+      // Prepare lesson plan data
+      const lessonNumber = Number(body.lessonNumber || 1);
+      const weekNumber = Number(body.weekNumber || 1);
+      
+      // Check for duplicate lesson number in course
+      const existing = await prisma.lessonPlan.findFirst({
+        where: {
+          courseId,
+          lessonNumber
+        }
+      });
+
+      let lessonPlan;
+      if (existing) {
+        // Update existing lesson plan
+        lessonPlan = await prisma.lessonPlan.update({
+          where: { id: existing.id },
+          data: {
+            title,
+            description: body.description ?? null,
+            weekNumber,
+            unit: body.unit ?? null,
+            level: Number(body.level || 1),
+            duration: Number(body.duration || 60),
+            difficulty: Number(body.difficulty || 1),
+            objectives: Array.isArray(body.objectives) ? body.objectives : [],
+            equipment: Array.isArray(body.equipment) ? body.equipment : [],
+            activities: Array.isArray(body.activities) ? body.activities : [],
+            warmup: body.warmup || {},
+            techniques: body.techniques || {},
+            simulations: body.simulations || {},
+            cooldown: body.cooldown || {},
+            mentalModule: body.mentalModule ?? null,
+            tacticalModule: body.tacticalModule ?? null,
+            adaptations: body.adaptations ?? null,
+            videoUrl: body.videoUrl ?? null,
+            thumbnailUrl: body.thumbnailUrl ?? null
+          },
+          include: {
+            course: {
+              select: { id: true, name: true, level: true }
+            }
+          }
+        });
+      } else {
+        // Create new lesson plan
+        lessonPlan = await prisma.lessonPlan.create({
+          data: {
+            courseId,
+            title,
+            description: body.description ?? null,
+            lessonNumber,
+            weekNumber,
+            unit: body.unit ?? null,
+            level: Number(body.level || 1),
+            duration: Number(body.duration || 60),
+            difficulty: Number(body.difficulty || 1),
+            objectives: Array.isArray(body.objectives) ? body.objectives : [],
+            equipment: Array.isArray(body.equipment) ? body.equipment : [],
+            activities: Array.isArray(body.activities) ? body.activities : [],
+            warmup: body.warmup || {},
+            techniques: body.techniques || {},
+            simulations: body.simulations || {},
+            cooldown: body.cooldown || {},
+            mentalModule: body.mentalModule ?? null,
+            tacticalModule: body.tacticalModule ?? null,
+            adaptations: body.adaptations ?? null,
+            videoUrl: body.videoUrl ?? null,
+            thumbnailUrl: body.thumbnailUrl ?? null
+          },
+          include: {
+            course: {
+              select: { id: true, name: true, level: true }
+            }
+          }
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: lessonPlan,
+        message: existing ? 'Plano de aula atualizado com sucesso' : 'Plano de aula importado com sucesso'
+      });
+    } catch (error) {
+      console.error('Import lesson plan error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao importar plano de aula'
+      });
+    }
+  }
 };
