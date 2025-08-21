@@ -1,87 +1,50 @@
-<!-- Students Management Module -->
-<div class="students-isolated">
-    <!-- Header Section -->
-    <header class="students-header">
-        <div class="header-left">
-            <h1 class="page-title">
-                <span class="title-icon">👥</span>
-                Gestão de Alunos
-            </h1>
-            <p class="page-subtitle">Gerencie todos os alunos da academia</p>
-        </div>
-        <div class="header-actions">
-            <button class="btn btn-primary" data-action="addNewStudent" data-args='[]'>
-                ➕ Novo Aluno
-            </button>
-        </div>
-    </header>
-
-    <!-- Stats Section -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-                <div class="stat-value" id="totalStudents">0</div>
-                <div class="stat-label">Total de Alunos</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <div class="stat-value" id="activeStudents">0</div>
-                <div class="stat-label">Ativos</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">⏸️</div>
-            <div class="stat-content">
-                <div class="stat-value" id="inactiveStudents">0</div>
-                <div class="stat-label">Inativos</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">🆕</div>
-            <div class="stat-content">
-                <div class="stat-value" id="newStudents">0</div>
-                <div class="stat-label">Novos (30 dias)</div>
-            </div>
+<div class="module-view students-isolated" id="studentsContainer">
+    <h2>Gestão de Alunos</h2>
+    
+    <div class="toolbar">
+        <button id="btn-new-student" class="btn-primary" onclick="window.openNewStudentForm()">
+            <i>➕</i> Novo Aluno
+        </button>
+        <div class="search-box">
+            <input type="text" placeholder="Buscar aluno..." id="studentSearch">
+            <button id="btn-search">🔍</button>
         </div>
     </div>
 
-    <!-- Filters and Search -->
-    <div class="filters-section">
-        <div class="search-container">
-            <input type="text" id="studentSearch" placeholder="🔍 Buscar por nome, email, telefone, CPF ou matrícula..." class="search-input">
+    <div class="student-stats">
+        <div class="stat-card">
+            <div class="value" id="totalStudents">0</div>
+            <div class="label">Alunos Cadastrados</div>
         </div>
-        
-        <div class="filters-container">
-            <select id="statusFilter" class="filter-select">
-                <option value="">Todos os Status</option>
-                <option value="active">Ativos</option>
-                <option value="inactive">Inativos</option>
-            </select>
-            
-            <select id="planFilter" class="filter-select">
-                <option value="">Todos os Planos</option>
-            </select>
-            
-            <button id="clearFiltersBtn" class="btn btn-secondary">
-                🔄 Limpar Filtros
-            </button>
+        <div class="stat-card">
+            <div class="value" id="activeStudents">0</div>
+            <div class="label">Alunos Ativos</div>
         </div>
-        
-        <div class="view-controls">
-            <button id="gridViewBtn" class="view-btn active" title="Visualização em Grade">
-                ⊞ Grade
-            </button>
-            <button id="tableViewBtn" class="view-btn" title="Visualização em Tabela">
-                ≡ Tabela
-            </button>
+        <div class="stat-card">
+            <div class="value" id="duePayments">0</div>
+            <div class="label">Pagamentos Pendentes</div>
         </div>
     </div>
 
-    <!-- Students Container -->
-    <div id="studentsContainer" class="students-container">
-        <!-- Content will be populated by the module -->
+    <div class="student-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Plano</th>
+                    <th>Categoria</th>
+                    <th>Status</th>
+                    <th>Vencimento</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+                <!-- Lista de alunos será carregada dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="student-editor" id="student-editor-container" style="display:none">
+        <!-- Editor de alunos será injetado aqui -->
     </div>
 </div>

@@ -105,13 +105,13 @@
             
             // Check if we're editing an existing plan (sessionStorage or URL fallback)
             const urlId = new URLSearchParams(window.location.search).get('id');
-            const storedId = sessionStorage.getItem('editingPlanId');
+            const storedId = (window.EditingSession && window.EditingSession.getEditingPlanId && window.EditingSession.getEditingPlanId()) || null;
             const editingPlanId = storedId || urlId;
             if (editingPlanId) {
                 console.log('🔄 Loading plan for editing:', editingPlanId);
                 editMode = true;
                 await loadPlanData(editingPlanId);
-                if (storedId) sessionStorage.removeItem('editingPlanId'); // Clean up if used
+                if (storedId && window.EditingSession && window.EditingSession.clearEditingPlanId) window.EditingSession.clearEditingPlanId(); // Clean up if used
             } else {
                 // This is a new plan - hide loading and show form and tabs
                 console.log('🆕 Creating new plan');
@@ -735,17 +735,25 @@
                     // If editing, refresh the current plan data
                     await loadPlanData(currentPlan.id);
                 } else {
-                    // If creating a new plan, redirect to its editor page
+                    // If creating a new plan, stay in the editor and load the created record without full navigation
                     if (result.data && result.data.id) {
-                        sessionStorage.setItem('editingPlanId', result.data.id);
-                        if (typeof window.navigateToModule === 'function') {
-                            window.navigateToModule('plan-editor');
-                        } else {
-                            window.location.href = `/views/plan-editor.html?id=${result.data.id}`;
+                        // Update currentPlan and switch to edit mode
+                        currentPlan = result.data;
+                        editMode = true;
+
+                        // Update URL to reflect editing state without triggering a reload
+                        try {
+                            const newUrl = `/views/plan-editor.html?id=${currentPlan.id}`;
+                            window.history.replaceState({}, '', newUrl);
+                        } catch (e) {
+                            // ignore history errors
                         }
+
+                        // Load the newly created plan data into the editor
+                        await loadPlanData(currentPlan.id);
                     } else {
                         // Fallback if new plan ID is not returned
-                        showError('Plano criado, mas ID não retornado. Recarregue a página.');
+                        showError('Plano criado, mas ID não retornado. Atualize a página.');
                     }
                 }
             } else {

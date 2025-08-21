@@ -3,59 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- NOTE: 'unsafe-inline' temporarily enabled for development to allow inline event handlers. Remove before production. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
-    <title>🥋 Krav Maga Academy - Dashboard</title>
-    
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link rel="stylesheet" href="/css/modules/dashboard.css">
-    <link rel="stylesheet" href="/css/enhanced-tabs.css">
-    
-    <!-- Loading Styles -->
-    <style>
-        .loading-dashboard {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            padding: 2rem;
-            background: #0f172a;
-            color: #f8fafc;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left: 4px solid #3B82F6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>Academia Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard/main.css">
 </head>
 <body>
-    <!-- Dashboard Container -->
-    <div id="dashboardContainer" class="dashboard-container">
-        <!-- Loading state -->
-        <div id="loadingState" class="loading-dashboard">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Carregando Dashboard...</div>
+    <!-- Barra Superior -->
+    <header class="top-bar">
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-    </div>
+        <div class="logo">Academia System</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div class="user-actions">
+            <div class="notifications">🔔</div>
+            <div class="user-profile">👤</div>
+        </div>
+    </header>
 
-    <!-- Core JavaScript -->
-    <script src="/js/modules/dashboard-optimized.js" defer></script>
-    <script src="/js/enhanced-tabs.js" defer></script>
-    <script src="/js/module-loader.js" defer></script>
-    <script src="/js/csp-delegator.js" defer></script>
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+        <nav class="main-menu">
+            <ul>
+                <li class="active" data-module="dashboard">
+                    <i>📊</i> <span>Dashboard</span>
+                </li>
+                <li data-module="students">
+                    <i>👨‍🎓</i> <span>Alunos</span>
+                </li>
+                <li data-module="financial">
+                    <i>💰</i> <span>Financeiro</span>
+                </li>
+                <li data-module="activities">
+                    <i>🏋️</i> <span>Atividades</span>
+                </li>
+                <li data-module="plans">
+                    <i>📋</i> <span>Planos</span>
+                </li>
+                <li data-module="courses">
+                    <i>🎓</i> <span>Cursos</span>
+                </li>
+                <li data-module="techniques">
+                    <i>🥋</i> <span>Técnicas</span>
+                </li>
+                <li data-module="reports">
+                    <i>📈</i> <span>Relatórios</span>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Área de Conteúdo -->
+    <main class="content-area">
+        <div class="module-header">
+            <h1>Dashboard</h1>
+            <div class="breadcrumb">Home / Dashboard</div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="value">248</div>
+                <div class="label">Alunos Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">R$ 42,560</div>
+                <div class="label">Receita Mensal</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">87%</div>
+                <div class="label">Frequência</div>
+            </div>
+        </div>
+
+        <div class="module-content" id="module-container">
+            <div id="contentContainer">
+                <!-- Conteúdo dos módulos será carregado aqui via SPA -->
+                <div class="welcome-message">
+                    <h2>Bem-vindo ao Novo Dashboard</h2>
+                    <p>Selecione um módulo no menu lateral para começar</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/dashboard/spa-router.js"></script>
+    <script src="js/dashboard/ui-controller.js"></script>
 </body>
 </html>

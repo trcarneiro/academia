@@ -46,7 +46,11 @@
     window.openNewPlanForm = function() {
         console.log('🆕 Opening new plan form...');
         if (typeof window.navigateToModule === 'function') {
-            sessionStorage.removeItem('editingPlanId');
+            if (window.EditingSession && window.EditingSession.clearEditingPlanId) {
+                window.EditingSession.clearEditingPlanId();
+            } else {
+                try { sessionStorage.removeItem('editingPlanId'); } catch(e){}
+            }
             window.navigateToModule('plan-editor');
         } else {
             window.location.href = '/views/plan-editor.html';
@@ -62,8 +66,12 @@
     
     window.editPlan = function(planId) {
         console.log('✏️ Editing plan:', planId);
+        if (window.EditingSession && window.EditingSession.setEditingPlanId) {
+            window.EditingSession.setEditingPlanId(planId);
+        } else {
+            try { sessionStorage.setItem('editingPlanId', planId); } catch(e) {}
+        }
         if (typeof window.navigateToModule === 'function') {
-            sessionStorage.setItem('editingPlanId', planId);
             window.navigateToModule('plan-editor');
         } else {
             window.location.href = `/views/plan-editor.html?id=${planId}`;
@@ -216,11 +224,13 @@
     
     async function loadPlansData() {
         console.log('📊 Loading plans data...');
+        showLoadingState();
         
         try {
-            showLoadingState();
-            
             const response = await fetch('/api/billing-plans');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const result = await response.json();
             
             if (result.success && result.data) {
@@ -229,8 +239,12 @@
                 
                 console.log('✅ Plans loaded:', allPlans.length);
                 
-                updateStats();
-                renderPlans();
+                if (allPlans.length === 0) {
+                    showEmptyState();
+                } else {
+                    updateStats();
+                    renderPlans();
+                }
                 
             } else {
                 throw new Error(result.message || 'Erro ao carregar planos');
@@ -238,8 +252,49 @@
             
         } catch (error) {
             console.error('❌ Error loading plans:', error);
-            showError('Erro ao carregar planos. Tente novamente.');
-            showEmptyState();
+            showErrorState();
+        }
+    }
+
+    function showLoadingState() {
+        const tableBody = document.getElementById('plansTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="plans-isolated-loading-state">
+                        <div class="spinner"></div>
+                        Carregando planos...
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function showErrorState() {
+        const tableBody = document.getElementById('plansTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="plans-isolated-error-state">
+                        ❌ Falha ao carregar planos. <button onclick="window.refreshPlans()">Tentar novamente</button>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function showEmptyState() {
+        const tableBody = document.getElementById('plansTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="plans-isolated-empty-state">
+                        <div class="empty-icon">💰</div>
+                        <h3>Nenhum plano encontrado</h3>
+                        <p>Clique em "Novo Plano" para criar o primeiro plano.</p>
+                    </td>
+                </tr>
+            `;
         }
     }
     

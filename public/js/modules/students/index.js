@@ -1,5 +1,5 @@
 // Lightweight students listing module with best-effort UX
-// Exported functions: init(target), destroy()
+// Functions: initStudentsList(target), destroyStudentsList()
 
 const API_URL = '/api/students';
 const PAGE_SIZE = 25;
@@ -248,7 +248,7 @@ function resetAndLoad() {
   loadNext();
 }
 
-export async function init(target) {
+window.initStudentsList = async function(target) {
   try {
     container = typeof target === 'string' ? document.querySelector(target) : target;
     if (!container) throw new Error('Container not found');
@@ -287,7 +287,7 @@ export async function init(target) {
   }
 }
 
-export function destroy() {
+window.destroyStudentsList = function() {
   if (abortController) { abortController.abort(); abortController = null; }
   if (loaderObserver) { loaderObserver.disconnect(); loaderObserver = null; }
   if (globalKeydownHandler) { window.removeEventListener('keydown', globalKeydownHandler); globalKeydownHandler = null; }
@@ -297,28 +297,24 @@ export function destroy() {
   currentPage = 1; totalLoaded = 0; isLoading = false; finished = false; query = '';
 }
 
-// auto-init when view is injected (dashboard loads HTML then appends this module script)
-(function tryAutoInit() {
-  // look for known container id inside views/students.html -> #studentsContainer or #studentsList
-  const possible = document.querySelector('#studentsContainer') || document.querySelector('#studentsList') || document.querySelector('[data-students-target]');
-  if (possible) init(possible).catch(()=>{});
-})();
-
 // Ensure module CSS is loaded via a dedicated stylesheet for caching, theming and CSP
-(function ensureStyles() {
-  if (document.getElementById('studentsModuleStylesLink')) return;
-  try {
+try {
+  if (!document.getElementById('studentsModuleStylesLink')) {
     const link = document.createElement('link');
     link.id = 'studentsModuleStylesLink';
     link.rel = 'stylesheet';
     link.href = '/css/modules/students.css';
-    // Optional SRI/integrity and nonce support: set globals in server or loader if you want them applied
+    
+    // Optional SRI/integrity and nonce support
     if (window.__STUDENTS_CSS_INTEGRITY) link.integrity = window.__STUDENTS_CSS_INTEGRITY;
     if (window.__STUDENTS_CSS_NONCE) link.setAttribute('nonce', window.__STUDENTS_CSS_NONCE);
+    
     link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
-  } catch (e) {
-    // Fallback: if link insertion fails, log and continue. No inline style injection is performed to favor caching.
-    console.warn('Falha ao adicionar stylesheet link para módulo de alunos', e);
   }
-})();
+} catch (e) {
+  console.warn('Falha ao adicionar stylesheet link para módulo de alunos', e);
+}
+
+// Sinalizar que o módulo foi carregado
+window.studentsModuleLoaded = true;

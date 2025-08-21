@@ -8,6 +8,8 @@
 
   <div class="activities-isolated-content">
     <form id="activity-form">
+      <input type="hidden" id="activity-id">
+      
       <div class="activities-isolated-form-group">
         <label for="title">Título*</label>
         <input type="text" id="title" name="title" required class="activities-isolated-input">
@@ -34,41 +36,142 @@
 
       <div class="activities-isolated-form-group">
         <label for="duration">Duração (minutos)*</label>
-        <input type="number" id="duration" name="duration" min="15" max="480" 
+        <input type="number" id="duration" name="duration" min="15" max="480"
                required class="activities-isolated-input">
       </div>
 
-      <button type="submit" class="activities-isolated-btn activities-isolated-btn-primary">
-        Salvar Atividade
-      </button>
+      <div class="activities-isolated-form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description" class="activities-isolated-textarea"></textarea>
+      </div>
+
+      <div class="activities-isolated-form-actions">
+        <button type="submit" class="activities-isolated-btn activities-isolated-btn-primary">
+          Salvar Atividade
+        </button>
+        <button type="button" id="delete-btn" class="activities-isolated-btn activities-isolated-btn-danger" style="display:none">
+          Excluir Atividade
+        </button>
+      </div>
     </form>
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // Definir data mínima como hoje
-  document.getElementById('date').min = new Date().toISOString().split('T')[0];
-  
-  document.getElementById('activity-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+<script type="module">
+  import { ActivitiesService } from '/js/modules/activities-service.js';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activityId = urlParams.get('id');
+    const form = document.getElementById('activity-form');
+    const deleteBtn = document.getElementById('delete-btn');
+    const titleElement = document.getElementById('editor-title');
+
+    // Definir data mínima como hoje
+    document.getElementById('date').min = new Date().toISOString().split('T')[0];
     
-    const dateInput = document.getElementById('date');
-    const dateError = document.getElementById('date-error');
-    const selectedDate = new Date(dateInput.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Validação de data futura
-    if (selectedDate < today) {
-      dateError.style.display = 'block';
-      dateInput.focus();
-      return;
+    // Carregar atividade existente se houver ID
+    if (activityId) {
+      try {
+        const { data } = await ActivitiesService.get(activityId);
+        populateForm(data);
+        titleElement.textContent = 'Editar Atividade';
+        deleteBtn.style.display = 'block';
+      } catch (error) {
+        console.error('Erro ao carregar atividade:', error);
+        alert('Falha ao carregar dados da atividade');
+      }
     }
-    dateError.style.display = 'none';
-    
-    // Resto da lógica de submissão...
-    console.log('Formulário válido, enviando dados...');
+
+    // Configurar evento de exclusão
+    deleteBtn.addEventListener('click', async () => {
+      if (confirm('Tem certeza que deseja excluir esta atividade?')) {
+        try {
+          deleteBtn.disabled = true;
+          const originalDeleteText = deleteBtn.textContent;
+          deleteBtn.textContent = 'Excluindo...';
+
+          await ActivitiesService.delete(activityId);
+          alert('Atividade excluída com sucesso!');
+          history.back();
+        } catch (error) {
+          console.error('Erro ao excluir atividade:', error);
+          alert('Falha ao excluir atividade');
+        } finally {
+          // re-enable if we didn't navigate away
+          try { deleteBtn.disabled = false; deleteBtn.textContent = originalDeleteText; } catch(e){}
+        }
+      }
+    });
+
+    // Configurar envio do formulário
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Evita duplo envio
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn.disabled) return;
+
+      // Validação de data
+      const dateInput = document.getElementById('date');
+      const dateError = document.getElementById('date-error');
+      const selectedDate = new Date(dateInput.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        dateError.style.display = 'block';
+        dateInput.focus();
+        return;
+      }
+      dateError.style.display = 'none';
+
+      // Coletar dados do formulário
+      const activityData = {
+        id: document.getElementById('activity-id').value || null,
+        title: document.getElementById('title').value,
+        type: document.getElementById('type').value,
+        date: document.getElementById('date').value,
+        duration: parseInt(document.getElementById('duration').value),
+        description: document.getElementById('description').value
+      };
+
+      // Disable submit UI and show feedback
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Salvando...';
+      submitBtn.setAttribute('aria-busy', 'true');
+
+      try {
+        // Atualizar ou criar atividade
+        if (activityId) {
+          await ActivitiesService.update(activityId, activityData);
+          alert('Atividade atualizada com sucesso!');
+        } else {
+          await ActivitiesService.create(activityData);
+          alert('Atividade criada com sucesso!');
+        }
+        history.back();
+      } catch (error) {
+        console.error('Erro ao salvar atividade:', error);
+        alert(`Falha ao salvar atividade: ${error?.message || error}`);
+      } finally {
+        // re-enable in case we didn't navigate away
+        try {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          submitBtn.removeAttribute('aria-busy');
+        } catch (e) {}
+      }
+    });
+
+    function populateForm(activity) {
+      document.getElementById('activity-id').value = activity.id;
+      document.getElementById('title').value = activity.title;
+      document.getElementById('type').value = activity.type;
+      document.getElementById('date').value = new Date(activity.date).toISOString().split('T')[0];
+      document.getElementById('duration').value = activity.duration;
+      document.getElementById('description').value = activity.description || '';
+    }
   });
-});
 </script>

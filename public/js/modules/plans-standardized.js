@@ -289,7 +289,7 @@
     // Global action functions
     window.editPlan = function(planId) {
         console.log('✏️ Editing plan:', planId);
-        sessionStorage.setItem('editingPlanId', planId);
+        if (window.EditingSession && window.EditingSession.setEditingPlanId) window.EditingSession.setEditingPlanId(planId);
         if (typeof window.navigateToModule === 'function') {
             window.navigateToModule('plan-editor');
         } else {

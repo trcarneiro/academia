@@ -4,48 +4,35 @@
 <link rel="stylesheet" href="/css/modules/activities.css">
 <script type="module" src="/js/modules/activities.js"></script>
 
-<div class="activities-list" id="activities-list"></div>
+<div class="activities-container">
+  <div class="module-header">
+    <h1>Lista de Atividades</h1>
+  </div>
+  
+  <div class="activities-list">
+    <table class="activities-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Tipo</th>
+          <th>Data</th>
+          <th>Duração</th>
+          <th>Status</th>
+          <th class="action-cell">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="activities-list">
+        <!-- Linhas serão inseridas dinamicamente aqui -->
+      </tbody>
+    </table>
+  </div>
+  
+  <form class="activity-form" id="activity-form">
+    <input type="text" name="name" placeholder="Nome da atividade" required>
+    <input type="text" name="category" placeholder="Categoria">
+    <textarea name="description" placeholder="Descrição"></textarea>
+    <input type="text" name="tags" placeholder="Tags (separadas por vírgula)">
+    <button type="submit">Adicionar Atividade</button>
+  </form>
+</div>
 
-<form class="activity-form" id="activity-form">
-  <input type="text" name="name" placeholder="Nome da atividade" required>
-  <input type="text" name="category" placeholder="Categoria">
-  <textarea name="description" placeholder="Descrição"></textarea>
-  <input type="text" name="tags" placeholder="Tags (separadas por vírgula)">
-  <button type="submit">Adicionar Atividade</button>
-</form>
-
-<script type="module">
-import { fetchActivities, createActivity, updateActivity, deleteActivity } from '/js/modules/activities.js';
-
-const listEl = document.getElementById('activities-list');
-const formEl = document.getElementById('activity-form');
-
-async function renderActivities() {
-  const activities = await fetchActivities();
-  listEl.innerHTML = '';
-  activities.forEach(activity => {
-    const item = document.createElement('div');
-    item.className = 'activity-item';
-    item.innerHTML = `<strong>${activity.name}</strong> <em>${activity.category}</em><br>${activity.description}<br><button data-id="${activity.id}" class="delete-btn">Excluir</button>`;
-    listEl.appendChild(item);
-  });
-}
-
-formEl.addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(formEl));
-  data.tags = data.tags ? data.tags.split(',').map(t => t.trim()) : [];
-  await createActivity(data);
-  formEl.reset();
-  renderActivities();
-});
-
-listEl.addEventListener('click', async e => {
-  if (e.target.classList.contains('delete-btn')) {
-    await deleteActivity(e.target.dataset.id);
-    renderActivities();
-  }
-});
-
-renderActivities();
-</script>

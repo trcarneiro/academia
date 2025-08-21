@@ -108,7 +108,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const idFromUrl = urlParams.get('id');
     if(idFromUrl) return idFromUrl;
-    const idFromSession = sessionStorage.getItem('editingPlanId');
+    const idFromSession = (window.EditingSession && window.EditingSession.getEditingPlanId && window.EditingSession.getEditingPlanId()) || null;
     return idFromSession || null;
   }
 

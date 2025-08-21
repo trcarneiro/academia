@@ -1,88 +1,56 @@
-<!-- Plans Management Module -->
-<div class="plans-isolated">
-    <div class="plans-isolated-container">
-        <!-- Header Section with gradient background matching turmas module -->
-        <div class="plans-isolated-page-header">
-            <div class="plans-isolated-header-content">
-                <div class="plans-isolated-header-left">
-                    <h1 class="plans-isolated-page-title">
-                        💰 Gestão de Planos
-                    </h1>
-                    <p class="plans-isolated-page-subtitle">Gerencie todos os planos financeiros da academia</p>
-                </div>
-                <div class="plans-isolated-header-actions">
-                    <button class="plans-isolated-btn plans-isolated-btn-primary" data-action="openNewPlanForm" data-args='[]'>
-                        Novo Plano
-                    </button>
-                    <button class="plans-isolated-btn plans-isolated-btn-secondary">
-                        📋 Cronograma
-                    </button>
-                </div>
-            </div>
+<div class="module-view plans-isolated-container" id="plansContainer">
+    <h2>Gestão de Planos</h2>
+    
+    <div class="toolbar">
+        <button id="btn-new-plan" class="plans-isolated-btn-primary" onclick="window.openNewPlanForm()">
+            <i>➕</i> Novo Plano
+        </button>
+        <div class="plans-isolated-search-box">
+            <input type="text" placeholder="Buscar plano..." id="planSearch">
+            <button id="btn-search-plans">🔍</button>
         </div>
+    </div>
 
-        <!-- Statistics grid matching turmas layout exactly -->
-        <div class="plans-isolated-stats-grid">
-            <div class="plans-isolated-stat-card">
-                <div class="plans-isolated-stat-number" id="totalPlans">0</div>
-                <div class="plans-isolated-stat-label">Planos Ativos</div>
-            </div>
-            <div class="plans-isolated-stat-card">
-                <div class="plans-isolated-stat-number" id="activePlans">0</div>
-                <div class="plans-isolated-stat-label">Alunos Total</div>
-            </div>
-            <div class="plans-isolated-stat-card">
-                <div class="plans-isolated-stat-number" id="totalSubscribers">0</div>
-                <div class="plans-isolated-stat-label">Planos Premium</div>
-            </div>
-            <div class="plans-isolated-stat-card">
-                <div class="plans-isolated-stat-number" id="monthlyRevenue">85%</div>
-                <div class="plans-isolated-stat-label">Taxa Adesão</div>
-            </div>
+    <div class="plans-stats">
+        <div class="plans-isolated-stat-card">
+            <div class="value" id="totalPlans">0</div>
+            <div class="label">Planos Cadastrados</div>
         </div>
-
-        <!-- Main content section with table header -->
-        <div class="plans-isolated-content">
-            <div class="plans-isolated-section-header">
-                <div class="plans-isolated-section-title">
-                    📋 Planos em Andamento
-                </div>
-                <div class="plans-isolated-section-actions">
-                    <select id="statusFilter" class="plans-isolated-filter-select">
-                        <option value="">Todos os Planos</option>
-                        <option value="true">Ativos</option>
-                        <option value="false">Inativos</option>
-                    </select>
-                    <button class="plans-isolated-btn plans-isolated-btn-primary" data-action="openNewPlanForm">
-                        Novo Plano
-                    </button>
-                </div>
-            </div>
-
-            <!-- Data table matching turmas module -->
-            <div class="plans-isolated-data-table">
-                <table id="plansTable">
-                    <thead>
-                        <tr>
-                            <th>Plano</th>
-                            <th>Categoria</th>
-                            <th>Horário</th>
-                            <th>Planos Ativos</th>
-                            <th>Total Alunos</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="plansTableBody">
-                        <!-- Content will be populated by JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Plans Container for other views -->
-            <div id="plansContainer" class="plans-isolated-plans-container" style="display: none;">
-                <!-- Alternative view content -->
-            </div>
+        <div class="plans-isolated-stat-card">
+            <div class="value" id="activePlans">0</div>
+            <div class="label">Planos Ativos</div>
         </div>
+        <div class="plans-isolated-stat-card">
+            <div class="value" id="totalSubscribers">0</div>
+            <div class="label">Alunos Vinculados</div>
+        </div>
+    </div>
+
+    <div class="plans-list">
+        <table class="plans-isolated-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Agenda</th>
+                    <th>Pagamento</th>
+                    <th>Alunos</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="plansTableBody">
+                <tr>
+                    <td colspan="7" class="plans-isolated-loading-state">
+                        <div class="spinner"></div>
+                        Carregando planos...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="plan-editor" id="plan-editor-container" style="display:none">
+        <!-- Editor de planos será injetado aqui -->
     </div>
 </div>

@@ -1,356 +1,79 @@
-/**
- * Plans Module CSS - Matching Turmas Module Layout Exactly
- * Following the exact visual style from the turmas module
- */
-
-/* Reset and base - força aplicação */
-.plans-isolated {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    background: #0f172a !important;
-    color: #f8fafc !important;
-    min-height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+/* Estilos isolados para o módulo de planos */
+.plans-isolated-container {
+    padding: 20px;
 }
 
-/* Container extension beyond sidebar - força extensão */
-.plans-isolated .plans-isolated-container {
-    margin-left: -240px !important;
-    padding-left: 260px !important;
-    min-height: 100vh !important;
-    padding-top: 2rem !important;
-    padding-right: 2rem !important;
-    padding-bottom: 2rem !important;
-    width: calc(100% + 240px) !important;
+.plans-isolated-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: var(--plans-isolated-table-shadow);
 }
 
-/* Page header with green gradient - força aplicação */
-.plans-isolated .plans-isolated-page-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    color: white !important;
-    padding: 2rem !important;
-    border-radius: 16px !important;
-    margin-bottom: 1.5rem !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+.plans-isolated-table th, .plans-isolated-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--plans-isolated-border-color);
 }
 
-.plans-isolated .plans-isolated-header-content {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-}
-
-.plans-isolated .plans-isolated-header-left {
-    flex: 1 !important;
-}
-
-.plans-isolated .plans-isolated-page-title {
-    font-size: 1.875rem !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    color: white !important;
-}
-
-.plans-isolated .plans-isolated-page-subtitle {
-    margin: 0.5rem 0 0 0 !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-size: 1rem !important;
-    font-weight: 400 !important;
-}
-
-.plans-isolated .plans-isolated-header-actions {
-    display: flex !important;
-    gap: 0.75rem !important;
-}
-
-/* Stats grid - força layout em 4 colunas */
-.plans-isolated .plans-isolated-stats-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 1rem !important;
-    margin-bottom: 1.5rem !important;
-    width: 100% !important;
-}
-
-.plans-isolated .plans-isolated-stat-card {
-    background: rgba(16, 185, 129, 0.15) !important;
-    border-radius: 12px !important;
-    padding: 1.5rem !important;
-    text-align: center !important;
-    transition: all 0.3s ease !important;
-    backdrop-filter: blur(10px) !important;
-}
-
-.plans-isolated .plans-isolated-stat-card:hover {
-    background: rgba(16, 185, 129, 0.2) !important;
-    transform: translateY(-2px) !important;
-}
-
-.plans-isolated .plans-isolated-stat-number {
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    color: white !important;
-    margin: 0 0 0.5rem 0 !important;
-    line-height: 1.2 !important;
-    display: block !important;
-}
-
-.plans-isolated .plans-isolated-stat-label {
-    color: rgba(255, 255, 255, 0.8) !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    margin: 0 !important;
-    display: block !important;
-}
-
-/* Content section - força aplicação */
-.plans-isolated .plans-isolated-content {
-    background: rgba(30, 41, 59, 0.8) !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    backdrop-filter: blur(10px) !important;
-    width: 100% !important;
-}
-
-.plans-isolated .plans-isolated-section-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 1.25rem 1.5rem !important;
-    background: rgba(15, 23, 42, 0.8) !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
-}
-
-.plans-isolated .plans-isolated-section-title {
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #f8fafc !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    margin: 0 !important;
-}
-
-.plans-isolated .plans-isolated-section-actions {
-    display: flex !important;
-    gap: 0.75rem !important;
-    align-items: center !important;
-}
-
-/* Data table - força aplicação completa */
-.plans-isolated .plans-isolated-data-table {
-    overflow-x: auto !important;
-    background: rgba(30, 41, 59, 0.8) !important;
-    width: 100% !important;
-}
-
-.plans-isolated .plans-isolated-data-table table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    background: transparent !important;
-    margin: 0 !important;
-    table-layout: auto !important;
-}
-
-.plans-isolated .plans-isolated-data-table th {
-    background: rgba(15, 23, 42, 0.9) !important;
-    color: #cbd5e1 !important;
-    padding: 1rem 1.5rem !important;
-    text-align: left !important;
-    font-weight: 600 !important;
-    border: none !important;
-    font-size: 0.9rem !important;
-    white-space: nowrap !important;
-}
-
-.plans-isolated .plans-isolated-data-table td {
-    padding: 1rem 1.5rem !important;
-    border: none !important;
-    color: #f8fafc !important;
-    vertical-align: middle !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.05) !important;
-}
-
-.plans-isolated .plans-isolated-data-table tr:hover {
-    background: rgba(59, 130, 246, 0.05) !important;
-}
-
-.plans-isolated .plans-isolated-data-table tr:last-child td {
-    border-bottom: none !important;
-}
-
-/* Plan identification cell - força estilo turmas */
-.plans-isolated .plan-id-cell {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-}
-
-.plans-isolated .plan-id-badge {
-    background: #3b82f6 !important;
-    color: white !important;
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 6px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-}
-
-.plans-isolated .plan-name {
+.plans-isolated-table th {
+    background-color: var(--plans-isolated-header-bg);
     font-weight: 600;
-    color: #f8fafc;
-    margin: 0;
 }
 
-/* Buttons - exact match to turmas buttons */
-.plans-isolated .plans-isolated-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+.plans-isolated-table tr:hover {
+    background-color: var(--plans-isolated-row-hover);
+}
+
+.plans-isolated-btn-primary {
+    background-color: var(--plans-isolated-primary);
+    color: white;
     border: none;
-    font-weight: 600;
+    padding: 10px 15px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-    text-decoration: none;
-    white-space: nowrap;
+    font-size: 14px;
 }
 
-.plans-isolated .plans-isolated-btn-primary {
-    background: #3b82f6;
-    color: white;
+.plans-isolated-btn-primary:hover {
+    background-color: var(--plans-isolated-primary-dark);
 }
 
-.plans-isolated .plans-isolated-btn-primary:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-}
-
-.plans-isolated .plans-isolated-btn-secondary {
-    background: rgba(148, 163, 184, 0.2);
-    color: #cbd5e1;
-}
-
-.plans-isolated .plans-isolated-btn-secondary:hover {
-    background: rgba(148, 163, 184, 0.3);
-}
-
-.plans-isolated .plans-isolated-btn-small {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-}
-
-/* Filter select */
-.plans-isolated .plans-isolated-filter-select {
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(15, 23, 42, 0.8);
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.plans-isolated .plans-isolated-filter-select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-/* Status badges - matches turmas green/inactive styling */
-.plans-isolated .status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.plans-isolated .status-badge.active {
-    background: #10b981;
-    color: white;
-}
-
-.plans-isolated .status-badge.inactive {
-    background: #6b7280;
-    color: white;
-}
-
-/* Plan badges - matches turmas faixa styling */
-.plans-isolated .plan-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-right: 0.25rem;
-    display: inline-block;
-}
-
-.plans-isolated .plan-badge.basic {
-    background: #f3f4f6;
-    color: #374151;
-}
-
-.plans-isolated .plan-badge.premium {
-    background: #fbbf24;
-    color: #92400e;
-}
-
-.plans-isolated .plan-badge.vip {
-    background: #8b5cf6;
-    color: white;
-}
-
-/* Action buttons in table */
-.plans-isolated .action-buttons {
+.plans-isolated-search-box {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
 }
 
-/* Loading and empty states */
-.plans-isolated .loading-state {
-    padding: 3rem;
+.plans-isolated-search-box input {
+    padding: 8px 12px;
+    border: 1px solid var(--plans-isolated-border-color);
+    border-radius: 4px;
+    width: 300px;
+}
+
+:root {
+    --plans-isolated-primary: #4361ee;
+    --plans-isolated-primary-dark: #3f37c9;
+    --plans-isolated-border-color: #e0e0e0;
+    --plans-isolated-header-bg: #f5f7fb;
+    --plans-isolated-row-hover: #f9f9f9;
+    --plans-isolated-table-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Estados de carregamento e erro */
+.plans-isolated-loading-state {
     text-align: center;
-    color: #cbd5e1;
+    padding: 40px 0;
 }
 
-.plans-isolated .loading-state .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(59, 130, 246, 0.3);
-    border-top: 3px solid #3b82f6;
+.plans-isolated-loading-state .spinner {
+    border: 4px solid rgba(0,0,0,0.1);
+    border-top: 4px solid var(--plans-isolated-primary);
     border-radius: 50%;
+    width: 40px;
+    height: 40px;
     animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-}
-
-.plans-isolated .empty-state {
-    padding: 3rem;
-    text-align: center;
-    color: #94a3b8;
-}
-
-.plans-isolated .empty-state .empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
+    margin: 0 auto 20px;
 }
 
 @keyframes spin {
@@ -358,178 +81,24 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Mobile responsive - força aplicação em todas as telas */
-@media (max-width: 768px) {
-    .plans-isolated .plans-isolated-container {
-        margin-left: 0 !important;
-        padding: 1.5rem !important;
-        width: 100% !important;
-    }
-
-    .plans-isolated .plans-isolated-header-content {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-    }
-
-    .plans-isolated .plans-isolated-header-actions {
-        width: 100% !important;
-        justify-content: flex-start !important;
-    }
-
-    .plans-isolated .plans-isolated-stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-    }
-
-    .plans-isolated .plans-isolated-section-header {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-        padding: 1rem !important;
-    }
-
-    .plans-isolated .plans-isolated-section-actions {
-        width: 100% !important;
-        justify-content: flex-start !important;
-    }
-
-    .plans-isolated .plans-isolated-data-table {
-        font-size: 0.85rem !important;
-    }
-
-    .plans-isolated .plans-isolated-data-table th,
-    .plans-isolated .plans-isolated-data-table td {
-        padding: 0.75rem 0.5rem !important;
-    }
+.plans-isolated-error-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #e74c3c;
 }
 
-/* Desktop e telas grandes - força aplicação */
-@media (min-width: 769px) {
-    .plans-isolated .plans-isolated-container {
-        margin-left: -240px !important;
-        padding-left: 260px !important;
-        width: calc(100% + 240px) !important;
-    }
-    
-    .plans-isolated .plans-isolated-stats-grid {
-        grid-template-columns: repeat(4, 1fr) !important;
-    }
+.plans-isolated-error-state button {
+    background: var(--plans-isolated-primary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-@media (max-width: 480px) {
-    .plans-isolated .plans-isolated-stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .plans-isolated .plans-isolated-header-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .plans-isolated .plans-isolated-btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* Ensure proper isolation and prevent conflicts */
-.plans-isolated * {
-    box-sizing: border-box;
-}
-
-.plans-isolated h1, .plans-isolated h2, .plans-isolated h3, .plans-isolated p {
-    margin: 0;
-    padding: 0;
-}
-
-/* Fix any layout issues */
-.plans-isolated table {
-    table-layout: auto;
-    width: 100%;
-}
-
-.plans-isolated .plans-isolated-data-table th:first-child,
-.plans-isolated .plans-isolated-data-table td:first-child {
-    padding-left: 1.5rem;
-}
-
-.plans-isolated .plans-isolated-data-table th:last-child,
-.plans-isolated .plans-isolated-data-table td:last-child {
-    padding-right: 1.5rem;
-}
-
-/* FORÇA TOTAL - CSS DE EMERGÊNCIA PARA APLICAR O LAYOUT */
-html body .content-wrapper .plans-isolated,
-html body .content-wrapper .plans-isolated .plans-isolated-container,
-html body div .plans-isolated .plans-isolated-container,
-html body .main-content .plans-isolated,
-html body .main-content .plans-isolated .plans-isolated-container {
-    margin-left: -240px !important;
-    padding-left: 260px !important;
-    width: calc(100% + 240px) !important;
-    box-sizing: border-box !important;
-    background: #f8fafc !important;
-    min-height: 100vh !important;
-}
-
-html body .content-wrapper .plans-isolated .plans-isolated-page-header,
-html body div .plans-isolated .plans-isolated-page-header,
-html body .main-content .plans-isolated .plans-isolated-page-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    color: white !important;
-    padding: 2rem !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-}
-
-html body .content-wrapper .plans-isolated .plans-isolated-stats-grid,
-html body div .plans-isolated .plans-isolated-stats-grid,
-html body .main-content .plans-isolated .plans-isolated-stats-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 1.5rem !important;
-    margin-bottom: 2rem !important;
-    padding: 0 !important;
-}
-
-html body .content-wrapper .plans-isolated .plans-isolated-stat-card,
-html body div .plans-isolated .plans-isolated-stat-card,
-html body .main-content .plans-isolated .plans-isolated-stat-card {
-    background: white !important;
-    padding: 1.5rem !important;
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-    margin: 0 !important;
-}
-
-html body .content-wrapper .plans-isolated .plans-isolated-data-section,
-html body div .plans-isolated .plans-isolated-data-section,
-html body .main-content .plans-isolated .plans-isolated-data-section {
-    background: white !important;
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-    margin: 0 !important;
-}
-
-/* Força aplicação no mobile também */
-@media (max-width: 768px) {
-    html body .content-wrapper .plans-isolated .plans-isolated-container,
-    html body div .plans-isolated .plans-isolated-container,
-    html body .main-content .plans-isolated .plans-isolated-container {
-        margin-left: 0 !important;
-        padding: 1.5rem !important;
-        width: 100% !important;
-    }
-    
-    html body .content-wrapper .plans-isolated .plans-isolated-stats-grid,
-    html body div .plans-isolated .plans-isolated-stats-grid,
-    html body .main-content .plans-isolated .plans-isolated-stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
-    }
+.plans-isolated-empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #7f8c8d;
 }

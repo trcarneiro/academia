@@ -500,4 +500,5 @@ window.initializeStudentEditor = () => {
 // Isso evita múltiplas instâncias
 console.log('📦 Student Editor Module carregado (aguardando inicialização manual)...');
 
-export default StudentEditor;
+// Removed export statement to prevent module loading errors
+// StudentEditor is already globally available via window.StudentEditor

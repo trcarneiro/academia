@@ -1,259 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Aluno - Academia Krav Maga</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/modules/students.css">
-    <link rel="stylesheet" href="../css/modules/student-editor/styles.css">
-</head>
-
-<body>
-    <div class="student-editor-container">
-        <!-- Header da Página -->
-        <header class="page-header">
-            <div class="header-content">
-                <div class="header-info">
-                    <h1 id="editPageStudentName">Nome não informado</h1>
-                    <p>
-                        <span id="editPageStudentId">ID: --</span> • 
-                        <span id="editPageStudentCategory">Status: Indefinido</span>
-                    </p>
-                </div>
-                <div class="header-actions">
-                    <button id="back-to-list-btn" class="btn btn-secondary">
-                        <span class="icon">←</span>
-                        Voltar
-                    </button>
-                    <button id="save-student-btn" class="btn btn-primary">
-                        <span class="icon">💾</span>
-                        Salvar Alterações
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navegação de Abas -->
-        <div class="tab-container">
-            <nav class="tab-navigation">
-                <button class="page-tab active" data-tab="profile">
-                    <span class="tab-icon">👤</span>
-                    <span class="tab-text">Perfil</span>
-                </button>
-                <button class="page-tab" data-tab="financial">
-                    <span class="tab-icon">💳</span>
-                    <span class="tab-text">Assinaturas</span>
-                </button>
-            </nav>
-        </div>
-
-        <!-- Conteúdo Principal -->
-        <main class="main-content">
-            <!-- Aba de Perfil -->
-            <section id="profile-content" class="tab-content active">
-                <form class="student-form">
-                    <div class="form-section">
-                        <div class="section-header">
-                            <span class="section-icon">📋</span>
-                            <h3>Informações Pessoais</h3>
-                        </div>
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="student-name">Nome Completo *</label>
-                                <input type="text" id="student-name" name="name" required 
-                                       placeholder="Digite o nome completo">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-email">Email *</label>
-                                <input type="email" id="student-email" name="email" required 
-                                       placeholder="exemplo@email.com">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-phone">Telefone</label>
-                                <input type="tel" id="student-phone" name="phone" 
-                                       placeholder="(11) 99999-9999">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-birth">Data de Nascimento</label>
-                                <input type="date" id="student-birth" name="birthDate">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-cpf">CPF</label>
-                                <input type="text" id="student-cpf" name="cpf" 
-                                       placeholder="000.000.000-00">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-status">Status *</label>
-                                <select id="student-status" name="status" required>
-                                    <option value="">Selecione o status</option>
-                                    <option value="active">Ativo</option>
-                                    <option value="inactive">Inativo</option>
-                                    <option value="suspended">Suspenso</option>
-                                    <option value="pending">Pendente</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="section-header">
-                            <span class="section-icon">📍</span>
-                            <h3>Contato e Endereço</h3>
-                        </div>
-                        
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="student-whatsapp">WhatsApp</label>
-                                <input type="tel" id="student-whatsapp" name="whatsapp" 
-                                       placeholder="(11) 99999-9999">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="student-emergency">Contato de Emergência</label>
-                                <input type="text" id="student-emergency" name="emergencyContact" 
-                                       placeholder="Nome e telefone">
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="student-address">Endereço Completo</label>
-                                <textarea id="student-address" name="address" rows="3" 
-                                          placeholder="Rua, número, bairro, cidade, CEP"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="section-header">
-                            <span class="section-icon">📝</span>
-                            <h3>Observações e Notas</h3>
-                        </div>
-                        
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label for="student-observations">Observações Médicas</label>
-                                <textarea id="student-observations" name="medicalObservations" rows="3" 
-                                          placeholder="Informações sobre o aluno, lesões, preferências, restrições, etc."></textarea>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label for="student-notes">Notas Internas</label>
-                                <textarea id="student-notes" name="internalNotes" rows="3" 
-                                          placeholder="Anotações internas sobre o aluno"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Aba Financeira -->
-            <section id="financial-content" class="tab-content">
-                <!-- Estado: Nenhuma Assinatura -->
-                <div id="noSubscriptionState" class="no-subscription-state" style="display: none;">
-                    <div class="empty-state">
-                        <div class="empty-icon">💳</div>
-                        <h6>Nenhuma assinatura ativa</h6>
-                        <p>Este aluno ainda não possui uma assinatura ativa.</p>
-                        <button type="button" class="btn btn-primary" data-action="createNewSubscription" data-args='[]'>
-                            <span class="icon">➕</span>
-                            Criar Nova Assinatura
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Assinatura Atual -->
-                <div class="subscription-card current-subscription">
-                    <div class="subscription-header">
-                        <h5>Assinatura Atual</h5>
-                        <span class="status-badge status-active">Ativo</span>
-                    </div>
-                    
-                    <div class="subscription-info">
-                        <div class="info-item">
-                            <label>Plano</label>
-                            <p id="current-plan-name">Nenhum plano ativo</p>
-                        </div>
-                        <div class="info-item">
-                            <label>Valor Mensal</label>
-                            <p id="current-plan-price">R$ 0,00</p>
-                        </div>
-                        <div class="info-item">
-                            <label>Data de Vencimento</label>
-                            <p id="current-plan-due">--</p>
-                        </div>
-                        <div class="info-item">
-                            <label>Status do Pagamento</label>
-                            <p id="current-payment-status">--</p>
-                        </div>
-                    </div>
-                    
-                    <div class="subscription-actions">
-                        <button type="button" class="btn btn-secondary btn-sm" id="edit-subscription-btn">
-                            <span class="icon">✏️</span>
-                            Editar Assinatura
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm" id="cancel-subscription-btn">
-                            <span class="icon">❌</span>
-                            Cancelar Assinatura
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Planos Disponíveis -->
-                <div class="available-plans">
-                    <h5>Planos Disponíveis</h5>
-                    <div class="plans-grid" id="available-plans-grid">
-                        <!-- Planos serão carregados dinamicamente -->
-                    </div>
-                </div>
-
-                <!-- Histórico de Pagamentos -->
-                <div class="payment-history">
-                    <h5>Histórico de Pagamentos</h5>
-                    <div class="history-table">
-                        <table id="payment-history-table">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Valor</th>
-                                    <th>Status</th>
-                                    <th>Método</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Histórico será carregado dinamicamente -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Modal de Loading -->
-    <div id="loadingState" class="loading-overlay" style="display: none;">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p id="loadingStateMessage">Carregando...</p>
+<div class="student-editor-container">
+    <div class="editor-header">
+        <h2 id="editPageStudentName">Novo Aluno</h2>
+        <div class="header-details">
+            <span id="editPageStudentId">ID: --</span>
+            <span id="editPageStudentCategory">Status: --</span>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <!-- Fix: load the correct Student Editor module path -->
-    <script type="module" src="../js/modules/student/student-editor/main.js"></script>
-    <script>
-      window.addEventListener('DOMContentLoaded', function() {
-        if (window.initializeStudentEditor) {
-          window.initializeStudentEditor();
-        }
-      });
-    </script>
-</body>
-</html>
+    <div class="editor-tabs">
+        <button class="page-tab active" data-tab="profile">Perfil</button>
+        <button class="page-tab" data-tab="financial">Financeiro</button>
+        <button class="page-tab" data-tab="documents">Documentos</button>
+        <button class="page-tab" data-tab="history">Histórico</button>
+    </div>
+
+    <div class="tab-content active" id="profile-content">
+        <!-- Conteúdo da aba Perfil será injetado pelo JS -->
+    </div>
+
+    <div class="tab-content" id="financial-content">
+        <!-- Conteúdo da aba Financeiro será injetado pelo JS -->
+    </div>
+
+    <div class="tab-content" id="documents-content">
+        <!-- Conteúdo da aba Documentos será injetado pelo JS -->
+    </div>
+
+    <div class="tab-content" id="history-content">
+        <!-- Conteúdo da aba Histórico será injetado pelo JS -->
+    </div>
+
+    <div class="editor-actions">
+        <button id="back-to-list-btn" class="btn-secondary">Voltar para Lista</button>
+        <button id="save-student-btn" class="btn-primary">Salvar Aluno</button>
+    </div>
+</div>
+
+<div id="loadingState" style="display: none;">
+    <div id="loadingStateMessage">Carregando...</div>
+</div>

@@ -23,12 +23,12 @@ Based on the analysis, create a detailed, step-by-step implementation plan. The 
 ## 🚨 Core Development Principles 🚨
 Violating these rules will require an immediate rollback and fix. There are no exceptions.
 
-### 1. UI Standard: Full-Screen Only
-The "modal" or "popup" concept is forbidden in this project. Every action that requires a form (e.g., create, edit, view details) must have its own dedicated, full-screen page.
+### 1. UI Standard: Full-Screen Only (Com Exceções)
+A abordagem de "modal" ou "popup" é desencorajada neste projeto. Ações que requerem formulários complexos (ex: edição detalhada) devem usar telas dedicadas, porém **o menu lateral deve permanecer visível** em módulos onde o contexto global é essencial, como no módulo de Atividades.
 
-*   ✅ **Golden Rule:** One Action = One Full Screen.
+*   ✅ **Regra Revisada:** Ação Complexa = Tela Dedicada com Menu Visível
 *   ✅ **Table Interaction:** A double-click on any table row must navigate to a full-screen edit page.
-*   ✅ **Navigation:** Every full-screen page must have a "Back" button to return to the previous view.
+*   ✅ **Navegação:** Telas dedicadas devem incluir botão "Voltar" mas manter o menu lateral ativo
 *   ✅ **Reference Implementation:** The Students and Plans modules are the perfect examples. Replicate their behavior and structure.
 
 ### 2. Architecture: Modular & Isolated

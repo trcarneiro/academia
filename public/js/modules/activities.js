@@ -1,6 +1,6 @@
-import ModuleLoader from '../../core/module-loader.js';
-import { showLoading, hideLoading } from '../../utils/loading.js';
-import { handleApiError } from '../../utils/error-handler.js';
+import ModuleLoader from '/js/core/module-loader.js';
+import { showLoading, hideLoading } from '/js/utils/loading.js';
+import { handleApiError } from '/js/utils/error-handler.js';
 
 const ActivitiesModule = {
   currentPage: 1,
@@ -89,4 +89,6 @@ const ActivitiesModule = {
   }
 };
 
-ModuleLoader.register('activities-module', ActivitiesModule);
+document.addEventListener('DOMContentLoaded', () => {
+  ActivitiesModule.init();
+});
