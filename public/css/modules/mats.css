@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    MATS MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .mats-isolated .mats-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -60,24 +60,24 @@
 .mats-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #F59E0B;
+    color: var(--color-warning);
     margin-bottom: 0.5rem;
 }
 
 .mats-isolated .stat-value.active {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .mats-isolated .stat-value.completed {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .mats-isolated .stat-value.pending {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .mats-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -105,7 +105,7 @@
 
 .mats-isolated .filter-group label,
 .mats-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -114,7 +114,7 @@
 .mats-isolated .mat-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -125,14 +125,14 @@
 .mats-isolated .mat-filter:hover,
 .mats-isolated .mat-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .mats-isolated .mat-filter.active,
 .mats-isolated .mat-sort.active {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
-    border-color: #F59E0B;
+    border-color: var(--color-warning);
 }
 
 .mats-isolated .search-group {
@@ -146,18 +146,18 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .mats-isolated .search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .mats-isolated .search-input:focus {
     outline: none;
-    border-color: #F59E0B;
+    border-color: var(--color-warning);
     box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
 }
 
@@ -193,23 +193,23 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .mats-isolated .mat-card.excellent::before {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .mats-isolated .mat-card.good::before {
-    background: linear-gradient(90deg, #3B82F6, #2563EB);
+    background: linear-gradient(90deg, var(--color-info), #2563EB);
 }
 
 .mats-isolated .mat-card.fair::before {
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .mats-isolated .mat-card.poor::before {
-    background: linear-gradient(90deg, #EF4444, #DC2626);
+    background: linear-gradient(90deg, var(--color-error), #DC2626);
 }
 
 /* Mat Card Header */
@@ -227,7 +227,7 @@
 }
 
 .mats-isolated .mat-info h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -237,7 +237,7 @@
 }
 
 .mats-isolated .mat-location {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -255,22 +255,22 @@
 
 .mats-isolated .condition-badge.excellent {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .mats-isolated .condition-badge.good {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .mats-isolated .condition-badge.fair {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .mats-isolated .condition-badge.poor {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Mat Content */
@@ -293,13 +293,13 @@
 }
 
 .mats-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
 .mats-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
@@ -314,7 +314,7 @@
 }
 
 .mats-isolated .condition-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
@@ -335,23 +335,23 @@
 }
 
 .mats-isolated .condition-fill.excellent {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .mats-isolated .condition-fill.good {
-    background: linear-gradient(90deg, #3B82F6, #2563EB);
+    background: linear-gradient(90deg, var(--color-info), #2563EB);
 }
 
 .mats-isolated .condition-fill.fair {
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .mats-isolated .condition-fill.poor {
-    background: linear-gradient(90deg, #EF4444, #DC2626);
+    background: linear-gradient(90deg, var(--color-error), #DC2626);
 }
 
 .mats-isolated .condition-text {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     text-align: center;
 }
@@ -379,13 +379,13 @@
 }
 
 .mats-isolated .maintenance-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .mats-isolated .maintenance-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
@@ -404,14 +404,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .mats-isolated .usage-hours {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -428,13 +428,13 @@
 
 .mats-isolated .usage-fill {
     height: 100%;
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
     border-radius: 3px;
     transition: width 0.6s ease;
 }
 
 .mats-isolated .usage-text {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     text-align: center;
 }
@@ -449,14 +449,14 @@
 }
 
 .mats-isolated .notes-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
 .mats-isolated .notes-content {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
 }
@@ -492,7 +492,7 @@
 }
 
 .mats-isolated .btn-primary {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -502,7 +502,7 @@
 
 .mats-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .mats-isolated .btn-secondary:hover {
@@ -510,7 +510,7 @@
 }
 
 .mats-isolated .btn-warning {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -519,7 +519,7 @@
 }
 
 .mats-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -543,12 +543,12 @@
 }
 
 .mats-isolated .mats-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .mats-isolated .mats-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -564,11 +564,11 @@
 .mats-isolated .mats-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .mats-isolated .mats-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -681,7 +681,7 @@
 
 .theme-light .mats-isolated .mat-info h3,
 .theme-light .mats-isolated .mats-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .mats-isolated .detail-label,
@@ -711,7 +711,7 @@
 .theme-light .mats-isolated .search-input {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.2);
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .mats-isolated .search-input::placeholder {
@@ -720,17 +720,17 @@
 
 /* Accessibility */
 .mats-isolated .mat-card:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
 .mats-isolated .btn:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
 .mats-isolated .search-input:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
@@ -750,10 +750,10 @@
     
     .mats-isolated .condition-fill,
     .mats-isolated .usage-fill {
-        background: #333 !important;
+        background: #333;
     }
     
     .mats-isolated .mat-info h3 {
-        color: #000 !important;
+        color: #000;
     }
 }

@@ -1,19 +1,23 @@
-:root {
+﻿:root {
     /* Layout responsivo e minimalista */
     --sidebar-width: 260px;
     --topbar-height: 65px;
     
-    /* Paleta minimalista e profissional */
-    --primary-color: #4f46e5;
-    --primary-light: #6366f1;
-    --background-main: #f8fafc;
-    --background-card: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --border-light: #e2e8f0;
-    --border-main: #cbd5e1;
+    /* ðŸŽ¯ PALETA OFICIAL - Unificada com Design System */
+    --primary-color: #667eea;          /* Azul Principal Oficial */
+    --secondary-color: #764ba2;        /* Roxo SecundÃ¡rio Oficial */
+    --primary-light: #8B9FEE;          /* Azul Claro derivado */
+    --background-main: var(--color-background);        /* âœ… Mantido */
+    --background-card: var(--color-surface);        /* âœ… Mantido */
+    --text-primary: var(--color-text);           /* âœ… Mantido */
+    --text-secondary: var(--color-text-muted);         /* âœ… Mantido */
+    --border-light: var(--color-border);           /* âœ… Mantido */
+    --border-main: var(--color-border);            /* âœ… Mantido */
     --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.05);
+    
+    /* ðŸŽ¨ Gradiente Premium */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 * {
@@ -102,7 +106,7 @@ body {
 }
 
 .search-bar::before {
-    content: '🔍';
+    content: 'ðŸ”';
     position: absolute;
     left: 12px;
     top: 50%;
@@ -192,7 +196,7 @@ body {
     color: white;
 }
 
-/* Área de Conteúdo Limpa e Funcional */
+/* Ãrea de ConteÃºdo Limpa e Funcional */
 .content-area {
     flex: 1;
     margin-left: var(--sidebar-width);
@@ -228,7 +232,7 @@ body {
 }
 
 .breadcrumb::before {
-    content: '📍';
+    content: 'ðŸ“';
     font-size: 0.875rem;
 }
 
@@ -403,7 +407,7 @@ body {
     }
 }
 
-/* Transições suaves e funcionais */
+/* TransiÃ§Ãµes suaves e funcionais */
 .sidebar, .content-area, .main-menu li {
     transition: all 0.2s ease;
 }

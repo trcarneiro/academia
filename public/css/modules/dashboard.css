@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    DASHBOARD MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .dashboard-isolated .dashboard-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -37,7 +37,7 @@
 }
 
 .dashboard-isolated .dashboard-actions button {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border: none;
     border-radius: 6px;
@@ -52,7 +52,7 @@
 }
 
 .dashboard-isolated .last-updated {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     margin-left: 1rem;
 }
@@ -83,13 +83,13 @@
 .dashboard-isolated .metric-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
     line-height: 1;
 }
 
 .dashboard-isolated .metric-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.75rem;
@@ -104,15 +104,15 @@
 }
 
 .dashboard-isolated .metric-trend.positive {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .dashboard-isolated .metric-trend.negative {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .dashboard-isolated .metric-trend.neutral {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .dashboard-isolated .metric-trend span {
@@ -134,7 +134,7 @@
 }
 
 .dashboard-isolated .smart-card h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     margin-bottom: 1rem;
     display: flex;
@@ -148,7 +148,7 @@
     gap: 0.75rem;
     padding: 0.75rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: #CBD5E1;
+    color: var(--color-border);
     line-height: 1.4;
 }
 
@@ -168,16 +168,16 @@
 
 .dashboard-isolated .smart-card .activity-title {
     font-weight: 600;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .dashboard-isolated .smart-card .activity-subtitle {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
 .dashboard-isolated .smart-card .activity-time {
-    color: #64748B;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
     white-space: nowrap;
 }
@@ -198,7 +198,7 @@
 }
 
 .dashboard-isolated .chart-container h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.125rem;
     margin-bottom: 1rem;
     display: flex;
@@ -214,7 +214,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -237,12 +237,12 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
-    color: #CBD5E1;
+    color: var(--color-border);
 }
 
 .dashboard-isolated .quick-action:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: #F8FAFC;
+    color: var(--color-background);
     transform: translateY(-1px);
 }
 
@@ -255,7 +255,7 @@
     justify-content: center;
     background: rgba(59, 130, 246, 0.2);
     border-radius: 8px;
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .dashboard-isolated .quick-action-content {
@@ -269,7 +269,7 @@
 
 .dashboard-isolated .quick-action-subtitle {
     font-size: 0.75rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 /* Status Indicators */
@@ -285,17 +285,17 @@
 
 .dashboard-isolated .status-indicator.online {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .dashboard-isolated .status-indicator.offline {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .dashboard-isolated .status-indicator.warning {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .dashboard-isolated .status-dot {
@@ -344,7 +344,7 @@
     width: 2rem;
     height: 2rem;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top: 2px solid #3B82F6;
+    border-top: 2px solid var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -361,7 +361,7 @@
     border-radius: 8px;
     padding: 1rem;
     margin: 1rem 0;
-    color: #EF4444;
+    color: var(--color-error);
     text-align: center;
 }
 
@@ -463,17 +463,17 @@
 }
 
 .theme-light .dashboard-isolated .smart-card .activity-title {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 /* Accessibility */
 .dashboard-isolated .metric-card:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
 .dashboard-isolated .quick-action:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 

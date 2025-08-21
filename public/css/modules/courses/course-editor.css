@@ -1,4 +1,4 @@
-/* Course Editor Module Styles - Isolated */
+﻿/* Course Editor Module Styles - Isolated */
 .course-editor-isolated {
     /* Standardized layout */
     min-height: 100vh;
@@ -6,8 +6,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden; /* prevent body double scroll */
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-    color: #f8fafc;
+    background: linear-gradient(135deg, var(--color-background-dark) 0%, var(--color-text) 100%);
+    color: var(--color-background);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     line-height: 1.6;
 }
@@ -59,7 +59,7 @@
 }
 
 .course-editor-isolated .header-btn:focus {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
@@ -100,13 +100,13 @@
     overflow-y: auto;
     padding: 2rem;
     scrollbar-width: thin;
-    scrollbar-color: #334155 #0f172a;
+    scrollbar-color: #334155 var(--color-background-dark);
 }
 
 /* Webkit scrollbar */
 .course-editor-isolated .editor-main::-webkit-scrollbar { width: 10px; }
-.course-editor-isolated .editor-main::-webkit-scrollbar-track { background: #0f172a; }
-.course-editor-isolated .editor-main::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; border: 2px solid #0f172a; }
+.course-editor-isolated .editor-main::-webkit-scrollbar-track { background: var(--color-background-dark); }
+.course-editor-isolated .editor-main::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; border: 2px solid var(--color-background-dark); }
 .course-editor-isolated .editor-main::-webkit-scrollbar-thumb:hover { background: #475569; }
 
 /* Loading State */
@@ -116,14 +116,14 @@
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    color: #94a3b8;
+    color: var(--color-text-light);
 }
 
 .course-editor-isolated .loading-spinner {
     width: 40px;
     height: 40px;
     border: 3px solid #334155;
-    border-top-color: #3b82f6;
+    border-top-color: var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
@@ -168,7 +168,7 @@
 .course-editor-isolated .section-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--color-background);
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -176,7 +176,7 @@
 }
 
 .course-editor-isolated .section-description {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
     line-height: 1.5;
@@ -211,7 +211,7 @@
 /* Labels */
 .course-editor-isolated .form-label {
     font-weight: 500;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.95rem;
     display: flex;
     align-items: center;
@@ -219,18 +219,18 @@
 }
 
 .course-editor-isolated .form-label .required {
-    color: #ef4444;
+    color: var(--color-error);
 }
 
 /* Input Styles */
 .course-editor-isolated .form-input,
 .course-editor-isolated .form-select,
 .course-editor-isolated .form-textarea {
-    background: #0f172a;
+    background: var(--color-background-dark);
     border: 1px solid #334155;
     border-radius: 8px;
     padding: 0.75rem;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.95rem;
     transition: all 0.2s ease;
     width: 100%;
@@ -241,13 +241,13 @@
 .course-editor-isolated .form-select:focus,
 .course-editor-isolated .form-textarea:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .course-editor-isolated .form-input::placeholder,
 .course-editor-isolated .form-textarea::placeholder {
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .course-editor-isolated .form-textarea {
@@ -260,7 +260,7 @@
 .course-editor-isolated .objectives-section,
 .course-editor-isolated .resources-section,
 .course-editor-isolated .evaluation-section {
-    background: #1E293B;
+    background: var(--color-text);
     border: 1px solid #334155;
     border-radius: 8px;
     padding: 1.5rem;
@@ -286,11 +286,11 @@
 .course-editor-isolated .objective-item textarea {
     flex: 1;
     min-height: 80px;
-    background: #1e293b;
+    background: var(--color-text);
     border: 1px solid #334155;
     border-radius: 6px;
     padding: 0.75rem;
-    color: #f8fafc;
+    color: var(--color-background);
     resize: vertical;
     font-family: inherit;
     font-size: 0.9rem;
@@ -299,11 +299,11 @@
 .course-editor-isolated .resource-item input,
 .course-editor-isolated .eval-item input {
     flex: 1;
-    background: #1e293b;
+    background: var(--color-text);
     border: 1px solid #334155;
     border-radius: 6px;
     padding: 0.75rem;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.9rem;
 }
 
@@ -415,3 +415,4 @@
         width: fit-content;
     }
 }
+

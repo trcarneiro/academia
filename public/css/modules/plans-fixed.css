@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Plans Module CSS - Matching Turmas Module Layout Exactly
  * Following the exact visual style from the turmas module
  */
@@ -6,8 +6,8 @@
 /* Reset and base */
 .plans-isolated {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0f172a;
-    color: #f8fafc;
+    background: var(--color-background-dark);
+    color: var(--color-background);
     min-height: 100vh;
     margin: 0;
     padding: 0;
@@ -23,7 +23,7 @@
 
 /* Page header with green gradient - exact match to turmas */
 .plans-isolated .plans-isolated-page-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%);
     color: white;
     padding: 2rem;
     border-radius: 16px;
@@ -124,7 +124,7 @@
 .plans-isolated .plans-isolated-section-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--color-background);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -152,7 +152,7 @@
 
 .plans-isolated .plans-isolated-data-table th {
     background: rgba(15, 23, 42, 0.9);
-    color: #cbd5e1;
+    color: var(--color-border);
     padding: 1rem 1.5rem;
     text-align: left;
     font-weight: 600;
@@ -164,7 +164,7 @@
 .plans-isolated .plans-isolated-data-table td {
     padding: 1rem 1.5rem;
     border: none;
-    color: #f8fafc;
+    color: var(--color-background);
     vertical-align: middle;
     border-bottom: 1px solid rgba(148, 163, 184, 0.05);
 }
@@ -185,7 +185,7 @@
 }
 
 .plans-isolated .plan-id-badge {
-    background: #3b82f6;
+    background: var(--color-info);
     color: white;
     width: 32px;
     height: 32px;
@@ -200,7 +200,7 @@
 
 .plans-isolated .plan-name {
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--color-background);
     margin: 0;
 }
 
@@ -222,7 +222,7 @@
 }
 
 .plans-isolated .plans-isolated-btn-primary {
-    background: #3b82f6;
+    background: var(--color-info);
     color: white;
 }
 
@@ -233,7 +233,7 @@
 
 .plans-isolated .plans-isolated-btn-secondary {
     background: rgba(148, 163, 184, 0.2);
-    color: #cbd5e1;
+    color: var(--color-border);
 }
 
 .plans-isolated .plans-isolated-btn-secondary:hover {
@@ -251,14 +251,14 @@
     border-radius: 8px;
     border: 1px solid rgba(148, 163, 184, 0.2);
     background: rgba(15, 23, 42, 0.8);
-    color: #cbd5e1;
+    color: var(--color-border);
     font-size: 0.9rem;
     cursor: pointer;
 }
 
 .plans-isolated .plans-isolated-filter-select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
@@ -274,7 +274,7 @@
 }
 
 .plans-isolated .status-badge.active {
-    background: #10b981;
+    background: var(--color-success);
     color: white;
 }
 
@@ -318,14 +318,14 @@
 .plans-isolated .loading-state {
     padding: 3rem;
     text-align: center;
-    color: #cbd5e1;
+    color: var(--color-border);
 }
 
 .plans-isolated .loading-state .spinner {
     width: 32px;
     height: 32px;
     border: 3px solid rgba(59, 130, 246, 0.3);
-    border-top: 3px solid #3b82f6;
+    border-top: 3px solid var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
@@ -334,7 +334,7 @@
 .plans-isolated .empty-state {
     padding: 3rem;
     text-align: center;
-    color: #94a3b8;
+    color: var(--color-text-light);
 }
 
 .plans-isolated .empty-state .empty-icon {
@@ -434,3 +434,4 @@
 .plans-isolated .plans-isolated-data-table td:last-child {
     padding-right: 1.5rem;
 }
+

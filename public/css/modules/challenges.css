@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    CHALLENGES MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .challenges-isolated .challenges-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -60,24 +60,24 @@
 .challenges-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #F59E0B;
+    color: var(--color-warning);
     margin-bottom: 0.5rem;
 }
 
 .challenges-isolated .stat-value.completed {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .challenges-isolated .stat-value.active {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .challenges-isolated .stat-value.pending {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .challenges-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -105,7 +105,7 @@
 
 .challenges-isolated .filter-group label,
 .challenges-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -114,7 +114,7 @@
 .challenges-isolated .challenge-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -125,14 +125,14 @@
 .challenges-isolated .challenge-filter:hover,
 .challenges-isolated .challenge-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .challenges-isolated .challenge-filter.active,
 .challenges-isolated .challenge-sort.active {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
-    border-color: #F59E0B;
+    border-color: var(--color-warning);
 }
 
 .challenges-isolated .search-group {
@@ -146,18 +146,18 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .challenges-isolated .search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .challenges-isolated .search-input:focus {
     outline: none;
-    border-color: #F59E0B;
+    border-color: var(--color-warning);
     box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
 }
 
@@ -193,15 +193,15 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .challenges-isolated .challenge-card.completed::before {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .challenges-isolated .challenge-card.expired::before {
-    background: linear-gradient(90deg, #EF4444, #DC2626);
+    background: linear-gradient(90deg, var(--color-error), #DC2626);
 }
 
 /* Challenge Card Header */
@@ -219,7 +219,7 @@
 }
 
 .challenges-isolated .challenge-title h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -230,7 +230,7 @@
 
 .challenges-isolated .challenge-category {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;
@@ -247,17 +247,17 @@
 
 .challenges-isolated .challenge-difficulty.easy {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .challenges-isolated .challenge-difficulty.medium {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .challenges-isolated .challenge-difficulty.hard {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .challenges-isolated .challenge-difficulty.expert {
@@ -276,17 +276,17 @@
 
 .challenges-isolated .status-badge.active {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .challenges-isolated .status-badge.completed {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .challenges-isolated .status-badge.expired {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .challenges-isolated .status-badge.draft {
@@ -314,23 +314,23 @@
 }
 
 .challenges-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
 .challenges-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .challenges-isolated .detail-value.points {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .challenges-isolated .detail-value.participants {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 /* Challenge Progress */
@@ -343,7 +343,7 @@
 }
 
 .challenges-isolated .progress-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
@@ -362,24 +362,24 @@
 
 .challenges-isolated .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
     border-radius: 4px;
     transition: width 0.6s ease;
 }
 
 .challenges-isolated .progress-fill.completed {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .challenges-isolated .progress-text {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     text-align: center;
 }
 
 /* Challenge Description */
 .challenges-isolated .challenge-description {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
     margin-bottom: 1rem;
@@ -420,7 +420,7 @@
 }
 
 .challenges-isolated .btn-primary {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -430,7 +430,7 @@
 
 .challenges-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .challenges-isolated .btn-secondary:hover {
@@ -438,7 +438,7 @@
 }
 
 .challenges-isolated .btn-success {
-    background: #10B981;
+    background: var(--color-success);
     color: white;
 }
 
@@ -447,7 +447,7 @@
 }
 
 .challenges-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -471,12 +471,12 @@
 }
 
 .challenges-isolated .challenges-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .challenges-isolated .challenges-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -492,11 +492,11 @@
 .challenges-isolated .challenges-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .challenges-isolated .challenges-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -599,7 +599,7 @@
 
 .theme-light .challenges-isolated .challenge-title h3,
 .theme-light .challenges-isolated .challenges-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .challenges-isolated .detail-label {
@@ -622,7 +622,7 @@
 .theme-light .challenges-isolated .search-input {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.2);
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .challenges-isolated .search-input::placeholder {
@@ -631,17 +631,17 @@
 
 /* Accessibility */
 .challenges-isolated .challenge-card:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
 .challenges-isolated .btn:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
 .challenges-isolated .search-input:focus-visible {
-    outline: 2px solid #F59E0B;
+    outline: 2px solid var(--color-warning);
     outline-offset: 2px;
 }
 
@@ -660,10 +660,10 @@
     }
     
     .challenges-isolated .progress-fill {
-        background: #333 !important;
+        background: #333;
     }
     
     .challenges-isolated .challenge-title h3 {
-        color: #000 !important;
+        color: #000;
     }
 }

@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    ATTENDANCE MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .attendance-isolated .attendance-header h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.5rem;
     margin: 0;
 }
@@ -39,7 +39,7 @@
 .attendance-isolated .attendance-filter {
     background: transparent;
     border: none;
-    color: #94A3B8;
+    color: var(--color-text-light);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -50,11 +50,11 @@
 
 .attendance-isolated .attendance-filter:hover {
     background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .attendance-isolated .attendance-filter.active {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
 }
 
@@ -74,7 +74,7 @@
 
 .attendance-isolated .attendance-table th {
     background: rgba(55, 65, 81, 0.5);
-    color: #F8FAFC;
+    color: var(--color-background);
     padding: 1rem;
     text-align: left;
     font-weight: 600;
@@ -84,7 +84,7 @@
 
 .attendance-isolated .attendance-table td {
     padding: 1rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -98,14 +98,14 @@
 
 /* Student Name Column */
 .attendance-isolated .student-name {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
 /* Date and Time Columns */
 .attendance-isolated .attendance-date,
 .attendance-isolated .attendance-time {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
@@ -126,17 +126,17 @@
 
 .attendance-isolated .status-badge.present {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .attendance-isolated .status-badge.absent {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .attendance-isolated .status-badge.late {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .attendance-isolated .status-badge.justified {
@@ -150,7 +150,7 @@
 }
 
 .attendance-isolated .btn {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border: none;
     border-radius: 6px;
@@ -177,7 +177,7 @@
 
 .attendance-isolated .btn.btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .attendance-isolated .btn.btn-secondary:hover {
@@ -185,7 +185,7 @@
 }
 
 .attendance-isolated .btn.btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -211,7 +211,7 @@
 }
 
 .attendance-isolated .checkin-form h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
@@ -221,7 +221,7 @@
 
 .attendance-isolated .form-group label {
     display: block;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
@@ -232,23 +232,23 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
 }
 
 .attendance-isolated .form-control::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .attendance-isolated .form-control:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .attendance-isolated .form-control:disabled {
     background: rgba(255, 255, 255, 0.02);
-    color: #64748B;
+    color: var(--color-text-muted);
     cursor: not-allowed;
 }
 
@@ -259,7 +259,7 @@
 }
 
 .attendance-isolated .form-text {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -289,22 +289,22 @@
 .attendance-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
 }
 
 .attendance-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .attendance-isolated .stat-card.present .stat-value {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .attendance-isolated .stat-card.absent .stat-value {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .attendance-isolated .stat-card.rate .stat-value {
@@ -315,7 +315,7 @@
 .attendance-isolated .attendance-empty-state {
     text-align: center;
     padding: 3rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .attendance-isolated .attendance-empty-state .empty-icon {
@@ -325,12 +325,12 @@
 }
 
 .attendance-isolated .attendance-empty-state h3 {
-    color: #CBD5E1;
+    color: var(--color-border);
     margin-bottom: 0.5rem;
 }
 
 .attendance-isolated .attendance-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 1.5rem;
 }
 
@@ -338,7 +338,7 @@
 .attendance-isolated .attendance-error-state {
     text-align: center;
     padding: 3rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .attendance-isolated .attendance-error-state .error-icon {
@@ -347,7 +347,7 @@
 }
 
 .attendance-isolated .attendance-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -360,7 +360,7 @@
 .attendance-isolated .attendance-loading {
     text-align: center;
     padding: 3rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .attendance-isolated .attendance-loading .loading-spinner {

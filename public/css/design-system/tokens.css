@@ -1,119 +1,221 @@
 /**
- * Design System Tokens - Academia System
- * Baseado em Guidelines.MD - UI/UX Standards
- * Mantém conformidade com padrões estabelecidos
+ * Design System Tokens - Academia Krav Maga v2.0
+ * OFICIAL - Paleta Unificada (#667eea + #764ba2)
+ * Baseado em COLOR_SYSTEM_ANALYSIS.md
+ * ✅ Implementação padronizada para TODOS os módulos
  */
 
 :root {
-    /* Guidelines.MD Core Variables */
-    --primary-gradient-start: #667eea;
-    --primary-gradient-end: #764ba2;
-    --card-background: rgba(255, 255, 255, 0.95);
-    --table-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    /* 🎯 CORES PRIMÁRIAS - Paleta Oficial */
+    --primary-color: #667eea;         /* Azul Principal - Confiança */
+    --secondary-color: #764ba2;       /* Roxo Secundário - Premium */
     
-    /* Core Colors */
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
-    --info-color: #3b82f6;
+    /* 🎨 GRADIENTES OFICIAIS - Modernos */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    --gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+    --gradient-error: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
     
-    /* Text Colors */
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
-    --text-muted: #9ca3af;
-    --text-white: #ffffff;
+    /* 🚦 CORES SEMÂNTICAS - Tailwind Standard */
+    --color-success: #10B981;         /* Verde Emerald */
+    --color-warning: #F59E0B;         /* Amarelo Amber */
+    --color-error: #EF4444;           /* Vermelho Red */
+    --color-info: #3B82F6;            /* Azul Blue */
     
-    /* Background Colors */
-    --background-primary: #ffffff;
-    --background-secondary: #f9fafb;
-    --background-muted: #f3f4f6;
-    --background-dark: #1f2937;
+    /* 📄 SUPERFÍCIES E TEXTOS - Clean System */
+    --color-surface: #FFFFFF;         /* Branco Puro */
+    --color-background: #F8FAFC;      /* Cinza Ultra Claro */
+    --color-border: #E2E8F0;          /* Cinza Borda */
+    --color-text: #1E293B;            /* Cinza Escuro */
+    --color-text-muted: #64748B;      /* Cinza Médio */
+    --color-text-light: #94A3B8;      /* Cinza Claro */
     
-    /* Border Colors */
-    --border-light: #e5e7eb;
-    --border-medium: #d1d5db;
-    --border-dark: #9ca3af;
+    /* 🌙 DARK THEME - Sistema Unificado */
+    --color-surface-dark: #1E293B;
+    --color-background-dark: #0F172A;
+    --color-border-dark: #374151;
+    --color-text-dark: #F8FAFC;
     
-    /* Spacing Scale */
-    --spacing-xs: 0.25rem;   /* 4px */
-    --spacing-sm: 0.5rem;    /* 8px */
-    --spacing-md: 1rem;      /* 16px */
-    --spacing-lg: 1.5rem;    /* 24px */
-    --spacing-xl: 2rem;      /* 32px */
-    --spacing-2xl: 3rem;     /* 48px */
-    --spacing-3xl: 4rem;     /* 64px */
     
-    /* Typography Scale */
-    --font-size-xs: 0.75rem;   /* 12px */
-    --font-size-sm: 0.875rem;  /* 14px */
-    --font-size-base: 1rem;    /* 16px */
-    --font-size-lg: 1.125rem;  /* 18px */
-    --font-size-xl: 1.25rem;   /* 20px */
-    --font-size-2xl: 1.5rem;   /* 24px */
-    --font-size-3xl: 1.875rem; /* 30px */
-    --font-size-4xl: 2.25rem;  /* 36px */
+    /* 📏 SPACING SCALE - Consistente */
+    --spacing-xs: 0.25rem;      /* 4px */
+    --spacing-sm: 0.5rem;       /* 8px */
+    --spacing-md: 1rem;         /* 16px */
+    --spacing-lg: 1.5rem;       /* 24px */
+    --spacing-xl: 2rem;         /* 32px */
+    --spacing-2xl: 3rem;        /* 48px */
+    --spacing-3xl: 4rem;        /* 64px */
     
-    /* Font Weights */
+    /* 📝 TYPOGRAPHY SCALE - Hierárquica */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+    
+    /* ⚖️ FONT WEIGHTS - Hierarquia Visual */
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     
-    /* Line Heights */
-    --line-height-tight: 1.25;
-    --line-height-normal: 1.5;
-    --line-height-relaxed: 1.75;
-    
-    /* Border Radius */
-    --radius-none: 0;
-    --radius-sm: 0.25rem;    /* 4px */
-    --radius-md: 0.375rem;   /* 6px */
-    --radius-lg: 0.5rem;     /* 8px */
-    --radius-xl: 0.75rem;    /* 12px */
-    --radius-2xl: 1rem;      /* 16px */
+    /* 📐 BORDER RADIUS - Suave */
+    --radius-sm: 0.25rem;       /* 4px */
+    --radius-md: 0.5rem;        /* 8px */
+    --radius-lg: 0.75rem;       /* 12px */
+    --radius-xl: 1rem;          /* 16px */
     --radius-full: 9999px;
     
-    /* Shadows */
+    /* 🌫️ SHADOWS - Profundidade */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     
-    /* Transitions */
+    /* ⚡ TRANSITIONS - Fluídas */
     --transition-fast: 150ms ease-in-out;
     --transition-normal: 300ms ease-in-out;
-    --transition-slow: 500ms ease-in-out;
-    
-    /* Z-Index Scale */
-    --z-dropdown: 1000;
-    --z-sticky: 1020;
-    --z-fixed: 1030;
-    --z-modal-backdrop: 1040;
-    --z-modal: 1050;
-    --z-popover: 1060;
-    --z-tooltip: 1070;
-    
-    /* Breakpoints (for JS usage) */
-    --breakpoint-sm: 640px;
-    --breakpoint-md: 768px;
-    --breakpoint-lg: 1024px;
-    --breakpoint-xl: 1280px;
-    --breakpoint-2xl: 1536px;
+    --transition-bounce: 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Dark Mode Support (opcional) */
+/* 🎨 CLASSES PREMIUM - Guidelines2.md Compliance */
+
+/* Header Premium com Gradient Sutil */
+.module-header-premium {
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    margin: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition-normal);
+}
+
+.module-header-premium:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+}
+
+/* Stat Cards Enhanced com Gradientes */
+.stat-card-enhanced {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-bounce);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: var(--transition-normal);
+}
+
+.stat-card-enhanced:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+}
+
+.stat-card-enhanced:hover::before {
+    left: 100%;
+}
+
+/* Data Cards Premium */
+.data-card-premium {
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-normal);
+}
+
+.data-card-premium:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+/* Module Filters Premium */
+.module-filters-premium {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Buttons Premium */
+.btn-premium {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: var(--transition-bounce);
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Table Premium */
+.table-premium {
+    width: 100%;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.table-premium thead {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.table-premium th,
+.table-premium td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table-premium tbody tr:hover {
+    background: var(--color-background);
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] {
+    --color-surface: var(--color-surface-dark);
+    --color-background: var(--color-background-dark);
+    --color-border: var(--color-border-dark);
+    --color-text: var(--color-text-dark);
+}
+
+/* Dark Mode Support (preferência do sistema) */
 @media (prefers-color-scheme: dark) {
     :root {
-        --text-primary: #f9fafb;
-        --text-secondary: #d1d5db;
-        --text-muted: #9ca3af;
-        --background-primary: #1f2937;
-        --background-secondary: #111827;
-        --background-muted: #374151;
-        --border-light: #374151;
-        --border-medium: #4b5563;
-        --border-dark: #6b7280;
+        --color-surface: var(--color-surface-dark);
+        --color-background: var(--color-background-dark);
+        --color-border: var(--color-border-dark);
+        --color-text: var(--color-text-dark);
     }
 }

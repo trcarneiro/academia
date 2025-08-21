@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Plans Module - Academia System
  * Migrado para Design System (Guidelines.MD compliance)
- * Usa componentes centralizados + customizações específicas
+ * Usa componentes centralizados + customizaÃ§Ãµes especÃ­ficas
  */
 
 /* ==========================================================================
-   CUSTOMIZAÇÕES ESPECÍFICAS DO MÓDULO PLANS
+   CUSTOMIZAÃ‡Ã•ES ESPECÃFICAS DO MÃ“DULO PLANS
    ========================================================================== */
 
 /* Loading state customizado para tabela de planos */
@@ -15,7 +15,7 @@
     color: var(--text-secondary);
 }
 
-/* States específicos para planos */
+/* States especÃ­ficos para planos */
 .plans-status-draft {
     background: var(--warning-color);
     color: white;
@@ -43,7 +43,7 @@
     font-weight: var(--font-weight-medium);
 }
 
-/* Badge para número de alunos */
+/* Badge para nÃºmero de alunos */
 .plans-student-count {
     background: var(--info-color);
     color: white;
@@ -56,14 +56,14 @@
     display: inline-block;
 }
 
-/* Valor monetário com destaque */
+/* Valor monetÃ¡rio com destaque */
 .plans-price {
     font-weight: var(--font-weight-semibold);
     color: var(--primary-color);
     font-size: var(--font-size-lg);
 }
 
-/* Ações da tabela */
+/* AÃ§Ãµes da tabela */
 .plans-actions {
     display: flex;
     gap: var(--spacing-sm);
@@ -130,7 +130,7 @@
     margin-bottom: var(--spacing-lg);
 }
 
-/* Form específico para criação/edição de planos */
+/* Form especÃ­fico para criaÃ§Ã£o/ediÃ§Ã£o de planos */
 .plans-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -182,7 +182,7 @@
     border-color: var(--primary-color);
 }
 
-/* Responsividade específica para planos */
+/* Responsividade especÃ­fica para planos */
 @media (max-width: 768px) {
     .plans-form-grid {
         grid-template-columns: 1fr;
@@ -211,7 +211,7 @@
 }
 
 /* ==========================================================================
-   ANIMAÇÕES ESPECÍFICAS
+   ANIMAÃ‡Ã•ES ESPECÃFICAS
    ========================================================================== */
 
 @keyframes plansSlideIn {
@@ -247,7 +247,7 @@
 }
 
 .module-isolated-btn-primary {
-    background: var(--ds-color-primary-600, #4f46e5);
+    background: var(--ds-color-primary-600, var(--primary-color));
     color: #fff;
     border-color: var(--ds-color-primary-700, #4338ca);
 }
@@ -267,19 +267,19 @@
 
 .module-isolated-btn-secondary {
     background: var(--background-secondary, #0b1220);
-    color: var(--text-primary, #e5e7eb);
+    color: var(--text-primary, var(--color-border));
     border-color: var(--border-medium, #334155);
 }
 .module-isolated-btn-secondary:hover,
 .module-isolated-btn-secondary:focus {
-    background: var(--background-elevated, #0f172a);
-    border-color: var(--text-secondary, #94a3b8);
+    background: var(--background-elevated, var(--color-background-dark));
+    border-color: var(--text-secondary, var(--color-text-light));
     box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.35);
 }
 /* Stat skeleton for loading state */
 .stat-skeleton {
     background: linear-gradient(90deg, #f3f3f3 25%, #e2e2e2 50%, #f3f3f3 75%);
-    color: #bdbdbd !important;
+    color: #bdbdbd;
     border-radius: 6px;
     min-width: 48px;
     min-height: 32px;
@@ -358,3 +358,4 @@
     background: var(--ds-color-danger-900);
     outline: 2px solid var(--ds-color-danger-800);
 }
+

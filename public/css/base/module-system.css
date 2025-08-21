@@ -1,10 +1,10 @@
-/**
+﻿/**
  * SISTEMA MODULAR BASE - Academia
- * Sistema padronizado para todos os módulos seguindo CLAUDE.md
+ * Sistema padronizado para todos os mÃ³dulos seguindo CLAUDE.md
  */
 
 :root {
-  /* === VARIÁVEIS GLOBAIS === */
+  /* === VARIÃVEIS GLOBAIS === */
   
   /* Layout */
   --sidebar-width: 240px;
@@ -13,33 +13,33 @@
   --border-radius-lg: 12px;
   
   /* Cores do Sistema */
-  --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --primary-gradient: linear-gradient(135deg, var(--color-success) 0%, #059669 100%);
+  --secondary-gradient: linear-gradient(135deg, var(--color-info) 0%, #2563eb 100%);
+  --danger-gradient: linear-gradient(135deg, var(--color-error) 0%, #dc2626 100%);
+  --warning-gradient: linear-gradient(135deg, var(--color-warning) 0%, #d97706 100%);
   
   /* Cores de Background */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-dark: #1e293b;
-  --bg-darker: #0f172a;
+  --bg-primary: var(--color-background);
+  --bg-secondary: var(--color-surface);
+  --bg-dark: var(--color-text);
+  --bg-darker: var(--color-background-dark);
   
   /* Cores de Texto */
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --text-white: #ffffff;
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-text-muted);
+  --text-muted: var(--color-text-light);
+  --text-white: var(--color-surface);
   
   /* Bordas */
-  --border-light: #e2e8f0;
-  --border-medium: #cbd5e1;
+  --border-light: var(--color-border);
+  --border-medium: var(--color-border);
   
   /* Sombras */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   
-  /* Transições */
+  /* TransiÃ§Ãµes */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.2s ease;
   --transition-slow: 0.3s ease;
@@ -52,310 +52,311 @@
 
 /* === BASE LAYOUT SYSTEM === */
 
-/* Container principal de qualquer módulo */
+/* Container principal de qualquer mÃ³dulo */
 .module-isolated-base {
-  /* Layout full-width obrigatório - estende além da sidebar */
-  margin-left: calc(-1 * var(--sidebar-width)) !important;
-  width: calc(100% + var(--sidebar-width)) !important;
-  padding-left: calc(var(--sidebar-width) + 20px) !important;
-  padding-right: 20px !important;
-  min-height: 100vh !important;
-  background: var(--bg-primary) !important;
-  box-sizing: border-box !important;
+  /* Layout full-width obrigatÃ³rio - estende alÃ©m da sidebar */
+  margin-left: calc(-1 * var(--sidebar-width));
+  width: calc(100% + var(--sidebar-width));
+  padding-left: calc(var(--sidebar-width) + 20px);
+  padding-right: 20px;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  box-sizing: border-box;
 }
 
-/* Header padrão com gradient */
+/* Header padrÃ£o com gradient */
 .module-isolated-header {
-  background: var(--primary-gradient) !important;
-  color: var(--text-white) !important;
-  padding: 2rem !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  width: 100% !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  padding: 2rem;
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .module-isolated-header h1 {
-  margin: 0 !important;
-  font-size: 2rem !important;
-  font-weight: 600 !important;
-  color: var(--text-white) !important;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-white);
 }
 
 .module-isolated-header p {
-  margin: 0.5rem 0 0 0 !important;
-  opacity: 0.9 !important;
-  font-size: 1rem !important;
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+  font-size: 1rem;
 }
 
-/* Grid de estatísticas padrão */
+/* Grid de estatÃ­sticas padrÃ£o */
 .module-isolated-stats-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
-  gap: 1.5rem !important;
-  margin: 2rem 0 !important;
-  padding: 0 !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+  padding: 0;
 }
 
-/* Cards de estatísticas */
+/* Cards de estatÃ­sticas */
 .module-isolated-stat-card {
-  background: var(--bg-secondary) !important;
-  padding: 1.5rem !important;
-  border-radius: var(--border-radius) !important;
-  border: 1px solid var(--border-light) !important;
-  box-shadow: var(--shadow-sm) !important;
-  transition: var(--transition-normal) !important;
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
 }
 
 .module-isolated-stat-card:hover {
-  box-shadow: var(--shadow-md) !important;
-  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .module-isolated-stat-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  margin-bottom: 1rem !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .module-isolated-stat-title {
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  color: var(--text-secondary) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .module-isolated-stat-icon {
-  font-size: 1.25rem !important;
+  font-size: 1.25rem;
 }
 
 .module-isolated-stat-value {
-  font-size: 2rem !important;
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
-  margin-bottom: 0.25rem !important;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
 }
 
 .module-isolated-stat-subtitle {
-  font-size: 0.875rem !important;
-  color: var(--text-muted) !important;
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
-/* Seção de dados principal */
+/* SeÃ§Ã£o de dados principal */
 .module-isolated-data-section {
-  background: var(--bg-secondary) !important;
-  border-radius: var(--border-radius) !important;
-  border: 1px solid var(--border-light) !important;
-  overflow: hidden !important;
-  box-shadow: var(--shadow-sm) !important;
-  margin-bottom: 2rem !important;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
 }
 
-/* Header da seção */
+/* Header da seÃ§Ã£o */
 .module-isolated-section-header {
-  background: var(--bg-primary) !important;
-  padding: 1.5rem !important;
-  border-bottom: 1px solid var(--border-light) !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  background: var(--bg-primary);
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .module-isolated-section-title {
-  font-size: 1.125rem !important;
-  font-weight: 600 !important;
-  color: var(--text-primary) !important;
-  margin: 0 !important;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .module-isolated-section-actions {
-  display: flex !important;
-  gap: 0.75rem !important;
-  align-items: center !important;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
-/* === SISTEMA DE BOTÕES === */
+/* === SISTEMA DE BOTÃ•ES === */
 
 .module-isolated-btn {
-  padding: 0.5rem 1rem !important;
-  border-radius: var(--border-radius) !important;
-  border: none !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  font-size: 0.875rem !important;
-  transition: var(--transition-normal) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.5rem !important;
-  text-decoration: none !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .module-isolated-btn-primary {
-  background: var(--secondary-gradient) !important;
-  color: var(--text-white) !important;
+  background: var(--secondary-gradient);
+  color: var(--text-white);
 }
 
 .module-isolated-btn-primary:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .module-isolated-btn-secondary {
-  background: var(--bg-primary) !important;
-  color: var(--text-secondary) !important;
-  border: 1px solid var(--border-light) !important;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
 }
 
 .module-isolated-btn-secondary:hover {
-  background: var(--bg-secondary) !important;
-  border-color: var(--border-medium) !important;
+  background: var(--bg-secondary);
+  border-color: var(--border-medium);
 }
 
 .module-isolated-btn-sm {
-  padding: 0.375rem 0.75rem !important;
-  font-size: 0.75rem !important;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
 }
 
 /* === SISTEMA DE TABELAS === */
 
 .module-isolated-data-table {
-  width: 100% !important;
-  border-collapse: collapse !important;
-  font-size: 0.875rem !important;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
 }
 
 .module-isolated-data-table th,
 .module-isolated-data-table td {
-  padding: 1rem 1.5rem !important;
-  text-align: left !important;
-  border-bottom: 1px solid var(--border-light) !important;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .module-isolated-data-table th {
-  background: var(--bg-primary) !important;
-  font-weight: 600 !important;
-  color: var(--text-secondary) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  font-size: 0.75rem !important;
+  background: var(--bg-primary);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
 }
 
 .module-isolated-data-table tbody tr:hover {
-  background: rgba(59, 130, 246, 0.05) !important;
+  background: rgba(59, 130, 246, 0.05);
 }
 
 /* === BADGES PADRONIZADOS === */
 
 .module-isolated-badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  padding: 0.25rem 0.75rem !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  border-radius: 9999px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .module-isolated-badge-success {
-  background: rgba(16, 185, 129, 0.1) !important;
-  color: #059669 !important;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
 }
 
 .module-isolated-badge-warning {
-  background: rgba(245, 158, 11, 0.1) !important;
-  color: #d97706 !important;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
 }
 
 .module-isolated-badge-danger {
-  background: rgba(239, 68, 68, 0.1) !important;
-  color: #dc2626 !important;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
 }
 
 /* === RESPONSIVIDADE === */
 
 @media (max-width: 768px) {
   .module-isolated-base {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: 1.5rem !important;
+    margin-left: 0;
+    width: 100%;
+    padding: 1.5rem;
   }
   
   .module-isolated-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 1rem !important;
-    padding: 1.5rem !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
   }
   
   .module-isolated-stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1rem !important;
-    margin: 1.5rem 0 !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
   }
   
   .module-isolated-section-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 1rem !important;
-    padding: 1rem !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
   }
   
   .module-isolated-section-actions {
-    width: 100% !important;
-    justify-content: flex-start !important;
+    width: 100%;
+    justify-content: flex-start;
   }
   
   .module-isolated-data-table {
-    font-size: 0.75rem !important;
+    font-size: 0.75rem;
   }
   
   .module-isolated-data-table th,
   .module-isolated-data-table td {
-    padding: 0.75rem 1rem !important;
+    padding: 0.75rem 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .module-isolated-stats-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 
 /* === UTILIDADES === */
 
 .module-isolated-loading {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 3rem !important;
-  color: var(--text-muted) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-muted);
 }
 
 .module-isolated-empty-state {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 3rem !important;
-  color: var(--text-muted) !important;
-  text-align: center !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  text-align: center;
 }
 
-/* === FORÇA APLICAÇÃO === */
+/* === FORÃ‡A APLICAÃ‡ÃƒO === */
 
-/* Seletores com máxima especificidade para garantir aplicação */
+/* Seletores com mÃ¡xima especificidade para garantir aplicaÃ§Ã£o */
 html body .main-content .module-isolated-base,
 html body .content-wrapper .module-isolated-base,
 html body div .module-isolated-base {
-  margin-left: calc(-1 * var(--sidebar-width)) !important;
-  width: calc(100% + var(--sidebar-width)) !important;
-  padding-left: calc(var(--sidebar-width) + 20px) !important;
+  margin-left: calc(-1 * var(--sidebar-width));
+  width: calc(100% + var(--sidebar-width));
+  padding-left: calc(var(--sidebar-width) + 20px);
 }
+

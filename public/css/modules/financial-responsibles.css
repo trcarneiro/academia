@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    FINANCIAL RESPONSIBLES MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .financial-responsibles-isolated .responsibles-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -60,24 +60,24 @@
 .financial-responsibles-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
 }
 
 .financial-responsibles-isolated .stat-value.active {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .financial-responsibles-isolated .stat-value.pending {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .financial-responsibles-isolated .stat-value.completed {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .financial-responsibles-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -105,7 +105,7 @@
 
 .financial-responsibles-isolated .filter-group label,
 .financial-responsibles-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -114,7 +114,7 @@
 .financial-responsibles-isolated .responsible-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -125,14 +125,14 @@
 .financial-responsibles-isolated .responsible-filter:hover,
 .financial-responsibles-isolated .responsible-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .financial-responsibles-isolated .responsible-filter.active,
 .financial-responsibles-isolated .responsible-sort.active {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
 }
 
 .financial-responsibles-isolated .search-group {
@@ -146,18 +146,18 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .financial-responsibles-isolated .search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .financial-responsibles-isolated .search-input:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
@@ -193,19 +193,19 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(90deg, var(--color-info), #1D4ED8);
 }
 
 .financial-responsibles-isolated .responsible-card.pending::before {
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .financial-responsibles-isolated .responsible-card.overdue::before {
-    background: linear-gradient(90deg, #EF4444, #DC2626);
+    background: linear-gradient(90deg, var(--color-error), #DC2626);
 }
 
 .financial-responsibles-isolated .responsible-card.up-to-date::before {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 /* Responsible Card Header */
@@ -223,7 +223,7 @@
 }
 
 .financial-responsibles-isolated .responsible-info h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -239,7 +239,7 @@
 }
 
 .financial-responsibles-isolated .responsible-contact span {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -257,17 +257,17 @@
 
 .financial-responsibles-isolated .status-badge.up-to-date {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .financial-responsibles-isolated .status-badge.pending {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .financial-responsibles-isolated .status-badge.overdue {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .financial-responsibles-isolated .status-badge.suspended {
@@ -295,23 +295,23 @@
 }
 
 .financial-responsibles-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
 .financial-responsibles-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .financial-responsibles-isolated .detail-value.balance.positive {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .financial-responsibles-isolated .detail-value.balance.negative {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Students List */
@@ -328,14 +328,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .financial-responsibles-isolated .students-count {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -359,20 +359,20 @@
 }
 
 .financial-responsibles-isolated .student-name {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 500;
     flex: 1;
 }
 
 .financial-responsibles-isolated .student-plan {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     flex: 1;
     text-align: center;
 }
 
 .financial-responsibles-isolated .student-value {
-    color: #10B981;
+    color: var(--color-success);
     font-weight: 600;
     font-size: 0.875rem;
 }
@@ -387,14 +387,14 @@
 }
 
 .financial-responsibles-isolated .notes-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
 .financial-responsibles-isolated .notes-content {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
 }
@@ -430,7 +430,7 @@
 }
 
 .financial-responsibles-isolated .btn-primary {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
 }
 
@@ -440,7 +440,7 @@
 
 .financial-responsibles-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .financial-responsibles-isolated .btn-secondary:hover {
@@ -448,7 +448,7 @@
 }
 
 .financial-responsibles-isolated .btn-success {
-    background: #10B981;
+    background: var(--color-success);
     color: white;
 }
 
@@ -457,7 +457,7 @@
 }
 
 .financial-responsibles-isolated .btn-warning {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -466,7 +466,7 @@
 }
 
 .financial-responsibles-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -490,12 +490,12 @@
 }
 
 .financial-responsibles-isolated .responsibles-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .financial-responsibles-isolated .responsibles-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -511,11 +511,11 @@
 .financial-responsibles-isolated .responsibles-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .financial-responsibles-isolated .responsibles-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -626,7 +626,7 @@
 
 .theme-light .financial-responsibles-isolated .responsible-info h3,
 .theme-light .financial-responsibles-isolated .responsibles-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .financial-responsibles-isolated .detail-label,
@@ -648,7 +648,7 @@
 .theme-light .financial-responsibles-isolated .search-input {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.2);
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .financial-responsibles-isolated .search-input::placeholder {
@@ -657,17 +657,17 @@
 
 /* Accessibility */
 .financial-responsibles-isolated .responsible-card:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
 .financial-responsibles-isolated .btn:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
 .financial-responsibles-isolated .search-input:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
@@ -686,10 +686,10 @@
     }
     
     .financial-responsibles-isolated .responsible-info h3 {
-        color: #000 !important;
+        color: #000;
     }
     
     .financial-responsibles-isolated .student-name {
-        color: #000 !important;
+        color: #000;
     }
 }

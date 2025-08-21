@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
    ENHANCED TAB SYSTEM - UX OPTIMIZED
    Designed by UX Specialist for better user experience
    ============================================================================= */
@@ -39,7 +39,7 @@
     flex: 1;
     background: transparent;
     border: none;
-    color: #94A3B8;
+    color: var(--color-text-light);
     padding: 16px 24px;
     border-radius: 12px;
     cursor: pointer;
@@ -68,7 +68,7 @@
 /* Hover State - Improved feedback */
 .plan-tab:hover {
     background: rgba(59, 130, 246, 0.15);
-    color: #E2E8F0;
+    color: var(--color-border);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
 }
@@ -83,7 +83,7 @@
 
 /* Active State - Premium design */
 .plan-tab.active {
-    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 50%, #1E40AF 100%);
+    background: linear-gradient(135deg, var(--color-info) 0%, #1D4ED8 50%, #1E40AF 100%);
     color: white;
     box-shadow: 
         0 12px 30px rgba(59, 130, 246, 0.4),
@@ -126,7 +126,7 @@
 
 .plan-tab:disabled:hover {
     background: transparent;
-    color: #94A3B8;
+    color: var(--color-text-light);
     transform: none;
     box-shadow: none;
 }
@@ -176,24 +176,24 @@
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, var(--color-info), #1D4ED8);
     border-radius: 2px;
 }
 
 .tab-header h3 {
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.75rem;
     font-size: 1.75rem;
     font-weight: 700;
     letter-spacing: -0.025em;
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, var(--color-info), #1D4ED8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .tab-header p {
-    color: #64748B;
+    color: var(--color-text-muted);
     margin: 0;
     font-size: 1.1rem;
     line-height: 1.6;
@@ -255,7 +255,7 @@
     top: -2px;
     left: 0;
     height: 4px;
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, var(--color-info), #1D4ED8);
     border-radius: 2px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -265,7 +265,7 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: linear-gradient(135deg, #10B981, #059669);
+    background: linear-gradient(135deg, var(--color-success), #059669);
     color: white;
     width: 24px;
     height: 24px;
@@ -379,14 +379,15 @@
 /* High contrast mode */
 @media (prefers-contrast: high) {
     .plan-tabs {
-        border: 2px solid #3B82F6;
+        border: 2px solid var(--color-info);
     }
     
     .plan-tab.active {
-        border: 2px solid #FFFFFF;
+        border: 2px solid var(--color-surface);
     }
     
     .tab-header {
-        border: 1px solid #64748B;
+        border: 1px solid var(--color-text-muted);
     }
 }
+

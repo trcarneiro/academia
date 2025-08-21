@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Courses Module CSS
  * Isolated styles for courses functionality
  */
@@ -12,7 +12,7 @@
 }
 
 .courses-isolated .back-btn {
-    background: var(--primary-color, #3b82f6);
+    background: var(--primary-color, var(--color-info));
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -69,7 +69,7 @@
 }
 
 .courses-isolated .stat-label {
-    color: #64748b;
+    color: var(--color-text-muted);
     font-size: 0.9rem;
 }
 
@@ -88,7 +88,7 @@
 .courses-isolated .courses-table th,
 .courses-isolated .courses-table td {
     padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--color-border);
     text-align: left;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .courses-isolated .btn-primary {
-    background: var(--primary-color, #3b82f6);
+    background: var(--primary-color, var(--color-info));
     color: #fff;
 }
 
@@ -120,12 +120,12 @@
 }
 
 .courses-isolated .btn-secondary {
-    background: #e5e7eb;
-    color: #1e293b;
+    background: var(--color-border);
+    color: var(--color-text);
 }
 
 .courses-isolated .btn-secondary:hover {
-    background: #cbd5e1;
+    background: var(--color-border);
 }
 
 .courses-isolated .form-grid {
@@ -150,7 +150,7 @@
 .courses-isolated .form-select,
 .courses-isolated textarea {
     padding: 0.5rem 1rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 1rem;
 }
@@ -176,3 +176,4 @@
         padding: 0.5rem;
     }
 }
+

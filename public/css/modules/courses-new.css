@@ -1,24 +1,24 @@
-/**
+﻿/**
  * Courses Module CSS - Enhanced UX
  * Isolated styles for courses functionality - Following CLAUDE.md guidelines
  */
 
 .courses-isolated {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0f172a;
-    color: #f8fafc;
+    background: var(--color-background-dark);
+    color: var(--color-background);
     min-height: 100vh;
     padding: 2rem;
-    --primary-blue: #3b82f6;
-    --success-green: #10b981;
-    --warning-yellow: #f59e0b;
-    --error-red: #ef4444;
+    --primary-blue: var(--color-info);
+    --success-green: var(--color-success);
+    --warning-yellow: var(--color-warning);
+    --error-red: var(--color-error);
     --surface-dark: rgba(15, 23, 42, 0.95);
     --border-light: rgba(148, 163, 184, 0.1);
     --hover-bg: rgba(59, 130, 246, 0.05);
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
+    --text-primary: var(--color-background);
+    --text-secondary: var(--color-border);
+    --text-muted: var(--color-text-light);
 }
 
 /* Header Section */
@@ -481,3 +481,4 @@
         gap: 0.5rem;
     }
 }
+

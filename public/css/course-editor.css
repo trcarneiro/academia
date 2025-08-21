@@ -1,8 +1,8 @@
-/* Course Editor Module Styles - Isolated */
+﻿/* Course Editor Module Styles - Isolated */
 .course-editor-isolated {
     min-height: 100vh;
-    background: var(--bg-primary, #0f172a);
-    color: var(--text-primary, #f8fafc);
+    background: var(--bg-primary, var(--color-background-dark));
+    color: var(--text-primary, var(--color-background));
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     line-height: 1.6;
 }
@@ -98,14 +98,14 @@
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    color: var(--text-secondary, #94a3b8);
+    color: var(--text-secondary, var(--color-text-light));
 }
 
 .course-editor-isolated .loading-spinner {
     width: 40px;
     height: 40px;
     border: 3px solid var(--border-color, #334155);
-    border-top-color: var(--blue-500, #3b82f6);
+    border-top-color: var(--blue-500, var(--color-info));
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
@@ -117,7 +117,7 @@
 
 /* Form Container */
 .course-editor-isolated .form-container {
-    background: var(--bg-secondary, #1e293b);
+    background: var(--bg-secondary, var(--color-text));
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -140,7 +140,7 @@
 .course-editor-isolated .section-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, var(--color-background));
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -148,7 +148,7 @@
 }
 
 .course-editor-isolated .section-description {
-    color: var(--text-secondary, #94a3b8);
+    color: var(--text-secondary, var(--color-text-light));
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
     line-height: 1.5;
@@ -183,7 +183,7 @@
 /* Labels */
 .course-editor-isolated .form-label {
     font-weight: 500;
-    color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, var(--color-background));
     font-size: 0.95rem;
     display: flex;
     align-items: center;
@@ -191,18 +191,18 @@
 }
 
 .course-editor-isolated .form-label .required {
-    color: var(--red-500, #ef4444);
+    color: var(--red-500, var(--color-error));
 }
 
 /* Input Styles */
 .course-editor-isolated .form-input,
 .course-editor-isolated .form-select,
 .course-editor-isolated .form-textarea {
-    background: var(--bg-primary, #0f172a);
+    background: var(--bg-primary, var(--color-background-dark));
     border: 1px solid var(--border-color, #334155);
     border-radius: 8px;
     padding: 0.75rem;
-    color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, var(--color-background));
     font-size: 0.95rem;
     transition: all 0.2s ease;
     width: 100%;
@@ -213,13 +213,13 @@
 .course-editor-isolated .form-select:focus,
 .course-editor-isolated .form-textarea:focus {
     outline: none;
-    border-color: var(--blue-500, #3b82f6);
+    border-color: var(--blue-500, var(--color-info));
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .course-editor-isolated .form-input::placeholder,
 .course-editor-isolated .form-textarea::placeholder {
-    color: var(--text-muted, #64748b);
+    color: var(--text-muted, var(--color-text-muted));
 }
 
 .course-editor-isolated .form-textarea {
@@ -231,12 +231,12 @@
 .course-editor-isolated .form-input.error,
 .course-editor-isolated .form-select.error,
 .course-editor-isolated .form-textarea.error {
-    border-color: var(--red-500, #ef4444);
+    border-color: var(--red-500, var(--color-error));
 }
 
 /* Field Error */
 .course-editor-isolated .field-error {
-    color: var(--red-500, #ef4444);
+    color: var(--red-500, var(--color-error));
     font-size: 0.8rem;
     margin-top: 0.25rem;
 }
@@ -245,7 +245,7 @@
 .course-editor-isolated .objectives-section,
 .course-editor-isolated .resources-section,
 .course-editor-isolated .evaluation-section {
-    background: var(--bg-primary, #0f172a);
+    background: var(--bg-primary, var(--color-background-dark));
     border-radius: 8px;
     padding: 1.5rem;
     border: 1px solid var(--border-color, #334155);
@@ -271,11 +271,11 @@
 .course-editor-isolated .objective-item textarea {
     flex: 1;
     min-height: 80px;
-    background: var(--bg-secondary, #1e293b);
+    background: var(--bg-secondary, var(--color-text));
     border: 1px solid var(--border-color, #334155);
     border-radius: 6px;
     padding: 0.75rem;
-    color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, var(--color-background));
     resize: vertical;
     font-family: inherit;
     font-size: 0.9rem;
@@ -284,11 +284,11 @@
 .course-editor-isolated .resource-item input,
 .course-editor-isolated .eval-item input {
     flex: 1;
-    background: var(--bg-secondary, #1e293b);
+    background: var(--bg-secondary, var(--color-text));
     border: 1px solid var(--border-color, #334155);
     border-radius: 6px;
     padding: 0.75rem;
-    color: var(--text-primary, #f8fafc);
+    color: var(--text-primary, var(--color-background));
     font-size: 0.9rem;
 }
 
@@ -343,7 +343,7 @@
 
 /* Help Text */
 .course-editor-isolated .help-text {
-    color: var(--text-muted, #64748b);
+    color: var(--text-muted, var(--color-text-muted));
     font-size: 0.8rem;
     margin-top: 0.5rem;
     font-style: italic;
@@ -438,26 +438,27 @@
 .course-editor-isolated .header-btn:focus,
 .course-editor-isolated .add-btn:focus,
 .course-editor-isolated .remove-btn:focus {
-    outline: 2px solid var(--blue-500, #3b82f6);
+    outline: 2px solid var(--blue-500, var(--color-info));
     outline-offset: 2px;
 }
 
 /* Print styles */
 @media print {
     .course-editor-isolated .editor-header {
-        background: white !important;
-        color: black !important;
-        box-shadow: none !important;
+        background: white;
+        color: black;
+        box-shadow: none;
     }
     
     .course-editor-isolated .header-actions,
     .course-editor-isolated .add-btn,
     .course-editor-isolated .remove-btn {
-        display: none !important;
+        display: none;
     }
     
     .course-editor-isolated .form-container {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
+        box-shadow: none;
+        border: 1px solid #ccc;
     }
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Toast System CSS
  * Styles for notification toasts
  */
@@ -47,19 +47,19 @@
 }
 
 .toast-info {
-    background-color: var(--primary-color, #3b82f6);
+    background-color: var(--primary-color, var(--color-info));
 }
 
 .toast-success {
-    background-color: var(--success-color, #10b981);
+    background-color: var(--success-color, var(--color-success));
 }
 
 .toast-warning {
-    background-color: var(--warning-color, #f59e0b);
+    background-color: var(--warning-color, var(--color-warning));
 }
 
 .toast-error {
-    background-color: var(--error-color, #ef4444);
+    background-color: var(--error-color, var(--color-error));
 }
 
 @keyframes toastSlideIn {
@@ -223,3 +223,4 @@
         font-size: 28px;
     }
 }
+

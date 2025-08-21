@@ -1,6 +1,6 @@
-/**
+﻿/**
  * STUDENTS TABLE FORCE OVERRIDE
- * Força aplicação dos estilos da tabela de alunos
+ * ForÃ§a aplicaÃ§Ã£o dos estilos da tabela de alunos
  */
 
 /* ==========================================================================
@@ -9,287 +9,288 @@
 
 /* Action group horizontal layout */
 .action-group-horizontal {
-    display: flex !important;
-    gap: 0.75rem !important;
-    align-items: center !important;
-    flex-wrap: nowrap !important;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .action-group-horizontal .btn-form {
-    margin: 0 !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* Header Actions */
 .header-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 1rem !important;
-    flex-wrap: wrap !important;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .header-actions .action-group-horizontal {
-    margin-left: auto !important;
+    margin-left: auto;
 }
 
 /* Editor Header Layout */
 .editor-header {
-    background: #ffffff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    padding: 1.5rem 2rem !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .header-main {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    width: 100% !important;
-    gap: 2rem !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: 2rem;
 }
 
 .student-info {
-    flex: 1 !important;
-    min-width: 0 !important;
+    flex: 1;
+    min-width: 0;
 }
 
 .student-info h1 {
-    margin: 0 0 0.5rem 0 !important;
-    font-size: 1.75rem !important;
-    font-weight: 700 !important;
-    color: #1e293b !important;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
 }
 
 .student-meta {
-    display: flex !important;
-    gap: 1rem !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .header-actions {
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 1rem !important;
-    margin-left: auto !important;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
 }
 
 /* Editor action bar */
 .action-bar-right .action-group-horizontal {
-    display: flex !important;
-    gap: 0.75rem !important;
-    align-items: center !important;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .header-main {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 1rem !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
     }
     
     .header-actions {
-        justify-content: flex-end !important;
-        margin-left: 0 !important;
+        justify-content: flex-end;
+        margin-left: 0;
     }
     
     .action-group-horizontal {
-        flex-wrap: wrap !important;
+        flex-wrap: wrap;
     }
 }
 
 @media (max-width: 480px) {
     .action-group-horizontal {
-        flex-direction: column !important;
-        width: 100% !important;
+        flex-direction: column;
+        width: 100%;
     }
     
     .action-group-horizontal .btn-form {
-        width: 100% !important;
+        width: 100%;
     }
 }
 
 /* Reset total da tabela de estudantes */
 .students-module,
 .students-module * {
-    box-sizing: border-box !important;
+    box-sizing: border-box;
 }
 
-/* Força layout da tabela */
+/* ForÃ§a layout da tabela */
 .students-module .table-wrapper {
-    background: #ffffff !important;
-    border-radius: 0 0 16px 16px !important;
-    overflow: hidden !important;
-    max-height: 70vh !important;
-    overflow-y: auto !important;
+    background: var(--color-surface);
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .students-module .students-table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    background: #ffffff !important;
-    margin: 0 !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Headers da tabela */
 .students-module .students-table thead {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 10 !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .students-module .students-table th {
-    background: #f8fafc !important;
-    padding: 16px 20px !important;
-    text-align: left !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    color: #374151 !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-    white-space: nowrap !important;
+    background: var(--color-background);
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #374151;
+    border-bottom: 2px solid var(--color-border);
+    white-space: nowrap;
 }
 
 /* Cells da tabela */
 .students-module .students-table td {
-    padding: 16px 20px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    font-size: 0.875rem !important;
-    color: #374151 !important;
-    vertical-align: middle !important;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.875rem;
+    color: #374151;
+    vertical-align: middle;
 }
 
 /* Hover effect */
 .students-module .students-table tbody tr {
-    transition: all 0.2s ease !important;
-    cursor: pointer !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .students-module .students-table tbody tr:hover {
-    background: #f8fafc !important;
-    transform: scale(1.001) !important;
+    background: var(--color-background);
+    transform: scale(1.001);
 }
 
 .students-module .students-table tbody tr:hover td {
-    color: #1e293b !important;
+    color: var(--color-text);
 }
 
 /* Avatar styling */
 .students-module .name-container {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .students-module .avatar {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    overflow: hidden !important;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-color), #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .students-module .avatar-placeholder {
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 1.1rem !important;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 
 .students-module .full-name {
-    font-weight: 600 !important;
-    color: #1e293b !important;
-    line-height: 1.2 !important;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.2;
 }
 
 .students-module .student-id {
-    font-size: 0.75rem !important;
-    color: #64748b !important;
-    font-family: monospace !important;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: monospace;
 }
 
 /* Status badges */
 .students-module .status-badge {
-    padding: 6px 12px !important;
-    border-radius: 20px !important;
-    font-size: 0.8rem !important;
-    font-weight: 600 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .students-module .status-badge.status-active {
-    background: linear-gradient(135deg, #10b981, #059669) !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--color-success), #059669);
+    color: white;
 }
 
 .students-module .status-badge.status-inactive {
-    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--color-error), #dc2626);
+    color: white;
 }
 
 /* Category badges */
 .students-module .category-badge {
-    padding: 4px 8px !important;
-    border-radius: 12px !important;
-    font-size: 0.75rem !important;
-    font-weight: 500 !important;
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid var(--color-border);
 }
 
 .students-module .category-badge.category-vip {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-    color: white !important;
-    border-color: #f59e0b !important;
+    background: linear-gradient(135deg, #fbbf24, var(--color-warning));
+    color: white;
+    border-color: var(--color-warning);
 }
 
 /* Action buttons */
 .students-module .action-buttons {
-    display: flex !important;
-    gap: 8px !important;
-    align-items: center !important;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .students-module .btn-action {
-    padding: 6px 10px !important;
-    border: none !important;
-    border-radius: 6px !important;
-    cursor: pointer !important;
-    font-size: 0.875rem !important;
-    transition: all 0.2s ease !important;
-    background: #f1f5f9 !important;
-    color: #64748b !important;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background: #f1f5f9;
+    color: var(--color-text-muted);
 }
 
 .students-module .btn-action:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .students-module .btn-edit:hover {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--primary-color), #7c3aed);
+    color: white;
 }
 
 /* Links styling */
 .students-module .email-link,
 .students-module .phone-link {
-    color: #4f46e5 !important;
-    text-decoration: none !important;
-    transition: color 0.2s ease !important;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 .students-module .email-link:hover,
 .students-module .phone-link:hover {
-    color: #7c3aed !important;
-    text-decoration: underline !important;
+    color: #7c3aed;
+    text-decoration: underline;
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Activities Module CSS - Guidelines.MD Compliant
  * Design System Integration
  * 
@@ -11,22 +11,22 @@
    ============================================== */
 
 .module-isolated-container[data-module="activities"] {
-    --primary-color: #4f46e5;
+    --primary-color: var(--primary-color);
     --primary-hover: #4338ca;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
+    --success-color: var(--color-success);
+    --warning-color: var(--color-warning);
+    --danger-color: var(--color-error);
     --secondary-color: #6b7280;
     
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
+    --bg-primary: var(--color-surface);
+    --bg-secondary: var(--color-background);
     --bg-card: rgba(255, 255, 255, 0.95);
     
-    --text-primary: #1f2937;
+    --text-primary: var(--color-text);
     --text-secondary: #6b7280;
     --text-muted: #9ca3af;
     
-    --border-color: #e5e7eb;
+    --border-color: var(--color-border);
     --border-hover: #d1d5db;
     
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -251,7 +251,7 @@
 }
 
 .module-isolated-container[data-module="activities"] .table-row:hover {
-    background: #f8fafc;
+    background: var(--color-background);
 }
 
 /* Activity Information */
@@ -319,7 +319,7 @@
 }
 
 .module-isolated-container[data-module="activities"] .status-assessment {
-    background: #e2e8f0;
+    background: var(--color-border);
     color: #2d3748;
 }
 
@@ -733,3 +733,4 @@
         padding: var(--spacing-sm);
     }
 }
+

@@ -1,67 +1,67 @@
-/* PLAN EDITOR MODULE - Padronizado com Sistema Base */
-/* Usa as variáveis corretas do module-system.css */
+﻿/* PLAN EDITOR MODULE - Padronizado com Sistema Base */
+/* Usa as variÃ¡veis corretas do module-system.css */
 
 /* === SISTEMA DE ABAS === */
 .plan-editor-tabs {
-    display: flex !important;
-    gap: 8px !important;
-    margin: 1.5rem 0 0 !important;
-    border-bottom: 2px solid var(--border-light) !important;
-    padding-bottom: 0 !important;
+    display: flex;
+    gap: 8px;
+    margin: 1.5rem 0 0;
+    border-bottom: 2px solid var(--border-light);
+    padding-bottom: 0;
 }
 
 .plan-editor-tab {
-    padding: 0.75rem 1.5rem !important;
-    border: 1px solid var(--border-light) !important;
-    border-bottom: none !important;
-    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
-    background: var(--bg-secondary) !important;
-    cursor: pointer !important;
-    font-weight: 600 !important;
-    color: var(--text-secondary) !important;
-    position: relative !important;
-    transition: var(--transition-normal) !important;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--border-light);
+    border-bottom: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary);
+    position: relative;
+    transition: var(--transition-normal);
 }
 
 .plan-editor-tab:hover {
-    background: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .plan-editor-tab.active {
-    background: var(--bg-secondary) !important;
-    color: #10b981 !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.1) !important;
+    background: var(--bg-secondary);
+    color: var(--color-success);
+    border-color: var(--color-success);
+    box-shadow: 0 -2px 8px rgba(16, 185, 129, 0.1);
 }
 
 .plan-editor-tab.badge-dirty::after {
-    content: "" !important;
-    width: 8px !important;
-    height: 8px !important;
-    background: #ef4444 !important;
-    border-radius: 50% !important;
-    position: absolute !important;
-    top: 8px !important;
-    right: 8px !important;
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: var(--color-error);
+    border-radius: 50%;
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
-/* === PAINÉIS DAS ABAS === */
+/* === PAINÃ‰IS DAS ABAS === */
 .plan-editor-tab-panels {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-light) !important;
-    border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius) !important;
-    padding: 2rem !important;
-    min-height: 400px !important;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius);
+    padding: 2rem;
+    min-height: 400px;
 }
 
 .plan-editor-tab-panel {
-    display: none !important;
+    display: none;
 }
 
 .plan-editor-tab-panel.active {
-    display: block !important;
-    animation: fadeIn 0.3s ease-in-out !important;
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -75,358 +75,358 @@
     }
 }
 
-/* === HEADERS DE SEÇÕES === */
+/* === HEADERS DE SEÃ‡Ã•ES === */
 .plan-editor-courses-header {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 1.5rem;
 }
 
 .plan-editor-courses-header h3 {
-    margin: 0 0 0.5rem 0 !important;
-    color: var(--text-primary) !important;
-    font-size: 1.25rem !important;
-    font-weight: 700 !important;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
 }
 
 .plan-editor-help {
-    margin: 0 !important;
-    color: var(--text-secondary) !important;
-    font-size: 0.875rem !important;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
 }
 
-/* === ASSOCIAÇÃO DE CURSOS === */
+/* === ASSOCIAÃ‡ÃƒO DE CURSOS === */
 .plan-editor-courses-association {
-    display: grid !important;
-    grid-template-columns: 1fr auto 1fr !important;
-    gap: 1.5rem !important;
-    margin: 2rem 0 !important;
-    align-items: start !important;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    align-items: start;
 }
 
 .plan-editor-courses-col {
-    border: 1px solid var(--border-light) !important;
-    border-radius: var(--border-radius) !important;
-    background: var(--bg-primary) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    max-height: 500px !important;
-    min-height: 300px !important;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+    min-height: 300px;
 }
 
 .plan-editor-courses-col .plan-editor-courses-header {
-    padding: 1rem 1.25rem !important;
-    background: var(--bg-secondary) !important;
-    border-bottom: 1px solid var(--border-light) !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    font-weight: 600 !important;
-    color: var(--text-primary) !important;
-    margin-bottom: 0 !important;
+    padding: 1rem 1.25rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0;
 }
 
 .plan-editor-count-badge {
-    background: #10b981 !important;
-    color: white !important;
-    padding: 0.25rem 0.5rem !important;
-    border-radius: 12px !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
+    background: var(--color-success);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .plan-editor-courses-toolbar {
-    padding: 1rem !important;
-    border-bottom: 1px solid var(--border-light) !important;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .plan-editor-course-list {
-    list-style: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow-y: auto !important;
-    flex: 1 !important;
-    background: var(--bg-secondary) !important;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+    background: var(--bg-secondary);
 }
 
 .plan-editor-course-list li {
-    padding: 0.75rem 1rem !important;
-    border-bottom: 1px solid var(--border-light) !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    cursor: pointer !important;
-    transition: var(--transition-normal) !important;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
 }
 
 .plan-editor-course-list li:hover {
-    background: var(--bg-primary) !important;
+    background: var(--bg-primary);
 }
 
 .plan-editor-course-list li.selected {
-    background: rgba(16, 185, 129, 0.1) !important;
-    border-left: 3px solid #10b981 !important;
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 3px solid var(--color-success);
 }
 
 .plan-editor-course-list li .meta {
-    margin-left: auto !important;
-    font-size: 0.75rem !important;
-    color: var(--text-secondary) !important;
-    text-align: right !important;
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: right;
 }
 
 .plan-editor-course-list li:last-child {
-    border-bottom: none !important;
+    border-bottom: none;
 }
 
-/* === AÇÕES DE ASSOCIAÇÃO === */
+/* === AÃ‡Ã•ES DE ASSOCIAÃ‡ÃƒO === */
 .plan-editor-assoc-actions {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    gap: 1rem !important;
-    padding: 1rem 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 0;
 }
 
 .plan-editor-assoc-actions button {
-    min-width: 120px !important;
+    min-width: 120px;
 }
 
 /* === BARRA DE SALVAMENTO === */
 .plan-editor-save-bar {
-    margin-top: 1.5rem !important;
-    padding: 1rem 1.25rem !important;
-    border: 1px solid #f59e0b !important;
-    background: rgba(245, 158, 11, 0.1) !important;
-    border-radius: var(--border-radius) !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    gap: 1rem !important;
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-warning);
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: var(--border-radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
 }
 
 .plan-editor-save-info {
-    flex: 1 !important;
-    color: var(--text-primary) !important;
+    flex: 1;
+    color: var(--text-primary);
 }
 
 .plan-editor-save-actions {
-    display: flex !important;
-    gap: 0.75rem !important;
+    display: flex;
+    gap: 0.75rem;
 }
 
 /* === PLANOS DE AULA === */
 .plan-editor-lesson-plans {
-    padding: 2rem !important;
-    text-align: center !important;
+    padding: 2rem;
+    text-align: center;
 }
 
 /* === RESPONSIVIDADE === */
 @media (max-width: 1024px) {
     .plan-editor-courses-association {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .plan-editor-assoc-actions {
-        flex-direction: row !important;
-        justify-content: center !important;
-        order: -1 !important;
-        margin-bottom: 1rem !important;
+        flex-direction: row;
+        justify-content: center;
+        order: -1;
+        margin-bottom: 1rem;
     }
     
     .plan-editor-courses-col {
-        max-height: 250px !important;
+        max-height: 250px;
     }
 }
 
 @media (max-width: 768px) {
     .plan-editor-tab-panels {
-        padding: 1rem !important;
+        padding: 1rem;
     }
     
     .plan-editor-tabs {
-        flex-wrap: wrap !important;
-        gap: 4px !important;
+        flex-wrap: wrap;
+        gap: 4px;
     }
     
     .plan-editor-tab {
-        padding: 0.5rem 1rem !important;
-        font-size: 0.875rem !important;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
     }
     
     .plan-editor-save-bar {
-        flex-direction: column !important;
-        text-align: center !important;
+        flex-direction: column;
+        text-align: center;
     }
     
     .plan-editor-save-actions {
-        justify-content: center !important;
-        width: 100% !important;
+        justify-content: center;
+        width: 100%;
     }
 }
 
 /* === OVERRIDE PARA COMPATIBILITY === */
-/* Força o estilo correto caso haja conflitos com CSS antigo */
+/* ForÃ§a o estilo correto caso haja conflitos com CSS antigo */
 .module-isolated-base #loadingState {
-    display: block !important;
-    text-align: center !important;
-    padding: 2rem !important;
-    color: var(--text-secondary) !important;
+    display: block;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
 }
 
 .module-isolated-base #planTabs.plan-editor-tabs {
-    display: flex !important;
+    display: flex;
 }
 
 .module-isolated-base #planTabPanels.plan-editor-tab-panels {
-    display: block !important;
+    display: block;
 }
 
-/* Força visibilidade dos formulários */
+/* ForÃ§a visibilidade dos formulÃ¡rios */
 .module-isolated-base #mainContent {
-    display: block !important;
+    display: block;
 }
 
 .module-isolated-base .module-isolated-form {
-    background: var(--bg-secondary) !important;
-    padding: 0 !important;
+    background: var(--bg-secondary);
+    padding: 0;
 }
 
 .module-isolated-base .module-isolated-form-section {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-light) !important;
-    border-radius: var(--border-radius) !important;
-    padding: 1.5rem !important;
-    margin-bottom: 1.5rem !important;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .module-isolated-base .module-isolated-form-section h3 {
-    margin: 0 0 1rem 0 !important;
-    color: var(--text-primary) !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    border-bottom: 1px solid var(--border-light) !important;
-    padding-bottom: 0.5rem !important;
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.5rem;
 }
 
 .module-isolated-base .module-isolated-form-group {
-    margin-bottom: 1rem !important;
+    margin-bottom: 1rem;
 }
 
 .module-isolated-base .module-isolated-form-row {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-    gap: 1rem !important;
-    margin-bottom: 1rem !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .module-isolated-base .module-isolated-label {
-    display: block !important;
-    margin-bottom: 0.5rem !important;
-    font-weight: 600 !important;
-    color: var(--text-primary) !important;
-    font-size: 0.875rem !important;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
 }
 
 .module-isolated-base .module-isolated-input,
 .module-isolated-base .module-isolated-select,
 .module-isolated-base .module-isolated-textarea {
-    width: 100% !important;
-    padding: 0.75rem !important;
-    border: 1px solid var(--border-light) !important;
-    border-radius: var(--border-radius) !important;
-    background: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    font-size: 0.875rem !important;
-    transition: var(--transition-normal) !important;
-    box-sizing: border-box !important;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: var(--transition-normal);
+    box-sizing: border-box;
 }
 
 .module-isolated-base .module-isolated-input:focus,
 .module-isolated-base .module-isolated-select:focus,
 .module-isolated-base .module-isolated-textarea:focus {
-    outline: none !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+    outline: none;
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .module-isolated-base .module-isolated-form-actions {
-    display: flex !important;
-    justify-content: flex-end !important;
-    gap: 1rem !important;
-    padding: 1.5rem 0 0 !important;
-    border-top: 1px solid var(--border-light) !important;
-    margin-top: 2rem !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 0 0;
+    border-top: 1px solid var(--border-light);
+    margin-top: 2rem;
 }
 
 .module-isolated-base .module-isolated-btn-primary,
 .module-isolated-base .module-isolated-btn-secondary,
 .module-isolated-base .module-isolated-btn-danger {
-    padding: 0.75rem 1.5rem !important;
-    border: none !important;
-    border-radius: var(--border-radius) !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    cursor: pointer !important;
-    transition: var(--transition-normal) !important;
-    text-decoration: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .module-isolated-base .module-isolated-btn-primary {
-    background: #10b981 !important;
-    color: white !important;
+    background: var(--color-success);
+    color: white;
 }
 
 .module-isolated-base .module-isolated-btn-primary:hover {
-    background: #059669 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: var(--shadow-md) !important;
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .module-isolated-base .module-isolated-btn-secondary {
-    background: var(--bg-secondary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-light) !important;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
 }
 
 .module-isolated-base .module-isolated-btn-secondary:hover {
-    background: var(--bg-primary) !important;
-    border-color: var(--border-medium) !important;
+    background: var(--bg-primary);
+    border-color: var(--border-medium);
 }
 
 .module-isolated-base .module-isolated-btn-danger {
-    background: #ef4444 !important;
-    color: white !important;
+    background: var(--color-error);
+    color: white;
 }
 
 .module-isolated-base .module-isolated-btn-danger:hover {
-    background: #dc2626 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: var(--shadow-md) !important;
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 /* Ensure loading state is properly styled */
 .module-isolated-base .module-isolated-loading {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 1rem !important;
-    padding: 3rem !important;
-    color: var(--text-secondary) !important;
-    background: var(--bg-secondary) !important;
-    border-radius: var(--border-radius) !important;
-    margin: 1rem 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    margin: 1rem 0;
 }
 
 .module-isolated-base .module-isolated-loading-spinner {
-    width: 24px !important;
-    height: 24px !important;
-    border: 3px solid var(--border-light) !important;
-    border-top: 3px solid #10b981 !important;
-    border-radius: 50% !important;
-    animation: spin 1s linear infinite !important;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border-light);
+    border-top: 3px solid var(--color-success);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -435,76 +435,77 @@
 }
 
 /* === CONTROLE DE VISIBILIDADE VIA JAVASCRIPT === */
-/* Estados iniciais - elementos visíveis por padrão para evitar tela branca */
+/* Estados iniciais - elementos visÃ­veis por padrÃ£o para evitar tela branca */
 
 .module-isolated-base #loadingState.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #planTabs.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #planTabPanels.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #mainContent.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #coursesLoading.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #coursesAssociation.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #coursesDiffBar.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #availableEmptyState.hidden {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #linkedEmptyState.hidden {
-    display: none !important;
+    display: none;
 }
 
-/* Por padrão, alguns elementos devem ficar escondidos inicialmente */
+/* Por padrÃ£o, alguns elementos devem ficar escondidos inicialmente */
 .module-isolated-base #coursesLoading {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #coursesDiffBar {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #availableEmptyState {
-    display: none !important;
+    display: none;
 }
 
 .module-isolated-base #linkedEmptyState {
-    display: none !important;
+    display: none;
 }
 
-/* Estados de loading - aparecem quando necessário */
+/* Estados de loading - aparecem quando necessÃ¡rio */
 .module-isolated-base #coursesLoading.show {
-    display: flex !important;
+    display: flex;
 }
 
 .module-isolated-base #coursesDiffBar.show {
-    display: flex !important;
+    display: flex;
 }
 
 .module-isolated-base #availableEmptyState.show {
-    display: block !important;
+    display: block;
 }
 
 .module-isolated-base #linkedEmptyState.show {
-    display: block !important;
+    display: block;
 }
 
-/* Todas as outras regras são herdadas do module-system.css */
+/* Todas as outras regras sÃ£o herdadas do module-system.css */
+

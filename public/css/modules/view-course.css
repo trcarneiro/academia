@@ -1,9 +1,9 @@
-/* Enhanced View Course Module Styles */
+﻿/* Enhanced View Course Module Styles */
 
 /* Reset and base styles for isolated mode */
 .view-course-isolated {
-    background-color: var(--bg-primary, #f8fafc);
-    color: var(--text-primary, #1e293b);
+    background-color: var(--bg-primary, var(--color-background));
+    color: var(--text-primary, var(--color-text));
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
 }
@@ -11,7 +11,7 @@
 /* Header Styles */
 .view-course-header {
     background: white;
-    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    border-bottom: 1px solid var(--border-color, var(--color-border));
     padding: 1.5rem 2rem;
     position: sticky;
     top: 0;
@@ -40,16 +40,16 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     background: var(--bg-secondary, #f1f5f9);
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
     border-radius: 0.5rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .back-button:hover {
-    background: var(--bg-tertiary, #e2e8f0);
+    background: var(--bg-tertiary, var(--color-border));
     transform: translateX(-2px);
 }
 
@@ -79,8 +79,8 @@
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid var(--border-color, #e2e8f0);
-    border-top: 4px solid var(--primary-color, #3b82f6);
+    border: 4px solid var(--border-color, var(--color-border));
+    border-top: 4px solid var(--primary-color, var(--color-info));
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -91,7 +91,7 @@
 }
 
 .error-state {
-    color: var(--error-color, #ef4444);
+    color: var(--error-color, var(--color-error));
 }
 
 .error-icon {
@@ -111,7 +111,7 @@
     border-radius: 1rem;
     padding: 2rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .course-header-info {
@@ -138,20 +138,20 @@
 }
 
 .course-category-badge {
-    background: var(--accent-color, #3b82f6);
+    background: var(--accent-color, var(--color-info));
     color: white;
 }
 
 .course-category-badge.beginner {
-    background: #10b981;
+    background: var(--color-success);
 }
 
 .course-category-badge.intermediate {
-    background: #f59e0b;
+    background: var(--color-warning);
 }
 
 .course-category-badge.advanced {
-    background: #ef4444;
+    background: var(--color-error);
 }
 
 .course-category-badge.expert {
@@ -159,16 +159,16 @@
 }
 
 .course-category-badge.master {
-    background: #1f2937;
+    background: var(--color-text);
 }
 
 .course-status-badge {
-    background: var(--success-color, #10b981);
+    background: var(--success-color, var(--color-success));
     color: white;
 }
 
 .course-status-badge.inactive {
-    background: var(--error-color, #ef4444);
+    background: var(--error-color, var(--color-error));
 }
 
 .course-actions {
@@ -181,10 +181,10 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
     border-radius: 0.5rem;
     background: white;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -195,9 +195,9 @@
 }
 
 .action-button.primary {
-    background: var(--primary-color, #3b82f6);
+    background: var(--primary-color, var(--color-info));
     color: white;
-    border-color: var(--primary-color, #3b82f6);
+    border-color: var(--primary-color, var(--color-info));
 }
 
 .action-button.primary:hover {
@@ -209,7 +209,7 @@
 }
 
 .action-button.secondary:hover {
-    background: var(--bg-tertiary, #e2e8f0);
+    background: var(--bg-tertiary, var(--color-border));
 }
 
 /* Course Details Grid */
@@ -224,9 +224,9 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    background: var(--bg-secondary, #f8fafc);
+    background: var(--bg-secondary, var(--color-background));
     border-radius: 0.75rem;
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .detail-icon {
@@ -248,14 +248,14 @@
 
 .detail-label {
     font-size: 0.875rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
     margin-bottom: 0.25rem;
 }
 
 .detail-value {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, var(--color-text));
 }
 
 /* Section Styles */
@@ -264,7 +264,7 @@
     border-radius: 1rem;
     padding: 2rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .section-header {
@@ -277,22 +277,22 @@
 .section-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, var(--color-text));
     margin: 0;
 }
 
 /* Description Card */
 .course-description-card {
     padding: 1.5rem;
-    background: var(--bg-secondary, #f8fafc);
+    background: var(--bg-secondary, var(--color-background));
     border-radius: 0.75rem;
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .course-description-text {
     font-size: 1rem;
     line-height: 1.75;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
     margin: 0;
 }
 
@@ -306,8 +306,8 @@
 
 .lesson-card,
 .technique-card {
-    background: var(--bg-secondary, #f8fafc);
-    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--bg-secondary, var(--color-background));
+    border: 1px solid var(--border-color, var(--color-border));
     border-radius: 0.75rem;
     padding: 1.5rem;
     transition: all 0.2s;
@@ -333,12 +333,12 @@
     font-weight: 600;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
-    background: var(--primary-color, #3b82f6);
+    background: var(--primary-color, var(--color-info));
     color: white;
 }
 
 .technique-difficulty {
-    background: var(--accent-color, #3b82f6);
+    background: var(--accent-color, var(--color-info));
 }
 
 .lesson-actions,
@@ -358,21 +358,21 @@
 }
 
 .action-icon:hover {
-    background: var(--bg-tertiary, #e2e8f0);
+    background: var(--bg-tertiary, var(--color-border));
 }
 
 .lesson-title,
 .technique-name {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, var(--color-text));
     margin: 0 0 0.5rem 0;
 }
 
 .lesson-description,
 .technique-description {
     font-size: 0.875rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
     margin: 0 0 1rem 0;
     line-height: 1.5;
 }
@@ -381,7 +381,7 @@
     display: flex;
     gap: 1rem;
     font-size: 0.875rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
 }
 
 .lesson-duration,
@@ -390,7 +390,7 @@
     padding: 0.25rem 0.75rem;
     background: white;
     border-radius: 9999px;
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 /* Stats Grid */
@@ -403,28 +403,28 @@
 .stat-card {
     text-align: center;
     padding: 2rem;
-    background: var(--bg-secondary, #f8fafc);
+    background: var(--bg-secondary, var(--color-background));
     border-radius: 0.75rem;
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--primary-color, #3b82f6);
+    color: var(--primary-color, var(--color-info));
     margin-bottom: 0.5rem;
 }
 
 .stat-label {
     font-size: 0.875rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: var(--text-secondary, #64748b);
+    color: var(--text-secondary, var(--color-text-muted));
 }
 
 .empty-icon {
@@ -435,7 +435,7 @@
 .empty-state h3 {
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, var(--color-text));
 }
 
 .empty-state p {
@@ -459,7 +459,7 @@
 }
 
 .primary-button {
-    background: var(--primary-color, #3b82f6);
+    background: var(--primary-color, var(--color-info));
     color: white;
 }
 
@@ -470,12 +470,12 @@
 
 .secondary-button {
     background: var(--bg-secondary, #f1f5f9);
-    color: var(--text-secondary, #64748b);
-    border: 1px solid var(--border-color, #e2e8f0);
+    color: var(--text-secondary, var(--color-text-muted));
+    border: 1px solid var(--border-color, var(--color-border));
 }
 
 .secondary-button:hover {
-    background: var(--bg-tertiary, #e2e8f0);
+    background: var(--bg-tertiary, var(--color-border));
 }
 
 .primary-button.small,
@@ -546,7 +546,7 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .view-course-isolated {
-        background-color: #0f172a;
+        background-color: var(--color-background-dark);
         color: #f1f5f9;
     }
 
@@ -557,7 +557,7 @@
     .lesson-card,
     .technique-card,
     .stat-card {
-        background: #1e293b;
+        background: var(--color-text);
         border-color: #334155;
     }
 
@@ -566,7 +566,7 @@
     .secondary-button {
         background: #334155;
         border-color: #475569;
-        color: #cbd5e1;
+        color: var(--color-border);
     }
 
     .back-button:hover,
@@ -604,7 +604,7 @@
 /* Focus styles for accessibility */
 button:focus,
 .action-icon:focus {
-    outline: 2px solid var(--primary-color, #3b82f6);
+    outline: 2px solid var(--primary-color, var(--color-info));
     outline-offset: 2px;
 }
 
@@ -626,3 +626,4 @@ button:focus,
         margin-bottom: 2rem;
     }
 }
+

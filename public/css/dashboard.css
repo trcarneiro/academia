@@ -1,9 +1,9 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+﻿* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: system-ui, -apple-system, sans-serif;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
-    color: #F8FAFC;
+    background: linear-gradient(135deg, var(--color-background-dark) 0%, var(--color-text) 50%, #334155 100%);
+    color: var(--color-background);
     min-height: 100vh;
     margin: 0;
     padding: 0;
@@ -51,7 +51,7 @@ body {
 }
 
 .logo h1 {
-    color: #3B82F6;
+    color: var(--color-info);
     font-size: 1.5rem;
     font-weight: 800;
     display: flex;
@@ -60,7 +60,7 @@ body {
 }
 
 .logo p {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -104,7 +104,7 @@ body {
     gap: 1rem;
     padding: 1rem;
     border-radius: 12px;
-    color: #CBD5E1;
+    color: var(--color-border);
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -120,7 +120,7 @@ body {
 }
 
 .nav-link.active {
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    background: linear-gradient(135deg, var(--color-info), #2563EB);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
 }
 
@@ -131,7 +131,7 @@ body {
 }
 
 .badge {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
     padding: 0.125rem 0.5rem;
     border-radius: 12px;
@@ -141,7 +141,7 @@ body {
 }
 
 .badge.success {
-    background: #10B981;
+    background: var(--color-success);
 }
 
 .main-content, .dashboard-main {
@@ -227,7 +227,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #0F172A;
+    background: var(--color-background-dark);
     z-index: 1001;
     overflow-y: auto;
     padding: 2rem;
@@ -251,7 +251,7 @@ body {
 .page-header h1 {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #F8FAFC, #3B82F6);
+    background: linear-gradient(135deg, var(--color-background), var(--color-info));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -259,7 +259,7 @@ body {
 }
 
 .page-header p {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 1rem;
 }
 
@@ -298,7 +298,7 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, #3B82F6, #10B981);
+    background: linear-gradient(90deg, var(--color-info), var(--color-success));
 }
 
 .stat-card:hover {
@@ -309,13 +309,13 @@ body {
 .stat-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
     line-height: 1;
 }
 
 .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -340,11 +340,11 @@ body {
 .table-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .btn {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border: none;
     border-radius: 12px;
@@ -365,14 +365,14 @@ body {
 
 .btn.secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .empty-state {
     padding: 3rem;
     text-align: center;
-    color: #64748B;
+    color: var(--color-text-muted);
 }
 
 .empty-icon {
@@ -408,7 +408,7 @@ body {
     background: transparent;
     border: none;
     border-radius: 8px;
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -418,11 +418,11 @@ body {
 
 .student-tab:hover {
     background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .student-tab.active {
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    background: linear-gradient(135deg, var(--color-info), #2563EB);
     color: white;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -459,11 +459,11 @@ body {
 .subscription-header h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .subscription-header p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -492,18 +492,18 @@ body {
 
 .info-item label {
     font-weight: 600;
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
 .info-value {
     font-size: 1rem;
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
 .info-value.status-active {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .subscription-actions {
@@ -527,11 +527,11 @@ body {
 .courses-header h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .courses-header p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -562,7 +562,7 @@ body {
 }
 
 .course-header h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.1rem;
 }
 
@@ -575,12 +575,12 @@ body {
 
 .course-status.active {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .course-status.completed {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .course-details {
@@ -588,7 +588,7 @@ body {
 }
 
 .course-details p {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     margin-bottom: 0.5rem;
 }
@@ -617,11 +617,11 @@ body {
 .attendance-header h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .attendance-header p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -640,7 +640,7 @@ body {
 }
 
 .attendance-recent h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
@@ -662,11 +662,11 @@ body {
 
 .attendance-date {
     font-size: 0.875rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .attendance-class {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 500;
 }
 
@@ -676,11 +676,11 @@ body {
 }
 
 .attendance-status.present {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .attendance-status.absent {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Progress Tab Styles */
@@ -697,11 +697,11 @@ body {
 .progress-header h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .progress-header p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -720,14 +720,14 @@ body {
 }
 
 .progress-card h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
 .level-badge {
     display: inline-block;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    background: linear-gradient(135deg, var(--color-info), #2563EB);
     color: white;
     border-radius: 20px;
     font-weight: 600;
@@ -744,7 +744,7 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3B82F6, #10B981);
+    background: linear-gradient(90deg, var(--color-info), var(--color-success));
     transition: width 0.3s ease;
 }
 
@@ -764,12 +764,12 @@ body {
 
 .technique-badge.completed {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .technique-badge.in-progress {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .technique-badge.pending {
@@ -785,7 +785,7 @@ body {
 }
 
 .achievements h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
@@ -811,18 +811,18 @@ body {
 }
 
 .achievement-info h5 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.25rem;
 }
 
 .achievement-info p {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     margin-bottom: 0.25rem;
 }
 
 .achievement-info small {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
 }
 
@@ -833,14 +833,14 @@ body {
     align-items: center;
     padding: 3rem;
     font-size: 1.2rem;
-    color: #64748B;
+    color: var(--color-text-muted);
     animation: pulse 1.5s ease-in-out infinite;
 }
 
 .loading-placeholder {
     padding: 2rem;
     text-align: center;
-    color: #64748B;
+    color: var(--color-text-muted);
 }
 
 .placeholder-text {
@@ -872,7 +872,7 @@ body {
     align-items: center;
     padding: 3rem;
     font-size: 1.2rem;
-    color: #EF4444;
+    color: var(--color-error);
     text-align: center;
 }
 
@@ -896,12 +896,12 @@ body {
 .no-data-message {
     text-align: center;
     padding: 2rem;
-    color: #64748B;
+    color: var(--color-text-muted);
     font-style: italic;
 }
 
 .status-inactive {
-    color: #EF4444 !important;
+    color: var(--color-error);
 }
 
 /* Animations */

@@ -1,4 +1,4 @@
-/* ================================================
+﻿/* ================================================
    CLASSES MODULE - ISOLATED STYLES
    ================================================ */
 
@@ -11,7 +11,7 @@
 
 /* Page Header */
 .classes-isolated-page-header {
-    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    background: linear-gradient(135deg, #059669 0%, var(--color-success) 100%);
     border-radius: 16px;
     padding: 2rem;
     margin-bottom: 2rem;
@@ -28,7 +28,7 @@
 .classes-isolated-title {
     margin: 0;
     font-size: 2rem;
-    background: linear-gradient(135deg, #FFFFFF, #F0FDF4);
+    background: linear-gradient(135deg, var(--color-surface), #F0FDF4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -62,7 +62,7 @@
 .classes-isolated-stat-value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #FFFFFF;
+    color: var(--color-surface);
 }
 
 .classes-isolated-stat-label {
@@ -90,7 +90,7 @@
 .classes-isolated-table-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .classes-isolated-table-actions {
@@ -100,9 +100,9 @@
 }
 
 .classes-isolated-filter-select {
-    background: #1E293B;
+    background: var(--color-text);
     border: 1px solid #374151;
-    color: #F8FAFC;
+    color: var(--color-background);
     padding: 0.5rem;
     border-radius: 8px;
 }
@@ -118,14 +118,14 @@
 }
 
 .classes-isolated-table thead tr {
-    background: #1E293B;
+    background: var(--color-text);
     border-bottom: 1px solid #374151;
 }
 
 .classes-isolated-table th {
     padding: 1rem;
     text-align: left;
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
@@ -135,12 +135,12 @@
 }
 
 .classes-isolated-text-secondary {
-    color: #CBD5E1;
+    color: var(--color-border);
 }
 
 .classes-isolated-text-small {
     font-size: 0.75rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 /* Class Info */
@@ -148,7 +148,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
@@ -182,7 +182,7 @@
 }
 
 .classes-isolated-belt-white {
-    background: #FFFFFF;
+    background: var(--color-surface);
     color: #000;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .classes-isolated-count-badge {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
@@ -241,7 +241,7 @@
 
 /* Buttons */
 .classes-isolated-btn {
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, var(--color-info), #1D4ED8);
     border: none;
     color: white;
     padding: 0.75rem 1.5rem;
@@ -255,7 +255,7 @@
 }
 
 .classes-isolated-btn-primary {
-    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    background: linear-gradient(135deg, var(--color-info), #1D4ED8);
 }
 
 .classes-isolated-btn-secondary {
@@ -268,7 +268,7 @@
 }
 
 .classes-isolated-btn-small.classes-isolated-btn-primary {
-    background: #3B82F6;
+    background: var(--color-info);
 }
 
 .classes-isolated-btn-small.classes-isolated-btn-secondary {
@@ -291,7 +291,7 @@
     background: rgba(59, 130, 246, 0.1);
     padding: 1rem;
     border-radius: 8px;
-    border-left: 4px solid #3B82F6;
+    border-left: 4px solid var(--color-info);
     margin-bottom: 1rem;
 }
 
@@ -303,12 +303,12 @@
 }
 
 .classes-isolated-class-name {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
 .classes-isolated-time-badge {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
@@ -343,7 +343,7 @@
 }
 
 .classes-isolated-lesson-white .classes-isolated-lesson-title {
-    color: #FFFFFF;
+    color: var(--color-surface);
 }
 
 .classes-isolated-lesson-yellow .classes-isolated-lesson-title {
@@ -356,7 +356,7 @@
 }
 
 .classes-isolated-class-footer {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
 }
 
@@ -403,7 +403,7 @@
 }
 
 .classes-isolated-stat-green .classes-isolated-weekly-value {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .classes-isolated-stat-purple .classes-isolated-weekly-value {
@@ -411,25 +411,25 @@
 }
 
 .classes-isolated-weekly-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
 }
 
 .classes-isolated-section-title {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
 }
 
 .classes-isolated-evaluation-list {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     line-height: 1.6;
     margin-bottom: 1rem;
 }
 
 .classes-isolated-focus-list {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
 }
 
@@ -479,7 +479,7 @@
 .classes-isolated-form-label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 600;
 }
 
@@ -490,14 +490,14 @@
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid #374151;
     border-radius: 8px;
-    color: #F8FAFC;
+    color: var(--color-background);
     transition: border-color 0.2s;
 }
 
 .classes-isolated-form-input:focus,
 .classes-isolated-form-select:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -517,12 +517,12 @@
 
 .classes-isolated-card-blue {
     background: rgba(59, 130, 246, 0.1);
-    border-color: #3B82F6;
+    border-color: var(--color-info);
 }
 
 .classes-isolated-card-orange {
     background: rgba(245, 158, 11, 0.1);
-    border-color: #F59E0B;
+    border-color: var(--color-warning);
 }
 
 .classes-isolated-card-purple {
@@ -536,11 +536,11 @@
 }
 
 .classes-isolated-card-blue .classes-isolated-card-title {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .classes-isolated-card-orange .classes-isolated-card-title {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .classes-isolated-card-purple .classes-isolated-card-title {
@@ -558,14 +558,14 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     cursor: pointer;
 }
 
 .classes-isolated-checkbox {
     margin: 0;
-    accent-color: #3B82F6;
+    accent-color: var(--color-info);
 }
 
 /* Time Grid */
@@ -586,12 +586,12 @@
     background: rgba(16, 185, 129, 0.1);
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid #10B981;
+    border: 1px solid var(--color-success);
     margin-bottom: 1rem;
 }
 
 .classes-isolated-info-title {
-    color: #10B981;
+    color: var(--color-success);
     margin: 0 0 0.5rem 0;
 }
 
@@ -616,7 +616,7 @@
 
 .classes-isolated-course-blue {
     background: rgba(59, 130, 246, 0.1);
-    border-color: #3B82F6;
+    border-color: var(--color-info);
 }
 
 .classes-isolated-course-yellow {
@@ -633,7 +633,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     margin-bottom: 0.5rem;
     cursor: pointer;
 }
@@ -643,7 +643,7 @@
 }
 
 .classes-isolated-course-details {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     margin-left: 1.5rem;
 }
@@ -764,3 +764,4 @@
         justify-content: center;
     }
 }
+

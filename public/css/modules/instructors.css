@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    INSTRUCTORS MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .instructors-isolated .instructors-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -65,19 +65,19 @@
 }
 
 .instructors-isolated .stat-value.active {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .instructors-isolated .stat-value.completed {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .instructors-isolated .stat-value.pending {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .instructors-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -105,7 +105,7 @@
 
 .instructors-isolated .filter-group label,
 .instructors-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -114,7 +114,7 @@
 .instructors-isolated .instructor-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -125,7 +125,7 @@
 .instructors-isolated .instructor-filter:hover,
 .instructors-isolated .instructor-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .instructors-isolated .instructor-filter.active,
@@ -146,13 +146,13 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .instructors-isolated .search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .instructors-isolated .search-input:focus {
@@ -197,7 +197,7 @@
 }
 
 .instructors-isolated .instructor-card.active::before {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .instructors-isolated .instructor-card.inactive::before {
@@ -205,7 +205,7 @@
 }
 
 .instructors-isolated .instructor-card.vacation::before {
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 /* Instructor Card Header */
@@ -237,7 +237,7 @@
 }
 
 .instructors-isolated .instructor-info h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -260,7 +260,7 @@
 }
 
 .instructors-isolated .instructor-contact span {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -278,7 +278,7 @@
 
 .instructors-isolated .status-badge.active {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .instructors-isolated .status-badge.inactive {
@@ -288,12 +288,12 @@
 
 .instructors-isolated .status-badge.vacation {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .instructors-isolated .status-badge.suspended {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Instructor Content */
@@ -316,24 +316,24 @@
 }
 
 .instructors-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
 .instructors-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .instructors-isolated .detail-value.rating {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 /* Belt Colors */
 .instructors-isolated .detail-value.belt-white {
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .instructors-isolated .detail-value.belt-yellow {
@@ -361,8 +361,8 @@
 .instructors-isolated .detail-value.belt-black-3,
 .instructors-isolated .detail-value.belt-black-4,
 .instructors-isolated .detail-value.belt-black-5 {
-    color: #1F2937;
-    background: linear-gradient(45deg, #F59E0B, #DC2626);
+    color: var(--color-text);
+    background: linear-gradient(45deg, var(--color-warning), #DC2626);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -382,14 +382,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .instructors-isolated .rating-value {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -408,11 +408,11 @@
 }
 
 .instructors-isolated .star.full {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .instructors-isolated .star.half {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .instructors-isolated .star.empty {
@@ -420,7 +420,7 @@
 }
 
 .instructors-isolated .rating-text {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     text-align: center;
 }
@@ -439,7 +439,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -483,14 +483,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .instructors-isolated .schedule-hours {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -511,13 +511,13 @@
 }
 
 .instructors-isolated .schedule-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .instructors-isolated .schedule-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
@@ -536,14 +536,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .instructors-isolated .certifications-count {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -566,13 +566,13 @@
 }
 
 .instructors-isolated .certification-name {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 500;
     font-size: 0.875rem;
 }
 
 .instructors-isolated .certification-date {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
 }
 
@@ -586,14 +586,14 @@
 }
 
 .instructors-isolated .bio-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
 .instructors-isolated .bio-content {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
 }
@@ -639,7 +639,7 @@
 
 .instructors-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .instructors-isolated .btn-secondary:hover {
@@ -647,7 +647,7 @@
 }
 
 .instructors-isolated .btn-warning {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -656,7 +656,7 @@
 }
 
 .instructors-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -680,12 +680,12 @@
 }
 
 .instructors-isolated .instructors-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .instructors-isolated .instructors-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -701,11 +701,11 @@
 .instructors-isolated .instructors-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .instructors-isolated .instructors-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -825,7 +825,7 @@
 
 .theme-light .instructors-isolated .instructor-info h3,
 .theme-light .instructors-isolated .instructors-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .instructors-isolated .detail-label,
@@ -854,7 +854,7 @@
 .theme-light .instructors-isolated .search-input {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.2);
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .instructors-isolated .search-input::placeholder {
@@ -893,7 +893,7 @@
     
     .instructors-isolated .instructor-info h3,
     .instructors-isolated .certification-name {
-        color: #000 !important;
+        color: #000;
     }
     
     .instructors-isolated .instructor-photo {

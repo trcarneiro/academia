@@ -1,24 +1,24 @@
-/**
+﻿/**
  * Design System - Academia System
  * Sistema de design centralizado conforme Guidelines.MD
- * Imports ordenados por dependência
+ * Imports ordenados por dependÃªncia
  */
 
-/* Base Tokens - Variáveis CSS obrigatórias */
+/* Base Tokens - VariÃ¡veis CSS obrigatÃ³rias */
 @import './tokens.css';
 
-/* Componentes Reutilizáveis - Guidelines.MD compliance */
+/* Componentes ReutilizÃ¡veis - Guidelines.MD compliance */
 @import './components.css';
 
-/* Utilitários para Composição Rápida */
+/* UtilitÃ¡rios para ComposiÃ§Ã£o RÃ¡pida */
 @import './utilities.css';
 
 /**
  * Design System Initialization
- * Configurações globais que não conflitam com módulos existentes
+ * ConfiguraÃ§Ãµes globais que nÃ£o conflitam com mÃ³dulos existentes
  */
 
-/* Reset mínimo para consistência */
+/* Reset mÃ­nimo para consistÃªncia */
 *,
 *::before,
 *::after {
@@ -44,7 +44,7 @@
     outline-offset: 2px;
 }
 
-/* Smooth scroll para âncoras */
+/* Smooth scroll para Ã¢ncoras */
 html {
     scroll-behavior: smooth;
 }
@@ -52,15 +52,15 @@ html {
 /* Print styles */
 @media print {
     .module-isolated-container {
-        background: white !important;
-        box-shadow: none !important;
+        background: white;
+        box-shadow: none;
     }
     
     .module-isolated-btn-primary,
     .module-isolated-btn-secondary {
-        background: white !important;
-        color: black !important;
-        border: 1px solid black !important;
+        background: white;
+        color: black;
+        border: 1px solid black;
     }
 }
 
@@ -80,8 +80,9 @@ html {
     *,
     *::before,
     *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
     }
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * STUDENTS EDITOR - UX ENHANCEMENTS
  * Estilos para o editor de estudantes com foco em UX.
  */
@@ -13,7 +13,7 @@
     align-items: center;
     padding: 1.5rem 2rem;
     background-color: #fff;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     flex-wrap: wrap;
     gap: 1rem;
@@ -48,12 +48,12 @@
 
 .student-editor-module .tab-contents {
     padding: 2rem;
-    background-color: #f8fafc;
+    background-color: var(--color-background);
 }
 
 .student-editor-module .tab-navigation {
     display: flex;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-border);
     background-color: #fff;
 }
 
@@ -73,7 +73,7 @@
 
 .profile-tab-content .form-section {
     background-color: #fff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -82,7 +82,7 @@
 .profile-tab-content .section-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--color-text);
     margin: 0 0 1.5rem 0;
     display: flex;
     align-items: center;
@@ -99,11 +99,11 @@
     grid-column: 1 / -1;
 }
 
-/* Botões de ação visíveis, acessíveis e consistentes */
+/* BotÃµes de aÃ§Ã£o visÃ­veis, acessÃ­veis e consistentes */
 .btn-secondary {
     background: #f3f4f6;
-    color: #4f46e5;
-    border: 2px solid #4f46e5;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
     font-size: 1.05rem;
     padding: 0.5em 1.3em;
     border-radius: 6px;
@@ -114,12 +114,12 @@
 .btn-secondary:hover, .btn-secondary:focus {
     background: #e0e7ff;
     color: #312e81;
-    box-shadow: 0 0 0 2px #6366f1;
-    outline: 2px solid #6366f1;
+    box-shadow: 0 0 0 2px var(--primary-light);
+    outline: 2px solid var(--primary-light);
 }
 
 .btn-danger {
-    background: #ef4444;
+    background: var(--color-error);
     color: #fff;
     border: 2px solid #b91c1c;
     font-size: 1.05rem;
@@ -132,8 +132,8 @@
 .btn-danger:hover, .btn-danger:focus {
     background: #b91c1c;
     color: #fff;
-    box-shadow: 0 0 0 2px #ef4444;
-    outline: 2px solid #ef4444;
+    box-shadow: 0 0 0 2px var(--color-error);
+    outline: 2px solid var(--color-error);
 }
 
 /* ==========================================================================
@@ -169,61 +169,61 @@
 }
 
 .student-editor-module .subscription-actions .btn-primary {
-    background: var(--primary-color, #4f46e5) !important;
-    color: #fff !important;
-    border: 2px solid var(--primary-color, #4f46e5) !important;
+    background: var(--primary-color, var(--primary-color));
+    color: #fff;
+    border: 2px solid var(--primary-color, var(--primary-color));
 }
 .student-editor-module .subscription-actions .btn-primary:hover,
 .student-editor-module .subscription-actions .btn-primary:focus {
-    background: var(--primary-light, #6366f1) !important;
+    background: var(--primary-light, var(--primary-light));
     box-shadow: 0 0 0 2px rgba(99,102,241,0.4);
     outline: none;
 }
 
 .student-editor-module .subscription-actions .btn-secondary {
-    background: #f3f4f6 !important;
-    color: var(--primary-color, #4f46e5) !important;
-    border: 2px solid var(--primary-color, #4f46e5) !important;
+    background: #f3f4f6;
+    color: var(--primary-color, var(--primary-color));
+    border: 2px solid var(--primary-color, var(--primary-color));
 }
 .student-editor-module .subscription-actions .btn-secondary:hover,
 .student-editor-module .subscription-actions .btn-secondary:focus {
-    background: #e0e7ff !important;
-    color: #312e81 !important;
+    background: #e0e7ff;
+    color: #312e81;
     box-shadow: 0 0 0 2px rgba(99,102,241,0.4);
     outline: none;
 }
 
 .student-editor-module .subscription-actions .btn-danger {
-    background: #ef4444 !important;
-    color: #fff !important;
-    border: 2px solid #b91c1c !important;
+    background: var(--color-error);
+    color: #fff;
+    border: 2px solid #b91c1c;
 }
 .student-editor-module .subscription-actions .btn-danger:hover,
 .student-editor-module .subscription-actions .btn-danger:focus {
-    background: #b91c1c !important;
+    background: #b91c1c;
     box-shadow: 0 0 0 2px rgba(239,68,68,0.35);
     outline: none;
 }
 
 /* Financial Tab buttons refinement */
 .student-editor-module .subscription-actions .btn-form {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    font-size: 0.95rem !important;
-    font-weight: 700 !important;
-    padding: 0.6rem 1.1rem !important;
-    min-height: 42px !important;
-    border-radius: 10px !important;
-    line-height: 1 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.6rem 1.1rem;
+    min-height: 42px;
+    border-radius: 10px;
+    line-height: 1;
 }
 .student-editor-module .subscription-actions .btn-form:focus-visible {
-    outline: 3px solid rgba(99,102,241,0.45) !important;
-    outline-offset: 2px !important;
+    outline: 3px solid rgba(99,102,241,0.45);
+    outline-offset: 2px;
 }
 .student-editor-module .plan-actions .btn-form {
-    width: 100% !important;
+    width: 100%;
 }
 
 .student-editor-module .subscription-actions .btn:focus-visible {
@@ -234,7 +234,7 @@
 /* Ensure emoji/icons have spacing */
 .student-editor-module .subscription-actions .btn > :first-child { margin-right: 2px; }
 
-/* Banner de feedback acessível */
+/* Banner de feedback acessÃ­vel */
 .feedback-banner {
     position: fixed;
     top: 24px;
@@ -259,10 +259,11 @@
 .feedback-banner.error {
     background: #ffe0e0;
     color: #b91c1c;
-    border: 2px solid #ef4444;
+    border: 2px solid var(--color-error);
 }
 .feedback-banner.warning {
     background: #fffbe0;
     color: #92400e;
     border: 2px solid #f59e42;
 }
+

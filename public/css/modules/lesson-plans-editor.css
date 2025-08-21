@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Lesson Plans Editor CSS - Guidelines.MD Compliant
  * Following the module-isolated-container pattern with proper form styling
  */
@@ -10,8 +10,8 @@
 .module-isolated-container[data-module="lesson-plans"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     line-height: 1.6;
-    color: #f8fafc;
-    background: #0f172a;
+    color: var(--color-background);
+    background: var(--color-background-dark);
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -35,7 +35,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .section-title {
-    color: #3b82f6;
+    color: var(--color-info);
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
@@ -86,7 +86,7 @@
 
 .module-isolated-container[data-module="lesson-plans"] .form-label {
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--color-border);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -96,7 +96,7 @@
 
 .module-isolated-container[data-module="lesson-plans"] .form-label.required::after {
     content: '*';
-    color: #ef4444;
+    color: var(--color-error);
     margin-left: 0.25rem;
 }
 
@@ -112,7 +112,7 @@
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 8px;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.875rem;
     font-family: inherit;
     transition: all 0.3s ease;
@@ -123,14 +123,14 @@
 .module-isolated-container[data-module="lesson-plans"] .form-select:focus,
 .module-isolated-container[data-module="lesson-plans"] .form-textarea:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     background: rgba(15, 23, 42, 0.95);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .form-input::placeholder,
 .module-isolated-container[data-module="lesson-plans"] .form-textarea::placeholder {
-    color: #64748b;
+    color: var(--color-text-muted);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .form-textarea {
@@ -146,14 +146,14 @@
 .module-isolated-container[data-module="lesson-plans"] .form-input.field-valid,
 .module-isolated-container[data-module="lesson-plans"] .form-select.field-valid,
 .module-isolated-container[data-module="lesson-plans"] .form-textarea.field-valid {
-    border-color: #10b981;
+    border-color: var(--color-success);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .form-input.field-invalid,
 .module-isolated-container[data-module="lesson-plans"] .form-select.field-invalid,
 .module-isolated-container[data-module="lesson-plans"] .form-textarea.field-invalid {
-    border-color: #ef4444;
+    border-color: var(--color-error);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
@@ -162,7 +162,7 @@
    ============================================== */
 
 .module-isolated-container[data-module="lesson-plans"] .form-help {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     margin-top: 0.25rem;
     line-height: 1.4;
@@ -238,7 +238,7 @@
 .module-isolated-container[data-module="lesson-plans"] .form-select[disabled],
 .module-isolated-container[data-module="lesson-plans"] .form-textarea[readonly] {
     background: rgba(15, 23, 42, 0.4);
-    color: #94a3b8;
+    color: var(--color-text-light);
     border-color: rgba(148, 163, 184, 0.2);
     cursor: not-allowed;
 }
@@ -355,9 +355,9 @@
 
 @media (prefers-reduced-motion: reduce) {
     .module-isolated-container[data-module="lesson-plans"] * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
     }
 }
 
@@ -368,22 +368,22 @@
 @media print {
     .module-isolated-container[data-module="lesson-plans"] .form-actions,
     .module-isolated-container[data-module="lesson-plans"] .module-header {
-        display: none !important;
+        display: none;
     }
     
     .module-isolated-container[data-module="lesson-plans"] .form-section {
-        background: white !important;
-        color: black !important;
-        border: 1px solid #ccc !important;
+        background: white;
+        color: black;
+        border: 1px solid #ccc;
         page-break-inside: avoid;
     }
     
     .module-isolated-container[data-module="lesson-plans"] .form-input,
     .module-isolated-container[data-module="lesson-plans"] .form-select,
     .module-isolated-container[data-module="lesson-plans"] .form-textarea {
-        background: white !important;
-        color: black !important;
-        border: 1px solid #ccc !important;
+        background: white;
+        color: black;
+        border: 1px solid #ccc;
     }
 }
 
@@ -392,18 +392,18 @@
    ============================================== */
 
 .module-isolated-container[data-module="lesson-plans"] .field-valid {
-    border-color: #22c55e !important;
+    border-color: #22c55e;
     background-color: rgba(34, 197, 94, 0.05);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .field-invalid {
-    border-color: #ef4444 !important;
+    border-color: var(--color-error);
     background-color: rgba(239, 68, 68, 0.05);
     animation: shake 0.3s ease-in-out;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .field-invalid:focus {
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 @keyframes shake {
@@ -411,3 +411,4 @@
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
+

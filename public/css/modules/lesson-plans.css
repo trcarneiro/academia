@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Lesson Plans List CSS - Guidelines.MD Compliant
  * Following the module-isolated-container pattern
  */
@@ -10,8 +10,8 @@
 .module-isolated-container[data-module="lesson-plans"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     line-height: 1.6;
-    color: #f8fafc;
-    background: #0f172a;
+    color: var(--color-background);
+    background: var(--color-background-dark);
     min-height: 100vh;
     padding: 1rem;
     overflow-x: hidden;
@@ -37,7 +37,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .module-title {
-    color: #3b82f6;
+    color: var(--color-info);
     font-size: 2rem;
     font-weight: 700;
     margin: 0;
@@ -47,7 +47,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .module-subtitle {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 1rem;
     margin: 0.5rem 0 0 0;
 }
@@ -80,12 +80,12 @@
 .module-isolated-container[data-module="lesson-plans"] .stat-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #3b82f6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .stat-label {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -118,7 +118,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .filter-label {
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -129,7 +129,7 @@
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 8px;
     padding: 0.75rem 1rem;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.875rem;
     transition: all 0.2s ease;
 }
@@ -137,7 +137,7 @@
 .module-isolated-container[data-module="lesson-plans"] .filter-input:focus,
 .module-isolated-container[data-module="lesson-plans"] .filter-select:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -159,7 +159,7 @@
 
 .module-isolated-container[data-module="lesson-plans"] .data-table th {
     background: rgba(15, 23, 42, 0.8);
-    color: #3b82f6;
+    color: var(--color-info);
     font-weight: 600;
     padding: 1rem;
     text-align: left;
@@ -172,7 +172,7 @@
 .module-isolated-container[data-module="lesson-plans"] .data-table td {
     padding: 1rem;
     border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-    color: #f8fafc;
+    color: var(--color-background);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .table-row:hover {
@@ -191,18 +191,18 @@
 
 .module-isolated-container[data-module="lesson-plans"] .lesson-title {
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 1rem;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .lesson-course {
-    color: #3b82f6;
+    color: var(--color-info);
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .lesson-description {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.8rem;
     max-width: 300px;
     overflow: hidden;
@@ -233,13 +233,13 @@
 
 .module-isolated-container[data-module="lesson-plans"] .status-level-2 {
     background: rgba(59, 130, 246, 0.2);
-    color: #3b82f6;
+    color: var(--color-info);
     border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .status-level-3 {
     background: rgba(245, 158, 11, 0.2);
-    color: #f59e0b;
+    color: var(--color-warning);
     border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
@@ -251,7 +251,7 @@
 
 .module-isolated-container[data-module="lesson-plans"] .status-level-5 {
     background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    color: var(--color-error);
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
@@ -276,7 +276,7 @@
    ============================================== */
 
 .module-isolated-container[data-module="lesson-plans"] .duration-display {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-weight: 500;
     white-space: nowrap;
 }
@@ -306,7 +306,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .pagination-info {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -317,7 +317,7 @@
 }
 
 .module-isolated-container[data-module="lesson-plans"] .pagination-current {
-    color: #f8fafc;
+    color: var(--color-background);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -329,7 +329,7 @@
 .module-isolated-container[data-module="lesson-plans"] .empty-state {
     text-align: center;
     padding: 3rem 1.5rem;
-    color: #94a3b8;
+    color: var(--color-text-light);
 }
 
 .module-isolated-container[data-module="lesson-plans"] .empty-icon {
@@ -341,13 +341,13 @@
 .module-isolated-container[data-module="lesson-plans"] .empty-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .empty-subtitle {
     font-size: 0.875rem;
-    color: #94a3b8;
+    color: var(--color-text-light);
 }
 
 /* ============================================== 
@@ -367,13 +367,13 @@
     width: 40px;
     height: 40px;
     border: 3px solid rgba(59, 130, 246, 0.3);
-    border-top: 3px solid #3b82f6;
+    border-top: 3px solid var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 .module-isolated-container[data-module="lesson-plans"] .loading-text {
-    color: #94a3b8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -416,3 +416,4 @@
         text-align: center;
     }
 }
+

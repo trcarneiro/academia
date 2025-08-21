@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    UNITS MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .units-isolated .units-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -65,15 +65,15 @@
 }
 
 .units-isolated .stat-value.active {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .units-isolated .stat-value.completed {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .units-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -101,7 +101,7 @@
 
 .units-isolated .filter-group label,
 .units-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -110,7 +110,7 @@
 .units-isolated .unit-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -121,7 +121,7 @@
 .units-isolated .unit-filter:hover,
 .units-isolated .unit-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .units-isolated .unit-filter.active,
@@ -142,13 +142,13 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .units-isolated .search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .units-isolated .search-input:focus {
@@ -193,15 +193,15 @@
 }
 
 .units-isolated .unit-card.active::before {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .units-isolated .unit-card.maintenance::before {
-    background: linear-gradient(90deg, #F59E0B, #D97706);
+    background: linear-gradient(90deg, var(--color-warning), #D97706);
 }
 
 .units-isolated .unit-card.inactive::before {
-    background: linear-gradient(90deg, #EF4444, #DC2626);
+    background: linear-gradient(90deg, var(--color-error), #DC2626);
 }
 
 /* Unit Card Header */
@@ -219,7 +219,7 @@
 }
 
 .units-isolated .unit-info h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
@@ -229,7 +229,7 @@
 }
 
 .units-isolated .unit-location {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -247,17 +247,17 @@
 
 .units-isolated .status-badge.active {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .units-isolated .status-badge.maintenance {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .units-isolated .status-badge.inactive {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .units-isolated .status-badge.planned {
@@ -285,19 +285,19 @@
 }
 
 .units-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.75rem;
     font-weight: 500;
 }
 
 .units-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .units-isolated .detail-value.revenue {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 /* Unit Metrics */
@@ -321,7 +321,7 @@
 }
 
 .units-isolated .metric-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     min-width: 80px;
@@ -343,7 +343,7 @@
 }
 
 .units-isolated .metric-fill.satisfaction {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
 }
 
 .units-isolated .metric-value {
@@ -371,7 +371,7 @@
 }
 
 .units-isolated .contact-info span {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -379,7 +379,7 @@
 }
 
 .units-isolated .operating-hours {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
     display: flex;
@@ -389,7 +389,7 @@
 
 /* Unit Description */
 .units-isolated .unit-description {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
     margin-bottom: 1rem;
@@ -440,7 +440,7 @@
 
 .units-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .units-isolated .btn-secondary:hover {
@@ -448,7 +448,7 @@
 }
 
 .units-isolated .btn-warning {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -457,7 +457,7 @@
 }
 
 .units-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -481,12 +481,12 @@
 }
 
 .units-isolated .units-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .units-isolated .units-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -502,11 +502,11 @@
 .units-isolated .units-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .units-isolated .units-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -630,7 +630,7 @@
 
 .theme-light .units-isolated .unit-info h3,
 .theme-light .units-isolated .units-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .units-isolated .detail-label,
@@ -657,7 +657,7 @@
 .theme-light .units-isolated .search-input {
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.2);
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .units-isolated .search-input::placeholder {
@@ -695,10 +695,10 @@
     }
     
     .units-isolated .metric-fill {
-        background: #333 !important;
+        background: #333;
     }
     
     .units-isolated .unit-info h3 {
-        color: #000 !important;
+        color: #000;
     }
 }

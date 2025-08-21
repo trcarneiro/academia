@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
    STUDENT EDITOR - TAB SYSTEM WITHOUT OVERLAPPING - FIXED
    ============================================================================ */
 
@@ -7,8 +7,8 @@
     position: relative;
     isolation: isolate;
     min-height: 100vh;
-    background: #0F172A;
-    color: #F8FAFC;
+    background: var(--color-background-dark);
+    color: var(--color-background);
     padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
@@ -51,7 +51,7 @@
     flex: 1;
     padding: 0.75rem 1rem;
     background: transparent;
-    color: #CBD5E1;
+    color: var(--color-border);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -66,11 +66,11 @@
 
 .page-tab:hover:not(.active) {
     background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .page-tab.active {
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    background: linear-gradient(135deg, var(--color-info), #8B5CF6);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
@@ -137,12 +137,12 @@
 }
 
 .form-section:hover {
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
 .form-section h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin: 0 0 1.5rem 0;
     font-size: 1.2rem;
     display: flex;
@@ -151,7 +151,7 @@
 }
 
 .form-section h4 i {
-    color: #3B82F6;
+    color: var(--color-info);
     font-size: 1.1rem;
 }
 
@@ -168,7 +168,7 @@
 }
 
 .form-group label {
-    color: #E2E8F0;
+    color: var(--color-border);
     font-weight: 600;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
@@ -181,7 +181,7 @@
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 8px;
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 14px;
     transition: all 0.3s ease;
     width: 100%;
@@ -192,14 +192,14 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Financial content specific styles */
 .subscription-card,
 .enrollment-card {
-    background: rgba(15, 23, 42, 0.8) !important;
+    background: rgba(15, 23, 42, 0.8);
     border-radius: 12px;
     padding: 1.5rem;
     border: 1px solid #334155;
@@ -215,17 +215,17 @@
 }
 
 .status-active {
-    background: #10B981;
+    background: var(--color-success);
     color: white;
 }
 
 .status-inactive {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
 .status-pending {
-    background: #F59E0B;
+    background: var(--color-warning);
     color: white;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .progress-fill {
-    background: linear-gradient(90deg, #10B981, #059669);
+    background: linear-gradient(90deg, var(--color-success), #059669);
     height: 100%;
     border-radius: 4px;
     transition: width 0.6s ease;
@@ -265,12 +265,12 @@
 }
 
 .sidebar-card:hover {
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     transform: translateY(-2px);
 }
 
 .sidebar-card h4 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
 }
@@ -282,7 +282,7 @@
     align-items: center;
     justify-content: center;
     padding: 3rem;
-    color: #CBD5E1;
+    color: var(--color-border);
     min-height: 200px;
 }
 
@@ -290,7 +290,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid rgba(59, 130, 246, 0.3);
-    border-top: 3px solid #3B82F6;
+    border-top: 3px solid var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
@@ -334,7 +334,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    background: linear-gradient(135deg, var(--color-info), #8B5CF6);
     color: white;
 }
 
@@ -345,7 +345,7 @@
 
 .btn-secondary {
     background: rgba(107, 114, 128, 0.3);
-    color: #E2E8F0;
+    color: var(--color-border);
     border: 1px solid #374151;
 }
 
@@ -355,18 +355,18 @@
 
 .btn-outline {
     background: transparent;
-    color: #CBD5E1;
+    color: var(--color-border);
     border: 1px solid #374151;
 }
 
 .btn-outline:hover {
     background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
-    border-color: #3B82F6;
+    color: var(--color-info);
+    border-color: var(--color-info);
 }
 
 .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -436,3 +436,4 @@
         transform: translateY(0);
     }
 }
+

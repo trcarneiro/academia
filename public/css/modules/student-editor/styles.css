@@ -1,23 +1,23 @@
-/**
+﻿/**
  * Student Editor - Specific Styles
- * Estilos específicos para o módulo de edição de estudantes
+ * Estilos especÃ­ficos para o mÃ³dulo de ediÃ§Ã£o de estudantes
  */
 
-/* ===== VARIÁVEIS CSS ===== */
+/* ===== VARIÃVEIS CSS ===== */
 :root {
-    --primary-color: #3B82F6;
+    --primary-color: var(--color-info);
     --secondary-color: #8B5CF6;
-    --success-color: #10B981;
-    --warning-color: #F59E0B;
-    --error-color: #EF4444;
-    --background-primary: #0F172A;
-    --background-secondary: #1E293B;
+    --success-color: var(--color-success);
+    --warning-color: var(--color-warning);
+    --error-color: var(--color-error);
+    --background-primary: var(--color-background-dark);
+    --background-secondary: var(--color-text);
     --background-tertiary: #334155;
-    --text-primary: #F8FAFC;
-    --text-secondary: #CBD5E1;
-    --text-muted: #94A3B8;
+    --text-primary: var(--color-background);
+    --text-secondary: var(--color-border);
+    --text-muted: var(--color-text-light);
     --border-color: #475569;
-    --border-color-light: #64748B;
+    --border-color-light: var(--color-text-muted);
 }
 
 /* ===== RESET E ESTILOS BASE ===== */
@@ -43,15 +43,15 @@ body, html {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    background: linear-gradient(135deg, var(--color-background-dark) 0%, var(--color-text) 100%);
     position: relative;
     z-index: 1;
 }
 
-/* ===== HEADER DA PÁGINA ===== */
+/* ===== HEADER DA PÃGINA ===== */
 
 .page-header {
-    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+    background: linear-gradient(135deg, var(--color-text) 0%, #334155 100%);
     border-radius: 16px;
     padding: 2rem;
     margin: 1.5rem;
@@ -67,7 +67,7 @@ body, html {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #3B82F6, #8B5CF6, #10B981);
+    background: linear-gradient(90deg, var(--color-info), #8B5CF6, var(--color-success));
 }
 
 .header-content {
@@ -81,7 +81,7 @@ body, html {
 .header-info h1 {
     margin: 0;
     font-size: 2rem;
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    background: linear-gradient(135deg, var(--color-info), #8B5CF6);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -89,7 +89,7 @@ body, html {
 
 .header-info p {
     margin: 0.5rem 0 0 0;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .header-actions {
@@ -111,12 +111,12 @@ body, html {
 
 .btn-secondary {
     background: transparent;
-    color: #CBD5E1;
-    border: 1px solid #64748B;
+    color: var(--color-border);
+    border: 1px solid var(--color-text-muted);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #059669, #10B981);
+    background: linear-gradient(135deg, #059669, var(--color-success));
     color: white;
 }
 
@@ -124,14 +124,14 @@ body, html {
     transform: translateY(-1px);
 }
 
-/* ===== NAVEGAÇÃO DE ABAS - PADRÃO DO SISTEMA ===== */
+/* ===== NAVEGAÃ‡ÃƒO DE ABAS - PADRÃƒO DO SISTEMA ===== */
 
 /* Tab Container */
 .tab-container {
     margin: 0 1.5rem 2rem 1.5rem;
 }
 
-/* Tab Navigation - Seguindo padrão do sistema */
+/* Tab Navigation - Seguindo padrÃ£o do sistema */
 .tab-navigation {
     display: flex;
     background: rgba(15, 23, 42, 0.5);
@@ -143,12 +143,12 @@ body, html {
     gap: 0.5rem;
 }
 
-/* Tab Buttons - Padrão do sistema */
+/* Tab Buttons - PadrÃ£o do sistema */
 .page-tab {
     flex: 1;
     padding: 0.75rem 1rem;
     background: transparent;
-    color: #CBD5E1;
+    color: var(--color-border);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -165,19 +165,19 @@ body, html {
     white-space: nowrap;
 }
 
-/* Tab Active State - Padrão do sistema */
+/* Tab Active State - PadrÃ£o do sistema */
 .page-tab.active {
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    background: linear-gradient(135deg, var(--color-info), #8B5CF6);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     z-index: 1;
 }
 
-/* Tab Hover State - Padrão do sistema */
+/* Tab Hover State - PadrÃ£o do sistema */
 .page-tab:hover:not(.active) {
     background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
+    color: var(--color-info);
     transform: translateY(-1px);
 }
 
@@ -233,7 +233,7 @@ body, html {
     display: block;
 }
 
-/* ===== ANIMAÇÕES ===== */
+/* ===== ANIMAÃ‡Ã•ES ===== */
 @keyframes fadeIn {
     from { 
         opacity: 0; 
@@ -306,7 +306,7 @@ body, html {
 }
 
 .field-loading::after {
-    content: '⏳';
+    content: 'â³';
     position: absolute;
     right: 0.75rem;
     top: 50%;
@@ -314,7 +314,7 @@ body, html {
     animation: pulse 1.5s infinite;
 }
 
-/* ===== TAB ESPECÍFICO - PROFILE ===== */
+/* ===== TAB ESPECÃFICO - PROFILE ===== */
 .profile-section {
     animation: fadeIn 0.5s ease;
 }
@@ -362,7 +362,7 @@ body, html {
     margin: 0.25rem 0 0 0;
 }
 
-/* ===== TAB ESPECÍFICO - FINANCIAL ===== */
+/* ===== TAB ESPECÃFICO - FINANCIAL ===== */
 .financial-section {
     animation: fadeIn 0.5s ease;
 }
@@ -451,7 +451,7 @@ body, html {
 }
 
 .plan-features li::before {
-    content: '✓';
+    content: 'âœ“';
     position: absolute;
     left: 0;
     color: var(--success-color);
@@ -521,9 +521,9 @@ body, html {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ===== RESPONSIVIDADE ESPECÍFICA ===== */
+/* ===== RESPONSIVIDADE ESPECÃFICA ===== */
 @media (max-width: 768px) {
-    /* Tab Navigation Mobile - Padrão do Sistema */
+    /* Tab Navigation Mobile - PadrÃ£o do Sistema */
     .tab-container {
         margin: 0 1rem 2rem 1rem;
     }
@@ -642,7 +642,7 @@ body, html {
 
 /* ===== ESTADOS DE LOADING ===== */
 .skeleton {
-    background: linear-gradient(90deg, #1E293B 0%, #334155 50%, #1E293B 100%);
+    background: linear-gradient(90deg, var(--color-text) 0%, #334155 50%, var(--color-text) 100%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
 }
@@ -676,27 +676,28 @@ body, html {
     *,
     ::before,
     ::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
     }
 }
 
-/* ===== IMPRESSÃO ===== */
+/* ===== IMPRESSÃƒO ===== */
 @media print {
     .header-actions,
     .subscription-actions,
     .form-actions,
     .tab-navigation {
-        display: none !important;
+        display: none;
     }
     
     .student-editor-container {
-        background: white !important;
-        color: black !important;
+        background: white;
+        color: black;
     }
     
     .tab-content {
-        display: block !important;
+        display: block;
     }
 }
+

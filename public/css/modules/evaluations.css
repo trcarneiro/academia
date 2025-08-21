@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    EVALUATIONS MODULE - ISOLATED CSS
    ========================================== */
 
@@ -22,7 +22,7 @@
 }
 
 .evaluations-isolated .evaluations-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -58,7 +58,7 @@
 
 .evaluations-isolated .filter-group label,
 .evaluations-isolated .sort-group label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     margin-right: 0.5rem;
 }
@@ -67,7 +67,7 @@
 .evaluations-isolated .evaluation-sort {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -78,14 +78,14 @@
 .evaluations-isolated .evaluation-filter:hover,
 .evaluations-isolated .evaluation-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .evaluations-isolated .evaluation-filter.active,
 .evaluations-isolated .evaluation-sort.active {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
 }
 
 /* Evaluations Grid */
@@ -128,7 +128,7 @@
 .evaluations-isolated .student-avatar {
     width: 2.5rem;
     height: 2.5rem;
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -139,13 +139,13 @@
 }
 
 .evaluations-isolated .student-info h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.125rem;
     margin: 0 0 0.25rem 0;
 }
 
 .evaluations-isolated .student-info p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     margin: 0;
 }
@@ -161,22 +161,22 @@
 
 .evaluations-isolated .status-badge.completed {
     background: rgba(16, 185, 129, 0.2);
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .evaluations-isolated .status-badge.pending {
     background: rgba(245, 158, 11, 0.2);
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .evaluations-isolated .status-badge.in_progress {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .evaluations-isolated .status-badge.cancelled {
     background: rgba(239, 68, 68, 0.2);
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Evaluation Content */
@@ -194,7 +194,7 @@
 }
 
 .evaluations-isolated .score-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
 }
 
@@ -204,19 +204,19 @@
 }
 
 .evaluations-isolated .score-value.excellent {
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .evaluations-isolated .score-value.good {
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .evaluations-isolated .score-value.average {
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .evaluations-isolated .score-value.poor {
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 /* Evaluation Details */
@@ -233,12 +233,12 @@
 }
 
 .evaluations-isolated .detail-label {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
 .evaluations-isolated .detail-value {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -253,7 +253,7 @@
 }
 
 .evaluations-isolated .notes-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-weight: 500;
     font-size: 0.875rem;
     display: block;
@@ -261,7 +261,7 @@
 }
 
 .evaluations-isolated .notes-content {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
     line-height: 1.5;
     margin: 0;
@@ -298,7 +298,7 @@
 }
 
 .evaluations-isolated .btn-primary {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
 }
 
@@ -308,7 +308,7 @@
 
 .evaluations-isolated .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .evaluations-isolated .btn-secondary:hover {
@@ -316,7 +316,7 @@
 }
 
 .evaluations-isolated .btn-danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -349,12 +349,12 @@
 .evaluations-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
 }
 
 .evaluations-isolated .stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -375,12 +375,12 @@
 }
 
 .evaluations-isolated .evaluations-empty-state h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 0.5rem;
 }
 
 .evaluations-isolated .evaluations-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 2rem;
 }
 
@@ -396,11 +396,11 @@
 .evaluations-isolated .evaluations-error-state .error-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .evaluations-isolated .evaluations-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -497,7 +497,7 @@
 
 .theme-light .evaluations-isolated .student-info h3,
 .theme-light .evaluations-isolated .evaluations-header h2 {
-    color: #1F2937;
+    color: var(--color-text);
 }
 
 .theme-light .evaluations-isolated .detail-label,
@@ -512,12 +512,12 @@
 
 /* Accessibility */
 .evaluations-isolated .evaluation-card:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
 .evaluations-isolated .btn:focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--color-info);
     outline-offset: 2px;
 }
 
@@ -536,6 +536,6 @@
     }
     
     .evaluations-isolated .score-value {
-        color: #333 !important;
+        color: #333;
     }
 }

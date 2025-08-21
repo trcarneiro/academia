@@ -1,96 +1,96 @@
-/**
- * FORÇA ABSOLUTA - CSS Reset para Design Minimalista
+﻿/**
+ * FORÃ‡A ABSOLUTA - CSS Reset para Design Minimalista
  * Este arquivo sobrescreve qualquer estilo anterior com !important
  */
 
 /* Reset total para evitar qualquer conflito */
 * {
-    background: unset !important;
-    background-image: unset !important;
+    background: unset;
+    background-image: unset;
 }
 
 body {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1.6 !important;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
 }
 
-/* Força o design minimalista */
+/* ForÃ§a o design minimalista */
 .top-bar,
 .header,
 .main-header {
-    background: #ffffff !important;
-    color: #1e293b !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar,
 .main-sidebar {
-    background: #ffffff !important;
-    border-right: 1px solid #e2e8f0 !important;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
 }
 
 .nav-link,
 .menu-item {
-    color: #64748b !important;
-    background: transparent !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: #64748b !important;
+    color: var(--color-text-muted);
+    background: transparent;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: var(--color-text-muted);
 }
 
 .nav-link:hover,
 .menu-item:hover {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-    -webkit-text-fill-color: #1e293b !important;
+    background: var(--color-background);
+    color: var(--color-text);
+    -webkit-text-fill-color: var(--color-text);
 }
 
 .nav-link.active,
 .menu-item.active {
-    background: #4f46e5 !important;
-    color: white !important;
-    -webkit-text-fill-color: white !important;
+    background: var(--primary-color);
+    color: white;
+    -webkit-text-fill-color: white;
 }
 
 .main-content,
 .content-area,
 #content {
-    background: #f8fafc !important;
+    background: var(--color-background);
 }
 
 .page-title,
 h1, h2, h3 {
-    color: #1e293b !important;
-    background: transparent !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: #1e293b !important;
+    color: var(--color-text);
+    background: transparent;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: var(--color-text);
 }
 
 .card,
 .dashboard-card,
 .stat-card {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
-    color: #4f46e5 !important;
-    background: transparent !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: #4f46e5 !important;
+    color: var(--primary-color);
+    background: transparent;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: var(--primary-color);
 }
 
 .btn-primary {
-    background: #4f46e5 !important;
-    color: white !important;
+    background: var(--primary-color);
+    color: white;
 }
 
 /* Remove qualquer efeito especial anterior */
@@ -99,13 +99,14 @@ h1, h2, h3 {
 .ultra-modern,
 .neon-glow,
 .gradient-text {
-    background: unset !important;
-    background-image: unset !important;
-    backdrop-filter: none !important;
-    filter: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-    color: inherit !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: inherit !important;
+    background: unset;
+    background-image: unset;
+    backdrop-filter: none;
+    filter: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: inherit;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: inherit;
 }
+

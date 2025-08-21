@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    KNOWLEDGE BASE MODULE - ISOLATED CSS
    ========================================== */
 
@@ -20,13 +20,13 @@
 }
 
 .knowledge-base-isolated .kb-header h2 {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.75rem;
     margin-bottom: 0.5rem;
 }
 
 .knowledge-base-isolated .kb-header p {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 1rem;
     margin-bottom: 0;
 }
@@ -56,12 +56,12 @@
 .knowledge-base-isolated .kb-stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #3B82F6;
+    color: var(--color-info);
     margin-bottom: 0.5rem;
 }
 
 .knowledge-base-isolated .kb-stat-label {
-    color: #CBD5E1;
+    color: var(--color-border);
     font-size: 0.875rem;
     font-weight: 500;
 }
@@ -76,7 +76,7 @@
 }
 
 .knowledge-base-isolated .kb-btn {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border: none;
     border-radius: 8px;
@@ -97,7 +97,7 @@
 
 .knowledge-base-isolated .kb-btn.secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 .knowledge-base-isolated .kb-btn.secondary:hover {
@@ -105,7 +105,7 @@
 }
 
 .knowledge-base-isolated .kb-btn.danger {
-    background: #EF4444;
+    background: var(--color-error);
     color: white;
 }
 
@@ -123,7 +123,7 @@
 }
 
 .knowledge-base-isolated .kb-search h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
@@ -133,17 +133,17 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1rem;
 }
 
 .knowledge-base-isolated .kb-search-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .kb-search-input:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
@@ -157,7 +157,7 @@
 }
 
 .knowledge-base-isolated .kb-content h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
 }
 
@@ -188,7 +188,7 @@
 }
 
 .knowledge-base-isolated .kb-item-title {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.125rem;
     font-weight: 600;
     margin: 0;
@@ -196,7 +196,7 @@
 
 .knowledge-base-isolated .kb-item-type {
     background: rgba(59, 130, 246, 0.2);
-    color: #3B82F6;
+    color: var(--color-info);
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;
@@ -204,7 +204,7 @@
 }
 
 .knowledge-base-isolated .kb-item-content {
-    color: #CBD5E1;
+    color: var(--color-border);
     line-height: 1.6;
     margin-bottom: 1rem;
 }
@@ -214,7 +214,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 0.875rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .kb-item-tags {
@@ -238,7 +238,7 @@
 .knowledge-base-isolated .kb-item-btn {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #CBD5E1;
+    color: var(--color-border);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     cursor: pointer;
@@ -248,7 +248,7 @@
 
 .knowledge-base-isolated .kb-item-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
 }
 
 /* Upload Area */
@@ -263,29 +263,29 @@
 }
 
 .knowledge-base-isolated .kb-upload:hover {
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     background: rgba(59, 130, 246, 0.05);
 }
 
 .knowledge-base-isolated .kb-upload.dragover {
-    border-color: #3B82F6;
+    border-color: var(--color-info);
     background: rgba(59, 130, 246, 0.1);
 }
 
 .knowledge-base-isolated .kb-upload-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .kb-upload-text {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-size: 1.125rem;
     margin-bottom: 0.5rem;
 }
 
 .knowledge-base-isolated .kb-upload-hint {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-size: 0.875rem;
 }
 
@@ -293,7 +293,7 @@
 .knowledge-base-isolated .kb-empty-state {
     text-align: center;
     padding: 3rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .kb-empty-state .empty-icon {
@@ -303,12 +303,12 @@
 }
 
 .knowledge-base-isolated .kb-empty-state h3 {
-    color: #CBD5E1;
+    color: var(--color-border);
     margin-bottom: 0.5rem;
 }
 
 .knowledge-base-isolated .kb-empty-state p {
-    color: #94A3B8;
+    color: var(--color-text-light);
     margin-bottom: 1.5rem;
 }
 
@@ -316,7 +316,7 @@
 .knowledge-base-isolated .kb-error-state {
     text-align: center;
     padding: 3rem;
-    color: #EF4444;
+    color: var(--color-error);
 }
 
 .knowledge-base-isolated .kb-error-state .error-icon {
@@ -325,7 +325,7 @@
 }
 
 .knowledge-base-isolated .kb-error-state h3 {
-    color: #EF4444;
+    color: var(--color-error);
     margin-bottom: 0.5rem;
 }
 
@@ -338,7 +338,7 @@
 .knowledge-base-isolated .kb-loading {
     text-align: center;
     padding: 3rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .kb-loading .loading-spinner {
@@ -366,7 +366,7 @@
 }
 
 .knowledge-base-isolated .kb-smart-chat h3 {
-    color: #F8FAFC;
+    color: var(--color-background);
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -437,21 +437,21 @@
 }
 
 .knowledge-base-isolated .chat-message.user .message-content {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border-bottom-right-radius: 4px;
 }
 
 .knowledge-base-isolated .chat-message.assistant .message-content {
     background: rgba(255, 255, 255, 0.1);
-    color: #F8FAFC;
+    color: var(--color-background);
     border-bottom-left-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .knowledge-base-isolated .chat-message.system .message-content {
     background: rgba(16, 185, 129, 0.1);
-    color: #10B981;
+    color: var(--color-success);
     border: 1px solid rgba(16, 185, 129, 0.3);
     max-width: 95%;
     text-align: center;
@@ -477,13 +477,13 @@
     flex: 1;
     border: none;
     background: transparent;
-    color: #F8FAFC;
+    color: var(--color-background);
     padding: 1rem;
     font-size: 0.875rem;
 }
 
 .knowledge-base-isolated .chat-input::placeholder {
-    color: #94A3B8;
+    color: var(--color-text-light);
 }
 
 .knowledge-base-isolated .chat-input:focus {
@@ -491,7 +491,7 @@
 }
 
 .knowledge-base-isolated .chat-send-btn {
-    background: #3B82F6;
+    background: var(--color-info);
     color: white;
     border: none;
     padding: 0.75rem 1rem;
@@ -514,7 +514,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-style: italic;
 }
 
@@ -526,7 +526,7 @@
 .knowledge-base-isolated .loading-dots span {
     width: 4px;
     height: 4px;
-    background: #94A3B8;
+    background: var(--color-text-light);
     border-radius: 50%;
     animation: loadingDots 1.4s infinite ease-in-out;
 }
@@ -571,26 +571,26 @@
 
 .knowledge-base-isolated .message-content h1 {
     font-size: 1.25rem;
-    color: #3B82F6;
+    color: var(--color-info);
 }
 
 .knowledge-base-isolated .message-content h2 {
     font-size: 1.125rem;
-    color: #10B981;
+    color: var(--color-success);
 }
 
 .knowledge-base-isolated .message-content h3 {
     font-size: 1rem;
-    color: #F59E0B;
+    color: var(--color-warning);
 }
 
 .knowledge-base-isolated .message-content strong {
-    color: #F8FAFC;
+    color: var(--color-background);
     font-weight: 600;
 }
 
 .knowledge-base-isolated .message-content em {
-    color: #94A3B8;
+    color: var(--color-text-light);
     font-style: italic;
 }
 
