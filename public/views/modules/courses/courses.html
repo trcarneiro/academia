@@ -1,7 +1,7 @@
 <!-- Courses Management Module -->
 <div class="courses-isolated">
-    <!-- Header Section -->
-    <header class="courses-header">
+    <!-- GUIDELINES2.MD: Header Premium Enhanced -->
+    <header class="module-header-premium">
         <div class="header-left">
             <h1 class="page-title">
                 <span class="title-icon">📚</span>
@@ -13,57 +13,42 @@
             <button class="btn btn-primary" data-action="openNewCourseForm" data-args='[]'>
                 ➕ Novo Curso
             </button>
-            <div class="import-buttons-group">
-                <button class="btn btn-import" id="importCourseBtn">
-                    📥 Importar Curso
-                </button>
-                <button class="btn btn-import" id="importActivitiesBtn">
-                    🏃 Importar Atividades
-                </button>
-                <button class="btn btn-import" id="importPlansBtn">
-                    📚 Importar Planos de Aula
-                </button>
-            </div>
+            <button class="btn btn-ai" id="generateWithAIBtn">
+                🤖 Gerar com IA
+            </button>
+            <button class="btn btn-import" id="importCourseBtn">
+                📥 Importar Curso
+            </button>
             <input type="file" id="importCourseFile" accept="application/json" style="display:none" />
-            <input type="file" id="importActivitiesFile" accept="application/json" style="display:none" />
-            <input type="file" id="importPlansFile" accept="application/json" style="display:none" />
         </div>
     </header>
 
-    <!-- Stats Section -->
+    <!-- GUIDELINES2.MD: Stats Cards Enhanced -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card-enhanced">
             <div class="stat-icon">📚</div>
-            <div class="stat-content">
-                <div class="stat-value" id="totalCourses">0</div>
-                <div class="stat-label">Total de Cursos</div>
-            </div>
+            <div class="stat-value" id="totalCourses">0</div>
+            <div class="stat-label">Total de Cursos</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card-enhanced">
             <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <div class="stat-value" id="activeCourses">0</div>
-                <div class="stat-label">Ativos</div>
-            </div>
+            <div class="stat-value" id="activeCourses">0</div>
+            <div class="stat-label">Ativos</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card-enhanced">
             <div class="stat-icon">⏸️</div>
-            <div class="stat-content">
-                <div class="stat-value" id="inactiveCourses">0</div>
-                <div class="stat-label">Inativos</div>
-            </div>
+            <div class="stat-value" id="inactiveCourses">0</div>
+            <div class="stat-label">Inativos</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card-enhanced">
             <div class="stat-icon">🎯</div>
-            <div class="stat-content">
-                <div class="stat-value" id="categoriesCount">0</div>
-                <div class="stat-label">Categorias</div>
-            </div>
+            <div class="stat-value" id="categoriesCount">0</div>
+            <div class="stat-label">Categorias</div>
         </div>
     </div>
 
-    <!-- Filters and Search -->
-    <div class="filters-section">
+    <!-- GUIDELINES2.MD: Filters Premium -->
+    <div class="module-filters-premium">
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="🔍 Buscar por nome, descrição ou categoria..." class="search-input">
         </div>
@@ -105,14 +90,16 @@
         <div class="loading-text">Carregando cursos...</div>
     </div>
 
-    <!-- Empty State -->
-    <div id="emptyState" class="empty-state" style="display: none;">
-        <div class="empty-icon">📚</div>
-        <h3>Nenhum curso encontrado</h3>
-        <p>Comece criando seu primeiro curso para começar a organizar seu programa de treinamento.</p>
-        <button class="btn btn-primary" data-action="openNewCourseForm" data-args='[]'>
-            ➕ Criar Primeiro Curso
-        </button>
+    <!-- GUIDELINES2.MD: Data Cards Premium -->
+    <div id="emptyState" class="data-card-premium" style="display: none;">
+        <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            <h3>Nenhum curso encontrado</h3>
+            <p>Comece criando seu primeiro curso para começar a organizar seu programa de treinamento.</p>
+            <button class="btn btn-primary" data-action="openNewCourseForm" data-args='[]'>
+                ➕ Criar Primeiro Curso
+            </button>
+        </div>
     </div>
 
     <!-- Courses Container -->

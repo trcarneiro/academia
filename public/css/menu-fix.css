@@ -1,0 +1,98 @@
+/* CORREÇÃO DE EMERGÊNCIA PARA O MENU */
+
+/* Garantir que o sidebar seja visível */
+.sidebar {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Garantir que o menu lateral tenha z-index adequado */
+.sidebar {
+    z-index: 1000 !important;
+}
+
+/* CORREÇÃO: Garantir que todos os itens do menu sejam visíveis */
+.main-menu {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.main-menu ul {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 20px !important; /* Espaço extra na parte inferior */
+}
+
+/* Garantir que TODOS os li sejam visíveis */
+.main-menu li {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    min-height: 40px !important;
+}
+
+/* Corrigir problemas de transform em mobile */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+        height: 100vh !important; /* Altura total da tela */
+        overflow-y: auto !important;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+    
+    /* Menu em mobile deve ter altura suficiente */
+    .main-menu {
+        height: auto !important;
+        min-height: calc(100vh - 100px) !important;
+    }
+}
+
+/* Garantir que os itens do menu sejam clicáveis */
+.main-menu li {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Corrigir o comportamento do menu toggle */
+.menu-toggle {
+    display: flex !important;
+    cursor: pointer !important;
+}
+
+/* Garantir que o conteúdo não sobreponha o sidebar em desktop */
+@media (min-width: 993px) {
+    .content-area {
+        margin-left: var(--sidebar-width) !important;
+    }
+    
+    .sidebar {
+        transform: translateX(0) !important;
+    }
+}
+
+/* Fix para botões e links */
+button, a, .main-menu li {
+    transition: all 0.2s ease !important;
+}
+
+/* Garantir que os ícones sejam visíveis */
+.main-menu li i {
+    display: inline-block !important;
+    margin-right: 12px !important;
+}
+
+/* CORREÇÃO ESPECÍFICA: Forçar exibição do item lesson-plans */
+.main-menu li[data-module="lesson-plans"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}

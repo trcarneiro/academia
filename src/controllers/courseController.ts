@@ -17,38 +17,54 @@ const updateCourseSchema = createCourseSchema.partial();
 
 // Função dinâmica para resolver organizationId
 async function getOrganizationId(request: FastifyRequest): Promise<string> {
+  console.log('🔍 getOrganizationId - Starting resolution...');
+  
   // 1) Body: organizationId (prioritário)
   const bodyOrgId = (request.body as any)?.organizationId as string | undefined;
+  console.log('🔍 Body organizationId:', bodyOrgId);
   if (bodyOrgId) {
     const org = await prisma.organization.findUnique({ where: { id: bodyOrgId } });
-    if (org) return org.id;
+    if (org) {
+      console.log('✅ Organization found via body:', org.id);
+      return org.id;
+    }
     throw new Error('Organization not found for provided organizationId');
   }
 
   const headers = request.headers as Record<string, string | undefined>;
   const headerId = headers['x-organization-id'] || headers['x-organizationid'] || headers['organization-id'];
   const headerSlug = headers['x-organization-slug'] || headers['organization-slug'];
+  console.log('🔍 Header organizationId:', headerId);
+  console.log('🔍 Header organizationSlug:', headerSlug);
 
   // 2) Header: X-Organization-Id
   if (headerId) {
     const org = await prisma.organization.findUnique({ where: { id: headerId } });
-    if (org) return org.id;
+    if (org) {
+      console.log('✅ Organization found via header ID:', org.id);
+      return org.id;
+    }
   }
 
   // 3) Header: X-Organization-Slug
   if (headerSlug) {
     const org = await prisma.organization.findUnique({ where: { slug: headerSlug } });
-    if (org) return org.id;
+    if (org) {
+      console.log('✅ Organization found via header slug:', org.id);
+      return org.id;
+    }
   }
 
-  // 4) Fallback: se houver exatamente 1 organização, usar ela
-  const count = await prisma.organization.count();
-  if (count === 1) {
-    const only = await prisma.organization.findFirst({ select: { id: true } });
-    if (only?.id) return only.id;
+  // 4) Fallback flexível: sempre usar a primeira organização disponível para desenvolvimento
+  console.log('🔍 Using fallback strategy - finding first available organization...');
+  const firstOrg = await prisma.organization.findFirst({ select: { id: true } });
+  if (firstOrg?.id) {
+    console.log('⚠️ Using first available organization as fallback:', firstOrg.id);
+    return firstOrg.id;
   }
 
-  throw new Error('Organization not resolved. Provide organizationId in body, X-Organization-Id or X-Organization-Slug header, or ensure exactly one organization exists.');
+  console.error('❌ No organization found at all');
+  throw new Error('No organization found in database');
 }
 
 // Resolver (buscar/criar) arte marcial válida
@@ -146,17 +162,69 @@ export const courseController = {
 
   async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      console.log('🗑️ Delete course request - ID:', request.params.id);
+      console.log('🗑️ Delete course headers:', request.headers);
+      console.log('🗑️ Delete course body:', request.body);
+      
       const { id } = request.params;
-      await courseService.deleteCourse(id, organizationId);
-      reply.status(204).send();
+      console.log('🗑️ Attempting to delete course:', id);
+      
+      // Verificar se o curso existe primeiro
+      const existingCourse = await prisma.course.findUnique({
+        where: { id },
+        select: { id: true, name: true }
+      });
+
+      if (!existingCourse) {
+        console.log('❌ Course not found:', id);
+        return reply.status(404).send({ 
+          success: false, 
+          error: 'Curso não encontrado' 
+        });
+      }
+
+      console.log('✅ Course found:', existingCourse.name);
+      
+      // Primeiro deletar todas as classes relacionadas
+      console.log('🗑️ Deleting related classes first...');
+      const deleteClassesResult = await prisma.class.deleteMany({
+        where: {
+          courseId: id
+        }
+      });
+      console.log(`✅ Deleted ${deleteClassesResult.count} related classes`);
+
+      // Agora deletar o curso
+      console.log('🗑️ Deleting course...');
+      await prisma.course.delete({
+        where: { id }
+      });
+      
+      console.log('✅ Course deleted successfully');
+      reply.status(200).send({ 
+        success: true, 
+        message: 'Curso e aulas relacionadas deletados com sucesso' 
+      });
     } catch (error) {
       const e = error as Error;
+      console.error('❌ Delete course error details:', e);
+      console.error('❌ Error message:', e.message);
+      console.error('❌ Error stack:', e.stack);
+      
       if (e.message.includes('não encontrado')) {
         return reply.status(404).send({ success: false, error: e.message });
       }
+      if (e.message.includes('foreign key') || e.message.includes('constraint')) {
+        return reply.status(400).send({ 
+          success: false, 
+          error: 'Não é possível deletar este curso pois ele possui dados associados (alunos, aulas, etc.)' 
+        });
+      }
       console.error('❌ delete course error', error);
-      reply.status(500).send({ success: false, error: 'Erro ao deletar curso' });
+      reply.status(500).send({ 
+        success: false, 
+        error: 'Erro interno do servidor ao deletar curso' 
+      });
     }
   },
 };

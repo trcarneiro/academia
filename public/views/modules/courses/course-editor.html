@@ -15,11 +15,8 @@
                 <button class="header-btn btn-back" id="goBackBtn">
                     ← Voltar
                 </button>
-                <button class="header-btn btn-draft" id="saveDraftBtn">
-                    💾 Salvar Rascunho
-                </button>
                 <button class="header-btn btn-save" id="saveCourseBtn">
-                    ➕ Criar Curso
+                    💾 Salvar
                 </button>
             </div>
         </div>
@@ -33,13 +30,30 @@
 
     <!-- Editor Content -->
     <div class="editor-main">
+        <!-- Tab Navigation -->
+        <div class="editor-tabs">
+            <button class="tab-btn active" data-tab="info" id="tabInfo">
+                📋 Informações
+            </button>
+            <button class="tab-btn" data-tab="schedule" id="tabSchedule">
+                📅 Cronograma
+            </button>
+            <button class="tab-btn" data-tab="techniques" id="tabTechniques">
+                🥋 Técnicas
+            </button>
+            <button class="tab-btn" data-tab="rag-generation" id="tabRAG">
+                🧠 Geração RAG
+            </button>
+        </div>
+
         <div id="editorContent" class="form-container">
-            <!-- Basic Information Section -->
-            <section class="form-section">
-                <h2 class="section-title">📋 Informações Básicas</h2>
-                <div class="section-description">
-                    Configure as informações fundamentais do curso
-                </div>
+            <!-- Tab Content: Basic Information -->
+            <div class="tab-content active" id="tabContentInfo">
+                <section class="form-section">
+                    <h2 class="section-title">📋 Informações Básicas</h2>
+                    <div class="section-description">
+                        Configure as informações fundamentais do curso
+                    </div>
                 <div class="form-grid two-columns">
                     <div class="form-group">
                         <label class="form-label" for="courseName">
@@ -202,6 +216,269 @@
                     </div>
                 </div>
             </section>
+            </div>
+
+            <!-- Tab Content: Schedule -->
+            <div class="tab-content" id="tabContentSchedule" style="display: none;">
+                <section class="form-section">
+                    <h2 class="section-title">📅 Cronograma do Curso</h2>
+                    <div class="section-description">
+                        Configure o cronograma detalhado com aulas, unidades e objetivos
+                    </div>
+                    
+                    <div class="schedule-section">
+                        <div class="schedule-header">
+                            <div class="form-grid two-columns">
+                                <div class="form-group">
+                                    <label class="form-label" for="totalWeeks">
+                                        Total de Semanas
+                                    </label>
+                                    <input type="number" class="form-input" id="totalWeeks" min="1" max="52" value="18">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="lessonsPerWeek">
+                                        Aulas por Semana
+                                    </label>
+                                    <input type="number" class="form-input" id="lessonsPerWeek" min="1" max="7" value="2">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule-tools">
+                            <button type="button" class="btn btn-secondary" id="generateScheduleBtn">
+                                ⚡ Gerar Cronograma Automático
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="importScheduleBtn">
+                                📥 Importar JSON
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="exportScheduleBtn">
+                                📤 Exportar JSON
+                            </button>
+                        </div>
+                        
+                        <div class="schedule-json-import" style="display: none;">
+                            <div class="form-group full-width">
+                                <label class="form-label" for="scheduleJsonInput">
+                                    Cole o JSON do Cronograma
+                                </label>
+                                <textarea class="form-textarea" id="scheduleJsonInput" rows="8" 
+                                          placeholder='Formato: { "weeks": 18, "lessonsPerWeek": [...] }'></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-primary" id="processScheduleJsonBtn">
+                                    ✅ Processar JSON
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelScheduleImportBtn">
+                                    ❌ Cancelar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="schedule-grid" id="scheduleGrid">
+                            <div class="schedule-empty-state">
+                                <p>📋 Nenhum cronograma configurado</p>
+                                <p>Use as ferramentas acima para criar ou importar um cronograma</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Tab Content: Techniques -->
+            <div class="tab-content" id="tabContentTechniques" style="display: none;">
+                <section class="form-section">
+                    <h2 class="section-title">🥋 Técnicas do Curso</h2>
+                    <div class="section-description">
+                        Gerencie as técnicas e atividades associadas ao curso
+                    </div>
+                    
+                    <div class="techniques-section">
+                        <div class="techniques-header">
+                            <div class="techniques-stats">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="totalTechniques">0</span>
+                                    <span class="stat-label">Total de Técnicas</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number" id="requiredTechniques">0</span>
+                                    <span class="stat-label">Obrigatórias</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number" id="optionalTechniques">0</span>
+                                    <span class="stat-label">Opcionais</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="techniques-tools">
+                            <div class="form-grid three-columns">
+                                <div class="form-group">
+                                    <input type="text" class="form-input" id="techniqueSearch" 
+                                           placeholder="🔍 Buscar técnicas...">
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-select" id="techniqueFilter">
+                                        <option value="all">Todas as Categorias</option>
+                                        <option value="attack">Ataques</option>
+                                        <option value="defense">Defesas</option>
+                                        <option value="movement">Movimentação</option>
+                                        <option value="grappling">Agarramentos</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-primary" id="addTechniqueBtn">
+                                        ➕ Adicionar Técnica
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="techniques-library" id="techniquesLibrary">
+                            <div class="library-section">
+                                <h3>📚 Biblioteca de Técnicas</h3>
+                                <div class="techniques-available" id="availableTechniques">
+                                    <div class="loading-state">Carregando técnicas disponíveis...</div>
+                                </div>
+                            </div>
+                            
+                            <div class="library-section">
+                                <h3>✅ Técnicas do Curso</h3>
+                                <div class="techniques-selected" id="selectedTechniques">
+                                    <div class="empty-state">Nenhuma técnica selecionada</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Tab Content: RAG Generation -->
+            <div class="tab-content" id="tabContentRAG" style="display: none;">
+                <section class="form-section">
+                    <h2 class="section-title">🧠 Geração Inteligente com RAG</h2>
+                    <div class="section-description">
+                        Use IA para gerar planos de aula baseados no cronograma e técnicas
+                    </div>
+                    
+                    <div class="rag-section">
+                        <div class="rag-overview">
+                            <div class="overview-card">
+                                <h3>📊 Visão Geral</h3>
+                                <div class="overview-stats">
+                                    <div class="overview-item">
+                                        <span class="overview-label">Cronograma:</span>
+                                        <span class="overview-value" id="ragScheduleStatus">Não configurado</span>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span class="overview-label">Técnicas:</span>
+                                        <span class="overview-value" id="ragTechniquesStatus">0 selecionadas</span>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span class="overview-label">Planos Existentes:</span>
+                                        <span class="overview-value" id="ragExistingPlans">0 planos</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="rag-configuration">
+                            <h3>⚙️ Configuração da Geração</h3>
+                            
+                            <div class="form-grid two-columns">
+                                <div class="form-group">
+                                    <label class="form-label" for="ragProvider">
+                                        Provedor de IA
+                                    </label>
+                                    <select class="form-select" id="ragProvider">
+                                        <option value="claude">Anthropic Claude</option>
+                                        <option value="openai">OpenAI GPT</option>
+                                        <option value="gemini">Google Gemini</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="ragLessonDuration">
+                                        Duração da Aula (min)
+                                    </label>
+                                    <input type="number" class="form-input" id="ragLessonDuration" 
+                                           min="30" max="180" value="60">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label class="form-label" for="ragInstructions">
+                                    Instruções Específicas
+                                </label>
+                                <textarea class="form-textarea" id="ragInstructions" rows="4" 
+                                          placeholder="Instruções adicionais para a IA (ex: foco em segurança, nível de intensidade, adaptações para iniciantes...)"></textarea>
+                            </div>
+                            
+                            <div class="rag-options">
+                                <div class="form-grid two-columns">
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="ragReplaceExisting">
+                                            <span class="checkmark"></span>
+                                            Substituir planos existentes
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="ragIncludeWarmup" checked>
+                                            <span class="checkmark"></span>
+                                            Incluir aquecimento
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-grid two-columns">
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="ragIncludeCooldown" checked>
+                                            <span class="checkmark"></span>
+                                            Incluir alongamento final
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="ragDryRun">
+                                            <span class="checkmark"></span>
+                                            Modo simulação (preview)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="rag-actions">
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-primary btn-large" id="generateRAGPlansBtn">
+                                    🚀 Gerar Planos de Aula
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="previewRAGBtn">
+                                    👁️ Preview
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="rag-progress" id="ragProgress" style="display: none;">
+                            <div class="progress-header">
+                                <h3>⚡ Gerando Planos de Aula...</h3>
+                                <span class="progress-status" id="ragProgressStatus">Iniciando...</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="ragProgressFill"></div>
+                            </div>
+                            <div class="progress-details" id="ragProgressDetails">
+                                <div class="progress-log" id="ragProgressLog"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="rag-results" id="ragResults" style="display: none;">
+                            <h3>✅ Resultados da Geração</h3>
+                            <div class="results-summary" id="ragResultsSummary"></div>
+                            <div class="results-preview" id="ragResultsPreview"></div>
+                        </div>
+                    </div>
+                </section>
 
             <!-- Course Status -->
             <section class="form-section">

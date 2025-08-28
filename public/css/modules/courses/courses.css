@@ -1,62 +1,53 @@
-﻿/**
- * Courses Module CSS - Enhanced UX
- * Isolated styles for courses functionality - Following CLAUDE.md guidelines
+/**
+ * Courses Module CSS - GUIDELINES2.MD COMPLIANT
+ * Premium UI Standards with unified design system (#667eea, #764ba2)
  */
 
 .courses-isolated {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--color-background-dark);
-    color: var(--color-background);
-    min-height: 100vh;
+    background: var(--color-background);
+    color: var(--color-text);
     padding: 2rem;
-    --primary-blue: var(--color-info);
-    --success-green: var(--color-success);
-    --warning-yellow: var(--color-warning);
-    --error-red: var(--color-error);
-    --surface-dark: rgba(15, 23, 42, 0.95);
-    --border-light: rgba(148, 163, 184, 0.1);
-    --hover-bg: rgba(59, 130, 246, 0.05);
-    --text-primary: var(--color-background);
-    --text-secondary: var(--color-border);
-    --text-muted: var(--color-text-light);
+    /* GUIDELINES2.MD: Remove min-height que quebra sidebar */
 }
 
-/* Header Section */
-.courses-isolated .courses-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+/* GUIDELINES2.MD: Header Premium Enhanced */
+.courses-isolated .module-header-premium {
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 2rem;
     margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-light);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
 }
 
-.courses-isolated .header-left {
-    flex: 1;
-}
-
-.courses-isolated .page-title {
+.courses-isolated .module-header-premium .page-title {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     font-size: 2rem;
     font-weight: 700;
-    margin: 0;
-    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    color: var(--color-text);
 }
 
-.courses-isolated .title-icon {
+.courses-isolated .module-header-premium .title-icon {
     font-size: 2.5rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.courses-isolated .page-subtitle {
-    color: var(--text-secondary);
+.courses-isolated .module-header-premium .page-subtitle {
+    color: var(--color-text-muted);
     font-size: 1rem;
-    margin: 0.5rem 0 0 0;
+    margin: 0 0 1.5rem 0;
     font-weight: 400;
 }
 
-.courses-isolated .header-actions {
+.courses-isolated .module-header-premium .header-actions {
     display: flex;
     gap: 1rem;
     align-items: flex-start;
@@ -70,7 +61,7 @@
 }
 
 .courses-isolated .btn-import {
-    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    background: var(--gradient-primary);
     color: white;
     border: none;
     padding: 0.75rem 1rem;
@@ -87,7 +78,7 @@
 }
 
 .courses-isolated .btn-import:hover {
-    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    background: var(--gradient-primary);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
 }
@@ -97,68 +88,69 @@
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
 }
 
-/* Stats Section */
+/* GUIDELINES2.MD: Stats Cards Enhanced */
 .courses-isolated .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
-.courses-isolated .stat-card {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
+.courses-isolated .stat-card-enhanced {
+    background: var(--gradient-primary);
+    border-radius: 16px;
     padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-bounce);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.courses-isolated .stat-card:hover {
-    background: var(--hover-bg);
-    border-color: var(--primary-blue);
-    transform: translateY(-2px);
+.courses-isolated .stat-card-enhanced:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
 }
 
-.courses-isolated .stat-icon {
+.courses-isolated .stat-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.courses-isolated .stat-card-enhanced .stat-icon {
     font-size: 2rem;
-    min-width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--primary-blue), #8b5cf6);
-    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
 }
 
-.courses-isolated .stat-content {
-    flex: 1;
-}
-
-.courses-isolated .stat-value {
-    font-size: 1.8rem;
+.courses-isolated .stat-card-enhanced .stat-value {
+    font-size: 2rem;
     font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
+    margin: 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.courses-isolated .stat-label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+.courses-isolated .stat-card-enhanced .stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
     font-weight: 500;
 }
 
-/* Filters Section */
-.courses-isolated .filters-section {
-    background: var(--surface-dark);
-    border: 1px solid var(--border-light);
+/* GUIDELINES2.MD: Filters Premium */
+.courses-isolated .module-filters-premium {
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2rem;
-    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .courses-isolated .search-container {
@@ -167,19 +159,19 @@
 
 .courses-isolated .search-input {
     width: 100%;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--border-light);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 0.75rem 1rem;
-    color: var(--text-primary);
+    color: var(--color-text);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 .courses-isolated .search-input:focus {
     outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .courses-isolated .filters-container {
@@ -190,11 +182,11 @@
 }
 
 .courses-isolated .filter-select {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--border-light);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 0.5rem 1rem;
-    color: var(--text-primary);
+    color: var(--color-text);
     font-size: 0.9rem;
     min-width: 150px;
     transition: all 0.3s ease;
@@ -202,7 +194,7 @@
 
 .courses-isolated .filter-select:focus {
     outline: none;
-    border-color: var(--primary-blue);
+    border-color: var(--primary-color);
 }
 
 .courses-isolated .view-controls {
@@ -215,7 +207,7 @@
     border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 0.5rem 1rem;
-    color: var(--text-secondary);
+    color: var(--color-border);
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -223,9 +215,9 @@
 
 .courses-isolated .view-btn.active,
 .courses-isolated .view-btn:hover {
-    background: var(--primary-blue);
+    background: var(--color-info);
     color: white;
-    border-color: var(--primary-blue);
+    border-color: var(--color-info);
 }
 
 /* Button Styles */
@@ -244,7 +236,7 @@
 }
 
 .courses-isolated .btn-primary {
-    background: linear-gradient(135deg, var(--primary-blue), #8b5cf6);
+    background: var(--gradient-primary);
     color: white;
 }
 
@@ -255,13 +247,13 @@
 
 .courses-isolated .btn-secondary {
     background: rgba(148, 163, 184, 0.1);
-    color: var(--text-secondary);
+    color: var(--color-border);
     border: 1px solid var(--border-light);
 }
 
 .courses-isolated .btn-secondary:hover {
     background: rgba(148, 163, 184, 0.2);
-    color: var(--text-primary);
+    color: var(--color-background);
 }
 
 /* Loading State */
@@ -278,14 +270,14 @@
     width: 3rem;
     height: 3rem;
     border: 3px solid var(--border-light);
-    border-top: 3px solid var(--primary-blue);
+    border-top: 3px solid var(--color-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
 }
 
 .courses-isolated .loading-text {
-    color: var(--text-secondary);
+    color: var(--color-border);
     font-size: 1rem;
 }
 
@@ -294,34 +286,39 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Empty State */
-.courses-isolated .empty-state {
+/* GUIDELINES2.MD: Data Cards Premium */
+.courses-isolated .data-card-premium {
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    margin: 2rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.courses-isolated .data-card-premium .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 4rem 2rem;
     text-align: center;
-    background: var(--surface-dark);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    margin: 2rem 0;
 }
 
 .courses-isolated .empty-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
     opacity: 0.5;
+    color: var(--color-text-muted);
 }
 
 .courses-isolated .empty-state h3 {
-    color: var(--text-primary);
+    color: var(--color-text);
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
 .courses-isolated .empty-state p {
-    color: var(--text-secondary);
+    color: var(--color-text-muted);
     margin-bottom: 2rem;
     max-width: 400px;
 }
@@ -349,7 +346,7 @@
 
 .courses-isolated .course-card:hover {
     background: var(--hover-bg);
-    border-color: var(--primary-blue);
+    border-color: var(--color-info);
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
@@ -362,7 +359,7 @@
 }
 
 .courses-isolated .course-title {
-    color: var(--text-primary);
+    color: var(--color-background);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0;
@@ -370,7 +367,7 @@
 }
 
 .courses-isolated .course-category {
-    background: linear-gradient(135deg, var(--primary-blue), #8b5cf6);
+    background: var(--gradient-primary);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
@@ -380,12 +377,13 @@
 }
 
 .courses-isolated .course-description {
-    color: var(--text-secondary);
+    color: var(--color-border);
     font-size: 0.9rem;
     line-height: 1.5;
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -405,12 +403,12 @@
 
 .courses-isolated .course-status.active {
     background: rgba(16, 185, 129, 0.1);
-    color: var(--success-green);
+    color: var(--color-success);
 }
 
 .courses-isolated .course-status.inactive {
     background: rgba(148, 163, 184, 0.1);
-    color: var(--text-muted);
+    color: var(--color-text-light);
 }
 
 .courses-isolated .course-actions {
@@ -424,7 +422,7 @@
     border: none;
     border-radius: 6px;
     background: rgba(148, 163, 184, 0.1);
-    color: var(--text-secondary);
+    color: var(--color-border);
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -434,7 +432,7 @@
 }
 
 .courses-isolated .action-btn:hover {
-    background: var(--primary-blue);
+    background: var(--color-info);
     color: white;
 }
 
@@ -453,7 +451,7 @@
     gap: 1rem;
     padding: 1rem 1.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--color-background);
     border-bottom: 1px solid var(--border-light);
 }
 
@@ -476,14 +474,14 @@
 }
 
 .courses-isolated .table-cell {
-    color: var(--text-secondary);
+    color: var(--color-border);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
 }
 
 .courses-isolated .table-cell:first-child {
-    color: var(--text-primary);
+    color: var(--color-background);
     font-weight: 500;
 }
 

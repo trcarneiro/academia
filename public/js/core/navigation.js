@@ -42,6 +42,12 @@ class NavigationSystem {
 
         // Sidebar toggle
         document.addEventListener('click', (e) => {
+            // Botão de toggle do menu
+            if (e.target.closest('.menu-toggle')) {
+                e.preventDefault();
+                this.toggleSidebar();
+            }
+            // Compatibilidade com onclick
             if (e.target.matches('[onclick*="toggleSidebar"]')) {
                 e.preventDefault();
                 this.toggleSidebar();
@@ -132,18 +138,18 @@ class NavigationSystem {
      * Toggle sidebar visibility
      */
     toggleSidebar() {
-        const sidebar = document.getElementById('dashboardSidebar');
+        const sidebar = document.querySelector('.sidebar');
         if (!sidebar) return;
 
         this.sidebarOpen = !this.sidebarOpen;
         
         if (this.sidebarOpen) {
-            sidebar.classList.add('open');
+            sidebar.classList.add('expanded');
         } else {
-            sidebar.classList.remove('open');
+            sidebar.classList.remove('expanded');
         }
 
-        console.log(`📱 Sidebar ${this.sidebarOpen ? 'opened' : 'closed'}`);
+        console.log(`📱 Sidebar ${this.sidebarOpen ? 'expanded' : 'collapsed'}`);
     }
 
     /**

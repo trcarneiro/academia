@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste Módulo Lesson Plans - Academia</title>
+    <link rel="stylesheet" href="/css/force-reset.css">
+    <link rel="stylesheet" href="/css/forms-ux.css">
+    <link rel="stylesheet" href="/css/design-system/index.css">
+    <link rel="stylesheet" href="/css/dashboard/main.css">
+    <link rel="stylesheet" href="/css/menu-fix.css">
+    <link rel="stylesheet" href="/css/modules/lesson-plans.css">
+    <style>
+        .test-panel {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 350px;
+            z-index: 9999;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .log-success { background: #d4edda; color: #155724; }
+        .log-error { background: #f8d7da; color: #721c24; }
+        .log-warning { background: #fff3cd; color: #856404; }
+        .log-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior -->
+    <header class="top-bar">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="logo">🥋 Academia - Teste Lesson Plans</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div class="user-actions">
+            <div class="notifications">🔔</div>
+            <div class="user-profile">👤</div>
+        </div>
+    </header>
+
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="main-menu">
+            <ul>
+                <li data-module="dashboard">
+                    <i>📊</i> <span>Dashboard</span>
+                </li>
+                <li data-module="students">
+                    <i>👥</i> <span>Alunos</span>
+                </li>
+                <li data-module="plans">
+                    <i>📋</i> <span>Planos</span>
+                </li>
+                <li data-module="financial">
+                    <i>💰</i> <span>Financeiro</span>
+                </li>
+                <li data-module="activities">
+                    <i>🏃</i> <span>Atividades</span>
+                </li>
+                <li data-module="lesson-plans" id="lessonPlansMenuItem">
+                    <i>📚</i> <span>Planos de Aula</span>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Área de Conteúdo -->
+    <main class="content-area">
+        <div class="module-header">
+            <h1>Dashboard</h1>
+            <div class="breadcrumb">Início</div>
+        </div>
+
+        <div class="module-content" id="module-container">
+            <div class="welcome-message">
+                <h2>🧪 Teste do Módulo Lesson Plans</h2>
+                <p>Clique em "Planos de Aula" no menu para testar o carregamento do módulo.</p>
+                <button onclick="testDirectLoad()" style="margin: 10px; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px;">
+                    🚀 Carregar Módulo Diretamente
+                </button>
+                <button onclick="clearLogs()" style="margin: 10px; padding: 10px; background: var(--secondary-color); color: white; border: none; border-radius: 4px;">
+                    🧹 Limpar Logs
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Painel de Teste -->
+    <div class="test-panel">
+        <h3>📊 Log do Módulo Lesson Plans</h3>
+        <div id="moduleLog"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/dashboard/spa-router.js"></script>
+    <script src="/js/dashboard/ui-controller.js"></script>
+
+    <script>
+        // Interceptar console.log para o painel
+        const moduleLog = document.getElementById('moduleLog');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addLog(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            moduleLog.appendChild(entry);
+            moduleLog.scrollTop = moduleLog.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            addLog('info', args.join(' '));
+        };
+        
+        console.error = (...args) => {
+            originalError(...args);
+            addLog('error', '❌ ' + args.join(' '));
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addLog('warning', '⚠️ ' + args.join(' '));
+        };
+
+        // Log inicial
+        console.log('🧪 Teste do módulo Lesson Plans iniciado');
+
+        // Monitorar cliques no menu
+        document.getElementById('lessonPlansMenuItem').addEventListener('click', () => {
+            console.log('🎯 Clique detectado no menu Lesson Plans');
+            
+            // Verificar se o router vai processar
+            setTimeout(() => {
+                console.log('⏰ Verificando após 100ms...');
+                
+                const container = document.querySelector('#lessonPlansContainer') ||
+                                document.querySelector('.lesson-plans-container');
+                
+                if (container) {
+                    console.log('✅ Container do módulo encontrado');
+                } else {
+                    console.log('❌ Container do módulo NÃO encontrado');
+                }
+                
+                if (typeof window.initializeLessonPlansModule === 'function') {
+                    console.log('✅ Função initializeLessonPlansModule disponível');
+                } else {
+                    console.log('❌ Função initializeLessonPlansModule NÃO disponível');
+                }
+                
+                if (window.lessonPlansModule) {
+                    console.log('✅ window.lessonPlansModule carregado');
+                } else {
+                    console.log('❌ window.lessonPlansModule NÃO carregado');
+                }
+            }, 200);
+        });
+
+        // Função para teste direto
+        function testDirectLoad() {
+            console.log('🚀 Iniciando carregamento direto do módulo...');
+            
+            // Simular o que o router faz
+            const moduleContainer = document.getElementById('module-container');
+            moduleContainer.innerHTML = '<div id="lessonPlansContainer" class="lesson-plans-container"></div>';
+            
+            console.log('📦 Container criado, carregando assets...');
+            
+            // Carregar o módulo
+            if (window.router && window.router.loadModuleAssets) {
+                window.router.loadModuleAssets('lesson-plans');
+                
+                setTimeout(() => {
+                    if (typeof window.initializeLessonPlansModule === 'function') {
+                        console.log('🎯 Inicializando módulo...');
+                        window.initializeLessonPlansModule();
+                    } else {
+                        console.log('❌ Função de inicialização não encontrada');
+                    }
+                }, 500);
+            } else {
+                console.log('❌ Router não disponível');
+            }
+        }
+
+        function clearLogs() {
+            moduleLog.innerHTML = '';
+            console.log('🧹 Logs limpos');
+        }
+
+        // Toggle menu
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Verificar se assets estão carregados
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('📋 Status dos assets:');
+                console.log(`Router: ${typeof window.router !== 'undefined' ? '✅' : '❌'}`);
+                console.log(`Lesson Plans Module: ${typeof window.lessonPlansModule !== 'undefined' ? '✅' : '❌'}`);
+                console.log(`Init Function: ${typeof window.initializeLessonPlansModule !== 'undefined' ? '✅' : '❌'}`);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

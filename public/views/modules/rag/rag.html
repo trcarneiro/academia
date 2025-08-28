@@ -1,0 +1,303 @@
+<!-- RAG Module - Sistema de Knowledge Base Inteligente -->
+<div class="rag-isolated">
+    <!-- GUIDELINES2.MD: Header Premium Enhanced -->
+    <header class="module-header-premium">
+        <div class="header-left">
+            <div class="breadcrumb">
+                <span>Home</span> / <span>Sistema</span> / <span class="active">RAG</span>
+            </div>
+            <h1 class="page-title">
+                <span class="title-icon">🧠</span>
+                RAG Knowledge System
+            </h1>
+            <p class="page-subtitle">Datalake Inteligente e Chat com IA para Academia</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.router?.navigateTo('dashboard')">
+                ← Voltar ao Dashboard
+            </button>
+        </div>
+    </header>
+
+    <!-- GUIDELINES2.MD: Stats Cards Enhanced -->
+    <div class="stats-grid">
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value" id="ragDocuments">0</div>
+            <div class="stat-label">Documentos no RAG</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-value" id="ragEmbeddings">0</div>
+            <div class="stat-label">Embeddings Criados</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">💬</div>
+            <div class="stat-value" id="ragQueries">0</div>
+            <div class="stat-label">Consultas Hoje</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value" id="ragAccuracy">95%</div>
+            <div class="stat-label">Precisão das Respostas</div>
+        </div>
+    </div>
+
+    <!-- RAG Navigation Tabs -->
+    <div class="rag-tabs">
+        <button class="tab-btn active" data-tab="upload" onclick="showTab('upload')">
+            <span class="tab-icon">📄</span>
+            <span class="tab-text">Upload & Ingestão</span>
+        </button>
+        <button class="tab-btn" data-tab="library" onclick="showTab('library')">
+            <span class="tab-icon">📚</span>
+            <span class="tab-text">Biblioteca</span>
+        </button>
+        <button class="tab-btn" data-tab="chat" onclick="showTab('chat')">
+            <span class="tab-icon">💬</span>
+            <span class="tab-text">Chat RAG</span>
+        </button>
+        <button class="tab-btn" data-tab="generate" onclick="showTab('generate')">
+            <span class="tab-icon">⚡</span>
+            <span class="tab-text">Geração</span>
+        </button>
+    </div>
+
+    <!-- Tab Content: Upload & Ingestão -->
+    <div class="tab-content active" id="upload-tab">
+        <div class="data-card-premium">
+            <div class="card-header">
+                <h2 class="card-title">📄 Upload de Documentos para RAG</h2>
+                <p class="card-subtitle">Adicione conhecimento à base de dados inteligente</p>
+            </div>
+            
+            <div class="upload-section">
+                <div class="upload-area-rag">
+                    <input type="file" id="ragDocumentFile" accept=".pdf,.doc,.docx,.txt,.md" multiple style="display: none;">
+                    <div class="upload-zone-rag" onclick="document.getElementById('ragDocumentFile').click()">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">
+                            <strong>Clique para selecionar documentos</strong>
+                            <br>ou arraste e solte aqui
+                        </div>
+                        <div class="upload-hint">
+                            Formatos: PDF, DOC, DOCX, TXT, MD (máx. 50MB por arquivo)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-options">
+                    <div class="form-group">
+                        <label for="documentCategory">Categoria do Documento</label>
+                        <select id="documentCategory" class="form-select">
+                            <option value="krav-maga">Krav Maga - Técnicas</option>
+                            <option value="defesa-pessoal">Defesa Pessoal</option>
+                            <option value="condicionamento">Condicionamento Físico</option>
+                            <option value="pedagogia">Pedagogia e Ensino</option>
+                            <option value="filosofia">Filosofia Marcial</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="documentTags">Tags (opcional)</label>
+                        <input type="text" id="documentTags" class="form-input" 
+                               placeholder="Ex: iniciante, avançado, autodefesa">
+                    </div>
+                </div>
+                
+                <button id="startIngestionBtn" class="btn btn-primary" style="display: none;">
+                    🚀 Iniciar Processamento RAG
+                </button>
+            </div>
+            
+            <div id="ingestionProgress" class="ingestion-progress" style="display: none;">
+                <div class="progress-header">
+                    <span class="progress-icon">🔄</span>
+                    <span class="progress-title">Processando documentos...</span>
+                </div>
+                <div class="progress-steps">
+                    <div class="step-item" id="step-upload">
+                        <span class="step-icon">📤</span>
+                        <span class="step-text">Upload</span>
+                    </div>
+                    <div class="step-item" id="step-extract">
+                        <span class="step-icon">📄</span>
+                        <span class="step-text">Extração</span>
+                    </div>
+                    <div class="step-item" id="step-chunk">
+                        <span class="step-icon">✂️</span>
+                        <span class="step-text">Chunking</span>
+                    </div>
+                    <div class="step-item" id="step-embed">
+                        <span class="step-icon">🧠</span>
+                        <span class="step-text">Embeddings</span>
+                    </div>
+                    <div class="step-item" id="step-store">
+                        <span class="step-icon">💾</span>
+                        <span class="step-text">Armazenamento</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="ingestionProgressBar"></div>
+                </div>
+                <div class="progress-details" id="ingestionDetails">
+                    Aguardando início do processamento...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Content: Biblioteca -->
+    <div class="tab-content" id="library-tab" style="display: none;">
+        <div class="data-card-premium">
+            <div class="card-header">
+                <h2 class="card-title">📚 Biblioteca de Conhecimento</h2>
+                <p class="card-subtitle">Documentos processados e disponíveis no RAG</p>
+            </div>
+            
+            <div class="library-filters">
+                <div class="filter-group">
+                    <label for="librarySearch">Buscar documentos</label>
+                    <input type="text" id="librarySearch" class="form-input" 
+                           placeholder="Buscar por nome, categoria ou tags...">
+                </div>
+                <div class="filter-group">
+                    <label for="libraryCategory">Filtrar por categoria</label>
+                    <select id="libraryCategory" class="form-select">
+                        <option value="">Todas as categorias</option>
+                        <option value="krav-maga">Krav Maga</option>
+                        <option value="defesa-pessoal">Defesa Pessoal</option>
+                        <option value="condicionamento">Condicionamento</option>
+                        <option value="pedagogia">Pedagogia</option>
+                        <option value="filosofia">Filosofia</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="documentsGrid" class="documents-grid">
+                <!-- Documentos serão carregados aqui -->
+                <div class="document-card placeholder">
+                    <div class="doc-icon">📄</div>
+                    <div class="doc-info">
+                        <h4>Nenhum documento encontrado</h4>
+                        <p>Faça upload de documentos na aba "Upload & Ingestão"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Content: Chat RAG -->
+    <div class="tab-content" id="chat-tab" style="display: none;">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <span class="chat-icon">🧠</span>
+                    <div class="chat-title">
+                        <h3>RAG Assistant</h3>
+                        <p>Converse com a base de conhecimento da academia</p>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="clearChat()">
+                        🗑️ Limpar Chat
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-avatar">🧠</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            Olá! Sou o assistente RAG da academia. Posso responder perguntas sobre:
+                            <ul>
+                                <li>🥋 Técnicas de Krav Maga</li>
+                                <li>🛡️ Defesa pessoal</li>
+                                <li>💪 Condicionamento físico</li>
+                                <li>📚 Metodologias de ensino</li>
+                                <li>🧘 Filosofia marcial</li>
+                            </ul>
+                            O que gostaria de saber?
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input type="text" id="chatInput" class="chat-input" 
+                           placeholder="Digite sua pergunta sobre Krav Maga ou defesa pessoal...">
+                    <button id="sendMessageBtn" class="btn btn-primary btn-send">
+                        <span class="send-icon">📤</span>
+                    </button>
+                </div>
+                <div class="chat-suggestions">
+                    <button class="suggestion-btn" onclick="askSuggestion('Como executar um soco direto?')">
+                        Como executar um soco direto?
+                    </button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Quais são os princípios do Krav Maga?')">
+                        Quais são os princípios do Krav Maga?
+                    </button>
+                    <button class="suggestion-btn" onclick="askSuggestion('Como se defender de um estrangulamento?')">
+                        Como se defender de um estrangulamento?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Content: Geração -->
+    <div class="tab-content" id="generate-tab" style="display: none;">
+        <div class="data-card-premium">
+            <div class="card-header">
+                <h2 class="card-title">⚡ Geração de Conteúdo com RAG</h2>
+                <p class="card-subtitle">Crie técnicas, planos de aula e cursos usando a base de conhecimento</p>
+            </div>
+            
+            <div class="generation-types">
+                <div class="generation-card" onclick="selectGenerationType('technique')">
+                    <div class="gen-icon">🥋</div>
+                    <div class="gen-content">
+                        <h3>Gerar Técnica</h3>
+                        <p>Nova técnica baseada no conhecimento da academia</p>
+                    </div>
+                </div>
+                
+                <div class="generation-card" onclick="selectGenerationType('lesson')">
+                    <div class="gen-icon">📝</div>
+                    <div class="gen-content">
+                        <h3>Gerar Plano de Aula</h3>
+                        <p>Plano estruturado com objetivos e atividades</p>
+                    </div>
+                </div>
+                
+                <div class="generation-card" onclick="selectGenerationType('course')">
+                    <div class="gen-icon">🎓</div>
+                    <div class="gen-content">
+                        <h3>Gerar Módulo de Curso</h3>
+                        <p>Módulo completo com progressão pedagógica</p>
+                    </div>
+                </div>
+                
+                <div class="generation-card" onclick="selectGenerationType('evaluation')">
+                    <div class="gen-icon">📊</div>
+                    <div class="gen-content">
+                        <h3>Gerar Avaliação</h3>
+                        <p>Critérios e métodos de avaliação</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="generationForm" class="generation-form" style="display: none;">
+                <!-- Formulário dinâmico baseado no tipo selecionado -->
+            </div>
+            
+            <div id="generationResults" class="generation-results" style="display: none;">
+                <!-- Resultados da geração -->
+            </div>
+        </div>
+    </div>
+</div>

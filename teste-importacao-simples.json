@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Teste de Importação 1",
+    "description": "Primeira técnica de teste para validar o sistema de importação.",
+    "type": "TECHNIQUE",
+    "category": "TEST",
+    "difficulty": 1,
+    "equipment": ["Tapete"],
+    "duration": 300,
+    "repetitions": 5,
+    "instructions": [
+      "Prepare o ambiente",
+      "Execute o movimento",
+      "Finalize com segurança"
+    ],
+    "tips": [
+      "Mantenha a concentração",
+      "Respire adequadamente"
+    ],
+    "safety": [
+      "Use equipamentos de proteção",
+      "Certifique-se do espaço disponível"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Teste de Importação 2",
+    "description": "Segunda técnica de teste para validar o sistema de importação.",
+    "type": "STRETCH",
+    "category": "TEST",
+    "difficulty": 2,
+    "equipment": [],
+    "duration": 600,
+    "repetitions": 1,
+    "instructions": [
+      "Posicione-se corretamente",
+      "Execute o alongamento",
+      "Mantenha a posição"
+    ],
+    "tips": [
+      "Não force o movimento",
+      "Mantenha a respiração"
+    ],
+    "safety": [
+      "Aqueça antes de alongar",
+      "Pare se sentir dor"
+    ]
+  }
+]

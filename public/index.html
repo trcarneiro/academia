@@ -11,6 +11,10 @@
     <!-- Design System - Guidelines.MD Compliance -->
     <link rel="stylesheet" href="css/design-system/index.css">
     <link rel="stylesheet" href="css/dashboard/main.css">
+    <!-- Correção de emergência para o menu -->
+    <link rel="stylesheet" href="css/menu-fix.css">
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="css/modules/courses.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -38,10 +42,10 @@
                     <i>📊</i> <span>Dashboard</span>
                 </li>
                 <li data-module="students">
-                    <i>�</i> <span>Alunos</span>
+                    <i>👥</i> <span>Alunos</span>
                 </li>
-                <li data-module="plans">
-                    <i>�</i> <span>Planos</span>
+                <li data-module="billing">
+                    <i>📋</i> <span>Cobrança</span>
                 </li>
                 <li data-module="financial">
                     <i>💰</i> <span>Financeiro</span>
@@ -50,10 +54,13 @@
                     <i>🏃</i> <span>Atividades</span>
                 </li>
                 <li data-module="lesson-plans">
-                    <i>📚</i> <span>Aulas</span>
+                    <i>📚</i> <span>Planos de Aula</span>
                 </li>
                 <li data-module="courses">
                     <i>🎓</i> <span>Cursos</span>
+                </li>
+                <li data-module="rag">
+                    <i>🧠</i> <span>RAG System</span>
                 </li>
                 <li data-module="reports">
                     <i>📈</i> <span>Relatórios</span>
@@ -84,95 +91,16 @@
     <script src="js/shared/utils/feedback.js"></script>
     <script src="js/shared/api-client.js"></script>
 
+    <!-- Course RAG Integration -->
+    <script src="js/modules/course-rag-integration.js"></script>
+
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
     <script src="js/dashboard/ui-controller.js"></script>
     
-    <!-- Demo UX Forms -->
-    <script>
-        // Demonstração da UX de formulários
-        window.showFormDemo = function() {
-            const demoHTML = `
-                <div id="form-ux-demo" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-                    <div style="background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
-                        <div style="padding: 24px 32px 16px 32px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #1e293b;">🎨 Demonstração UX - Formulários Profissionais</h2>
-                            <button onclick="document.getElementById('form-ux-demo').remove()" style="background: none; border: none; font-size: 2rem; color: #64748b; cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
-                        </div>
-                        <div class="form-sections" style="padding: 24px 32px;">
-                            <div class="form-section">
-                                <h3 class="section-title">
-                                    <span class="section-icon">⚡</span>
-                                    Cadastro Rápido de Aluno - UX Profissional
-                                </h3>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label for="demo-name" class="required">Nome Completo</label>
-                                        <input type="text" id="demo-name" class="form-control" placeholder="Digite o nome completo" required>
-                                        <div class="field-error" id="demo-name-error"></div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="demo-email" class="required">Email</label>
-                                        <input type="email" id="demo-email" class="form-control" placeholder="email@exemplo.com" required>
-                                        <div class="field-error" id="demo-email-error"></div>
-                                        <div class="form-help">Será usado para login e comunicações</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="demo-phone">Telefone/WhatsApp</label>
-                                        <input type="tel" id="demo-phone" class="form-control" placeholder="(11) 99999-9999">
-                                        <div class="field-error" id="demo-phone-error"></div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="demo-plan">Plano Inicial</label>
-                                        <select id="demo-plan" class="form-control">
-                                            <option value="">Sem plano (por enquanto)</option>
-                                            <option value="basic">Básico - R$ 89/mês</option>
-                                            <option value="premium">Premium - R$ 149/mês</option>
-                                            <option value="vip">VIP - R$ 299/mês</option>
-                                        </select>
-                                        <div class="form-help">Pode ser alterado posteriormente</div>
-                                    </div>
-                                    <div class="form-group full-width">
-                                        <label for="demo-notes">Observações</label>
-                                        <textarea id="demo-notes" class="form-control" placeholder="Informações adicionais sobre o aluno..." rows="3"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn-form btn-secondary-form" onclick="document.getElementById('form-ux-demo').remove()">Cancelar</button>
-                            <button type="button" class="btn-form btn-primary-form" onclick="window.demoSave()">💾 Salvar Aluno</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', demoHTML);
-            setTimeout(() => document.getElementById('demo-name')?.focus(), 100);
-        };
-        
-        window.demoSave = function() {
-            const btn = event.target;
-            btn.classList.add('loading');
-            btn.textContent = 'Salvando...';
-            
-            setTimeout(() => {
-                btn.textContent = '✅ Salvo!';
-                setTimeout(() => document.getElementById('form-ux-demo')?.remove(), 1500);
-            }, 1000);
-        };
-    </script>
-    
     <!-- Students Module -->
     <script type="module" src="js/modules/students/students.js"></script>
     
-    <!-- Design System Validator (desenvolvimento) -->
-    <script src="js/design-system/validator.js"></script>
-    <!-- Debug Scripts -->
-    <script src="js/debug-validator.js"></script>
-    <script src="js/debug-plans.js"></script>
-    <script src="js/debug-plans-loading.js"></script>
-    <!-- Plans Module Patch -->
-    <script src="js/debug/plans-patch.js"></script>
+    <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
 </body>
 </html>

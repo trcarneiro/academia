@@ -15,6 +15,25 @@ import { ActivitiesListController } from './controllers/list-controller.js';
 import { ActivityEditorController } from './controllers/editor-controller.js';
 
 // ==============================================
+// CSS LOADING
+// ==============================================
+
+/**
+ * Load module CSS dynamically
+ */
+function loadModuleCSS() {
+    const cssId = 'activities-module-css';
+    if (!document.getElementById(cssId)) {
+        const link = document.createElement('link');
+        link.id = cssId;
+        link.rel = 'stylesheet';
+        link.href = '/css/modules/activities.css';
+        document.head.appendChild(link);
+        console.log('🎨 Activities CSS carregado');
+    }
+}
+
+// ==============================================
 // MODULE INITIALIZATION
 // ==============================================
 
@@ -45,18 +64,26 @@ function waitForAPIClient() {
  */
 async function initActivitiesModule(targetContainer) {
     console.log('🏋️ Inicializando módulo de Atividades...');
+    console.log('🏋️ Container recebido:', targetContainer);
+    console.log('🏋️ API Client disponível:', typeof window.createModuleAPI);
     
     try {
+        // Load module CSS
+        loadModuleCSS();
+        
         // Wait for API Client
         await waitForAPIClient();
         activitiesAPI = window.createModuleAPI('Activities');
+        console.log('🏋️ API Client inicializado:', activitiesAPI);
         
         // Initialize controllers
         listController = new ActivitiesListController(activitiesAPI);
         editorController = new ActivityEditorController(activitiesAPI);
+        console.log('🏋️ Controllers inicializados');
         
         // Load activities list by default
         await listController.render(targetContainer);
+        console.log('✅ Lista de atividades renderizada');
         
         console.log('✅ Módulo de Atividades inicializado com sucesso');
         
@@ -68,20 +95,37 @@ async function initActivitiesModule(targetContainer) {
         
     } catch (error) {
         console.error('❌ Erro ao inicializar módulo de Atividades:', error);
+        console.error('❌ Stack trace:', error.stack);
         showErrorState(targetContainer, error.message);
+        throw error; // Re-throw para debugging
     }
 }
 
 /**
  * Navigate to activity editor
  */
-async function openActivityEditor(activityId = null, targetContainer) {
+async function openActivityEditor(activityId = null, targetContainer = null) {
     if (!editorController) {
         console.error('❌ Editor controller não inicializado');
         return;
     }
     
-    await editorController.render(targetContainer, activityId);
+    // Use o container principal se não especificado
+    const container = targetContainer || document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container não encontrado');
+        return;
+    }
+    
+    console.log('🏋️ Abrindo editor de atividade:', activityId ? `editando ID ${activityId}` : 'nova atividade');
+    console.log('🏋️ Container:', container);
+    
+    // Limpar o list controller se estiver ativo
+    if (listController) {
+        listController.cleanup();
+    }
+    
+    await editorController.render(container, activityId);
 }
 
 /**
@@ -115,6 +159,7 @@ function showErrorState(container, message) {
 }
 
 // Global exports for SPA router
+window.initActivitiesModule = initActivitiesModule;
 window.openActivityEditor = openActivityEditor;
 window.openActivitiesList = openActivitiesList;
 

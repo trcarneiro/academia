@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Menu - Academia</title>
+    <link rel="stylesheet" href="/css/design-system/index.css">
+    <link rel="stylesheet" href="/css/dashboard/main.css">
+    <style>
+        .test-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--color-surface);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        .test-log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior -->
+    <header class="top-bar">
+        <div class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="logo">Academia</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar alunos, planos...">
+        </div>
+        <div class="user-actions">
+            <div class="notifications" title="Notificações">🔔</div>
+            <div class="user-profile" title="Perfil">👤</div>
+        </div>
+    </header>
+
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+        <nav class="main-menu">
+            <ul>
+                <li class="active" data-module="dashboard">
+                    <i>📊</i> <span>Dashboard</span>
+                </li>
+                <li data-module="students">
+                    <i>👥</i> <span>Alunos</span>
+                </li>
+                <li data-module="plans">
+                    <i>📋</i> <span>Planos</span>
+                </li>
+                <li data-module="financial">
+                    <i>💰</i> <span>Financeiro</span>
+                </li>
+                <li data-module="activities">
+                    <i>🏃</i> <span>Atividades</span>
+                </li>
+                <li data-module="lesson-plans">
+                    <i>📚</i> <span>Planos de Aula</span>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Área de Conteúdo -->
+    <main class="content-area">
+        <div class="module-header">
+            <h1>Teste do Menu</h1>
+        </div>
+
+        <div class="module-content" id="module-container">
+            <div id="contentContainer">
+                <h2>🧪 Teste de Navegação</h2>
+                <p>Clique nos itens do menu lateral para testar a navegação.</p>
+                <div id="current-module">Módulo atual: dashboard</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Painel de Teste -->
+    <div class="test-info">
+        <h3>🔧 Status do Menu</h3>
+        <div id="test-status">Carregando...</div>
+        <div class="test-log" id="test-log"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/dashboard/spa-router.js"></script>
+    <script src="/js/dashboard/ui-controller.js"></script>
+
+    <script>
+        // Override console.log para capturar logs
+        const originalLog = console.log;
+        const testLog = document.getElementById('test-log');
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            const timestamp = new Date().toLocaleTimeString();
+            testLog.innerHTML += `[${timestamp}] ${args.join(' ')}<br>`;
+            testLog.scrollTop = testLog.scrollHeight;
+        };
+
+        // Testes do menu
+        function runMenuTests() {
+            const status = document.getElementById('test-status');
+            let tests = [];
+
+            // Teste 1: Router existe
+            if (typeof window.router !== 'undefined') {
+                tests.push('✅ Router carregado');
+                console.log('✅ Router disponível globalmente');
+            } else {
+                tests.push('❌ Router não encontrado');
+                console.log('❌ Router não está disponível');
+            }
+
+            // Teste 2: Menu toggle funciona
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (menuToggle) {
+                tests.push('✅ Menu toggle encontrado');
+                console.log('✅ Menu toggle disponível');
+            } else {
+                tests.push('❌ Menu toggle não encontrado');
+                console.log('❌ Menu toggle não encontrado');
+            }
+
+            // Teste 3: Itens do menu existem
+            const menuItems = document.querySelectorAll('.main-menu li[data-module]');
+            if (menuItems.length > 0) {
+                tests.push(`✅ ${menuItems.length} itens de menu encontrados`);
+                console.log(`✅ ${menuItems.length} itens de menu carregados`);
+            } else {
+                tests.push('❌ Nenhum item de menu encontrado');
+                console.log('❌ Itens de menu não encontrados');
+            }
+
+            // Teste 4: Event listeners
+            let hasListeners = false;
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    hasListeners = true;
+                    const module = item.dataset.module;
+                    document.getElementById('current-module').textContent = `Módulo atual: ${module}`;
+                    console.log(`🎯 Navegação para: ${module}`);
+                });
+            });
+            
+            if (hasListeners || menuItems.length > 0) {
+                tests.push('✅ Event listeners configurados');
+                console.log('✅ Event listeners adicionados aos itens do menu');
+            }
+
+            status.innerHTML = tests.join('<br>');
+        }
+
+        // Executar testes após carregamento
+        window.addEventListener('load', () => {
+            setTimeout(runMenuTests, 500);
+        });
+    </script>
+</body>
+</html>

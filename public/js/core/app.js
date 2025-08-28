@@ -86,7 +86,11 @@ class AcademyApp {
             'classes', 
             'financial',
             'attendance',
-            'dashboard'
+            'dashboard',
+            'plans',
+            'activities',
+            'lesson-plans',
+            'rag'
         ];
 
         // Register available modules

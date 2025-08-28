@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Debug Menu - Academia</title>
+    <link rel="stylesheet" href="/css/force-reset.css">
+    <link rel="stylesheet" href="/css/forms-ux.css">
+    <link rel="stylesheet" href="/css/design-system/index.css">
+    <link rel="stylesheet" href="/css/dashboard/main.css">
+    <link rel="stylesheet" href="/css/menu-fix.css">
+    <style>
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 9999;
+            border: 1px solid #333;
+        }
+        .debug-title {
+            color: #ffffff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .error { color: #ff6b6b; }
+        .warning { color: #ffa500; }
+        .success { color: #51cf66; }
+        .info { color: #74c0fc; }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior -->
+    <header class="top-bar">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="logo">🥋 Academia Debug</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div class="user-actions">
+            <div class="notifications">🔔</div>
+            <div class="user-profile">👤</div>
+        </div>
+    </header>
+
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="main-menu">
+            <ul>
+                <li class="active" data-module="dashboard">
+                    <i>📊</i> <span>Dashboard</span>
+                </li>
+                <li data-module="students">
+                    <i>👥</i> <span>Alunos</span>
+                </li>
+                <li data-module="billing">
+                    <i>📋</i> <span>Cobrança</span>
+                </li>
+                <li data-module="financial">
+                    <i>💰</i> <span>Financeiro</span>
+                </li>
+                <li data-module="activities">
+                    <i>🏃</i> <span>Atividades</span>
+                </li>
+                <li data-module="lesson-plans">
+                    <i>📚</i> <span>Planos de Aula</span>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Área de Conteúdo -->
+    <main class="content-area">
+        <div class="module-header">
+            <h1>🔧 Debug do Menu</h1>
+            <div class="breadcrumb">Diagnóstico / Menu</div>
+        </div>
+
+        <div class="module-content" id="module-container">
+            <div style="padding: 20px;">
+                <h2>🎯 Status do Menu</h2>
+                <div id="menu-status" style="background: var(--color-surface); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    Verificando...
+                </div>
+                
+                <h3>🧪 Testes Interativos</h3>
+                <button onclick="testMenuToggle()" style="margin: 5px; padding: 10px;">Testar Toggle</button>
+                <button onclick="testNavigation()" style="margin: 5px; padding: 10px;">Testar Navegação</button>
+                <button onclick="showMenuInfo()" style="margin: 5px; padding: 10px;">Info do Menu</button>
+                
+                <div id="test-results" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Painel de Debug -->
+    <div class="debug-panel" id="debugPanel">
+        <div class="debug-title">🔧 Console Debug</div>
+        <div id="debugOutput"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    
+    <script>
+        // Capturar todos os logs do console
+        const debugOutput = document.getElementById('debugOutput');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addDebugMessage(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            debugOutput.appendChild(div);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            addDebugMessage('info', args.join(' '));
+        };
+        
+        console.error = (...args) => {
+            originalError(...args);
+            addDebugMessage('error', '❌ ' + args.join(' '));
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addDebugMessage('warning', '⚠️ ' + args.join(' '));
+        };
+
+        // Log inicial
+        console.log('🔧 Debug iniciado');
+        
+        // Verificar se scripts estão carregando
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ DOM carregado');
+            checkMenuStatus();
+        });
+
+        function checkMenuStatus() {
+            const status = document.getElementById('menu-status');
+            const results = [];
+            
+            // Verificar elementos DOM
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            const menuItems = document.querySelectorAll('.main-menu li[data-module]');
+            
+            results.push(sidebar ? '✅ Sidebar encontrado' : '❌ Sidebar não encontrado');
+            results.push(menuToggle ? '✅ Menu toggle encontrado' : '❌ Menu toggle não encontrado');
+            results.push(`${menuItems.length > 0 ? '✅' : '❌'} ${menuItems.length} itens de menu`);
+            
+            // Verificar CSS
+            const sidebarStyles = sidebar ? window.getComputedStyle(sidebar) : null;
+            if (sidebarStyles) {
+                results.push(`📐 Sidebar width: ${sidebarStyles.width}`);
+                results.push(`👁️ Sidebar visibility: ${sidebarStyles.visibility}`);
+                results.push(`🎨 Sidebar transform: ${sidebarStyles.transform}`);
+            }
+            
+            // Verificar JavaScript globals
+            results.push(typeof window.router !== 'undefined' ? '✅ Router disponível' : '❌ Router não encontrado');
+            
+            status.innerHTML = results.join('<br>');
+            console.log('📊 Status do menu verificado');
+        }
+
+        function testMenuToggle() {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('menuToggle');
+            
+            if (toggle && sidebar) {
+                console.log('🧪 Testando menu toggle...');
+                
+                // Simular clique
+                const wasActive = sidebar.classList.contains('active');
+                sidebar.classList.toggle('active');
+                
+                const results = document.getElementById('test-results');
+                results.innerHTML = `
+                    <div style="background: var(--color-surface); padding: 15px; border-radius: 8px;">
+                        <h4>🧪 Resultado do Toggle:</h4>
+                        <p>Estado anterior: ${wasActive ? 'Ativo' : 'Inativo'}</p>
+                        <p>Estado atual: ${sidebar.classList.contains('active') ? 'Ativo' : 'Inativo'}</p>
+                        <p>Classes: ${sidebar.className}</p>
+                    </div>
+                `;
+                
+                console.log(`Toggle executado: ${wasActive} → ${sidebar.classList.contains('active')}`);
+            } else {
+                console.error('❌ Elementos não encontrados para o teste');
+            }
+        }
+
+        function testNavigation() {
+            const menuItems = document.querySelectorAll('.main-menu li[data-module]');
+            console.log(`🧪 Testando navegação com ${menuItems.length} itens...`);
+            
+            let results = '<div style="background: var(--color-surface); padding: 15px; border-radius: 8px;"><h4>🧪 Teste de Navegação:</h4>';
+            
+            menuItems.forEach((item, index) => {
+                const module = item.dataset.module;
+                const hasListener = item.onclick || item.addEventListener;
+                
+                results += `<p>Item ${index + 1}: ${module} ${hasListener ? '✅' : '❌'}</p>`;
+                
+                // Adicionar listener temporário para teste
+                item.addEventListener('click', () => {
+                    console.log(`🎯 Clique detectado em: ${module}`);
+                    item.classList.add('active');
+                    menuItems.forEach(other => {
+                        if (other !== item) other.classList.remove('active');
+                    });
+                });
+            });
+            
+            results += '</div>';
+            document.getElementById('test-results').innerHTML = results;
+            console.log('✅ Listeners de navegação configurados');
+        }
+
+        function showMenuInfo() {
+            const sidebar = document.getElementById('sidebar');
+            const computed = window.getComputedStyle(sidebar);
+            
+            const info = `
+                <div style="background: var(--color-surface); padding: 15px; border-radius: 8px;">
+                    <h4>📋 Informações Detalhadas do Menu:</h4>
+                    <p><strong>Position:</strong> ${computed.position}</p>
+                    <p><strong>Top:</strong> ${computed.top}</p>
+                    <p><strong>Left:</strong> ${computed.left}</p>
+                    <p><strong>Width:</strong> ${computed.width}</p>
+                    <p><strong>Height:</strong> ${computed.height}</p>
+                    <p><strong>Z-index:</strong> ${computed.zIndex}</p>
+                    <p><strong>Display:</strong> ${computed.display}</p>
+                    <p><strong>Visibility:</strong> ${computed.visibility}</p>
+                    <p><strong>Opacity:</strong> ${computed.opacity}</p>
+                    <p><strong>Transform:</strong> ${computed.transform}</p>
+                    <p><strong>Background:</strong> ${computed.backgroundColor}</p>
+                </div>
+            `;
+            
+            document.getElementById('test-results').innerHTML = info;
+            console.log('📋 Informações do menu exibidas');
+        }
+
+        // Adicionar funcionalidade básica de toggle
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+            console.log('🔄 Menu toggle acionado');
+        });
+    </script>
+    
+    <!-- Carregar SPA Router e UI Controller -->
+    <script src="/js/dashboard/spa-router.js"></script>
+    <script src="/js/dashboard/ui-controller.js"></script>
+</body>
+</html>

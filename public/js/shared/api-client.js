@@ -157,16 +157,29 @@ class ApiClient {
         const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
         try {
+            // Inject organization headers from storage (if available)
+            const orgHeaders = {};
+            try {
+                const ls = (typeof window !== 'undefined') ? window.localStorage : null;
+                const ss = (typeof window !== 'undefined') ? window.sessionStorage : null;
+                const orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
+                const orgSlug = (ls?.getItem('activeOrganizationSlug')) || (ss?.getItem('activeOrganizationSlug')) || (typeof window !== 'undefined' ? window.currentOrganizationSlug : null);
+                if (orgId) orgHeaders['X-Organization-Id'] = orgId;
+                else if (orgSlug) orgHeaders['X-Organization-Slug'] = orgSlug;
+            } catch (_) {}
+
             const fetchOptions = {
                 method,
                 signal: controller.signal,
                 headers: {
-                    'Content-Type': 'application/json',
+                    ...orgHeaders,
                     ...config.headers
                 }
             };
 
+            // Only add Content-Type for methods that send data
             if (data && ['POST', 'PUT', 'PATCH'].includes(method)) {
+                fetchOptions.headers['Content-Type'] = 'application/json';
                 fetchOptions.body = JSON.stringify(data);
             }
 
@@ -312,14 +325,27 @@ class ModuleAPIHelper {
             onLoading,
             onSuccess,
             onError,
-            onEmpty
+            onEmpty,
+            params,
+            headers
         } = options;
 
         try {
             // Estado: Loading
             this._setState(UI_STATES.LOADING, { loadingElement, onLoading });
             
-            const result = await this.api.get(endpoint);
+            // Build URL with query params when provided
+            let url = endpoint;
+            if (params && typeof params === 'object') {
+                const usp = new URLSearchParams();
+                Object.entries(params).forEach(([k, v]) => {
+                    if (v !== undefined && v !== null && String(v) !== '') usp.append(k, String(v));
+                });
+                const qs = usp.toString();
+                if (qs) url += (endpoint.includes('?') ? '&' : '?') + qs;
+            }
+            
+            const result = await this.api.get(url, { headers });
             
             if (!result.success) {
                 throw new Error(result.message || 'API returned error');
@@ -331,7 +357,8 @@ class ModuleAPIHelper {
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 this._setState(UI_STATES.EMPTY, { targetElement, onEmpty });
             } else {
-                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data });
+                // CORRIGIDO: Passar o resultado completo ao invés de apenas data
+                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data: result });
             }
 
             return result;

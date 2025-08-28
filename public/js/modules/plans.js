@@ -61,6 +61,8 @@ window.initializePlansModule = async function initializePlansModule() {
 
     window.__PLANS_INIT_DONE = true;
     try { window.__MODULE_ACTIVE = 'plans'; window.dispatchEvent(new CustomEvent('module:ready', { detail: { module: 'plans' } })); } catch(_) {}
+    // Notify AcademyApp
+    try { window.app?.dispatchEvent?.('module:loaded', { name: 'plans' }); } catch(_) {}
 };
 
 // Util: aguardar DOM pronto
@@ -172,64 +174,49 @@ function ensurePlansScaffold(hostEl) {
     const wrapper = document.createElement('div');
     wrapper.innerHTML = `
         <div class="module-isolated-container plans-module" id="plansContainer" data-module="plans" data-active="true">
-            <header class="module-isolated-flex module-isolated-justify-between module-isolated-items-center module-isolated-mb-md">
-                <h1 class="module-isolated-text-2xl module-isolated-font-bold">📋 Gestão de Planos</h1>
-                <div class="module-isolated-flex module-isolated-gap-sm">
-                    <button class="btn-form btn-primary-form" id="btn-new-plan" aria-label="Adicionar novo plano">➕ Novo Plano</button>
+            <header class="module-header-premium">
+                <nav class="breadcrumb">Home / Planos</nav>
+                <div class="actions">
+                    <button class="module-isolated-btn-primary" id="btn-new-plan" type="button" aria-label="Adicionar novo plano">➕ Novo Plano</button>
                 </div>
             </header>
 
             <section class="module-isolated-mb-lg" id="statsContainer">
                 <div class="module-isolated-grid module-isolated-grid-cols-4 module-isolated-gap-md">
-                    <div class="module-isolated-card">
+                    <div class="module-isolated-card stat-card-enhanced">
                         <div class="module-isolated-text-3xl module-isolated-font-bold" id="totalPlans">0</div>
                         <div class="module-isolated-text-muted">Total de Planos</div>
                     </div>
-                    <div class="module-isolated-card">
+                    <div class="module-isolated-card stat-card-enhanced">
                         <div class="module-isolated-text-3xl module-isolated-font-bold" id="activePlans">0</div>
                         <div class="module-isolated-text-muted">Planos Ativos</div>
                     </div>
-                    <div class="module-isolated-card">
+                    <div class="module-isolated-card stat-card-enhanced">
                         <div class="module-isolated-text-3xl module-isolated-font-bold" id="totalRevenue">R$ 0</div>
                         <div class="module-isolated-text-muted">Receita Mensal</div>
                     </div>
-                    <div class="module-isolated-card">
+                    <div class="module-isolated-card stat-card-enhanced">
                         <div class="module-isolated-text-3xl module-isolated-font-bold" id="avgPrice">R$ 0</div>
                         <div class="module-isolated-text-muted">Preço Médio</div>
                     </div>
                 </div>
             </section>
-
-            <div class="module-isolated-card">
-                <div class="module-isolated-overflow-auto">
-                    <table id="plansTable" class="module-isolated-table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Categoria</th>
-                                <th>Preço</th>
-                                <th>Tipo</th>
-                                <th>Aulas/Semana</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="plansTableBody">
-                            <tr>
-                                <td colspan="7" class="module-isolated-text-center module-isolated-text-muted">Carregando planos...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="errorContainer" class="module-isolated-mt-md module-isolated-hidden">
-                <div id="errorMessage" class="module-isolated-text-error module-isolated-mb-sm"></div>
-                <button onclick="window.loadAndShowPlans()" class="btn-form btn-danger-form" aria-label="Tentar novamente carregar planos">🔄 Tentar novamente</button>
-            </div>
-
-            <!-- Contexto opcional do estudante -->
-            <div id="student-subscription-context" class="module-isolated-mt-md" style="display:none;"></div>
+            
+            <section class="module-isolated-card data-card-premium">
+                <table id="plansTable" class="module-isolated-table">
+                    <thead>
+                        <tr>
+                            <th>Plano</th>
+                            <th>Categoria</th>
+                            <th>Cobrança</th>
+                            <th>Preço</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plansTableBody"></tbody>
+                </table>
+            </section>
         </div>
     `;
     hostEl.appendChild(wrapper.firstElementChild);
@@ -579,6 +566,8 @@ window.initializePlansModule = async function initializePlansModule() {
 
     window.__PLANS_INIT_DONE = true;
     try { window.__MODULE_ACTIVE = 'plans'; window.dispatchEvent(new CustomEvent('module:ready', { detail: { module: 'plans' } })); } catch(_) {}
+    // Notify AcademyApp
+    try { window.app?.dispatchEvent?.('module:loaded', { name: 'plans' }); } catch(_) {}
 };
 
 // ===============================

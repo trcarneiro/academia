@@ -1,0 +1,262 @@
+<!-- AI Module - Geração Inteligente de Técnicas e Planos de Aula -->
+<div class="ai-isolated">
+    <!-- GUIDELINES2.MD: Header Premium Enhanced -->
+    <header class="module-header-premium">
+        <div class="header-left">
+            <div class="breadcrumb">
+                <span>Home</span> / <span>Cursos</span> / <span class="active">IA</span>
+            </div>
+            <h1 class="page-title">
+                <span class="title-icon">🤖</span>
+                Geração com Inteligência Artificial
+            </h1>
+            <p class="page-subtitle">Gere técnicas e planos de aula automaticamente a partir de documentos</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.router?.navigateTo('courses')">
+                ← Voltar aos Cursos
+            </button>
+        </div>
+    </header>
+
+    <!-- GUIDELINES2.MD: Stats Cards Enhanced -->
+    <div class="stats-grid">
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value" id="aiTotalCourses">0</div>
+            <div class="stat-label">Cursos Disponíveis</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">🏃</div>
+            <div class="stat-value" id="aiGeneratedTechniques">0</div>
+            <div class="stat-label">Técnicas Geradas</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value" id="aiGeneratedLessons">0</div>
+            <div class="stat-label">Planos Gerados</div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value" id="aiProcessingTime">0s</div>
+            <div class="stat-label">Último Processamento</div>
+        </div>
+    </div>
+
+    <!-- GUIDELINES2.MD: Data Cards Premium -->
+    <div class="data-card-premium">
+        <div class="ai-workflow">
+            <!-- Step 1: Course Selection -->
+            <section class="workflow-step">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <h2 class="step-title">Selecionar Curso</h2>
+                    <p class="step-description">Escolha o curso para gerar técnicas e planos de aula</p>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label class="form-label" for="courseSelect">Curso*</label>
+                        <select id="courseSelect" class="form-select" required>
+                            <option value="">-- Selecione um curso --</option>
+                        </select>
+                    </div>
+                    <div id="courseInfo" class="course-info" style="display: none;">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Nome:</span>
+                                <span class="info-value" id="courseInfoName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Nível:</span>
+                                <span class="info-value" id="courseInfoLevel">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Duração:</span>
+                                <span class="info-value" id="courseInfoDuration">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value" id="courseInfoStatus">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Document Upload (Optional) -->
+            <section class="workflow-step">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <h2 class="step-title">Upload de Documento <span class="optional-badge">(Opcional)</span></h2>
+                    <p class="step-description">Envie documento adicional para enriquecer a análise ou use os dados do curso</p>
+                </div>
+                <div class="step-content">
+                    <div class="generation-options">
+                        <div class="option-card option-direct active" data-mode="direct">
+                            <div class="option-icon">🎯</div>
+                            <div class="option-title">Usar Dados do Curso</div>
+                            <div class="option-description">Gera conteúdo baseado nas informações já cadastradas do curso</div>
+                        </div>
+                        <div class="option-card option-document" data-mode="document">
+                            <div class="option-icon">📄</div>
+                            <div class="option-title">Upload de Documento</div>
+                            <div class="option-description">Envia documento adicional para análise mais detalhada</div>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadArea" class="upload-area" style="display: none;">
+                        <input type="file" id="documentFile" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+                        <div class="upload-zone" onclick="document.getElementById('documentFile').click()">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-text">
+                                <strong>Clique para selecionar documento</strong>
+                                <br>ou arraste e solte aqui
+                            </div>
+                            <div class="upload-hint">Formatos: PDF, DOC, DOCX, TXT (máx. 10MB)</div>
+                        </div>
+                        <button id="uploadDocumentBtn" class="btn btn-primary" style="margin-top: 12px;">
+                            📤 Fazer Upload
+                        </button>
+                    </div>
+                    
+                    <div id="uploadProgress" class="progress-container" style="display: none;">
+                        <div class="progress-text">📤 Analisando documento...</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="analysisResults" class="analysis-results" style="display: none;">
+                        <!-- Analysis results will be populated here -->
+                    </div>
+                    
+                    <div id="courseAnalysisPreview" class="course-analysis-preview" style="display: block;">
+                        <div class="preview-header">
+                            <span class="preview-icon">📋</span>
+                            <span class="preview-title">Dados do Curso Disponíveis</span>
+                        </div>
+                        <div class="preview-content">
+                            <p>A IA utilizará as informações já cadastradas do curso selecionado:</p>
+                            <ul class="course-data-list">
+                                <li>🎯 Nome e nível do curso</li>
+                                <li>📝 Descrição e objetivos</li>
+                                <li>📚 Requisitos e pré-requisitos</li>
+                                <li>⏱️ Duração e estrutura</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 3: AI Configuration -->
+            <section class="workflow-step">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <h2 class="step-title">Configuração da IA</h2>
+                    <p class="step-description">Configure as opções de geração inteligente</p>
+                </div>
+                <div class="step-content">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="aiProvider">Provedor de IA</label>
+                            <select id="aiProvider" class="form-select">
+                                <option value="claude">Claude (Anthropic)</option>
+                                <option value="openai">GPT-4 (OpenAI)</option>
+                                <option value="gemini">Gemini (Google)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="difficultyLevel">Nível de Dificuldade</label>
+                            <select id="difficultyLevel" class="form-select">
+                                <option value="auto">Automático (baseado no curso)</option>
+                                <option value="beginner">Iniciante</option>
+                                <option value="intermediate">Intermediário</option>
+                                <option value="advanced">Avançado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="generateVariations" checked>
+                                Gerar variações das técnicas
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="includeAdaptations" checked>
+                                Incluir adaptações para diferentes públicos
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 4: Generation Options -->
+            <section class="workflow-step">
+                <div class="step-header">
+                    <span class="step-number">4</span>
+                    <h2 class="step-title">Opções de Geração</h2>
+                    <p class="step-description">Escolha o que gerar automaticamente</p>
+                </div>
+                <div class="step-content">
+                    <div class="generation-options">
+                        <button id="generateTechniquesBtn" class="generation-btn" disabled>
+                            <div class="btn-icon">🥋</div>
+                            <div class="btn-content">
+                                <div class="btn-title">Gerar Técnicas</div>
+                                <div class="btn-description">Extrair e criar técnicas individuais</div>
+                            </div>
+                        </button>
+                        
+                        <button id="generateLessonsBtn" class="generation-btn" disabled>
+                            <div class="btn-icon">📚</div>
+                            <div class="btn-content">
+                                <div class="btn-title">Gerar Planos de Aula</div>
+                                <div class="btn-description">Criar cronograma estruturado</div>
+                            </div>
+                        </button>
+                        
+                        <button id="generateAllBtn" class="generation-btn generation-btn-primary" disabled>
+                            <div class="btn-icon">⚡</div>
+                            <div class="btn-content">
+                                <div class="btn-title">Geração Completa</div>
+                                <div class="btn-description">Técnicas + Planos de Aula</div>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div id="generationProgress" class="progress-container" style="display: none;">
+                        <div class="progress-text">🤖 Gerando conteúdo...</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 5: Results -->
+            <section class="workflow-step">
+                <div class="step-header">
+                    <span class="step-number">5</span>
+                    <h2 class="step-title">Resultados</h2>
+                    <p class="step-description">Visualize e aprove o conteúdo gerado</p>
+                </div>
+                <div class="step-content">
+                    <div id="techniquesResults" class="results-container" style="display: none;">
+                        <!-- Techniques results will be populated here -->
+                    </div>
+                    
+                    <div id="lessonsResults" class="results-container" style="display: none;">
+                        <!-- Lessons results will be populated here -->
+                    </div>
+                    
+                    <div id="completeResults" class="results-container" style="display: none;">
+                        <!-- Complete generation results will be populated here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

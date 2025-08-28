@@ -73,19 +73,101 @@ export const fastifyActivityController = {
         prisma.activity.count({ where })
       ]);
 
-      return reply.send({
+      const response = {
         success: true,
         data: activities,
         count,
         page,
         pageSize,
         totalPages: Math.ceil(count / pageSize)
+      };
+
+      console.log('🔍 DEBUG - Activities controller response:', {
+        dataLength: activities.length,
+        count,
+        page,
+        pageSize,
+        totalPages: response.totalPages,
+        responseKeys: Object.keys(response)
       });
+
+      // Log temporário para arquivo
+      const fs = require('fs');
+      fs.writeFileSync('debug-activities.log', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        activitiesLength: activities.length,
+        count,
+        page,
+        pageSize,
+        totalPages: response.totalPages,
+        responseKeys: Object.keys(response),
+        fullResponse: response
+      }, null, 2));
+
+      return reply.send(response);
     } catch (error) {
       console.error('Get activities error:', error);
       return reply.status(500).send({
         success: false,
         error: 'Falha ao buscar atividades'
+      });
+    }
+  },
+
+  // GET /api/activities/count - Get total count
+  async getCount(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const organizationId = await getOrganizationId();
+      const query = request.query as any || {};
+      
+      // Same filters as getAll
+      const where: any = { organizationId };
+      if (query.type) where.type = query.type;
+      if (query.difficulty) where.difficulty = parseInt(query.difficulty);
+      if (query.q) {
+        where.OR = [
+          { title: { contains: query.q, mode: 'insensitive' } },
+          { description: { contains: query.q, mode: 'insensitive' } }
+        ];
+      }
+
+      const count = await prisma.activity.count({ where });
+
+      return reply.send({
+        success: true,
+        count
+      });
+    } catch (error) {
+      console.error('Get activities count error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao contar atividades'
+      });
+    }
+  },
+
+  // GET /api/activities/ids - Get all activity IDs
+  async getAllIds(_request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const organizationId = await getOrganizationId();
+      
+      const activities = await prisma.activity.findMany({
+        where: { organizationId },
+        select: { id: true },
+        orderBy: { title: 'asc' }
+      });
+
+      const ids = activities.map(activity => activity.id);
+
+      return reply.send({
+        success: true,
+        data: ids
+      });
+    } catch (error) {
+      console.error('Get activities IDs error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao buscar IDs das atividades'
       });
     }
   },

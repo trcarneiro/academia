@@ -1178,6 +1178,8 @@
                          document.querySelector('.lesson-plans-container') ||
                          document.querySelector('.lesson-plans-isolated');
         
+        console.log('📦 Container found:', container ? 'Yes' : 'No', container);
+        
         if (container) {
             // CLEAR CONTAINER COMPLETELY
             container.innerHTML = '';
@@ -1188,9 +1190,12 @@
                 listController = null;
             }
             
+            console.log('🔄 Creating new editor controller...');
             // Create new editor controller
             editorController = new LessonPlanEditorController();
             editorController.init(container, lessonPlanId, isReadOnly);
+        } else {
+            console.error('❌ Container not found for lesson plan editor');
         }
     };
     

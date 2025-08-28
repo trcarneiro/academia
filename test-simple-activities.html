@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples - Atividades</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-box { 
+            border: 2px solid #ccc; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+        }
+        .success { border-color: green; background: #f0fff0; }
+        .error { border-color: red; background: #fff0f0; }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏋️ Teste Simples - Módulo de Atividades</h1>
+    
+    <div class="test-box">
+        <h3>1️⃣ Teste de API</h3>
+        <button onclick="testAPI()">Testar API</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h3>2️⃣ Carregamento do Módulo</h3>
+        <button onclick="loadModule()">Carregar Módulo</button>
+        <div id="module-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h3>3️⃣ Container do Módulo</h3>
+        <div id="activities-container" style="min-height: 300px; border: 1px dashed #ccc; padding: 20px;">
+            Módulo será carregado aqui...
+        </div>
+    </div>
+
+    <!-- API Client (necessário para o módulo) -->
+    <script src="js/shared/api-client.js"></script>
+    
+    <script>
+        function updateResult(elementId, message, isError = false) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<p style="color: ${isError ? 'red' : 'green'}; font-weight: bold;">${message}</p>`;
+            console.log(message);
+        }
+        
+        async function testAPI() {
+            updateResult('api-result', 'Testando API...');
+            
+            try {
+                const response = await fetch('/api/activities');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateResult('api-result', `✅ API OK - ${data.data?.length || 0} atividades encontradas`);
+                    console.log('Dados da API:', data);
+                } else {
+                    updateResult('api-result', `❌ Erro API: ${response.status} - ${data.message || 'Erro desconhecido'}`, true);
+                }
+            } catch (error) {
+                updateResult('api-result', `❌ Erro de conexão: ${error.message}`, true);
+            }
+        }
+        
+        async function loadModule() {
+            updateResult('module-result', 'Carregando módulo...');
+            
+            try {
+                // Verificar se API client está disponível
+                if (typeof window.createModuleAPI !== 'function') {
+                    throw new Error('API Client não disponível');
+                }
+                
+                // Carregar o script do módulo
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = 'js/modules/activities/index.js';
+                
+                script.onload = async () => {
+                    try {
+                        updateResult('module-result', 'Script carregado, aguardando inicialização...');
+                        
+                        // Aguardar a função estar disponível
+                        let attempts = 0;
+                        while (typeof window.initActivitiesModule !== 'function' && attempts < 10) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            attempts++;
+                        }
+                        
+                        if (typeof window.initActivitiesModule === 'function') {
+                            updateResult('module-result', 'Função encontrada, inicializando...');
+                            
+                            const container = document.getElementById('activities-container');
+                            await window.initActivitiesModule(container);
+                            
+                            updateResult('module-result', '✅ Módulo inicializado com sucesso!');
+                        } else {
+                            throw new Error('Função initActivitiesModule não encontrada após carregamento');
+                        }
+                    } catch (error) {
+                        updateResult('module-result', `❌ Erro na inicialização: ${error.message}`, true);
+                    }
+                };
+                
+                script.onerror = () => {
+                    updateResult('module-result', '❌ Erro ao carregar script do módulo', true);
+                };
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                updateResult('module-result', `❌ Erro: ${error.message}`, true);
+            }
+        }
+        
+        // Aguardar carregamento da página
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Página carregada, pronto para testes');
+        });
+    </script>
+</body>
+</html>

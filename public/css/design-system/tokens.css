@@ -37,6 +37,11 @@
     --color-border-dark: #374151;
     --color-text-dark: #F8FAFC;
     
+    /* 🎨 CORES ADICIONAIS - Tailwind Slate */
+    --color-slate-700: #334155;      /* Cinza Médio-Escuro */
+    --color-slate-600: #475569;      /* Cinza Médio */
+    --color-slate-500: #64748B;      /* Cinza Balanceado */
+    
     
     /* 📏 SPACING SCALE - Consistente */
     --spacing-xs: 0.25rem;      /* 4px */

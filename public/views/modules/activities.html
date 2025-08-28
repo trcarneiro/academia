@@ -1,101 +1,97 @@
 <!-- Activities module view -->
-<!-- Reference: CLAUDE.md standards -->
+<!-- Reference: GUIDELINES2.md standards -->
 
 <link rel="stylesheet" href="/css/modules/activities.css">
 <script type="module" src="/js/modules/activities.js"></script>
 
-<div class="activities-container">
-  <!-- Header Section -->
-  <div class="activities-header">
-    <div class="header-left">
-      <h1 class="page-title">
-        <span class="title-icon">🏋️</span>
-        Banco de Atividades
-      </h1>
-      <p class="page-subtitle">Gerencie atividades para planos de aula</p>
-    </div>
-    <div class="header-actions">
-      <button id="new-activity-btn" class="btn btn-primary">
-        ➕ Nova Atividade
+<section id="activitiesContainer" class="module-isolated-container module-active" data-module="activities" data-active="true">
+  <!-- Header Premium -->
+  <header class="module-header-premium">
+    <nav class="breadcrumb">Home / Atividades</nav>
+    <div class="actions">
+      <button id="new-activity-btn" class="module-isolated-btn-primary" type="button" aria-label="Criar nova atividade">
+        ➕ Nova
       </button>
-      <button id="refresh-btn" class="btn btn-secondary">
+      <button id="refresh-btn" class="module-isolated-btn-secondary" type="button" aria-label="Atualizar lista de atividades">
         🔄 Atualizar
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Stats Section -->
-  <div class="activities-stats">
-    <div class="stat-card">
-      <div class="stat-value" id="total-activities">-</div>
-      <div class="stat-label">Total de Atividades</div>
+  <div class="activities-container">
+    <!-- Stats Section -->
+    <div class="activities-stats">
+      <div class="stat-card stat-card-enhanced">
+        <div class="stat-value" id="total-activities">-</div>
+        <div class="stat-label">Total de Atividades</div>
+      </div>
+      <div class="stat-card stat-card-enhanced">
+        <div class="stat-value" id="result-count">-</div>
+        <div class="stat-label">Resultados</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value" id="result-count">-</div>
-      <div class="stat-label">Resultados</div>
-    </div>
-  </div>
 
-  <!-- Filters Section -->
-  <div class="activities-filters">
-    <div class="filter-group">
-      <label for="search-input">Buscar:</label>
-      <input type="text" id="search-input" placeholder="Digite título ou descrição..." class="filter-input">
+    <!-- Filters Section -->
+    <div class="activities-filters module-filters-premium">
+      <div class="filter-group">
+        <label for="search-input">Buscar:</label>
+        <input type="text" id="search-input" placeholder="Digite título ou descrição..." class="filter-input">
+      </div>
+      
+      <div class="filter-group">
+        <label for="type-filter">Tipo:</label>
+        <select id="type-filter" class="filter-select">
+          <option value="">Todos os tipos</option>
+          <option value="TECHNIQUE">Técnica</option>
+          <option value="STRETCH">Alongamento</option>
+          <option value="DRILL">Drill</option>
+          <option value="EXERCISE">Exercício</option>
+          <option value="GAME">Jogo</option>
+          <option value="CHALLENGE">Desafio</option>
+          <option value="ASSESSMENT">Avaliação</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="page-size">Por página:</label>
+        <select id="page-size" class="filter-select">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
     </div>
     
-    <div class="filter-group">
-      <label for="type-filter">Tipo:</label>
-      <select id="type-filter" class="filter-select">
-        <option value="">Todos os tipos</option>
-        <option value="TECHNIQUE">Técnica</option>
-        <option value="STRETCH">Alongamento</option>
-        <option value="DRILL">Drill</option>
-        <option value="EXERCISE">Exercício</option>
-        <option value="GAME">Jogo</option>
-        <option value="CHALLENGE">Desafio</option>
-        <option value="ASSESSMENT">Avaliação</option>
-      </select>
+    <!-- Table Section -->
+    <div class="activities-table-container data-card-premium">
+      <table id="activities-table" class="activities-table">
+        <thead>
+          <tr>
+            <th class="col-title">Título</th>
+            <th class="col-type">Tipo</th>
+            <th class="col-difficulty">Dificuldade</th>
+            <th class="col-equipment">Equipamentos</th>
+            <th class="col-technique">Técnica Ref.</th>
+            <th class="col-actions">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="activities-table-body">
+          <!-- Linhas serão inseridas dinamicamente aqui -->
+        </tbody>
+      </table>
     </div>
 
-    <div class="filter-group">
-      <label for="page-size">Por página:</label>
-      <select id="page-size" class="filter-select">
-        <option value="10">10</option>
-        <option value="20" selected>20</option>
-        <option value="50">50</option>
-        <option value="100">100</option>
-      </select>
+    <!-- Pagination Section -->
+    <div class="activities-pagination module-pagination">
+      <div class="pagination-info" id="pagination-info">
+        Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+      </div>
+      <div class="pagination-controls">
+        <button id="prev-page" class="module-isolated-btn-secondary" type="button">⬅️ Anterior</button>
+        <button id="next-page" class="module-isolated-btn-secondary" type="button">Próxima ➡️</button>
+      </div>
     </div>
   </div>
-  
-  <!-- Table Section -->
-  <div class="activities-table-container">
-    <table id="activities-table" class="activities-table">
-      <thead>
-        <tr>
-          <th class="col-title">Título</th>
-          <th class="col-type">Tipo</th>
-          <th class="col-difficulty">Dificuldade</th>
-          <th class="col-equipment">Equipamentos</th>
-          <th class="col-technique">Técnica Ref.</th>
-          <th class="col-actions">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Linhas serão inseridas dinamicamente aqui -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pagination Section -->
-  <div class="activities-pagination">
-    <div class="pagination-info">
-      Página <span id="current-page">1</span> de <span id="total-pages">1</span>
-    </div>
-    <div class="pagination-controls">
-      <button id="prev-page" class="btn btn-secondary">⬅️ Anterior</button>
-      <button id="next-page" class="btn btn-secondary">Próxima ➡️</button>
-    </div>
-  </div>
-</div>
+</section>
 

@@ -432,26 +432,27 @@ export class LessonPlanEditorController {
         this.validateField(event.target);
         this.validateForm();
         
-        // Schedule auto-save
-        this.scheduleAutoSave();
+        // Auto-save desativado por solicitação
+        // this.scheduleAutoSave();
         
         // Update save status
         this.updateSaveStatus('Alterações não salvas', 'warning');
     }
 
     /**
-     * Schedule auto-save
+     * Schedule auto-save (disabled)
      */
     scheduleAutoSave() {
-        if (this.autoSaveTimeout) {
-            clearTimeout(this.autoSaveTimeout);
-        }
-        
-        this.autoSaveTimeout = setTimeout(() => {
-            if (this.isDirty && this.validateForm()) {
-                this.autoSave();
-            }
-        }, 3000); // Auto-save after 3 seconds of inactivity
+        // Desativado
+        return;
+    }
+
+    /**
+     * Auto-save functionality (disabled)
+     */
+    async autoSave() {
+        // Desativado
+        return;
     }
 
     /**
@@ -621,73 +622,46 @@ export class LessonPlanEditorController {
      * Handle save
      */
     async handleSave() {
-        if (!this.validateForm()) {
-            this.updateSaveStatus('Corrija os erros no formulário', 'error');
-            return;
-        }
-
-        this.setLoading(true);
+        if (this.isReadOnly) return;
         
         try {
-            const planData = this.getFormData();
+            if (!this.validateForm()) {
+                this.updateSaveStatus('Preencha os campos obrigatórios', 'error');
+                return;
+            }
+            
+            const planData = this.collectFormData();
             const url = this.planId ? `/api/lesson-plans/${this.planId}` : '/api/lesson-plans';
             const method = this.planId ? 'PUT' : 'POST';
-
+            
+            const saveBtn = this.container.querySelector('#save-plan-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            }
+            
             await this.api.saveWithFeedback(url, planData, {
                 method,
-                onSuccess: (result) => {
-                    this.plan = result.data || result;
-                    this.planId = this.plan.id;
-                    this.isDirty = false;
-                    
-                    this.updateSaveStatus('Plano salvo com sucesso', 'success');
-                    
-                    if (window.showBanner) {
-                        window.showBanner('Plano de aula salvo com sucesso', 'success');
-                    }
-                    
-                    // Update URL and header if creating new
-                    if (!this.planId) {
-                        this.planId = this.plan.id;
-                        this.updateHeaderForEdit();
-                    }
-                },
-                onError: (error) => {
-                    this.updateSaveStatus('Erro ao salvar plano', 'error');
-                    console.error('Erro ao salvar plano de aula:', error);
-                }
-            });
-
-        } catch (error) {
-            console.error('Erro ao salvar plano de aula:', error);
-            this.updateSaveStatus('Erro ao salvar plano', 'error');
-        } finally {
-            this.setLoading(false);
-        }
-    }
-
-    /**
-     * Auto-save functionality
-     */
-    async autoSave() {
-        if (!this.planId || !this.isDirty || !this.validateForm()) return;
-        
-        try {
-            const planData = this.getFormData();
-            
-            await this.api.saveWithFeedback(`/api/lesson-plans/${this.planId}`, planData, {
-                method: 'PUT',
                 onSuccess: () => {
                     this.isDirty = false;
-                    this.updateSaveStatus('Salvo automaticamente', 'success');
+                    this.updateSaveStatus('Plano salvo com sucesso', 'success');
+                    window.showBanner?.('Plano salvo com sucesso', 'success');
+                    setTimeout(() => {
+                        window.openLessonPlansList?.(this.container);
+                    }, 1000);
                 },
-                onError: () => {
-                    this.updateSaveStatus('Erro no salvamento automático', 'warning');
+                onError: (error) => {
+                    console.error('Erro ao salvar plano de aula:', error);
+                    this.updateSaveStatus('Erro ao salvar plano', 'error');
+                    window.showBanner?.(`Erro ao salvar: ${error?.message || 'Falha'}`, 'error');
                 }
             });
-
-        } catch (error) {
-            console.warn('Erro no auto-save:', error);
+        } finally {
+            const saveBtn = this.container.querySelector('#save-plan-btn');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Salvar';
+            }
         }
     }
 

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste AI Module - Workflow Simplificado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .demo-section h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #e8f4fd;
+            border-left: 4px solid #3b82f6;
+            display: none;
+        }
+        .result.success {
+            background: #f0f9ff;
+            border-left-color: #10b981;
+        }
+        .result.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        .course-data {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #f0d000;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Teste AI Module - Workflow Simplificado</h1>
+        
+        <div class="highlight">
+            <strong>✨ Nova Funcionalidade:</strong> Agora você pode gerar técnicas e planos de aula diretamente dos dados do curso, sem necessidade de upload de documento!
+        </div>
+
+        <div class="demo-section">
+            <h2>📚 1. Curso de Exemplo</h2>
+            <div class="course-data">
+                <strong>Nome:</strong> Krav Maga - Defesa Pessoal Nível 1<br>
+                <strong>Nível:</strong> BEGINNER<br>
+                <strong>Descrição:</strong> Curso básico de defesa pessoal com técnicas fundamentais de Krav Maga<br>
+                <strong>Objetivos:</strong> Ensinar técnicas básicas de autodefesa, desenvolver condicionamento físico e mental<br>
+                <strong>Requisitos:</strong> Nenhum pré-requisito, adequado para iniciantes<br>
+                <strong>Duração:</strong> 12 semanas
+            </div>
+            <button class="test-button" onclick="testCourseData()">🎯 Usar Dados do Curso</button>
+            <div id="courseResult" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🏃 2. Geração de Técnicas</h2>
+            <p>Gera técnicas baseadas nos dados do curso selecionado:</p>
+            <button class="test-button" onclick="testGenerateTechniques()">⚡ Gerar Técnicas</button>
+            <div id="techniquesResult" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📝 3. Geração de Planos de Aula</h2>
+            <p>Gera planos de aula estruturados baseados no curso e técnicas:</p>
+            <button class="test-button" onclick="testGenerateLessons()">📋 Gerar Planos de Aula</button>
+            <div id="lessonsResult" class="result"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔄 4. Geração Completa</h2>
+            <p>Executa o fluxo completo: técnicas + planos de aula:</p>
+            <button class="test-button" onclick="testGenerateAll()">🚀 Gerar Tudo</button>
+            <div id="allResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const TEST_COURSE_ID = 'test-course-123';
+
+        // Simular dados de curso para teste
+        const testCourseData = {
+            id: TEST_COURSE_ID,
+            name: 'Krav Maga - Defesa Pessoal Nível 1',
+            level: 'BEGINNER',
+            description: 'Curso básico de defesa pessoal com técnicas fundamentais de Krav Maga focado em situações reais de autodefesa urbana.',
+            objectives: 'Ensinar técnicas básicas de autodefesa, desenvolver condicionamento físico e mental, preparar o aluno para situações de risco.',
+            requirements: 'Nenhum pré-requisito necessário, adequado para iniciantes sem experiência prévia em artes marciais.',
+            duration: 12,
+            status: 'ACTIVE'
+        };
+
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.innerHTML = message;
+            element.style.display = 'block';
+        }
+
+        function hideResult(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function testCourseData() {
+            hideResult('courseResult');
+            
+            try {
+                showResult('courseResult', '🔄 Verificando dados do curso...', 'info');
+                
+                // Simular que temos um curso com dados completos
+                const courseAnalysis = `Análise do Curso:
+• Nome: ${testCourseData.name}
+• Nível: ${testCourseData.level}
+• Foco: Defesa pessoal urbana
+• Público: Iniciantes
+• Estrutura: 12 semanas progressivas
+• Técnicas: Golpes básicos, esquivas, defesas contra agarramentos
+
+✅ Dados suficientes para geração de conteúdo AI!`;
+
+                showResult('courseResult', courseAnalysis, 'success');
+                
+            } catch (error) {
+                showResult('courseResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGenerateTechniques() {
+            hideResult('techniquesResult');
+            
+            try {
+                showResult('techniquesResult', '🔄 Gerando técnicas com AI...', 'info');
+                
+                const result = await makeRequest(`${API_BASE}/ai/generate-techniques`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        courseId: TEST_COURSE_ID,
+                        options: {
+                            aiProvider: 'claude',
+                            difficulty: 'beginner',
+                            generateVariations: false
+                        }
+                    })
+                });
+                
+                const message = `✅ Técnicas geradas com sucesso!
+📊 Resultado:
+• ${result.data.created} técnicas criadas
+• Categorias: ${result.data.techniques?.map(t => t.category).join(', ') || 'Variadas'}
+• Tempo de processamento: ${result.data.processingTime || 'N/A'}
+• Provider: ${result.data.aiProvider || 'Mock'}`;
+                
+                showResult('techniquesResult', message, 'success');
+                
+            } catch (error) {
+                showResult('techniquesResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGenerateLessons() {
+            hideResult('lessonsResult');
+            
+            try {
+                showResult('lessonsResult', '🔄 Gerando planos de aula com AI...', 'info');
+                
+                const result = await makeRequest(`${API_BASE}/ai/generate-lesson-plans`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        courseId: TEST_COURSE_ID,
+                        options: {
+                            aiProvider: 'claude',
+                            generateCount: 8
+                        }
+                    })
+                });
+                
+                const message = `✅ Planos de aula gerados com sucesso!
+📊 Resultado:
+• ${result.data.created} planos criados
+• Semanas: ${result.data.weekRange?.start || 1} - ${result.data.weekRange?.end || 8}
+• Tempo de processamento: ${result.data.processingTime || 'N/A'}
+• Provider: ${result.data.aiProvider || 'Mock'}`;
+                
+                showResult('lessonsResult', message, 'success');
+                
+            } catch (error) {
+                showResult('lessonsResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGenerateAll() {
+            hideResult('allResult');
+            
+            try {
+                showResult('allResult', '🔄 Executando geração completa...', 'info');
+                
+                // Primeiro gerar técnicas
+                const techniquesResult = await makeRequest(`${API_BASE}/ai/generate-techniques`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        courseId: TEST_COURSE_ID,
+                        options: {
+                            aiProvider: 'claude',
+                            difficulty: 'beginner'
+                        }
+                    })
+                });
+                
+                // Depois gerar planos de aula
+                const lessonsResult = await makeRequest(`${API_BASE}/ai/generate-lesson-plans`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        courseId: TEST_COURSE_ID,
+                        options: {
+                            aiProvider: 'claude',
+                            generateCount: 8
+                        }
+                    })
+                });
+                
+                const message = `🚀 Geração completa finalizada!
+
+📊 Resumo:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏃 Técnicas: ${techniquesResult.data.created} criadas
+📝 Planos: ${lessonsResult.data.created} criados
+⚡ Provider: ${techniquesResult.data.aiProvider || 'Mock'}
+🎯 Modo: Dados do curso (sem documento)
+
+✅ Workflow simplificado funcionando perfeitamente!`;
+                
+                showResult('allResult', message, 'success');
+                
+            } catch (error) {
+                showResult('allResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -199,202 +199,49 @@
                 if (!resp.ok || !j.success) throw new Error(j.message || 'Falha ao importar curso');
                 alert('Curso importado com sucesso');
                 importCourseFile.value = '';
+                await loadInitialData(); // Recarregar a lista de cursos
             } catch(e){ alert('Erro na importação de curso: ' + (e.message || e)); }
         });
-        // Importação de Técnicas/Atividades
-        const importActivitiesBtn = document.getElementById('importActivitiesBtn');
-        const importActivitiesFile = document.getElementById('importActivitiesFile');
-        importActivitiesBtn?.addEventListener('click', () => importActivitiesFile.click());
-        importActivitiesFile?.addEventListener('change', async () => {
-            if (!importActivitiesFile.files.length) return;
-            try {
-                const text = await importActivitiesFile.files[0].text();
-                const data = JSON.parse(text);
-                if (!Array.isArray(data)) return alert('JSON inválido: esperado array de técnicas/atividades');
-                let successCount = 0, failCount = 0;
-                for (const rawItem of data) {
-                    try {
-                        const title = (rawItem?.title || rawItem?.name || '').toString().trim();
-                        if (!title) { failCount++; continue; }
-                        
-                        // Map Portuguese types to enum values (only if needed)
-                        const typeMap = {
-                            'Postura': 'TECHNIQUE',
-                            'Soco': 'TECHNIQUE', 
-                            'Cotovelada': 'TECHNIQUE',
-                            'Chute': 'TECHNIQUE',
-                            'Combinação': 'TECHNIQUE',
-                            'Defesa Estrangulamento': 'TECHNIQUE',
-                            'Defesa Geral': 'TECHNIQUE',
-                            'Queda': 'DRILL',
-                            'Rolamento': 'DRILL'
-                        };
-                        
-                        // Map difficulty strings to integers (only if needed)
-                        const difficultyMap = {
-                            'Iniciante': 1,
-                            'Intermediário': 2,
-                            'Avançado': 3,
-                            'Especialista': 4,
-                            'Mestre': 5
-                        };
-                        
-                        // Use existing values if they're already in the correct format
-                        const validTypes = ['TECHNIQUE', 'STRETCH', 'DRILL', 'EXERCISE', 'GAME', 'CHALLENGE', 'ASSESSMENT'];
-                        const mappedType = validTypes.includes(rawItem?.type) ? rawItem.type : (typeMap[rawItem?.type] || 'TECHNIQUE');
-                        
-                        const mappedDifficulty = typeof rawItem?.difficulty === 'number' ? rawItem.difficulty : (difficultyMap[rawItem?.difficulty] || 1);
-                        
-                        // Handle refTechniqueId - convert array to single string or null
-                        let refTechniqueId = null;
-                        if (Array.isArray(rawItem?.refTechniqueId) && rawItem.refTechniqueId.length > 0) {
-                            refTechniqueId = rawItem.refTechniqueId[0]; // Take first element
-                        } else if (typeof rawItem?.refTechniqueId === 'string' && rawItem.refTechniqueId.trim()) {
-                            refTechniqueId = rawItem.refTechniqueId;
-                        }
-                        // Note: refTechniqueId will be null if the referenced technique doesn't exist
-                        // This avoids foreign key constraint errors during bulk import
-                        
-                        const payload = {
-                            id: rawItem.id,
-                            title,
-                            description: rawItem.description,
-                            type: mappedType,
-                            difficulty: mappedDifficulty,
-                            refTechniqueId: null, // Set to null to avoid foreign key errors during bulk import
-                            equipment: Array.isArray(rawItem?.equipment)
-                                ? rawItem.equipment
-                                : (rawItem?.equipment ? [rawItem.equipment] : []),
-                            adaptations: Array.isArray(rawItem?.adaptations)
-                                ? rawItem.adaptations
-                                : (rawItem?.adaptations ? [rawItem.adaptations] : []),
-                            safety: rawItem.safety,
-                            defaultParams: rawItem.defaultParams
-                        };
-                        const resp = await fetch('/api/activities', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        const j = await resp.json().catch(() => ({ success: false }));
-                        if (resp.ok && j?.success) {
-                            successCount++;
-                        } else if (resp.status === 500 && (j?.message?.includes?.('Unique constraint') || j?.error?.includes?.('Unique constraint'))) {
-                            // Skip duplicates - already exists
-                            console.warn(`Skipping duplicate activity: ${rawItem.id}`);
-                        } else {
-                            failCount++;
-                            console.error(`Failed to import ${rawItem.id}:`, j?.error || j?.message || 'Unknown error');
-                        }
-                    } catch (_) {
-                        failCount++;
-                    }
-                }
-                alert(`Importação concluída: ${successCount} técnicas/atividades importadas, ${failCount} falhas.`);
-                importActivitiesFile.value = '';
-            } catch(e){ alert('Erro na importação de técnicas: ' + (e.message || e)); }
-        });
-        // Importação de Planos de Aula
-        const importPlansBtn = document.getElementById('importPlansBtn');
-        const importPlansFile = document.getElementById('importPlansFile');
-        importPlansBtn?.addEventListener('click', () => importPlansFile.click());
-        importPlansFile?.addEventListener('change', async () => {
-            if (!importPlansFile.files.length) return;
-            try {
-                const text = await importPlansFile.files[0].text();
-                const data = JSON.parse(text);
-                if (!Array.isArray(data)) return alert('JSON inválido: esperado array de planos de aula');
-
-                // Verificar se todos os planos têm courseId ou solicitar um global
-                let defaultCourseId = null;
-                const plansWithoutCourse = data.filter(p => !p?.courseId);
-                
-                if (plansWithoutCourse.length > 0) {
-                    // Mostrar lista de cursos disponíveis para seleção
-                    const coursesResponse = await fetch('/api/courses');
-                    const coursesResult = await coursesResponse.json();
-                    
-                    if (coursesResult.success && coursesResult.data.length > 0) {
-                        // Criar modal customizado para seleção de curso
-                        defaultCourseId = await showCourseSelectionModal(coursesResult.data, plansWithoutCourse.length);
-                        
-                        if (!defaultCourseId) {
-                            alert('Importação cancelada: é necessário associar os planos a um curso.');
-                            importPlansFile.value = '';
-                            return;
-                        }
+        
+        // "Novo Curso" buttons (header and empty state)
+        const newCourseButtons = document.querySelectorAll('[data-action="openNewCourseForm"]');
+        newCourseButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                try { window.openNewCourseForm(); } catch (_) {
+                    // Fallback SPA navigation
+                    if (window.router) {
+                        window.router.navigateTo('course-editor');
                     } else {
-                        alert('Nenhum curso encontrado. Crie um curso primeiro antes de importar planos de aula.');
-                        importPlansFile.value = '';
-                        return;
+                        location.hash = 'course-editor';
                     }
                 }
-
-                let successCount = 0, failCount = 0;
-                const errors = [];
-                
-                for (let i = 0; i < data.length; i++) {
-                    const rawPlan = data[i];
-                    try {
-                        const title = (rawPlan?.title || rawPlan?.name || '').toString().trim();
-                        const courseId = rawPlan?.courseId || defaultCourseId;
-                        
-                        if (!title) { 
-                            failCount++; 
-                            errors.push(`Plano ${i + 1}: título é obrigatório`);
-                            continue; 
-                        }
-                        
-                        if (!courseId) { 
-                            failCount++; 
-                            errors.push(`Plano ${i + 1}: courseId é obrigatório`);
-                            continue; 
-                        }
-                        
-                        const planPayload = { 
-                            ...rawPlan, 
-                            title, 
-                            courseId,
-                            lessonNumber: rawPlan.lessonNumber || (i + 1),
-                            weekNumber: rawPlan.weekNumber || Math.ceil((i + 1) / 2)
-                        };
-                        
-                        const resp = await fetch('/api/lesson-plans/import', { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json' }, 
-                            body: JSON.stringify(planPayload) 
-                        });
-                        
-                        const j = await resp.json().catch(() => ({ success: false }));
-                        
-                        if (resp.ok && j?.success) {
-                            successCount++;
-                        } else {
-                            failCount++;
-                            errors.push(`Plano ${i + 1}: ${j?.error || 'erro desconhecido'}`);
-                        }
-                    } catch (e) {
-                        failCount++;
-                        errors.push(`Plano ${i + 1}: ${e.message || 'erro de processamento'}`);
-                    }
+            });
+        });
+        
+        // "Gerar com IA" button
+        const generateWithAIBtn = document.getElementById('generateWithAIBtn');
+        generateWithAIBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Navigate to AI module
+            if (window.router) {
+                window.router.navigateTo('ai');
+            } else {
+                location.hash = 'ai';
+            }
+        });
+        
+        // Delegated fallback in case buttons are rendered later
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action="openNewCourseForm"]');
+            if (!btn) return;
+            e.preventDefault();
+            try { window.openNewCourseForm(); } catch (_) {
+                if (window.router) {
+                    window.router.navigateTo('course-editor');
+                } else {
+                    location.hash = 'course-editor';
                 }
-                
-                let message = `Importação concluída: ${successCount} planos importados, ${failCount} falhas.`;
-                if (errors.length > 0 && errors.length <= 5) {
-                    message += '\n\nErros:\n' + errors.join('\n');
-                } else if (errors.length > 5) {
-                    message += '\n\nPrimeiros 5 erros:\n' + errors.slice(0, 5).join('\n') + '\n...';
-                }
-                
-                alert(message);
-                importPlansFile.value = '';
-                
-                // Recarregar dados se houve sucesso
-                if (successCount > 0) {
-                    await loadInitialData();
-                }
-            } catch(e) { 
-                alert('Erro na importação de planos: ' + (e.message || e)); 
             }
         });
         
@@ -456,44 +303,6 @@
             console.warn('⚠️ Courses grid element not found');
             return;
         }
-        
-        // Adiciona botão de importação e modal
-        if (!document.getElementById('importCourseBtn')) {
-            const importBtn = document.createElement('button');
-            importBtn.id = 'importCourseBtn';
-            importBtn.className = 'btn btn-secondary';
-            importBtn.textContent = 'Importar Curso (JSON)';
-            importBtn.style.margin = '10px 0';
-            importBtn.onclick = showImportModal;
-            coursesGrid.parentElement.insertBefore(importBtn, coursesGrid);
-        }
-
-        if (!document.getElementById('importCourseModal')) {
-            const modal = document.createElement('div');
-            modal.id = 'importCourseModal';
-            modal.style.display = 'none';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.background = 'rgba(0,0,0,0.5)';
-            modal.style.zIndex = '9999';
-            modal.innerHTML = `
-                <div style="background:#fff;max-width:500px;margin:60px auto;padding:24px;border-radius:8px;box-shadow:0 2px 16px #0002;">
-                    <h3>Importar Curso via JSON</h3>
-                    <textarea id="importCourseTextarea" style="width:100%;height:180px;"></textarea>
-                    <div style="margin-top:12px;text-align:right;">
-                        <button id="importCourseCancelBtn" class="btn btn-light">Cancelar</button>
-                        <button id="importCourseSendBtn" class="btn btn-primary">Importar</button>
-                    </div>
-                    <div id="importCourseError" style="color:#c00;margin-top:8px;"></div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            document.getElementById('importCourseCancelBtn').onclick = hideImportModal;
-            document.getElementById('importCourseSendBtn').onclick = importCourseJson;
-        }
 
         if (filteredCourses.length === 0) {
             coursesGrid.innerHTML = '<div class="no-results">Nenhum curso encontrado com os filtros aplicados.</div>';
@@ -502,44 +311,6 @@
 
         coursesGrid.innerHTML = filteredCourses.map(course => createCourseCardHTML(course)).join('');
         console.log('✅ Courses rendered successfully');
-
-        // Funções do modal
-        function showImportModal() {
-            document.getElementById('importCourseModal').style.display = 'block';
-            document.getElementById('importCourseTextarea').value = '';
-            document.getElementById('importCourseError').textContent = '';
-        }
-        function hideImportModal() {
-            document.getElementById('importCourseModal').style.display = 'none';
-        }
-        async function importCourseJson() {
-            const textarea = document.getElementById('importCourseTextarea');
-            const errorDiv = document.getElementById('importCourseError');
-            let json;
-            try {
-                json = JSON.parse(textarea.value);
-            } catch (e) {
-                errorDiv.textContent = 'JSON inválido.';
-                return;
-            }
-            errorDiv.textContent = '';
-            try {
-                const res = await fetch('/api/courses/import', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(json)
-                });
-                const result = await res.json();
-                if (result.success) {
-                    hideImportModal();
-                    window.refreshCourses();
-                } else {
-                    errorDiv.textContent = result.message || 'Erro ao importar.';
-                }
-            } catch (e) {
-                errorDiv.textContent = 'Erro ao importar.';
-            }
-        }
     }
     
     // Create course card HTML - Following UI standards from CLAUDE.md
@@ -565,7 +336,7 @@
                         <button class="action-btn" onclick="editCourse('${course.id}')" title="Editar">
                             ✏️
                         </button>
-                        <button class="action-btn" onclick="deleteCourse('${course.id}')" title="Excluir">
+                        <button class="action-btn" onclick="deleteCourse('${course.id}', '${course.name.replace(/'/g, "\\'")}')" title="Excluir">
                             🗑️
                         </button>
                     </div>
@@ -679,7 +450,7 @@
                         <div class="course-actions">
                             <button class="action-btn" onclick="viewCourse('${course.id}')" title="Visualizar">👁️</button>
                             <button class="action-btn" onclick="editCourse('${course.id}')" title="Editar">✏️</button>
-                            <button class="action-btn" onclick="deleteCourse('${course.id}')" title="Excluir">🗑️</button>
+                            <button class="action-btn" onclick="deleteCourse('${course.id}', '${course.name.replace(/'/g, "\\'")}')" title="Excluir">🗑️</button>
                         </div>
                     </div>
                 </div>
@@ -713,19 +484,25 @@
     // Global functions for course actions
     window.openNewCourseForm = function() {
         console.log('➕ Opening new course form...');
-        if (typeof window.navigateToModule === 'function') {
-            window.navigateToModule('course-editor');
+        // Usar o router global que já existe
+        if (window.router) {
+            window.router.navigateTo('course-editor');
         } else {
-            window.location.href = '/modules/courses/course-editor.html';
+            location.hash = 'course-editor';
         }
     };
     
     window.viewCourse = function(courseId) {
         console.log('👁️ Viewing course:', courseId);
-        if (typeof window.navigateToModule === 'function') {
-            window.navigateToModule('course-editor', `?id=${courseId}&mode=view`);
+        // Store mode and ID for the editor
+        window.currentCourseId = courseId;
+        window.currentCourseMode = 'view';
+        // Usar o router global
+        if (window.router) {
+            location.hash = `course-editor/${courseId}`;
+            window.router.navigateTo('course-editor');
         } else {
-            window.location.href = `/modules/courses/course-editor.html?id=${courseId}&mode=view`;
+            location.hash = `course-editor/${courseId}`;
         }
     };
     
@@ -734,42 +511,105 @@
         
         // Store courseId globally for the editor to pick up
         window.currentCourseId = courseId;
+        window.currentCourseMode = 'edit';
         
-        // Navigate to course editor
-        if (typeof window.navigateToModule === 'function') {
-            window.navigateToModule('course-editor', `&id=${courseId}`);
+        // Usar o router global
+        if (window.router) {
+            location.hash = `course-editor/${courseId}`;
+            window.router.navigateTo('course-editor');
         } else {
-            window.location.href = `/modules/courses/course-editor.html?id=${courseId}`;
+            location.hash = `course-editor/${courseId}`;
         }
     };
     
-    window.deleteCourse = async function(courseId) {
+    window.deleteCourse = async function(courseId, courseName) {
         console.log('🗑️ Deleting course:', courseId);
         
-        if (!confirm('Tem certeza que deseja excluir este curso? Esta ação não pode ser desfeita.')) {
+        // Confirmação com nome do curso se disponível
+        const confirmMessage = courseName 
+            ? `Tem certeza que deseja excluir o curso "${courseName}"?\n\nEsta ação não pode ser desfeita.`
+            : 'Tem certeza que deseja excluir este curso? Esta ação não pode ser desfeita.';
+            
+        if (!confirm(confirmMessage)) {
             return;
         }
         
         try {
+            // DEBUG: Forçar uso de fetch direto para testar
+            console.warn('🔍 TESTING: Using direct fetch instead of API client');
+            console.log('🔍 Using direct fetch for DELETE request - NO Content-Type header');
+            
             const response = await fetch(`/api/courses/${courseId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                method: 'DELETE'
+                // Não enviar Content-Type para DELETE sem body
             });
+            
+            console.log('🔍 Response status:', response.status);
             
             if (response.ok) {
                 console.log('✅ Course deleted successfully');
-                await loadInitialData();
+                showNotification('success', `Curso ${courseName ? `"${courseName}"` : ''} excluído com sucesso!`);
+                loadInitialData();
             } else {
-                throw new Error(`Error deleting course: ${response.status}`);
+                const result = await response.json().catch(() => ({}));
+                throw new Error(result.error || `Error deleting course: ${response.status}`);
             }
+
         } catch (error) {
-            console.error('❌ Error deleting course:', error);
-            alert('Erro ao excluir curso. Tente novamente.');
+            console.error('💥 Unexpected error in deleteCourse:', error);
+            
+            // Mostrar mensagem de erro específica
+            let errorMessage = 'Erro inesperado ao excluir curso';
+            
+            if (error.message) {
+                if (error.message.includes('not found')) {
+                    errorMessage = 'Curso não encontrado';
+                } else if (error.message.includes('foreign key') || error.message.includes('constraint')) {
+                    errorMessage = 'Não é possível deletar este curso pois ele possui dados associados';
+                } else {
+                    errorMessage = error.message;
+                }
+            }
+            
+            showNotification('error', `Erro ao excluir curso: ${errorMessage}`);
+            
+            // Usar o error handler do app conforme instruções
+            if (window.app?.handleError) {
+                window.app.handleError(error, 'courses-delete');
+            }
         }
     };
     
+    // Função para mostrar notificações seguindo o padrão Guidelines.MD
+    function showNotification(type, message) {
+        // Remover notificação existente
+        const existingNotification = document.querySelector('.notification-toast');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Criar nova notificação
+        const notification = document.createElement('div');
+        notification.className = `notification-toast notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+
+        // Adicionar ao DOM
+        document.body.appendChild(notification);
+
+        // Remover automaticamente após 5 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
     // Refresh function
     window.refreshCourses = function() {
         console.log('🔄 Refreshing courses...');
@@ -802,150 +642,4 @@
             try { initializeCoursesModule(); } catch (_) {}
         }
     });
-
-    // Função para mostrar modal de seleção de curso
-    function showCourseSelectionModal(courses, plansCount) {
-        return new Promise((resolve) => {
-            // Criar modal
-            const modal = document.createElement('div');
-            modal.className = 'course-selection-modal-overlay';
-            modal.innerHTML = `
-                <div class="course-selection-modal">
-                    <div class="modal-header">
-                        <h3>Selecionar Curso para Planos de Aula</h3>
-                        <p>${plansCount} planos não têm curso associado. Selecione um curso:</p>
-                    </div>
-                    <div class="modal-body">
-                        <select id="courseSelector" class="course-selector">
-                            <option value="">-- Selecione um curso --</option>
-                            ${courses.map(c => `<option value="${c.id}">${c.name} (${c.level || 'N/A'})</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button id="confirmCourse" class="btn btn-primary">Confirmar</button>
-                        <button id="cancelCourse" class="btn btn-secondary">Cancelar</button>
-                    </div>
-                </div>
-            `;
-
-            // Estilos do modal
-            const style = document.createElement('style');
-            style.textContent = `
-                .course-selection-modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(4px);
-                    z-index: 9999;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                }
-                .course-selection-modal {
-                    background: white;
-                    border-radius: 12px;
-                    max-width: 500px;
-                    width: 100%;
-                    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-                    color: #1e293b;
-                }
-                .course-selection-modal .modal-header {
-                    padding: 24px 24px 16px 24px;
-                    border-bottom: 1px solid #e2e8f0;
-                }
-                .course-selection-modal .modal-header h3 {
-                    margin: 0 0 8px 0;
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                }
-                .course-selection-modal .modal-header p {
-                    margin: 0;
-                    color: #64748b;
-                    font-size: 0.875rem;
-                }
-                .course-selection-modal .modal-body {
-                    padding: 24px;
-                }
-                .course-selection-modal .course-selector {
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    background: white;
-                }
-                .course-selection-modal .modal-footer {
-                    padding: 16px 24px 24px 24px;
-                    display: flex;
-                    gap: 12px;
-                    justify-content: flex-end;
-                }
-                .course-selection-modal .btn {
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: 6px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                .course-selection-modal .btn-primary {
-                    background: linear-gradient(135deg, #8b5cf6, #a855f7);
-                    color: white;
-                }
-                .course-selection-modal .btn-primary:hover {
-                    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-                }
-                .course-selection-modal .btn-secondary {
-                    background: #f1f5f9;
-                    color: #475569;
-                }
-                .course-selection-modal .btn-secondary:hover {
-                    background: #e2e8f0;
-                }
-            `;
-
-            document.head.appendChild(style);
-            document.body.appendChild(modal);
-
-            // Event listeners
-            const confirmBtn = modal.querySelector('#confirmCourse');
-            const cancelBtn = modal.querySelector('#cancelCourse');
-            const selector = modal.querySelector('#courseSelector');
-
-            confirmBtn.addEventListener('click', () => {
-                const selectedCourseId = selector.value;
-                if (!selectedCourseId) {
-                    alert('Por favor, selecione um curso.');
-                    return;
-                }
-                document.body.removeChild(modal);
-                document.head.removeChild(style);
-                resolve(selectedCourseId);
-            });
-
-            cancelBtn.addEventListener('click', () => {
-                document.body.removeChild(modal);
-                document.head.removeChild(style);
-                resolve(null);
-            });
-
-            // Fechar com ESC
-            const handleEsc = (e) => {
-                if (e.key === 'Escape') {
-                    document.body.removeChild(modal);
-                    document.head.removeChild(style);
-                    document.removeEventListener('keydown', handleEsc);
-                    resolve(null);
-                }
-            };
-            document.addEventListener('keydown', handleEsc);
-
-            // Focar no select
-            setTimeout(() => selector.focus(), 100);
-        });
-    }
 })();

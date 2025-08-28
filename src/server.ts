@@ -42,6 +42,8 @@ import planCoursesRoutes from '@/routes/planCourses';
 import assessmentsRoutes from '@/routes/assessments';
 import feedbackRoutes from '@/routes/feedback';
 import gamificationRoutes from '@/routes/gamification';
+import { aiRoutes } from '@/routes/ai';
+import { ragRoutes } from '@/routes/rag';
 
 const server = Fastify({ logger: fastifyLoggerOptions });
 
@@ -81,6 +83,8 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(feedbackRoutes, 'feedbackRoutes'), { prefix: '/api/feedback' } as any);
     await server.register(normalizePlugin(gamificationRoutes, 'gamificationRoutes'), { prefix: '/api/gamification' } as any);
     await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
+    await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
+    await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
 
     server.setErrorHandler(errorHandler);
 

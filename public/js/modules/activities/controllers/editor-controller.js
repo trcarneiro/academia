@@ -25,6 +25,10 @@ export class ActivityEditorController {
      * Render the activity editor in the target container
      */
     async render(targetContainer, activityId = null) {
+        console.log('🏋️ Renderizando editor de atividade');
+        console.log('🏋️ Container:', targetContainer);
+        console.log('🏋️ Activity ID:', activityId);
+        
         this.container = targetContainer;
         this.activityId = activityId;
         
@@ -32,6 +36,9 @@ export class ActivityEditorController {
         targetContainer.setAttribute('data-module', 'activities');
         targetContainer.setAttribute('data-active', 'true');
         targetContainer.classList.add('module-active');
+        
+        // Clear any existing content and timers
+        targetContainer.innerHTML = '';
         
         // Render initial HTML structure
         this.renderHTML();

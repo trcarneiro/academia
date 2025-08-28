@@ -13,8 +13,8 @@ class ModularSystem {
             'dashboard': '/views/dashboard.html',
             'students': '/views/students.html',
             'student-editor': '/views/student-editor.html',
-            'courses': '/modules/courses/courses.html',
-            'course-editor': '/modules/courses/course-editor.html',
+            'courses': '/views/modules/courses/courses.html',
+            'course-editor': '/views/modules/courses/course-editor.html',
             'plans': '/views/plans.html',
             'plan-editor': '/views/plan-editor.html',
             'lessons': '/views/lessons.html',
@@ -69,6 +69,10 @@ class ModularSystem {
                     <a href="#" onclick="navigateToModule('courses')" class="nav-item">
                         <span class="nav-icon">📚</span>
                         <span class="nav-text">Cursos</span>
+                    </a>
+                    <a href="#" onclick="navigateToModule('lesson-plans')" class="nav-item">
+                        <span class="nav-icon">📝</span>
+                        <span class="nav-text">Planos de Aula</span>
                     </a>
                     <a href="#" onclick="navigateToModule('plans')" class="nav-item">
                         <span class="nav-icon">📋</span>
@@ -203,10 +207,10 @@ class ModularSystem {
         // Load CSS (handle special cases)
         let cssPath = `/css/modules/${moduleName}.css`;
         if (moduleName === 'course-editor') {
-            // Real file lives under /modules/courses
-            cssPath = '/modules/courses/course-editor.css';
+            // Real file lives under /css/modules/courses
+            cssPath = '/css/modules/courses/course-editor.css';
         } else if (moduleName === 'courses') {
-            cssPath = '/modules/courses/courses.css';
+            cssPath = '/css/modules/courses/courses.css';
         }
         if (!document.querySelector(`link[href="${cssPath}"]`)) {
             const link = document.createElement('link');
@@ -353,5 +357,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.modularSystem = new ModularSystem();
 });
 
-// **EXPORTAR PARA USO EM OUTROS MÓDULOS**
-export default ModularSystem;
+// **EXPORTAR REMOVIDO - usando apenas window globals**

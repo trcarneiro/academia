@@ -4,24 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planos de Aula - Academia</title>
+    <link rel="stylesheet" href="../css/design-system/tokens.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/modules/lesson-plans.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="lessonPlansContainer" class="lesson-plans-container lesson-plans-isolated">`
-        <!-- Header -->
-        <div class="lesson-plans-header">
-            <h1 class="lesson-plans-title">Planos de Aula</h1>
-            <button class="create-lesson-plan-btn" id="create-lesson-plan-btn">
-                <i class="fas fa-plus"></i>
-                Novo Plano de Aula
-            </button>
+    <div id="lessonPlansContainer" class="module-isolated-container lesson-plans-container lesson-plans-isolated" data-module="lesson-plans">
+        <!-- Header Premium -->
+        <div class="module-header-premium">
+            <div class="header-content">
+                <div>
+                    <h1 class="module-title">📚 Planos de Aula</h1>
+                    <p class="module-subtitle">Gerencie os planos de aula dos cursos</p>
+                </div>
+                <button class="btn btn-primary create-lesson-plan-btn" id="create-lesson-plan-btn">
+                    <i class="fas fa-plus"></i>
+                    Novo Plano
+                </button>
+            </div>
         </div>
 
-        <!-- Search and Filters -->
-        <div class="lesson-plans-search">
-            <form id="search-form" class="search-form">
+        <!-- Statistics Cards Enhanced -->
+        <div class="module-stats">
+            <div class="stat-card-enhanced">
+                <div class="stat-value" id="totalLessonPlans">2</div>
+                <div class="stat-label">Total de Planos</div>
+            </div>
+            <div class="stat-card-enhanced">
+                <div class="stat-value" id="activeCourses">2</div>
+                <div class="stat-label">Cursos Ativos</div>
+            </div>
+            <div class="stat-card-enhanced">
+                <div class="stat-value" id="avgDuration">60</div>
+                <div class="stat-label">Duração Média (min)</div>
+            </div>
+        </div>
+
+        <!-- Filters Premium -->
+        <div class="module-filters-premium">
+            <div class="filter-row">
                 <div class="search-input-group">
                     <label class="search-label" for="search-q">Buscar</label>
                     <input type="text" id="search-q" name="q" class="search-input" placeholder="Título ou descrição...">

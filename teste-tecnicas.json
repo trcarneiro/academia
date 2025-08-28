@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "name": "Defesa contra Soco Direto",
+    "description": "Técnica fundamental de defesa contra ataque frontal com soco direto ao rosto. Esta técnica é essencial para iniciantes e forma a base para defesas mais avançadas.",
+    "type": "TECHNIQUE",
+    "category": "DEFENSE",
+    "difficulty": 2,
+    "equipment": ["Luvas de proteção", "Capacete"],
+    "duration": 300,
+    "repetitions": 10,
+    "instructions": [
+      "Posicione-se em stance básica com pés afastados na largura dos ombros",
+      "Mantenha as mãos levantadas em posição de guarda",
+      "Ao ver o soco chegando, execute movimento de bloco de fora para dentro",
+      "Imediatamente após o bloco, contra-ataque com soco direto",
+      "Termine em posição de guarda defensiva"
+    ],
+    "tips": [
+      "Mantenha sempre os olhos no oponente, não na mão que ataca",
+      "Use o corpo inteiro no movimento de bloco, não apenas o braço",
+      "O contra-ataque deve ser imediato e explosivo",
+      "Pratique o movimento devagar antes de aumentar a velocidade"
+    ],
+    "safety": [
+      "Sempre use equipamentos de proteção durante os treinos",
+      "Pratique com velocidade controlada nas primeiras sessões",
+      "Certifique-se de que há espaço suficiente ao redor",
+      "Pare imediatamente se sentir dor ou desconforto"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Alongamento de Pernas",
+    "description": "Sequência de alongamentos para preparar as pernas antes do treino de Krav Maga, focando em flexibilidade e prevenção de lesões.",
+    "type": "STRETCH",
+    "category": "WARMUP",
+    "difficulty": 1,
+    "equipment": ["Colchonete"],
+    "duration": 600,
+    "repetitions": 1,
+    "instructions": [
+      "Comece em pé com os pés afastados na largura dos quadris",
+      "Alongue o quadríceps levantando o pé em direção ao glúteo",
+      "Segure por 30 segundos cada perna",
+      "Alongue os isquiotibiais inclinando-se para frente",
+      "Finalize com alongamento das panturrilhas"
+    ],
+    "tips": [
+      "Respire profundamente durante todo o alongamento",
+      "Não force movimentos que causem dor",
+      "Mantenha o alongamento por tempo suficiente",
+      "Aqueça o corpo antes de alongar"
+    ],
+    "safety": [
+      "Nunca force um alongamento além do limite confortável",
+      "Pare se sentir dor aguda",
+      "Use superfície antiderrapante",
+      "Mantenha movimentos controlados"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Drill de Socos Básicos",
+    "description": "Exercício repetitivo para aperfeiçoar a técnica de socos básicos do Krav Maga, melhorando velocidade, precisão e potência.",
+    "type": "DRILL",
+    "category": "TECHNIQUE",
+    "difficulty": 3,
+    "equipment": ["Saco de pancadas", "Bandagens", "Luvas"],
+    "duration": 900,
+    "repetitions": 50,
+    "instructions": [
+      "Posicione-se em frente ao saco de pancadas",
+      "Execute 10 socos diretos com a mão direita",
+      "Execute 10 socos diretos com a mão esquerda",
+      "Execute 10 socos cruzados direita-esquerda",
+      "Descanse 30 segundos e repita a sequência"
+    ],
+    "tips": [
+      "Mantenha o punho fechado corretamente",
+      "Gire o quadril para dar mais potência",
+      "Mantenha o cotovelo próximo ao corpo",
+      "Respire no momento do impacto"
+    ],
+    "safety": [
+      "Use bandagens para proteger os punhos",
+      "Calce luvas apropriadas",
+      "Verifique se o saco está bem fixado",
+      "Pare se sentir dor nas articulações"
+    ]
+  }
+]

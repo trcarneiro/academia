@@ -1,8 +1,8 @@
 /**
- * Lesson Plans Module - Guidelines.MD Compliant
+ * Lesson Plans Module - Guidelines2.md Premium Compliant
  * 
  * Main entry point for the lesson plans module with proper MVC architecture,
- * API client integration, and SPA compatibility.
+ * API client integration, SPA compatibility, and AcademyApp integration.
  */
 
 (function() {
@@ -10,8 +10,39 @@
     
     console.log('📚 Lesson Plans Module - Starting...');
     
+    // Provide a safe banner shim using feedback utilities when available
+    if (typeof window.showBanner !== 'function') {
+        window.showBanner = function(message, type = 'info') {
+            const fb = window.feedback || {};
+            if (type === 'error') {
+                (fb.showError && fb.showError(message)) || alert(message);
+            } else if (type === 'success') {
+                (fb.showSuccess && fb.showSuccess(message)) || alert(message);
+            } else {
+                (fb.showInfo && fb.showInfo(message)) || alert(message);
+            }
+        };
+    }
+    
     // ==============================================
-    // API CLIENT INTEGRATION (Guidelines.MD)
+    // ACADEMY APP INTEGRATION (Guidelines2.md)
+    // ==============================================
+    
+    // Register with AcademyApp
+    if (window.app) {
+        window.app.dispatchEvent('module:loaded', { name: 'lesson-plans' });
+    }
+    
+    // Expose module globally for AcademyApp
+    window.lessonPlansModule = {
+        name: 'lesson-plans',
+        version: '2.0.0',
+        init: initLessonPlans,
+        destroy: destroyLessonPlans
+    };
+    
+    // ==============================================
+    // API CLIENT INTEGRATION (Guidelines2.md)
     // ==============================================
     
     let lessonPlansAPI = null;
@@ -55,21 +86,21 @@
     
     // Initialize controllers
     async function initializeControllers() {
-        // Initialize API first
-        if (!lessonPlansAPI) {
-            await initializeAPI();
+        try {
+            // Initialize API first
+            if (!lessonPlansAPI) {
+                await initializeAPI();
+            }
+            
+            // Create controller instances - use local classes, not window
+            listController = new LessonPlansListController(lessonPlansAPI);
+            editorController = new LessonPlanEditorController(lessonPlansAPI);
+            
+            console.log('✅ Lesson Plans controllers initialized');
+        } catch (error) {
+            console.error('❌ Error initializing controllers:', error);
+            throw error;
         }
-        
-        // Create controller instances
-        if (window.LessonPlansListController) {
-            listController = new window.LessonPlansListController(lessonPlansAPI);
-        }
-        
-        if (window.LessonPlanEditorController) {
-            editorController = new window.LessonPlanEditorController(lessonPlansAPI);
-        }
-        
-        console.log('✅ Lesson Plans controllers initialized');
     }
     
     // ==============================================
@@ -197,7 +228,35 @@
             
         } catch (error) {
             console.error('❌ Error initializing lesson plans module:', error);
+            
+            // Use AcademyApp error handling if available
+            if (window.app && window.app.handleError) {
+                window.app.handleError(error, 'Lesson Plans Module Initialization');
+            }
         }
+    }
+    
+    /**
+     * Destroy lesson plans module
+     */
+    function destroyLessonPlans() {
+        console.log('🧹 Destroying Lesson Plans Module...');
+        
+        // Cleanup controllers
+        if (listController) {
+            listController.destroy();
+            listController = null;
+        }
+        
+        if (editorController) {
+            editorController.destroy();
+            editorController = null;
+        }
+        
+        // Remove global references
+        window.lessonPlansModule = null;
+        
+        console.log('✅ Lesson Plans Module destroyed');
     }
     
     // ==============================================
@@ -230,10 +289,10 @@
             this.container = null;
             this.isLoading = false;
             
-            // Bind methods to preserve context
-            this.handleSearch = this.handleSearch.bind(this);
-            this.handleFilter = this.handleFilter.bind(this);
-            this.handlePageChange = this.handlePageChange.bind(this);
+            // Note: Methods will be bound after class definition
+            // this.handleSearch = this.handleSearch.bind(this);
+            // this.handleFilter = this.handleFilter.bind(this);
+            // this.handlePageChange = this.handlePageChange.bind(this);
         }
 
         /**
@@ -260,13 +319,13 @@
         }
 
         /**
-         * Render HTML structure
+         * Render HTML structure (Premium Guidelines2.md)
          */
         renderHTML() {
             this.container.innerHTML = `
                 <div class="module-isolated-container" data-module="lesson-plans">
-                    <!-- Header Section -->
-                    <div class="module-header">
+                    <!-- Header Section Premium -->
+                    <div class="module-header-premium">
                         <div class="header-content">
                             <div class="header-left">
                                 <h1 class="module-title">
@@ -288,24 +347,24 @@
                         </div>
                     </div>
 
-                    <!-- Stats Section -->
+                    <!-- Stats Section Enhanced -->
                     <div class="module-stats">
-                        <div class="stat-card">
+                        <div class="stat-card-enhanced">
                             <div class="stat-value" id="total-lesson-plans">-</div>
                             <div class="stat-label">Total de Planos</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card-enhanced">
                             <div class="stat-value" id="filtered-lesson-plans">-</div>
                             <div class="stat-label">Filtrados</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card-enhanced">
                             <div class="stat-value" id="courses-count">-</div>
                             <div class="stat-label">Cursos</div>
                         </div>
                     </div>
 
-                    <!-- Filters Section -->
-                    <div class="module-filters">
+                    <!-- Filters Section Premium -->
+                    <div class="module-filters-premium">
                         <div class="filter-row">
                             <div class="filter-group">
                                 <label for="search-lesson-plans" class="filter-label">Buscar:</label>
@@ -341,14 +400,14 @@
                         </div>
                     </div>
 
-                    <!-- Table Section -->
+                    <!-- Table Section Premium -->
                     <div class="module-content">
                         <div id="loading-state" class="loading-state" style="display: none;">
                             <div class="loading-spinner"></div>
                             <div class="loading-text">Carregando planos de aula...</div>
                         </div>
                         
-                        <div class="module-isolated-table">
+                        <div class="data-card-premium">
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -441,7 +500,13 @@
             const createBtn = container.querySelector('#create-lesson-plan-btn');
             if (createBtn) {
                 createBtn.addEventListener('click', () => {
-                    window.openLessonPlanEditor(null, this.container);
+                    // Navigate via SPA router to ensure rendering in main container
+                    if (window.router && typeof window.router.navigateTo === 'function') {
+                        location.hash = 'lesson-plan-editor';
+                        window.router.navigateTo('lesson-plan-editor');
+                    } else {
+                        location.hash = 'lesson-plan-editor';
+                    }
                 });
             }
 
@@ -594,34 +659,20 @@
                             ${plan.description ? `<div class="lesson-description">${plan.description}</div>` : ''}
                         </div>
                     </td>
-                    <td>
-                        <span class="lesson-number">${plan.lessonNumber || 'N/A'}</span>
-                    </td>
-                    <td>
-                        <span class="week-number">${plan.weekNumber || 'N/A'}</span>
-                    </td>
-                    <td>
-                        <div class="difficulty-display">
-                            ${this.renderDifficulty(plan.difficulty || 1)}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="duration-display">${plan.duration || 60} min</span>
-                    </td>
-                    <td>
-                        <span class="status-badge status-level-${plan.level || 1}">
-                            Nível ${plan.level || 1}
-                        </span>
-                    </td>
+                    <td><span class="lesson-number">${plan.lessonNumber || 'N/A'}</span></td>
+                    <td><span class="week-number">${plan.weekNumber || 'N/A'}</span></td>
+                    <td><div class="difficulty-display">${this.renderDifficulty(plan.difficulty || 1)}</div></td>
+                    <td><span class="duration-display">${plan.duration || 60} min</span></td>
+                    <td><span class="status-badge status-level-${plan.level || 1}">Nível ${plan.level || 1}</span></td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn-form btn-small btn-primary-form" 
-                                    onclick="window.openLessonPlanEditor('${plan.id}', document.querySelector('[data-module=lesson-plans]').parentElement)" 
+                                    onclick="location.hash='lesson-plan-editor/${plan.id}'" 
                                     title="Editar plano">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn-form btn-small btn-info-form" 
-                                    onclick="window.lessonPlansListController?.viewLessonPlan('${plan.id}')" 
+                                    onclick="location.hash='lesson-plan-editor/${plan.id}'" 
                                     title="Visualizar plano">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -658,7 +709,7 @@
                                 : 'Comece criando seu primeiro plano de aula'}
                         </div>
                         ${!this.searchQuery && !this.filterCourse && !this.filterLevel ? `
-                            <button class="btn-form btn-primary-form" onclick="window.openLessonPlanEditor(null, document.querySelector('[data-module=lesson-plans]').parentElement)">
+                            <button class="btn-form btn-primary-form" onclick="location.hash='lesson-plan-editor'">
                                 <i class="fas fa-plus"></i>
                                 Criar primeiro plano
                             </button>
@@ -776,9 +827,8 @@
          * View lesson plan details
          */
         viewLessonPlan(planId) {
-            console.log('👁️ Visualizando plano de aula:', planId);
-            // Implementation for view lesson plan
-            window.openLessonPlanEditor(planId, this.container, true); // read-only mode
+            // Route to editor in read-only (same screen, viewer handled inside editor if needed)
+            window.location.hash = `lesson-plan-editor/${planId}`;
         }
 
         /**
@@ -853,10 +903,7 @@
             this.isReadOnly = false;
             this.autoSaveTimeout = null;
             
-            // Bind methods to preserve context
-            this.handleInputChange = this.handleInputChange.bind(this);
-            this.handleSave = this.handleSave.bind(this);
-            this.handleCancel = this.handleCancel.bind(this);
+            // Bind methods - will be set up when methods are defined
         }
 
         /**
@@ -879,7 +926,7 @@
         }
         
         /**
-         * Render simple editor (placeholder)
+         * Render complete lesson plan editor
          */
         renderSimpleEditor() {
             const isEditing = !!this.planId;
@@ -888,7 +935,7 @@
             
             this.container.innerHTML = `
                 <div class="module-isolated-container" data-module="lesson-plans">
-                    <div class="module-header">
+                    <div class="module-header-premium">
                         <div class="header-content">
                             <div class="header-left">
                                 <button id="back-to-list-btn" class="btn-form btn-secondary-form" onclick="window.openLessonPlansList(this.closest('.module-isolated-container').parentElement)">
@@ -900,31 +947,552 @@
                                         <span class="title-icon">📚</span>
                                         ${title}
                                     </h1>
-                                    <p class="module-subtitle">Editor de planos de aula em desenvolvimento</p>
+                                    <p class="module-subtitle">Complete todos os campos necessários</p>
                                 </div>
+                            </div>
+                            <div class="header-right">
+                                ${!this.isReadOnly ? `
+                                    <button id="save-plan-btn" class="btn-form btn-primary-form" ${isEditing ? '' : 'disabled'}>
+                                        <i class="fas fa-save"></i>
+                                        Salvar
+                                    </button>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
                     
                     <div class="module-content">
-                        <div style="padding: 2rem; text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">🚧</div>
-                            <h3>Editor em Desenvolvimento</h3>
-                            <p>O editor completo de planos de aula será implementado em breve.</p>
-                            <p>Por enquanto, use a API diretamente ou aguarde a próxima atualização.</p>
-                            
-                            <div style="margin-top: 2rem;">
-                                <button class="btn-form btn-primary-form" onclick="window.openLessonPlansList(this.closest('.module-isolated-container').parentElement)">
-                                    <i class="fas fa-list"></i>
-                                    Voltar para Lista
-                                </button>
+                        <form id="lesson-plan-form" class="lesson-plan-editor">
+                            <!-- Informações Básicas -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="courseId" class="form-label">Curso *</label>
+                                        <select id="courseId" name="courseId" class="form-input" required ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="">Selecione um curso...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="title" class="form-label">Título da Aula *</label>
+                                        <input type="text" id="title" name="title" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Técnicas de Defesa Básica">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="lessonNumber" class="form-label">Número da Aula *</label>
+                                        <input type="number" id="lessonNumber" name="lessonNumber" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} min="1" placeholder="1">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="weekNumber" class="form-label">Semana *</label>
+                                        <input type="number" id="weekNumber" name="weekNumber" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} min="1" placeholder="1">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="unit" class="form-label">Unidade</label>
+                                        <input type="text" id="unit" name="unit" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Fundamentos">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="description" class="form-label">Descrição</label>
+                                    <textarea id="description" name="description" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva os objetivos gerais da aula..."></textarea>
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Configurações -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-cog"></i> Configurações</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="level" class="form-label">Nível (1-5)</label>
+                                        <select id="level" name="level" class="form-input" ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="1">1 - Iniciante</option>
+                                            <option value="2">2 - Básico</option>
+                                            <option value="3">3 - Intermediário</option>
+                                            <option value="4">4 - Avançado</option>
+                                            <option value="5">5 - Expert</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="difficulty" class="form-label">Dificuldade (1-5)</label>
+                                        <select id="difficulty" name="difficulty" class="form-input" ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="1">1 - Muito Fácil</option>
+                                            <option value="2">2 - Fácil</option>
+                                            <option value="3">3 - Moderado</option>
+                                            <option value="4">4 - Difícil</option>
+                                            <option value="5">5 - Muito Difícil</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="duration" class="form-label">Duração (minutos)</label>
+                                        <input type="number" id="duration" name="duration" class="form-input" ${this.isReadOnly ? 'readonly' : ''} min="15" max="180" value="60" placeholder="60">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos e Equipamentos -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-bullseye"></i> Objetivos e Recursos</h3>
+                                
+                                <div class="form-group">
+                                    <label for="objectives" class="form-label">Objetivos da Aula</label>
+                                    <textarea id="objectives" name="objectives" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Liste os objetivos separados por linha..."></textarea>
+                                    <small class="form-hint">Um objetivo por linha</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="equipment" class="form-label">Equipamentos Necessários</label>
+                                    <textarea id="equipment" name="equipment" class="form-input" rows="2" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Tatames, luvas, bastões..."></textarea>
+                                    <small class="form-hint">Um equipamento por linha</small>
+                                </div>
+                            </div>
+
+                            <!-- Estrutura da Aula -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-list-ol"></i> Estrutura da Aula</h3>
+                                
+                                <div class="lesson-structure">
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-fire"></i> Aquecimento</h4>
+                                        <textarea id="warmup" name="warmup" class="form-input" rows="4" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as atividades de aquecimento..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-fist-raised"></i> Técnicas Principais</h4>
+                                        <textarea id="techniques" name="techniques" class="form-input" rows="6" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as técnicas que serão ensinadas..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-users"></i> Simulações e Prática</h4>
+                                        <textarea id="simulations" name="simulations" class="form-input" rows="4" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as simulações e exercícios práticos..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-leaf"></i> Relaxamento</h4>
+                                        <textarea id="cooldown" name="cooldown" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as atividades de relaxamento..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Módulos Opcionais -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-puzzle-piece"></i> Módulos Opcionais</h3>
+                                
+                                <div class="form-group">
+                                    <label for="mentalModule" class="form-label">Módulo Mental/Psicológico</label>
+                                    <textarea id="mentalModule" name="mentalModule" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Aspectos mentais, controle de estresse, concentração..."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="tacticalModule" class="form-label">Módulo Tático</label>
+                                    <input type="text" id="tacticalModule" name="tacticalModule" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Análise de distância, timing, posicionamento">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="adaptations" class="form-label">Adaptações</label>
+                                    <textarea id="adaptations" name="adaptations" class="form-input" rows="2" ${this.isReadOnly ? 'readonly' : ''} placeholder="Adaptações para diferentes níveis ou necessidades especiais..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Mídia -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-video"></i> Recursos de Mídia</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="videoUrl" class="form-label">URL do Vídeo</label>
+                                        <input type="url" id="videoUrl" name="videoUrl" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="https://youtube.com/watch?v=...">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="thumbnailUrl" class="form-label">URL da Thumbnail</label>
+                                        <input type="url" id="thumbnailUrl" name="thumbnailUrl" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="https://...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${!this.isReadOnly ? `
+                                <div class="form-actions">
+                                    <button type="button" class="btn-form btn-secondary-form" onclick="window.openLessonPlansList(this.closest('.module-isolated-container').parentElement)">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="btn-form btn-primary-form">
+                                        <i class="fas fa-save"></i>
+                                        ${isEditing ? 'Atualizar' : 'Criar'} Plano de Aula
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </form>
                     </div>
                 </div>
             `;
+            
+            // Initialize editor functionality
+            this.initializeEditor();
         }
-        
+
+        /**
+         * Initialize editor functionality
+         */
+        async initializeEditor() {
+            // Load courses for dropdown
+            await this.loadCourses();
+            
+            // Load existing data if editing
+            if (this.planId) {
+                await this.loadLessonPlan();
+            }
+            
+            // Setup form handlers
+            this.setupFormHandlers();
+            
+            // Setup auto-save if not read-only
+            if (!this.isReadOnly) {
+                this.setupAutoSave();
+            }
+        }
+
+        /**
+         * Load courses for dropdown
+         */
+        async loadCourses() {
+            try {
+                await this.api.fetchWithStates('/api/courses', {
+                    onSuccess: (list) => {
+                        const courses = Array.isArray(list) ? list : (list?.data || []);
+                        const courseSelect = document.getElementById('courseId');
+                        if (courseSelect) {
+                            courseSelect.innerHTML = '<option value="">Selecione um curso...</option>';
+                            courses.forEach(course => {
+                                courseSelect.innerHTML += `
+                                    <option value="${course.id}">${course.name}${course.level ? ` (Nível ${course.level})` : ''}</option>
+                                `;
+                            });
+                        }
+                    },
+                    onError: (error) => { console.warn('Erro ao carregar cursos:', error); }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        }
+
+        /**
+         * Load existing lesson plan data
+         */
+        async loadLessonPlan() {
+            try {
+                await this.api.fetchWithStates(`/api/lesson-plans/${this.planId}`, {
+                    onSuccess: (data) => {
+                        this.plan = data;
+                        this.populateForm(this.plan);
+                    },
+                    onError: (error) => {
+                        console.error('Erro ao carregar plano de aula:', error);
+                        if (window.showBanner) {
+                            window.showBanner('Erro ao carregar dados do plano de aula', 'error');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar plano de aula:', error);
+                if (window.showBanner) {
+                    window.showBanner('Erro ao carregar dados do plano de aula', 'error');
+                }
+            }
+        }
+
+        /**
+         * Populate form with lesson plan data
+         */
+        populateForm(plan) {
+            const fields = [
+                'courseId', 'title', 'description', 'lessonNumber', 'weekNumber', 
+                'unit', 'level', 'difficulty', 'duration', 'tacticalModule',
+                'videoUrl', 'thumbnailUrl'
+            ];
+
+            fields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && plan[field] !== undefined) {
+                    element.value = plan[field];
+                }
+            });
+
+            // Handle array fields
+            if (plan.objectives && Array.isArray(plan.objectives)) {
+                const objectivesEl = document.getElementById('objectives');
+                if (objectivesEl) {
+                    objectivesEl.value = plan.objectives.join('\n');
+                }
+            }
+
+            if (plan.equipment && Array.isArray(plan.equipment)) {
+                const equipmentEl = document.getElementById('equipment');
+                if (equipmentEl) {
+                    equipmentEl.value = plan.equipment.join('\n');
+                }
+            }
+
+            // Handle JSON fields
+            const jsonFields = ['warmup', 'techniques', 'simulations', 'cooldown', 'mentalModule', 'adaptations'];
+            jsonFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && plan[field]) {
+                    if (typeof plan[field] === 'string') {
+                        element.value = plan[field];
+                    } else if (typeof plan[field] === 'object') {
+                        element.value = JSON.stringify(plan[field], null, 2);
+                    }
+                }
+            });
+        }
+
+        /**
+         * Setup form event handlers
+         */
+        setupFormHandlers() {
+            const form = document.getElementById('lesson-plan-form');
+            if (form) {
+                form.addEventListener('submit', this.handleSubmit.bind(this));
+                
+                // Mark form as dirty on changes
+                form.addEventListener('input', () => {
+                    this.isDirty = true;
+                    const saveBtn = document.getElementById('save-plan-btn');
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                    }
+                });
+            }
+        }
+
+        /**
+         * Setup auto-save functionality (disabled)
+         */
+        setupAutoSave() {
+            // Auto-save desativado por solicitação
+            this.autoSaveTimeout = null;
+            return;
+        }
+
+        /**
+         * Save draft (disabled)
+         */
+        async saveDraft() {
+            // Auto-save/rascunho desativado
+            return;
+        }
+
+        /**
+         * Handle form submission
+         */
+        async handleSubmit(event) {
+            event.preventDefault();
+            
+            if (this.isReadOnly) return;
+            
+            try {
+                const formData = this.collectFormData();
+                const validation = this.validateFormData(formData);
+                
+                if (!validation.isValid) {
+                    window.showBanner(validation.message, 'error');
+                    return;
+                }
+
+                const saveBtn = document.querySelector('#lesson-plan-form button[type="submit"]');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                }
+
+                const endpoint = this.planId ? `/api/lesson-plans/${this.planId}` : '/api/lesson-plans';
+                const method = this.planId ? 'PUT' : 'POST';
+
+                await this.api.saveWithFeedback(endpoint, formData, {
+                    method,
+                    onSuccess: () => {
+                        this.isDirty = false;
+                        window.showBanner(
+                            `Plano de aula ${this.planId ? 'atualizado' : 'criado'} com sucesso!`,
+                            'success'
+                        );
+                        setTimeout(() => {
+                            window.openLessonPlansList(this.container);
+                        }, 1200);
+                    },
+                    onError: (error) => {
+                        console.error('Erro ao salvar plano de aula:', error);
+                        window.showBanner(`Erro ao salvar: ${error?.message || 'Falha no salvamento'}`, 'error');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erro ao salvar plano de aula:', error);
+                window.showBanner(`Erro ao salvar: ${error.message}`, 'error');
+            } finally {
+                const saveBtn = document.querySelector('#lesson-plan-form button[type="submit"]');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = `<i class="fas fa-save"></i> ${this.planId ? 'Atualizar' : 'Criar'} Plano de Aula`;
+                }
+            }
+        }
+
+        /**
+         * Collect form data
+         */
+        collectFormData() {
+            const form = document.getElementById('lesson-plan-form');
+            const formData = new FormData(form);
+            
+            const data = {};
+            
+            // Basic fields
+            const basicFields = [
+                'courseId', 'title', 'description', 'unit', 'tacticalModule',
+                'videoUrl', 'thumbnailUrl'
+            ];
+            
+            basicFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            // Numeric fields
+            const numericFields = ['lessonNumber', 'weekNumber', 'level', 'difficulty', 'duration'];
+            numericFields.forEach(field => {
+                const value = formData.get(field);
+                if (value) {
+                    data[field] = parseInt(value);
+                }
+            });
+
+            // Array fields (split by lines)
+            const objectives = formData.get('objectives');
+            if (objectives) {
+                data.objectives = objectives.split('\n').filter(line => line.trim()).map(line => line.trim());
+            }
+
+            const equipment = formData.get('equipment');
+            if (equipment) {
+                data.equipment = equipment.split('\n').filter(line => line.trim()).map(line => line.trim());
+            }
+
+            // JSON/Text fields for lesson structure
+            const structureFields = ['warmup', 'techniques', 'simulations', 'cooldown'];
+            structureFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            // Optional fields
+            const optionalFields = ['mentalModule', 'adaptations'];
+            optionalFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            return data;
+        }
+
+        /**
+         * Validate form data
+         */
+        validateFormData(data) {
+            if (!data.courseId) {
+                return { isValid: false, message: 'Selecione um curso' };
+            }
+            
+            if (!data.title || data.title.length < 3) {
+                return { isValid: false, message: 'Título deve ter pelo menos 3 caracteres' };
+            }
+            
+            if (!data.lessonNumber || data.lessonNumber < 1) {
+                return { isValid: false, message: 'Número da aula deve ser maior que zero' };
+            }
+            
+            if (!data.weekNumber || data.weekNumber < 1) {
+                return { isValid: false, message: 'Número da semana deve ser maior que zero' };
+            }
+
+            return { isValid: true };
+        }
+
+        /**
+         * Save draft (auto-save)
+         */
+        async saveDraft() {
+            if (!this.planId || this.isReadOnly) return;
+            
+            try {
+                const formData = this.collectFormData();
+                await this.api.saveWithFeedback(`/api/lesson-plans/${this.planId}`, formData, {
+                    method: 'PUT',
+                    onSuccess: () => console.log('💾 Rascunho salvo automaticamente'),
+                    onError: (e) => console.warn('Erro no auto-save:', e)
+                });
+            } catch (error) {
+                console.warn('Erro no auto-save:', error);
+            }
+        }
+
+        /**
+         * Handle search input
+         */
+        handleSearch = (event) => {
+            this.searchQuery = event.target.value.trim();
+            this.currentPage = 1;
+            this.loadData();
+        }
+
+        /**
+         * Handle filter changes
+         */
+        handleFilter = (event) => {
+            const { name, value } = event.target;
+            
+            if (name === 'course') {
+                this.filterCourse = value;
+            } else if (name === 'level') {
+                this.filterLevel = value;
+            }
+            
+            this.currentPage = 1;
+            this.loadData();
+        }
+
+        /**
+         * Handle page changes
+         */
+        handlePageChange = (newPage) => {
+            this.currentPage = newPage;
+            this.loadData();
+        }
+
+        /**
+         * Refresh data
+         */
+        async refresh() {
+            await this.loadData();
+        }
+
         /**
          * Destroy controller and cleanup
          */
@@ -942,35 +1510,16 @@
     window.LessonPlansListController = LessonPlansListController;
     window.LessonPlanEditorController = LessonPlanEditorController;
     
-    // Auto-initialize if DOM is ready and container exists
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('lessonPlansContainer') || 
-                document.querySelector('.lesson-plans-container') ||
-                document.querySelector('.lesson-plans-isolated') ||
-                document.querySelector('[data-module="lesson-plans"]')) {
-                initLessonPlans();
-            }
-        });
-    } else {
-        // DOM already loaded
-        if (document.getElementById('lessonPlansContainer') || 
-            document.querySelector('.lesson-plans-container') ||
-            document.querySelector('.lesson-plans-isolated') ||
-            document.querySelector('[data-module="lesson-plans"]')) {
-            initLessonPlans();
-        }
-    }
+    // ==============================================
+    // AUTO-INITIALIZATION DISABLED
+    // ==============================================
     
-    // Listen for hash changes (SPA navigation)
-    window.addEventListener('hashchange', () => {
-        // Attempt init on route changes if container exists
-        if (document.getElementById('lessonPlansContainer') ||
-            document.querySelector('.lesson-plans-container') ||
-            document.querySelector('.lesson-plans-isolated') ||
-            document.querySelector('[data-module="lesson-plans"]')) {
-            try { initLessonPlans(); } catch (_) {}
-        }
-    });
+    // Auto-initialization has been DISABLED to prevent unwanted loading.
+    // The module will ONLY initialize when explicitly called via:
+    // window.initializeLessonPlansModule() by the SPA router
+    
+    // Make controllers available globally for debugging and legacy compatibility
+    window.LessonPlansListController = LessonPlansListController;
+    window.LessonPlanEditorController = LessonPlanEditorController;
     
 })();

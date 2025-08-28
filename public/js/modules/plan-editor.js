@@ -92,6 +92,7 @@
             initializePlanEditor();
         } catch (e) {
             console.error('[PlanEditor] Boot error:', e);
+            window.app?.handleError?.(e, { module: 'plan-editor', stage: 'boot' });
         }
     }
     if (document.readyState === 'loading') {
@@ -137,7 +138,7 @@
             }
             if (editorContainer.dataset) {
                 editorContainer.dataset.initialized = 'true';
-                // Mark as active for validator
+                // Mark as active for validator and DS
                 try {
                     editorContainer.id = editorContainer.id || 'planEditorContainer';
                     editorContainer.dataset.module = 'plan-editor';
@@ -147,6 +148,9 @@
             }
             
             console.log('✅ DOM validation passed - plan editor container found');
+
+            // Dispatch module loaded when finishing init
+            const dispatchLoaded = () => window.app?.dispatchEvent?.('module:loaded', { name: 'plan-editor' });
             
             // Check if we're editing an existing plan (session from router supports deep routes)
             const storedId = (window.EditingSession && window.EditingSession.getEditingPlanId && window.EditingSession.getEditingPlanId()) || null;
@@ -186,10 +190,24 @@
             // Setup event listeners
             setupEventListeners();
             
+            // A11y adjustments for header actions
+            const headerSaveBtn = document.getElementById('savePlanHeaderBtn');
+            if (headerSaveBtn) {
+                headerSaveBtn.type = 'button';
+                headerSaveBtn.setAttribute('aria-label','Salvar alterações do plano');
+            }
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) backBtn.setAttribute('aria-label','Voltar para a lista de planos');
+
+            // Register with ModuleLoader and expose globally
+            window.planEditor = Object.assign(window.planEditor || {}, { init: initializePlanEditor });
+            window.ModuleLoader?.register?.('plan-editor', window.planEditor);
+
             console.log('✅ Plan Editor Module initialized successfully');
+            dispatchLoaded();
         } catch (error) {
             console.error('❌ Error initializing plan editor module:', error);
-            FE.error('Erro ao inicializar editor de planos: ' + (error?.message||error));
+            window.app?.handleError?.(error, { module: 'plan-editor', stage: 'init' });
             
             const loadingState = document.getElementById('loadingState');
             const mainContent = document.getElementById('mainContent');
@@ -382,6 +400,10 @@
 
     // Expose for any external callers expecting this name
     window.goBackToPlans = navigateBackToPlans;
+
+    // Ensure integration with AcademyApp and ModuleLoader
+    window.planEditor = Object.assign(window.planEditor || {}, { init: initializePlanEditor });
+    window.ModuleLoader?.register?.('plan-editor', window.planEditor);
 
     function getActivePanelKey(){
         const active = document.querySelector('.plan-editor-tab-panel.active');

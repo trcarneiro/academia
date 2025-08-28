@@ -1,0 +1,118 @@
+/* Correção Sidebar - Colapsado por padrão */
+
+/* Layout container principal */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top bar fixa */
+.top-bar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 1000;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Container principal ajustado */
+.main-layout {
+    display: flex;
+    margin-top: 60px; /* Espaço para top bar */
+    min-height: calc(100vh - 60px);
+}
+
+/* Sidebar base */
+.sidebar {
+    position: fixed !important;
+    top: 60px; /* Abaixo da top bar */
+    left: 0;
+    bottom: 0;
+    width: 60px !important;
+    min-width: 60px !important;
+    transition: width 0.3s ease;
+    overflow: hidden;
+    z-index: 900;
+}
+
+/* Quando expandido */
+.sidebar.expanded {
+    width: 280px !important;
+    min-width: 280px !important;
+}
+
+/* Esconder texto quando colapsado */
+.sidebar:not(.expanded) .main-menu span {
+    display: none;
+}
+
+/* Ajustar ícones quando colapsado */
+.sidebar:not(.expanded) .main-menu li {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.sidebar:not(.expanded) .main-menu i {
+    margin-right: 0;
+    font-size: 1.2rem;
+}
+
+/* Ajustar container principal */
+.main-container {
+    margin-left: 60px !important;
+    transition: margin-left 0.3s ease;
+    width: calc(100vw - 60px);
+    padding: 1rem;
+}
+
+.sidebar.expanded ~ .main-container {
+    margin-left: 280px !important;
+    width: calc(100vw - 280px);
+}
+
+/* Menu toggle button - mostrar sempre */
+.menu-toggle {
+    display: flex !important;
+    cursor: pointer;
+    padding: 0.5rem;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.menu-toggle span {
+    width: 20px;
+    height: 2px;
+    background: var(--color-text);
+    transition: all 0.3s ease;
+}
+
+/* Responsive - mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        left: -60px;
+        transition: left 0.3s ease, width 0.3s ease;
+    }
+    
+    .sidebar.mobile-open {
+        left: 0;
+    }
+    
+    .sidebar.expanded.mobile-open {
+        left: 0;
+        width: 280px !important;
+    }
+    
+    .main-container {
+        margin-left: 0 !important;
+        width: 100vw !important;
+    }
+}

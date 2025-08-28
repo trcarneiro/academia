@@ -1,6 +1,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { courseController } from '../controllers/courseController';
 import { prisma } from '@/utils/database';
+import { z } from 'zod';
+import { TechniqueImportService } from '../services/techniqueImportService';
+import { CourseImportService } from '../services/courseImportService';
 
 // Helper: resolve organizationId (first org fallback)
 async function getOrganizationId(): Promise<string> {
@@ -28,6 +31,7 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.get('/:id', courseController.show);
   app.post('/', courseController.create);
   app.patch('/:id', courseController.update);
+  app.put('/:id', courseController.update); // Alias for PATCH to support frontend expectations
   app.delete('/:id', courseController.delete);
 
   // Import course with techniques
@@ -97,6 +101,64 @@ export async function coursesRoutes(app: FastifyInstance) {
       request.log?.error(e);
       reply.code(500);
       return { success: false, error: e?.message || 'Erro ao importar curso' };
+    }
+  });
+
+  // Import techniques endpoint with proper validation
+  app.post('/import-techniques', async (request, reply) => {
+    try {
+      const body = (request.body as any) || {};
+      
+      // Debug: Log the incoming request
+      console.log('🔍 Incoming technique import request:', JSON.stringify(body, null, 2));
+      
+      // Validation schema for technique import
+      const techniqueSchema = z.object({
+        id: z.string().min(1, 'ID é obrigatório'),
+        type: z.string().min(1, 'Tipo é obrigatório'),
+        title: z.string().min(1, 'Título é obrigatório'),
+        description: z.string().min(1, 'Descrição é obrigatória'),
+        difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
+        defaultParams: z.object({
+          repetitions: z.record(z.string(), z.number()).optional(),
+          duration: z.string().optional(),
+          precision: z.string().optional(),
+          equipment: z.array(z.string()).optional(),
+          safety: z.string().optional(),
+          adaptations: z.array(z.string()).optional(),
+          refTechniqueId: z.array(z.string()).optional()
+        }).optional()
+      });
+
+      const importSchema = z.object({
+        techniques: z.array(techniqueSchema).min(1, 'Lista de técnicas não pode estar vazia')
+      });
+
+      // Validate the request body
+      const validatedData = importSchema.parse(body);
+
+      // Use TechniqueImportService to process techniques
+      const result = await TechniqueImportService.importTechniques(validatedData.techniques);
+
+      return reply.send({
+        success: true,
+        data: result
+      });
+
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Dados de técnica inválidos',
+          details: error.flatten().fieldErrors
+        });
+      }
+
+      console.error('❌ Import techniques error:', error);
+      return reply.code(500).send({
+        success: false,
+        error: 'Erro interno ao importar técnicas'
+      });
     }
   });
 
@@ -211,6 +273,67 @@ export async function coursesRoutes(app: FastifyInstance) {
       request.log?.error(e);
       reply.code(500);
       return { success: false, error: e?.message || 'Erro ao gerar planos de aula' };
+    }
+  });
+
+  // Import full course endpoint
+  app.post('/import-full-course', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const courseData = request.body as any;
+      const organizationId = await getOrganizationId();
+
+      // Validate basic structure
+      if (!courseData.courseId || !courseData.name || !courseData.techniques) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Dados do curso inválidos. Campos obrigatórios: courseId, name, techniques'
+        });
+      }
+
+      const result = await CourseImportService.importFullCourse(courseData, organizationId);
+      
+      if (result.success) {
+        reply.code(201).send(result);
+      } else {
+        reply.code(400).send(result);
+      }
+
+    } catch (error) {
+      console.error('Erro no endpoint de importação:', error);
+      reply.code(500).send({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get import preview endpoint
+  app.post('/import-preview', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const courseData = request.body as any;
+      
+      // Validate basic structure
+      if (!courseData.courseId || !courseData.name || !courseData.techniques) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Dados do curso inválidos para prévia'
+        });
+      }
+
+      const preview = await CourseImportService.validateImportData(courseData);
+      
+      reply.send({
+        success: true,
+        data: preview
+      });
+
+    } catch (error) {
+      reply.code(500).send({
+        success: false,
+        message: 'Erro na validação',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 }

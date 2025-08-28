@@ -12,8 +12,7 @@
     line-height: 1.6;
     color: var(--color-background);
     background: var(--color-background-dark);
-    min-height: 100vh;
-    overflow-x: hidden;
+    width: 100%;
 }
 
 /* ============================================== 

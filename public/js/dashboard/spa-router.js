@@ -63,21 +63,38 @@ class SPARouter {
                 css: 'css/modules/plans.css',
                 js: 'js/modules/plans.js'
             },
+            // FIX: plan-editor deve usar o editor de cobrança, não lesson-plans
             'plan-editor': {
                 css: 'css/modules/plan-editor-padronizado.css',
                 js: 'js/modules/plan-editor.js'
             },
             'activities': {
                 css: 'css/modules/activities.css',
-                js: 'js/modules/activities.js'
+                js: 'js/modules/activities/index.js'
+            },
+            // NEW: activity-editor SPA assets (apenas CSS; HTML já inclui script necessário)
+            'activity-editor': {
+                css: 'css/modules/activities.css'
             },
             'lesson-plans': {
                 css: 'css/modules/lesson-plans.css',
-                js: 'js/modules/lesson-plans.js'
+                js: 'js/modules/lesson-plans/lesson-plans.js'
             },
             'courses': {
                 css: 'css/modules/courses/courses.css',
                 js: 'js/modules/courses.js'
+            },
+            'course-editor': {
+                css: 'css/modules/courses/course-editor.css',
+                js: 'js/modules/course-editor.js'
+            },
+            'ai': {
+                css: 'css/modules/ai/ai.css',
+                js: 'js/modules/ai.js'
+            },
+            'rag': {
+                css: 'css/modules/rag/rag.css',
+                js: 'js/modules/rag/index.js'
             }
         };
 
@@ -185,6 +202,9 @@ class SPARouter {
 
 // Inicialização do router
 const router = new SPARouter();
+
+// Tornar router globalmente acessível
+window.router = router;
 
 // Registro das rotas
 router.registerRoute('dashboard', () => {
@@ -302,15 +322,17 @@ router.registerRoute('student-editor', () => {
 });
 
 // Restaurar funcionalidade completa dos módulos
-router.registerRoute('plans', () => {
-    // Carregar HTML do módulo de planos
+router.registerRoute('billing', () => {
+    console.log('💰 Carregando módulo de Cobrança...');
+    
+    // Carregar HTML do módulo de planos de cobrança
     fetch('views/plans.html')
         .then(response => response.text())
         .then(html => {
             document.getElementById('module-container').innerHTML = html;
             router.loadModuleAssets('plans');
             
-            // Inicializar módulo após carregamento (similar ao students)
+            // Inicializar módulo após carregamento
             const initInterval = setInterval(() => {
                 if (typeof window.initializePlansModule === 'function') {
                     clearInterval(initInterval);
@@ -319,25 +341,36 @@ router.registerRoute('plans', () => {
                                      document.querySelector('.module-isolated-container') ||
                                      document.querySelector('.plans-isolated');
                     
-                    console.log('Plans container:', container);
-                    console.log('initializePlansModule function exists:', typeof window.initializePlansModule === 'function');
+                    console.log('💰 Plans container:', container);
+                    console.log('💰 initializePlansModule function exists:', typeof window.initializePlansModule === 'function');
                     
                     if (container) {
                         try {
-                            console.log('Initializing plans module...');
+                            console.log('💰 Initializing billing plans module...');
                             window.initializePlansModule();
                         } catch (err) {
-                            console.error('Error initializing plans module:', err);
+                            console.error('❌ Error initializing billing plans module:', err);
                         }
                     } else {
-                        console.error('Plans container not found');
+                        console.error('❌ Billing plans container not found');
                     }
                 }
             }, 100);
+        })
+        .catch(err => {
+            console.error('❌ Erro ao carregar módulo de cobrança:', err);
+            document.getElementById('module-container').innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro de carregamento</h3>
+                    <p>${err.message}</p>
+                    <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                </div>
+            `;
         });
     
-    document.querySelector('.module-header h1').textContent = 'Planos';
-    document.querySelector('.breadcrumb').textContent = 'Home / Planos';
+    document.querySelector('.module-header h1').textContent = 'Planos de Cobrança';
+    document.querySelector('.breadcrumb').textContent = 'Home / Cobrança';
 });
 
 router.registerRoute('courses', () => {
@@ -366,21 +399,148 @@ router.registerRoute('techniques', () => {
     document.querySelector('.breadcrumb').textContent = 'Home / Técnicas';
 });
 
-router.registerRoute('activities', () => {
-    // Carregar HTML do módulo de atividades
-    fetch('views/modules/activities.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('module-container').innerHTML = html;
-            router.loadModuleAssets('activities');
-        });
+router.registerRoute('activities', async () => {
+    console.log('🏋️ Carregando módulo de Atividades...');
     
-    document.querySelector('.module-header h1').textContent = 'Atividades';
-    document.querySelector('.breadcrumb').textContent = 'Home / Atividades';
+    try {
+        // Update header
+        document.querySelector('.module-header h1').textContent = 'Atividades';
+        document.querySelector('.breadcrumb').textContent = 'Home / Atividades';
+        
+        // Get target container
+        const container = document.getElementById('module-container');
+        
+        // Check if module is available
+        if (typeof window.initActivitiesModule === 'function') {
+            await window.initActivitiesModule(container);
+        } else {
+            // Load module dynamically
+            const moduleScript = document.createElement('script');
+            moduleScript.type = 'module';
+            moduleScript.src = 'js/modules/activities/index.js';
+            
+            moduleScript.onload = async () => {
+                if (typeof window.initActivitiesModule === 'function') {
+                    await window.initActivitiesModule(container);
+                } else {
+                    console.error('❌ Módulo de atividades não foi carregado corretamente');
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro ao carregar módulo</h3>
+                            <p>O módulo de atividades não pôde ser carregado.</p>
+                            <button onclick="location.reload()" class="btn btn-primary">
+                                Recarregar Página
+                            </button>
+                        </div>
+                    `;
+                }
+            };
+            
+            moduleScript.onerror = () => {
+                console.error('❌ Erro ao carregar script do módulo de atividades');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro de carregamento</h3>
+                        <p>Não foi possível carregar o módulo de atividades.</p>
+                        <button onclick="location.reload()" class="btn btn-primary">
+                            Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(moduleScript);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de atividades:', error);
+        document.getElementById('module-container').innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+// NEW: Rota para editor de atividades (SPA)
+router.registerRoute('activity-editor', () => {
+    console.log('📝 Carregando editor de atividade...');
+
+    // Extrair ID da atividade do hash (padrão: #activity-editor/<id>)
+    const parts = (location.hash || '').split('/');
+    const activityId = parts[1] && parts[1] !== 'activity-editor' ? decodeURIComponent(parts[1]) : null;
+
+    // Garantir que o script do editor que usa window.location.search receba o ID
+    try {
+        const u = new URL(window.location.href);
+        if (activityId) {
+            u.searchParams.set('id', activityId);
+        } else {
+            u.searchParams.delete('id');
+        }
+        // Não alterar o hash ao atualizar a busca
+        history.replaceState(null, '', u.toString());
+    } catch (e) { console.warn('Não foi possível ajustar URL search param para activityId', e); }
+
+    // Atualizar header/breadcrumb
+    document.querySelector('.module-header h1').textContent = activityId ? 'Editar Atividade' : 'Nova Atividade';
+    document.querySelector('.breadcrumb').textContent = 'Home / Atividades / Editor';
+
+    const container = document.getElementById('module-container');
+
+    // Carregar view do editor e injetar conteúdo interno isolado + executar scripts embutidos
+    fetch('views/modules/activity-editor.html')
+        .then(r => r.text())
+        .then(html => {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+
+            // Injetar HTML completo para preservar estrutura esperada
+            container.innerHTML = html;
+
+            // Carregar assets do editor (CSS)
+            router.loadModuleAssets('activity-editor');
+
+            // Executar scripts embutidos (inclui <script type="module">)
+            const scripts = tmp.querySelectorAll('script');
+            scripts.forEach(orig => {
+                const s = document.createElement('script');
+                if (orig.type) s.type = orig.type;
+                if (orig.src) {
+                    s.src = orig.src;
+                } else {
+                    s.textContent = orig.textContent;
+                }
+                // Garantir execução após injeção do HTML
+                document.body.appendChild(s);
+            });
+
+            // Foco no topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        .catch(err => {
+            console.error('❌ Erro ao carregar editor de atividade:', err);
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro de carregamento</h3>
+                    <p>${err.message}</p>
+                    <button onclick="router.navigateTo('activities')" class="btn btn-primary">Voltar às Atividades</button>
+                </div>
+            `;
+        });
 });
 
 router.registerRoute('lesson-plans', () => {
-    // NÃO carregar HTML estático - usar apenas o módulo JavaScript
+    console.log('📚 Carregando módulo Planos de Aula...');
+    
     // Clear module container first
     const moduleContainer = document.getElementById('module-container');
     moduleContainer.innerHTML = '<div id="lessonPlansContainer" class="lesson-plans-container"></div>';
@@ -388,61 +548,192 @@ router.registerRoute('lesson-plans', () => {
     // Load module assets
     router.loadModuleAssets('lesson-plans');
     
-    // Aguardar o carregamento dos assets e inicializar o módulo
+    // Wait for assets and initialize
     setTimeout(() => {
         if (typeof window.initializeLessonPlansModule === 'function') {
             try {
-                // Procurar pelo container do módulo
                 const container = document.querySelector('#lessonPlansContainer') ||
                                  document.querySelector('.lesson-plans-container') ||
                                  document.querySelector('.lesson-plans-isolated');
                 
                 if (container) {
-                    console.log('Initializing lesson plans module...');
+                    console.log('📚 Initializing lesson plans module...');
                     window.initializeLessonPlansModule();
                 } else {
-                    console.error('Lesson plans container not found');
+                    console.error('❌ Lesson plans container not found');
+                    moduleContainer.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Container não encontrado</h3>
+                            <p>Não foi possível encontrar o container do módulo.</p>
+                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                        </div>
+                    `;
                 }
             } catch (error) {
-                console.error('Error initializing lesson plans module:', error);
+                console.error('❌ Error initializing lesson plans module:', error);
+                moduleContainer.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro de inicialização</h3>
+                        <p>${error.message}</p>
+                        <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                    </div>
+                `;
             }
         } else {
-            console.error('initializeLessonPlansModule function not found');
+            console.error('❌ initializeLessonPlansModule function not found');
+            moduleContainer.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não carregado</h3>
+                    <p>A função de inicialização não foi encontrada.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                </div>
+            `;
         }
-    }, 100);
+    }, 150);
     
+    // Update header
     document.querySelector('.module-header h1').textContent = 'Planos de Aula';
     document.querySelector('.breadcrumb').textContent = 'Home / Planos de Aula';
 });
 
+// FIX: Restaurar rota 'plan-editor' para o editor de cobrança
 router.registerRoute('plan-editor', () => {
-    console.log('📝 Carregando editor de plano...');
+    console.log('🧾 Carregando editor de plano (cobrança)...');
 
-    // Parse id from hash (pattern: #plan-editor/<id>)
-    const parts = location.hash.split('/');
-    const planId = parts[1] && parts[1] !== 'plan-editor' ? parts[1] : null;
+    // Extrair ID do plano do hash (padrão: #plan-editor/<id>)
+    const parts = (location.hash || '').split('/');
+    const billingPlanId = parts[1] && parts[1] !== 'plan-editor' ? decodeURIComponent(parts[1]) : null;
 
-    // Update header/breadcrumb to keep sidebar layout consistent
-    document.querySelector('.module-header h1').textContent = planId ? 'Editar Plano' : 'Novo Plano';
-    document.querySelector('.breadcrumb').textContent = 'Home / Planos / Editor';
+    // Atualizar header/breadcrumb
+    document.querySelector('.module-header h1').textContent = billingPlanId ? 'Editar Plano (Cobrança)' : 'Novo Plano (Cobrança)';
+    document.querySelector('.breadcrumb').textContent = 'Home / Cobrança / Editor';
 
     const container = document.getElementById('module-container');
 
-    // Provide EditingSession for the editor script to consume
+    // Disponibilizar sessão de edição para o script do editor
     window.EditingSession = {
-        _id: planId,
+        _id: billingPlanId,
         getEditingPlanId() { return this._id; },
         setEditingPlanId(id) { this._id = id; },
         clearEditingPlanId() { this._id = null; }
     };
 
-    // Load the editor view and extract inner content
+    // Carregar view do editor de cobrança e injetar conteúdo interno
     fetch('views/plan-editor.html')
         .then(r => r.text())
         .then(html => {
             const tmp = document.createElement('div');
             tmp.innerHTML = html;
             const inner = tmp.querySelector('.module-isolated-base');
+            container.innerHTML = '';
+            if (inner) {
+                container.appendChild(inner);
+            } else {
+                // Fallback: injetar HTML como está
+                container.innerHTML = html;
+            }
+            // Carregar assets do editor de cobrança
+            router.loadModuleAssets('plan-editor');
+        })
+        .catch(err => {
+            console.error('❌ Erro ao carregar editor de cobrança:', err);
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro de carregamento</h3>
+                    <p>${err.message}</p>
+                    <button onclick="router.navigateTo('billing')" class="btn btn-primary">Voltar à Cobrança</button>
+                </div>
+            `;
+        });
+});
+
+// NEW: Criar rota separada para o editor de Planos de Aula
+router.registerRoute('lesson-plan-editor', () => {
+    console.log('📝 Carregando editor de Plano de Aula...');
+
+    // Parse ID do hash (padrão: #lesson-plan-editor/<id>)
+    const parts = (location.hash || '').split('/');
+    const planId = parts[1] && parts[1] !== 'lesson-plan-editor' ? decodeURIComponent(parts[1]) : null;
+
+    // Atualizar header/breadcrumb
+    document.querySelector('.module-header h1').textContent = planId ? 'Editar Plano de Aula' : 'Novo Plano de Aula';
+    document.querySelector('.breadcrumb').textContent = 'Home / Planos de Aula / Editor';
+
+    const container = document.getElementById('module-container');
+    container.innerHTML = '<div id="lessonPlansContainer" class="lesson-plans-container"></div>';
+
+    // Carregar assets do módulo de planos de aula
+    router.loadModuleAssets('lesson-plans');
+
+    // Inicializar o módulo e abrir o editor
+    setTimeout(() => {
+        if (typeof window.initializeLessonPlansModule === 'function') {
+            try {
+                window.initializeLessonPlansModule();
+                setTimeout(() => {
+                    const targetContainer = document.getElementById('lessonPlansContainer') || container;
+                    if (typeof window.openLessonPlanEditor === 'function') {
+                        window.openLessonPlanEditor(planId, targetContainer);
+                    } else if (window.lessonPlansModule?.openEditor) {
+                        window.lessonPlansModule.openEditor(planId, targetContainer);
+                    } else {
+                        throw new Error('Função do editor de planos de aula não encontrada');
+                    }
+                }, 200);
+            } catch (error) {
+                console.error('❌ Erro ao inicializar editor de planos de aula:', error);
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro no editor</h3>
+                        <p>${error.message}</p>
+                        <button onclick="router.navigateTo('lesson-plans')" class="btn btn-primary">Voltar aos Planos</button>
+                    </div>
+                `;
+            }
+        } else {
+            console.error('❌ Módulo de planos de aula não encontrado');
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não carregado</h3>
+                    <p>O módulo de planos de aula não foi encontrado.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                </div>
+            `;
+        }
+    }, 300);
+});
+
+router.registerRoute('course-editor', () => {
+    console.log('📝 Carregando editor de curso...');
+    
+    // Extract course ID from hash if present
+    const hashParts = location.hash.split('/');
+    const courseId = hashParts[1] || null;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = courseId ? 'Editar Curso' : 'Novo Curso';
+    document.querySelector('.breadcrumb').textContent = 'Home / Cursos / Editor';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+
+    // Propagar ID/mode para o módulo do editor (compatível com courses.js)
+    window.currentCourseId = courseId || null;
+    window.currentCourseMode = courseId ? 'edit' : 'create';
+    
+    // Load the editor view and extract inner content
+    fetch('views/modules/courses/course-editor.html')
+        .then(r => r.text())
+        .then(html => {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const inner = tmp.querySelector('.course-editor-isolated');
             if (inner) {
                 container.innerHTML = '';
                 container.appendChild(inner);
@@ -450,11 +741,11 @@ router.registerRoute('plan-editor', () => {
                 // Fallback: inject as-is
                 container.innerHTML = html;
             }
-            router.loadModuleAssets('plan-editor');
-            // Ensure plan-editor initialization runs even if script was loaded earlier
+            router.loadModuleAssets('course-editor');
+            // Ensure course-editor initialization runs even if script was loaded earlier
             const tryInit = (attempts = 0) => {
-                if (typeof window.initializePlanEditor === 'function') {
-                    try { window.initializePlanEditor(); } catch (e) { console.error('plan-editor init error', e); }
+                if (typeof window.initializeCourseEditorModule === 'function') {
+                    try { window.initializeCourseEditorModule(); } catch (e) { console.error('course-editor init error', e); }
                 } else if (attempts < 30) {
                     setTimeout(() => tryInit(attempts + 1), 150);
                 }
@@ -462,14 +753,133 @@ router.registerRoute('plan-editor', () => {
             tryInit();
         })
         .catch(err => {
-            console.error('❌ Erro ao carregar editor de planos:', err);
+            console.error('❌ Erro ao carregar editor de curso:', err);
             container.innerHTML = `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
                     <h3>Erro de carregamento</h3>
                     <p>${err.message}</p>
-                    <button onclick="router.navigateTo('plans')" class="btn btn-primary">Voltar aos Planos</button>
+                    <button onclick="router.navigateTo('courses')" class="btn btn-primary">Voltar aos Cursos</button>
                 </div>
             `;
         });
+});
+
+router.registerRoute('ai', () => {
+    console.log('🤖 Carregando módulo de IA...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Inteligência Artificial';
+    document.querySelector('.breadcrumb').textContent = 'Home / Cursos / IA';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    // Load the AI view
+    fetch('views/modules/ai/ai.html')
+        .then(r => r.text())
+        .then(html => {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const inner = tmp.querySelector('.ai-isolated');
+            if (inner) {
+                container.innerHTML = '';
+                container.appendChild(inner);
+            } else {
+                // Fallback: inject as-is
+                container.innerHTML = html;
+            }
+            
+            router.loadModuleAssets('ai');
+            
+            // Initialize AI module
+            const tryInit = (attempts = 0) => {
+                if (typeof window.initializeAIModule === 'function') {
+                    try { 
+                        window.initializeAIModule(); 
+                    } catch (e) { 
+                        console.error('AI module init error', e); 
+                    }
+                } else if (attempts < 30) {
+                    setTimeout(() => tryInit(attempts + 1), 150);
+                }
+            };
+            tryInit();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        .catch(err => {
+            console.error('❌ Erro ao carregar módulo de IA:', err);
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro de carregamento</h3>
+                    <p>${err.message}</p>
+                    <button onclick="router.navigateTo('courses')" class="btn btn-primary">Voltar aos Cursos</button>
+                </div>
+            `;
+        });
+});
+
+// RAG Module Route
+router.registerRoute('rag', () => {
+    console.log('🧠 Carregando módulo RAG...');
+    
+    // Clear module container first
+    const moduleContainer = document.getElementById('module-container');
+    moduleContainer.innerHTML = '<div id="ragContainer" class="rag-container"></div>';
+    
+    // Load module assets
+    router.loadModuleAssets('rag');
+    
+    // Wait for assets and initialize
+    setTimeout(() => {
+        if (typeof window.ragModule?.init === 'function') {
+            try {
+                const container = document.querySelector('#ragContainer') ||
+                                 document.querySelector('.rag-container') ||
+                                 document.querySelector('.rag-isolated');
+                
+                if (container) {
+                    console.log('🧠 Initializing RAG module...');
+                    window.ragModule.init();
+                } else {
+                    console.error('❌ RAG container not found');
+                    moduleContainer.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Container não encontrado</h3>
+                            <p>Não foi possível encontrar o container do módulo RAG.</p>
+                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error initializing RAG module:', error);
+                moduleContainer.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro de inicialização</h3>
+                        <p>${error.message}</p>
+                        <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                    </div>
+                `;
+            }
+        } else {
+            console.error('❌ RAG module not found');
+            moduleContainer.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não carregado</h3>
+                    <p>A função de inicialização do RAG não foi encontrada.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                </div>
+            `;
+        }
+    }, 150);
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'RAG Knowledge System';
+    document.querySelector('.breadcrumb').textContent = 'Home / RAG System';
 });

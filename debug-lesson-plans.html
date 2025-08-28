@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Lesson Plans - Debug</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; background: #f8fafc; }
+        .test-area { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .debug { background: #1e293b; color: white; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; }
+        .error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px; border-radius: 6px; }
+        .success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; padding: 10px; border-radius: 6px; }
+        button { background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Lesson Plans Module</h1>
+    
+    <div class="test-area">
+        <h3>1. Carregamento de Scripts</h3>
+        <div id="script-status"></div>
+        <button onclick="checkScripts()">Verificar Scripts</button>
+    </div>
+
+    <div class="test-area">
+        <h3>2. API Client</h3>
+        <div id="api-status"></div>
+        <button onclick="checkAPIClient()">Verificar API</button>
+    </div>
+
+    <div class="test-area">
+        <h3>3. Module Loading</h3>
+        <div id="module-status"></div>
+        <button onclick="checkModule()">Verificar Módulo</button>
+    </div>
+
+    <div class="test-area">
+        <h3>4. Container de Teste</h3>
+        <div id="lessonPlansContainer" class="lesson-plans-container" style="border: 2px dashed #667eea; min-height: 200px; padding: 20px;">
+            Container aguardando inicialização...
+        </div>
+        <button onclick="initModule()">Inicializar Módulo</button>
+    </div>
+
+    <div class="test-area">
+        <h3>5. Console Log</h3>
+        <div id="console-log" class="debug"></div>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="public/js/shared/utils/feedback.js"></script>
+    <script src="public/js/shared/api-client.js"></script>
+    <script type="module" src="public/js/modules/lesson-plans/lesson-plans.js"></script>
+
+    <script>
+        // Capturar console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logContainer = document.getElementById('console-log');
+        
+        function appendLog(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+            logContainer.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            appendLog('log', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            appendLog('error', ...args);
+        };
+
+        // Funções de teste
+        function checkScripts() {
+            const status = document.getElementById('script-status');
+            const checks = [
+                { name: 'API Client', check: () => typeof window.createModuleAPI === 'function' },
+                { name: 'Feedback Utils', check: () => typeof window.showToast === 'function' },
+                { name: 'Lesson Plans Module', check: () => typeof window.initLessonPlans === 'function' },
+                { name: 'Controllers', check: () => typeof window.LessonPlansListController === 'function' }
+            ];
+            
+            let html = '';
+            checks.forEach(({ name, check }) => {
+                const passed = check();
+                html += `<div class="${passed ? 'success' : 'error'}">${passed ? '✅' : '❌'} ${name}</div>`;
+            });
+            
+            status.innerHTML = html;
+        }
+
+        function checkAPIClient() {
+            const status = document.getElementById('api-status');
+            try {
+                if (window.createModuleAPI) {
+                    const api = window.createModuleAPI('TestModule');
+                    status.innerHTML = '<div class="success">✅ API Client funcionando</div>';
+                } else {
+                    status.innerHTML = '<div class="error">❌ API Client não encontrado</div>';
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Erro no API Client: ${error.message}</div>`;
+            }
+        }
+
+        function checkModule() {
+            const status = document.getElementById('module-status');
+            const checks = [
+                'lessonPlansModule',
+                'initLessonPlans', 
+                'LessonPlansListController',
+                'LessonPlanEditorController'
+            ];
+            
+            let html = '';
+            checks.forEach(name => {
+                const exists = window[name] !== undefined;
+                html += `<div class="${exists ? 'success' : 'error'}">${exists ? '✅' : '❌'} window.${name}</div>`;
+            });
+            
+            status.innerHTML = html;
+        }
+
+        async function initModule() {
+            try {
+                console.log('🧪 Testando inicialização do módulo...');
+                
+                if (typeof window.initLessonPlans === 'function') {
+                    await window.initLessonPlans();
+                    document.getElementById('module-status').innerHTML = '<div class="success">✅ Módulo inicializado com sucesso!</div>';
+                } else {
+                    throw new Error('Função initLessonPlans não encontrada');
+                }
+            } catch (error) {
+                console.error('❌ Erro na inicialização:', error);
+                document.getElementById('module-status').innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-check ao carregar
+        setTimeout(() => {
+            checkScripts();
+            checkAPIClient();
+            checkModule();
+        }, 1000);
+    </script>
+</body>
+</html>
