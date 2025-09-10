@@ -216,13 +216,8 @@ class StudentEditor {
         this.showLoading('Carregando dados do estudante...');
         
         try {
-            const response = await fetch(`/api/students/${this.currentStudentId}`);
-            
-            if (!response.ok) {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
-            }
-            
-            const payload = await response.json();
+            const api = this.api || (window.createModuleAPI && window.createModuleAPI('Students'));
+            const payload = await (api?.api?.get ? api.api.get(`/api/students/${this.currentStudentId}`) : api.get(`/api/students/${this.currentStudentId}`));
             // Normalizar para obter o objeto do estudante
             const student = payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload;
             
@@ -253,6 +248,7 @@ class StudentEditor {
             
         } catch (error) {
             console.error('❌ Erro ao carregar dados do estudante:', error);
+            try { window.app?.handleError?.(error, 'Students:legacyEditor:load'); } catch(_) {}
             this.showError('Erro ao carregar dados do estudante');
             this.hideLoading();
         }
@@ -298,20 +294,8 @@ class StudentEditor {
             console.log(JSON.stringify(collectedData, null, 2));
             
             try {
-                const response = await fetch('/api/students', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(collectedData)
-                });
-                
-                console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('📡 API Error Response:', errorText);
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-                const created = await response.json();
+                const api = this.api || (window.createModuleAPI && window.createModuleAPI('Students'));
+                const created = await (api?.api?.post ? api.api.post('/api/students', collectedData) : api.post('/api/students', collectedData));
                 // Normalizar resposta de criação
                 const createdStudent = created && created.data ? created.data : created;
                 this.studentData = createdStudent || collectedData;
@@ -330,6 +314,7 @@ class StudentEditor {
                 setTimeout(() => this.loadStudentData(), 500);
             } catch (error) {
                 console.error('❌ Erro ao criar aluno:', error);
+                try { window.app?.handleError?.(error, 'Students:legacyEditor:create'); } catch(_) {}
                 this.showError('Erro ao criar aluno');
             }
             this.hideLoading();
@@ -344,19 +329,14 @@ class StudentEditor {
 
         this.showLoading('Salvando alterações...');
         try {
+            const api = this.api || (window.createModuleAPI && window.createModuleAPI('Students'));
             const allData = { ...this.studentData, ...collectedData };
-            const response = await fetch(`/api/students/${this.currentStudentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(allData)
-            });
-            if (!response.ok) {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
-            }
+            await (api?.api?.put ? api.api.put(`/api/students/${this.currentStudentId}`, allData) : api.put(`/api/students/${this.currentStudentId}`, allData));
             this.showSuccess('Alterações salvas com sucesso!');
             setTimeout(() => this.loadStudentData(), 500);
         } catch (error) {
             console.error('❌ Erro ao salvar dados:', error);
+            try { window.app?.handleError?.(error, 'Students:legacyEditor:update'); } catch(_) {}
             this.showError('Erro ao salvar alterações');
         }
         this.hideLoading();

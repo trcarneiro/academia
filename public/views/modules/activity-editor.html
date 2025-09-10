@@ -93,9 +93,17 @@
 <script type="module">
   import { ActivitiesService } from '/js/modules/activities-service.js';
 
-  document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for URL to be updated by router
+  setTimeout(async () => {
+    console.log('🔍 Activity Editor Script - Current URL:', window.location.href);
+    console.log('🔍 Activity Editor Script - Current hash:', window.location.hash);
+    console.log('🔍 Activity Editor Script - Current search:', window.location.search);
+    
     const urlParams = new URLSearchParams(window.location.search);
-    const activityId = urlParams.get('id');
+    const activityId = urlParams.get('activityId');  // Use activityId instead of id
+    
+    console.log('🔍 Activity Editor Script - Extracted ID:', activityId);
+    
     const form = document.getElementById('activity-form');
     const deleteBtn = document.getElementById('delete-btn');
     const titleElement = document.getElementById('editor-title');
@@ -108,16 +116,20 @@
     // Carregar atividade existente se houver ID
     if (activityId) {
       try {
+        console.log('🔄 Loading activity:', activityId);
         const response = await ActivitiesService.get(activityId);
+        console.log('✅ Activity loaded:', response);
         const activity = response.data || response;
         populateForm(activity);
         titleElement.textContent = 'Editar Atividade';
         deleteBtn.style.display = 'block';
       } catch (error) {
-        console.error('Erro ao carregar atividade:', error);
+        console.error('❌ Erro ao carregar atividade:', error);
         window.feedback?.showError?.('Falha ao carregar dados da atividade') || 
         alert('Falha ao carregar dados da atividade');
       }
+    } else {
+      console.log('ℹ️ No activity ID found - creating new activity');
     }
 
     // Configurar evento de exclusão
@@ -217,7 +229,7 @@
         document.getElementById('adaptations').value = activity.adaptations.join(', ');
       }
     }
-  });
+  }, 100); // Close setTimeout
 </script>
         </button>
         <button type="button" id="delete-btn" class="activities-isolated-btn activities-isolated-btn-danger" style="display:none">

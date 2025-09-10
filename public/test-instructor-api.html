@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Instructor API</title>
+</head>
+<body>
+    <h1>Test Instructor API</h1>
+    
+    <div>
+        <h2>Test Data</h2>
+        <textarea id="testData" rows="10" cols="50">{
+  "name": "João Silva",
+  "email": "joao.silva@test.com",
+  "phone": "(11) 99999-9999",
+  "belt": "Branca",
+  "status": "ACTIVE"
+}</textarea>
+    </div>
+    
+    <div>
+        <button onclick="testGet()">Test GET /api/instructors</button>
+        <button onclick="testPost()">Test POST /api/instructors</button>
+    </div>
+    
+    <div>
+        <h2>Results</h2>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            resultsDiv.textContent += new Date().toISOString() + ': ' + message + '\n';
+        }
+        
+        async function testGet() {
+            try {
+                log('Testing GET /api/instructors...');
+                const response = await fetch('/api/instructors');
+                const data = await response.json();
+                log('GET Response: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                log('GET Error: ' + error.message);
+            }
+        }
+        
+        async function testPost() {
+            try {
+                log('Testing POST /api/instructors...');
+                const testData = JSON.parse(document.getElementById('testData').value);
+                log('Sending data: ' + JSON.stringify(testData, null, 2));
+                
+                const response = await fetch('/api/instructors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log('Response status: ' + response.status);
+                log('Response headers: ' + JSON.stringify([...response.headers]));
+                
+                const data = await response.json();
+                log('POST Response: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                log('POST Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

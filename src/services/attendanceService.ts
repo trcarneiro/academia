@@ -2,7 +2,7 @@ import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { QRCodeService } from '@/utils/qrcode';
 import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, AttendanceStatsQuery } from '@/schemas/attendance';
-import { AttendanceStatus, CheckInMethod, UserRole } from '@/types';
+import { AttendanceStatus, CheckInMethod, UserRole, ClassStatus } from '@/types';
 import dayjs from 'dayjs';
 
 export class AttendanceService {
@@ -12,7 +12,7 @@ export class AttendanceService {
     // Verify class exists and is active
     const classInfo = await prisma.class.findUnique({
       where: { id: classId },
-      include: { schedule: true, courseProgram: true },
+      include: { schedule: true, course: true },
     });
 
     if (!classInfo) {
@@ -93,7 +93,7 @@ export class AttendanceService {
       include: {
         class: {
           include: {
-            courseProgram: true,
+            course: true,
             instructor: true,
           },
         },
@@ -202,7 +202,7 @@ export class AttendanceService {
           },
           class: {
             include: {
-              courseProgram: {
+              course: {
                 select: {
                   name: true,
                   level: true,
@@ -263,7 +263,7 @@ export class AttendanceService {
         student: true,
         class: {
           include: {
-            courseProgram: true,
+            course: true,
             instructor: true,
           },
         },
@@ -470,5 +470,460 @@ export class AttendanceService {
     });
 
     logger.info({ studentId, attendanceRate, recentTrend }, 'Attendance pattern updated');
+  }
+
+  static async findStudentByRegistration(registrationNumber: string) {
+    // Try to find by registration number first
+    let student = await prisma.student.findFirst({
+      where: {
+        registrationNumber: registrationNumber,
+        isActive: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        enrollments: {
+          where: { status: 'ACTIVE' },
+          include: {
+            course: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // If not found by registration, try to find by name (partial match)
+    if (!student) {
+      const searchTerm = registrationNumber.toLowerCase();
+      
+      student = await prisma.student.findFirst({
+        where: {
+          isActive: true,
+          user: {
+            OR: [
+              {
+                firstName: {
+                  contains: searchTerm,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                lastName: {
+                  contains: searchTerm,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                // Full name search (first + last)
+                AND: [
+                  {
+                    OR: [
+                      { firstName: { contains: searchTerm.split(' ')[0] || '', mode: 'insensitive' } },
+                      { lastName: { contains: searchTerm.split(' ')[0] || '', mode: 'insensitive' } },
+                    ],
+                  },
+                  searchTerm.split(' ').length > 1 ? {
+                    OR: [
+                      { firstName: { contains: searchTerm.split(' ')[1] || '', mode: 'insensitive' } },
+                      { lastName: { contains: searchTerm.split(' ')[1] || '', mode: 'insensitive' } },
+                    ],
+                  } : {},
+                ],
+              },
+            ],
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+          enrollments: {
+            where: { status: 'ACTIVE' },
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    if (!student) {
+      return null;
+    }
+
+    // Create a simple, serializable object
+    const result = {
+      id: (student as any).id,
+      registrationNumber: (student as any).registrationNumber,
+      user: {
+        id: (student as any).user.id,
+        firstName: (student as any).user.firstName,
+        lastName: (student as any).user.lastName,
+        email: (student as any).user.email,
+        avatarUrl: (student as any).user.avatarUrl || null,
+      },
+      enrollments: (student as any).enrollments || [],
+      graduationLevel: (student as any).graduationLevel || null,
+      joinDate: (student as any).createdAt ? new Date((student as any).createdAt).toISOString() : null,
+      searchedBy: (student as any).registrationNumber === registrationNumber ? 'registration' : 'name',
+    };
+
+    return result;
+  }
+
+  static async getAvailableClasses(studentId?: string) {
+    const now = new Date();
+    const today = dayjs();
+    const startOfDay = today.startOf('day').toDate();
+    const endOfDay = today.endOf('day').toDate();
+
+    // Get classes for today
+    const classes = await prisma.class.findMany({
+      where: {
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS]
+        },
+      },
+      include: {
+        schedule: true,
+        instructor: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        course: {
+          select: {
+            name: true,
+            level: true,
+          },
+        },
+        attendances: studentId ? {
+          where: { studentId },
+        } : false,
+      },
+    });
+
+    return classes.map(classInfo => {
+      const hasCheckedIn = studentId && classInfo.attendances?.length > 0;
+      const startTime = dayjs(classInfo.startTime);
+      const checkInStart = startTime.subtract(30, 'minute');
+      const checkInEnd = startTime.add(15, 'minute');
+      const currentTime = dayjs();
+      
+      const canCheckIn = !hasCheckedIn && 
+        currentTime.isAfter(checkInStart) && 
+        currentTime.isBefore(checkInEnd);
+
+      return {
+        id: classInfo.id,
+        name: classInfo.title || classInfo.course?.name,
+        startTime: classInfo.startTime,
+        endTime: classInfo.endTime,
+        instructor: classInfo.instructor ? {
+          name: `${classInfo.instructor.user.firstName} ${classInfo.instructor.user.lastName}`,
+        } : null,
+        course: classInfo.course,
+        capacity: classInfo.maxStudents,
+        enrolled: classInfo.attendances?.length || 0,
+        canCheckIn,
+        hasCheckedIn,
+        status: hasCheckedIn ? 'CHECKED_IN' : 
+               canCheckIn ? 'AVAILABLE' : 
+               currentTime.isBefore(checkInStart) ? 'NOT_YET' : 'EXPIRED',
+      };
+    });
+  }
+
+  static async getStudentDashboard(studentId: string) {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+        enrollments: {
+          where: { status: 'ACTIVE' },
+          include: {
+            course: true,
+          },
+        },
+      },
+    });
+
+    if (!student) {
+      throw new Error('Aluno não encontrado');
+    }
+
+    // Get recent attendance (last 10)
+    const recentAttendances = await prisma.attendance.findMany({
+      where: { studentId },
+      take: 10,
+      orderBy: { checkInTime: 'desc' },
+      include: {
+        class: {
+          select: {
+            title: true,
+            date: true,
+            startTime: true,
+          },
+        },
+      },
+    });
+
+    // Get attendance stats for current month
+    const currentMonth = dayjs().startOf('month');
+    const attendanceStats = await prisma.attendance.count({
+      where: {
+        studentId,
+        checkInTime: {
+          gte: currentMonth.toDate(),
+        },
+        status: AttendanceStatus.PRESENT,
+      },
+    });
+
+    // Get total classes this month
+    const totalClassesThisMonth = await prisma.class.count({
+      where: {
+        date: {
+          gte: currentMonth.toDate(),
+          lte: dayjs().endOf('month').toDate(),
+        },
+        status: {
+          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS, ClassStatus.COMPLETED]
+        },
+      },
+    });
+
+    // Get next classes (upcoming 5)
+    const upcomingClasses = await prisma.class.findMany({
+      where: {
+        date: {
+          gte: new Date(),
+        },
+        status: {
+          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS]
+        },
+      },
+      take: 5,
+      orderBy: { date: 'asc' },
+      include: {
+        schedule: true,
+        instructor: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      student: {
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        avatar: student.user.avatar || null,
+        registrationNumber: student.registrationNumber,
+        graduationLevel: student.graduationLevel || null,
+        joinDate: student.createdAt,
+      },
+      stats: {
+        attendanceThisMonth: attendanceStats,
+        totalClassesThisMonth,
+        attendanceRate: totalClassesThisMonth > 0 ? 
+          Math.round((attendanceStats / totalClassesThisMonth) * 100) : 0,
+      },
+      recentAttendances: recentAttendances.map(att => ({
+        id: att.id,
+        className: att.class.title || 'Aula sem título',
+        date: att.class.date,
+        checkInTime: att.checkInTime,
+        status: att.status,
+      })),
+      upcomingClasses: upcomingClasses.map(cls => ({
+        id: cls.id,
+        name: cls.title || cls.course?.name || 'Aula sem título',
+        date: cls.date,
+        startTime: cls.startTime,
+        instructor: cls.instructor ? 
+          `${cls.instructor.user.firstName} ${cls.instructor.user.lastName}` : 
+          'Instrutor não definido',
+      })),
+      enrollments: student.enrollments.map(enrollment => ({
+        course: enrollment.package.name,
+        startDate: enrollment.startDate,
+        endDate: enrollment.endDate,
+        isActive: enrollment.isActive,
+      })),
+    };
+  }
+
+  static async searchStudents(query: string, limit: number = 10) {
+    const searchTerm = query.toLowerCase().trim();
+    
+    if (searchTerm.length < 2) {
+      return [];
+    }
+
+    const students = await prisma.student.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          {
+            registrationNumber: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            user: {
+              OR: [
+                {
+                  firstName: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  lastName: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  email: {
+                    contains: searchTerm,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      take: limit,
+      orderBy: [
+        {
+          // Prioritize exact registration number matches
+          registrationNumber: 'asc',
+        },
+        {
+          user: {
+            firstName: 'asc',
+          },
+        },
+      ],
+    });
+
+    return students.map(student => ({
+      id: student.id,
+      registrationNumber: student.registrationNumber,
+      name: `${student.user.firstName} ${student.user.lastName}`,
+      email: student.user.email,
+      avatar: student.user.avatar,
+      graduationLevel: student.graduationLevel,
+      matchType: student.registrationNumber.toLowerCase().includes(searchTerm) 
+        ? 'registration' 
+        : 'name',
+    }));
+  }
+
+  static async getAllActiveStudents() {
+    const students = await prisma.student.findMany({
+      where: {
+        isActive: true,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: [
+        {
+          registrationNumber: 'asc',
+        },
+        {
+          user: {
+            firstName: 'asc',
+          },
+        },
+      ],
+    });
+
+    return students.map(student => ({
+      id: student.id,
+      registrationNumber: student.registrationNumber,
+      name: `${student.user.firstName} ${student.user.lastName}`,
+      firstName: student.user.firstName,
+      lastName: student.user.lastName,
+      email: student.user.email,
+      avatar: student.user.avatar,
+      graduationLevel: student.graduationLevel,
+      // Pre-computed search strings for faster client-side filtering
+      searchString: [
+        student.registrationNumber,
+        student.user.firstName.toLowerCase(),
+        student.user.lastName.toLowerCase(),
+        student.user.email.toLowerCase(),
+        `${student.user.firstName} ${student.user.lastName}`.toLowerCase()
+      ].join(' '),
+    }));
   }
 }

@@ -1,7 +1,12 @@
 <!-- Student Editor Module - Guidelines.MD Compliant -->
-<div class="student-editor-module">
-    <!-- Editor Header -->
-    <header class="editor-header">
+<div class="student-editor-module module-isolated-container" data-module="students-editor">
+    <!-- Editor Header (Premium) -->
+    <header class="editor-header module-header-premium">
+        <nav class="breadcrumb">
+            <span class="crumb" onclick="window.openStudentsList && window.openStudentsList(document.querySelector('.content-area')||document.body)">Alunos</span>
+            <span class="crumb-sep">›</span>
+            <span class="crumb active">Editor</span>
+        </nav>
         <div class="header-main">
             <div class="student-info">
                 <h1 id="student-name-header">Novo Estudante</h1>
@@ -59,7 +64,7 @@
     </nav>
 
     <!-- Tab Contents -->
-    <main class="tab-contents">
+    <main class="tab-contents data-card-premium">
         <div id="profile-content" class="tab-pane active"></div>
         <div id="financial-content" class="tab-pane"></div>
         <div id="courses-content" class="tab-pane"></div>

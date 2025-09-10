@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Packages API</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            background: #f0f0f0; 
+        }
+        .log { 
+            background: white; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border-left: 4px solid #007acc; 
+        }
+        .error { 
+            border-left-color: #ff6b6b; 
+            background: #ffebee; 
+        }
+        .success { 
+            border-left-color: #4caf50; 
+            background: #e8f5e8; 
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #005999; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug - Packages API</h1>
+    <div id="logs"></div>
+    
+    <button onclick="testAPI()">🧪 Testar API Client</button>
+    <button onclick="testModuleAPI()">📦 Testar Module API</button>
+    <button onclick="testPackagesLoad()">📋 Testar Load Packages</button>
+    <button onclick="clearLogs()">🧹 Limpar Logs</button>
+
+    <script>
+        const logsDiv = document.getElementById('logs');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            logsDiv.appendChild(div);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+        }
+
+        async function testAPI() {
+            log('🔍 Testando disponibilidade da API...');
+            
+            if (!window.apiClient) {
+                log('❌ window.apiClient não está disponível', 'error');
+                return;
+            }
+            
+            if (!window.createModuleAPI) {
+                log('❌ window.createModuleAPI não está disponível', 'error');
+                return;
+            }
+            
+            log('✅ API Client está disponível', 'success');
+            log(`📊 API Client tipo: ${typeof window.apiClient}`);
+            log(`🏭 createModuleAPI tipo: ${typeof window.createModuleAPI}`);
+        }
+
+        async function testModuleAPI() {
+            log('🧪 Criando ModuleAPIHelper para teste...');
+            
+            try {
+                const moduleAPI = window.createModuleAPI('TestModule');
+                log('✅ ModuleAPIHelper criado com sucesso', 'success');
+                
+                log(`📋 Propriedades disponíveis: ${Object.getOwnPropertyNames(moduleAPI).join(', ')}`);
+                log(`🔧 Método api disponível: ${typeof moduleAPI.api}`);
+                log(`🔧 Método fetchWithStates: ${typeof moduleAPI.fetchWithStates}`);
+                
+                // Testar se o api.request está disponível
+                if (moduleAPI.api && typeof moduleAPI.api.request === 'function') {
+                    log('✅ moduleAPI.api.request está disponível', 'success');
+                } else {
+                    log('❌ moduleAPI.api.request NÃO está disponível', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro ao criar ModuleAPIHelper: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPackagesLoad() {
+            log('📦 Testando carregamento de pacotes...');
+            
+            try {
+                const moduleAPI = window.createModuleAPI('Packages');
+                log('✅ API Helper criado');
+                
+                // Testar com o método correto
+                log('🔄 Fazendo requisição GET /api/billing-plans...');
+                const response = await moduleAPI.api.request('GET', '/api/billing-plans');
+                
+                log(`✅ Resposta recebida: ${JSON.stringify(response, null, 2)}`, 'success');
+                
+                if (response.success) {
+                    log(`📊 ${response.data?.length || 0} pacotes encontrados`, 'success');
+                } else {
+                    log(`⚠️ API retornou success=false: ${response.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro no teste: ${error.message}`, 'error');
+                log(`📋 Stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Auto-teste inicial
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 Iniciando testes automáticos...');
+                testAPI();
+            }, 1000);
+        });
+    </script>
+    
+    <!-- Carregar API Client -->
+    <script src="/public/js/shared/api-client.js"></script>
+</body>
+</html>

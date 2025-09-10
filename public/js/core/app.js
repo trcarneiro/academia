@@ -84,13 +84,20 @@ class AcademyApp {
         const moduleList = [
             'students',
             'classes', 
-            'financial',
+            'packages',
             'attendance',
             'dashboard',
-            'plans',
             'activities',
             'lesson-plans',
-            'rag'
+            'courses',
+            'frequency',
+            'import',
+            'rag',
+            'turmas',
+            'organizations',
+            'units',
+            'instructors',
+            'agenda'
         ];
 
         // Register available modules

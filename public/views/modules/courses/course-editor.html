@@ -38,9 +38,6 @@
             <button class="tab-btn" data-tab="schedule" id="tabSchedule">
                 📅 Cronograma
             </button>
-            <button class="tab-btn" data-tab="techniques" id="tabTechniques">
-                🥋 Técnicas
-            </button>
             <button class="tab-btn" data-tab="rag-generation" id="tabRAG">
                 🧠 Geração RAG
             </button>
@@ -221,131 +218,54 @@
             <!-- Tab Content: Schedule -->
             <div class="tab-content" id="tabContentSchedule" style="display: none;">
                 <section class="form-section">
-                    <h2 class="section-title">📅 Cronograma do Curso</h2>
+                    <h2 class="section-title">📅 Cronograma de Aulas</h2>
                     <div class="section-description">
-                        Configure o cronograma detalhado com aulas, unidades e objetivos
+                        Configure as aulas com técnicas/atividades específicas
                     </div>
                     
                     <div class="schedule-section">
                         <div class="schedule-header">
-                            <div class="form-grid two-columns">
-                                <div class="form-group">
-                                    <label class="form-label" for="totalWeeks">
-                                        Total de Semanas
-                                    </label>
-                                    <input type="number" class="form-input" id="totalWeeks" min="1" max="52" value="18">
+                            <div class="schedule-controls">
+                                <div class="control-group">
+                                    <label for="totalWeeks">Total de Semanas:</label>
+                                    <input type="number" id="totalWeeks" min="1" max="52" value="16" class="form-input">
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="lessonsPerWeek">
-                                        Aulas por Semana
-                                    </label>
-                                    <input type="number" class="form-input" id="lessonsPerWeek" min="1" max="7" value="2">
+                                <div class="control-group">
+                                    <label for="lessonsPerWeek">Aulas por Semana:</label>
+                                    <input type="number" id="lessonsPerWeek" min="1" max="7" value="2" class="form-input">
+                                </div>
+                                <div class="control-group">
+                                    <button type="button" class="btn btn-primary" id="generateScheduleBtn">
+                                        🔄 Gerar Cronograma
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="schedule-tools">
-                            <button type="button" class="btn btn-secondary" id="generateScheduleBtn">
-                                ⚡ Gerar Cronograma Automático
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="importScheduleBtn">
-                                📥 Importar JSON
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="exportScheduleBtn">
-                                📤 Exportar JSON
-                            </button>
-                        </div>
-                        
-                        <div class="schedule-json-import" style="display: none;">
-                            <div class="form-group full-width">
-                                <label class="form-label" for="scheduleJsonInput">
-                                    Cole o JSON do Cronograma
-                                </label>
-                                <textarea class="form-textarea" id="scheduleJsonInput" rows="8" 
-                                          placeholder='Formato: { "weeks": 18, "lessonsPerWeek": [...] }'></textarea>
+                            
+                            <div class="schedule-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total de Aulas:</span>
+                                    <span class="stat-value" id="totalLessonsCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Técnicas Atribuídas:</span>
+                                    <span class="stat-value" id="assignedTechniquesCount">0</span>
+                                </div>
                             </div>
-                            <div class="form-actions">
-                                <button type="button" class="btn btn-primary" id="processScheduleJsonBtn">
-                                    ✅ Processar JSON
+                            
+                            <div class="schedule-tools">
+                                <button type="button" class="btn btn-secondary" id="importScheduleBtn">
+                                    📁 Importar Cronograma
                                 </button>
-                                <button type="button" class="btn btn-secondary" id="cancelScheduleImportBtn">
-                                    ❌ Cancelar
+                                <button type="button" class="btn btn-secondary" id="exportScheduleBtn">
+                                    📤 Exportar Cronograma
                                 </button>
                             </div>
                         </div>
                         
                         <div class="schedule-grid" id="scheduleGrid">
                             <div class="schedule-empty-state">
-                                <p>📋 Nenhum cronograma configurado</p>
-                                <p>Use as ferramentas acima para criar ou importar um cronograma</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Tab Content: Techniques -->
-            <div class="tab-content" id="tabContentTechniques" style="display: none;">
-                <section class="form-section">
-                    <h2 class="section-title">🥋 Técnicas do Curso</h2>
-                    <div class="section-description">
-                        Gerencie as técnicas e atividades associadas ao curso
-                    </div>
-                    
-                    <div class="techniques-section">
-                        <div class="techniques-header">
-                            <div class="techniques-stats">
-                                <div class="stat-card">
-                                    <span class="stat-number" id="totalTechniques">0</span>
-                                    <span class="stat-label">Total de Técnicas</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-number" id="requiredTechniques">0</span>
-                                    <span class="stat-label">Obrigatórias</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-number" id="optionalTechniques">0</span>
-                                    <span class="stat-label">Opcionais</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="techniques-tools">
-                            <div class="form-grid three-columns">
-                                <div class="form-group">
-                                    <input type="text" class="form-input" id="techniqueSearch" 
-                                           placeholder="🔍 Buscar técnicas...">
-                                </div>
-                                <div class="form-group">
-                                    <select class="form-select" id="techniqueFilter">
-                                        <option value="all">Todas as Categorias</option>
-                                        <option value="attack">Ataques</option>
-                                        <option value="defense">Defesas</option>
-                                        <option value="movement">Movimentação</option>
-                                        <option value="grappling">Agarramentos</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <button type="button" class="btn btn-primary" id="addTechniqueBtn">
-                                        ➕ Adicionar Técnica
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="techniques-library" id="techniquesLibrary">
-                            <div class="library-section">
-                                <h3>📚 Biblioteca de Técnicas</h3>
-                                <div class="techniques-available" id="availableTechniques">
-                                    <div class="loading-state">Carregando técnicas disponíveis...</div>
-                                </div>
-                            </div>
-                            
-                            <div class="library-section">
-                                <h3>✅ Técnicas do Curso</h3>
-                                <div class="techniques-selected" id="selectedTechniques">
-                                    <div class="empty-state">Nenhuma técnica selecionada</div>
-                                </div>
+                                <p>📋 Nenhum cronograma carregado</p>
+                                <p>Importe um curso com cronograma para ver as aulas</p>
                             </div>
                         </div>
                     </div>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testAPI()">Test API Connection</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function testAPI() {
+            const result = document.getElementById('result');
+            
+            try {
+                // Test 1: Get all billing plans
+                console.log('Testing GET /api/billing-plans...');
+                const response1 = await fetch('/api/billing-plans');
+                const data1 = await response1.json();
+                
+                result.textContent = `GET /api/billing-plans:\nStatus: ${response1.status}\nData: ${JSON.stringify(data1, null, 2)}\n\n`;
+                
+                if (data1.success && data1.data && data1.data.length > 0) {
+                    const firstPlan = data1.data[0];
+                    result.textContent += `First plan ID: ${firstPlan.id}\n\n`;
+                    
+                    // Test 2: Get specific plan
+                    console.log(`Testing GET /api/billing-plans/${firstPlan.id}...`);
+                    const response2 = await fetch(`/api/billing-plans/${firstPlan.id}`);
+                    const data2 = await response2.json();
+                    
+                    result.textContent += `GET /api/billing-plans/${firstPlan.id}:\nStatus: ${response2.status}\nData: ${JSON.stringify(data2, null, 2)}\n\n`;
+                    
+                    // Test 3: Try UPDATE
+                    console.log(`Testing PUT /api/billing-plans/${firstPlan.id}...`);
+                    const updateData = {
+                        name: firstPlan.name + ' - Updated',
+                        description: firstPlan.description,
+                        price: firstPlan.price,
+                        billingType: firstPlan.billingType,
+                        isActive: true
+                    };
+                    
+                    const response3 = await fetch(`/api/billing-plans/${firstPlan.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    });
+                    const data3 = await response3.json();
+                    
+                    result.textContent += `PUT /api/billing-plans/${firstPlan.id}:\nStatus: ${response3.status}\nRequest: ${JSON.stringify(updateData, null, 2)}\nResponse: ${JSON.stringify(data3, null, 2)}`;
+                }
+                
+            } catch (error) {
+                result.textContent = `Error: ${error.message}\nStack: ${error.stack}`;
+                console.error('API Test Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

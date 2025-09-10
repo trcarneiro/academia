@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Package Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .debug-section { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #e9ecef; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Package Update API</h1>
+        
+        <div class="debug-section">
+            <h3>1. Test Package Data Structure</h3>
+            <button onclick="testPackageData()">Test Package Data</button>
+            <pre id="package-data-output"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>2. GET Existing Package</h3>
+            <button onclick="getExistingPackage()">GET Package 7f753d68-e466-4a87-aa27-87ad9baa5dbd</button>
+            <pre id="get-output"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>3. PUT Update Package</h3>
+            <button onclick="updatePackage()">PUT Update Package</button>
+            <pre id="put-output"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>4. Raw Fetch Test</h3>
+            <button onclick="rawFetchTest()">Raw Fetch Test</button>
+            <pre id="raw-output"></pre>
+        </div>
+    </div>
+
+    <script>
+        const packageId = '7f753d68-e466-4a87-aa27-87ad9baa5dbd';
+        
+        function log(elementId, content, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content;
+            element.className = isError ? 'error' : 'success';
+        }
+        
+        async function testPackageData() {
+            const testData = {
+                name: "Plano Básico Test",
+                description: "Test description",
+                billingType: "CREDIT",
+                hasPersonalTraining: false,
+                hasNutrition: false,
+                isActive: true,
+                maxClasses: 8,
+                pricePerClass: 100,
+                price: 800,
+                creditsValidity: 90
+            };
+            
+            log('package-data-output', `Data Type: ${typeof testData}\n\nData Structure:\n${JSON.stringify(testData, null, 2)}`);
+        }
+        
+        async function getExistingPackage() {
+            try {
+                const response = await fetch(`/api/billing-plans/${packageId}`);
+                const data = await response.json();
+                log('get-output', `Status: ${response.status}\n\nResponse:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                log('get-output', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function updatePackage() {
+            const updateData = {
+                name: "Plano Básico Updated",
+                description: "Updated description",
+                billingType: "CREDIT",
+                hasPersonalTraining: false,
+                hasNutrition: false,
+                isActive: true,
+                maxClasses: 8,
+                pricePerClass: 100,
+                price: 800,
+                creditsValidity: 90
+            };
+            
+            try {
+                console.log('🔍 Sending PUT request with data:', updateData);
+                
+                const response = await fetch(`/api/billing-plans/${packageId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                log('put-output', `Status: ${response.status}\n\nRequest Data:\n${JSON.stringify(updateData, null, 2)}\n\nResponse:\n${JSON.stringify(data, null, 2)}`, !response.ok);
+                
+            } catch (error) {
+                log('put-output', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function rawFetchTest() {
+            const updateData = {
+                name: "Plano Básico Raw Test",
+                description: "Raw fetch test",
+                billingType: "CREDIT",
+                hasPersonalTraining: false,
+                hasNutrition: false,
+                isActive: true,
+                maxClasses: 8,
+                pricePerClass: 100,
+                price: 800,
+                creditsValidity: 90
+            };
+            
+            try {
+                // Test different content types
+                console.log('🔍 Testing raw fetch...');
+                
+                const response = await fetch(`/api/billing-plans/${packageId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                console.log('🔍 Response status:', response.status);
+                console.log('🔍 Response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('🔍 Response text:', responseText);
+                
+                try {
+                    const responseData = JSON.parse(responseText);
+                    log('raw-output', `Status: ${response.status}\n\nRaw Response:\n${responseText}\n\nParsed:\n${JSON.stringify(responseData, null, 2)}`, !response.ok);
+                } catch (parseError) {
+                    log('raw-output', `Status: ${response.status}\n\nRaw Response (not JSON):\n${responseText}`, true);
+                }
+                
+            } catch (error) {
+                log('raw-output', `Error: ${error.message}\nStack: ${error.stack}`, true);
+            }
+        }
+        
+        // Auto-run on load
+        document.addEventListener('DOMContentLoaded', () => {
+            testPackageData();
+        });
+    </script>
+</body>
+</html>

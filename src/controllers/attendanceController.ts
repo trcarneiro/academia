@@ -216,4 +216,170 @@ export class AttendanceController {
       return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
     }
   }
+
+  static async getStudentByRegistration(
+    request: FastifyRequest<{ Params: { registrationNumber: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const student = await AttendanceService.findStudentByRegistration(
+        request.params.registrationNumber
+      );
+
+      console.log('🔍 Student from service:', student);
+
+      if (!student) {
+        return ResponseHelper.error(reply, 'Aluno não encontrado com esta matrícula ou nome', 404);
+      }
+
+      const message = student.searchedBy === 'registration' 
+        ? 'Aluno encontrado por matrícula' 
+        : 'Aluno encontrado por nome';
+
+      console.log('📤 Sending response with:', student);
+
+      // Create the response object explicitly
+      const responseObj = {
+        success: true,
+        data: student,
+        message: message,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('📤 Response object before send:', responseObj);
+      console.log('📤 Response object JSON:', JSON.stringify(responseObj, null, 2));
+
+      // Send as string to ensure proper serialization
+      return reply.type('application/json').send(JSON.stringify(responseObj));
+    } catch (error) {
+      logger.error({
+        error,
+        registrationNumber: request.params.registrationNumber,
+      }, 'Find student by registration failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async searchStudents(
+    request: FastifyRequest<{ 
+      Params: { query: string }; 
+      Querystring: { limit?: number } 
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const students = await AttendanceService.searchStudents(
+        request.params.query,
+        request.query.limit || 10
+      );
+
+      return ResponseHelper.success(
+        reply,
+        students,
+        `${students.length} aluno(s) encontrado(s)`
+      );
+    } catch (error) {
+      logger.error({
+        error,
+        query: request.params.query,
+      }, 'Search students failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async getAllStudents(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) {
+    try {
+      const students = await AttendanceService.getAllActiveStudents();
+
+      return ResponseHelper.success(
+        reply,
+        students,
+        `${students.length} alunos ativos carregados`
+      );
+    } catch (error) {
+      logger.error({
+        error,
+      }, 'Get all students failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async getAvailableClasses(
+    request: FastifyRequest<{ Querystring: { studentId?: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const classes = await AttendanceService.getAvailableClasses(
+        request.query.studentId
+      );
+
+      return ResponseHelper.success(
+        reply,
+        classes,
+        'Aulas disponíveis recuperadas com sucesso'
+      );
+    } catch (error) {
+      logger.error({
+        error,
+        studentId: request.query.studentId,
+      }, 'Get available classes failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async getStudentDashboard(
+    request: FastifyRequest<{ Params: { studentId: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const dashboard = await AttendanceService.getStudentDashboard(
+        request.params.studentId
+      );
+
+      // Manual JSON serialization to fix Fastify serialization issues
+      const response = {
+        success: true,
+        data: dashboard,
+        message: 'Dashboard do aluno recuperado com sucesso',
+        timestamp: new Date().toISOString()
+      };
+
+      reply.header('Content-Type', 'application/json; charset=utf-8');
+      return reply.send(JSON.stringify(response));
+    } catch (error) {
+      logger.error({
+        error,
+        studentId: request.params.studentId,
+      }, 'Get student dashboard failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
 }

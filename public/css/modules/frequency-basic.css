@@ -1,0 +1,288 @@
+/* ============================================
+   Frequency Module - Basic CSS Styles
+   Módulo de Frequência - Estilos Básicos
+   ============================================ */
+
+/* ====== VARIÁVEIS CSS ====== */
+:root {
+  /* Design System Colors */
+  --frequency-primary: #667eea;
+  --frequency-secondary: #764ba2;
+  --frequency-success: #27ae60;
+  --frequency-error: #e74c3c;
+  
+  /* Gradients */
+  --frequency-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --frequency-gradient-light: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  
+  /* Surfaces */
+  --frequency-surface: #ffffff;
+  --frequency-surface-alt: #f8fafc;
+  --frequency-border: #e2e8f0;
+  --frequency-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  /* Typography */
+  --frequency-text: #2d3748;
+  --frequency-text-light: #718096;
+  --frequency-text-muted: #a0aec0;
+  
+  /* Transitions */
+  --frequency-transition: all 0.3s ease;
+}
+
+/* ====== LAYOUT PRINCIPAL ====== */
+.frequency-module-container {
+  min-height: 100vh;
+  background: var(--frequency-surface-alt);
+  padding: 1rem;
+}
+
+.frequency-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ====== HEADER ====== */
+.frequency-header {
+  background: var(--frequency-gradient);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.frequency-header h2 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* ====== NAVEGAÇÃO ====== */
+.frequency-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--frequency-transition);
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+/* ====== CONTEÚDO ====== */
+.frequency-content {
+  background: var(--frequency-surface);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: var(--frequency-shadow);
+}
+
+.view-content {
+  min-height: 400px;
+}
+
+/* ====== LOADING E STATES ====== */
+.frequency-loading,
+.loading-container {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--frequency-border);
+  border-top: 4px solid var(--frequency-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  text-align: center;
+  padding: 2rem;
+  color: var(--frequency-error);
+}
+
+/* ====== FORMULÁRIOS ====== */
+.checkin-view {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.checkin-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.checkin-header h3 {
+  color: var(--frequency-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--frequency-text);
+}
+
+.form-group select {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--frequency-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: var(--frequency-surface);
+  transition: var(--frequency-transition);
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--frequency-primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background: var(--frequency-gradient);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--frequency-transition);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--frequency-primary);
+  border: 2px solid var(--frequency-primary);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--frequency-transition);
+}
+
+.btn-outline:hover {
+  background: var(--frequency-primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ====== CHECK-INS RECENTES ====== */
+.recent-checkins {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--frequency-border);
+}
+
+.recent-checkins h4 {
+  color: var(--frequency-text);
+  margin-bottom: 1rem;
+}
+
+.checkin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--frequency-surface-alt);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  transition: var(--frequency-transition);
+}
+
+.checkin-item:hover {
+  background: var(--frequency-gradient-light);
+}
+
+.student-name {
+  font-weight: 600;
+  color: var(--frequency-text);
+}
+
+.session-info {
+  color: var(--frequency-text-light);
+}
+
+.time {
+  color: var(--frequency-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ====== ESTADOS PLACEHOLDER ====== */
+.history-view,
+.reports-view {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.history-view h3,
+.reports-view h3 {
+  color: var(--frequency-primary);
+  margin-bottom: 1rem;
+}
+
+/* ====== RESPONSIVIDADE ====== */
+@media (max-width: 768px) {
+  .frequency-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .checkin-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

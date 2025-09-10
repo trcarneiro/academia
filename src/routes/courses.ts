@@ -34,6 +34,68 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.put('/:id', courseController.update); // Alias for PATCH to support frontend expectations
   app.delete('/:id', courseController.delete);
 
+  // Replace course techniques association
+  app.post('/:id/techniques', async (request, reply) => {
+    try {
+      const { id } = request.params as any;
+      const body = (request.body as any) || {};
+
+      const schema = z.object({
+        replace: z.boolean().optional().default(true),
+        techniques: z.array(z.object({
+          id: z.union([z.string(), z.number()]).transform(String),
+          name: z.string().optional(),
+          orderIndex: z.number().int().positive().optional(),
+          weekNumber: z.number().int().positive().nullable().optional(),
+          lessonNumber: z.number().int().positive().nullable().optional(),
+          isRequired: z.boolean().optional().default(true)
+        })).min(1, 'Lista de técnicas não pode estar vazia')
+      });
+
+      const input = schema.parse(body);
+
+      // Ensure course exists
+      const course = await prisma.course.findUnique({ where: { id } });
+      if (!course) return reply.code(404).send({ success: false, error: 'Curso não encontrado' });
+
+      // Replace existing associations if requested
+      if (input.replace) {
+        await prisma.courseTechnique.deleteMany({ where: { courseId: id } });
+      }
+
+      // Link techniques in order
+      let order = 1;
+      let linked = 0, skipped = 0;
+      for (const t of input.techniques) {
+        // find technique by id or by name as fallback
+        let tech = null as any;
+        if (t.id) tech = await prisma.technique.findUnique({ where: { id: t.id } });
+        if (!tech && t.name) tech = await prisma.technique.findFirst({ where: { name: t.name } });
+        if (!tech) { skipped++; continue; }
+
+        await prisma.courseTechnique.create({
+          data: {
+            courseId: id,
+            techniqueId: tech.id,
+            orderIndex: t.orderIndex || order++,
+            weekNumber: t.weekNumber ?? null,
+            lessonNumber: t.lessonNumber ?? null,
+            isRequired: t.isRequired ?? true,
+          }
+        });
+        linked++;
+      }
+
+      return reply.send({ success: true, summary: { linked, skipped } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.code(400).send({ success: false, error: error.flatten() });
+      }
+      request.log?.error(error);
+      return reply.code(500).send({ success: false, error: 'Erro ao associar técnicas' });
+    }
+  });
+
   // Import course with techniques
   app.post('/import', async (request, reply) => {
     try {
@@ -137,8 +199,14 @@ export async function coursesRoutes(app: FastifyInstance) {
       // Validate the request body
       const validatedData = importSchema.parse(body);
 
+      // Sanitize optional properties for exactOptionalPropertyTypes compatibility
+      const techniques = validatedData.techniques.map((t: any) => {
+        const { defaultParams, ...rest } = t;
+        return defaultParams === undefined ? rest : { ...rest, defaultParams };
+      });
+
       // Use TechniqueImportService to process techniques
-      const result = await TechniqueImportService.importTechniques(validatedData.techniques);
+      const result = await TechniqueImportService.importTechniques(techniques as any);
 
       return reply.send({
         success: true,
@@ -332,6 +400,66 @@ export async function coursesRoutes(app: FastifyInstance) {
       reply.code(500).send({
         success: false,
         message: 'Erro na validação',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get lesson techniques for course schedule display
+  app.get('/:id/lesson-techniques', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      // Get all lesson plans for this course with their associated activities
+      const lessonPlans = await prisma.lessonPlan.findMany({
+        where: { courseId: id },
+        include: {
+          activityItems: {
+            include: {
+              activity: {
+                select: {
+                  id: true,
+                  title: true,
+                  type: true,
+                  description: true
+                }
+              }
+            },
+            where: {
+              activity: {
+                type: 'TECHNIQUE'
+              }
+            },
+            orderBy: { ord: 'asc' }
+          }
+        },
+        orderBy: { lessonNumber: 'asc' }
+      });
+
+      // Format the response
+      const lessonsWithTechniques = lessonPlans.map(lesson => ({
+        lessonNumber: lesson.lessonNumber,
+        weekNumber: lesson.weekNumber,
+        title: lesson.title,
+        techniques: lesson.activityItems.map(item => ({
+          id: item.activity.id,
+          title: item.activity.title,
+          type: item.activity.type,
+          description: item.activity.description,
+          segment: item.segment,
+          order: item.ord
+        }))
+      }));
+
+      reply.send({
+        success: true,
+        data: lessonsWithTechniques
+      });
+
+    } catch (error) {
+      console.error('Error fetching lesson techniques:', error);
+      reply.code(500).send({
+        success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

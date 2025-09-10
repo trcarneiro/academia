@@ -851,6 +851,109 @@ function initCourseFormHandlers() {
     }
 }
 
+// ===== Course Picker API (used by other modules) =====
+// Opens a lightweight course picker modal and calls the provided callback with
+// the selected course id (single) or array of ids (when multi=true).
+async function openCoursePicker(options = {}) {
+    const { onSelect, multi = false, preselected = [] } = options || {};
+
+    // Ensure courses cache is loaded
+    if (!allCourses || allCourses.length === 0) {
+        await loadAndRenderCourses();
+    }
+
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.zIndex = 10000;
+
+    const dialog = document.createElement('div');
+    dialog.className = 'modal-dialog';
+    dialog.style.maxWidth = '900px';
+
+    const title = document.createElement('h3');
+    title.textContent = multi ? 'Selecione cursos' : 'Selecione um curso';
+    dialog.appendChild(title);
+
+    const list = document.createElement('div');
+    list.style.maxHeight = '60vh';
+    list.style.overflow = 'auto';
+
+    // When multi, render checkboxes
+    allCourses.forEach(course => {
+        const row = document.createElement('div');
+        row.className = 'picker-course-row';
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.style.padding = '0.5rem 0';
+        row.innerHTML = `
+            <div style="flex:1">🎓 ${course.name}</div>
+        `;
+
+        if (multi) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = course.id;
+            if (preselected.includes(course.id)) checkbox.checked = true;
+            row.insertBefore(checkbox, row.firstChild);
+        } else {
+            const selectBtn = document.createElement('button');
+            selectBtn.type = 'button';
+            selectBtn.className = 'btn btn-primary';
+            selectBtn.textContent = 'Selecionar';
+            selectBtn.addEventListener('click', () => {
+                try {
+                    if (typeof onSelect === 'function') onSelect(course.id);
+                } catch (err) {
+                    console.error('openCoursePicker onSelect handler error:', err);
+                }
+                modal.remove();
+            });
+            row.appendChild(selectBtn);
+        }
+
+        list.appendChild(row);
+    });
+
+    dialog.appendChild(list);
+
+    // Actions (for multi selection)
+    const actions = document.createElement('div');
+    actions.style.marginTop = '1rem';
+    actions.style.display = 'flex';
+    actions.style.justifyContent = 'flex-end';
+    actions.style.gap = '0.5rem';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'btn btn-secondary';
+    closeBtn.textContent = 'Fechar';
+    closeBtn.addEventListener('click', () => modal.remove());
+    actions.appendChild(closeBtn);
+
+    if (multi) {
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'btn btn-primary';
+        confirmBtn.textContent = 'Selecionar';
+        confirmBtn.addEventListener('click', () => {
+            const checked = Array.from(list.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+            try {
+                if (typeof onSelect === 'function') onSelect(checked);
+            } catch (err) {
+                console.error('openCoursePicker onSelect handler error:', err);
+            }
+            modal.remove();
+        });
+        actions.appendChild(confirmBtn);
+    }
+
+    dialog.appendChild(actions);
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+}
+
 // Legacy function compatibility
 function loadCourses() {
     return loadAndRenderCourses();
@@ -876,15 +979,31 @@ function closeModal(modalId) {
 }
 
 // Global function exposure for HTML onclick handlers
-window.refreshCourses = loadAndRenderCourses;
-window.exportCourses = exportCourses;
-window.openCourseModal = openCourseModal;
-window.openNewCourseForm = openNewCourseForm;
-window.editCourse = editCourse;
-window.deleteCourse = deleteCourse;
-window.openModal = openModal;
-window.closeModal = closeModal;
+try { window.refreshCourses = loadAndRenderCourses; } catch(_) {}
+try { window.exportCourses = exportCourses; } catch(_) {}
+
+// Safe exposure for openCourseModal - fallback navigates to course editor
+if (typeof openCourseModal === 'function') {
+    window.openCourseModal = openCourseModal;
+} else {
+    window.openCourseModal = function() { console.warn('openCourseModal not available, falling back'); if (window.router) return window.router.navigateTo('course-editor'); location.hash = 'course-editor'; };
+}
+
+if (typeof openNewCourseForm === 'function') window.openNewCourseForm = openNewCourseForm; else window.openNewCourseForm = window.openCourseModal;
+if (typeof editCourse === 'function') window.editCourse = editCourse;
+if (typeof deleteCourse === 'function') window.deleteCourse = deleteCourse;
+if (typeof openModal === 'function') window.openModal = openModal;
+if (typeof closeModal === 'function') window.closeModal = closeModal;
+
+// Prevent re-wrapping recursion: bind to real implementation if available
+if (typeof openCoursePicker === 'function') {
+    const __impl = openCoursePicker;
+    window.openCoursePicker = function(options) { return __impl(options); };
+} else {
+    window.openCoursePicker = function(options) { console.warn('openCoursePicker not implemented'); return Promise.resolve(); };
+}
+
 window.filterCourses = function() {
     const event = { target: document.getElementById('courseSearch') };
-    handleCourseSearch(event);
+    try { handleCourseSearch(event); } catch (e) { console.warn('handleCourseSearch not available', e); }
 };

@@ -2,6 +2,7 @@
 
 ## Project Overview
 This is a multi-tenant Krav Maga academy management system built with TypeScript/Fastify backend and modular vanilla JavaScript frontend. The architecture emphasizes API-first design, modular isolation, and full-screen UI patterns.
+Docs source of truth: AGENTS.md (master). Detailed specs live in /dev; if anything conflicts, AGENTS.md wins.
 
 ## Critical Architecture Patterns
 
@@ -11,6 +12,8 @@ This is a multi-tenant Krav Maga academy management system built with TypeScript
 - Expose modules globally: `window.myModuleName = myModule;`
 - Use app events: `window.app.dispatchEvent('module:loaded', { name: 'myModule' })`
 - Follow error handling: `window.app.handleError(error, context)`
+
+
 
 ### 2. Modular System (MANDATORY)
 - **ALL new functionality** must be created in `/public/js/modules/[module]/` 
@@ -37,7 +40,7 @@ await moduleAPI.fetchWithStates('/api/endpoint', {
 });
 ```
 
-### 4. Premium UI Standards (Guidelines.MD)
+### 4. Premium UI Standards (AGENTS.md + /dev)
 - **Header Enhanced**: Use `.module-header-premium` with breadcrumb navigation
 - **Stats Cards**: Use `.stat-card-enhanced` with hover effects and gradients
 - **Design System**: Unified palette #667eea, #764ba2, gradient support
@@ -49,7 +52,7 @@ await moduleAPI.fetchWithStates('/api/endpoint', {
 - **Loading/Empty/Error states**: Always handle all three states with proper UX
 - **Back buttons**: Include on dedicated pages but maintain sidebar navigation
 
-## Entity Standards (Guidelines.MD)
+## Entity Standards (AGENTS.md + /dev)
 
 ### Module Names (always plural):
 - `students`, `lesson-plans`, `activities`, `courses`, `instructors`, `payments`
@@ -59,7 +62,7 @@ await moduleAPI.fetchWithStates('/api/endpoint', {
 
 ### CSS Classes:
 ```css
-/* Premium classes from Guidelines.MD */
+/* Premium classes per AGENTS.md + /dev */
 .module-header-premium { background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%); }
 .stat-card-enhanced { background: var(--gradient-primary); transition: var(--transition-bounce); }
 .data-card-premium { background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%); }
@@ -73,11 +76,10 @@ await moduleAPI.fetchWithStates('/api/endpoint', {
 ## Development Workflow
 
 ### Before Starting ANY Work:
-1. Read `Guidelines.MD` and `docs/CurrentArchitecture.md` 
+1. Read `AGENTS.MD`  
 2. Check `public/js/core/app.js` for existing module integration patterns
 3. Search existing code: use file search for similar functionality
 4. Verify API endpoints in `src/routes/` before implementing UI
-5. Check `CLAUDE.md` for project-specific conventions
 
 ### Key Commands:
 - **Development**: `npm run dev` (TypeScript server with PostgreSQL + Prisma)
@@ -129,7 +131,7 @@ await moduleAPI.fetchWithStates('/api/endpoint', {
 2. **Don't use modals** - Full-screen pages only (see Students/Plans modules)
 3. **Don't hardcode data** - Always fetch from API (`"João Silva"`, `"R$ 149,90"` forbidden)
 4. **Don't skip loading states** - Users need feedback during API calls
-5. **Don't ignore Guidelines.MD** - It's the single source of truth for design system
+5. **Don't ignore AGENTS.md** - It's the single source of truth; see /dev for detailed design tokens
 6. **Don't use old CSS classes** - Use `.module-header-premium`, `.stat-card-enhanced` (not `.module-header`)
 7. **Don't forget app integration** - Register modules and use `window.app.handleError()`
 

@@ -32,6 +32,7 @@ import progressRoutes from '@/routes/progress';
 import financialResponsibleRoutes from '@/routes/financialResponsible';
 import financialRoutes from '@/routes/financial';
 import studentsRoutes from '@/routes/students';
+import studentCoursesRoutes from '@/routes/studentCourses';
 import organizationsRoutes from '@/routes/organizations';
 import activitiesRoutes from '@/routes/activities';
 import asaasSimpleRoutes from '@/routes/asaas-simple';
@@ -44,6 +45,15 @@ import feedbackRoutes from '@/routes/feedback';
 import gamificationRoutes from '@/routes/gamification';
 import { aiRoutes } from '@/routes/ai';
 import { ragRoutes } from '@/routes/rag';
+import turmasRoutes from '@/routes/turmas';
+import testRoutes from '@/routes/test';
+import usersRoutes from '@/routes/users';
+import instructorsRoutes from '@/routes/instructors';
+import unitsRoutes from '@/routes/units';
+import trainingAreasRoutes from '@/routes/trainingAreas';
+import agendaRoutes from '@/routes/agenda';
+import settingsRoutes from '@/routes/settings';
+// import packagesRoutes from '@/routes/packages';
 
 const server = Fastify({ logger: fastifyLoggerOptions });
 
@@ -55,6 +65,16 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
 
     await server.register(normalizePlugin(staticFiles, 'static'), { root: path.join(__dirname, '..', 'public'), prefix: '/' } as any);
+
+    // Debug hook to track response serialization
+    server.addHook('onSend', async (request, reply, payload) => {
+      if (request.url.includes('/api/attendance/student/')) {
+        console.log('🔧 onSend hook - URL:', request.url);
+        console.log('🔧 onSend hook - Payload type:', typeof payload);
+        console.log('🔧 onSend hook - Payload:', payload);
+      }
+      return payload;
+    });
 
     server.get('/health', async () => {
       try { await prisma.$queryRaw`SELECT 1`; return { status: 'healthy', timestamp: new Date().toISOString(), database: 'connected' }; }
@@ -73,6 +93,8 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(financialResponsibleRoutes, 'financialResponsibleRoutes'), { prefix: '/api/financial-responsible' } as any);
     await server.register(normalizePlugin(financialRoutes, 'financialRoutes'), { prefix: '/api/financial' } as any);
     await server.register(normalizePlugin(studentsRoutes, 'studentsRoutes'), { prefix: '/api/students' } as any);
+  // Student Courses sub-resource routes (activate/list/deactivate)
+  await server.register(normalizePlugin(studentCoursesRoutes, 'studentCoursesRoutes'), { prefix: '/api/students' } as any);
     await server.register(normalizePlugin(organizationsRoutes, 'organizationsRoutes'), { prefix: '/api/organizations' } as any);
     await server.register(normalizePlugin(activitiesRoutes, 'activitiesRoutes'), { prefix: '/api/activities' } as any);
     await server.register(normalizePlugin(asaasSimpleRoutes, 'asaasSimpleRoutes'), { prefix: '/api/asaas' } as any);
@@ -85,6 +107,15 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
     await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
     await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
+  await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);
+  await server.register(normalizePlugin(testRoutes, 'testRoutes'), { prefix: '/api' } as any);
+  await server.register(normalizePlugin(usersRoutes, 'usersRoutes'), { prefix: '/api/users' } as any);
+  await server.register(normalizePlugin(instructorsRoutes, 'instructorsRoutes'), { prefix: '/api/instructors' } as any);
+  await server.register(normalizePlugin(unitsRoutes, 'unitsRoutes'), { prefix: '/api/units' } as any);
+  await server.register(normalizePlugin(trainingAreasRoutes, 'trainingAreasRoutes'), { prefix: '/api/training-areas' } as any);
+  await server.register(normalizePlugin(agendaRoutes, 'agendaRoutes'), { prefix: '/api/agenda' } as any);
+  await server.register(normalizePlugin(settingsRoutes, 'settingsRoutes'), { prefix: '/api/settings' } as any);
+  // await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
 
     server.setErrorHandler(errorHandler);
 

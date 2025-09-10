@@ -231,8 +231,16 @@ class ApiClient {
     async parseResponse(response) {
         const contentType = response.headers.get('content-type');
         
+        console.log('🔧 parseResponse - Content-Type:', contentType);
+        
         if (contentType?.includes('application/json')) {
-            return await response.json();
+            const text = await response.text();
+            console.log('🔧 parseResponse - Raw text:', text);
+            
+            const json = JSON.parse(text);
+            console.log('🔧 parseResponse - Parsed JSON:', json);
+            
+            return json;
         }
         
         if (contentType?.includes('text/')) {
@@ -357,8 +365,8 @@ class ModuleAPIHelper {
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 this._setState(UI_STATES.EMPTY, { targetElement, onEmpty });
             } else {
-                // CORRIGIDO: Passar o resultado completo ao invés de apenas data
-                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data: result });
+                // Passar apenas os dados (data) ao callback onSuccess
+                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data: data });
             }
 
             return result;
@@ -410,13 +418,21 @@ class ModuleAPIHelper {
                 break;
 
             case UI_STATES.ERROR:
-                if (onError) onError(error);
-                if (targetElement) this._showError(targetElement, error);
+                if (onError) {
+                    onError(error);
+                    // If consumer handles error, don't overwrite with default UI
+                } else if (targetElement) {
+                    this._showError(targetElement, error);
+                }
                 break;
 
             case UI_STATES.EMPTY:
-                if (onEmpty) onEmpty();
-                if (targetElement) this._showEmpty(targetElement);
+                if (onEmpty) {
+                    onEmpty();
+                    // If consumer renders custom empty, skip default UI to avoid overwrite
+                } else if (targetElement) {
+                    this._showEmpty(targetElement);
+                }
                 break;
         }
     }
@@ -503,8 +519,25 @@ if (typeof window !== 'undefined') {
     window.UI_STATES = UI_STATES;
 
     // Helper factory para módulos
-    window.createModuleAPI = function(moduleName) {
-        return new ModuleAPIHelper(moduleName, apiClient);
+    window.createModuleAPI = function(moduleName, options = {}) {
+        const moduleAPI = new ModuleAPIHelper(moduleName, apiClient);
+        
+        // Se foram fornecidos headers padrão, override o método request
+        if (options.defaultHeaders) {
+            const originalRequest = moduleAPI.api.request.bind(moduleAPI.api);
+            moduleAPI.api.request = async function(method, url, data = null, requestOptions = {}) {
+                const mergedOptions = {
+                    ...requestOptions,
+                    headers: {
+                        ...options.defaultHeaders,
+                        ...requestOptions.headers
+                    }
+                };
+                return originalRequest(method, url, data, mergedOptions);
+            };
+        }
+        
+        return moduleAPI;
     };
 
     console.log('🌐 API Client carregado - Guidelines.MD compliance');

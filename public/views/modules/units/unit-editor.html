@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Unidade - Academia Krav Maga</title>
+    <link rel="stylesheet" href="/css/modules/unit-editor.css">
+</head>
+<body>
+    <div id="unit-editor-container" class="module-isolated-unit-editor">
+        <!-- Loading State -->
+        <div id="unit-editor-loading" class="loading-state" style="display: flex;">
+            <div class="loading-content">
+                <div class="spinner-premium"></div>
+                <h3>Carregando...</h3>
+                <p>Preparando editor de unidade</p>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="unit-editor-error" class="error-state" style="display: none;">
+            <div class="error-content">
+                <div class="error-icon">❌</div>
+                <h3>Erro ao carregar</h3>
+                <p id="error-message">Ocorreu um erro inesperado</p>
+                <button class="btn-primary-premium" onclick="window.location.reload()">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        </div>
+
+        <!-- Success State -->
+        <div id="unit-editor-success" class="success-state" style="display: none;">
+            <div class="success-content">
+                <div class="success-icon">✅</div>
+                <h3>Sucesso!</h3>
+                <p id="success-message">Unidade salva com sucesso!</p>
+                <div class="success-actions">
+                    <button class="btn-primary-premium" id="view-unit-btn">
+                        👁️ Ver Unidade
+                    </button>
+                    <button class="btn-secondary-premium" onclick="window.location.hash='#units'">
+                        📋 Voltar à Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="unit-editor-content" style="display: none;">
+            <div class="module-header-premium">
+                <div class="header-content">
+                    <nav class="breadcrumb-premium">
+                        <span class="breadcrumb-item">🏠 Academia</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-item" onclick="window.router.navigateTo('units')">🏢 Unidades</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-item active" id="editor-breadcrumb">Nova Unidade</span>
+                    </nav>
+                    <div class="title-section">
+                        <h1 id="editor-title">➕ Nova Unidade</h1>
+                        <p class="subtitle">Preencha as informações da unidade</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-secondary-premium" onclick="window.location.hash='#units'">
+                            ← Voltar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-content">
+                <!-- Tab Navigation -->
+                <div class="tabs-premium">
+                    <div class="tab-nav">
+                        <button class="tab-button active" data-tab="basic-info">
+                            📋 Informações Básicas
+                        </button>
+                        <button class="tab-button" data-tab="training-areas">
+                            🏃 Áreas de Treino
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Basic Info -->
+                <div id="tab-basic-info" class="tab-content active">
+                    <form id="unit-form" class="form-premium">
+                        <div class="form-section">
+                            <h3>🏫 Organização</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-organization">Organização *</label>
+                                    <select id="unit-organization" name="organizationId" required>
+                                        <option value="">Selecione a organização...</option>
+                                    </select>
+                                    <small class="field-help">A unidade pertencerá a esta organização</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>📋 Informações Básicas</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-name">Nome da Unidade *</label>
+                                    <input type="text" id="unit-name" name="name" required 
+                                           placeholder="Ex: Academia Centro, Filial Norte">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-address">Endereço *</label>
+                                    <input type="text" id="unit-address" name="address" required
+                                           placeholder="Rua, número, bairro">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="unit-city">Cidade *</label>
+                                    <input type="text" id="unit-city" name="city" required
+                                           placeholder="Nome da cidade">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-state">Estado *</label>
+                                    <input type="text" id="unit-state" name="state" required
+                                           placeholder="Ex: SP, RJ" maxlength="2">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="unit-zipcode">CEP *</label>
+                                    <input type="text" id="unit-zipcode" name="zipCode" required
+                                           placeholder="00000-000" maxlength="9">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>📞 Contato</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-phone">Telefone</label>
+                                    <input type="tel" id="unit-phone" name="phone" 
+                                           placeholder="(11) 99999-9999">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="unit-email">Email</label>
+                                    <input type="email" id="unit-email" name="email" 
+                                           placeholder="unidade@academia.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>⚙️ Configurações</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="unit-capacity">Capacidade</label>
+                                    <input type="number" id="unit-capacity" name="capacity" 
+                                           placeholder="100" min="1">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="unit-total-mats">Total de Tatames</label>
+                                    <input type="number" id="unit-total-mats" name="totalMats" 
+                                           placeholder="1" min="1">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="unit-active" name="isActive" checked>
+                                        <span class="checkmark"></span>
+                                        Unidade Ativa
+                                    </label>
+                                    <small class="form-help">Unidades inativas ficam ocultas do sistema</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary-premium" onclick="window.location.hash='#units'">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-primary-premium" id="save-unit-btn">
+                                💾 Salvar Unidade
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tab Content: Training Areas -->
+                <div id="tab-training-areas" class="tab-content">
+                    <div class="training-areas-container">
+                        <div class="section-header">
+                            <h3>🏃 Áreas de Treino</h3>
+                            <p class="section-description">Gerencie as áreas de treino desta unidade</p>
+                            <div class="header-actions">
+                                <button class="btn-primary-premium" id="add-training-area-btn">
+                                    ➕ Criar Área de Treino
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Training Areas List -->
+                        <div id="training-areas-list">
+                            <!-- Training areas will be loaded here -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="training-areas-empty" class="empty-state-premium" style="display: none;">
+                            <div class="empty-icon">🏃</div>
+                            <h3>Nenhuma área de treino cadastrada</h3>
+                            <p>Crie a primeira área de treino para esta unidade</p>
+                            <button class="btn-primary-premium" id="create-first-training-area-btn">
+                                ➕ Criar Área de Treino
+                            </button>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="training-areas-loading" class="loading-state-premium" style="display: none;">
+                            <div class="spinner-premium"></div>
+                            <p>Carregando áreas de treino...</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="training-areas-error" class="error-state-premium" style="display: none;">
+                            <div class="error-icon">❌</div>
+                            <h3>Erro ao carregar áreas</h3>
+                            <p id="training-areas-error-message">Ocorreu um erro inesperado</p>
+                            <button class="btn-secondary-premium" id="retry-training-areas-btn">
+                                � Tentar Novamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instrutores - Academia Krav Maga</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/modules/instructors.css">
+
+<!-- Header Premium -->
+<div class="module-header-premium">
+  <div class="breadcrumb-premium">
+    <span class="breadcrumb-item active">Instrutores</span>
+  </div>
+  <h1>👨‍🏫 Instrutores</h1>
+  <div class="header-actions">
+    <button id="add-instructor-btn" class="btn-primary">
+      <i class="fas fa-plus"></i>
+      Novo Instrutor
+    </button>
+  </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="module-filters-premium">
+  <div class="filter-group">
+    <div class="search-input-wrapper">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="instructor-search" placeholder="Buscar instrutores..." class="search-input">
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card-enhanced">
+    <div class="stat-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number" id="total-instructors">0</div>
+      <div class="stat-label">Total de Instrutores</div>
+    </div>
+  </div>
+
+  <div class="stat-card-enhanced">
+    <div class="stat-icon">
+      <i class="fas fa-user-check"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number" id="active-instructors">0</div>
+      <div class="stat-label">Instrutores Ativos</div>
+    </div>
+  </div>
+
+  <div class="stat-card-enhanced">
+    <div class="stat-icon">
+      <i class="fas fa-graduation-cap"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-number" id="certified-instructors">0</div>
+      <div class="stat-label">Certificados</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div id="module-content" class="module-content">
+  <!-- Loading State -->
+  <div class="module-isolated-loading-state">
+    <div class="module-isolated-spinner"></div>
+    <p>Carregando instrutores...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="module-isolated-empty-state" style="display: none;">
+    <div class="empty-icon-premium">
+      <i class="fas fa-user-slash"></i>
+    </div>
+    <h3>Nenhum instrutor encontrado</h3>
+    <p>Não há instrutores cadastrados no sistema.</p>
+    <button class="btn-primary" onclick="window.location.href='#/instructors/new'">
+      <i class="fas fa-plus"></i>
+      Adicionar Primeiro Instrutor
+    </button>
+  </div>
+
+  <!-- Error State -->
+  <div class="module-isolated-error-state" style="display: none;">
+    <div class="error-icon-premium">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3>Erro ao carregar instrutores</h3>
+    <p class="error-message">Não foi possível carregar os dados de instrutores.</p>
+    <button class="btn-primary" onclick="window.location.reload()">
+      Tentar Novamente
+    </button>
+  </div>
+
+  <!-- Data Table -->
+  <div class="data-card-premium">
+    <div class="data-card-header">
+      <h3>Lista de Instrutores</h3>
+      <div class="data-card-actions">
+        <button class="btn-icon" title="Atualizar" onclick="window.location.reload()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="data-card-content">
+      <table id="instructors-table" class="data-table-premium">
+        <thead>
+          <tr>
+            <th>Instrutor</th>
+            <th>Telefone</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="/js/shared/api-client.js"></script>
+<script src="/js/shared/utils.js"></script>
+<script src="/js/modules/instructors/controllers/InstructorsController.js"></script>

@@ -2,8 +2,153 @@ class SPARouter {
     constructor() {
         this.routes = {};
         this.currentModule = null;
+        this.isNavigating = false; // Add navigation lock
+        
+        // Global module state management
+        this.moduleStates = new Map();
+        this.initializingModules = new Set();
+        
         this.initEventListeners();
         this.navigateTo(this.getModuleFromHash() || 'dashboard');
+    }
+    
+    /**
+     * Get or initialize module state
+     */
+    getModuleState(moduleName) {
+        if (!this.moduleStates.has(moduleName)) {
+            this.moduleStates.set(moduleName, {
+                isInitialized: false,
+                isInitializing: false,
+                initPromise: null,
+                instance: null,
+                container: null,
+                lastError: null,
+                initCount: 0
+            });
+        }
+        return this.moduleStates.get(moduleName);
+    }
+    
+    /**
+     * Check if module is currently initializing
+     */
+    isModuleInitializing(moduleName) {
+        return this.initializingModules.has(moduleName);
+    }
+    
+    /**
+     * Mark module as initializing
+     */
+    markModuleInitializing(moduleName) {
+        console.log(`🔄 [Router] Marking ${moduleName} as initializing...`);
+        this.initializingModules.add(moduleName);
+        const state = this.getModuleState(moduleName);
+        state.isInitializing = true;
+        state.initCount++;
+    }
+    
+    /**
+     * Mark module initialization complete
+     */
+    markModuleInitialized(moduleName, instance = null) {
+        console.log(`✅ [Router] Marking ${moduleName} as initialized`);
+        this.initializingModules.delete(moduleName);
+        const state = this.getModuleState(moduleName);
+        state.isInitializing = false;
+        state.isInitialized = true;
+        state.instance = instance;
+        state.lastError = null;
+        state.initPromise = null;
+    }
+    
+    /**
+     * Mark module initialization failed
+     */
+    markModuleInitializationFailed(moduleName, error) {
+        console.error(`❌ [Router] Module ${moduleName} initialization failed:`, error);
+        this.initializingModules.delete(moduleName);
+        const state = this.getModuleState(moduleName);
+        state.isInitializing = false;
+        state.isInitialized = false;
+        state.instance = null;
+        state.lastError = error;
+        state.initPromise = null;
+    }
+    
+    /**
+     * Reset module state (for retry scenarios)
+     */
+    resetModuleState(moduleName) {
+        console.log(`🔄 [Router] Resetting state for ${moduleName}`);
+        this.initializingModules.delete(moduleName);
+        this.moduleStates.delete(moduleName);
+    }
+
+    /**
+     * Safe module initialization with concurrency protection
+     * Returns existing promise if module is initializing, or cached instance if already loaded
+     */
+    async safeModuleInitialization(moduleName, initializerFn) {
+        const state = this.getModuleState(moduleName);
+        
+        // 1. Check if already initialized - return cached instance
+        if (state.isInitialized && state.instance) {
+            console.log(`📋 [CACHE] Módulo ${moduleName} já inicializado, reutilizando...`);
+            
+            // Update header for cached modules
+            if (moduleName === 'students') {
+                document.querySelector('.module-header h1').textContent = 'Gestão de Estudantes';
+                document.querySelector('.breadcrumb').textContent = 'Home / Estudantes';
+                
+                // Reinitialize UI with cached instance
+                const container = document.getElementById('module-container');
+                if (typeof window.initStudentsModule === 'function') {
+                    await window.initStudentsModule(container);
+                }
+            }
+            
+            return state.instance;
+        }
+        
+        // 2. Check if currently initializing - return existing promise
+        if (state.initPromise) {
+            console.log(`📋 [CACHE] Módulo ${moduleName} já está carregando, aguardando...`);
+            return state.initPromise;
+        }
+        
+        // 3. Start new initialization
+        console.log(`📋 [NETWORK] Inicializando módulo ${moduleName}...`);
+        this.markModuleInitializing(moduleName);
+        
+        // Create and store initialization promise
+        state.initPromise = initializerFn()
+            .then(instance => {
+                this.markModuleInitialized(moduleName, instance);
+                return instance;
+            })
+            .catch(error => {
+                this.markModuleInitializationFailed(moduleName, error);
+                
+                // Show error in container
+                const container = document.getElementById('module-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro ao carregar módulo</h3>
+                            <p>${error.message}</p>
+                            <button onclick="router.resetModuleState('${moduleName}'); router.navigateTo('${moduleName}')" class="btn btn-primary">
+                                Tentar Novamente
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                throw error;
+            });
+        
+        return state.initPromise;
     }
 
     registerRoute(module, handler) {
@@ -59,9 +204,13 @@ class SPARouter {
                 css: 'css/modules/techniques.css',
                 js: 'js/modules/techniques.js'
             },
-            'plans': {
-                css: 'css/modules/plans.css',
-                js: 'js/modules/plans.js'
+            'packages': {
+                css: 'css/modules/packages.css',
+                js: 'js/modules/packages/index.js'
+            },
+            'package-editor': {
+                css: 'css/modules/packages.css',
+                js: 'js/modules/packages/index.js'
             },
             // FIX: plan-editor deve usar o editor de cobrança, não lesson-plans
             'plan-editor': {
@@ -95,6 +244,40 @@ class SPARouter {
             'rag': {
                 css: 'css/modules/rag/rag.css',
                 js: 'js/modules/rag/index.js'
+            },
+            'turmas': {
+                css: 'css/modules/turmas-consolidated.css',
+                js: 'js/modules/turmas-consolidated.js'
+            },
+            'organizations': {
+                css: 'css/modules/organizations/organizations.css',
+                js: 'js/modules/organizations/index.js'
+            },
+            'units': {
+                css: 'css/modules/units.css',
+                js: 'js/modules/units/index.js'
+            },
+            'unit-editor': {
+                css: 'css/modules/unit-editor.css'
+            },
+            'instructors': {
+                css: 'css/modules/instructors.css',
+                js: 'js/modules/instructors/index.js'
+            },
+            'instructor-editor': {
+                css: 'css/modules/instructor-editor.css'
+            },
+            'agenda': {
+                css: 'css/modules/agenda.css',
+                js: [
+                    'js/modules/agenda/services/agendaService.js',
+                    'js/modules/agenda/controllers/calendarController.js',
+                    'js/modules/agenda/index.js'
+                ]
+            },
+            'settings': {
+                css: 'css/modules/settings.css',
+                js: 'js/modules/settings.js'
             }
         };
 
@@ -219,9 +402,12 @@ router.registerRoute('dashboard', () => {
 });
 
 router.registerRoute('students', async () => {
-    console.log('📋 Carregando módulo de Estudantes...');
+    const moduleName = 'students';
     
-    try {
+    // Use promise-based concurrent protection
+    return router.safeModuleInitialization(moduleName, async () => {
+        console.log('📋 [NETWORK] Carregando módulo de Estudantes...');
+        
         // Update header
         document.querySelector('.module-header h1').textContent = 'Gestão de Estudantes';
         document.querySelector('.breadcrumb').textContent = 'Home / Estudantes';
@@ -231,61 +417,36 @@ router.registerRoute('students', async () => {
         
         // Check if module is available
         if (typeof window.initStudentsModule === 'function') {
-            await window.initStudentsModule(container);
+            const instance = await window.initStudentsModule(container);
+            return instance;
         } else {
-            // Load module dynamically
-            const moduleScript = document.createElement('script');
-            moduleScript.type = 'module';
-            moduleScript.src = 'js/modules/students/index.js';
-            
-            moduleScript.onload = async () => {
-                if (typeof window.initStudentsModule === 'function') {
-                    await window.initStudentsModule(container);
-                } else {
-                    console.error('❌ Módulo de estudantes não foi carregado corretamente');
-                    container.innerHTML = `
-                        <div class="error-state">
-                            <div class="error-icon">⚠️</div>
-                            <h3>Erro ao carregar módulo</h3>
-                            <p>O módulo de estudantes não pôde ser carregado.</p>
-                            <button onclick="location.reload()" class="btn btn-primary">
-                                Recarregar Página
-                            </button>
-                        </div>
-                    `;
-                }
-            };
-            
-            moduleScript.onerror = () => {
-                console.error('❌ Erro ao carregar script do módulo de estudantes');
-                container.innerHTML = `
-                    <div class="error-state">
-                        <div class="error-icon">⚠️</div>
-                        <h3>Erro de carregamento</h3>
-                        <p>Não foi possível carregar o módulo de estudantes.</p>
-                        <button onclick="location.reload()" class="btn btn-primary">
-                            Tentar Novamente
-                        </button>
-                    </div>
-                `;
-            };
-            
-            document.head.appendChild(moduleScript);
+            // Load module dynamically with promise
+            return new Promise((resolve, reject) => {
+                const moduleScript = document.createElement('script');
+                moduleScript.type = 'module';
+                moduleScript.src = 'js/modules/students/index.js';
+                
+                moduleScript.onload = async () => {
+                    try {
+                        if (typeof window.initStudentsModule === 'function') {
+                            const instance = await window.initStudentsModule(container);
+                            resolve(instance);
+                        } else {
+                            throw new Error('Module function not available after script load');
+                        }
+                    } catch (initError) {
+                        reject(initError);
+                    }
+                };
+                
+                moduleScript.onerror = () => {
+                    reject(new Error('Failed to load module script'));
+                };
+                
+                document.head.appendChild(moduleScript);
+            });
         }
-        
-    } catch (error) {
-        console.error('❌ Erro ao inicializar módulo de estudantes:', error);
-        document.getElementById('module-container').innerHTML = `
-            <div class="error-state">
-                <div class="error-icon">⚠️</div>
-                <h3>Erro na inicialização</h3>
-                <p>${error.message}</p>
-                <button onclick="location.reload()" class="btn btn-primary">
-                    Recarregar Página
-                </button>
-            </div>
-        `;
-    }
+    });
 });
 
 router.registerRoute('student-editor', () => {
@@ -322,55 +483,135 @@ router.registerRoute('student-editor', () => {
 });
 
 // Restaurar funcionalidade completa dos módulos
-router.registerRoute('billing', () => {
-    console.log('💰 Carregando módulo de Cobrança...');
+router.registerRoute('packages', () => {
+    console.log('� Carregando módulo Packages...');
     
-    // Carregar HTML do módulo de planos de cobrança
-    fetch('views/plans.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('module-container').innerHTML = html;
-            router.loadModuleAssets('plans');
-            
-            // Inicializar módulo após carregamento
-            const initInterval = setInterval(() => {
-                if (typeof window.initializePlansModule === 'function') {
-                    clearInterval(initInterval);
-                    
-                    const container = document.querySelector('#plansContainer') ||
-                                     document.querySelector('.module-isolated-container') ||
-                                     document.querySelector('.plans-isolated');
-                    
-                    console.log('💰 Plans container:', container);
-                    console.log('💰 initializePlansModule function exists:', typeof window.initializePlansModule === 'function');
-                    
-                    if (container) {
-                        try {
-                            console.log('💰 Initializing billing plans module...');
-                            window.initializePlansModule();
-                        } catch (err) {
-                            console.error('❌ Error initializing billing plans module:', err);
-                        }
-                    } else {
-                        console.error('❌ Billing plans container not found');
-                    }
+    try {
+        // Limpar container
+        const container = document.getElementById('module-container');
+        if (!container) {
+            console.error('❌ Container module-container não encontrado');
+            return;
+        }
+        
+        // Carregar assets do módulo
+        router.loadModuleAssets('packages');
+        
+        // Aguardar carregamento do módulo e inicializar
+        const initInterval = setInterval(() => {
+            if (typeof window.initializePackagesModule === 'function') {
+                clearInterval(initInterval);
+                
+                try {
+                    console.log('� Inicializando PackagesModule...');
+                    window.initializePackagesModule();
+                } catch (err) {
+                    console.error('❌ Erro ao inicializar PackagesModule:', err);
                 }
-            }, 100);
-        })
-        .catch(err => {
-            console.error('❌ Erro ao carregar módulo de cobrança:', err);
-            document.getElementById('module-container').innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Erro de carregamento</h3>
-                    <p>${err.message}</p>
-                    <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
-                </div>
-            `;
-        });
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar módulo Packages:', error);
+        document.getElementById('module-container').innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro de carregamento</h3>
+                <p>${error.message}</p>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+            </div>
+        `;
+    }
+});
+
+router.registerRoute('package-editor', () => {
+    console.log('📝 Carregando editor de pacote...');
     
-    document.querySelector('.module-header h1').textContent = 'Planos de Cobrança';
-    document.querySelector('.breadcrumb').textContent = 'Home / Cobrança';
+    // Extract package ID from hash if present
+    const hashParts = location.hash.split('/');
+    const packageId = hashParts[1] || null;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = packageId ? 'Editar Pacote' : 'Novo Pacote';
+    document.querySelector('.breadcrumb').textContent = 'Home / Pacotes / Editor';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    try {
+        router.loadModuleAssets('package-editor');
+        
+        setTimeout(() => {
+            if (typeof window.initializePackagesModule === 'function') {
+                try {
+                    console.log('📝 Inicializando PackageEditor...');
+                    window.initializePackagesModule();
+                    
+                    // Open package editor
+                    if (window.packagesModule && typeof window.packagesModule.openPackageEditor === 'function') {
+                        window.packagesModule.openPackageEditor(packageId, container);
+                    } else {
+                        console.error('❌ Editor de pacotes não disponível');
+                        container.innerHTML = `
+                            <div class="error-state">
+                                <div class="error-icon">⚠️</div>
+                                <h3>Editor não disponível</h3>
+                                <p>O editor de pacotes não foi carregado.</p>
+                                <button onclick="router.navigateTo('packages')" class="btn btn-primary">Voltar aos Pacotes</button>
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    console.error('❌ Erro ao inicializar PackageEditor:', err);
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro de inicialização</h3>
+                            <p>${err.message}</p>
+                            <button onclick="router.navigateTo('packages')" class="btn btn-primary">Voltar aos Pacotes</button>
+                        </div>
+                    `;
+                }
+            } else {
+                console.error('❌ PackagesModule não encontrado');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Módulo não encontrado</h3>
+                        <p>O módulo de pacotes não foi carregado.</p>
+                        <button onclick="router.navigateTo('packages')" class="btn btn-primary">Voltar aos Pacotes</button>
+                    </div>
+                `;
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar editor de pacotes:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro de carregamento</h3>
+                <p>${error.message}</p>
+                <button onclick="router.navigateTo('packages')" class="btn btn-primary">Voltar aos Pacotes</button>
+            </div>
+        `;
+    }
+});
+
+// Legacy routes redirect para packages
+router.registerRoute('billing', () => {
+    console.log('🔄 Redirecionando /billing → /packages');
+    router.navigateTo('packages');
+});
+
+router.registerRoute('plans', () => {
+    console.log('🔄 Redirecionando /plans → /packages');
+    router.navigateTo('packages');
+});
+
+router.registerRoute('financial', () => {
+    console.log('🔄 Redirecionando /financial → /packages');
+    router.navigateTo('packages');
 });
 
 router.registerRoute('courses', () => {
@@ -476,18 +717,30 @@ router.registerRoute('activity-editor', () => {
     // Extrair ID da atividade do hash (padrão: #activity-editor/<id>)
     const parts = (location.hash || '').split('/');
     const activityId = parts[1] && parts[1] !== 'activity-editor' ? decodeURIComponent(parts[1]) : null;
+    
+    console.log('🔍 Hash parts:', parts);
+    console.log('🔍 Activity ID extracted:', activityId);
 
     // Garantir que o script do editor que usa window.location.search receba o ID
     try {
         const u = new URL(window.location.href);
+        console.log('🔍 Current URL before update:', u.toString());
+        
         if (activityId) {
-            u.searchParams.set('id', activityId);
+            u.searchParams.set('activityId', activityId);  // Use activityId instead of id
+            console.log('🔍 Setting search param activityId to:', activityId);
         } else {
-            u.searchParams.delete('id');
+            u.searchParams.delete('activityId');
         }
+        
+        console.log('🔍 Updated URL:', u.toString());
+        
         // Não alterar o hash ao atualizar a busca
         history.replaceState(null, '', u.toString());
-    } catch (e) { console.warn('Não foi possível ajustar URL search param para activityId', e); }
+        console.log('✅ URL updated with search params');
+    } catch (e) { 
+        console.warn('Não foi possível ajustar URL search param para activityId', e); 
+    }
 
     // Atualizar header/breadcrumb
     document.querySelector('.module-header h1').textContent = activityId ? 'Editar Atividade' : 'Nova Atividade';
@@ -882,4 +1135,822 @@ router.registerRoute('rag', () => {
     // Update header
     document.querySelector('.module-header h1').textContent = 'RAG Knowledge System';
     document.querySelector('.breadcrumb').textContent = 'Home / RAG System';
+});
+
+// Turmas Module Route
+router.registerRoute('turmas', () => {
+    // Prevent multiple rapid calls
+    if (router.isNavigating) {
+        console.log('👥 Navigation already in progress, ignoring...');
+        return;
+    }
+    
+    console.log('👥 Carregando módulo Turmas...');
+    router.isNavigating = true;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Gestão de Turmas';
+    document.querySelector('.breadcrumb').textContent = 'Home / Turmas';
+    
+    // Clear module container first
+    const moduleContainer = document.getElementById('module-container');
+    moduleContainer.innerHTML = '<div id="turmasContainer" class="turmas-container"></div>';
+    
+    // Load module assets (CSS and JS)
+    router.loadModuleAssets('turmas');
+    
+    // Wait for assets and initialize
+    setTimeout(() => {
+        if (typeof window.initializeTurmasModule === 'function') {
+            window.initializeTurmasModule().then(() => {
+                router.isNavigating = false;
+            }).catch(error => {
+                router.isNavigating = false;
+                console.error('❌ Error initializing turmas:', error);
+                moduleContainer.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro de inicialização</h3>
+                        <p>${error.message}</p>
+                        <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                    </div>
+                `;
+            });
+        } else {
+            router.isNavigating = false;
+            console.error('❌ initializeTurmasModule not found');
+            moduleContainer.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não encontrado</h3>
+                    <p>Função de inicialização não disponível.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
+                </div>
+            `;
+        }
+    }, 200);
+});
+
+// Turma Editor Route
+router.registerRoute('turma-editor', () => {
+    console.log('📝 Carregando editor de turma...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Editor de Turma';
+    document.querySelector('.breadcrumb').textContent = 'Home / Turmas / Editor';
+    
+    const moduleContainer = document.getElementById('module-container');
+    
+    // Extract turma ID from hash if available
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParts = window.location.hash.slice(1).split('/');
+    const turmaId = hashParts[1] || urlParams.get('id');
+    
+    // Load turma editor HTML
+    fetch('/views/modules/turmas/turma-editor.html')
+        .then(response => response.text())
+        .then(html => {
+            moduleContainer.innerHTML = html;
+
+            // Helper to load scripts in order
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+                    const s = document.createElement('script');
+                    s.src = src;
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.body.appendChild(s);
+                });
+            }
+
+            // Load courses.js first, then turma-editor.js. If the module version doesn't expose the
+            // picker in time, try loading the legacy top-level /js/courses.js as a fallback so
+            // other modules that expect window.openCoursePicker can function reliably.
+            loadScript('/js/modules/courses.js').then(() => {
+                // If the shared picker wasn't exposed by the modules file, attempt to load the
+                // top-level courses.js as a fallback. This helps environments where one path
+                // is present but the other is used by legacy code.
+                return new Promise((resolve) => {
+                    // Small grace period for the module to run and expose globals
+                    setTimeout(() => {
+                        if (window.openCoursePicker) {
+                            resolve();
+                        } else {
+                            // Try loading the legacy script; ignore errors and continue
+                            loadScript('/js/courses.js').then(() => resolve()).catch(() => resolve());
+                        }
+                    }, 50);
+                });
+            }).then(() => {
+                loadScript('/js/modules/turmas/turma-editor.js').then(() => {
+                    console.log('✅ Turma editor script loaded');
+                    
+                    // Wait a bit for the module to initialize
+                    setTimeout(() => {
+                        // Initialize turma editor
+                        if (typeof window.turmaEditor === 'object' && window.turmaEditor.initialize) {
+                            window.turmaEditor.initialize(turmaId).catch(error => {
+                                console.error('❌ Error initializing turma editor:', error);
+                            });
+                        } else if (typeof window.initializeTurmaEditor === 'function') {
+                            window.initializeTurmaEditor(turmaId).catch(error => {
+                                console.error('❌ Error initializing turma editor:', error);
+                            });
+                        } else {
+                            console.error('❌ Turma editor initialization function not found');
+                        }
+                    }, 100); // Small delay to allow module initialization
+                }).catch(() => {
+                    console.error('❌ Error loading turma editor script');
+                    moduleContainer.innerHTML = `
+                        <div class="error-container">
+                            <h3>Erro ao carregar editor</h3>
+                            <p>Não foi possível carregar o script do editor de turma.</p>
+                            <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
+                        </div>
+                    `;
+                });
+            }).catch(() => {
+                console.error('❌ Error loading courses.js script');
+                moduleContainer.innerHTML = `
+                    <div class="error-container">
+                        <h3>Erro ao carregar dependências</h3>
+                        <p>Não foi possível carregar o seletor de cursos (courses.js).</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => {
+            console.error('❌ Error loading turma editor HTML:', error);
+            moduleContainer.innerHTML = `
+                <div class="error-container">
+                    <h3>Erro ao carregar editor</h3>
+                    <p>Não foi possível carregar a interface do editor de turma.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
+                </div>
+            `;
+        });
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Editor de Turma';
+    document.querySelector('.breadcrumb').textContent = 'Home / Turmas / Editor';
+});
+
+// Organizations Module Routes
+router.registerRoute('organizations', async () => {
+    // Prevent multiple rapid calls
+    if (router.isNavigating) {
+        console.log('🏫 Navigation already in progress, ignoring organizations...');
+        return;
+    }
+    
+    console.log('🏫 Carregando módulo de Organizações...');
+    router.isNavigating = true;
+    
+    try {
+        // Update header
+        document.querySelector('.module-header h1').textContent = 'Gestão de Organizações';
+        document.querySelector('.breadcrumb').textContent = 'Home / Organizações';
+        
+        // Get target container
+        const container = document.getElementById('module-container');
+        
+        // Check if module is available
+        if (typeof window.initOrganizationsModule === 'function') {
+            window.organizationsModuleInitialized = true;
+            await window.initOrganizationsModule(container);
+            router.isNavigating = false;
+        } else {
+            // Load module dynamically
+            const moduleScript = document.createElement('script');
+            moduleScript.type = 'module';
+            moduleScript.src = 'js/modules/organizations/index.js';
+            
+            moduleScript.onload = async () => {
+                if (typeof window.initOrganizationsModule === 'function') {
+                    window.organizationsModuleInitialized = true;
+                    await window.initOrganizationsModule(container);
+                    router.isNavigating = false;
+                } else {
+                    router.isNavigating = false;
+                    console.error('❌ Módulo de organizações não foi carregado corretamente');
+                    container.innerHTML = `
+                        <div class="error-state-premium">
+                            <div class="error-icon">❌</div>
+                            <h3>Erro ao carregar organizações</h3>
+                            <p>O módulo de organizações não foi carregado corretamente</p>
+                            <button class="btn-primary-premium" onclick="window.location.reload()">
+                                🔄 Recarregar Página
+                            </button>
+                        </div>
+                    `;
+                }
+            };
+            
+            moduleScript.onerror = () => {
+                router.isNavigating = false;
+                console.error('❌ Erro ao carregar script do módulo de organizações');
+                container.innerHTML = `
+                    <div class="error-state-premium">
+                        <div class="error-icon">❌</div>
+                        <h3>Erro ao carregar organizações</h3>
+                        <p>Não foi possível carregar o script do módulo</p>
+                        <button class="btn-primary-premium" onclick="window.location.reload()">
+                            🔄 Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(moduleScript);
+        }
+        
+    } catch (error) {
+        router.isNavigating = false;
+        console.error('❌ Erro ao carregar módulo de organizações:', error);
+        const container = document.getElementById('module-container');
+        container.innerHTML = `
+            <div class="error-state-premium">
+                <div class="error-icon">❌</div>
+                <h3>Erro ao carregar organizações</h3>
+                <p>${error.message}</p>
+                <button class="btn-primary-premium" onclick="window.location.reload()">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        `;
+    }
+});
+
+// Units Module Routes
+router.registerRoute('units', async () => {
+    console.log('🏢 Carregando módulo de Unidades...');
+    
+    try {
+        // Update header
+        document.querySelector('.module-header h1').textContent = 'Gestão de Unidades';
+        document.querySelector('.breadcrumb').textContent = 'Home / Unidades';
+        
+        // Get target container and ensure clean state per AGENTS.md modular isolation
+        const container = document.getElementById('module-container');
+        if (container) {
+            // Clean only when not already hosting instructors content to avoid wiping fresh render
+            const alreadyScoped = container.querySelector('#module-content.module-isolated-instructors');
+            if (!alreadyScoped) {
+                container.innerHTML = '';
+                container.className = 'module-content';
+                container.removeAttribute('data-module');
+            }
+        }
+        
+        // Check if module is available
+        if (typeof window.initUnitsModule === 'function') {
+            await window.initUnitsModule(container);
+        } else {
+            // Load module dynamically
+            const moduleScript = document.createElement('script');
+            moduleScript.type = 'module';
+            moduleScript.src = 'js/modules/units/index.js';
+            
+            moduleScript.onload = async () => {
+                if (typeof window.initUnitsModule === 'function') {
+                    await window.initUnitsModule(container);
+                } else {
+                    console.error('❌ Módulo de unidades não foi carregado corretamente');
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro ao carregar módulo</h3>
+                            <p>O módulo de unidades não pôde ser carregado.</p>
+                            <button onclick="location.reload()" class="btn btn-primary">
+                                Recarregar Página
+                            </button>
+                        </div>
+                    `;
+                }
+            };
+            
+            moduleScript.onerror = () => {
+                console.error('❌ Erro ao carregar script do módulo de unidades');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro de carregamento</h3>
+                        <p>Não foi possível carregar o módulo de unidades.</p>
+                        <button onclick="location.reload()" class="btn btn-primary">
+                            Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(moduleScript);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de unidades:', error);
+        document.getElementById('module-container').innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+router.registerRoute('unit-editor', () => {
+    console.log('📝 Carregando editor de unidade...');
+    
+    // Extract unit ID from hash if present
+    const hashParts = location.hash.split('/');
+    const unitId = hashParts[1] || null;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = unitId ? 'Editar Unidade' : 'Nova Unidade';
+    document.querySelector('.breadcrumb').textContent = 'Home / Unidades / Editor';
+    
+    // Load unit editor HTML
+    fetch('views/modules/units/unit-editor.html')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('module-container').innerHTML = html;
+            
+            // Load CSS
+            if (!document.querySelector('link[href="css/modules/units.css"]')) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = 'css/modules/units.css';
+                document.head.appendChild(cssLink);
+            }
+            
+            if (!document.querySelector('link[href="css/modules/unit-editor.css"]')) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = 'css/modules/unit-editor.css';
+                document.head.appendChild(cssLink);
+            }
+            
+            // Load JavaScript
+            if (!document.querySelector('script[src="js/modules/units/unit-editor.js"]')) {
+                const script = document.createElement('script');
+                script.src = 'js/modules/units/unit-editor.js';
+                script.type = 'application/javascript';
+                script.onload = () => {
+                    // Initialize the unit editor after script loads
+                    setTimeout(() => {
+                        if (window.unitEditor && window.unitEditor.initialize) {
+                            window.unitEditor.initialize(unitId);
+                        } else {
+                            console.error('❌ Unit editor functions not found');
+                        }
+                    }, 100);
+                };
+                document.head.appendChild(script);
+            } else {
+                // Script already loaded, just initialize
+                setTimeout(() => {
+                    if (window.unitEditor && window.unitEditor.initialize) {
+                        window.unitEditor.initialize(unitId);
+                    } else {
+                        console.error('❌ Unit editor functions not found');
+                    }
+                }, 100);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erro ao carregar editor de unidade:', error);
+            document.getElementById('module-container').innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao carregar editor</h3>
+                    <p>Não foi possível carregar o editor de unidades.</p>
+                    <button onclick="router.navigateTo('units')" class="btn btn-primary">
+                        Voltar às Unidades
+                    </button>
+                </div>
+            `;
+        });
+});
+
+// Instructors Module Routes
+router.registerRoute('instructors', async () => {
+    console.log('👨‍🏫 Carregando módulo de Instrutores...');
+    
+    try {
+        // Update header
+        document.querySelector('.module-header h1').textContent = 'Gestão de Instrutores';
+        document.querySelector('.breadcrumb').textContent = 'Home / Instrutores';
+        
+        // Get target container and ensure clean state per AGENTS.md modular isolation
+        const container = document.getElementById('module-container');
+        if (container) {
+            // Aggressive container cleaning to ensure modular isolation
+            container.innerHTML = '';
+            container.className = 'module-content';
+            container.removeAttribute('data-module');
+            // Remove any stuck CSS classes
+            container.removeAttribute('style');
+            // Force cleanup of any embedded content
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+    // Ensure assets are loaded (CSS/JS) per module registry
+    try { router.loadModuleAssets && router.loadModuleAssets('instructors'); } catch(_) {}
+
+    // Check if module is available
+        if (typeof window.initInstructorsModule === 'function') {
+            await window.initInstructorsModule(container);
+        } else {
+            // Load all module files directly in the HTML head to ensure they're available
+            const scriptsToLoad = [
+                'js/modules/instructors/services/InstructorsService.js',
+                'js/modules/instructors/views/InstructorsListView.js', 
+                'js/modules/instructors/controllers/InstructorsController.js',
+                'js/modules/instructors/index.js'
+            ];
+            
+            // Check if scripts are already loaded
+            const alreadyLoaded = scriptsToLoad.every(src => {
+                return Array.from(document.scripts).some(script => script.src.includes(src));
+            });
+            
+            if (!alreadyLoaded) {
+                console.log('Loading instructors module scripts...');
+                for (const src of scriptsToLoad) {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    document.head.appendChild(script);
+                }
+                
+                // Wait a bit for scripts to load
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Try to initialize
+            let retries = 0;
+            while (retries < 10) {
+                if (typeof window.initInstructorsModule === 'function') {
+                    await window.initInstructorsModule(container);
+                    break;
+                } else {
+                    console.log(`Waiting for initInstructorsModule... attempt ${retries + 1}`);
+                    retries++;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            
+            if (retries >= 10) {
+                console.error('❌ Módulo de instrutores não foi carregado corretamente após múltiplas tentativas');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro ao carregar módulo</h3>
+                        <p>O módulo de instrutores não pôde ser carregado após múltiplas tentativas.</p>
+                        <button onclick="location.reload()" class="btn btn-primary">
+                            Recarregar Página
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de instrutores:', error);
+        document.getElementById('module-container').innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+router.registerRoute('instructor-editor', () => {
+    console.log('📝 Carregando editor de instrutor...');
+    
+    // Extract instructor ID from hash if present
+    const hashParts = location.hash.split('/');
+    const instructorId = hashParts[1] || null;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = instructorId ? 'Editar Instrutor' : 'Novo Instrutor';
+    document.querySelector('.breadcrumb').textContent = 'Home / Instrutores / Editor';
+    
+    // Load instructor editor HTML
+    fetch('views/modules/instructors/instructor-editor.html')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('module-container').innerHTML = html;
+            
+            // Load CSS
+            if (!document.querySelector('link[href="css/modules/instructors.css"]')) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = 'css/modules/instructors.css';
+                document.head.appendChild(cssLink);
+            }
+            
+            if (!document.querySelector('link[href="css/modules/instructor-editor.css"]')) {
+                const cssLink = document.createElement('link');
+                cssLink.rel = 'stylesheet';
+                cssLink.href = 'css/modules/instructor-editor.css';
+                document.head.appendChild(cssLink);
+            }
+            
+            // Load JavaScript
+            if (!document.querySelector('script[src="js/modules/instructors/instructor-editor.js"]')) {
+                const script = document.createElement('script');
+                script.src = 'js/modules/instructors/instructor-editor.js';
+                script.type = 'application/javascript';
+                document.head.appendChild(script);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erro ao carregar editor de instrutor:', error);
+            document.getElementById('module-container').innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao carregar editor</h3>
+                    <p>Não foi possível carregar o editor de instrutores.</p>
+                    <button onclick="router.navigateTo('instructors')" class="btn btn-primary">
+                        Voltar aos Instrutores
+                    </button>
+                </div>
+            `;
+        });
+});
+
+// Frequency Module Route
+router.registerRoute('frequency', async () => {
+    console.log('📊 Carregando módulo de Frequência...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Gestão de Frequência';
+    document.querySelector('.breadcrumb').textContent = 'Home / Frequência';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    try {
+        // Check if initialization function is available
+        if (typeof window.initFrequencyModule === 'function') {
+            await window.initFrequencyModule(container);
+        } else {
+            // Wait for module to load and try again
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (!window.initFrequencyModule && attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+            
+            if (window.initFrequencyModule) {
+                await window.initFrequencyModule(container);
+            } else {
+                throw new Error('Módulo de frequência não foi carregado após 10 segundos');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de frequência:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+// Check-in Kiosk Route
+router.registerRoute('checkin-kiosk', () => {
+    console.log('🖥️ Redirecionando para Kiosk de Check-in...');
+    
+    // Redirect to standalone kiosk page
+    window.open('/views/checkin-kiosk.html', '_blank');
+    
+    // Show info in current page
+    const container = document.getElementById('module-container');
+    container.innerHTML = `
+        <div class="kiosk-redirect-info">
+            <div class="kiosk-icon">🖥️</div>
+            <h2>Kiosk de Check-in</h2>
+            <p>O kiosk foi aberto em uma nova janela/aba.</p>
+            <div class="kiosk-features">
+                <h3>Funcionalidades do Kiosk:</h3>
+                <ul>
+                    <li>✅ Busca por matrícula</li>
+                    <li>📊 Dashboard do aluno</li>
+                    <li>📅 Aulas disponíveis</li>
+                    <li>⚡ Check-in rápido</li>
+                    <li>📱 Interface touch-friendly</li>
+                </ul>
+            </div>
+            <div class="kiosk-actions">
+                <button onclick="window.open('/views/checkin-kiosk.html', '_blank')" class="btn btn-primary">
+                    🖥️ Abrir Kiosk Novamente
+                </button>
+                <button onclick="router.navigateTo('frequency')" class="btn btn-secondary">
+                    📊 Ir para Frequência
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Kiosk de Check-in';
+    document.querySelector('.breadcrumb').textContent = 'Home / Frequência / Kiosk';
+});
+
+// Import Module Route
+router.registerRoute('import', async () => {
+    console.log('🔄 Inicializando módulo de importação...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando módulo de importação...</p>
+        </div>
+    `;
+
+    try {
+        // Verificar se o módulo está disponível
+        if (typeof window.initImportModule === 'function') {
+            await window.initImportModule(container);
+            console.log('✅ Módulo de importação inicializado com sucesso');
+        } else {
+            console.log('⏳ Aguardando carregamento do módulo de importação...');
+            
+            // Aguardar até 10 segundos pelo carregamento do módulo
+            let attempts = 0;
+            const maxAttempts = 100; // 10 segundos (100 * 100ms)
+            
+            while (!window.initImportModule && attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (window.initImportModule) {
+                await window.initImportModule(container);
+                console.log('✅ Módulo de importação inicializado com sucesso (após aguardar)');
+            } else {
+                throw new Error('Módulo de importação não foi carregado após 10 segundos');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de importação:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+// Agenda Module Route
+router.registerRoute('agenda', async () => {
+    console.log('🔄 Inicializando módulo de agenda...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container first
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando agenda...</p>
+        </div>
+    `;
+
+    try {
+        // Load module assets
+        router.loadModuleAssets('agenda');
+        
+        // Wait for module to be available
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds (100 * 100ms)
+        
+        while (!window.agendaModule && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.agendaModule) {
+            // Initialize agenda module
+            await window.agendaModule.initialize();
+            
+            // Clear container and show agenda
+            container.innerHTML = '';
+            await window.agendaModule.onShow();
+            
+            console.log('✅ Módulo de agenda inicializado com sucesso');
+        } else {
+            throw new Error('Módulo de agenda não foi carregado após 10 segundos');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de agenda:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na Agenda</h3>
+                <p>Falha ao carregar o módulo de agenda: ${error.message}</p>
+                <button onclick="router.navigateTo('agenda')" class="btn btn-primary">
+                    🔄 Tentar Novamente
+                </button>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-secondary">
+                    🏠 Voltar ao Dashboard
+                </button>
+            </div>
+        `;
+    }
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Agenda';
+    document.querySelector('.breadcrumb').textContent = 'Home / Agenda';
+});
+
+// Settings Module Route
+router.registerRoute('settings', async () => {
+    console.log('⚙️ Carregando módulo de Configurações...');
+
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Configurações';
+    document.querySelector('.breadcrumb').textContent = 'Home / Configurações';
+
+    const container = document.getElementById('module-container');
+    if (!container) return;
+    container.innerHTML = '<div class="settings-loading"><div class="loading-spinner">⚙️</div><p>Carregando configurações...</p></div>';
+
+    try {
+        // Load HTML view
+        const resp = await fetch('views/settings.html');
+        const html = await resp.text();
+
+        // Extract isolated content if full HTML was returned
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const isolated = tmp.querySelector('.settings-isolated');
+        container.innerHTML = '';
+        if (isolated) {
+            container.appendChild(isolated);
+        } else {
+            // Fallback: inject as-is
+            container.innerHTML = html;
+        }
+
+        // Ensure assets
+        router.loadModuleAssets('settings');
+
+        // Initialize module
+        const tryInit = (attempts = 0) => {
+            if (typeof window.loadSettings === 'function') {
+                try { window.loadSettings(); } catch (e) { console.error('settings init error', e); }
+            } else if (attempts < 30) {
+                setTimeout(() => tryInit(attempts + 1), 150);
+            }
+        };
+        tryInit();
+    } catch (error) {
+        console.error('❌ Erro ao carregar Configurações:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro ao carregar configurações</h3>
+                <p>${error && error.message ? error.message : 'Tente novamente'}</p>
+            </div>
+        `;
+    }
 });

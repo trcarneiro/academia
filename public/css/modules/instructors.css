@@ -1,8 +1,29 @@
 ﻿/* ==========================================
-   INSTRUCTORS MODULE - ISOLATED CSS
+   INSTRUCTORS MODULE - PREMIUM STYLING
    ========================================== */
 
 /* Instructors Container */
+.module-isolated-instructors {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --primary-color: #667eea;
+  --secondary-color: #764ba2;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --color-surface: #ffffff;
+  --color-background: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-text: #1f2937;
+  --color-text-muted: #6b7280;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --shadow-premium: 0 4px 20px rgba(102, 126, 234, 0.15);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
 .instructors-isolated {
     max-width: 1200px;
     margin: 0 auto;
@@ -22,7 +43,7 @@
 }
 
 .instructors-isolated .instructors-header h2 {
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
@@ -125,7 +146,7 @@
 .instructors-isolated .instructor-filter:hover,
 .instructors-isolated .instructor-sort:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--color-background);
+    color: var(--color-text);
 }
 
 .instructors-isolated .instructor-filter.active,
@@ -146,7 +167,7 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
@@ -237,7 +258,7 @@
 }
 
 .instructors-isolated .instructor-info h3 {
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;

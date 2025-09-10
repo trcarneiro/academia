@@ -31,30 +31,60 @@ export class StudentsListController {
         console.log('📋 Renderizando lista de estudantes...');
         
         try {
-            // Show loading state
-            this.showLoadingState(container);
-            
-            // Load template
+            // Ensure premium module styles are loaded
+            this.ensureStyles();
+
+            // Load template first
             await this.loadTemplate(container);
 
             // Mark container for Design System validator
             container.classList.add('module-isolated-container');
             container.setAttribute('data-module', 'students');
             
-            // Load students data
-            await this.loadStudents();
-            
-            // Render current view
-            this.renderCurrentView();
-            
-            // Initialize filters
+            // Initialize filters + connect callback
             this.filters.init(container);
+            this.filters.setFilterChangeCallback((searchTerm, filters) => {
+                this.filterStudents(searchTerm, filters);
+            });
+            
+            // Bind view toggle buttons (premium UI)
+            this.bindViewToggle();
+            
+            // Ensure global retry is available
+            window.reloadStudents = () => this.reload();
+            
+            // Show loading state immediately
+            this.showLoading();
+
+            // Load students data using ModuleAPIHelper.fetchWithStates (AGENTS.md)
+            await this.api.fetchWithStates('/api/students', {
+                loadingElement: this.elements.loadingState || this.elements.container,
+                onSuccess: (data) => {
+                    this.students = Array.isArray(data) ? data : (data?.items || []);
+                    this.filteredStudents = [...this.students];
+                    this.showContent();
+                    this.renderCurrentView();
+                    this.updateResultsCount();
+                },
+                onEmpty: () => {
+                    this.students = [];
+                    this.filteredStudents = [];
+                    this.renderCurrentView();
+                    this.updateResultsCount();
+                    this.showEmpty();
+                },
+                onError: (error) => {
+                    this.showError(error?.message || 'Falha ao carregar estudantes');
+                    window.app?.handleError?.(error, 'Students:list');
+                }
+            });
             
             console.log('✅ Lista de estudantes renderizada');
             
         } catch (error) {
             console.error('❌ Erro ao renderizar lista:', error);
             this.showErrorState(container, error.message);
+            try { window.app?.handleError?.(error, 'Students:list:render'); } catch (_) {}
         }
     }
 
@@ -78,29 +108,29 @@ export class StudentsListController {
             searchInput: container.querySelector('#students-search'),
             viewToggle: container.querySelector('#view-toggle'),
             addButton: container.querySelector('#add-student-btn'),
-            loadingState: container.querySelector('.loading-state'),
-            errorState: container.querySelector('.error-state')
+            loadingState: container.querySelector('#loading-state') || container.querySelector('.loading-state'),
+            emptyState: container.querySelector('#empty-state') || container.querySelector('.empty-state'),
+            errorState: container.querySelector('#error-state') || container.querySelector('.error-state'),
+            contentArea: container.querySelector('.content-area')
         };
+
+        // Bind export action
+        window.exportStudents = () => this.exportStudents();
+        
+        // Bind clear filters button if present
+        const clearBtn = container.querySelector('#clear-filters-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.filters.reset();
+            });
+        }
     }
 
     /**
      * Load students from API
      */
-    async loadStudents() {
-        this.isLoading = true;
-        
-        try {
-            this.students = await this.service.getStudents();
-            this.filteredStudents = [...this.students];
-            this.updateResultsCount();
-            
-        } catch (error) {
-            console.error('❌ Erro ao carregar estudantes:', error);
-            throw error;
-        } finally {
-            this.isLoading = false;
-        }
-    }
+    // loadStudents now handled by fetchWithStates in render()
 
     /**
      * Render current view (table or grid)
@@ -131,10 +161,13 @@ export class StudentsListController {
         this.currentView = view;
         this.renderCurrentView();
         
-        // Update toggle buttons
-        const buttons = this.elements.viewToggle.querySelectorAll('button');
-        buttons.forEach(btn => btn.classList.remove('active'));
-        this.elements.viewToggle.querySelector(`[data-view="${view}"]`).classList.add('active');
+        // Update toggle buttons (fallback if #view-toggle is missing)
+        try {
+            const container = this.elements.container || document;
+            const buttons = container.querySelectorAll('.view-controls .view-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            container.querySelector(`.view-controls .view-btn[data-view="${view}"]`)?.classList.add('active');
+        } catch (_) { /* noop */ }
     }
 
     /**
@@ -209,13 +242,63 @@ export class StudentsListController {
     }
 
     /**
+     * Handle open import module
+     */
+    onOpenImport() {
+        console.log('📥 Abrindo módulo de importação');
+        
+        // Navegar para o módulo de importação usando o SPA router
+        if (window.navigateTo) {
+            window.navigateTo('import');
+        } else if (window.location) {
+            window.location.hash = '#import';
+        }
+    }
+
+    /**
      * Bind event listeners
      */
     bindEvents() {
         // Make methods available globally for HTML onclick handlers
         window.selectStudent = (id) => this.onStudentSelect(id);
         window.addNewStudent = () => this.onAddStudent();
+        window.openImportModule = () => this.onOpenImport();
         window.switchStudentsView = (view) => this.switchView(view);
+    }
+
+    /**
+     * Ensure module CSS is loaded (premium + responsive)
+     */
+    ensureStyles() {
+        const head = document.head || document.getElementsByTagName('head')[0];
+        const ensureLink = (href) => {
+            if (!document.querySelector(`link[href="${href}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                head.appendChild(link);
+            }
+        };
+        // Design tokens (usually global, but ensure)
+        ensureLink('/css/design-system/tokens.css');
+        // Students premium styles
+        ensureLink('/css/modules/students-enhanced.css');
+        ensureLink('/css/modules/students.css');
+        ensureLink('/css/modules/students-responsive.css');
+    }
+
+    /**
+     * Bind view toggle buttons
+     */
+    bindViewToggle() {
+        const container = this.elements?.container;
+        if (!container) return;
+        container.querySelectorAll('.view-controls .view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.getAttribute('data-view');
+                this.switchView(view);
+            });
+        });
     }
 
     /**
@@ -246,6 +329,70 @@ export class StudentsListController {
         `;
     }
 
+    // Premium UI State helpers (loading/empty/error/content)
+    showContent() {
+        this.elements.contentArea && (this.elements.contentArea.style.display = 'block');
+        this.elements.loadingState && (this.elements.loadingState.style.display = 'none');
+        this.elements.emptyState && (this.elements.emptyState.style.display = 'none');
+        this.elements.errorState && (this.elements.errorState.style.display = 'none');
+    }
+    showLoading() {
+        this.elements.contentArea && (this.elements.contentArea.style.display = 'none');
+        this.elements.loadingState && (this.elements.loadingState.style.display = 'block');
+        this.elements.emptyState && (this.elements.emptyState.style.display = 'none');
+        this.elements.errorState && (this.elements.errorState.style.display = 'none');
+    }
+    showEmpty() {
+        this.elements.contentArea && (this.elements.contentArea.style.display = 'none');
+        this.elements.loadingState && (this.elements.loadingState.style.display = 'none');
+        this.elements.emptyState && (this.elements.emptyState.style.display = 'block');
+        this.elements.errorState && (this.elements.errorState.style.display = 'none');
+    }
+    showError(message) {
+        this.elements.contentArea && (this.elements.contentArea.style.display = 'none');
+        this.elements.loadingState && (this.elements.loadingState.style.display = 'none');
+        if (this.elements.errorState) {
+            const msg = this.elements.errorState.querySelector('#error-message');
+            if (msg) msg.textContent = message || 'Erro ao carregar estudantes';
+            this.elements.errorState.style.display = 'block';
+        }
+        this.elements.emptyState && (this.elements.emptyState.style.display = 'none');
+    }
+
+    /**
+     * Reload list from API
+     */
+    async reload() {
+        // Re-run render on current container
+        await this.render(this.elements?.container || document.getElementById('app'));
+    }
+
+    /**
+     * Export students (CSV client-side from API data)
+     */
+    exportStudents() {
+        const rows = this.filteredStudents.map(s => {
+            const u = s.user || {};
+            const name = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+            const email = u.email || '';
+            const phone = u.phone || '';
+            const category = s.category || '';
+            const status = s.isActive ? 'Ativo' : 'Inativo';
+            return [s.id, name, email, phone, category, status].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+        });
+        const header = ['ID','Nome','Email','Telefone','Categoria','Status'].join(',');
+        const csv = [header, ...rows].join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `alunos-${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     /**
      * Cleanup when leaving module
      */
@@ -253,6 +400,7 @@ export class StudentsListController {
         // Remove global handlers
         delete window.selectStudent;
         delete window.addNewStudent;
+        delete window.openImportModule;
         delete window.switchStudentsView;
         
         console.log('🧹 Students List Controller destruído');

@@ -175,6 +175,73 @@ export default async function financialRoutes(
   // STUDENT SUBSCRIPTIONS
   // ==========================================
 
+  // GET /api/financial/subscriptions - Listar todas as assinaturas
+  fastify.get('/subscriptions', {
+    schema: {
+      description: 'List all subscriptions',
+      tags: ['Financial'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  student: { type: 'object' },
+                  plan: { type: 'object' },
+                  status: { type: 'string' },
+                  startDate: { type: 'string' },
+                  endDate: { type: 'string', nullable: true },
+                  customPrice: { type: 'number', nullable: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const subscriptions = await prisma.subscription.findMany({
+        include: {
+          student: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              billingType: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return reply.code(200).send({
+        success: true,
+        data: subscriptions
+      });
+    } catch (error) {
+      console.error('Erro ao listar assinaturas:', error);
+      return reply.code(500).send({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  });
+
   // POST /api/financial/subscriptions - Criar assinatura
   fastify.post('/subscriptions', {
     schema: {
@@ -494,6 +561,92 @@ export default async function financialRoutes(
         error: 'Failed to create charge',
         message: error instanceof Error ? error.message : 'Unknown error'
       };
+    }
+  });
+
+  // ==========================================
+  // CREDIT PURCHASES
+  // ==========================================
+
+  // GET /api/financial/credits - Listar compras de crédito
+  fastify.get('/credits', {
+    schema: {
+      description: 'List all credit purchases',
+      tags: ['Financial'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  student: { type: 'object' },
+                  plan: { type: 'object' },
+                  credits: { type: 'number' },
+                  usedCredits: { type: 'number' },
+                  remainingCredits: { type: 'number' },
+                  purchaseDate: { type: 'string' },
+                  expiryDate: { type: 'string', nullable: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      // Por agora, vamos simular dados de crédito baseados nas assinaturas de crédito
+      const creditPlans = await prisma.billingPlan.findMany({
+        where: {
+          billingType: 'CREDIT'
+        },
+        include: {
+          subscriptions: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const creditPurchases = creditPlans.flatMap(plan => 
+        plan.subscriptions.map(subscription => ({
+          id: subscription.id,
+          student: subscription.student,
+          plan: {
+            id: plan.id,
+            name: plan.name,
+            price: plan.price
+          },
+          credits: plan.maxClasses || 10, // Usar maxClasses como créditos
+          usedCredits: Math.floor(Math.random() * (plan.maxClasses || 10)), // Simulado
+          remainingCredits: (plan.maxClasses || 10) - Math.floor(Math.random() * (plan.maxClasses || 10)),
+          purchaseDate: subscription.startDate,
+          expiryDate: subscription.endDate
+        }))
+      );
+
+      return reply.code(200).send({
+        success: true,
+        data: creditPurchases
+      });
+    } catch (error) {
+      console.error('Erro ao listar créditos:', error);
+      return reply.code(500).send({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
     }
   });
 }

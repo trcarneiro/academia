@@ -1,0 +1,4922 @@
+[
+  {
+    "name": "R$ 0,00",
+    "email": "R$ 400,00",
+    "phone": null,
+    "document": null,
+    "registration": "ASR$ 00099",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Eduardo Jose Maria Filho",
+      "empresa": "",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.101Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.101Z",
+    "updatedAt": "2025-09-02T03:03:10.101Z"
+  },
+  {
+    "name": "nathalia.sena.goulart@gmail.com",
+    "email": "31999282615",
+    "phone": null,
+    "document": "801",
+    "registration": "AS8010101",
+    "address": "Belo Horizonte - Minas Gerais, 30170050, MG, R$ 0,00",
+    "city": "R$ 299,99",
+    "state": null,
+    "zipCode": "R$ 299,99",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Nathalia Sena Goulart",
+      "empresa": "801",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.101Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.101Z",
+    "updatedAt": "2025-09-02T03:03:10.101Z"
+  },
+  {
+    "name": "joaoalvaro866@gmail.com",
+    "email": "38997274912",
+    "phone": null,
+    "document": "501",
+    "registration": "AS5010102",
+    "address": "Belo Horizonte - Minas Gerais, 30441036, MG, R$ 0,00",
+    "city": "R$ 199,90",
+    "state": null,
+    "zipCode": "R$ 199,90",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "João Álvaro Barral Morais",
+      "empresa": "596",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.102Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.102Z",
+    "updatedAt": "2025-09-02T03:03:10.102Z"
+  },
+  {
+    "name": "brenoharantes@hotmail.com",
+    "email": "31998910737",
+    "phone": null,
+    "document": "302",
+    "registration": "AS3020102",
+    "address": "Belo Horizonte - Minas Gerais, 30180120, MG, R$ 0,00",
+    "city": "R$ 150,00",
+    "state": null,
+    "zipCode": "R$ 300,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "José Breno Silva Arantes",
+      "empresa": "374",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.102Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.102Z",
+    "updatedAt": "2025-09-02T03:03:10.102Z"
+  },
+  {
+    "name": "gustavo@ontic.com.br",
+    "email": "31985079796",
+    "phone": null,
+    "document": "401",
+    "registration": "AS4010102",
+    "address": "Belo Horizonte - Minas Gerais, 30350180, MG, R$ 0,00",
+    "city": "R$ 349,42",
+    "state": null,
+    "zipCode": "R$ 174,71",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "LUIZ G V SOARES",
+      "empresa": "310",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.102Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.102Z",
+    "updatedAt": "2025-09-02T03:03:10.102Z"
+  },
+  {
+    "name": "tpratesnogueira@gmail.com",
+    "email": "31984566615",
+    "phone": null,
+    "document": "1502",
+    "registration": "AS15020103",
+    "address": "Belo Horizonte - Minas Gerais, 30180098, MG, R$ 0,00",
+    "city": "R$ 454,56",
+    "state": null,
+    "zipCode": "R$ 227,28",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "VERA M V PRATES",
+      "empresa": "1424",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.103Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.103Z",
+    "updatedAt": "2025-09-02T03:03:10.103Z"
+  },
+  {
+    "name": "christianeletronica1303@gmail.com",
+    "email": "31971790902",
+    "phone": null,
+    "document": "402",
+    "registration": "AS4020103",
+    "address": "Belo Horizonte - Minas Gerais, 30421185, MG, R$ 0,00",
+    "city": "R$ 220,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "CHRISTIAN DA Costa Silva",
+      "empresa": "126",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.103Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.103Z",
+    "updatedAt": "2025-09-02T03:03:10.103Z"
+  },
+  {
+    "name": "henriquecesarb2@gmail.com",
+    "email": "31972371005",
+    "phone": null,
+    "document": null,
+    "registration": "ASHENR0103",
+    "address": "Belo Horizonte - Minas Gerais, 30550320, MG, R$ 0,00",
+    "city": "R$ 300,00",
+    "state": null,
+    "zipCode": "R$ 300,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Rodrigo Augusto Barbosa Martins",
+      "empresa": "239",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.103Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.103Z",
+    "updatedAt": "2025-09-02T03:03:10.103Z"
+  },
+  {
+    "name": "R$ 0,00",
+    "email": "R$ 380,00",
+    "phone": null,
+    "document": null,
+    "registration": "ASR$ 00104",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Flavia Ribeiro",
+      "empresa": "",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "victoriadaros@gmail.com",
+    "email": "31999747668",
+    "phone": null,
+    "document": "302",
+    "registration": "AS3020104",
+    "address": "Belo Horizonte - Minas Gerais, 30520460, MG, R$ 0,00",
+    "city": "R$ 677,00",
+    "state": null,
+    "zipCode": "R$ 398,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Victoria Daros Silva",
+      "empresa": "95",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "karineoliveirastudy@gmail.com",
+    "email": "31996315939",
+    "phone": null,
+    "document": null,
+    "registration": "ASKARI0104",
+    "address": "30285170, MG, R$ 0,00, R$ 507,00",
+    "city": "R$ 169,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 507,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Karine Oliveira da Costa",
+      "empresa": "952",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "saramartins298@gmail.com",
+    "email": "31971409621",
+    "phone": "(31) 97140-9621",
+    "document": "7938",
+    "registration": "AS79380104",
+    "address": "Belo Horizonte - Minas Gerais, 30110056, MG, R$ 0,00",
+    "city": "R$ 587,00",
+    "state": null,
+    "zipCode": "R$ 338,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "SARA MARTINS DA SILVA",
+      "empresa": "Avenida do Contorno",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "analu-07@live.com",
+    "email": "31998109104",
+    "phone": null,
+    "document": null,
+    "registration": "ASANAL0104",
+    "address": "34006086, MG, R$ 0,00, R$ 82,97",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 82,97",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Analu B T Araujo",
+      "empresa": "205",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "fellipe.santos@gmail.com",
+    "email": "31983359939",
+    "phone": null,
+    "document": null,
+    "registration": "ASFELL0104",
+    "address": "30170041, MG, R$ 0,00, R$ 80,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 80,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Fellipe Fernandes Goulart dos Santos",
+      "empresa": "1143",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "anamfbicalho@gmail.com",
+    "email": "31997783113",
+    "phone": null,
+    "document": "01",
+    "registration": "AS010104",
+    "address": "Belo Horizonte - Minas Gerais, 30441055, MG, R$ 0,00",
+    "city": "R$ 82,97",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Ana Maria Ferreira",
+      "empresa": "742",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "crisleyralves@hotmail.com",
+    "email": "32999361657",
+    "phone": null,
+    "document": null,
+    "registration": "ASCRIS0104",
+    "address": "Belo Horizonte - Minas Gerais, 30620780, MG, R$ 0,00",
+    "city": "R$ 162,97",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Crisley Rios Alves",
+      "empresa": "524",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "guglielmelliana@gmail.com",
+    "email": "37999695154",
+    "phone": null,
+    "document": "406",
+    "registration": "AS4060104",
+    "address": "Belo Horizonte - Minas Gerais, 30190030, MG, R$ 0,00",
+    "city": "R$ 597,00",
+    "state": null,
+    "zipCode": "R$ 398,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Ana Clara Guglielmelli",
+      "empresa": "272",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.104Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.104Z",
+    "updatedAt": "2025-09-02T03:03:10.104Z"
+  },
+  {
+    "name": "rodrigocomercial78@gmail.com",
+    "email": "31983641557",
+    "phone": null,
+    "document": null,
+    "registration": "ASRODR0105",
+    "address": "30310550, MG, R$ 0,00, R$ 6.259,00",
+    "city": "R$ 1.296,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 6.259,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Rodrigo Gualberto",
+      "empresa": "150",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.105Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.105Z",
+    "updatedAt": "2025-09-02T03:03:10.105Z"
+  },
+  {
+    "name": "marcoscunharesende@gmail.com",
+    "email": "31982133711",
+    "phone": null,
+    "document": null,
+    "registration": "ASMARC0105",
+    "address": "30180061, MG, R$ 676,00, R$ 169,00",
+    "city": "R$ 169,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 169,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Marcos Cunha Resende",
+      "empresa": "1399",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.105Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.105Z",
+    "updatedAt": "2025-09-02T03:03:10.105Z"
+  },
+  {
+    "name": "krolsat@gmail.com",
+    "email": "31992208100",
+    "phone": null,
+    "document": "301",
+    "registration": "AS3010105",
+    "address": "Belo Horizonte - Minas Gerais, 30180098, MG, R$ 0,00",
+    "city": "R$ 1.744,60",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Maria c c f brandao",
+      "empresa": "1450",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.105Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.105Z",
+    "updatedAt": "2025-09-02T03:03:10.105Z"
+  },
+  {
+    "name": "sarahgarciamm@gmail.com",
+    "email": "31991842711",
+    "phone": null,
+    "document": "206",
+    "registration": "AS2060105",
+    "address": "Belo Horizonte - Minas Gerais, 30441031, MG, R$ 0,00",
+    "city": "R$ 795,00",
+    "state": null,
+    "zipCode": "R$ 318,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "SARAH G M M AGUIAR",
+      "empresa": "194",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.105Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.105Z",
+    "updatedAt": "2025-09-02T03:03:10.105Z"
+  },
+  {
+    "name": "rafaelaknupp@gmail.com",
+    "email": "31999904900",
+    "phone": null,
+    "document": "802",
+    "registration": "AS8020105",
+    "address": "Belo Horizonte - Minas Gerais, 30180111, MG, R$ 0,00",
+    "city": "R$ 199,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Rafaela Felizardo Knupp",
+      "empresa": "1639",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.105Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.105Z",
+    "updatedAt": "2025-09-02T03:03:10.105Z"
+  },
+  {
+    "name": "brito.gisag@gmail.com",
+    "email": "13933003071",
+    "phone": null,
+    "document": null,
+    "registration": "ASBRIT0106",
+    "address": "Belo Horizonte - Minas Gerais, 30380435, MG, R$ 0,00",
+    "city": "R$ 750,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Gisele Brito",
+      "empresa": "11t83",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "zemauro.reis@gmail.com",
+    "email": "31987426045",
+    "phone": null,
+    "document": "201",
+    "registration": "AS2010106",
+    "address": "Belo Horizonte - Minas Gerais, 30180061, MG, R$ 0,00",
+    "city": "R$ 1.620,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "José Mauro Barbosa Reis",
+      "empresa": "1364",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "ceciliachaves@gmail.com",
+    "email": "31984548984",
+    "phone": null,
+    "document": "201",
+    "registration": "AS2010106",
+    "address": "Belo Horizonte - Minas Gerais, 30441123, MG, R$ 0,00",
+    "city": "R$ 450,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Cecilia Chaves",
+      "empresa": "985",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "sarahgarciamm@gmail.com",
+    "email": "31991842711",
+    "phone": null,
+    "document": "206",
+    "registration": "AS2060106",
+    "address": "Belo Horizonte - Minas Gerais, 30441031, MG, R$ 0,00",
+    "city": "R$ 429,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Sarah Garcia de Mello Mattos Aguiar",
+      "empresa": "194",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "marciavgl@gmail.com",
+    "email": "61984633582",
+    "phone": null,
+    "document": "402",
+    "registration": "AS4020106",
+    "address": "Belo Horizonte - Minas Gerais, 30350212, MG, R$ 0,00",
+    "city": "R$ 1.425,00",
+    "state": null,
+    "zipCode": "R$ 237,50",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Márcia Vanessa da Silva Gomes",
+      "empresa": "60",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "allyssonvalentealvarenga@yahoo.com",
+    "email": "31983172555",
+    "phone": null,
+    "document": "1102",
+    "registration": "AS11020106",
+    "address": "Belo Horizonte - Minas Gerais, 30455610, MG, R$ 0,00",
+    "city": "R$ 199,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "ALLYSSON VALENTE ALVARENGA DE PAULA",
+      "empresa": "1321",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "adrianobaiao@otimisaeventos.com.br",
+    "email": "31987118292",
+    "phone": null,
+    "document": null,
+    "registration": "ASADRI0106",
+    "address": "30441042, MG, R$ 0,00, R$ 2.730,00",
+    "city": "R$ 360,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 2.730,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Adriano Haddad Baiao",
+      "empresa": "755",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "adryze@gmail.com",
+    "email": "31987997702",
+    "phone": null,
+    "document": "401",
+    "registration": "AS4010106",
+    "address": "Belo Horizonte - Minas Gerais, 30441086, MG, R$ 0,00",
+    "city": "R$ 1.425,00",
+    "state": null,
+    "zipCode": "R$ 237,50",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Adryze p l g de santana",
+      "empresa": "555",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.106Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.106Z",
+    "updatedAt": "2025-09-02T03:03:10.106Z"
+  },
+  {
+    "name": "riccdias@gmail.com",
+    "email": "31986350628",
+    "phone": null,
+    "document": "401",
+    "registration": "AS4010107",
+    "address": "Belo Horizonte - Minas Gerais, 30441086, MG, R$ 0,00",
+    "city": "R$ 567,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Ricardo Cançado Dias",
+      "empresa": "555",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.107Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.107Z",
+    "updatedAt": "2025-09-02T03:03:10.107Z"
+  },
+  {
+    "name": "roger@agpsa.com.br",
+    "email": "31991438218",
+    "phone": null,
+    "document": "411",
+    "registration": "AS4110107",
+    "address": "Belo Horizonte - Minas Gerais, 30350093, MG, R$ 0,00",
+    "city": "R$ 1.595,70",
+    "state": null,
+    "zipCode": "R$ 159,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "ROGER ARAUJO MELO",
+      "empresa": "287",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.107Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.107Z",
+    "updatedAt": "2025-09-02T03:03:10.107Z"
+  },
+  {
+    "name": "raquelcoutinhobe@gmail.com",
+    "email": "31998983407",
+    "phone": null,
+    "document": "2201",
+    "registration": "AS22010107",
+    "address": "Belo Horizonte - Minas Gerais, 30421310, MG, R$ 0,00",
+    "city": "R$ 765,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Raquel Ferreira Coutinho Braga",
+      "empresa": "630",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.107Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.107Z",
+    "updatedAt": "2025-09-02T03:03:10.107Z"
+  },
+  {
+    "name": "willianrodrigues.bh@gmail.com",
+    "email": "31991387049",
+    "phone": "(31) 99447-9395",
+    "document": "837",
+    "registration": "AS8370107",
+    "address": "Paraíso, Belo Horizonte - Minas Gerais, 30270400, MG",
+    "city": "R$ 0,00",
+    "state": "R$ 0,00",
+    "zipCode": "R$ 199,00",
+    "neighborhood": "MG",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Willian Rodrigues Santos",
+      "empresa": "Rua Paulo Papini",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.107Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.107Z",
+    "updatedAt": "2025-09-02T03:03:10.107Z"
+  },
+  {
+    "name": "phcontato@hotmail.com",
+    "email": "31989690207",
+    "phone": null,
+    "document": null,
+    "registration": "ASPHCO0107",
+    "address": "30170008, MG, R$ 0,00, R$ 150,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 150,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Paulo Henrique Silva Coelho",
+      "empresa": "1605",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.107Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.107Z",
+    "updatedAt": "2025-09-02T03:03:10.107Z"
+  },
+  {
+    "name": "analu-07@live.com",
+    "email": "31998109104",
+    "phone": "(31) 99810-9104",
+    "document": "672",
+    "registration": "AS6720108",
+    "address": "Belo Horizonte - Minas Gerais, 30315540, MG, R$ 0,00",
+    "city": "R$ 1.194,00",
+    "state": null,
+    "zipCode": "R$ 398,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "ANALU B T ARAUJO",
+      "empresa": "Rua Washington",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.108Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.108Z",
+    "updatedAt": "2025-09-02T03:03:10.108Z"
+  },
+  {
+    "name": "mendesraf98@gmail.com",
+    "email": "31998363405",
+    "phone": null,
+    "document": null,
+    "registration": "ASMEND0108",
+    "address": "34007656, MG, R$ 0,00, R$ 476,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 476,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Rafaela Mendes",
+      "empresa": "870",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.108Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.108Z",
+    "updatedAt": "2025-09-02T03:03:10.108Z"
+  },
+  {
+    "name": "antonio.lucio@unisys.com",
+    "email": "31999752811",
+    "phone": "(31) 99663-3733",
+    "document": "52",
+    "registration": "AS520108",
+    "address": "Nova Granada, Belo Horizonte - Minas Gerais, 30431375, MG",
+    "city": "R$ 0,00",
+    "state": "R$ 189,00",
+    "zipCode": "R$ 1.573,00",
+    "neighborhood": "MG",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Antônio Carlos Lúcio",
+      "empresa": "Rua Belfort Roxo",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.108Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.108Z",
+    "updatedAt": "2025-09-02T03:03:10.108Z"
+  },
+  {
+    "name": "henriquecesarb2@gmail.com",
+    "email": "31972371005",
+    "phone": null,
+    "document": null,
+    "registration": "ASHENR0109",
+    "address": "Belo Horizonte - Minas Gerais, 30550320, MG, R$ 0,00",
+    "city": "R$ 1.712,00",
+    "state": null,
+    "zipCode": "R$ 199,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Henrique Cesar Barbosa",
+      "empresa": "239",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.109Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.109Z",
+    "updatedAt": "2025-09-02T03:03:10.109Z"
+  },
+  {
+    "name": "renata@renatacyrino.com",
+    "email": "31999921853",
+    "phone": null,
+    "document": "201",
+    "registration": "AS2010109",
+    "address": "Belo Horizonte - Minas Gerais, 30180098, MG, R$ 0,00",
+    "city": "R$ 199,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Renata Magalhães Cyrino",
+      "empresa": "1328",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.109Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.109Z",
+    "updatedAt": "2025-09-02T03:03:10.109Z"
+  },
+  {
+    "name": "brunocassimirobarros@gmail.com",
+    "email": "31984575387",
+    "phone": "(31) 98457-5387",
+    "document": "804",
+    "registration": "AS8040109",
+    "address": "Vila da Serra, Nova Lima - Minas Gerais, 34006056, MG",
+    "city": "R$ 0,00",
+    "state": "R$ 0,00",
+    "zipCode": "R$ 300,00",
+    "neighborhood": "MG",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Bruno barros",
+      "empresa": "Alameda Oscar Niemeyer",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.109Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.109Z",
+    "updatedAt": "2025-09-02T03:03:10.109Z"
+  },
+  {
+    "name": "taguapenido@gmail.com",
+    "email": "31992760560",
+    "phone": null,
+    "document": null,
+    "registration": "ASTAGU0110",
+    "address": "34006083, MG, R$ 0,00, R$ 900,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 900,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Tagua s p godoy",
+      "empresa": "85",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "carolinamcapanema@gmail.com",
+    "email": "31975757464",
+    "phone": "551552",
+    "document": null,
+    "registration": "ASCARO0110",
+    "address": "30431236, MG, R$ 0,00, R$ 240,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 240,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "CAROLINA MOREIRA CAPANEMA",
+      "empresa": "609",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "julia_andrade@hotmail.com",
+    "email": "31975545145",
+    "phone": null,
+    "document": "202",
+    "registration": "AS2020110",
+    "address": "Belo Horizonte - Minas Gerais, 30575160, MG, R$ 0,00",
+    "city": "R$ 2.000,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Júlia Maria Melo Andrade",
+      "empresa": "170",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "thalleslara3@gmail.com",
+    "email": "31983372235",
+    "phone": null,
+    "document": null,
+    "registration": "ASTHAL0110",
+    "address": "30190120, MG, R$ 0,00, R$ 440,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 440,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Thalles Augusto Tissot-Lara",
+      "empresa": "475",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "lorrainechrissouza@gmail.com",
+    "email": "31988801030",
+    "phone": "48000",
+    "document": "48000",
+    "registration": "AS80000110",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lorraine C S M Barbosa Claudio",
+      "empresa": "R$ 8.499,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "leandrorseg74@gmail.com",
+    "email": "31999668805",
+    "phone": null,
+    "document": "301",
+    "registration": "AS3010110",
+    "address": "Belo Horizonte - Minas Gerais, 30431035, MG, R$ 0,00",
+    "city": "R$ 540,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "LEANDRO TOLEDO GONTIJO",
+      "empresa": "543",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.110Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.110Z",
+    "updatedAt": "2025-09-02T03:03:10.110Z"
+  },
+  {
+    "name": "Albertoassispires@gmail.com",
+    "email": "31999171731",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000111",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Alberto Assis Pires",
+      "empresa": "R$ 360,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.111Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.111Z",
+    "updatedAt": "2025-09-02T03:03:10.111Z"
+  },
+  {
+    "name": "danyfly28@hotmail.com",
+    "email": "31982467218",
+    "phone": null,
+    "document": "307",
+    "registration": "AS3070111",
+    "address": "Belo Horizonte - Minas Gerais, 30220400, MG, R$ 0,00",
+    "city": "R$ 500,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Daniela fredianj",
+      "empresa": "426",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.111Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.111Z",
+    "updatedAt": "2025-09-02T03:03:10.111Z"
+  },
+  {
+    "name": "lucasarruda20111@hotmail.com",
+    "email": "31991909683",
+    "phone": null,
+    "document": "702",
+    "registration": "AS7020111",
+    "address": "Belo Horizonte - Minas Gerais, 30493175, MG, R$ 0,00",
+    "city": "R$ 1.089,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lucas Arruda dos Santos",
+      "empresa": "24",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.111Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.111Z",
+    "updatedAt": "2025-09-02T03:03:10.111Z"
+  },
+  {
+    "name": "mandaparadeborah@gmail.com",
+    "email": "31975760006",
+    "phone": null,
+    "document": null,
+    "registration": "ASMAND0112",
+    "address": "Belo Horizonte - Minas Gerais, 30431128, MG, R$ 0,00",
+    "city": "R$ 500,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Deborah Francischelli Amoni",
+      "empresa": "1000",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "pnshenriques@gmail.com",
+    "email": "31999570998",
+    "phone": null,
+    "document": "01",
+    "registration": "AS010112",
+    "address": "Belo Horizonte - Minas Gerais, 30350130, MG, R$ 0,00",
+    "city": "R$ 240,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Pilar do nascimento e Silva Henriques",
+      "empresa": "414",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "Keyllalara@hotmail.com",
+    "email": "31983591639",
+    "phone": null,
+    "document": null,
+    "registration": "ASKEYL0112",
+    "address": "30441086, MG, R$ 0,00, R$ 1.134,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 1.134,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Keylla Fernanda",
+      "empresa": "553",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "sandromoreira.bh@gmail.com",
+    "email": "31975096446",
+    "phone": null,
+    "document": "1102",
+    "registration": "AS11020112",
+    "address": "Belo Horizonte - Minas Gerais, 30575839, MG, R$ 0,00",
+    "city": "R$ 1.751,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Sandro Goulart Crivellaro Moreira",
+      "empresa": "151",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "almeidapedrohc@gmail.com",
+    "email": "31994938426",
+    "phone": null,
+    "document": null,
+    "registration": "ASALME0112",
+    "address": "30421249, MG, R$ 0,00, R$ 200,00",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 200,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Pedro Henrique Carvalho de Almeida",
+      "empresa": "115",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "elisa_lodi@hotmail.com",
+    "email": "31995776150",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000112",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Elisa Lodi Wollscheid",
+      "empresa": "R$ 480,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "monica3102ls@gmail.com",
+    "email": "31998465789",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000112",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Monica Cordeiro De Souza",
+      "empresa": "R$ 500,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.112Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.112Z",
+    "updatedAt": "2025-09-02T03:03:10.112Z"
+  },
+  {
+    "name": "thi260405@gmail.com",
+    "email": "31989173418",
+    "phone": null,
+    "document": "802",
+    "registration": "AS8020113",
+    "address": "Belo Horizonte - Minas Gerais, 30170048, MG, R$ 0,00",
+    "city": "R$ 1.200,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Thiago Augusto Vaz Silveira",
+      "empresa": "1240",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.113Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.113Z",
+    "updatedAt": "2025-09-02T03:03:10.113Z"
+  },
+  {
+    "name": "sueliapereirapereira@gmail.com",
+    "email": "31997820178",
+    "phone": null,
+    "document": "202",
+    "registration": "AS2020113",
+    "address": "Belo Horizonte - Minas Gerais, 30441130, MG, R$ 0,00",
+    "city": "R$ 1.620,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Sueli Aparecida Pereira",
+      "empresa": "319",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.113Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.113Z",
+    "updatedAt": "2025-09-02T03:03:10.113Z"
+  },
+  {
+    "name": "marciofarah@gmail.com",
+    "email": "31994412530",
+    "phone": null,
+    "document": "207",
+    "registration": "AS2070113",
+    "address": "Belo Horizonte - Minas Gerais, 30441123, MG, R$ 0,00",
+    "city": "R$ 1.670,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Marcio William Carvalho Farah",
+      "empresa": "931",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.113Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.113Z",
+    "updatedAt": "2025-09-02T03:03:10.113Z"
+  },
+  {
+    "name": "nancyraquel2@yahoo.com.br",
+    "email": "31999451423",
+    "phone": null,
+    "document": "1802",
+    "registration": "AS18020113",
+    "address": "Belo Horizonte - Minas Gerais, 30441063, MG, R$ 0,00",
+    "city": "R$ 180,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Nancy Raquel Dutra Felipetto Malta",
+      "empresa": "200",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.113Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.113Z",
+    "updatedAt": "2025-09-02T03:03:10.113Z"
+  },
+  {
+    "name": "giovannagaudioso@gmail.com",
+    "email": "31992263434",
+    "phone": null,
+    "document": "202",
+    "registration": "AS2020113",
+    "address": "Belo Horizonte - Minas Gerais, 30441061, MG, R$ 0,00",
+    "city": "R$ 1.860,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Giovanna Gaudioso",
+      "empresa": "435",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.113Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.113Z",
+    "updatedAt": "2025-09-02T03:03:10.113Z"
+  },
+  {
+    "name": "jjcb.pro@gmail.com",
+    "email": "3133378307",
+    "phone": null,
+    "document": "801",
+    "registration": "AS8010113",
+    "address": "Belo Horizonte - Minas Gerais, 30110056, MG, R$ 0,00",
+    "city": "R$ 338,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Newton C Barreto",
+      "empresa": "7950",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "lidiacgomes86@gmail.com",
+    "email": "31984595572",
+    "phone": null,
+    "document": "501",
+    "registration": "AS5010114",
+    "address": "Belo Horizonte - Minas Gerais, 30441123, MG, R$ 0,00",
+    "city": "R$ 570,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "LIDIA CAMPOS GOMES",
+      "empresa": "1020",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "robsonvcn@gmail.com",
+    "email": "31986060960",
+    "phone": null,
+    "document": "1101",
+    "registration": "AS11010114",
+    "address": "Belo Horizonte - Minas Gerais, 30441063, MG, R$ 0,00",
+    "city": "R$ 780,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Robson Vicenzi",
+      "empresa": "199",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "phfs@yahoo.com",
+    "email": "31993440380",
+    "phone": null,
+    "document": "801",
+    "registration": "AS8010114",
+    "address": "Belo Horizonte - Minas Gerais, 30180060, MG, R$ 0,00",
+    "city": "R$ 400,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Paloma Shimabukuro",
+      "empresa": "673",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "sitartagliamotta@gmail.com",
+    "email": "31983349228",
+    "phone": null,
+    "document": "801",
+    "registration": "AS8010114",
+    "address": "Belo Horizonte - Minas Gerais, 30441123, MG, R$ 0,00",
+    "city": "R$ 1.050,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Simone Tartaglia",
+      "empresa": "1076",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "marcellaserpa@hotmail.com",
+    "email": "31991352630",
+    "phone": null,
+    "document": "302",
+    "registration": "AS3020114",
+    "address": "Belo Horizonte - Minas Gerais, 30441025, MG, R$ 0,00",
+    "city": "R$ 2.600,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Marcella R S Zanini",
+      "empresa": "97",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "danivignolibr@yahoo.com.br",
+    "email": "31988590900",
+    "phone": null,
+    "document": "1101",
+    "registration": "AS11010114",
+    "address": "Belo Horizonte - Minas Gerais, 30441063, MG, R$ 0,00",
+    "city": "R$ 1.010,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Daniela Carvalho Vignoli",
+      "empresa": "199",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "trcarneiro@outlook.com",
+    "email": "31993074190",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000114",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Thiago Carneiro",
+      "empresa": "R$ 4.406,01",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.114Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.114Z",
+    "updatedAt": "2025-09-02T03:03:10.114Z"
+  },
+  {
+    "name": "prmariotini@gmail.com",
+    "email": "31998230052",
+    "phone": null,
+    "document": "201",
+    "registration": "AS2010115",
+    "address": "Belo Horizonte - Minas Gerais, 30441123, MG, R$ 0,00",
+    "city": "R$ 1.290,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Paulo Mariottini",
+      "empresa": "965",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "liviaca@gmail.com",
+    "email": "31992111830",
+    "phone": null,
+    "document": "502",
+    "registration": "AS5020115",
+    "address": "Belo Horizonte - Minas Gerais, 30350250, MG, R$ 0,00",
+    "city": "R$ 1.732,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lívia Campos de Aguiar",
+      "empresa": "416",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "rejaneam10@gmail.com",
+    "email": "31982555777",
+    "phone": null,
+    "document": "7042",
+    "registration": "AS70420115",
+    "address": "Belo Horizonte - Minas Gerais, 30494225, MG, R$ 0,00",
+    "city": "R$ 5.160,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Rejane Amaral Resende",
+      "empresa": "15",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "ana.camisasca@gmail.com",
+    "email": "31991840668",
+    "phone": null,
+    "document": "201",
+    "registration": "AS2010115",
+    "address": "Belo Horizonte - Minas Gerais, 30411156, MG, R$ 0,00",
+    "city": "R$ 120,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Ana Luiza Oliveira Camisasca de Souza",
+      "empresa": "45",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "tassocanhestro@yahoo.com.br",
+    "email": "31984964885",
+    "phone": null,
+    "document": "402",
+    "registration": "AS4020115",
+    "address": "Belo Horizonte - Minas Gerais, 30421145, MG, R$ 0,00",
+    "city": "R$ 2.600,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Tasso C Costa",
+      "empresa": "624",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "Michelletiagodiju@gmail.com",
+    "email": "31982790594",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000115",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Diego Peixoto de Carvalho Coelho",
+      "empresa": "R$ 250,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "Juaresmello@me.com",
+    "email": "31992494520",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000115",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Juares Goncalves de Mello",
+      "empresa": "R$ 169,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "daniamarodias@gmail.com",
+    "email": "31983135055",
+    "phone": null,
+    "document": "202",
+    "registration": "AS2020115",
+    "address": "Belo Horizonte - Minas Gerais, 30240220, MG, R$ 0,00",
+    "city": "R$ 820,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "DANIELA AMARO TEIXEIRA DIAS",
+      "empresa": "225",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.115Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.115Z",
+    "updatedAt": "2025-09-02T03:03:10.115Z"
+  },
+  {
+    "name": "taguapenido@gmail.com",
+    "email": "31992760560",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000115",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Tagua Penido",
+      "empresa": "R$ 0,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "magnojoviano@gmail.com",
+    "email": "31999516394",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000116",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Magno Joviano de Carvalho",
+      "empresa": "R$ 5.690,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "daniela@alvacosmeticos.com.br",
+    "email": "31982723937",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000116",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Filipe Maia Riccio",
+      "empresa": "R$ 600,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "reginabarbosaa@yahoo.com.br",
+    "email": "31995203100",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000116",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Heitor Barbosa",
+      "empresa": "R$ 169,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "catiqueiroz92@gmail.com",
+    "email": "31998769818",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000116",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Catarina Queiros de Castro",
+      "empresa": "R$ 450,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "leo.g.santos@bol.com.br",
+    "email": "31995010790",
+    "phone": null,
+    "document": "1200",
+    "registration": "AS12000116",
+    "address": "Belo Horizonte - Minas Gerais, 30431143, MG, R$ 0,00",
+    "city": "R$ 8.093,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Leo Goncalves dos Santos",
+      "empresa": "42",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "tainasecundino@gmail.com",
+    "email": "31973657853",
+    "phone": null,
+    "document": "402",
+    "registration": "AS4020116",
+    "address": "Belo Horizonte - Minas Gerais, 30380252, MG, R$ 400,00",
+    "city": "R$ 10.520,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 400,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Tainá Silva Secundino",
+      "empresa": "818",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "julicmol@hotmail.com",
+    "email": "31999818258",
+    "phone": null,
+    "document": null,
+    "registration": "ASJULI0116",
+    "address": "30170050, MG, R$ 0,00, R$ 2.251,70",
+    "city": "R$ 0,00",
+    "state": null,
+    "zipCode": null,
+    "neighborhood": "R$ 2.251,70",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lucas Malta Mol",
+      "empresa": "287",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "iaramnunes@yahoo.com.br",
+    "email": "31996374050",
+    "phone": null,
+    "document": "1001",
+    "registration": "AS10010116",
+    "address": "Belo Horizonte - Minas Gerais, 30180150, MG, R$ 0,00",
+    "city": "R$ 600,00",
+    "state": null,
+    "zipCode": "R$ 0,00",
+    "neighborhood": "R$ 0,00",
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Iara Marcia Muniz Nunes de Oliveira",
+      "empresa": "205",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.116Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.116Z",
+    "updatedAt": "2025-09-02T03:03:10.116Z"
+  },
+  {
+    "name": "vendas@pisodegranito.com",
+    "email": "31991714055",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Miguel de Abreu Fraga",
+      "empresa": "R$ 630,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "fpmfono@gmail.com",
+    "email": "31988120566",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Fernanda Pinton Miguel",
+      "empresa": "R$ 338,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "nataliaperilo@outlook.com",
+    "email": "37988407047",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Natalia de Oliveira Perilo",
+      "empresa": "R$ 2.535,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "barbosaarrudagustavo@gmail.com",
+    "email": "31995108763",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Gustavo Barbosa Arruda",
+      "empresa": "R$ 3.196,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "ferpema@yahoo.com.br",
+    "email": "31971394045",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Fernando Pereira Macedo",
+      "empresa": "R$ 199,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "marcellaserpa@hotmail.com",
+    "email": "31991352630",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "MARCELLA REZENDE SERPA ZANINI",
+      "empresa": "R$ 400,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "julicmol@hotmail.com",
+    "email": "31999818258",
+    "phone": "000",
+    "document": "115200",
+    "registration": "AS52000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lucas Mol",
+      "empresa": "R$ 10.798,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "carlosoliveira3423@outlook.com",
+    "email": "31989645977",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000117",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Carlos Alberto Soares de Oliveira",
+      "empresa": "R$ 100,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.117Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.117Z",
+    "updatedAt": "2025-09-02T03:03:10.117Z"
+  },
+  {
+    "name": "mcarol.tavares@hotmail.com",
+    "email": "64984077327",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Maria Carolina Tavares Almeida",
+      "empresa": "R$ 338,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "temp@kravmaga.com.br",
+    "email": "31987692185",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Roger Roberth Teixeira",
+      "empresa": "R$ 160,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "giovannagaudioso@gmail.com",
+    "email": "31992263434",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Giovanna Gaudioso",
+      "empresa": "R$ 960,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "gilmaravieira.st@gmail.com",
+    "email": "31992889058",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Gilmara Vieira dos Santos",
+      "empresa": "R$ 338,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "maligodoy@gmail.com",
+    "email": "31997652491",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Maria Alice Cambraia Godoy Barreto",
+      "empresa": "R$ 310,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "walmsleypaiva@gmail.com",
+    "email": "31981987832",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Arthur Walmsley Paiva",
+      "empresa": "R$ 360,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "wollscheid@uol.com.br",
+    "email": "31997936271",
+    "phone": "000",
+    "document": "100000",
+    "registration": "AS00000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Jean Pierre Wollschieid",
+      "empresa": "R$ 12.180,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "thalesnas@gmail.com",
+    "email": "31996049778",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Thales Nascimento",
+      "empresa": "R$ 598,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "chris.cfiorio@gmail.com",
+    "email": "31999584166",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000118",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Izabel Christina Cavalcante Fiorio",
+      "empresa": "R$ 5.200,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.118Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.118Z",
+    "updatedAt": "2025-09-02T03:03:10.118Z"
+  },
+  {
+    "name": "iaramnunes@yahoo.com.br",
+    "email": "31996374050",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Joaquim Muniz Nunes",
+      "empresa": "R$ 3.590,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "Sarahmello97@gmail.com",
+    "email": "31995450441",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Sarah Letícia Barbosa Mello",
+      "empresa": "R$ 300,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "Ruthmariasousalima@gmail.com",
+    "email": "31991980017",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Lucas de Sousa Lima Barros",
+      "empresa": "R$ 5.200,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "31999835825",
+    "email": "02780485604",
+    "phone": "495100",
+    "document": null,
+    "registration": "AS31990119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Adriana Kattah",
+      "empresa": "R$ 578,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "va_habib@outlook.com",
+    "email": "31997287564",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Vinícius Almeida Habib",
+      "empresa": "R$ 0,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "03173514000137",
+    "email": "R$ 0,00",
+    "phone": "000",
+    "document": null,
+    "registration": "AS03170119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Henry Mendes Loureiro",
+      "empresa": "",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "01389330656",
+    "email": "R$ 0,00",
+    "phone": "000",
+    "document": null,
+    "registration": "AS01380119",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Fabio Perondi Barbosa Lima",
+      "empresa": "",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.119Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.119Z",
+    "updatedAt": "2025-09-02T03:03:10.119Z"
+  },
+  {
+    "name": "gustavoarc13@gmail.com",
+    "email": "31991823371",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000120",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Gustavo Alberto Rodrigues da Costa",
+      "empresa": "R$ 6.040,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.120Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.120Z",
+    "updatedAt": "2025-09-02T03:03:10.120Z"
+  },
+  {
+    "name": "loiziaanee@gmail.com",
+    "email": "31983421178",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Loiziane da Silva Braga",
+      "empresa": "R$ 0,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "wagnerwt@gmail.com",
+    "email": "31991921487",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Wagner Tadeu de Souza Reis",
+      "empresa": "R$ 0,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "Carolina.ramos@unicred.com.br",
+    "email": "31995331929",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Eduardo Ramos Vale",
+      "empresa": "R$ 0,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "vendas@pisodegranito.com",
+    "email": "31991714055",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Daniel Lima Fraga",
+      "empresa": "R$ 3.280,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "persiocarneiro2@gmail.com",
+    "email": "31992812093",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "PERCIO GERALDO LIMA CARNEIRO",
+      "empresa": "R$ 24.647,60",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "tainasecundino@gmail.com",
+    "email": "31973657853",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Tainá  Secundino",
+      "empresa": "R$ 1.750,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "temp@kravmgabh.com.br",
+    "email": "31984589667",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Christianno Inacio Sousa",
+      "empresa": "R$ 665,86",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "Heitor.molica@gmail.com",
+    "email": "31983263516",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Heitor Molica Soares",
+      "empresa": "R$ 169,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "facilacademia@yahoo.com.br",
+    "email": "37991940002",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Glauber Rodrigues de Souza",
+      "empresa": "R$ 1.080,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "anapdossantos@gmail.com",
+    "email": "31997976609",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000121",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Ana Paula",
+      "empresa": "R$ 3.922,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.121Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.121Z",
+    "updatedAt": "2025-09-02T03:03:10.121Z"
+  },
+  {
+    "name": "zedomato38@gmail.com",
+    "email": "31989098380",
+    "phone": "000",
+    "document": "000",
+    "registration": "AS0000122",
+    "address": null,
+    "city": null,
+    "state": null,
+    "zipCode": null,
+    "neighborhood": null,
+    "status": "ACTIVE",
+    "belt": "BRANCA",
+    "enrollmentDate": "2025-09-02",
+    "monthlyFee": 299.99,
+    "paymentMethod": "ASAAS",
+    "asaasData": {
+      "identificadorExterno": "Samuel Ruas Starling",
+      "empresa": "R$ 1.521,00",
+      "valorVencido": 0,
+      "valorPago": 0,
+      "valorAVencer": 0,
+      "valorTotal": 0,
+      "importedAt": "2025-09-02T03:03:10.122Z"
+    },
+    "emergencyContact": {
+      "name": "",
+      "phone": "",
+      "relationship": ""
+    },
+    "medicalInfo": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "observations": ""
+    },
+    "source": "ASAAS_IMPORT",
+    "createdAt": "2025-09-02T03:03:10.122Z",
+    "updatedAt": "2025-09-02T03:03:10.122Z"
+  }
+]

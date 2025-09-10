@@ -15,6 +15,13 @@
     <link rel="stylesheet" href="css/menu-fix.css">
     <!-- Module CSS -->
     <link rel="stylesheet" href="css/modules/courses.css">
+    <link rel="stylesheet" href="css/modules/turmas.css">
+    <link rel="stylesheet" href="css/modules/turmas-courses.css">
+    <link rel="stylesheet" href="css/modules/turmas-tabs.css">
+    <link rel="stylesheet" href="css/modules/frequency-basic.css">
+    <link rel="stylesheet" href="css/modules/import.css">
+    <link rel="stylesheet" href="css/modules/agenda.css">
+    <link rel="stylesheet" href="css/modules/units.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -44,11 +51,8 @@
                 <li data-module="students">
                     <i>👥</i> <span>Alunos</span>
                 </li>
-                <li data-module="billing">
-                    <i>📋</i> <span>Cobrança</span>
-                </li>
-                <li data-module="financial">
-                    <i>💰</i> <span>Financeiro</span>
+                <li data-module="packages">
+                    <i>�</i> <span>Pacotes</span>
                 </li>
                 <li data-module="activities">
                     <i>🏃</i> <span>Atividades</span>
@@ -59,11 +63,35 @@
                 <li data-module="courses">
                     <i>🎓</i> <span>Cursos</span>
                 </li>
+                <li data-module="turmas">
+                    <i>👥</i> <span>Turmas</span>
+                </li>
+                <li data-module="organizations">
+                    <i>🏫</i> <span>Organizações</span>
+                </li>
+                <li data-module="units">
+                    <i>🏢</i> <span>Unidades</span>
+                </li>
+                <li data-module="instructors">
+                    <i>👨‍🏫</i> <span>Instrutores</span>
+                </li>
+                <li data-module="agenda">
+                    <i>📅</i> <span>Agenda</span>
+                </li>
+                <li data-module="frequency">
+                    <i>📊</i> <span>Frequência</span>
+                </li>
+                <li data-module="import">
+                    <i>📥</i> <span>Importação</span>
+                </li>
                 <li data-module="rag">
                     <i>🧠</i> <span>RAG System</span>
                 </li>
                 <li data-module="reports">
                     <i>📈</i> <span>Relatórios</span>
+                </li>
+                <li data-module="settings">
+                    <i>⚙️</i> <span>Configurações</span>
                 </li>
             </ul>
         </nav>
@@ -90,6 +118,8 @@
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="js/shared/utils/feedback.js"></script>
     <script src="js/shared/api-client.js"></script>
+    <!-- Design Tokens (theme/branding) runtime applier -->
+    <script src="js/shared/design-tokens.js"></script>
 
     <!-- Course RAG Integration -->
     <script src="js/modules/course-rag-integration.js"></script>
@@ -100,6 +130,18 @@
     
     <!-- Students Module -->
     <script type="module" src="js/modules/students/students.js"></script>
+    
+    <!-- Turmas Module -->
+    <script type="module" src="js/modules/turmas/index.js"></script>
+    
+    <!-- Frequency Module -->
+    <script type="module" src="js/modules/frequency/index.js"></script>
+    
+    <!-- Import Module -->
+    <script type="module" src="js/modules/import/index.js"></script>
+    
+    <!-- Test Guide for Anti-Duplication System -->
+    <script type="module" src="js/modules/students/services/test-guide.js"></script>
     
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
 </body>

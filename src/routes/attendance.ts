@@ -159,6 +159,140 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
     handler: AttendanceController.getStats,
   });
 
+  // Get student by registration number for check-in
+  fastify.get('/student/:registrationNumber', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get student by registration number or name for check-in',
+      params: {
+        type: 'object',
+        required: ['registrationNumber'],
+        properties: {
+          registrationNumber: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'object' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getStudentByRegistration,
+  });
+
+  // Search students by name or registration (multiple results)
+  fastify.get('/students/search/:query', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Search students by name or registration for check-in',
+      params: {
+        type: 'object',
+        required: ['query'],
+        properties: {
+          query: { type: 'string' },
+        },
+      },
+      querystring: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', minimum: 1, maximum: 20, default: 10 },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.searchStudents,
+  });
+
+  // Get all active students for kiosk cache
+  fastify.get('/students/all', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get all active students for kiosk cache',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getAllStudents,
+  });
+
+  // Get available classes for check-in
+  fastify.get('/classes/available', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get available classes for check-in',
+      querystring: {
+        type: 'object',
+        properties: {
+          studentId: { type: 'string', format: 'uuid' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getAvailableClasses,
+  });
+
+  // Student dashboard data
+  fastify.get('/dashboard/:studentId', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get student dashboard data',
+      params: {
+        type: 'object',
+        required: ['studentId'],
+        properties: {
+          studentId: { type: 'string', format: 'uuid' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'object' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    preHandler: [validateParams(studentIdParamsSchema)],
+    handler: AttendanceController.getStudentDashboard,
+  });
+
   // Get student attendance pattern (admin/instructor only)
   fastify.get('/pattern/:studentId', {
     schema: {

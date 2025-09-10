@@ -488,21 +488,44 @@ function resetUploadForm() {
  */
 async function loadDocuments() {
     try {
+        console.log('📚 RAG: Iniciando carregamento de documentos...');
+        
         const response = await ragAPI.fetchWithStates('/api/rag/documents', {
             loadingElement: document.getElementById('documentsGrid'),
             onSuccess: (data) => {
-                ragState.documents = data;
-                renderDocuments(data);
+                console.log('✅ RAG: Dados recebidos com sucesso:', data);
+                console.log('✅ RAG: Tipo dos dados:', typeof data, 'É array?', Array.isArray(data));
+                
+                // Garantir que temos um array de documentos
+                let documentsArray = data;
+                
+                // Se os dados vieram em uma estrutura { data: [...] }, extrair o array
+                if (data && typeof data === 'object' && !Array.isArray(data) && data.data) {
+                    console.log('🔄 RAG: Extraindo array do campo data');
+                    documentsArray = data.data;
+                }
+                
+                // Se ainda não é um array, usar array vazio
+                if (!Array.isArray(documentsArray)) {
+                    console.warn('⚠️ RAG: Dados não são um array, usando array vazio');
+                    documentsArray = [];
+                }
+                
+                ragState.documents = documentsArray;
+                renderDocuments(documentsArray);
             },
             onEmpty: () => {
+                console.log('📄 RAG: Nenhum documento encontrado');
                 renderEmptyDocuments();
             },
             onError: (error) => {
-                console.error('Erro ao carregar documentos:', error);
+                console.error('❌ RAG: Erro ao carregar documentos:', error);
                 renderEmptyDocuments();
             }
         });
     } catch (error) {
+        console.error('💥 RAG: Erro na função loadDocuments:', error);
+        
         // Simula alguns documentos para demonstração
         const mockDocuments = [
             {
@@ -537,6 +560,13 @@ function renderDocuments(documents) {
     const grid = document.getElementById('documentsGrid');
     if (!grid) return;
     
+    // Validação robusta: verificar se documents é um array válido
+    if (!documents || !Array.isArray(documents)) {
+        console.warn('⚠️ renderDocuments: documents não é um array válido:', documents);
+        renderEmptyDocuments();
+        return;
+    }
+    
     if (documents.length === 0) {
         renderEmptyDocuments();
         return;
@@ -570,7 +600,11 @@ function renderEmptyDocuments() {
             <div class="doc-icon">📄</div>
             <div class="doc-info">
                 <h4>Nenhum documento encontrado</h4>
-                <p>Faça upload de documentos na aba "Upload & Ingestão"</p>
+                <p>A base de conhecimento ainda não possui documentos.</p>
+                <p>Para começar, faça upload de documentos na aba "Upload & Ingestão".</p>
+                <small style="color: #666; margin-top: 10px; display: block;">
+                    Formatos suportados: PDF, DOC, DOCX, TXT, MD
+                </small>
             </div>
         </div>
     `;

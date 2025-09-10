@@ -67,11 +67,9 @@ export class FinancialTab {
     async loadAvailablePlans() {
         try {
             console.log('📋 Carregando planos disponíveis...');
-            // Usar API real
-            const resp = await fetch('/api/billing-plans');
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-            const payload = await resp.json();
-            const plans = payload && payload.data ? payload.data : payload;
+            const api = this.main?.api || (window.createModuleAPI && window.createModuleAPI('Students'));
+            const payload = await (api?.api?.get ? api.api.get('/api/billing-plans') : api.get('/api/billing-plans'));
+            const plans = payload?.data ?? payload;
 
             // Normalizar campos esperados pelo render
             this.availablePlans = (plans || []).filter(p => p.isActive !== false).map(p => ({
@@ -87,6 +85,7 @@ export class FinancialTab {
             
         } catch (error) {
             console.error('❌ Erro ao carregar planos:', error);
+            try { window.app?.handleError?.(error, 'Students:financial:plans'); } catch(_) {}
             // Fallback: manter grid vazio, sem mock
             this.availablePlans = [];
             this.renderAvailablePlans();
@@ -97,15 +96,13 @@ export class FinancialTab {
         const studentId = this.main.currentStudentId;
         if (!studentId) return;
         try {
+            const api = this.main?.api || (window.createModuleAPI && window.createModuleAPI('Students'));
             // Carregar assinatura atual
-            const subResp = await fetch(`/api/students/${studentId}/subscription`);
-            const subPayload = subResp.ok ? await subResp.json() : null;
-            const subscription = subPayload && subPayload.data !== undefined ? subPayload.data : (subPayload || null);
-
+            const subRes = await (api?.api?.get ? api.api.get(`/api/students/${studentId}/subscription`) : api.get(`/api/students/${studentId}/subscription`));
+            const subscription = subRes?.data ?? null;
             // Carregar resumo financeiro
-            const finResp = await fetch(`/api/students/${studentId}/financial-summary`);
-            const finPayload = finResp.ok ? await finResp.json() : null;
-            const summary = finPayload && finPayload.data !== undefined ? finPayload.data : (finPayload || {});
+            const finRes = await (api?.api?.get ? api.api.get(`/api/students/${studentId}/financial-summary`) : api.get(`/api/students/${studentId}/financial-summary`));
+            const summary = finRes?.data ?? {};
 
             // Normalizar e armazenar
             this.subscriptionData = subscription ? this.normalizeSubscription(subscription) : null;
@@ -122,6 +119,7 @@ export class FinancialTab {
             this.renderPaymentHistory();
         } catch (err) {
             console.error('❌ Erro ao carregar dados financeiros do aluno:', err);
+            try { window.app?.handleError?.(err, 'Students:financial:refresh'); } catch(_) {}
         }
     }
 
@@ -352,9 +350,8 @@ export class FinancialTab {
         if (confirmed) {
             try {
                 this.main.showLoading('Cancelando assinatura...');
-                // Preferir rota financeira genérica
-                const resp = await fetch(`/api/financial/subscriptions/${this.subscriptionData.id}`, { method: 'DELETE' });
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const api = this.main?.api || (window.createModuleAPI && window.createModuleAPI('Students'));
+                await (api?.api?.delete ? api.api.delete(`/api/financial/subscriptions/${this.subscriptionData.id}`) : api.delete(`/api/financial/subscriptions/${this.subscriptionData.id}`));
                 this.subscriptionData = null;
                 this.showNoSubscriptionState();
                 this.renderAvailablePlans();
@@ -362,6 +359,7 @@ export class FinancialTab {
                 alert('Assinatura cancelada com sucesso!');
             } catch (error) {
                 console.error('❌ Erro ao cancelar assinatura:', error);
+                try { window.app?.handleError?.(error, 'Students:financial:cancel'); } catch(_) {}
                 this.main.hideLoading();
                 alert('Erro ao cancelar assinatura. Tente novamente.');
             }
@@ -393,29 +391,19 @@ export class FinancialTab {
         if (confirmed) {
             try {
                 this.main.showLoading('Processando nova assinatura...');
-
-                // Se já existe assinatura, vamos apenas informar que será trocada (backend deve encerrar a anterior)
+                const api = this.main?.api || (window.createModuleAPI && window.createModuleAPI('Students'));
                 const studentId = this.main.currentStudentId;
-                const body = { studentId, planId };
-                const resp = await fetch('/api/financial/subscriptions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                const payload = await resp.json();
-                const sub = payload && payload.data ? payload.data : payload;
-
-                this.subscriptionData = this.normalizeSubscription(sub);
+                const res = await (api?.api?.post ? api.api.post('/api/financial/subscriptions', { studentId, planId }) : api.post('/api/financial/subscriptions', { studentId, planId }));
+                const sub = res?.data ?? null;
+                this.subscriptionData = sub ? this.normalizeSubscription(sub) : null;
                 this.hideNoSubscriptionState();
                 this.renderCurrentSubscription();
                 this.renderAvailablePlans();
-                
                 this.main.hideLoading();
                 alert(`Assinatura do ${plan.name} criada/atualizada com sucesso!`);
-                
             } catch (error) {
                 console.error('❌ Erro ao criar assinatura:', error);
+                try { window.app?.handleError?.(error, 'Students:financial:create'); } catch(_) {}
                 this.main.hideLoading();
                 alert('Erro ao criar assinatura. Tente novamente.');
             }

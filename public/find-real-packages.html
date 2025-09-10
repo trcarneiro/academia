@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Real Package ID</title>
+</head>
+<body>
+    <h1>Find Real Package ID</h1>
+    <button onclick="findRealPackages()">Get All Packages</button>
+    <pre id="result"></pre>
+    
+    <script>
+        async function findRealPackages() {
+            const result = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/billing-plans');
+                const data = await response.json();
+                
+                result.textContent = `Status: ${response.status}\n\n`;
+                
+                if (data.success && data.data) {
+                    result.textContent += `Found ${data.data.length} packages:\n\n`;
+                    
+                    data.data.forEach((plan, index) => {
+                        result.textContent += `${index + 1}. ID: ${plan.id}\n   Name: ${plan.name}\n   Price: ${plan.price}\n   Type: ${plan.billingType}\n\n`;
+                    });
+                    
+                    if (data.data.length > 0) {
+                        const firstPlan = data.data[0];
+                        result.textContent += `\n=== Testing update on first plan ===\n`;
+                        result.textContent += `Using ID: ${firstPlan.id}\n\n`;
+                        
+                        // Test update on first real plan
+                        const updateData = {
+                            name: firstPlan.name,
+                            description: firstPlan.description || 'Updated test',
+                            price: Number(firstPlan.price),
+                            billingType: firstPlan.billingType,
+                            isActive: true
+                        };
+                        
+                        const updateResponse = await fetch(`/api/billing-plans/${firstPlan.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updateData)
+                        });
+                        
+                        const updateResult = await updateResponse.json();
+                        
+                        result.textContent += `Update Status: ${updateResponse.status}\n`;
+                        result.textContent += `Update Response: ${JSON.stringify(updateResult, null, 2)}\n`;
+                    }
+                } else {
+                    result.textContent += `No packages found or error: ${JSON.stringify(data, null, 2)}`;
+                }
+                
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+                console.error('Error:', error);
+            }
+        }
+        
+        // Auto-run on load
+        document.addEventListener('DOMContentLoaded', findRealPackages);
+    </script>
+</body>
+</html>

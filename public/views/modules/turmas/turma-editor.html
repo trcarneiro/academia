@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Turma - Academia Krav Maga</title>
+</head>
+<body>
+    <div class="turma-editor-container module-isolated-turma-editor">
+        <!-- Header Premium -->
+        <div class="module-header-premium">
+            <div class="header-content">
+                <div class="breadcrumb-nav">
+                    <span class="breadcrumb-item" onclick="window.navigateToModule('turmas')">👥 Turmas</span>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item active" id="breadcrumb-action">Nova Turma</span>
+                </div>
+                <h1 class="header-title" id="editor-title">✨ Nova Turma</h1>
+                <p class="header-subtitle">Configure uma nova turma para execução do curso</p>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.navigateToModule('turmas')">
+                    ← Voltar
+                </button>
+                <button type="button" class="btn btn-primary" id="save-turma-btn">
+                    💾 Salvar Turma
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="turma-editor-loading" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Carregando dados da turma...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="turma-editor-error" class="error-container" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Erro ao carregar turma</h3>
+            <p id="error-message">Não foi possível carregar os dados da turma.</p>
+            <button type="button" class="btn btn-primary" onclick="window.navigateToModule('turmas')">
+                Voltar às Turmas
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="turma-editor-content" class="editor-content">
+            <!-- Tabs Navigation -->
+            <div class="form-tabs-nav">
+                <button type="button" id="tab-btn-general" class="tab-btn active">Geral</button>
+                <button type="button" id="tab-btn-courses" class="tab-btn">Cursos</button>
+            </div>
+
+            <div class="form-tabs-content">
+                <div id="tab-general" class="tab-panel active">
+                    <form id="turma-form" class="form-premium">
+                        <!-- Informações Básicas -->
+                        <div class="form-section">
+                    <h3 class="section-title">📋 Informações Básicas</h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="turma-name" class="form-label required">Nome da Turma</label>
+                            <input type="text" id="turma-name" name="name" class="form-input" required 
+                                   placeholder="Ex: Krav Maga Iniciante - Noturno"
+                                   value="">
+                            <small class="form-help">Nome identificador da turma</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cursos</label>
+                            <p class="form-help">O curso principal e cursos associados são gerenciados na aba "Cursos".</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-type" class="form-label required">Tipo</label>
+                            <select id="turma-type" name="type" class="form-select" required>
+                                <option value="">Selecione o tipo...</option>
+                                <option value="COLLECTIVE">👥 Coletiva</option>
+                                <option value="PRIVATE">👤 Individual</option>
+                                <option value="SEMI_PRIVATE">👥👤 Semi-privada</option>
+                            </select>
+                            <small class="form-help">Modalidade da turma</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-instructor" class="form-label required">Instrutor</label>
+                            <select id="turma-instructor" name="instructorId" class="form-select" required>
+                                <option value="">Selecione um instrutor...</option>
+                            </select>
+                            <small class="form-help">Instrutor responsável pela turma</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cronograma -->
+                <div class="form-section">
+                    <h3 class="section-title">📅 Cronograma</h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="turma-start-date" class="form-label required">Data de Início</label>
+                            <input type="date" id="turma-start-date" name="startDate" class="form-input" required 
+                                   value="2025-09-01">
+                            <small class="form-help">Primeira aula da turma</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-end-date" class="form-label">Data de Término</label>
+                            <input type="date" id="turma-end-date" name="endDate" class="form-input"
+                                   value="2025-12-31">
+                            <small class="form-help">Última aula prevista (opcional)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-time" class="form-label required">Horário</label>
+                            <input type="time" id="turma-time" name="time" class="form-input" required
+                                   value="19:00">
+                            <small class="form-help">Horário de início das aulas</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-duration" class="form-label required">Duração (minutos)</label>
+                            <input type="number" id="turma-duration" name="duration" class="form-input" 
+                                   min="30" max="180" step="15" value="90" required>
+                            <small class="form-help">Duração de cada aula em minutos</small>
+                        </div>
+                    </div>
+
+                    <!-- Dias da Semana -->
+                    <div class="form-group">
+                        <label class="form-label required">Dias da Semana</label>
+                        <div class="weekdays-selector">
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="1" checked>
+                                <span class="weekday-label">Seg</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="2">
+                                <span class="weekday-label">Ter</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="3" checked>
+                                <span class="weekday-label">Qua</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="4">
+                                <span class="weekday-label">Qui</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="5">
+                                <span class="weekday-label">Sex</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="6">
+                                <span class="weekday-label">Sáb</span>
+                            </label>
+                            <label class="weekday-item">
+                                <input type="checkbox" name="daysOfWeek" value="0">
+                                <span class="weekday-label">Dom</span>
+                            </label>
+                        </div>
+                        <small class="form-help">Selecione os dias em que a turma acontece</small>
+                    </div>
+                </div>
+
+                <!-- Configurações Avançadas -->
+                <div class="form-section">
+                    <h3 class="section-title">⚙️ Configurações</h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="turma-max-students" class="form-label">Máximo de Alunos</label>
+                            <input type="number" id="turma-max-students" name="maxStudents" class="form-input" 
+                                   min="1" max="50" value="20">
+                            <small class="form-help">Limite de alunos na turma</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-unit" class="form-label">Unidade</label>
+                            <select id="turma-unit" name="unitId" class="form-select">
+                                <option value="">Selecione uma unidade...</option>
+                            </select>
+                            <small class="form-help">Local onde acontecem as aulas</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-training-area" class="form-label">Área de Treino</label>
+                            <select id="turma-training-area" name="trainingAreaId" class="form-select">
+                                <option value="">Selecione uma área de treino...</option>
+                            </select>
+                            <small class="form-help">Área específica dentro da unidade</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-room" class="form-label">Sala/Ambiente</label>
+                            <input type="text" id="turma-room" name="room" class="form-input" 
+                                   placeholder="Ex: Sala 1, Tatame Principal">
+                            <small class="form-help">Ambiente específico da unidade</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turma-price" class="form-label">Valor (R$)</label>
+                            <input type="number" id="turma-price" name="price" class="form-input" 
+                                   min="0" step="0.01" placeholder="0,00">
+                            <small class="form-help">Valor da mensalidade (opcional)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descrição -->
+                <div class="form-section">
+                    <h3 class="section-title">📝 Descrição</h3>
+                    
+                    <div class="form-group">
+                        <label for="turma-description" class="form-label">Descrição da Turma</label>
+                        <textarea id="turma-description" name="description" class="form-textarea" 
+                                  rows="4" placeholder="Informações adicionais sobre a turma..."></textarea>
+                        <small class="form-help">Detalhes importantes sobre esta turma</small>
+                    </div>
+                </div>
+
+                    </form>
+                </div>
+
+                <div id="tab-courses" class="tab-panel" style="display:none">
+                    <div class="form-section">
+                        <h3 class="section-title">🎓 Cursos Associados</h3>
+                        <div class="form-group">
+                            <p>Associe cursos adicionais à turma. Use "Adicionar Curso" para selecionar.</p>
+                            <div style="margin-top:8px;">
+                                <button type="button" class="btn btn-secondary" id="add-course-btn">➕ Adicionar Curso</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div id="selected-courses" class="selected-courses-list">
+                                <!-- Lista de cursos associados será renderizada aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal placeholder for course picker -->
+            <div id="courses-modal" style="display:none"></div>
+        </div>
+
+        <!-- Success State -->
+        <div id="turma-editor-success" class="success-container" style="display: none;">
+            <div class="success-icon">✅</div>
+            <h3>Turma salva com sucesso!</h3>
+            <p id="success-message">A turma foi criada e está pronta para receber alunos.</p>
+            <div class="success-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.navigateToModule('turmas')">
+                    Ver Todas as Turmas
+                </button>
+                <button type="button" class="btn btn-primary" id="view-turma-btn">
+                    Ver Turma Criada
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+</body>
+</html>

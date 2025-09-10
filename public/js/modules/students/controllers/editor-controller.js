@@ -4,9 +4,10 @@
  */
 
 import { StudentsService } from '../services/students-service.js';
+import { createStudentDataService } from '../services/student-data-service.js';
 import { ProfileTab } from '../tabs/profile-tab.js';
 import { FinancialTab } from '../tabs/financial-tab.js';
-import { CoursesTab } from '../tabs/courses-tab.js';
+import { CoursesTab } from '../tabs/courses-tab-modern.js';
 import { DocumentsTab } from '../tabs/documents-tab.js';
 import { HistoryTab } from '../tabs/history-tab.js';
 import { StudentValidator } from '../validators/student-validator.js';
@@ -15,10 +16,12 @@ export class StudentEditorController {
     constructor(apiClient) {
         this.api = apiClient;
         this.service = new StudentsService(apiClient);
+        this.dataService = createStudentDataService(apiClient); // New centralized data service
         this.validator = new StudentValidator();
         
         this.studentId = null;
         this.studentData = null;
+        this.studentBundle = null; // Cached bundle data
         this.activeTab = 'profile';
         this.hasUnsavedChanges = false;
         this.isLoading = false;
@@ -64,6 +67,7 @@ export class StudentEditorController {
         } catch (error) {
             console.error('❌ Erro ao renderizar editor:', error);
             this.showErrorState(container, error.message);
+            try { window.app?.handleError?.(error, 'Students:editor:render'); } catch (_) {}
         }
     }
 
@@ -79,11 +83,20 @@ export class StudentEditorController {
         const html = await response.text();
         container.innerHTML = html;
 
-        // Inject CSS
-        const editorCSS = document.createElement('link');
-        editorCSS.rel = 'stylesheet';
-        editorCSS.href = '/css/modules/students-editor.css';
-        document.head.appendChild(editorCSS);
+        // Inject CSS (idempotent + cache-busting)
+        const ensureStyle = (id, hrefBase) => {
+            if (document.getElementById(id)) return;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.id = id;
+            link.href = `${hrefBase}?v=${Date.now()}`;
+            document.head.appendChild(link);
+        };
+        ensureStyle('students-editor-css', '/css/modules/students-editor.css');
+        // Isolation shim for AGENTS.md .module-isolated-* compliance
+        ensureStyle('students-editor-isolation-css', '/css/modules/students-editor-isolation.css');
+        // Courses tab styles (isolated)
+        ensureStyle('students-courses-css', '/css/modules/students-courses.css');
         
         // Cache DOM elements
         this.elements = {
@@ -128,20 +141,30 @@ export class StudentEditorController {
     }
 
     /**
-     * Load existing student data
+     * Load existing student data using bundle approach
      */
     async loadStudentData() {
         this.isLoading = true;
         
         try {
-            this.studentData = await this.service.getStudent(this.studentId);
+            console.log('📦 Carregando bundle completo para estudante:', this.studentId);
+            
+            // Use the new bundle loading approach
+            this.studentBundle = await this.dataService.prefetchStudent(this.studentId);
+            
+            // Extract student data from bundle
+            this.studentData = this.studentBundle.student;
             
             // Update header
             this.updateHeader();
             
-            // Load data into all tabs
+            // Load bundle data into all tabs (they'll consume from bundle instead of making individual API calls)
             Object.values(this.tabs).forEach(tab => {
-                if (tab.loadData) {
+                if (tab.loadBundleData) {
+                    // New method for tabs that can consume bundle data
+                    tab.loadBundleData(this.studentBundle);
+                } else if (tab.loadData) {
+                    // Fallback to existing method
                     tab.loadData(this.studentData);
                 }
             });
@@ -223,8 +246,15 @@ export class StudentEditorController {
         const activeTab = this.tabs[tabName];
         const tabContainer = this.elements.tabContents.querySelector(`#${tabName}-content`);
 
-        if (activeTab && activeTab.render && tabContainer) {
-            activeTab.render(tabContainer);
+        if (activeTab && tabContainer) {
+            // Call init if present
+            if (activeTab.init && typeof activeTab.init === 'function') {
+                activeTab.init(tabContainer, this.studentId);
+            }
+            // Always render if render exists (some tabs' init doesn't render)
+            if (activeTab.render && typeof activeTab.render === 'function') {
+                activeTab.render(tabContainer);
+            }
         } else {
             console.warn(`Aba ou container não encontrado para: ${tabName}`);
         }
@@ -251,6 +281,9 @@ export class StudentEditorController {
             let savedStudent;
             if (this.studentId) {
                 savedStudent = await this.service.updateStudent(this.studentId, studentData);
+                
+                // Invalidate cache for updated student
+                this.dataService.invalidateStudent(this.studentId);
             } else {
                 savedStudent = await this.service.createStudent(studentData);
                 this.studentId = savedStudent.id;
@@ -270,6 +303,71 @@ export class StudentEditorController {
             this.showErrorMessage('Erro ao salvar estudante: ' + error.message);
             return false;
         }
+    }
+
+    // ==============================================
+    // CACHE MANAGEMENT METHODS
+    // ==============================================
+
+    /**
+     * Refresh specific student data sections
+     * @param {string[]} sections - ['student', 'subscription', 'attendances', 'financial']
+     */
+    async refreshStudentData(sections = ['student']) {
+        if (!this.studentId) return;
+
+        try {
+            console.log('🔄 Atualizando dados do estudante:', sections);
+            
+            const refreshedData = await this.dataService.refreshStudent(this.studentId, sections);
+            
+            // Update local data
+            if (refreshedData.student) {
+                this.studentData = refreshedData.student;
+                this.updateHeader();
+            }
+            
+            // Update tabs with new data
+            this.updateTabsWithRefreshedData(refreshedData);
+            
+            this.showSuccessMessage('Dados atualizados com sucesso!');
+            
+        } catch (error) {
+            console.error('❌ Erro ao atualizar dados:', error);
+            this.showErrorMessage('Erro ao atualizar dados: ' + error.message);
+        }
+    }
+
+    /**
+     * Update tabs with refreshed data
+     */
+    updateTabsWithRefreshedData(refreshedData) {
+        Object.entries(this.tabs).forEach(([tabName, tab]) => {
+            if (tab.updateWithRefreshedData) {
+                tab.updateWithRefreshedData(refreshedData);
+            }
+        });
+    }
+
+    /**
+     * Get data service for tabs to access cached data
+     */
+    getDataService() {
+        return this.dataService;
+    }
+
+    /**
+     * Get cached bundle data
+     */
+    getStudentBundle() {
+        return this.studentBundle;
+    }
+
+    /**
+     * Get cache statistics for debugging
+     */
+    getCacheStats() {
+        return this.dataService.getStats();
     }
 
     /**

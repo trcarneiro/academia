@@ -83,8 +83,9 @@ export interface CourseImportData {
 
 export interface TechniqueValidation {
   allValid: boolean;
-  existing: Array<{ id: string; title: string }>;
+  existing: Array<{ id: string; name: string }>;
   missing: Array<{ id: string; name: string }>;
+  slugMapping?: Map<string, string>; // Maps JSON technique ID to real technique ID
 }
 
 export class CourseImportService {
@@ -113,7 +114,7 @@ export class CourseImportService {
       console.log('✅ Course created/updated:', course.id);
 
       // 3. Associate techniques with the course
-      await this.associateTechniques(course.id, courseData.techniques);
+      await this.associateTechniques(course.id, courseData.techniques, techniqueValidation.slugMapping);
       console.log('✅ Techniques associated:', courseData.techniques.length);
 
       // 4. Create detailed schedule
@@ -153,24 +154,109 @@ export class CourseImportService {
    * Validate that all techniques exist in the system
    */
   static async validateTechniques(techniques: Array<{ id: string; name: string }>): Promise<TechniqueValidation> {
+    // First try to find by ID in technique table (exact match)
     const techniqueIds = techniques.map(t => t.id);
-    
-    // Check in activities table for techniques
-    const existingActivities = await prisma.activity.findMany({
+    const existingById = await prisma.technique.findMany({
       where: {
-        id: { in: techniqueIds },
-        type: 'TECHNIQUE'
+        id: { in: techniqueIds }
       },
-      select: { id: true, title: true }
+      select: { id: true, name: true }
     });
 
-    const existingIds = new Set(existingActivities.map(t => t.id));
-    const missing = techniques.filter(t => !existingIds.has(t.id));
+    // If not found by ID, try intelligent name mapping
+    const notFoundByIds = techniques.filter(t => !existingById.find(e => e.id === t.id));
+    
+    const nameMapping = new Map<string, string>();
+    const existingByName: Array<{ id: string; name: string }> = [];
+    
+    if (notFoundByIds.length > 0) {
+      console.log(`🔍 Need to map ${notFoundByIds.length} techniques by name similarity`);
+      
+      // Get all techniques from database for comparison
+      const allTechniques = await prisma.technique.findMany({
+        select: { id: true, name: true }
+      });
+      
+      for (const jsonTech of notFoundByIds) {
+        // Extract keywords from JSON technique name
+        const jsonKeywords = jsonTech.name
+          .toLowerCase()
+          .split(/[-\s,]+/)
+          .filter(word => word.length > 2 && !['com', 'para', 'por', 'pela', 'pelo', 'contra', 'dos', 'das'].includes(word));
+        
+        let bestMatch = null;
+        let bestScore = 0;
+        
+        // Evaluate each technique in database
+        for (const dbTech of allTechniques) {
+          const dbName = dbTech.name.toLowerCase();
+          const dbId = dbTech.id.toLowerCase();
+          let score = 0;
+
+          // Calculate score based on keyword matches
+          for (const keyword of jsonKeywords) {
+            if (dbName.includes(keyword) || dbId.includes(keyword)) {
+              score += keyword.length; // Longer words have more weight
+            }
+          }
+
+          // Bonus for exact matches of specific words
+          if (jsonKeywords.includes('soco') && (dbName.includes('soco') || dbId.includes('soco'))) {
+            score += 10;
+          }
+          if (jsonKeywords.includes('defesa') && (dbName.includes('defesa') || dbId.includes('defesa'))) {
+            score += 10;
+          }
+          if (jsonKeywords.includes('estrangulamento') && (dbName.includes('estrangulamento') || dbId.includes('estrangulamento'))) {
+            score += 15;
+          }
+          if (jsonKeywords.includes('uppercut') && (dbName.includes('uppercut') || dbId.includes('uppercut'))) {
+            score += 15;
+          }
+          if (jsonKeywords.includes('combinação') && (dbName.includes('combinação') || dbId.includes('combinacao'))) {
+            score += 15;
+          }
+          if (jsonKeywords.includes('cotovelada') && (dbName.includes('cotovelada') || dbId.includes('cotovelada'))) {
+            score += 15;
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = dbTech;
+          }
+        }
+        
+        // Only map if confidence score is high enough
+        if (bestMatch && bestScore >= 5) {
+          nameMapping.set(jsonTech.id, bestMatch.id);
+          existingByName.push(bestMatch);
+          console.log(`🔍 Mapped "${jsonTech.name}" -> "${bestMatch.name}" (${bestMatch.id}) [score: ${bestScore}]`);
+        } else {
+          console.log(`⚠️ Could not find good match for "${jsonTech.name}" (best score: ${bestScore})`);
+        }
+      }
+    } else {
+      console.log(`✅ All ${existingById.length} techniques found by exact ID match`);
+    }
+
+    // Combine results
+    const existing = [
+      ...existingById,
+      ...existingByName
+    ];
+
+    const existingIds = new Set([
+      ...existingById.map(t => t.id),
+      ...notFoundByIds.filter(t => nameMapping.has(t.id)).map(t => t.id)
+    ]);
+
+    const missing = techniques.filter(t => !existingIds.has(t.id) && !nameMapping.has(t.id));
 
     return {
       allValid: missing.length === 0,
-      existing: existingActivities,
-      missing: missing
+      existing: existing,
+      missing: missing,
+      slugMapping: nameMapping // Contains JSON ID -> Real Technique ID mapping
     };
   }
 
@@ -264,24 +350,51 @@ export class CourseImportService {
   /**
    * Associate techniques with the course
    */
-  private static async associateTechniques(courseId: string, techniques: Array<{ id: string; name: string }>) {
+  private static async associateTechniques(
+    courseId: string, 
+    techniques: Array<{ id: string; name: string }>, 
+    slugMapping?: Map<string, string>
+  ) {
     // Remove existing associations
     await prisma.courseTechnique.deleteMany({
       where: { courseId }
     });
 
-    // Create new associations
-    const associations = techniques.map((technique, index) => ({
-      courseId: courseId,
-      techniqueId: technique.id,
-      orderIndex: index + 1,
-      isRequired: true,
-      createdAt: new Date()
-    }));
+    // Create new associations, mapping IDs if needed and removing duplicates
+    const seenTechniqueIds = new Set<string>();
+    const associations: Array<{
+      courseId: string;
+      techniqueId: string;
+      orderIndex: number;
+      isRequired: boolean;
+    }> = [];
 
-    await prisma.courseTechnique.createMany({
-      data: associations
+    techniques.forEach((technique, index) => {
+      // Use mapped ID if available, otherwise use original ID
+      const techniqueId = slugMapping?.get(technique.id) || technique.id;
+      
+      // Only add if we haven't seen this technique ID before
+      if (!seenTechniqueIds.has(techniqueId)) {
+        seenTechniqueIds.add(techniqueId);
+        associations.push({
+          courseId: courseId,
+          techniqueId: techniqueId,
+          orderIndex: associations.length + 1, // Use actual index in final array
+          isRequired: true
+        });
+        console.log(`📌 Adding technique association: ${technique.name} → ${techniqueId} (order: ${associations.length})`);
+      } else {
+        console.log(`⚠️ Skipping duplicate technique: ${technique.name} → ${techniqueId}`);
+      }
     });
+
+    console.log(`✅ Creating ${associations.length} unique technique associations`);
+
+    if (associations.length > 0) {
+      await prisma.courseTechnique.createMany({
+        data: associations
+      });
+    }
   }
 
   /**

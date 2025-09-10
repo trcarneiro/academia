@@ -3,13 +3,28 @@ import { z } from 'zod';
 import { courseService, CourseData, UpdateCourseData } from '../services/courseService';
 import { prisma } from '@/utils/database';
 
-// Esquema de validação para criação de curso
+// Esquema de validação para criação de curso  
 const createCourseSchema = z.object({
   name: z.string().min(3, 'O nome do curso é obrigatório'),
   description: z.string().optional(),
   level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'MASTER']),
   duration: z.number().int().positive('A duração deve ser um número positivo'),
   isActive: z.boolean().default(true),
+  // Extended fields for complex course structure
+  objectives: z.array(z.string()).optional(),
+  generalObjectives: z.array(z.string()).optional(),
+  specificObjectives: z.array(z.string()).optional(),
+  requirements: z.array(z.string()).optional(),
+  resources: z.array(z.string()).optional(),
+  targetAudience: z.string().optional(),
+  methodology: z.string().optional(),
+  teachingStyle: z.string().optional(),
+  evaluation: z.object({
+    criteria: z.array(z.string()).optional(),
+    methods: z.array(z.string()).optional(),
+    requirements: z.string().optional()
+  }).optional(),
+  evaluationCriteria: z.array(z.string()).optional()
 });
 
 // Esquema de validação para atualização

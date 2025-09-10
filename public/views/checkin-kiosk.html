@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in Kiosk - Academia Krav Maga</title>
+    <link rel="stylesheet" href="/css/core/variables.css">
+    <link rel="stylesheet" href="/css/core/reset.css">
+    <link rel="stylesheet" href="/css/core/layout.css">
+    <link rel="stylesheet" href="/css/core/components.css">
+    <link rel="stylesheet" href="/css/modules/frequency.css">
+    <link rel="stylesheet" href="/css/modules/checkin-kiosk.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="kiosk-mode">
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner">
+                <i class="fas fa-fist-raised fa-spin"></i>
+            </div>
+            <p>Carregando sistema de check-in...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="main-content" style="display: none;">
+            
+            <!-- Header -->
+            <header class="kiosk-header">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <i class="fas fa-fist-raised"></i>
+                        <h1>Academia Krav Maga</h1>
+                    </div>
+                    <div class="current-time">
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Student Lookup Stage -->
+            <div id="lookup-stage" class="stage active">
+                <div class="stage-container">
+                    <div class="welcome-section">
+                        <h2><i class="fas fa-user-check"></i> Bem-vindo!</h2>
+                        <p>Digite sua matrícula ou nome para fazer check-in</p>
+                    </div>
+
+                    <div class="lookup-form">
+                        <div class="input-group">
+                            <label for="registration-input">Matrícula ou Nome</label>
+                            <input 
+                                type="text" 
+                                id="registration-input" 
+                                placeholder="Digite sua matrícula ou nome..."
+                                autocomplete="off"
+                                maxlength="50"
+                            >
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Busque por matrícula (ex: 12345) ou nome (ex: João Silva)
+                            </div>
+                        </div>
+
+                        <button id="lookup-btn" class="btn-primary" disabled>
+                            <i class="fas fa-search"></i>
+                            Buscar Aluno
+                        </button>
+
+                        <div id="lookup-error" class="error-message" style="display: none;"></div>
+                        
+                        <!-- Search Results -->
+                        <div id="search-results" class="search-results" style="display: none;"></div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <div class="action-card">
+                            <i class="fas fa-qrcode"></i>
+                            <span>QR Code em breve</span>
+                        </div>
+                        <div class="action-card">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>App Mobile em breve</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Dashboard Stage -->
+            <div id="dashboard-stage" class="stage">
+                <div class="stage-container">
+                    <!-- Student Info -->
+                    <div class="student-header">
+                        <div class="student-info">
+                            <div class="student-avatar">
+                                <img id="student-avatar" src="/images/default-avatar.svg" alt="Avatar">
+                            </div>
+                            <div class="student-details">
+                                <h2 id="student-name">Nome do Aluno</h2>
+                                <div class="student-meta">
+                                    <span id="student-registration">Matrícula: </span>
+                                    <span id="student-level">Faixa: </span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="logout-btn" class="btn-secondary">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sair
+                        </button>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="attendance-rate">0%</div>
+                                <div class="stat-label">Taxa de Presença</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="classes-month">0</div>
+                                <div class="stat-label">Aulas este Mês</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="graduation-level">Iniciante</div>
+                                <div class="stat-label">Nível Atual</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Classes -->
+                    <div class="classes-section">
+                        <h3><i class="fas fa-clock"></i> Aulas Disponíveis Agora</h3>
+                        <div id="available-classes" class="classes-grid">
+                            <!-- Classes will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="activity-section">
+                        <h3><i class="fas fa-history"></i> Últimas Presenças</h3>
+                        <div id="recent-activity" class="activity-list">
+                            <!-- Recent activity will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Check-in Confirmation -->
+            <div id="confirmation-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-check-circle"></i> Confirmar Check-in</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Confirmar check-in para a aula:</p>
+                        <div class="class-details">
+                            <h4 id="confirm-class-name"></h4>
+                            <div class="class-meta">
+                                <span id="confirm-class-time"></span>
+                                <span id="confirm-instructor"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="cancel-checkin" class="btn-secondary">Cancelar</button>
+                        <button id="confirm-checkin" class="btn-primary">
+                            <i class="fas fa-check"></i> Confirmar Check-in
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal" class="modal" style="display: none;">
+                <div class="modal-content success">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-check-circle"></i> Check-in Realizado!</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="success-animation">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p>Seu check-in foi registrado com sucesso!</p>
+                        <div class="success-details">
+                            <span id="success-class-name"></span>
+                            <span id="success-time"></span>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="success-ok" class="btn-primary">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/modules/checkin-kiosk.js"></script>
+</body>
+</html>

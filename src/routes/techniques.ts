@@ -34,40 +34,33 @@ export default async function techniquesRoutes(app: FastifyInstance) {
         additionalProperties: false,
         required: [], // explicit empty array to satisfy AJV "data/required must be array"
       },
-      response: {
-        200: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean' },
-            data: {
-              type: 'object',
-              properties: {
-                techniques: { type: 'array', items: { type: 'object' } },
-                pagination: {
-                  type: 'object',
-                  properties: {
-                    page: { type: 'integer' },
-                    limit: { type: 'integer' },
-                    total: { type: 'integer' },
-                    totalPages: { type: 'integer' },
-                  },
-                  required: ['page', 'limit', 'total', 'totalPages'],
-                },
-              },
-              required: ['techniques', 'pagination'],
-            },
-          },
-          required: ['success', 'data'],
-        },
-      },
     },
   }, async (req, reply) => {
-    const parse = TechniqueSearchQuerySchema.safeParse(req.query);
-    if (!parse.success) {
-      return reply.status(400).send({ success: false, error: parse.error.message, code: 'VALIDATION_ERROR' });
+    try {
+      const parse = TechniqueSearchQuerySchema.safeParse(req.query);
+      if (!parse.success) {
+        return reply.status(400).send({ success: false, error: parse.error.message, code: 'VALIDATION_ERROR' });
+      }
+      
+      console.log('🔍 Techniques endpoint called with query:', parse.data);
+      const result = await TechniquesService.list(parse.data);
+      console.log('📊 Service returned:', {
+        success: result.success,
+        techniqueCount: result.data?.techniques?.length || 0,
+        hasData: !!result.data,
+        firstTechniqueKeys: result.data?.techniques?.[0] ? Object.keys(result.data.techniques[0]) : 'no techniques'
+      });
+      
+      // Ensure we always have a valid response structure
+      if (!result.success || !result.data) {
+        return reply.status(500).send({ success: false, error: 'Failed to fetch techniques' });
+      }
+      
+      return reply.send(result);
+    } catch (error) {
+      console.error('❌ Error in techniques endpoint:', error);
+      return reply.status(500).send({ success: false, error: 'Internal server error' });
     }
-    const result = await TechniquesService.list(parse.data);
-    return reply.send(result);
   });
 
   // Simple search endpoint (q param)

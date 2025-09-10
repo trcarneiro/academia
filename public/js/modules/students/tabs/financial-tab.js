@@ -1,6 +1,7 @@
 /**
  * Financial Tab Component
  * Handles student subscription and financial information
+ * Enhanced with bundle data consumption and cache management
  */
 
 export class FinancialTab {
@@ -9,12 +10,137 @@ export class FinancialTab {
         this.subscriptionData = null;
         this.availablePlans = [];
         this.financialHistory = [];
+        this.bundleData = null; // Store bundle data
         
         this.init();
     }
 
     init() {
         console.log('💰 Inicializando aba Financeira...');
+    }
+
+    // ==============================================
+    // BUNDLE DATA CONSUMPTION
+    // ==============================================
+
+    /**
+     * Load data from bundle (preferred method)
+     * This method consumes pre-fetched data from StudentDataService
+     */
+    loadBundleData(bundle) {
+        console.log('💰 [CACHE] Carregando dados financeiros do bundle...');
+        
+        this.bundleData = bundle;
+        this.subscriptionData = bundle.subscription || null;
+        
+        // Normalize billing plans - ensure each plan has features as array
+        this.availablePlans = Array.isArray(bundle.billingPlans) ? 
+            bundle.billingPlans.map(plan => ({
+                ...plan,
+                features: Array.isArray(plan.features) ? plan.features : []
+            })) : [];
+            
+        this.financialHistory = bundle.financial || []; // Ensure it's always an array
+        
+        // Ensure financialHistory is an array
+        if (!Array.isArray(this.financialHistory)) {
+            console.warn('💰 financialHistory não é array, convertendo:', this.financialHistory);
+            this.financialHistory = [];
+        }
+        
+        // Re-render if already visible
+        if (this.isVisible()) {
+            this.refreshDisplay();
+        }
+    }
+
+    /**
+     * Legacy data loading method (fallback)
+     * Used when bundle data is not available
+     */
+    loadData(studentData) {
+        console.log('💰 [FALLBACK] Carregando dados financeiros via API individual...');
+        
+        // This will trigger individual API calls (old behavior)
+        this.loadFinancialDataLegacy(studentData);
+    }
+
+    /**
+     * Legacy method for individual API calls
+     */
+    async loadFinancialDataLegacy(studentData) {
+        try {
+            const dataService = this.editor.getDataService();
+            
+            // Use individual cached methods
+            this.subscriptionData = await dataService.getSubscription(studentData.id);
+            this.availablePlans = await dataService.getBillingPlans();
+            this.financialHistory = await dataService.getFinancialSummary(studentData.id);
+            
+            if (this.isVisible()) {
+                this.refreshDisplay();
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar dados financeiros:', error);
+            try { window.app?.handleError?.(error, 'Students:financialModern:load'); } catch (_) {}
+        }
+    }
+
+    /**
+     * Handle refreshed data from selective updates
+     */
+    updateWithRefreshedData(refreshedData) {
+        console.log('💰 [REFRESH] Atualizando dados financeiros...');
+        
+        if (refreshedData.subscription) {
+            this.subscriptionData = refreshedData.subscription;
+        }
+        
+        if (refreshedData.financial) {
+            this.financialHistory = refreshedData.financial;
+        }
+        
+        // Re-render if visible
+        if (this.isVisible()) {
+            this.refreshDisplay();
+        }
+    }
+
+    // ==============================================
+    // UI MANAGEMENT
+    // ==============================================
+
+    /**
+     * Check if tab is currently visible
+     */
+    isVisible() {
+        const container = document.querySelector('#financial-content');
+        if (!container) return false;
+        // Consider visible when it's the active tab-pane
+        return container.classList.contains('active');
+    }
+
+    /**
+     * Refresh the display with current data
+     */
+    refreshDisplay() {
+        const container = document.querySelector('#financial-content');
+        if (!container) return;
+        this.render(container);
+    }
+
+    /**
+     * Trigger selective refresh of financial data
+     */
+    async refreshFinancialData() {
+        try {
+            await this.editor.refreshStudentData(['subscription', 'financial']);
+        } catch (error) {
+            console.error('❌ Erro ao atualizar dados financeiros:', error);
+            this.showBanner('Erro ao atualizar dados financeiros', 'error');
+            try { window.app?.handleError?.(error, 'Students:financialModern:refresh'); } catch (_) {}
+        }
     }
 
     /**
@@ -89,7 +215,10 @@ export class FinancialTab {
 
         container.innerHTML = html;
         this.bindEvents(container);
-        this.loadFinancialData();
+        // Load data only if not available from bundle yet
+        if (!this.subscriptionData && this.editor?.studentId) {
+            this.loadFinancialData();
+        }
     }
 
     /**
@@ -169,7 +298,10 @@ export class FinancialTab {
      * Render available plans
      */
     renderAvailablePlans() {
-        if (!this.availablePlans || this.availablePlans.length === 0) {
+        // Ensure availablePlans is always an array
+        const plans = Array.isArray(this.availablePlans) ? this.availablePlans : [];
+        
+        if (!plans || plans.length === 0) {
             return `
                 <div class="no-plans">
                     <div class="no-plans-icon">📋</div>
@@ -178,7 +310,7 @@ export class FinancialTab {
             `;
         }
 
-        return this.availablePlans.map(plan => `
+        return plans.map(plan => `
             <div class="plan-card ${this.isCurrentPlan(plan.id) ? 'current-plan' : ''}"
                  data-plan-id="${plan.id}">
                 <div class="plan-header">
@@ -190,7 +322,7 @@ export class FinancialTab {
                 </div>
                 
                 <div class="plan-features">
-                    ${plan.features ? plan.features.map(feature => `
+                    ${(plan.features && Array.isArray(plan.features)) ? plan.features.map(feature => `
                         <div class="feature-item">
                             <span class="feature-icon">✓</span>
                             <span class="feature-text">${feature}</span>
@@ -212,7 +344,10 @@ export class FinancialTab {
      * Render payment history
      */
     renderPaymentHistory() {
-        if (!this.financialHistory || this.financialHistory.length === 0) {
+        // Ensure financialHistory is always an array
+        const history = Array.isArray(this.financialHistory) ? this.financialHistory : [];
+        
+        if (!history || history.length === 0) {
             return `
                 <div class="no-history">
                     <div class="no-history-icon">📊</div>
@@ -235,7 +370,7 @@ export class FinancialTab {
                         </tr>
                     </thead>
                     <tbody>
-                        ${this.financialHistory.map(payment => {
+                        ${history.map(payment => {
                             const date = payment.dueDate || payment.createdAt || payment.date;
                             const displayDate = date ? new Date(date).toLocaleDateString('pt-BR') : '-';
                             const amount = (typeof payment.amount === 'number') ? payment.amount : Number(payment.amount?.value || payment.amount) || 0;
@@ -443,6 +578,7 @@ export class FinancialTab {
         } catch (error) {
             console.error('❌ Erro ao editar assinatura:', error);
             alert('Erro ao editar assinatura. Tente novamente.');
+            try { window.app?.handleError?.(error, 'Students:financialModern:edit'); } catch (_) {}
         }
     }
 
@@ -468,6 +604,7 @@ export class FinancialTab {
             success = true;
         } catch (putErr) {
             console.error('❌ Erro ao atualizar assinatura para CANCELLED:', putErr);
+            try { window.app?.handleError?.(putErr, 'Students:financialModern:cancel:put'); } catch (_) {}
             // 2) Fallback: tentar DELETE direto por ID
             try {
                 const subId = String(this.subscriptionData.id).trim();
@@ -475,12 +612,14 @@ export class FinancialTab {
                 success = true;
             } catch (delErr) {
                 console.error('❌ Erro ao cancelar por ID:', delErr);
+                try { window.app?.handleError?.(delErr, 'Students:financialModern:cancel:delete'); } catch (_) {}
                 // 3) Fallback final: cancelar por studentId (alias backend)
                 try {
                     await this.editor.service.api.delete(`/api/students/${this.editor.studentId}/subscription`);
                     success = true;
                 } catch (aliasErr) {
                     console.error('❌ Fallback de cancelamento por studentId falhou:', aliasErr);
+                    try { window.app?.handleError?.(aliasErr, 'Students:financialModern:cancel:alias'); } catch (_) {}
                     const status = aliasErr?.status || delErr?.status || putErr?.status;
                     if (status === 404) errorMsg = 'Assinatura não encontrada.';
                     else if (status === 400) errorMsg = 'Dados inválidos (400). Verifique o ID e tente novamente.';
@@ -538,6 +677,7 @@ export class FinancialTab {
         } catch (error) {
             console.error('❌ Erro ao selecionar plano:', error);
             alert('Erro ao selecionar plano. Tente novamente.');
+            try { window.app?.handleError?.(error, 'Students:financialModern:selectPlan'); } catch (_) {}
         }
     }
 

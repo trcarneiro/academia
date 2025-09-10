@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Package Update Values</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #e9ecef; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; font-size: 12px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group { margin: 10px 0; }
+        input, select { width: 200px; padding: 5px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Package Update Values</h1>
+        
+        <div class="section">
+            <h3>Current Package Data</h3>
+            <button onclick="getCurrentData()">📋 Get Current Data</button>
+            <pre id="current-data"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>Test Update</h3>
+            <div class="form-group">
+                <label>Nome:</label>
+                <input type="text" id="name" value="Pacote 4 Créditos Teste">
+            </div>
+            <div class="form-group">
+                <label>Quantidade de Créditos:</label>
+                <input type="number" id="maxClasses" value="4">
+            </div>
+            <div class="form-group">
+                <label>Valor por Aula:</label>
+                <input type="number" id="pricePerClass" value="30.00" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Valor Total (será calculado):</label>
+                <input type="number" id="totalPrice" value="120.00" step="0.01" readonly>
+            </div>
+            <div class="form-group">
+                <label>Tipo:</label>
+                <select id="billingType">
+                    <option value="MONTHLY">MONTHLY (Créditos)</option>
+                    <option value="RECURRING">RECURRING (Assinatura)</option>
+                </select>
+            </div>
+            
+            <button onclick="calculateTotal()">🔢 Calculate Total</button>
+            <button onclick="updatePackage()">💾 Update Package</button>
+            <pre id="update-result"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>Verify Changes</h3>
+            <button onclick="verifyChanges()">🔍 Verify Changes</button>
+            <pre id="verify-result"></pre>
+        </div>
+    </div>
+
+    <script>
+        const packageId = '7f753d68-e466-4a87-aa27-87ad9baa5dbd';
+        
+        function calculateTotal() {
+            const quantity = Number(document.getElementById('maxClasses').value);
+            const pricePerClass = Number(document.getElementById('pricePerClass').value);
+            const total = quantity * pricePerClass;
+            document.getElementById('totalPrice').value = total.toFixed(2);
+        }
+        
+        async function getCurrentData() {
+            try {
+                const response = await fetch(`/api/billing-plans/${packageId}`);
+                const data = await response.json();
+                document.getElementById('current-data').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.success && data.data) {
+                    const plan = data.data;
+                    document.getElementById('name').value = plan.name || '';
+                    document.getElementById('maxClasses').value = plan.maxClasses || '';
+                    document.getElementById('billingType').value = plan.billingType || 'MONTHLY';
+                    // Calculate price per class if we have both price and maxClasses
+                    if (plan.price && plan.maxClasses) {
+                        const pricePerClass = Number(plan.price) / Number(plan.maxClasses);
+                        document.getElementById('pricePerClass').value = pricePerClass.toFixed(2);
+                        document.getElementById('totalPrice').value = Number(plan.price).toFixed(2);
+                    }
+                }
+            } catch (error) {
+                document.getElementById('current-data').textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function updatePackage() {
+            const updateData = {
+                name: document.getElementById('name').value,
+                description: "Teste de atualização de valores",
+                billingType: document.getElementById('billingType').value,
+                maxClasses: Number(document.getElementById('maxClasses').value),
+                price: Number(document.getElementById('totalPrice').value),
+                hasPersonalTraining: false,
+                hasNutrition: false,
+                isActive: true
+            };
+            
+            try {
+                console.log('🔍 Sending update:', updateData);
+                
+                const response = await fetch(`/api/billing-plans/${packageId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                const output = `Status: ${response.status}\n\nSent Data:\n${JSON.stringify(updateData, null, 2)}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
+                document.getElementById('update-result').textContent = output;
+                
+                console.log('📤 Update sent:', updateData);
+                console.log('📥 Update response:', result);
+                
+            } catch (error) {
+                document.getElementById('update-result').textContent = `Error: ${error.message}`;
+                console.error('❌ Update error:', error);
+            }
+        }
+        
+        async function verifyChanges() {
+            try {
+                // Wait a moment for the update to process
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const response = await fetch(`/api/billing-plans/${packageId}`);
+                const data = await response.json();
+                
+                const output = `Verification Status: ${response.status}\n\nCurrent Data After Update:\n${JSON.stringify(data, null, 2)}`;
+                document.getElementById('verify-result').textContent = output;
+                
+                if (data.success && data.data) {
+                    console.log('🔍 Current values after update:', data.data);
+                }
+                
+            } catch (error) {
+                document.getElementById('verify-result').textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-load on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            getCurrentData();
+            
+            // Auto-calculate when values change
+            document.getElementById('maxClasses').addEventListener('input', calculateTotal);
+            document.getElementById('pricePerClass').addEventListener('input', calculateTotal);
+        });
+    </script>
+</body>
+</html>

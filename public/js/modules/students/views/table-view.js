@@ -132,8 +132,8 @@ export class StudentsTableView {
         return `
             <tr class="student-row" 
                 data-student-id="${student.id}"
-                onclick="window.selectStudent('${student.id}')"
-                title="Clique para editar ${fullName}">
+                ondblclick="window.selectStudent('${student.id}')"
+                title="Dê um duplo clique para editar ${fullName}">
                 <td class="student-name">
                     <div class="name-container">
                         <div class="avatar">

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructors Module Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Instructors Module Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: API Connection</h2>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <div id="api-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Create Instructor</h2>
+        <form id="create-instructor-form">
+            <input type="text" id="name" placeholder="Name" required><br><br>
+            <input type="email" id="email" placeholder="Email" required><br><br>
+            <input type="text" id="phone" placeholder="Phone"><br><br>
+            <button type="submit">Create Instructor</button>
+        </form>
+        <div id="create-test-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: List Instructors</h2>
+        <button onclick="testListInstructors()">List Instructors</button>
+        <div id="list-test-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        function testAPIConnection() {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.innerHTML = 'Testing...';
+
+            fetch(`${API_BASE}/instructors`)
+                .then(response => {
+                    if (response.ok) {
+                        resultDiv.innerHTML = '<div class="success">✅ API Connection Successful!</div>';
+                        return response.json();
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<div class="error">❌ API Connection Failed: ${error.message}</div>`;
+                });
+        }
+
+        function testListInstructors() {
+            const resultDiv = document.getElementById('list-test-result');
+            resultDiv.innerHTML = 'Loading instructors...';
+
+            fetch(`${API_BASE}/instructors`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultDiv.innerHTML = `<div class="success">✅ Found ${data.data.length} instructors</div>`;
+                        resultDiv.innerHTML += `<pre>${JSON.stringify(data.data, null, 2)}</pre>`;
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ Error: ${data.error}</div>`;
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                });
+        }
+
+        document.getElementById('create-instructor-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const resultDiv = document.getElementById('create-test-result');
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            resultDiv.innerHTML = 'Creating instructor...';
+
+            fetch(`${API_BASE}/instructors`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    bio: 'Test instructor created via API test'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ Instructor created successfully!</div>`;
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data.data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            });
+        });
+
+        // Auto-test API connection on page load
+        window.addEventListener('load', function() {
+            setTimeout(testAPIConnection, 1000);
+        });
+    </script>
+</body>
+</html>
