@@ -1,5 +1,10 @@
+import { safeNavigateTo } from '../../../shared/utils/navigation.js';
+
 export class TurmasStudentsView {
-    constructor() {
+    constructor(service, controller) {
+        this.service = service;
+        this.controller = controller;
+        this.api = service.api; // ✅ API do service
         this.container = null;
         this.currentTurma = null;
         this.students = [];
@@ -13,6 +18,9 @@ export class TurmasStudentsView {
     render(container, turma) {
         this.container = container;
         this.currentTurma = turma;
+        
+        // Registrar instância globalmente para callbacks inline
+        window.turmasStudentsView = this;
         
         container.innerHTML = `
             <div class="module-isolated-turmas">
@@ -302,7 +310,7 @@ export class TurmasStudentsView {
 
     async loadTurmaStudents() {
         try {
-            const response = await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/students`);
+            const response = await this.api.request(`/api/turmas/${this.currentTurma.id}/students`);
             return response.data || [];
         } catch (error) {
             console.error('Erro ao carregar alunos da turma:', error);
@@ -312,7 +320,7 @@ export class TurmasStudentsView {
 
     async loadAllStudents() {
         try {
-            const response = await turmasAPI.fetch('/api/students');
+            const response = await this.api.request('/api/students');
             return response.data || [];
         } catch (error) {
             console.error('Erro ao carregar todos os alunos:', error);
@@ -492,7 +500,7 @@ export class TurmasStudentsView {
         try {
             this.showSaveLoading();
             
-            await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/students`, {
+            await this.api.request(`/api/turmas/${this.currentTurma.id}/students`, {
                 method: 'POST',
                 body: JSON.stringify({
                     studentId,
@@ -523,7 +531,7 @@ export class TurmasStudentsView {
             `Tem certeza que deseja remover ${studentName} desta turma? Esta ação não pode ser desfeita.`,
             async () => {
                 try {
-                    await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/students/${studentId}`, {
+                    await this.api.request(`/api/turmas/${this.currentTurma.id}/students/${studentId}`, {
                         method: 'DELETE'
                     });
                     
@@ -540,9 +548,9 @@ export class TurmasStudentsView {
 
     viewStudent(studentId) {
         // Navegar para detalhes do aluno
-        if (window.router) {
-            window.router.navigate(`students/detail/${studentId}`);
-        }
+        safeNavigateTo(`students/detail/${studentId}`, {
+            context: 'turmas:students:viewStudent'
+        });
     }
 
     editStudent(studentId) {
@@ -702,6 +710,5 @@ export class TurmasStudentsView {
     }
 }
 
-// Tornar disponível globalmente para callbacks
+// Tornar classe disponível globalmente (não instanciar ainda)
 window.TurmasStudentsView = TurmasStudentsView;
-window.turmasStudentsView = new TurmasStudentsView();

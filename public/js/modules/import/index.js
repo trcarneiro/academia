@@ -1,13 +1,14 @@
 /**
  * Import Module - Main Entry Point
- * Sistema de importação de alunos do Asaas
+ * Sistema de importação de cursos com Progress Bar Enhanced
  * 
- * @version 1.0.0
+ * @version 2.0.0
  * @author AI Assistant
- * @follows Guidelines2.md
+ * @follows AGENTS.md
  */
 
-import ImportController from './controllers/importController.js';
+// Dinamicamente importar o controller enhanced se disponível, caso contrário usa o original
+const ImportController = window.ImportControllerEnhanced || (await import('./controllers/importController.js')).default;
 
 class ImportModule {
     constructor() {
@@ -22,7 +23,7 @@ class ImportModule {
      */
     async init(container) {
         try {
-            console.log('🚀 Inicializando ImportModule...');
+            console.log('🚀 Inicializando ImportModule (Enhanced Version)...');
             
             if (!container) {
                 throw new Error('Container não fornecido para o módulo de importação');

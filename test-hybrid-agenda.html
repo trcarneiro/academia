@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Agenda Híbrida</title>
+    <link rel="stylesheet" href="/css/modules/hybrid-agenda.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste - Agenda Híbrida</h1>
+        <p>Testando carregamento do módulo híbrido...</p>
+        
+        <div id="agenda-container">
+            <!-- Module will be loaded here -->
+        </div>
+        
+        <div class="test-results" id="test-results">
+            <strong>Resultados dos testes:</strong><br>
+            <span id="results"></span>
+        </div>
+    </div>
+
+    <!-- Load shared utilities -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/shared/utils/feedback.js"></script>
+    
+    <!-- Load hybrid agenda module -->
+    <script type="module" src="/js/modules/hybrid-agenda/index.js"></script>
+    
+    <script>
+        function showResult(message, status = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusIcon = status === 'success' ? '✅' : status === 'error' ? '❌' : 'ℹ️';
+            results.innerHTML += `[${timestamp}] ${statusIcon} ${message}<br>`;
+        }
+
+        async function testHybridAgenda() {
+            try {
+                showResult('🔍 Iniciando teste do módulo híbrido...', 'info');
+                
+                // Test 1: Check if module is loaded
+                if (typeof window.initHybridAgendaModule === 'function') {
+                    showResult('✅ Função initHybridAgendaModule encontrada', 'success');
+                } else {
+                    showResult('❌ Função initHybridAgendaModule NÃO encontrada', 'error');
+                    return;
+                }
+                
+                // Test 2: Check if container exists
+                const container = document.getElementById('agenda-container');
+                if (container) {
+                    showResult('✅ Container encontrado', 'success');
+                } else {
+                    showResult('❌ Container NÃO encontrado', 'error');
+                    return;
+                }
+                
+                // Test 3: Try to initialize module
+                showResult('🚀 Inicializando módulo...', 'info');
+                await window.initHybridAgendaModule(container);
+                showResult('✅ Módulo inicializado com sucesso!', 'success');
+                
+                // Test 4: Check if module instance exists
+                if (window.hybridAgendaModule) {
+                    showResult('✅ Instância do módulo criada', 'success');
+                } else {
+                    showResult('⚠️ Instância do módulo não encontrada', 'error');
+                }
+                
+                showResult('🎉 Todos os testes concluídos!', 'success');
+                
+            } catch (error) {
+                showResult(`❌ Erro durante teste: ${error.message}`, 'error');
+                console.error('Erro detalhado:', error);
+            }
+        }
+
+        // Wait for DOM and run tests
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testHybridAgenda, 1000);
+        });
+    </script>
+</body>
+</html>

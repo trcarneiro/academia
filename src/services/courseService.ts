@@ -70,9 +70,14 @@ const mapCourseToViewModel = (course: Course) => {
 };
 
 export const courseService = {
-  async getAllCourses(organizationId: string) {
+  async getAllCourses(organizationId: string, isActive?: boolean) {
+    const where: any = { organizationId };
+    if (isActive !== undefined) {
+      where.isActive = isActive;
+    }
+    
     const courses = await prisma.course.findMany({
-      where: { organizationId },
+      where,
       orderBy: { createdAt: 'desc' },
     });
     return courses.map(mapCourseToViewModel);
@@ -195,6 +200,8 @@ export const courseService = {
     delete updateData.resources;
     delete updateData.evaluation;
     delete updateData.evaluationCriteria;
+    delete updateData.targetAudience; // Remove if sent by frontend (use category instead)
+    delete updateData.methodology; // Remove if sent by frontend (not in schema)
 
     console.log('🔄 Updating course with processed data:', updateData);
     

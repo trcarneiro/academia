@@ -1,11 +1,11 @@
 ﻿/**
  * STUDENTS MODULE - ENHANCED LAYOUT
- * Design profissional para gestÃ£o de alunos
+ * Design profissional para gestão de alunos - UX CORRIGIDA
  * FORCE: Sobrescreve todos os estilos anteriores
  */
 
 /* ==========================================================================
-   ACTION GROUPS
+   ACTION GROUPS - RESPONSIVOS
    ========================================================================== */
 
 /* Action group horizontal layout */
@@ -13,22 +13,71 @@
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .action-group-horizontal .btn-form {
     margin: 0;
     white-space: nowrap;
+    font-size: 0.875rem;
 }
 
-/* Header Actions */
+/* Header Actions - Mobile First */
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .header-actions .action-group-horizontal {
     margin-left: auto;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.25rem;
+    }
+    
+    .action-group-horizontal .btn-form {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .action-group-horizontal .btn-form i {
+        margin-right: 0.25rem;
+    }
+    
+    /* Melhorar filtros em mobile */
+    .module-filters-premium .filter-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .module-filters-premium .filter-group {
+        width: 100%;
+    }
+    
+    .module-filters-premium .filter-input,
+    .module-filters-premium .filter-select {
+        width: 100%;
+    }
+    
+    .module-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card-enhanced {
+        padding: 1rem;
+    }
+    
+    .stat-card-enhanced .stat-value {
+        font-size: 1.5rem;
+    }
 }
 
 /* ==========================================================================
@@ -499,8 +548,117 @@
     color: white;
 }
 
+.students-module .btn-personal:hover {
+    background: linear-gradient(135deg, var(--color-warning), #f59e0b);
+    color: white;
+}
+
+.students-module .btn-personal {
+    background: #fef3c7;
+    color: #d97706;
+    border-color: #fbbf24;
+}
+
 /* ==========================================================================
-   EMPTY STATE IN TABLE
+   ENHANCED EMPTY STATE IN TABLE
+   ========================================================================== */
+
+.empty-state-row {
+    text-align: center;
+    padding: 3rem 2rem !important;
+}
+
+.module-isolated-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-icon i {
+    opacity: 0.5;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.empty-title {
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.empty-message {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+}
+
+.empty-actions {
+    margin-top: 0.5rem;
+}
+
+.empty-actions .btn-form {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 0.5; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   ENHANCED LOADING STATE
+   ========================================================================== */
+
+.loading-state-row {
+    text-align: center;
+    padding: 2rem !important;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--color-text-muted);
+}
+
+.loading-spinner {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.loading-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   ENHANCED ROW INTERACTIONS
+   ========================================================================== */
+
+.row-link {
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.row-link:hover {
+    background: var(--color-background) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.row-link:active {
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   ORIGINAL EMPTY STATE STYLES
    ========================================================================== */
 
 .students-module .empty-state td {
@@ -678,6 +836,1404 @@
     .students-module .students-table th:nth-child(n+4),
     .students-module .students-table td:nth-child(n+4) {
         display: none;
+    }
+}
+
+/* ==========================================================================
+   INFO STATE - Endpoint não implementado
+   ========================================================================== */
+
+.info-state {
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    border-radius: 8px;
+    color: #667eea;
+}
+
+.info-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.info-state p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.info-state code {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.info-state .hint {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   FINANCIAL TAB - Summary Cards
+   ========================================================================== */
+
+.financial-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.financial-summary .summary-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.financial-summary .summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.financial-summary .summary-card h4 {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.financial-summary .summary-card span {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.financial-summary .amount-paid {
+    color: #10b981 !important;
+}
+
+.financial-summary .amount-pending {
+    color: #f59e0b !important;
+}
+
+.financial-summary .amount-overdue {
+    color: #ef4444 !important;
+}
+
+/* ==========================================================================
+   FINANCIAL TAB - Payment History
+   ========================================================================== */
+
+.payments-list {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+}
+
+.payments-list h5 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.payment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s;
+}
+
+.payment-item:hover {
+    background-color: #f9fafb;
+}
+
+.payment-item:last-child {
+    border-bottom: none;
+}
+
+.payment-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.payment-date .date {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.payment-details {
+    flex: 1;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.payment-description {
+    font-weight: 500;
+    color: #374151;
+}
+
+.payment-method {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.payment-amount {
+    text-align: right;
+    min-width: 100px;
+}
+
+.payment-amount .amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.payment-amount .amount.paid {
+    color: #10b981;
+}
+
+.payment-amount .amount.pending {
+    color: #f59e0b;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.received,
+.status-badge.paid {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.overdue,
+.status-badge.late {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.info-state .hint {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   FINANCIAL TAB - Header with Add Plan Button
+   ========================================================================== */
+
+.financial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.financial-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.btn-add-plan {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-add-plan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* ==========================================================================
+   FINANCIAL TAB - Payment Actions
+   ========================================================================== */
+
+.payment-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-action {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    transform: scale(1.1);
+}
+
+.btn-mark-paid:hover {
+    background: #d1fae5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.btn-end-subscription:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.subscription-id {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-family: monospace;
+}
+
+/* ==========================================================================
+   MODAL - Add Plan
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Active Subscriptions Section */
+.active-subscriptions {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border: 1px solid #e5e7eb;
+}
+
+.active-subscriptions h5 {
+    color: #1f2937;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.active-subscriptions h5 i {
+    color: #10b981;
+}
+
+.subscriptions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Single plan - center and limit width */
+.subscriptions-grid.single {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+}
+
+/* Multiple plans - allow grid to expand */
+.subscriptions-grid.multiple {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    max-width: 100%;
+}
+
+.subscription-card {
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.subscription-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.subscription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.subscription-header h6 {
+    color: #1f2937;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.subscription-price {
+    color: #667eea;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.subscription-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.detail-item i {
+    color: #667eea;
+    width: 16px;
+}
+
+.subscription-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.btn-warning:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Warning for multiple active plans */
+.warning-multiple-plans {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #92400e;
+    font-weight: 600;
+}
+
+.warning-multiple-plans i {
+    font-size: 1.5rem;
+    color: #f59e0b;
+}
+
+/* ==========================================================================
+   COURSES TAB - Vertical Layout (One Below Another)
+   ========================================================================== */
+
+/* Section body for courses tab - vertical stacking */
+#tab-courses .section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Individual courses sections */
+#tab-courses .courses-section {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Course cards grid within each section */
+#tab-courses .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Individual course card styling */
+#tab-courses .course-card {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#tab-courses .course-card.enrolled {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #ffffff 100%);
+}
+
+#tab-courses .course-card.available {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, #ffffff 100%);
+}
+
+#tab-courses .course-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+#tab-courses .course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#tab-courses .course-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1f2937;
+    font-weight: 700;
+}
+
+#tab-courses .course-status,
+#tab-courses .course-level {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+#tab-courses .course-status.active,
+#tab-courses .course-status.ativo {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+#tab-courses .course-status.inactive,
+#tab-courses .course-status.inativo {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+#tab-courses .course-level {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#tab-courses .course-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#tab-courses .course-description {
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+#tab-courses .course-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+#tab-courses .course-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+#tab-courses .course-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+#tab-courses .course-actions .btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+#tab-courses .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#tab-courses .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+#tab-courses .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+#tab-courses .btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+#tab-courses .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+#tab-courses .btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Empty state for courses */
+#tab-courses .empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #tab-courses .courses-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #tab-courses .course-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #tab-courses .course-actions {
+        flex-direction: column;
+    }
+}
+
+/* ==========================================================================
+   COURSES TAB - PREMIUM CARDS (v2.0)
+   ========================================================================== */
+
+/* Courses Section Layout */
+#tab-courses .section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+#tab-courses .courses-section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+#tab-courses .courses-section h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#tab-courses .courses-section h4 i {
+    color: #667eea;
+}
+
+/* Empty States Premium */
+.empty-state-premium,
+.empty-state-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--color-surface);
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.empty-state-premium {
+    border: 2px dashed #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.empty-state-info {
+    border: 2px dashed #3b82f6;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--gradient-primary));
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.empty-state-premium h3,
+.empty-state-info h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.empty-state-premium p,
+.empty-state-info p {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+    max-width: 500px;
+}
+
+.empty-state-hint {
+    font-size: 0.875rem;
+    color: #667eea;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* Course Cards Premium */
+.course-card-premium {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.course-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.course-card-premium.enrolled {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(16, 185, 129, 0.01) 100%);
+}
+
+.course-card-premium.available {
+    border-left: 4px solid #3b82f6;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(59, 130, 246, 0.01) 100%);
+}
+
+/* Card Header */
+.course-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.course-title-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.course-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+/* Category Badges */
+.course-category-badge {
+    padding: 0.375rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.course-category-badge.adult {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.course-category-badge.teen {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.course-category-badge.kids {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.course-category-badge.women {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.course-category-badge.men {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    color: white;
+}
+
+.course-category-badge.mixed {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.course-category-badge.law_enforcement {
+    background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+    color: white;
+}
+
+/* Course Stats Grid */
+.course-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
+}
+
+.stat-item i {
+    color: #667eea;
+    font-size: 1rem;
+}
+
+/* Course Description */
+.course-description {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Action Buttons Row */
+.course-actions-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.btn-action {
+    flex: 1;
+    min-width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    outline: none;
+}
+
+.btn-action i {
+    font-size: 1rem;
+}
+
+.btn-action.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+}
+
+.btn-action.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-action.btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1.5px solid var(--color-border);
+}
+
+.btn-action.btn-secondary:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.btn-action.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-action.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-action.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.btn-action.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .course-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .course-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .course-actions-row {
+        flex-direction: column;
+    }
+    
+    .btn-action {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .empty-state-premium,
+    .empty-state-info {
+        padding: 3rem 1.5rem;
+    }
+    
+    .empty-state-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .empty-state-icon i {
+        font-size: 2rem;
+    }
+}
+
+/* ==========================================
+   COURSES IN FINANCIAL TAB (Compact View)
+   ========================================== */
+
+.courses-in-plan-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.courses-subsection {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 1rem;
+}
+
+.courses-subsection h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.courses-subsection h5 i {
+    color: var(--primary-color);
+}
+
+/* Compact Course Cards */
+.courses-compact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.course-compact-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.course-compact-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.course-compact-card.enrolled {
+    border-left: 3px solid #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+}
+
+.course-compact-card.available {
+    border-left: 3px solid #3b82f6;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%);
+}
+
+.course-compact-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.25rem;
+}
+
+.course-compact-card.enrolled .course-compact-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.course-compact-card.available .course-compact-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.course-compact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.course-compact-info h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 0.25rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.course-compact-meta {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.course-compact-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+    border-radius: 12px;
+    margin-top: 0.25rem;
+}
+
+.course-compact-badge.auto {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+    color: #059669;
+    font-weight: 600;
+}
+
+.course-compact-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0.5rem 0 0 0;
+    line-height: 1.4;
+    max-width: 100%;
+}
+
+.course-compact-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-compact {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.btn-compact.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-compact.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-compact.btn-secondary {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.btn-compact.btn-secondary:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.btn-compact.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-compact.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Empty State Simple */
+.empty-state-simple {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--color-text-secondary);
+}
+
+.empty-state-simple i {
+    font-size: 2.5rem;
+    color: var(--color-border);
+    margin-bottom: 0.75rem;
+}
+
+.empty-state-simple p {
+    font-size: 0.9375rem;
+    margin: 0;
+}
+
+/* Responsive for Compact Courses */
+@media (max-width: 768px) {
+    .courses-in-plan-container {
+        gap: 1.5rem;
+    }
+    
+    .course-compact-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .course-compact-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .course-compact-info h6 {
+        white-space: normal;
     }
 }
 

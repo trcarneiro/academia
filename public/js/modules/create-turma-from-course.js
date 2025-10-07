@@ -27,7 +27,7 @@
                 endDate: new Date(Date.now() + (90 * 24 * 60 * 60 * 1000)).toISOString(), // 90 days
                 maxStudents: 20,
                 instructorId: 'ba8a4a0b-4445-4d17-8808-4d1cfcfee6ce',
-                organizationId: 'ba8a4a0b-4445-4d17-8808-4d1cfcfee6ce',
+                organizationId: 'a55ad715-2eb0-493c-996c-bb0f60bacec9',
                 unitId: 'ba8a4a0b-4445-4d17-8808-4d1cfcfee6ce',
                 schedule: {
                     daysOfWeek: [1, 3, 5], // Segunda, Quarta, Sexta

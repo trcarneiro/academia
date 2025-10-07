@@ -109,6 +109,16 @@ const CoursesModule = {
             console.log('🎨 Courses CSS loaded');
         }
 
+        // Load courses premium CSS (with modal styles)
+        const existingPremiumLink = document.querySelector('link[href*="courses-premium.css"]');
+        if (!existingPremiumLink) {
+            const premiumLink = document.createElement('link');
+            premiumLink.rel = 'stylesheet';
+            premiumLink.href = '/css/modules/courses-premium.css';
+            document.head.appendChild(premiumLink);
+            console.log('🎨 Courses Premium CSS loaded');
+        }
+
         // Load course details CSS
         const existingDetailsLink = document.querySelector('link[href*="course-details.css"]');
         if (!existingDetailsLink) {
@@ -228,8 +238,7 @@ const CoursesModule = {
 // AGENTS.md: Auto-initialize when module is loaded
 CoursesModule.init();
 
+
 // AGENTS.md: Export for global access
 window.coursesModule = CoursesModule;
 
-// AGENTS.md: Export for ES6 imports
-export default CoursesModule;

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Krav Maga - Sistema de Gestão</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/core/reset.css">
+    <link rel="stylesheet" href="/css/core/base.css">
+    <link rel="stylesheet" href="/css/core/layout.css">
+    <link rel="stylesheet" href="/css/core/components.css">
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="/css/design-system/tokens.css">
+    <link rel="stylesheet" href="/css/design-system/colors.css">
+    <link rel="stylesheet" href="/css/design-system/typography.css">
+
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="/css/modules/dashboard.css">
+    <link rel="stylesheet" href="/css/modules/course-techniques-modal.css">
+</head>
+<body>
+    <!-- ===== MAIN DASHBOARD CONTAINER ===== -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <!-- Loading State -->
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Carregando Academia Krav Maga...</div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/js/shared/polyfills.js"></script>
+    <script src="/js/shared/utils.js"></script>
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/shared/state-manager.js"></script>
+    <script src="/js/core/app.js"></script>
+
+    <!-- Dashboard Module -->
+    <script src="/js/modules/dashboard.js"></script>
+
+    <!-- Initialize Application -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Use the global AcademyApp instance
+                if (window.AcademyApp) {
+                    window.app = window.AcademyApp;
+
+                    // Wait for initialization to complete
+                    if (!window.app.initialized) {
+                        await window.app.init();
+                    }
+
+                    // Dashboard module will auto-initialize and load content
+                    console.log('🎯 Dashboard page loaded - module will handle content');
+
+                } else {
+                    console.error('AcademyApp not found');
+                    document.getElementById('loadingScreen').innerHTML = `
+                        <div class="error-state">
+                            <h2>Erro de Inicialização</h2>
+                            <p>AcademyApp não foi carregado corretamente.</p>
+                            <button onclick="location.reload()">Recarregar Página</button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Application initialization error:', error);
+                document.getElementById('loadingScreen').innerHTML = `
+                    <div class="error-state">
+                        <h2>Erro de Inicialização</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()">Recarregar Página</button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

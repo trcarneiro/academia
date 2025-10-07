@@ -53,6 +53,9 @@ import unitsRoutes from '@/routes/units';
 import trainingAreasRoutes from '@/routes/trainingAreas';
 import agendaRoutes from '@/routes/agenda';
 import settingsRoutes from '@/routes/settings';
+import crmRoutes from '@/routes/crm';
+import googleAdsRoutes from '@/routes/googleAds';
+import devAuthRoutes from '@/routes/dev-auth';
 // import packagesRoutes from '@/routes/packages';
 
 const server = Fastify({ logger: fastifyLoggerOptions });
@@ -115,6 +118,9 @@ const start = async (): Promise<void> => {
   await server.register(normalizePlugin(trainingAreasRoutes, 'trainingAreasRoutes'), { prefix: '/api/training-areas' } as any);
   await server.register(normalizePlugin(agendaRoutes, 'agendaRoutes'), { prefix: '/api/agenda' } as any);
   await server.register(normalizePlugin(settingsRoutes, 'settingsRoutes'), { prefix: '/api/settings' } as any);
+  await server.register(normalizePlugin(crmRoutes, 'crmRoutes'), { prefix: '/api/crm' } as any);
+  await server.register(normalizePlugin(googleAdsRoutes, 'googleAdsRoutes'), { prefix: '/api/google-ads' } as any);
+  await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
   // await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
 
     server.setErrorHandler(errorHandler);

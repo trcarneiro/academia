@@ -5,6 +5,35 @@ export class TurmasService {
     constructor(apiClient) {
         this.api = apiClient;
         this.baseURL = '/api/turmas';
+        // Simple in-memory cache for support lists to avoid repetitive network calls
+        // Structure: { key: { timestamp: number, data: any } }
+        this._cache = new Map();
+        // Default TTL (ms) - 2 minutes is enough for support reference lists (instructors, units, courses)
+        this.DEFAULT_TTL = 2 * 60 * 1000;
+    }
+
+    // ===== Generic Cache Helpers =====
+    _getCache(key) {
+        const entry = this._cache.get(key);
+        if (!entry) return null;
+        const isExpired = (Date.now() - entry.timestamp) > (entry.ttl || this.DEFAULT_TTL);
+        if (isExpired) {
+            this._cache.delete(key);
+            return null;
+        }
+        return entry.data;
+    }
+
+    _setCache(key, data, ttl = this.DEFAULT_TTL) {
+        this._cache.set(key, { data, ttl, timestamp: Date.now() });
+    }
+
+    invalidateCache(keys = []) {
+        if (!keys.length) {
+            this._cache.clear();
+            return;
+        }
+        keys.forEach(k => this._cache.delete(k));
     }
 
     // ===== CRUD Básico =====
@@ -33,27 +62,19 @@ export class TurmasService {
     }
 
     async create(data) {
-        return await this.api.fetchWithStates(this.baseURL, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        return await this.api.saveWithFeedback(this.baseURL, data, {
+            method: 'POST'
         });
     }
 
     async update(id, data) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        return await this.api.saveWithFeedback(`${this.baseURL}/${id}`, data, {
+            method: 'PUT'
         });
     }
 
     async delete(id) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${id}`, {
+        return await this.api.saveWithFeedback(`${this.baseURL}/${id}`, {}, {
             method: 'DELETE'
         });
     }
@@ -61,7 +82,7 @@ export class TurmasService {
     // ===== Cronograma e Aulas =====
     
     async generateSchedule(turmaId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/schedule`, {
+        return await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/schedule`, {}, {
             method: 'POST'
         });
     }
@@ -86,12 +107,8 @@ export class TurmasService {
     }
 
     async updateLessonStatus(turmaId, lessonId, status) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/lessons/${lessonId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ status }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        return await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/lessons/${lessonId}`, { status }, {
+            method: 'PUT'
         });
     }
 
@@ -105,17 +122,13 @@ export class TurmasService {
     }
 
     async addStudent(turmaId, studentId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/students`, {
-            method: 'POST',
-            body: JSON.stringify({ studentId }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        return await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/students`, { studentId }, {
+            method: 'POST'
         });
     }
 
     async removeStudent(turmaId, studentId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/students/${studentId}`, {
+        return await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/students/${studentId}`, {}, {
             method: 'DELETE'
         });
     }
@@ -142,12 +155,8 @@ export class TurmasService {
     }
 
     async markAttendance(turmaId, attendanceData) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/attendance`, {
-            method: 'POST',
-            body: JSON.stringify(attendanceData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        return await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/attendance`, attendanceData, {
+            method: 'POST'
         });
     }
 
@@ -214,41 +223,87 @@ export class TurmasService {
         });
     }
 
+    // ===== Operações administrativas =====
+    async clearAllEndDates() {
+        return await this.api.saveWithFeedback(`${this.baseURL}/clear-end-dates`, {}, {
+            method: 'POST'
+        });
+    }
+
     // ===== Dados de Apoio =====
     
-    async getCourses() {
-        return await this.api.fetchWithStates('/api/courses', {
+    async getCourses({ force = false } = {}) {
+        const cacheKey = 'courses';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        const result = await this.api.fetchWithStates('/api/courses', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        if (result && result.success) this._setCache(cacheKey, result);
+        return result;
     }
 
-    async getInstructors() {
-        return await this.api.fetchWithStates('/api/instructors', {
+    async getInstructors({ force = false } = {}) {
+        const cacheKey = 'instructors';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        console.log('🔄 [TurmasService] Buscando instrutores...');
+        const result = await this.api.fetchWithStates('/api/instructors', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        if (result && result.success) this._setCache(cacheKey, result);
+        console.log('👨‍🏫 [TurmasService] Instrutores retornados:', result);
+        return result;
     }
 
-    async getStudents() {
-        return await this.api.fetchWithStates('/api/students', {
+    async getStudents({ force = false } = {}) {
+        const cacheKey = 'students';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        const result = await this.api.fetchWithStates('/api/students', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        if (result && result.success) this._setCache(cacheKey, result);
+        return result;
     }
 
-    async getOrganizations() {
-        return await this.api.fetchWithStates('/api/organizations', {
+    async getOrganizations({ force = false } = {}) {
+        const cacheKey = 'organizations';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        const result = await this.api.fetchWithStates('/api/organizations', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        if (result && result.success) this._setCache(cacheKey, result);
+        return result;
     }
 
-    async getUnits() {
-        return await this.api.fetchWithStates('/api/units', {
+    async getUnits({ force = false } = {}) {
+        const cacheKey = 'units';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        console.log('🔄 [TurmasService] Buscando unidades...');
+        const result = await this.api.fetchWithStates('/api/units', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        if (result && result.success) this._setCache(cacheKey, result);
+        console.log('🏢 [TurmasService] Unidades retornadas:', result);
+        return result;
     }
 
     // ===== Utilitários =====
@@ -256,13 +311,17 @@ export class TurmasService {
     formatTurmaData(turma) {
         if (!turma) return null;
         
+        // Normalize type field (classType vs type)
+        const normalizedType = turma.classType || turma.type;
+        const normalized = { ...turma, type: normalizedType, classType: normalizedType };
+
         return {
-            ...turma,
-            startDateFormatted: this.formatDate(turma.startDate),
-            endDateFormatted: turma.endDate ? this.formatDate(turma.endDate) : null,
-            statusText: this.getStatusText(turma.status),
-            typeText: this.getTypeText(turma.type),
-            progressPercentage: this.calculateProgress(turma)
+            ...normalized,
+            startDateFormatted: this.formatDate(normalized.startDate),
+            endDateFormatted: normalized.endDate ? this.formatDate(normalized.endDate) : null,
+            statusText: this.getStatusText(normalized.status),
+            typeText: this.getTypeText(normalized.classType),
+            progressPercentage: this.calculateProgress(normalized)
         };
     }
 
@@ -290,8 +349,9 @@ export class TurmasService {
 
     getTypeText(type) {
         const typeMap = {
-            'COLLECTIVE': 'Coletivo',
-            'PRIVATE': 'Particular'
+            'COLLECTIVE': 'Coletiva',
+            'PRIVATE': 'Particular',
+            'SEMI_PRIVATE': 'Semi-Particular'
         };
         return typeMap[type] || type;
     }
@@ -343,39 +403,47 @@ export class TurmasService {
     // ===== Gestão de Cursos da Turma =====
 
     async getTurmaCourses(turmaId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/courses`, {
+        // Provide lightweight caching similar to support lists to avoid redundant rapid calls
+        const cacheKey = `turma-courses:${turmaId}`;
+        const cached = this._getCache(cacheKey);
+        if (cached) {
+            console.debug(`[TurmasService] Cache hit for ${cacheKey}`);
+            return cached;
+        }
+
+        const result = await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/courses`, {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+
+        // Cache only successful responses
+        if (result && result.success) {
+            // Shorter TTL (30s) for courses association since it can change more often
+            this._setCache(cacheKey, result, 30 * 1000);
+        }
+        return result;
     }
 
     async addCourseToTurma(turmaId, courseId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/courses`, {
-            method: 'POST',
-            body: JSON.stringify({ courseId }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const resp = await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/courses`, { courseId }, {
+            method: 'POST'
         });
+        // Invalidate courses cache for this turma so UI refetches fresh list
+        this.invalidateCache([`turma-courses:${turmaId}`]);
+        return resp;
     }
 
     async removeCourseFromTurma(turmaId, courseId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/courses/${courseId}`, {
+        const resp = await this.api.saveWithFeedback(`${this.baseURL}/${turmaId}/courses/${courseId}`, {}, {
             method: 'DELETE'
         });
+        // Invalidate cache to reflect removal
+        this.invalidateCache([`turma-courses:${turmaId}`]);
+        return resp;
     }
 
-    async getTurmaCourses(turmaId) {
-        return await this.api.fetchWithStates(`${this.baseURL}/${turmaId}/courses`, {
-            method: 'GET',
-            onEmpty: () => ({ success: true, data: [] })
-        });
-    }
-
-    async getCourses() {
-        return await this.api.fetchWithStates('/api/courses', {
-            method: 'GET',
-            onEmpty: () => ({ success: true, data: [] })
-        });
+    async getAvailableCourses(options) {
+        // Alias for compatibility; pass through options to allow force refresh
+        return await this.getCourses(options);
     }
 }

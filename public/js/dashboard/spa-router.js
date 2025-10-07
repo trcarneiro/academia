@@ -1,51 +1,11 @@
 class SPARouter {
     constructor() {
         this.routes = {};
-        this.currentModule = null;
-        this.isNavigating = false; // Add navigation lock
-        
-        // Global module state management
+        // Hybrid Agenda Module Route removed - legacy archived; see earlier redirect route to 'agenda'
         this.moduleStates = new Map();
         this.initializingModules = new Set();
-        
-        this.initEventListeners();
-        this.navigateTo(this.getModuleFromHash() || 'dashboard');
-    }
-    
-    /**
-     * Get or initialize module state
-     */
-    getModuleState(moduleName) {
-        if (!this.moduleStates.has(moduleName)) {
-            this.moduleStates.set(moduleName, {
-                isInitialized: false,
-                isInitializing: false,
-                initPromise: null,
-                instance: null,
-                container: null,
-                lastError: null,
-                initCount: 0
-            });
-        }
-        return this.moduleStates.get(moduleName);
-    }
-    
-    /**
-     * Check if module is currently initializing
-     */
-    isModuleInitializing(moduleName) {
-        return this.initializingModules.has(moduleName);
-    }
-    
-    /**
-     * Mark module as initializing
-     */
-    markModuleInitializing(moduleName) {
-        console.log(`🔄 [Router] Marking ${moduleName} as initializing...`);
-        this.initializingModules.add(moduleName);
-        const state = this.getModuleState(moduleName);
-        state.isInitializing = true;
-        state.initCount++;
+        this.isNavigating = false; // ✅ Prevent concurrent navigation
+        this.lastNavigatedModule = null; // ✅ Track last module
     }
     
     /**
@@ -75,6 +35,35 @@ class SPARouter {
         state.lastError = error;
         state.initPromise = null;
     }
+
+    /**
+     * Mark module as initializing
+     */
+    markModuleInitializing(moduleName) {
+        console.log(`🔄 [Router] Marking ${moduleName} as initializing`);
+        this.initializingModules.add(moduleName);
+        const state = this.getModuleState(moduleName);
+        state.isInitializing = true;
+        state.isInitialized = false;
+        state.instance = null;
+        state.lastError = null;
+    }
+    
+    /**
+     * Get or create module state
+     */
+    getModuleState(moduleName) {
+        if (!this.moduleStates.has(moduleName)) {
+            this.moduleStates.set(moduleName, {
+                isInitializing: false,
+                isInitialized: false,
+                instance: null,
+                lastError: null,
+                initPromise: null
+            });
+        }
+        return this.moduleStates.get(moduleName);
+    }
     
     /**
      * Reset module state (for retry scenarios)
@@ -96,12 +85,11 @@ class SPARouter {
         if (state.isInitialized && state.instance) {
             console.log(`📋 [CACHE] Módulo ${moduleName} já inicializado, reutilizando...`);
             
-            // Update header for cached modules
+            // Manage header visibility
+            this.manageDefaultHeader(moduleName);
+            
+            // Reinitialize UI with cached instance if needed
             if (moduleName === 'students') {
-                document.querySelector('.module-header h1').textContent = 'Gestão de Estudantes';
-                document.querySelector('.breadcrumb').textContent = 'Home / Estudantes';
-                
-                // Reinitialize UI with cached instance
                 const container = document.getElementById('module-container');
                 if (typeof window.initStudentsModule === 'function') {
                     await window.initStudentsModule(container);
@@ -152,9 +140,14 @@ class SPARouter {
     }
 
     registerRoute(module, handler) {
+        // ✅ PREVENT DUPLICATE ROUTE REGISTRATION
+        if (this.routes[module]) {
+            console.warn(`⚠️ [Router] Route '${module}' already registered, skipping`);
+            return;
+        }
         this.routes[module] = handler;
+        console.log(`✅ [Router] Route '${module}' registered`);
     }
-
     // Resolve first path segment from hash, e.g. '#plan-editor/123' -> 'plan-editor'
     getModuleFromHash() {
         const raw = (location.hash || '').slice(1);
@@ -162,26 +155,67 @@ class SPARouter {
     }
 
     navigateTo(module) {
+        // ✅ PREVENT CONCURRENT NAVIGATION
+        if (this.isNavigating) {
+            console.log(`⏸️ [Router] Already navigating, skipping ${module}`);
+            return;
+        }
+
+        // ✅ PREVENT DUPLICATE NAVIGATION
+        if (this.lastNavigatedModule === module) {
+            console.log(`⏸️ [Router] Already on ${module}, skipping navigation`);
+            return;
+        }
+
         if (this.routes[module]) {
-            // Remover módulo ativo anterior
-            if (this.currentModule) {
-                const prevItem = document.querySelector(`.main-menu li[data-module="${this.currentModule}"]`);
-                if (prevItem) prevItem.classList.remove('active');
+            this.isNavigating = true;
+            this.lastNavigatedModule = module;
+
+            try {
+                // Remover módulo ativo anterior
+                if (this.currentModule) {
+                    const prevItem = document.querySelector(`.main-menu li[data-module="${this.currentModule}"]`);
+                    if (prevItem) prevItem.classList.remove('active');
+                }
+                
+                // Ativar novo módulo
+                this.currentModule = module;
+                const newItem = document.querySelector(`.main-menu li[data-module="${module}"]`);
+                if (newItem) newItem.classList.add('active');
+                
+                // ✅ ONLY UPDATE HASH IF NEEDED (prevent loop)
+                const currentFirst = (location.hash || '').slice(1).split('/')[0];
+                if (currentFirst !== module) {
+                    // Temporarily disable hashchange listener
+                    this._ignoreNextHashChange = true;
+                    location.hash = module;
+                }
+                
+                // Executar handler do módulo
+                this.routes[module]();
+            } finally {
+                // Reset navigation flag immediately - module init handles async loading
+                setTimeout(() => {
+                    this.isNavigating = false;
+                }, 100); // Reduced from 500ms to 100ms
             }
-            
-            // Ativar novo módulo
-            this.currentModule = module;
-            const newItem = document.querySelector(`.main-menu li[data-module="${module}"]`);
-            if (newItem) newItem.classList.add('active');
-            
-            // Atualizar URL somente se o primeiro segmento for diferente (não clobber IDs)
-            const currentFirst = (location.hash || '').slice(1).split('/')[0];
-            if (currentFirst !== module) {
-                location.hash = module;
+        }
+    }
+
+    /**
+     * Manage default header visibility for modules
+     */
+    manageDefaultHeader(moduleName) {
+        // Some modules like 'students' manage their own headers (module-header-premium)
+        // Hide default header for modules that have their own premium headers
+        const defaultHeader = document.querySelector('.module-header');
+        if (defaultHeader) {
+            const modulesWithOwnHeaders = ['students', 'activities', 'lesson-plans', 'courses', 'packages', 'billing'];
+            if (modulesWithOwnHeaders.includes(moduleName)) {
+                defaultHeader.style.display = 'none';
+            } else {
+                defaultHeader.style.display = 'block';
             }
-            
-            // Executar handler do módulo
-            this.routes[module]();
         }
     }
 
@@ -198,7 +232,7 @@ class SPARouter {
             },
             'student-editor': {
                 css: 'css/modules/students-enhanced.css',
-                js: 'js/modules/students/student-editor/student-editor.js'
+                js: 'js/modules/students/index.js'
             },
             'techniques': {
                 css: 'css/modules/techniques.css',
@@ -206,11 +240,11 @@ class SPARouter {
             },
             'packages': {
                 css: 'css/modules/packages.css',
-                js: 'js/modules/packages/index.js'
+                js: 'js/modules/packages/index.js?v=2.0.1'
             },
             'package-editor': {
                 css: 'css/modules/packages.css',
-                js: 'js/modules/packages/index.js'
+                js: 'js/modules/packages/index.js?v=2.0.1'
             },
             // FIX: plan-editor deve usar o editor de cobrança, não lesson-plans
             'plan-editor': {
@@ -227,34 +261,38 @@ class SPARouter {
             },
             'lesson-plans': {
                 css: 'css/modules/lesson-plans.css',
-                js: 'js/modules/lesson-plans/lesson-plans.js'
+                js: 'js/modules/lesson-plans/index.js'
             },
             'courses': {
                 css: 'css/modules/courses/courses.css',
-                js: 'js/modules/courses.js'
+                js: 'js/modules/courses/index.js'
             },
             'course-editor': {
                 css: 'css/modules/courses/course-editor.css',
-                js: 'js/modules/course-editor.js'
+                js: 'js/modules/courses/controllers/courseEditorController.js'
             },
             'ai': {
                 css: 'css/modules/ai/ai.css',
                 js: 'js/modules/ai.js'
             },
             'rag': {
-                css: 'css/modules/rag/rag.css',
-                js: 'js/modules/rag/index.js'
+                css: 'css/modules/ai/ai.css',
+                js: 'js/modules/ai.js'
             },
             'turmas': {
-                css: 'css/modules/turmas-consolidated.css',
-                js: 'js/modules/turmas-consolidated.js'
+                css: 'css/modules/turmas/turma-editor.css',
+                js: 'js/modules/turmas/turma-editor.js'
+            },
+            'turmas-list': {
+                css: 'css/modules/turmas.css',
+                js: 'js/modules/turmas/index.js'
             },
             'organizations': {
                 css: 'css/modules/organizations/organizations.css',
                 js: 'js/modules/organizations/index.js'
             },
             'units': {
-                css: 'css/modules/units.css',
+                css: 'css/modules/units/units.css',
                 js: 'js/modules/units/index.js'
             },
             'unit-editor': {
@@ -275,9 +313,17 @@ class SPARouter {
                     'js/modules/agenda/index.js'
                 ]
             },
+            'crm': {
+                css: 'css/modules/crm.css',
+                js: 'js/modules/crm/index.js'
+            },
             'settings': {
                 css: 'css/modules/settings.css',
                 js: 'js/modules/settings.js'
+            },
+            'ai-monitor': {
+                css: 'css/modules/ai-monitor.css',
+                js: 'js/modules/ai-monitor/index.js'
             }
         };
 
@@ -373,21 +419,35 @@ class SPARouter {
             });
         });
 
-        // Navegação pelo botão voltar/avancar
+        // ✅ FIXED: Prevent hashchange loop
         window.addEventListener('hashchange', () => {
+            // Ignore if we just set the hash programmatically
+            if (this._ignoreNextHashChange) {
+                this._ignoreNextHashChange = false;
+                return;
+            }
+
             const module = this.getModuleFromHash();
-            if (module && this.routes[module]) {
+            
+            // Only navigate if module changed
+            if (module && this.routes[module] && this.lastNavigatedModule !== module) {
+                console.log(`🔗 [Router] Hashchange detected: ${module}`);
                 this.navigateTo(module);
             }
         });
     }
 }
 
-// Inicialização do router
-const router = new SPARouter();
+// ✅ SINGLETON PATTERN - Prevent multiple router instances
+if (window.router) {
+    console.warn('⚠️ [Router] Router already exists, reusing existing instance');
+} else {
+    // Inicialização do router
+    window.router = new SPARouter();
+}
 
-// Tornar router globalmente acessível
-window.router = router;
+// Use existing router instance
+const router = window.router;
 
 // Registro das rotas
 router.registerRoute('dashboard', () => {
@@ -407,10 +467,12 @@ router.registerRoute('students', async () => {
     // Use promise-based concurrent protection
     return router.safeModuleInitialization(moduleName, async () => {
         console.log('📋 [NETWORK] Carregando módulo de Estudantes...');
+    // Ensure module assets (CSS + JS) are loaded consistently
+    try { router.loadModuleAssets('students'); } catch (_) {}
         
-        // Update header
-        document.querySelector('.module-header h1').textContent = 'Gestão de Estudantes';
-        document.querySelector('.breadcrumb').textContent = 'Home / Estudantes';
+        // Header is managed by the students module itself (module-header-premium)
+        // document.querySelector('.module-header h1').textContent = 'Gestão de Estudantes';
+        // document.querySelector('.breadcrumb').textContent = 'Home / Estudantes';
         
         // Get target container
         const container = document.getElementById('module-container');
@@ -425,9 +487,15 @@ router.registerRoute('students', async () => {
                 const moduleScript = document.createElement('script');
                 moduleScript.type = 'module';
                 moduleScript.src = 'js/modules/students/index.js';
-                
+
+                // Save reference to router instance
+                const routerInstance = this;
+
                 moduleScript.onload = async () => {
                     try {
+                        // Manage header visibility
+                        routerInstance.manageDefaultHeader('students');
+                        
                         if (typeof window.initStudentsModule === 'function') {
                             const instance = await window.initStudentsModule(container);
                             resolve(instance);
@@ -452,6 +520,7 @@ router.registerRoute('students', async () => {
 router.registerRoute('student-editor', () => {
     // Carregar editor de aluno - usando o novo sistema
     console.log('📝 Carregando editor de estudante...');
+    try { router.loadModuleAssets('students'); } catch (_) {}
     
     // Extract student ID from hash if present
     const hashParts = location.hash.split('/');
@@ -803,7 +872,17 @@ router.registerRoute('lesson-plans', () => {
     
     // Wait for assets and initialize
     setTimeout(() => {
-        if (typeof window.initializeLessonPlansModule === 'function') {
+        console.log('🔍 Checking for lesson plans functions...');
+        console.log('initLessonPlans:', typeof window.initLessonPlans);
+        console.log('testLessonPlansModule:', typeof window.testLessonPlansModule);
+        
+        // Try test function first
+        if (typeof window.testLessonPlansModule === 'function') {
+            console.log('🧪 Running test function...');
+            window.testLessonPlansModule();
+        }
+        
+        if (typeof window.initLessonPlans === 'function') {
             try {
                 const container = document.querySelector('#lessonPlansContainer') ||
                                  document.querySelector('.lesson-plans-container') ||
@@ -811,7 +890,8 @@ router.registerRoute('lesson-plans', () => {
                 
                 if (container) {
                     console.log('📚 Initializing lesson plans module...');
-                    window.initializeLessonPlansModule();
+                    // Pass the resolved container so the module renders inside the router-managed node
+                    window.initLessonPlans(container);
                 } else {
                     console.error('❌ Lesson plans container not found');
                     moduleContainer.innerHTML = `
@@ -835,7 +915,7 @@ router.registerRoute('lesson-plans', () => {
                 `;
             }
         } else {
-            console.error('❌ initializeLessonPlansModule function not found');
+            console.error('❌ initLessonPlans function not found');
             moduleContainer.innerHTML = `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
@@ -845,7 +925,7 @@ router.registerRoute('lesson-plans', () => {
                 </div>
             `;
         }
-    }, 150);
+    }, 1000);
     
     // Update header
     document.querySelector('.module-header h1').textContent = 'Planos de Aula';
@@ -924,9 +1004,9 @@ router.registerRoute('lesson-plan-editor', () => {
 
     // Inicializar o módulo e abrir o editor
     setTimeout(() => {
-        if (typeof window.initializeLessonPlansModule === 'function') {
+        if (typeof window.initLessonPlans === 'function') {
             try {
-                window.initializeLessonPlansModule();
+                window.initLessonPlans();
                 setTimeout(() => {
                     const targetContainer = document.getElementById('lessonPlansContainer') || container;
                     if (typeof window.openLessonPlanEditor === 'function') {
@@ -1019,8 +1099,6 @@ router.registerRoute('course-editor', () => {
 });
 
 router.registerRoute('ai', () => {
-    console.log('🤖 Carregando módulo de IA...');
-    
     // Update header
     document.querySelector('.module-header h1').textContent = 'Inteligência Artificial';
     document.querySelector('.breadcrumb').textContent = 'Home / Cursos / IA';
@@ -1028,167 +1106,146 @@ router.registerRoute('ai', () => {
     // Get target container
     const container = document.getElementById('module-container');
     
-    // Load the AI view
-    fetch('views/modules/ai/ai.html')
-        .then(r => r.text())
-        .then(html => {
-            const tmp = document.createElement('div');
-            tmp.innerHTML = html;
-            const inner = tmp.querySelector('.ai-isolated');
-            if (inner) {
-                container.innerHTML = '';
-                container.appendChild(inner);
-            } else {
-                // Fallback: inject as-is
-                container.innerHTML = html;
-            }
-            
-            router.loadModuleAssets('ai');
-            
-            // Initialize AI module
-            const tryInit = (attempts = 0) => {
-                if (typeof window.initializeAIModule === 'function') {
-                    try { 
-                        window.initializeAIModule(); 
-                    } catch (e) { 
-                        console.error('AI module init error', e); 
-                    }
-                } else if (attempts < 30) {
-                    setTimeout(() => tryInit(attempts + 1), 150);
-                }
-            };
-            tryInit();
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .catch(err => {
-            console.error('❌ Erro ao carregar módulo de IA:', err);
-            container.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Erro de carregamento</h3>
-                    <p>${err.message}</p>
-                    <button onclick="router.navigateTo('courses')" class="btn btn-primary">Voltar aos Cursos</button>
-                </div>
-            `;
-        });
-});
-
-// RAG Module Route
-router.registerRoute('rag', () => {
-    console.log('🧠 Carregando módulo RAG...');
-    
-    // Clear module container first
-    const moduleContainer = document.getElementById('module-container');
-    moduleContainer.innerHTML = '<div id="ragContainer" class="rag-container"></div>';
+    // Create clean container for Enhanced AI Module (no old HTML loading)
+    container.innerHTML = '<div id="ai-module-container" class="ai-isolated"></div>';
     
     // Load module assets
-    router.loadModuleAssets('rag');
+    router.loadModuleAssets('ai');
     
-    // Wait for assets and initialize
-    setTimeout(() => {
-        if (typeof window.ragModule?.init === 'function') {
+    // Initialize Enhanced AI Module
+    const tryInit = (attempts = 0) => {
+        if (typeof window.initializeAIModule === 'function') {
+            try { 
+                window.initializeAIModule(); 
+            } catch (e) { 
+                console.error('AI module init error', e); 
+            }
+        } else if (attempts < 30) {
+            setTimeout(() => tryInit(attempts + 1), 150);
+        }
+    };
+    tryInit();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// AI Monitor Module Route
+router.registerRoute('ai-monitor', () => {
+    console.log('🤖 Carregando módulo AI Monitor...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'AI Monitor';
+    document.querySelector('.breadcrumb').textContent = 'Home / IA / AI Monitor';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    // Clear container
+    container.innerHTML = '<div id="ai-monitor-loading">Carregando AI Monitor...</div>';
+    
+    // Load module assets
+    router.loadModuleAssets('ai-monitor');
+    
+    // Initialize AI Monitor Module
+    const tryInit = (attempts = 0) => {
+        console.log(`🤖 AI Monitor - Tentativa de inicialização ${attempts + 1}/30`);
+        
+        if (typeof window.initAIMonitorModule === 'function') {
             try {
-                const container = document.querySelector('#ragContainer') ||
-                                 document.querySelector('.rag-container') ||
-                                 document.querySelector('.rag-isolated');
-                
-                if (container) {
-                    console.log('🧠 Initializing RAG module...');
-                    window.ragModule.init();
-                } else {
-                    console.error('❌ RAG container not found');
-                    moduleContainer.innerHTML = `
-                        <div class="error-state">
-                            <div class="error-icon">⚠️</div>
-                            <h3>Container não encontrado</h3>
-                            <p>Não foi possível encontrar o container do módulo RAG.</p>
-                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('❌ Error initializing RAG module:', error);
-                moduleContainer.innerHTML = `
+                console.log('🤖 AI Monitor - Inicializando módulo...');
+                window.initAIMonitorModule();
+            } catch (e) {
+                console.error('❌ AI Monitor - Erro na inicialização:', e);
+                container.innerHTML = `
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
-                        <h3>Erro de inicialização</h3>
-                        <p>${error.message}</p>
-                        <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                        <h3>Erro ao inicializar AI Monitor</h3>
+                        <p>${e.message}</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
                     </div>
                 `;
             }
+        } else if (attempts < 30) {
+            setTimeout(() => tryInit(attempts + 1), 200);
         } else {
-            console.error('❌ RAG module not found');
-            moduleContainer.innerHTML = `
+            console.error('❌ AI Monitor - Timeout na inicialização');
+            container.innerHTML = `
                 <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Módulo não carregado</h3>
-                    <p>A função de inicialização do RAG não foi encontrada.</p>
-                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                    <div class="error-icon">⏰</div>
+                    <h3>Timeout na inicialização</h3>
+                    <p>O módulo AI Monitor não foi carregado a tempo.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
                 </div>
             `;
         }
-    }, 150);
+    };
     
-    // Update header
-    document.querySelector('.module-header h1').textContent = 'RAG Knowledge System';
-    document.querySelector('.breadcrumb').textContent = 'Home / RAG System';
+    // Start initialization with small delay
+    setTimeout(() => tryInit(), 300);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// RAG Module Route - Redirects to AI module (RAG integrated in AI module)
+router.registerRoute('rag', () => {
+    console.log('🧠 RAG route - redirecting to AI module...');
+    router.navigateTo('ai');
 });
 
 // Turmas Module Route
 router.registerRoute('turmas', () => {
-    // Prevent multiple rapid calls
-    if (router.isNavigating) {
-        console.log('👥 Navigation already in progress, ignoring...');
-        return;
-    }
-    
     console.log('👥 Carregando módulo Turmas...');
-    router.isNavigating = true;
     
     // Update header
     document.querySelector('.module-header h1').textContent = 'Gestão de Turmas';
     document.querySelector('.breadcrumb').textContent = 'Home / Turmas';
     
-    // Clear module container first
+    // Load turmas module assets and initialize the proper listing module
     const moduleContainer = document.getElementById('module-container');
-    moduleContainer.innerHTML = '<div id="turmasContainer" class="turmas-container"></div>';
     
-    // Load module assets (CSS and JS)
-    router.loadModuleAssets('turmas');
-    
-    // Wait for assets and initialize
-    setTimeout(() => {
-        if (typeof window.initializeTurmasModule === 'function') {
-            window.initializeTurmasModule().then(() => {
-                router.isNavigating = false;
-            }).catch(error => {
-                router.isNavigating = false;
-                console.error('❌ Error initializing turmas:', error);
+    try {
+        // Load turmas module assets (will load the proper index.js with listing view)
+        router.loadModuleAssets('turmas-list');
+        
+        // Initialize the turmas module for listing
+        setTimeout(() => {
+            if (typeof window.turmasModule === 'object' && window.turmasModule.init) {
+                window.turmasModule.init().catch(error => {
+                    console.error('❌ Error initializing turmas module:', error);
+                    moduleContainer.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro ao carregar módulo</h3>
+                            <p>Não foi possível inicializar o módulo de turmas.</p>
+                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                        </div>
+                    `;
+                });
+            } else {
+                console.error('❌ Turmas module not found or not properly exported');
                 moduleContainer.innerHTML = `
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
-                        <h3>Erro de inicialização</h3>
-                        <p>${error.message}</p>
+                        <h3>Módulo não encontrado</h3>
+                        <p>O módulo de turmas não foi carregado corretamente.</p>
                         <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
                     </div>
                 `;
-            });
-        } else {
-            router.isNavigating = false;
-            console.error('❌ initializeTurmasModule not found');
-            moduleContainer.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Módulo não encontrado</h3>
-                    <p>Função de inicialização não disponível.</p>
-                    <button onclick="location.reload()" class="btn btn-primary">Recarregar</button>
-                </div>
-            `;
-        }
-    }, 200);
+            }
+        }, 100);
+    } catch (error) {
+        console.error('❌ Error loading turmas module assets:', error);
+        moduleContainer.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro ao carregar assets</h3>
+                <p>Não foi possível carregar os recursos do módulo de turmas.</p>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+            </div>
+        `;
+    }
 });
 
 // Turma Editor Route
@@ -1204,7 +1261,9 @@ router.registerRoute('turma-editor', () => {
     // Extract turma ID from hash if available
     const urlParams = new URLSearchParams(window.location.search);
     const hashParts = window.location.hash.slice(1).split('/');
-    const turmaId = hashParts[1] || urlParams.get('id');
+    const turmaId = hashParts[1] !== 'personal' ? hashParts[1] : null;
+    const isPersonalSession = hashParts[1] === 'personal';
+    const personalSessionId = isPersonalSession ? hashParts[2] : null;
     
     // Load turma editor HTML
     fetch('/views/modules/turmas/turma-editor.html')
@@ -1224,10 +1283,10 @@ router.registerRoute('turma-editor', () => {
                 });
             }
 
-            // Load courses.js first, then turma-editor.js. If the module version doesn't expose the
-            // picker in time, try loading the legacy top-level /js/courses.js as a fallback so
-            // other modules that expect window.openCoursePicker can function reliably.
-            loadScript('/js/modules/courses.js').then(() => {
+            // Ensure centralized API client is present, then load courses.js, then turma-editor.js
+            // If the module version doesn't expose the picker in time, try loading the legacy
+            // top-level /js/courses.js as a fallback so other modules that expect window.openCoursePicker can function reliably.
+            loadScript('/js/shared/api-client.js').then(() => loadScript('/js/modules/courses.js')).then(() => {
                 // If the shared picker wasn't exposed by the modules file, attempt to load the
                 // top-level courses.js as a fallback. This helps environments where one path
                 // is present but the other is used by legacy code.
@@ -1248,13 +1307,36 @@ router.registerRoute('turma-editor', () => {
                     
                     // Wait a bit for the module to initialize
                     setTimeout(() => {
+                        // Check for personal session route pattern
+                        const hashParts = window.location.hash.slice(1).split('/');
+                        const isPersonalRoute = hashParts[1] === 'personal';
+                        const sessionId = isPersonalRoute ? hashParts[2] : null;
+                        
                         // Initialize turma editor
                         if (typeof window.turmaEditor === 'object' && window.turmaEditor.initialize) {
-                            window.turmaEditor.initialize(turmaId).catch(error => {
+                            window.turmaEditor.initialize(turmaId || personalSessionId).then(() => {
+                                // If this is a personal session route, switch to personal tab
+                                if (isPersonalSession) {
+                                    const personalTabBtn = document.getElementById('tab-btn-personal');
+                                    if (personalTabBtn) {
+                                        personalTabBtn.click();
+                                        console.log('🎯 Switched to Personal tab for session:', personalSessionId);
+                                    }
+                                }
+                            }).catch(error => {
                                 console.error('❌ Error initializing turma editor:', error);
                             });
                         } else if (typeof window.initializeTurmaEditor === 'function') {
-                            window.initializeTurmaEditor(turmaId).catch(error => {
+                            window.initializeTurmaEditor(turmaId || personalSessionId).then(() => {
+                                // If this is a personal session route, switch to personal tab
+                                if (isPersonalSession) {
+                                    const personalTabBtn = document.getElementById('tab-btn-personal');
+                                    if (personalTabBtn) {
+                                        personalTabBtn.click();
+                                        console.log('🎯 Switched to Personal tab for session:', personalSessionId);
+                                    }
+                                }
+                            }).catch(error => {
                                 console.error('❌ Error initializing turma editor:', error);
                             });
                         } else {
@@ -1300,14 +1382,7 @@ router.registerRoute('turma-editor', () => {
 
 // Organizations Module Routes
 router.registerRoute('organizations', async () => {
-    // Prevent multiple rapid calls
-    if (router.isNavigating) {
-        console.log('🏫 Navigation already in progress, ignoring organizations...');
-        return;
-    }
-    
     console.log('🏫 Carregando módulo de Organizações...');
-    router.isNavigating = true;
     
     try {
         // Update header
@@ -1321,20 +1396,19 @@ router.registerRoute('organizations', async () => {
         if (typeof window.initOrganizationsModule === 'function') {
             window.organizationsModuleInitialized = true;
             await window.initOrganizationsModule(container);
-            router.isNavigating = false;
         } else {
             // Load module dynamically
             const moduleScript = document.createElement('script');
-            moduleScript.type = 'module';
             moduleScript.src = 'js/modules/organizations/index.js';
             
             moduleScript.onload = async () => {
+                // Wait a bit for script to execute
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 if (typeof window.initOrganizationsModule === 'function') {
                     window.organizationsModuleInitialized = true;
                     await window.initOrganizationsModule(container);
-                    router.isNavigating = false;
                 } else {
-                    router.isNavigating = false;
                     console.error('❌ Módulo de organizações não foi carregado corretamente');
                     container.innerHTML = `
                         <div class="error-state-premium">
@@ -1350,7 +1424,6 @@ router.registerRoute('organizations', async () => {
             };
             
             moduleScript.onerror = () => {
-                router.isNavigating = false;
                 console.error('❌ Erro ao carregar script do módulo de organizações');
                 container.innerHTML = `
                     <div class="error-state-premium">
@@ -1368,7 +1441,6 @@ router.registerRoute('organizations', async () => {
         }
         
     } catch (error) {
-        router.isNavigating = false;
         console.error('❌ Erro ao carregar módulo de organizações:', error);
         const container = document.getElementById('module-container');
         container.innerHTML = `
@@ -1411,10 +1483,12 @@ router.registerRoute('units', async () => {
         } else {
             // Load module dynamically
             const moduleScript = document.createElement('script');
-            moduleScript.type = 'module';
             moduleScript.src = 'js/modules/units/index.js';
             
             moduleScript.onload = async () => {
+                // Wait a bit for script to execute
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 if (typeof window.initUnitsModule === 'function') {
                     await window.initUnitsModule(container);
                 } else {
@@ -1637,106 +1711,19 @@ router.registerRoute('instructors', async () => {
     }
 });
 
-router.registerRoute('instructor-editor', () => {
-    console.log('📝 Carregando editor de instrutor...');
-    
-    // Extract instructor ID from hash if present
-    const hashParts = location.hash.split('/');
-    const instructorId = hashParts[1] || null;
-    
-    // Update header
-    document.querySelector('.module-header h1').textContent = instructorId ? 'Editar Instrutor' : 'Novo Instrutor';
-    document.querySelector('.breadcrumb').textContent = 'Home / Instrutores / Editor';
-    
-    // Load instructor editor HTML
-    fetch('views/modules/instructors/instructor-editor.html')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('module-container').innerHTML = html;
-            
-            // Load CSS
-            if (!document.querySelector('link[href="css/modules/instructors.css"]')) {
-                const cssLink = document.createElement('link');
-                cssLink.rel = 'stylesheet';
-                cssLink.href = 'css/modules/instructors.css';
-                document.head.appendChild(cssLink);
-            }
-            
-            if (!document.querySelector('link[href="css/modules/instructor-editor.css"]')) {
-                const cssLink = document.createElement('link');
-                cssLink.rel = 'stylesheet';
-                cssLink.href = 'css/modules/instructor-editor.css';
-                document.head.appendChild(cssLink);
-            }
-            
-            // Load JavaScript
-            if (!document.querySelector('script[src="js/modules/instructors/instructor-editor.js"]')) {
-                const script = document.createElement('script');
-                script.src = 'js/modules/instructors/instructor-editor.js';
-                script.type = 'application/javascript';
-                document.head.appendChild(script);
-            }
-        })
-        .catch(error => {
-            console.error('❌ Erro ao carregar editor de instrutor:', error);
-            document.getElementById('module-container').innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Erro ao carregar editor</h3>
-                    <p>Não foi possível carregar o editor de instrutores.</p>
-                    <button onclick="router.navigateTo('instructors')" class="btn btn-primary">
-                        Voltar aos Instrutores
-                    </button>
-                </div>
-            `;
-        });
-});
-
-// Frequency Module Route
-router.registerRoute('frequency', async () => {
-    console.log('📊 Carregando módulo de Frequência...');
-    
-    // Update header
-    document.querySelector('.module-header h1').textContent = 'Gestão de Frequência';
-    document.querySelector('.breadcrumb').textContent = 'Home / Frequência';
-    
-    // Get target container
+router.registerRoute('hybrid-agenda', async () => {
+    console.warn('ℹ️ Rota antiga "hybrid-agenda" acessada. Redirecionando para a nova Agenda...');
     const container = document.getElementById('module-container');
-    
-    try {
-        // Check if initialization function is available
-        if (typeof window.initFrequencyModule === 'function') {
-            await window.initFrequencyModule(container);
-        } else {
-            // Wait for module to load and try again
-            let attempts = 0;
-            const maxAttempts = 20;
-            
-            while (!window.initFrequencyModule && attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                attempts++;
-            }
-            
-            if (window.initFrequencyModule) {
-                await window.initFrequencyModule(container);
-            } else {
-                throw new Error('Módulo de frequência não foi carregado após 10 segundos');
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro ao inicializar módulo de frequência:', error);
+    if (container) {
         container.innerHTML = `
-            <div class="error-state">
-                <div class="error-icon">⚠️</div>
-                <h3>Erro na inicialização</h3>
-                <p>${error.message}</p>
-                <button onclick="location.reload()" class="btn btn-primary">
-                    Recarregar Página
-                </button>
+            <div class="data-card-premium" style="padding:24px; margin:16px 0;">
+                <h3>Agenda unificada disponível</h3>
+                <p>O módulo antigo de Agenda Híbrida foi descontinuado. Você será redirecionado para a nova Agenda.</p>
+                <button class="btn btn-primary" onclick="router.navigateTo('agenda')">Ir para Agenda</button>
             </div>
         `;
     }
+    setTimeout(() => router.navigateTo('agenda'), 600);
 });
 
 // Check-in Kiosk Route
@@ -1902,6 +1889,73 @@ router.registerRoute('agenda', async () => {
     document.querySelector('.breadcrumb').textContent = 'Home / Agenda';
 });
 
+// CRM Module Route
+router.registerRoute('crm', async () => {
+    console.log('🎯 Inicializando módulo de CRM...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container first
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando CRM...</p>
+        </div>
+    `;
+
+    try {
+        // Load module assets
+        router.loadModuleAssets('crm');
+        
+        // Wait for CRM module to be available
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds (100 * 100ms)
+        
+        while (!window.crm && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.crm) {
+            // Set container
+            window.crm.container = container;
+            
+            // Initialize CRM module
+            await window.crm.init();
+            
+            console.log('✅ Módulo de CRM inicializado com sucesso');
+        } else {
+            throw new Error('Módulo de CRM não foi carregado após 10 segundos');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de CRM:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro no CRM</h3>
+                <p>Falha ao carregar o módulo de CRM: ${error.message}</p>
+                <button onclick="router.navigateTo('crm')" class="btn btn-primary">
+                    🔄 Tentar Novamente
+                </button>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-secondary">
+                    🏠 Voltar ao Dashboard
+                </button>
+            </div>
+        `;
+    }
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'CRM & Leads';
+    document.querySelector('.breadcrumb').textContent = 'Home / CRM & Leads';
+});
+
+// (Legacy) Hybrid Agenda: fully archived; see earlier route redirecting to 'agenda'
+
 // Settings Module Route
 router.registerRoute('settings', async () => {
     console.log('⚙️ Carregando módulo de Configurações...');
@@ -1952,5 +2006,24 @@ router.registerRoute('settings', async () => {
                 <p>${error && error.message ? error.message : 'Tente novamente'}</p>
             </div>
         `;
+
     }
 });
+
+// ✅ PREVENT MULTIPLE INITIALIZATIONS
+if (!window._routerInitialized) {
+    // Inicializar router quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🚀 Inicializando SPA Router...');
+        router.initEventListeners();
+
+        // Carregar rota inicial baseada no hash ou dashboard
+        const initialModule = router.getModuleFromHash() || 'dashboard';
+        router.navigateTo(initialModule);
+        
+        // Mark as initialized
+        window._routerInitialized = true;
+    });
+} else {
+    console.log('✅ Router já inicializado, pulando inicialização');
+}

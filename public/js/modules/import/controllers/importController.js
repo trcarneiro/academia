@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Import Controller - Main UI Controller
  * Gerencia o workflow de importação de alunos do Asaas
  * 
@@ -122,23 +122,52 @@ class ImportController {
 
                 <!-- Info sobre formato -->
                 <div class="data-preview-premium">
-                    <h3>📋 Formato Esperado</h3>
-                    <p>O arquivo CSV deve conter as seguintes colunas:</p>
-                    <ul>
-                        <li><strong>nome</strong> - Nome completo do aluno</li>
-                        <li><strong>email</strong> - Email válido</li>
-                        <li><strong>telefone</strong> - Telefone no formato brasileiro</li>
-                        <li><strong>documento</strong> - CPF ou CNPJ</li>
-                        <li><strong>endereco</strong> - Endereço completo</li>
-                        <li><strong>valor_mensalidade</strong> - Valor da mensalidade</li>
-                        <li><strong>empresa</strong> - Código da empresa (opcional)</li>
-                    </ul>
+                    <h3>📋 Formatos Suportados</h3>
+                    <div class="format-tabs">
+                        <div class="format-tab active" data-format="sistema">
+                            <h4>🎓 Formato Padrão</h4>
+                            <p>Campos: nome, email, telefone, documento, endereco, valor_mensalidade</p>
+                        </div>
+                        <div class="format-tab" data-format="asaas">
+                            <h4>💳 Formato Asaas</h4>
+                            <p>Importação direta de exportações do Asaas (mapeamento automático)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="format-details active" data-format="sistema">
+                        <p><strong>📋 Formato Padrão do Sistema:</strong></p>
+                        <ul>
+                            <li><strong>nome</strong> - Nome completo do aluno</li>
+                            <li><strong>email</strong> - Email válido</li>
+                            <li><strong>telefone</strong> - Telefone no formato brasileiro</li>
+                            <li><strong>documento</strong> - CPF ou CNPJ</li>
+                            <li><strong>endereco</strong> - Endereço completo</li>
+                            <li><strong>valor_mensalidade</strong> - Valor da mensalidade</li>
+                            <li><strong>empresa</strong> - Código da empresa (opcional)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="format-details" data-format="asaas">
+                        <p><strong>💳 Formato Asaas (Detecção Automática):</strong></p>
+                        <ul>
+                            <li><strong>Nome</strong> → mapeado para <code>nome</code></li>
+                            <li><strong>Email</strong> → mapeado para <code>email</code></li>
+                            <li><strong>Celular</strong> → mapeado para <code>telefone</code></li>
+                            <li><strong>CPF ou CNPJ</strong> → mapeado para <code>documento</code></li>
+                            <li><strong>Rua + Número + Bairro + Cidade</strong> → concatenado em <code>endereco</code></li>
+                            <li><strong>Valor a vencer</strong> → processado para <code>valor_mensalidade</code></li>
+                        </ul>
+                        <p class="format-note">✨ O sistema detecta automaticamente o formato e faz a conversão!</p>
+                    </div>
                 </div>
             </div>
         `;
 
         // Setup upload functionality
         this.setupUploadArea();
+        
+        // Setup format tabs
+        this.setupFormatTabs();
         
         // Hide action buttons for upload step
         this.container.querySelector('#btn-back').style.display = 'none';
@@ -250,21 +279,157 @@ class ImportController {
             throw new Error('Arquivo CSV deve ter pelo menos 2 linhas (cabeçalho + dados)');
         }
 
-        const headers = lines[0].split(',').map(h => h.trim());
+        const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
         const data = [];
 
+        // Detectar formato (Asaas vs Padrão)
+        const formatType = this.detectCSVFormat(headers);
+        console.log('🔍 Formato detectado:', formatType);
+
         for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',');
+            const values = this.parseCSVLine(lines[i]);
             const row = {};
             
             headers.forEach((header, index) => {
-                row[header] = values[index] ? values[index].trim() : '';
+                row[header] = values[index] ? values[index].trim().replace(/['"]/g, '') : '';
             });
             
-            data.push(row);
+            // Aplicar mapeamento se necessário
+            const mappedRow = this.mapRowToStandardFormat(row, formatType);
+            data.push(mappedRow);
         }
 
         return data;
+    }
+
+    /**
+     * Parse mais robusto de linha CSV (lida com vírgulas dentro de aspas)
+     */
+    parseCSVLine(line) {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        values.push(current); // Último valor
+        return values;
+    }
+
+    /**
+     * Detectar formato do CSV
+     */
+    detectCSVFormat(headers) {
+        const asaasFields = ['Nome', 'Email', 'Celular', 'CPF ou CNPJ', 'Rua', 'Número', 'Bairro', 'Cidade', 'Valor a vencer'];
+        const standardFields = ['nome', 'email', 'telefone', 'documento', 'endereco', 'valor_mensalidade'];
+        
+        const asaasMatches = asaasFields.filter(field => headers.includes(field)).length;
+        const standardMatches = standardFields.filter(field => headers.includes(field)).length;
+        
+        if (asaasMatches >= 5) {
+            return 'asaas';
+        } else if (standardMatches >= 3) {
+            return 'standard';
+        } else {
+            return 'unknown';
+        }
+    }
+
+    /**
+     * Mapear linha para formato padrão
+     */
+    mapRowToStandardFormat(row, formatType) {
+        if (formatType === 'asaas') {
+            return this.mapAsaasToStandard(row);
+        } else if (formatType === 'standard') {
+            return row; // Já está no formato correto
+        } else {
+            // Tentar mapeamento inteligente
+            return this.smartMapping(row);
+        }
+    }
+
+    /**
+     * Mapear formato Asaas para padrão
+     */
+    mapAsaasToStandard(asaasRow) {
+        // Construir endereço completo
+        const enderecoPartes = [
+            asaasRow['Rua'],
+            asaasRow['Número'],
+            asaasRow['Complemento'],
+            asaasRow['Bairro'],
+            asaasRow['Cidade'],
+            asaasRow['CEP'],
+            asaasRow['Estado']
+        ].filter(parte => parte && parte.trim() && parte.trim() !== '');
+        
+        const endereco = enderecoPartes.join(', ');
+
+        // Limpar valor monetário
+        let valorMensalidade = '0';
+        if (asaasRow['Valor a vencer']) {
+            valorMensalidade = asaasRow['Valor a vencer']
+                .replace(/[R$\s]/g, '')
+                .replace(',', '.')
+                .trim();
+        }
+
+        // Telefone: priorizar celular, depois fone
+        const telefone = asaasRow['Celular'] || asaasRow['Fone'] || '';
+
+        return {
+            nome: asaasRow['Nome'] || '',
+            email: asaasRow['Email'] || '',
+            telefone: telefone,
+            documento: asaasRow['CPF ou CNPJ'] || '',
+            endereco: endereco,
+            valor_mensalidade: valorMensalidade,
+            empresa: asaasRow['Empresa'] || '',
+            // Campos extras do Asaas para referência
+            _original_identificador: asaasRow['Identificador externo'] || '',
+            _original_valor_vencido: asaasRow['Valor vencido'] || '',
+            _original_valor_pago: asaasRow['Valor pago'] || ''
+        };
+    }
+
+    /**
+     * Mapeamento inteligente para formatos desconhecidos
+     */
+    smartMapping(row) {
+        const mapped = {};
+        
+        // Mapear campos comuns
+        Object.keys(row).forEach(key => {
+            const lowerKey = key.toLowerCase();
+            
+            if (lowerKey.includes('nome') || lowerKey.includes('name')) {
+                mapped.nome = row[key];
+            } else if (lowerKey.includes('email') || lowerKey.includes('e-mail')) {
+                mapped.email = row[key];
+            } else if (lowerKey.includes('telefone') || lowerKey.includes('celular') || lowerKey.includes('phone')) {
+                mapped.telefone = row[key];
+            } else if (lowerKey.includes('cpf') || lowerKey.includes('cnpj') || lowerKey.includes('documento')) {
+                mapped.documento = row[key];
+            } else if (lowerKey.includes('endereco') || lowerKey.includes('address') || lowerKey.includes('rua')) {
+                mapped.endereco = row[key];
+            } else if (lowerKey.includes('valor') || lowerKey.includes('mensalidade') || lowerKey.includes('price')) {
+                mapped.valor_mensalidade = row[key];
+            }
+        });
+        
+        return { ...row, ...mapped }; // Manter campos originais + mapeados
     }
 
     /**
@@ -323,13 +488,29 @@ class ImportController {
         this.uploadedData.data.forEach((row, index) => {
             const rowErrors = [];
             
-            // Validações básicas
+            // Validações básicas para campos obrigatórios
             if (!row.nome || row.nome.length < 2) {
                 rowErrors.push('Nome inválido ou muito curto');
             }
             
-            if (!row.email || !row.email.includes('@')) {
-                rowErrors.push('Email inválido');
+            // Email é opcional, mas se fornecido deve ser válido
+            if (row.email && !this.isValidEmail(row.email)) {
+                rowErrors.push('Email em formato inválido');
+            }
+            
+            // Validação de telefone (opcional mas se existir deve ser válido)
+            if (row.telefone && !this.isValidPhone(row.telefone)) {
+                rowErrors.push('Telefone em formato inválido');
+            }
+            
+            // Validação de CPF/CNPJ (opcional mas se existir deve ser válido)
+            if (row.documento && !this.isValidDocument(row.documento)) {
+                rowErrors.push('CPF/CNPJ em formato inválido');
+            }
+            
+            // Validação de valor monetário
+            if (row.valor_mensalidade && !this.isValidMonetary(row.valor_mensalidade)) {
+                rowErrors.push('Valor da mensalidade inválido');
             }
             
             if (rowErrors.length === 0) {
@@ -350,6 +531,66 @@ class ImportController {
         };
 
         this.displayValidationResults();
+    }
+
+    /**
+     * Validar email
+     */
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    /**
+     * Validar telefone brasileiro
+     */
+    isValidPhone(phone) {
+        // Remove caracteres não numéricos
+        const cleanPhone = phone.replace(/\D/g, '');
+        // Aceita formatos: 11987654321, 1187654321, 87654321
+        return cleanPhone.length >= 8 && cleanPhone.length <= 11;
+    }
+
+    /**
+     * Validar CPF/CNPJ
+     */
+    isValidDocument(doc) {
+        const cleanDoc = doc.replace(/\D/g, '');
+        return cleanDoc.length === 11 || cleanDoc.length === 14; // CPF ou CNPJ
+    }
+
+    /**
+     * Validar valor monetário
+     */
+    isValidMonetary(value) {
+        const cleanValue = value.toString().replace(/[R$\s]/g, '').replace(',', '.');
+        return !isNaN(parseFloat(cleanValue)) && isFinite(cleanValue);
+    }
+
+    /**
+     * Setup format tabs
+     */
+    setupFormatTabs() {
+        const formatTabs = this.container.querySelectorAll('.format-tab');
+        const formatDetails = this.container.querySelectorAll('.format-details');
+
+        formatTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const format = tab.dataset.format;
+                
+                // Update active tab
+                formatTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update active details
+                formatDetails.forEach(detail => {
+                    detail.classList.remove('active');
+                    if (detail.dataset.format === format) {
+                        detail.classList.add('active');
+                    }
+                });
+            });
+        });
     }
 
     /**
@@ -556,12 +797,36 @@ class ImportController {
     async processStudentImport() {
         try {
             console.log('🔄 Processando importação de alunos...');
+            console.log('📊 Dados válidos para importação:', this.validationResults.valid);
             
-            // Simular chamada API
+            // Fazer chamada real para API
+            const response = await fetch('/api/students/bulk-import', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    students: this.validationResults.valid
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const apiResult = await response.json();
+            console.log('✅ Resposta da API:', apiResult);
+
+            if (!apiResult.success) {
+                throw new Error(apiResult.message || 'Erro na importação');
+            }
+
+            // Usar resultados reais da API
             const results = {
-                imported: this.validationResults.valid.length,
-                skipped: this.validationResults.errors.length,
-                total: this.uploadedData.data.length
+                imported: apiResult.data.imported,
+                skipped: apiResult.data.skipped,
+                total: apiResult.data.total,
+                errors: apiResult.data.errors || []
             };
 
             this.showImportResults(results);
@@ -569,6 +834,9 @@ class ImportController {
         } catch (error) {
             console.error('❌ Erro na importação:', error);
             this.showError('Erro durante a importação: ' + error.message);
+            
+            // Voltar para a view de preview
+            this.loadPreviewView();
         }
     }
 
@@ -577,6 +845,29 @@ class ImportController {
      */
     showImportResults(results) {
         const content = this.container.querySelector('#import-content');
+        
+        // Determinar tipo de mensagem
+        const hasErrors = results.skipped > 0;
+        const messageClass = hasErrors ? 'warning' : 'success';
+        const messageIcon = hasErrors ? '⚠️' : '🎉';
+        const messageText = hasErrors ? 
+            `Importação concluída com ${results.skipped} registro(s) ignorado(s)` :
+            'Importação concluída com sucesso!';
+
+        // Construir HTML dos erros
+        let errorsHTML = '';
+        if (results.errors && results.errors.length > 0) {
+            errorsHTML = `
+                <div class="import-errors">
+                    <h4>⚠️ Detalhes dos Erros:</h4>
+                    <ul class="error-list">
+                        ${results.errors.slice(0, 10).map(error => `<li>${error}</li>`).join('')}
+                        ${results.errors.length > 10 ? `<li><em>... e mais ${results.errors.length - 10} erro(s)</em></li>` : ''}
+                    </ul>
+                </div>
+            `;
+        }
+
         content.innerHTML = `
             <div class="import-success fade-in">
                 <div class="import-stats">
@@ -597,10 +888,12 @@ class ImportController {
                     </div>
                 </div>
                 
-                <div class="validation-message success">
-                    <span>🎉</span>
-                    Importação concluída com sucesso!
+                <div class="validation-message ${messageClass}">
+                    <span>${messageIcon}</span>
+                    ${messageText}
                 </div>
+                
+                ${errorsHTML}
                 
                 <div class="import-actions">
                     <button onclick="window.navigateTo ? window.navigateTo('students') : (window.location.hash = '#students')" class="btn-import-primary">

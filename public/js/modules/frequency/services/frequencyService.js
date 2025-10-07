@@ -6,20 +6,20 @@
 export class FrequencyService {
     constructor(validationService) {
         this.validationService = validationService;
-        this.apiClient = null;
+        this.moduleAPI = null;
         this.cache = new Map();
         this.initAPI();
     }
 
     /**
-     * Inicializar cliente da API
+     * Inicializar cliente da API usando createModuleAPI (AGENTS.md v2.1)
      */
     async initAPI() {
         // Aguardar API client estar disponível
-        while (!window.apiClient) {
+        while (!window.createModuleAPI) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        this.apiClient = window.apiClient;
+        this.moduleAPI = window.createModuleAPI('Frequency');
     }
 
     /**
@@ -154,7 +154,7 @@ export class FrequencyService {
      */
     async isDuplicate(context) {
         try {
-            const response = await this.apiClient.get(
+            const response = await this.moduleAPI.request(
                 `/api/frequency/attendance/check-duplicate?studentId=${context.studentId}&sessionId=${context.sessionId}`
             );
 
@@ -192,7 +192,10 @@ export class FrequencyService {
             }
         };
 
-        const response = await this.apiClient.post('/api/frequency/attendance/checkin', payload);
+        const response = await this.moduleAPI.request('/api/frequency/attendance/checkin', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
 
         if (!response.data || !response.data.success) {
             throw new Error(response.data?.error || 'Falha ao registrar frequência');
@@ -206,7 +209,7 @@ export class FrequencyService {
      */
     async calculateStreak(studentId) {
         try {
-            const response = await this.apiClient.get(`/api/frequency/attendance/streak/${studentId}`);
+            const response = await this.moduleAPI.request(`/api/frequency/attendance/streak/${studentId}`);
             return response.data?.streak || 0;
         } catch (error) {
             console.warn('Failed to calculate streak:', error);
@@ -302,7 +305,7 @@ export class FrequencyService {
         }
 
         try {
-            const response = await this.apiClient.get(`/api/students/${studentId}`);
+            const response = await this.moduleAPI.request(`/api/students/${studentId}`);
             
             if (!response.data || !response.data.success) {
                 throw new Error('Aluno não encontrado');
@@ -326,7 +329,7 @@ export class FrequencyService {
      */
     async getSession(sessionId) {
         try {
-            const response = await this.apiClient.get(`/api/sessions/${sessionId}`);
+            const response = await this.moduleAPI.request(`/api/sessions/${sessionId}`);
             
             if (!response.data || !response.data.success) {
                 throw new Error('Sessão não encontrada');
@@ -344,7 +347,7 @@ export class FrequencyService {
      */
     async getActivePlans(studentId) {
         try {
-            const response = await this.apiClient.get(`/api/students/${studentId}/active-plans`);
+            const response = await this.moduleAPI.request(`/api/students/${studentId}/active-plans`);
             
             if (!response.data || !response.data.success) {
                 return [];
@@ -367,7 +370,7 @@ export class FrequencyService {
             const windowStart = new Date(now.getTime() - 15 * 60 * 1000); // -15min
             const windowEnd = new Date(now.getTime() + 30 * 60 * 1000);   // +30min
 
-            const response = await this.apiClient.get(
+            const response = await this.moduleAPI.request(
                 `/api/sessions/active?start=${windowStart.toISOString()}&end=${windowEnd.toISOString()}`
             );
 
@@ -394,7 +397,7 @@ export class FrequencyService {
                 ...options.filters
             });
 
-            const response = await this.apiClient.get(
+            const response = await this.moduleAPI.request(
                 `/api/frequency/attendance/student/${studentId}?${params}`
             );
 
@@ -416,7 +419,7 @@ export class FrequencyService {
     async getFrequencyStats(filters = {}) {
         try {
             const params = new URLSearchParams(filters);
-            const response = await this.apiClient.get(`/api/frequency/stats?${params}`);
+            const response = await this.moduleAPI.request(`/api/frequency/stats?${params}`);
 
             if (!response.data || !response.data.success) {
                 return {};

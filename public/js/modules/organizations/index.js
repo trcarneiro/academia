@@ -1,619 +1,647 @@
-// Organizations Module - Entry Point
-console.log('🏫 Organizations Module Loading...');
+/**
+ * Organizations Module - SIMPLIFIED VERSION (Single-file)
+ * Manages organizations (academies) and their settings
+ * Based on Instructors module template - AGENTS.md v2.1 compliant
+ */
 
-let organizationsAPI = null;
-let isInitializing = false;
-let isInitialized = false;
+// Prevent multiple declarations
+if (typeof window.OrganizationsModule !== 'undefined') {
+    console.log('🏫 Organizations Module already loaded, skipping...');
+} else {
 
-async function resolveContainer(container) {
-    // Prefer provided container; otherwise try common app containers, waiting briefly
-    if (container instanceof HTMLElement) return container;
-    const selectors = ['#main-content', '.main-content', '#content', '#app-content'];
-    let attempts = 0;
-    while (attempts < 30) { // up to ~3s
-        for (const sel of selectors) {
-            const el = document.querySelector(sel);
-            if (el) return el;
-        }
-        await new Promise(r => setTimeout(r, 100));
-        attempts++;
-    }
-    return null;
-}
+const OrganizationsModule = {
+    // Module properties
+    container: null,
+    organizations: [],
+    initialized: false,
 
-async function initializeOrganizations(container) {
-    // Prevent multiple simultaneous initializations
-    if (isInitialized) {
-        console.log('[Organizations] Already initialized, skipping...');
-        return;
-    }
-    
-    if (isInitializing) {
-        console.log('[Organizations] Initialization in progress, waiting...');
-        let attempts = 0;
-        while (isInitializing && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
-        if (attempts >= 50) {
-            console.warn('[Organizations] Initialization timeout, forcing new initialization...');
-            isInitializing = false;
-        } else if (isInitialized) {
-            return;
-        }
-    }
-    
-    isInitializing = true;
-    
-    try {
-        // Wait for API client
-        while (!window.createModuleAPI) {
-            console.log('[Organizations] Waiting for API client...');
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        organizationsAPI = window.createModuleAPI('Organizations');
-        console.log('[Organizations] API initialized');
-
-        // Resolve target container (router may mount late)
-        const target = await resolveContainer(container);
-        console.log('[Organizations] Container resolved:', !!target);
-
-        // Load CSS
-        if (!document.querySelector('link[href*="organizations.css"]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = '/css/modules/organizations/organizations.css';
-            document.head.appendChild(link);
-        }
-
-        // Load organizations data
-        await loadOrganizations(target);
-
-        // Integrate with app
-        if (window.app) {
-            window.app.dispatchEvent('module:loaded', { name: 'organizations' });
-        }
-        
-        isInitialized = true;
-        isInitializing = false;
-        window.organizationsModuleInitialized = true;
-
-    } catch (error) {
-        isInitializing = false;
-        console.error('[Organizations] Initialization error:', error);
-        if (window.app) {
-            window.app.handleError(error, 'Organizations:initialization');
-        }
-    }
-}
-
-async function loadOrganizations(container) {
-    // Use provided container or fallback to main-content
-    const targetContainer = container || document.getElementById('main-content') || document.querySelector('.main-content') || document.getElementById('content');
-    if (!targetContainer) {
-        console.error('[Organizations] Container not found');
-        return;
-    }
-
-    try {
-        await organizationsAPI.fetchWithStates('/api/organizations', {
-            loadingElement: targetContainer,
-            targetElement: targetContainer,
-            onSuccess: (organizations) => {
-                const list = Array.isArray(organizations) ? organizations : [];
-                targetContainer.innerHTML = renderOrganizationsList(list);
-                setupEventListeners();
-            },
-            onEmpty: () => {
-                targetContainer.innerHTML = renderOrganizationsList([]) + renderEmptyState();
-                setupEventListeners();
-            },
-            onError: (error) => {
-                console.error('[Organizations] Error loading:', error);
-                targetContainer.innerHTML = renderErrorState(error?.message || 'Falha ao carregar');
-                if (window.app) {
-                    window.app.handleError(error, 'Organizations:load');
-                }
+    /**
+     * Initialize the module - SIMPLIFIED
+     */
+    async init() {
+        try {
+            if (this.initialized) {
+                console.log('🏫 Organizations Module already initialized, skipping...');
+                return this;
             }
-        });
-
-    } catch (error) {
-        console.error('[Organizations] Error loading:', error);
-        targetContainer.innerHTML = renderErrorState(error.message);
-        if (window.app) {
-            window.app.handleError(error, 'Organizations:load');
+            
+            console.log('🏫 Organizations Module - Starting (Simplified)...');
+            
+            if (!this.container) {
+                throw new Error('Container not set before initialization');
+            }
+            
+            // Load data and render in one go
+            await this.loadData();
+            this.render();
+            this.setupEvents();
+            
+            // Register module globally for compatibility
+            window.organizationsModule = this;
+            window.organizationsController = this; // Compatibility with existing code
+            
+            // Dispatch module loaded event
+            if (window.app) {
+                window.app.dispatchEvent('module:loaded', { name: 'organizations' });
+            }
+            
+            this.initialized = true;
+            console.log('✅ Organizations Module - Loaded (Simplified)');
+            
+            return this;
+        } catch (error) {
+            console.error('❌ Organizations Module initialization failed:', error);
+            if (window.app) {
+                window.app.handleError(error, 'Organizations Module Init');
+            }
+            throw error;
         }
-    }
-}
+    },
 
-function renderOrganizationsList(organizations) {
-    const stats = calculateStats(organizations);
-    
-    return `
-        <div class="module-isolated-organizations">
+    /**
+     * Load organizations data from API
+     */
+    async loadData() {
+        try {
+            console.log('📡 Loading organizations data...');
+            
+            const response = await fetch('/api/organizations');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.organizations = data.data || [];
+                console.log(`📊 Loaded ${this.organizations.length} organizations`);
+            } else {
+                throw new Error(data.error || 'Failed to load organizations');
+            }
+        } catch (error) {
+            console.error('❌ Error loading organizations:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Show success message
+     */
+    showSuccess(message) {
+        if (window.showSuccess) {
+            window.showSuccess(message);
+        } else {
+            // Fallback: create inline notification
+            this.showNotification(message, 'success');
+        }
+    },
+
+    /**
+     * Show error message
+     */
+    showError(message) {
+        if (window.showError) {
+            window.showError(message);
+        } else {
+            // Fallback: create inline notification
+            this.showNotification(message, 'error');
+        }
+    },
+
+    /**
+     * Show inline notification
+     */
+    showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existing = document.querySelector('.organization-notification');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `organization-notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">
+                    ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+                </span>
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+
+        // Insert at top of container
+        this.container.insertBefore(notification, this.container.firstChild);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    },
+
+    /**
+     * Render main organizations list - EXACT SAME STRUCTURE AS INSTRUCTORS
+     */
+    render() {
+        const totalOrganizations = this.organizations.length;
+        const activeOrganizations = this.organizations.filter(org => org.isActive).length;
+        const totalStudents = this.organizations.reduce((sum, org) => sum + (org.maxStudents || 0), 0);
+
+        this.container.innerHTML = `
+            <!-- Premium Header -->
             <div class="module-header-premium">
-                <div class="header-content">
-                    <nav class="breadcrumb-premium">
-                        <span class="breadcrumb-item">🏠 Academia</span>
-                        <span class="breadcrumb-separator">›</span>
-                        <span class="breadcrumb-item active">🏫 Organizações</span>
-                    </nav>
-                    <div class="title-section">
-                        <h1>🏫 Organizações</h1>
-                        <p class="subtitle">Gerenciamento de organizações/academias</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-primary-premium" data-action="create-organization">
-                            ➕ Nova Organização
-                        </button>
-                    </div>
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item active">🏫 Organizações</span>
+                </div>
+                <h1 class="module-title-premium">
+                    🏫 Gestão de Organizações
+                </h1>
+                <div class="module-subtitle">
+                    Gerencie organizações e configurações da academia
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.organizationsModule.navigateToEditor()">
+                        <i class="fas fa-plus"></i>
+                        Nova Organização
+                    </button>
                 </div>
             </div>
 
-            <div class="module-stats-premium">
+            <!-- Stats Cards - EXACT SAME AS INSTRUCTORS -->
+            <div class="stats-grid">
                 <div class="stat-card-enhanced">
-                    <div class="stat-icon">🏫</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
                     <div class="stat-content">
-                        <div class="stat-number">${stats.total}</div>
-                        <div class="stat-label">Total Organizações</div>
+                        <div class="stat-number">${totalOrganizations}</div>
+                        <div class="stat-label">Total de Organizações</div>
                     </div>
                 </div>
+
                 <div class="stat-card-enhanced">
-                    <div class="stat-icon">✅</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
                     <div class="stat-content">
-                        <div class="stat-number">${stats.active}</div>
+                        <div class="stat-number">${activeOrganizations}</div>
                         <div class="stat-label">Organizações Ativas</div>
                     </div>
                 </div>
+
                 <div class="stat-card-enhanced">
-                    <div class="stat-icon">🏢</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${stats.totalUnits}</div>
-                        <div class="stat-label">Total de Unidades</div>
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
                     </div>
-                </div>
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">🌆</div>
                     <div class="stat-content">
-                        <div class="stat-number">${stats.cities}</div>
-                        <div class="stat-label">Cidades</div>
+                        <div class="stat-number">${totalStudents}</div>
+                        <div class="stat-label">Capacidade Total</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Organizations Table - PREMIUM STYLE -->
             <div class="data-card-premium">
-                <div class="table-container">
-                    <table class="data-table-premium">
-                        <thead>
-                            <tr>
-                                <th>🏫 Nome</th>
-                                <th>🌐 Slug</th>
-                                <th>🌆 Localização</th>
-                                <th>🏢 Unidades</th>
-                                <th>📊 Status</th>
-                                <th>⚙️ Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${renderOrganizationsRows(organizations)}
-                        </tbody>
-                    </table>
+                <div class="card-header">
+                    <h3>Lista de Organizações</h3>
+                    <div class="search-filter">
+                        <input type="text" placeholder="🔍 Buscar organizações..." class="search-input">
+                    </div>
                 </div>
+                <table class="data-table-premium">
+                    <thead>
+                        <tr>
+                            <th>Organização</th>
+                            <th>Localização</th>
+                            <th>Plano</th>
+                            <th>Capacidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.organizations.map(org => this.renderOrganizationRow(org)).join('')}
+                    </tbody>
+                </table>
             </div>
+        `;
+    },
 
-            ${organizations.length === 0 ? renderEmptyState() : ''}
-        </div>
-    `;
-}
+    /**
+     * Render single organization row - EXACT SAME PATTERN AS INSTRUCTORS
+     */
+    renderOrganizationRow(org) {
+        const statusClass = org.isActive ? 'status-active' : 'status-inactive';
+        const statusText = org.isActive ? 'Ativo' : 'Inativo';
+        const planText = this.getPlanText(org.subscriptionPlan);
 
-function renderOrganizationsRows(organizations) {
-    if (!organizations || organizations.length === 0) {
-        return '<tr><td colspan="6" class="text-center">Nenhuma organização encontrada</td></tr>';
-    }
+        return `
+            <tr class="data-row-premium" data-id="${org.id}">
+                <td>
+                    <div class="organization-info-premium">
+                        <div class="organization-avatar-premium">
+                            <span>🏫</span>
+                        </div>
+                        <div class="organization-details">
+                            <div class="organization-name">${org.name}</div>
+                            <div class="organization-slug">${org.slug}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="location-info">
+                        <div class="city">${org.city || 'Não informado'}</div>
+                        <div class="state">${org.state || ''} - ${org.country || 'Brasil'}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="plan-badge plan-${org.subscriptionPlan?.toLowerCase()}">${planText}</span>
+                </td>
+                <td>
+                    <div class="capacity-info">
+                        <span class="capacity-number">${org.maxStudents}</span>
+                        <span class="capacity-label">alunos</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon" onclick="window.organizationsModule.navigateToEditor('${org.id}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-danger" onclick="window.organizationsModule.confirmDelete('${org.id}')" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    },
 
-    return organizations.map(org => `
-    <tr class="table-row-interactive" data-action="view-organization" data-id="${org.id}">
-            <td>
-                <div class="organization-info">
-                    <strong>${org.name}</strong>
-                    ${org.description ? `<small>${org.description}</small>` : ''}
-                </div>
-            </td>
-            <td>
-                <code class="slug-code">${org.slug}</code>
-            </td>
-            <td>
-                <div class="location-info">
-                    ${org.city ? `${org.city}` : 'Não informado'}
-                    ${org.state ? `/${org.state}` : ''}
-                </div>
-            </td>
-            <td>
-                <span class="count-badge">${org._count?.units || 0} unidades</span>
-            </td>
-            <td>
-                <span class="status ${org.isActive ? 'status-active' : 'status-inactive'}">
-                    ${org.isActive ? '✅ Ativa' : '❌ Inativa'}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-            <button class="btn-icon" data-action="edit-organization" data-id="${org.id}" title="Editar">
-                        ✏️
-                    </button>
-            <button class="btn-icon" data-action="view-units" data-id="${org.id}" title="Ver Unidades">
-                        🏢
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
-}
+    /**
+     * Get plan text
+     */
+    getPlanText(plan) {
+        const plans = {
+            'BASIC': 'Básico',
+            'PREMIUM': 'Premium',
+            'ENTERPRISE': 'Empresarial'
+        };
+        return plans[plan] || 'Básico';
+    },
 
-function calculateStats(organizations) {
-    return {
-        total: organizations.length,
-        active: organizations.filter(org => org.isActive).length,
-        totalUnits: organizations.reduce((sum, org) => sum + (org._count?.units || 0), 0),
-        cities: new Set(organizations.map(org => org.city).filter(Boolean)).size
-    };
-}
-
-function renderLoadingState() {
-    return `
-        <div class="loading-state-premium">
-            <div class="loading-spinner"></div>
-            <p>Carregando organizações...</p>
-        </div>
-    `;
-}
-
-function renderErrorState(message) {
-    return `
-        <div class="error-state-premium">
-            <div class="error-icon">❌</div>
-            <h3>Erro ao carregar organizações</h3>
-            <p>${message}</p>
-            <button class="btn-action-primary" data-action="reload-organizations">
-                🔄 Tentar novamente
-            </button>
-        </div>
-    `;
-}
-
-function renderEmptyState() {
-    return `
-        <div class="empty-state-premium">
-            <div class="empty-state-icon">🏫</div>
-            <h3>Nenhuma organização cadastrada</h3>
-            <p>Comece criando a primeira organização para gerenciar suas academias</p>
-            <button class="btn-action-primary" data-action="create-organization">
-                ➕ Criar primeira organização
-            </button>
-        </div>
-    `;
-}
-
-function setupEventListeners() {
-    const root = document.querySelector('.module-isolated-organizations');
-    if (!root) return;
-
-    // Delegated click handling
-    root.addEventListener('click', (e) => {
-        const actionEl = e.target.closest('[data-action]');
-        if (!actionEl) return;
-        const action = actionEl.dataset.action;
-        const id = actionEl.dataset.id || actionEl.closest('tr')?.dataset.id;
-
-        switch (action) {
-            case 'create-organization':
-                createNewOrganization();
-                break;
-            case 'edit-organization':
-                if (id) editOrganization(id);
-                break;
-            case 'view-organization':
-                if (id) viewOrganization(id);
-                break;
-            case 'view-units':
-                if (id) viewUnits(id);
-                break;
-            case 'reload-organizations':
-                loadOrganizations(root.closest('#main-content, .main-content, #content') || document.body);
-                break;
-        }
-    });
-
-    // Optional: double-click row to edit
-    root.addEventListener('dblclick', (e) => {
-        const row = e.target.closest('tr[data-id]');
-        if (!row) return;
-        const id = row.dataset.id;
-        if (id) editOrganization(id);
-    });
-}
-
-// Action functions
-function createNewOrganization() {
-    console.log('[Organizations] Creating new organization...');
-    const target = document.querySelector('#main-content, .main-content, #content, #module-container') || document.body;
-    openOrganizationEditor(null, target);
-}
-
-function editOrganization(id) {
-    console.log('[Organizations] Editing organization:', id);
-    const target = document.querySelector('#main-content, .main-content, #content, #module-container') || document.body;
-    openOrganizationEditor(id, target);
-}
-
-function viewOrganization(id) {
-    console.log('[Organizations] Viewing organization:', id);
-    // Implementar visualização
-}
-
-function viewUnits(organizationId) {
-    console.log('[Organizations] Viewing units for organization:', organizationId);
-    // Navegar para units filtrado por organização
-    if (window.router && typeof window.router.navigateTo === 'function') {
-        window.router.navigateTo(`#/units?organization=${organizationId}`);
-    } else {
-        window.location.hash = `#/units?organization=${organizationId}`;
-    }
-}
-
-// Expose action functions globally for inline onclick compatibility
-window.createNewOrganization = createNewOrganization;
-window.editOrganization = editOrganization;
-window.viewOrganization = viewOrganization;
-window.viewUnits = viewUnits;
-
-// ---------- Editor (full-screen) ----------
-function openOrganizationEditor(id = null, container) {
-    const target = container || document.getElementById('main-content') || document.querySelector('.main-content') || document.getElementById('content');
-    if (!target) {
-        console.error('[Organizations] Editor container not found');
-        return;
-    }
-
-    target.innerHTML = renderOrganizationEditorSkeleton(id);
-    bindEditorEvents(target, id);
-
-    if (id) {
-        // Load data for edit
-        const content = target.querySelector('#org-editor-content');
-        organizationsAPI.fetchWithStates(`/api/organizations/${id}`, {
-            loadingElement: content,
-            targetElement: content,
-            onSuccess: (org) => populateEditorForm(target, org),
-            onError: (err) => {
-                content.innerHTML = renderErrorState(err?.message || 'Falha ao carregar organização');
-                if (window.app) window.app.handleError(err, 'Organizations:editor:load');
-            },
-            onEmpty: () => {
-                content.innerHTML = renderErrorState('Organização não encontrada');
-            }
+    /**
+     * Setup event listeners - SAME PATTERN AS INSTRUCTORS
+     */
+    setupEvents() {
+        // Double-click to edit (SPA navigation standard)
+        const rows = this.container.querySelectorAll('.data-row-premium');
+        rows.forEach(row => {
+            row.addEventListener('dblclick', (e) => {
+                const orgId = row.getAttribute('data-id');
+                this.navigateToEditor(orgId);
+            });
         });
-    } else {
-        // New organization: prepare defaults
-        populateEditorForm(target, { isActive: true, country: 'Brazil', maxStudents: 100, maxStaff: 10 });
-    }
-}
 
-function renderOrganizationEditorSkeleton(id) {
-    const isEdit = !!id;
-    return `
-        <div class="module-isolated-organizations">
-            <div class="module-header-premium">
-                <div class="header-content">
-                    <nav class="breadcrumb-premium">
-                        <span class="breadcrumb-item">🏠 Academia</span>
-                        <span class="breadcrumb-separator">›</span>
-                        <span class="breadcrumb-item">🏫 Organizações</span>
-                        <span class="breadcrumb-separator">›</span>
-                        <span class="breadcrumb-item active">${isEdit ? '✏️ Editar' : '➕ Nova'}</span>
-                    </nav>
-                    <div class="title-section">
-                        <h1>${isEdit ? '✏️ Editar Organização' : '➕ Nova Organização'}</h1>
-                        <p class="subtitle">Preencha os dados e salve</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-primary-premium" data-action="back-to-organizations">← Voltar</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="data-card-premium">
-                <div id="org-editor-content">
-                    ${renderLoadingState()}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function populateEditorForm(root, org) {
-    const content = root.querySelector('#org-editor-content');
-    const isEdit = !!org?.id;
-    content.innerHTML = `
-        <form id="org-editor-form" class="form-premium">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nome *</label>
-                    <input type="text" name="name" id="org-name" required value="${org?.name || ''}" />
-                </div>
-                <div class="form-group">
-                    <label>Slug *</label>
-                    <input type="text" name="slug" id="org-slug" required value="${org?.slug || ''}" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" value="${org?.email || ''}" />
-                </div>
-                <div class="form-group">
-                    <label>Telefone</label>
-                    <input type="tel" name="phone" value="${org?.phone || ''}" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="url" name="website" value="${org?.website || ''}" />
-                </div>
-                <div class="form-group">
-                    <label>País</label>
-                    <input type="text" name="country" value="${org?.country || 'Brazil'}" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Endereço</label>
-                    <input type="text" name="address" value="${org?.address || ''}" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Cidade</label>
-                    <input type="text" name="city" value="${org?.city || ''}" />
-                </div>
-                <div class="form-group">
-                    <label>Estado</label>
-                    <input type="text" name="state" value="${org?.state || ''}" />
-                </div>
-                <div class="form-group">
-                    <label>CEP</label>
-                    <input type="text" name="zipCode" value="${org?.zipCode || ''}" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Máx. Alunos</label>
-                    <input type="number" name="maxStudents" min="1" value="${org?.maxStudents ?? 100}" />
-                </div>
-                <div class="form-group">
-                    <label>Máx. Staff</label>
-                    <input type="number" name="maxStaff" min="1" value="${org?.maxStaff ?? 10}" />
-                </div>
-                <div class="form-group" style="align-items:center;">
-                    <label>&nbsp;</label>
-                    <label style="display:flex; gap:.5rem; align-items:center;">
-                        <input type="checkbox" name="isActive" ${org?.isActive !== false ? 'checked' : ''} /> Ativa
-                    </label>
-                </div>
-            </div>
-            <div class="form-actions">
-                <button type="button" class="btn-secondary-premium" data-action="back-to-organizations">Cancelar</button>
-                <button type="submit" class="btn-primary-premium">Salvar</button>
-            </div>
-        </form>
-    `;
-}
-
-function bindEditorEvents(root, id) {
-    root.addEventListener('click', (e) => {
-        const back = e.target.closest('[data-action="back-to-organizations"]');
-        if (back) {
-            loadOrganizations(root);
+        // Search functionality
+        const searchInput = this.container.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterOrganizations(e.target.value);
+            });
         }
-    });
+    },
 
-    const form = root.querySelector('#org-editor-form');
-    // form may not exist yet until populateEditorForm runs
-    const attachSubmit = () => {
-        const f = root.querySelector('#org-editor-form');
-        if (!f) return;
-        f.addEventListener('submit', async (ev) => {
-            ev.preventDefault();
+    /**
+     * Filter organizations by search term
+     */
+    filterOrganizations(searchTerm) {
+        const rows = this.container.querySelectorAll('.data-row-premium');
+        const term = searchTerm.toLowerCase();
+
+        rows.forEach(row => {
+            const orgName = row.querySelector('.organization-name')?.textContent.toLowerCase() || '';
+            const orgSlug = row.querySelector('.organization-slug')?.textContent.toLowerCase() || '';
+            const city = row.querySelector('.city')?.textContent.toLowerCase() || '';
+            
+            const matches = orgName.includes(term) || orgSlug.includes(term) || city.includes(term);
+            row.style.display = matches ? '' : 'none';
+        });
+    },
+
+    /**
+     * Delete organization with confirmation
+     */
+    async confirmDelete(orgId) {
+        const org = this.organizations.find(o => o.id === orgId);
+        if (!org) {
+            this.showError('Organização não encontrada');
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja excluir a organização "${org.name}"?`)) {
             try {
-                const fd = new FormData(f);
-                const payload = sanitizeOrganizationPayload(fd);
-                const method = id ? 'put' : 'post';
-                const url = id ? `/api/organizations/${id}` : '/api/organizations';
-                await organizationsAPI.api[method](url, payload);
-                if (window.app) window.app.dispatchEvent('organizations:updated', { id });
-                loadOrganizations(root);
-            } catch (err) {
-                console.error('[Organizations] Save error:', err);
-                if (window.app) window.app.handleError(err, 'Organizations:editor:save');
-                const content = root.querySelector('#org-editor-content');
-                if (content) content.insertAdjacentHTML('beforeend', `<div class="error-state-premium"><div class="error-icon">❌</div><p>${err?.message || 'Erro ao salvar'}</p></div>`);
+                const response = await fetch(`/api/organizations/${orgId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    this.showSuccess('Organização excluída com sucesso!');
+                    await this.loadData();
+                    this.render();
+                    this.setupEvents();
+                } else {
+                    const error = await response.json();
+                    this.showError(error.message || 'Erro ao excluir organização');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao excluir:', error);
+                this.showError('Erro ao excluir organização');
             }
+        }
+    },
+
+    /**
+     * Navigate to editor - INTERNAL NAVIGATION (SPA Style)
+     */
+    async navigateToEditor(orgId = null) {
+        console.log('🔄 Navigating to editor internally:', orgId ? `edit ${orgId}` : 'create new');
+        
+        try {
+            // Render editor within the container
+            await this.renderEditor(orgId);
+        } catch (error) {
+            console.error('❌ Erro ao abrir editor:', error);
+            this.showError('Erro ao carregar editor de organização');
+        }
+    },
+
+    /**
+     * Render inline editor - NEW METHOD
+     */
+    async renderEditor(orgId = null) {
+        const isEdit = orgId !== null;
+        const title = isEdit ? 'Editar Organização' : 'Nova Organização';
+        
+        // Get organization data if editing
+        let orgData = null;
+        if (isEdit) {
+            try {
+                const response = await fetch(`/api/organizations/${orgId}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    orgData = result.data;
+                    
+                    // Convert isActive boolean to status string
+                    orgData.status = orgData.isActive ? 'ACTIVE' : 'INACTIVE';
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar organização:', error);
+                this.showError('Erro ao carregar dados da organização');
+                return;
+            }
+        }
+
+        // Render editor form
+        this.container.innerHTML = `
+            <div class="module-header-premium">
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item" onclick="window.organizationsModule.showList()">🏫 Organizações</span>
+                    <span class="breadcrumb-separator">></span>
+                    <span class="breadcrumb-item active">${title}</span>
+                </div>
+                <h1>${title}</h1>
+            </div>
+
+            <div class="organization-editor-container">
+                <form id="organization-form" class="organization-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Nome da Organização *</label>
+                            <input type="text" id="name" name="name" required 
+                                   value="${orgData?.name || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label for="slug">Slug *</label>
+                            <input type="text" id="slug" name="slug" required 
+                                   value="${orgData?.slug || ''}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <textarea id="description" name="description" rows="3">${orgData?.description || ''}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" 
+                                   value="${orgData?.email || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Telefone</label>
+                            <input type="tel" id="phone" name="phone" 
+                                   value="${orgData?.phone || ''}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">Cidade</label>
+                            <input type="text" id="city" name="city" 
+                                   value="${orgData?.city || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">Estado</label>
+                            <select id="state" name="state">
+                                <option value="">Selecione...</option>
+                                <option value="SP" ${orgData?.state === 'SP' ? 'selected' : ''}>São Paulo</option>
+                                <option value="RJ" ${orgData?.state === 'RJ' ? 'selected' : ''}>Rio de Janeiro</option>
+                                <option value="MG" ${orgData?.state === 'MG' ? 'selected' : ''}>Minas Gerais</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subscriptionPlan">Plano de Assinatura</label>
+                            <select id="subscriptionPlan" name="subscriptionPlan">
+                                <option value="BASIC" ${orgData?.subscriptionPlan === 'BASIC' ? 'selected' : ''}>Básico</option>
+                                <option value="PREMIUM" ${orgData?.subscriptionPlan === 'PREMIUM' ? 'selected' : ''}>Premium</option>
+                                <option value="ENTERPRISE" ${orgData?.subscriptionPlan === 'ENTERPRISE' ? 'selected' : ''}>Empresarial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxStudents">Máximo de Alunos</label>
+                            <input type="number" id="maxStudents" name="maxStudents" min="1" 
+                                   value="${orgData?.maxStudents || 100}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxStaff">Máximo de Funcionários</label>
+                            <input type="number" id="maxStaff" name="maxStaff" min="1" 
+                                   value="${orgData?.maxStaff || 10}">
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="ACTIVE" ${orgData?.status === 'ACTIVE' ? 'selected' : ''}>Ativo</option>
+                                <option value="INACTIVE" ${orgData?.status === 'INACTIVE' ? 'selected' : ''}>Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="window.organizationsModule.showList()">
+                            ← Voltar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            ${isEdit ? 'Atualizar' : 'Criar'} Organização
+                        </button>
+                        ${isEdit ? `
+                            <button type="button" class="btn btn-danger" onclick="window.organizationsModule.confirmDelete('${orgId}')">
+                                🗑️ Excluir
+                            </button>
+                        ` : ''}
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // Setup form events
+        this.setupEditorEvents(orgId);
+    },
+
+    /**
+     * Setup editor form events
+     */
+    setupEditorEvents(orgId = null) {
+        const form = document.getElementById('organization-form');
+        const self = this; // Preserve context
+
+        // Auto-generate slug from name
+        const nameInput = document.getElementById('name');
+        const slugInput = document.getElementById('slug');
+        
+        if (nameInput && slugInput) {
+            nameInput.addEventListener('input', (e) => {
+                if (!orgId) { // Only auto-generate for new organizations
+                    const slug = e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+                    slugInput.value = slug;
+                }
+            });
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await self.handleFormSubmit(orgId);
         });
-    };
+    },
 
-    // Attach submit after form render
-    setTimeout(attachSubmit, 0);
-}
+    /**
+     * Handle form submission
+     */
+    async handleFormSubmit(orgId = null) {
+        const form = document.getElementById('organization-form');
+        const formData = new FormData(form);
+        const isEdit = orgId !== null;
 
-function sanitizeOrganizationPayload(fd) {
-    const num = (v, d) => {
-        const n = Number(v);
-        return Number.isFinite(n) && n > 0 ? n : d;
-    };
-    return {
-        name: (fd.get('name') || '').toString().trim(),
-        slug: (fd.get('slug') || '').toString().trim(),
-        description: nullIfEmpty(fd.get('description')),
-        email: nullIfEmpty(fd.get('email')),
-        phone: nullIfEmpty(fd.get('phone')),
-        website: nullIfEmpty(fd.get('website')),
-        address: nullIfEmpty(fd.get('address')),
-        city: nullIfEmpty(fd.get('city')),
-        state: nullIfEmpty(fd.get('state')),
-        zipCode: nullIfEmpty(fd.get('zipCode')),
-        country: (fd.get('country') || 'Brazil').toString().trim(),
-        maxStudents: num(fd.get('maxStudents'), 100),
-        maxStaff: num(fd.get('maxStaff'), 10),
-        isActive: fd.get('isActive') !== null
-    };
-}
+        // Prepare data in correct API format
+        const data = {
+            name: formData.get('name'),
+            slug: formData.get('slug'),
+            description: formData.get('description'),
+            phone: formData.get('phone'),
+            email: formData.get('email'),
+            city: formData.get('city'),
+            state: formData.get('state'),
+            subscriptionPlan: formData.get('subscriptionPlan'),
+            maxStudents: parseInt(formData.get('maxStudents')) || 100,
+            maxStaff: parseInt(formData.get('maxStaff')) || 10,
+            isActive: formData.get('status') === 'ACTIVE' // Convert string to boolean
+        };
 
-function nullIfEmpty(v) {
-    if (v === undefined || v === null) return null;
-    const s = String(v).trim();
-    return s === '' ? null : s;
-}
+        try {
+            const url = isEdit ? `/api/organizations/${orgId}` : '/api/organizations';
+            const method = isEdit ? 'PUT' : 'POST';
 
-// Expose globally
-window.organizationsModule = {
-    initialize: initializeOrganizations,
-    loadOrganizations
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                this.showSuccess(isEdit ? 'Organização atualizada com sucesso!' : 'Organização criada com sucesso!');
+                await this.loadData();
+                this.showList();
+            } else {
+                const error = await response.json();
+                this.showError(error.message || error.error || 'Erro ao salvar organização');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao salvar:', error);
+            this.showError('Erro ao salvar organização');
+        }
+    },
+
+    /**
+     * Show main list view
+     */
+    showList() {
+        this.render();
+        this.setupEvents();
+    },
+
+    /**
+     * Refresh/reload data - SAME AS INSTRUCTORS
+     */
+    async refresh() {
+        try {
+            await this.loadData();
+            this.render();
+            this.setupEvents();
+        } catch (error) {
+            console.error('❌ Error refreshing organizations:', error);
+            this.showError('Erro ao atualizar dados');
+        }
+    }
 };
 
-// Also expose the init function for router compatibility
-window.initOrganizationsModule = initializeOrganizations;
+// Register module globally and expose for compatibility
+window.OrganizationsModule = OrganizationsModule;
+window.organizationsModule = OrganizationsModule;
 
-// Auto-initialize carefully: only if hash matches and a container exists,
-// otherwise let the router drive initialization to avoid races.
-function maybeAutoInit() {
-    if (window.organizationsModuleInitialized || isInitialized || isInitializing) return;
-    const hash = String(window.location.hash || '');
-    const matchesRoute = hash.includes('organizations');
-    const hasRouter = !!window.router;
-    if (!matchesRoute) return; // avoid loading on unrelated pages
-    // If router exists and is navigating, skip auto-init
-    if (hasRouter && (window.router.isNavigating || window.router._navigating)) return;
-    // Try to resolve container and initialize
-    resolveContainer().then((target) => {
-        if (target) initializeOrganizations(target);
-    });
-}
+// Global registration
+console.log('📦 Organizations Module (Simplified) loaded and ready');
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', maybeAutoInit);
-} else {
-    setTimeout(maybeAutoInit, 0);
-}
+} // End of module wrapper
 
-console.log('✅ Organizations Module Loaded');
-
-// Register with ModuleLoader for core integration
-if (window.ModuleLoader && window.organizationsModule) {
-    try {
-        window.ModuleLoader.register('organizations', window.organizationsModule);
-    } catch (e) {
-        console.warn('[Organizations] ModuleLoader registration failed:', e?.message || e);
+// Initialization function for SPA router compatibility (ALWAYS AVAILABLE)
+window.initOrganizationsModule = async function(container) {
+    console.log('🔧 initOrganizationsModule called...');
+    if (window.OrganizationsModule) {
+        window.OrganizationsModule.container = container;
+        return await window.OrganizationsModule.init();
+    } else {
+        console.error('❌ OrganizationsModule not available');
+        throw new Error('OrganizationsModule not loaded');
     }
+};
+
+// Export for module loader
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.OrganizationsModule;
 }

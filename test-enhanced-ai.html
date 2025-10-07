@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced AI Module Test</title>
+    <link rel="stylesheet" href="css/modules/ai-enhanced.css">
+    <link rel="stylesheet" href="css/design-system/index.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Enhanced AI Module Test</h1>
+    
+    <div id="ai-module-container" class="ai-enhanced-container">
+        <p>Container pronto - aguardando inicialização...</p>
+    </div>
+
+    <script src="js/shared/api-client.js"></script>
+    <script src="js/modules/ai.js"></script>
+    
+    <script>
+        console.log('🧪 Test page loaded');
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🧪 DOM loaded - Testing Enhanced AI Module initialization...');
+            
+            // Check what's available immediately
+            console.log('Available AI functions:', Object.keys(window).filter(key => key.toLowerCase().includes('ai')));
+            
+            // Wait a bit for modules to load
+            setTimeout(async () => {
+                console.log('🕐 After timeout - checking again...');
+                console.log('Available AI functions:', Object.keys(window).filter(key => key.toLowerCase().includes('ai')));
+                
+                try {
+                    if (window.initializeAIModule) {
+                        console.log('✅ Found initializeAIModule function');
+                        await window.initializeAIModule();
+                        console.log('✅ AI Module initialized successfully');
+                        
+                        // Check container content
+                        const container = document.getElementById('ai-module-container');
+                        console.log('Container content:', container.innerHTML);
+                        
+                    } else {
+                        console.error('❌ initializeAIModule function not found');
+                        
+                        // Try alternative approaches
+                        if (window.ai && window.ai.initializeAIModule) {
+                            console.log('🔄 Trying window.ai.initializeAIModule...');
+                            await window.ai.initializeAIModule();
+                        } else if (window.ai && window.ai.initializeEnhancedModule) {
+                            console.log('🔄 Trying window.ai.initializeEnhancedModule...');
+                            await window.ai.initializeEnhancedModule();
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error initializing AI Module:', error);
+                    console.error('Error stack:', error.stack);
+                }
+            }, 2000);
+        });
+        
+        // Also try on window load
+        window.addEventListener('load', () => {
+            console.log('🧪 Window loaded event');
+        });
+    </script>
+</body>
+</html>

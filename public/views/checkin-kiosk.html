@@ -101,6 +101,10 @@
                                 <div class="student-meta">
                                     <span id="student-registration">Matrícula: </span>
                                     <span id="student-level">Faixa: </span>
+                                    <span id="student-plan">Plano: -</span>
+                                    <span id="student-plan-validity">Validade: -</span>
+                                    <span id="student-course">Curso: -</span>
+                                    <span id="student-turma">Turma: -</span>
                                 </div>
                             </div>
                         </div>
@@ -112,13 +116,18 @@
 
                     <!-- Stats Cards -->
                     <div class="stats-grid">
-                        <div class="stat-card-enhanced">
+                        <div class="stat-card-enhanced progress-card">
                             <div class="stat-icon">
                                 <i class="fas fa-calendar-check"></i>
                             </div>
                             <div class="stat-content">
                                 <div class="stat-number" id="attendance-rate">0%</div>
                                 <div class="stat-label">Taxa de Presença</div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="attendance-progress-bar">
+                                        <div class="progress-fill" id="attendance-progress-fill"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="stat-card-enhanced">
@@ -141,11 +150,70 @@
                         </div>
                     </div>
 
+                    <!-- AI Recommendations -->
+                    <div class="recommendations-section">
+                        <h3><i class="fas fa-brain"></i> Recomendações para Você</h3>
+                        <div id="ai-recommendations" class="recommendations-grid">
+                            <!-- AI recommendations will be loaded here -->
+                        </div>
+                    </div>
+
                     <!-- Available Classes -->
                     <div class="classes-section">
                         <h3><i class="fas fa-clock"></i> Aulas Disponíveis Agora</h3>
                         <div id="available-classes" class="classes-grid">
                             <!-- Classes will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Classes -->
+                    <div class="classes-section">
+                        <h3><i class="fas fa-calendar-alt"></i> Próximas Aulas</h3>
+                        <div id="upcoming-classes" class="classes-grid">
+                            <!-- Upcoming classes will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Payments Summary -->
+                    <div class="activity-section">
+                        <h3><i class="fas fa-receipt"></i> Resumo Financeiro</h3>
+                        <div id="payments-summary" class="payments-grid">
+                            <div class="stat-card-enhanced">
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="payments-overdue-count">0</div>
+                                    <div class="stat-label">Boletos em Atraso</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-enhanced">
+                                <div class="stat-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="payments-overdue-amount">R$ 0,00</div>
+                                    <div class="stat-label">Total em Atraso</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-enhanced">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="payments-last">—</div>
+                                    <div class="stat-label">Último Pagamento</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-enhanced">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="payments-next-due">—</div>
+                                    <div class="stat-label">Próximo Vencimento</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -211,5 +279,6 @@
     <!-- Scripts -->
     <script src="/js/shared/api-client.js"></script>
     <script src="/js/modules/checkin-kiosk.js"></script>
+    <script src="/js/modules/kiosk-enhancements.js"></script>
 </body>
 </html>

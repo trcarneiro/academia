@@ -11,6 +11,7 @@
  */
 
 import { TurmasEditorController } from './controllers/TurmasEditorController.js';
+import { safeNavigateToList } from '../../shared/utils/navigation.js';
 
 // ==============================================
 // MODULE INITIALIZATION
@@ -128,9 +129,10 @@ window.navigateToTurmaEditor = async function(turmaId = null) {
         }
         
         // Fallback navigation
-        if (window.router) {
-            window.router.navigate('turmas');
-        }
+        safeNavigateToList('turmas', {
+            fallback: () => window.turmasModule?.controller?.showList?.(),
+            context: 'turmas-editor:navigate-error'
+        });
     }
 };
 

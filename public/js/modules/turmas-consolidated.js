@@ -62,7 +62,8 @@
         turmas: [],
         courses: [],
         instructors: [],
-        units: []
+        units: [],
+        trainingAreas: []
     };
     
     // Load CSS
@@ -624,6 +625,17 @@
                 }
             }
             
+            // Load training areas if not loaded
+            if (moduleState.trainingAreas.length === 0) {
+                console.log('[Turmas] Loading training areas...');
+                const trainingAreasResponse = await fetch('/api/training-areas');
+                const trainingAreasResult = await trainingAreasResponse.json();
+                if (trainingAreasResult.success) {
+                    moduleState.trainingAreas = trainingAreasResult.data;
+                    console.log(`[Turmas] Loaded ${trainingAreasResult.data.length} training areas`);
+                }
+            }
+            
             console.log('[Turmas] Form dependencies loaded successfully!');
             
         } catch (error) {
@@ -679,6 +691,12 @@
         // Get weekDays for checkbox rendering (convert from daysOfWeek if needed)
         const weekDaysForCheckboxes = getWeekDaysForRendering(turma);
         
+        // Build set of associated course IDs for checkbox pre-selection
+        const associatedCourseIds = new Set([
+            ...((turma.courses || []).map(tc => tc.courseId)),
+            ...(turma.courseId ? [turma.courseId] : [])
+        ]);
+        
         editorContainer.innerHTML = `
             <div class="editor-container">
                 <!-- Editor Header -->
@@ -716,25 +734,22 @@
                             </div>
                             <div class="form-group">
                                 <label>Cursos da Turma *</label>
-                                    <div class="courses-selection">
-                                        <div class="courses-list" id="turma-courses-list">
-                                            ${moduleState.courses.map(course => `
-                                                <div class="course-option">
-                                                    <label class="course-checkbox-label">
-                                                        <input type="checkbox" 
-                                                               name="courseIds" 
-                                                               value="${course.id}"
-                                                               class="course-checkbox"
-                                                               ${turma.courseIds && turma.courseIds.includes(course.id) ? 'checked' : ''}>
-                                                        <span class="course-info">
-                                                            <strong>${course.name}</strong>
-                                                            <small>${course.level || ''} • ${course.description || ''}</small>
-                                                        </span>
-                                                    </label>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                        <small class="form-help">Selecione os cursos que serão ministrados nesta turma. Uma turma pode ter alunos de diferentes níveis.</small>
+                                    <div class="courses-selection" id="courses-selection-container">
+                                        ${moduleState.courses.map(course => `
+                                            <div class="course-option">
+                                                <label class="course-checkbox-label">
+                                                    <input type="checkbox" 
+                                                           name="courseIds" 
+                                                           value="${course.id}"
+                                                           class="course-checkbox"
+                                                           ${associatedCourseIds.has(course.id) ? 'checked' : ''}>
+                                                    <span class="course-info">
+                                                        <strong>${course.name}</strong>
+                                                        <small>${course.level || ''} • ${course.description || ''}</small>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        `).join('')}
                                     </div>
                                 </div>
                             </div>
@@ -809,6 +824,13 @@
                                             ${unit.name}
                                         </option>
                                     `).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="turma-training-area">Área de Treino</label>
+                                <select id="turma-training-area" name="trainingAreaId">
+                                    <option value="">Selecione uma área de treino</option>
+                                    <!-- Training areas will be loaded dynamically based on selected unit -->
                                 </select>
                             </div>
                             <div class="form-group">
@@ -932,9 +954,52 @@
             });
         }
         
+        // Setup unit change handler to update training areas
+        const unitSelect = document.getElementById('turma-unit');
+        const trainingAreaSelect = document.getElementById('turma-training-area');
+        
+        if (unitSelect && trainingAreaSelect) {
+            unitSelect.addEventListener('change', (e) => {
+                const selectedUnitId = e.target.value;
+                console.log('[Turmas] Unit changed:', selectedUnitId);
+                updateTrainingAreas(selectedUnitId, trainingAreaSelect);
+            });
+        }
+        
         // Mark handlers as setup
         moduleState.handlersSetup = true;
         console.log('[Turmas] ✅ Editor handlers setup complete');
+    }
+    
+    // Update training areas based on selected unit
+    function updateTrainingAreas(selectedUnitId, trainingAreaSelect) {
+        // Clear existing options except the first one
+        trainingAreaSelect.innerHTML = '<option value="">Selecione uma área de treino</option>';
+        
+        if (!selectedUnitId) {
+            console.log('[Turmas] No unit selected, clearing training areas');
+            return;
+        }
+        
+        // Filter training areas by unit
+        const filteredAreas = moduleState.trainingAreas.filter(area => area.unitId === selectedUnitId);
+        console.log(`[Turmas] Found ${filteredAreas.length} training areas for unit ${selectedUnitId}`);
+        
+        // Add filtered training areas to select
+        filteredAreas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.id;
+            option.textContent = area.name;
+            trainingAreaSelect.appendChild(option);
+        });
+        
+        if (filteredAreas.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Nenhuma área de treino disponível';
+            option.disabled = true;
+            trainingAreaSelect.appendChild(option);
+        }
     }
     
     // Handle save turma
@@ -1047,27 +1112,50 @@
             if (moduleState.editingTurma && moduleState.editingTurma.organizationId) {
                 turmaData.organizationId = moduleState.editingTurma.organizationId;
             } else {
-                // Fallback to first available organization (same as backend does)
-                turmaData.organizationId = 'd961f738-9552-4385-8c1d-e10d8b1047e5';
+                // Fallback to first available organization (Academia Demo)
+                turmaData.organizationId = 'a55ad715-2eb0-493c-996c-bb0f60bacec9';
             }
             
             // Ensure schedule has correct format for backend
             if (turmaData.schedule && turmaData.schedule.weekDays) {
                 console.log('[Turmas] 🔄 Converting weekDays to daysOfWeek...');
-                
-                // Convert weekDays to numbers if they are strings
-                turmaData.schedule.daysOfWeek = turmaData.schedule.weekDays.map(day => {
-                    if (typeof day === 'string') {
-                        // Convert string days to numbers: Sunday=0, Monday=1, etc.
-                        const dayMap = {
-                            'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
-                            'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
-                        };
-                        return dayMap[day] || 1; // Default to Monday if invalid
+
+                const normalizeDay = (val) => {
+                    if (val === null || val === undefined) return null;
+                    // Already a number 0-6
+                    if (typeof val === 'number') return val;
+                    // String handling
+                    const raw = String(val).trim();
+                    // Numeric string
+                    if (/^\d+$/.test(raw)) {
+                        const n = parseInt(raw, 10);
+                        return isNaN(n) ? null : Math.max(0, Math.min(6, n));
                     }
-                    return day;
-                });
-                
+                    const upper = raw
+                      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+                      .toUpperCase();
+                    // English map
+                    const mapEn = {
+                        SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3,
+                        THURSDAY: 4, FRIDAY: 5, SATURDAY: 6,
+                        SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6
+                    };
+                    // Portuguese map
+                    const mapPt = {
+                        DOMINGO: 0, SEGUNDA: 1, TERCA: 2, QUARTA: 3,
+                        QUINTA: 4, SEXTA: 5, SABADO: 6,
+                        DOM: 0, SEG: 1, TER: 2, QUA: 3, QUI: 4, SEX: 5, SAB: 6
+                    };
+                    if (upper in mapEn) return mapEn[upper];
+                    if (upper in mapPt) return mapPt[upper];
+                    // Unknown -> default to Monday (1)
+                    return 1;
+                };
+
+                turmaData.schedule.daysOfWeek = (turmaData.schedule.weekDays || [])
+                  .map(normalizeDay)
+                  .filter(v => v !== null && v !== undefined);
+
                 console.log('[Turmas] ✅ Converted daysOfWeek:', turmaData.schedule.daysOfWeek);
                 delete turmaData.schedule.weekDays; // Remove old format
             } else {
@@ -1116,6 +1204,37 @@
             if (turmaData.maxStudents) turmaData.maxStudents = parseInt(turmaData.maxStudents);
             if (turmaData.price) turmaData.price = parseFloat(turmaData.price);
             
+            // Client-side uniqueness check for name within organization
+            try {
+                const orgIdForCheck = turmaData.organizationId || (moduleState.editingTurma && moduleState.editingTurma.organizationId);
+                const currentId = moduleState.editingTurma && moduleState.editingTurma.id;
+                if (orgIdForCheck && moduleState.turmas && Array.isArray(moduleState.turmas)) {
+                    const duplicate = moduleState.turmas.find(t => (
+                        t.organizationId === orgIdForCheck &&
+                        t.name && turmaData.name && t.name.trim().toLowerCase() === turmaData.name.trim().toLowerCase() &&
+                        t.id !== currentId
+                    ));
+                    if (duplicate) {
+                        const msg = 'Já existe uma turma com esse nome nesta organização. Escolha um nome diferente.';
+                        console.warn('[Turmas] Duplicate name detected, aborting save');
+                        if (window.app && window.app.showNotification) {
+                            window.app.showNotification(msg, 'warning');
+                        } else {
+                            alert(msg);
+                        }
+                        // Reset saving state and exit early
+                        moduleState.isSaving = false;
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = moduleState.editingTurma ? '💾 Atualizar Turma' : '💾 Criar Turma';
+                        }
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('[Turmas] Name uniqueness pre-check failed (non-blocking):', e);
+            }
+
             // API call
             const isEdit = !!moduleState.editingTurma;
             const url = isEdit ? `/api/turmas/${moduleState.editingTurma.id}` : '/api/turmas';
@@ -1170,7 +1289,8 @@
                 console.log('[Turmas] Save completed - staying in editor');
                 
             } else {
-                throw new Error(result.message || 'Erro ao salvar turma');
+                const serverMessage = result.error || result.message || 'Erro ao salvar turma';
+                throw new Error(serverMessage);
             }
             
         } catch (error) {

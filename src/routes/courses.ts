@@ -5,10 +5,49 @@ import { z } from 'zod';
 import { TechniqueImportService } from '../services/techniqueImportService';
 import { CourseImportService } from '../services/courseImportService';
 
-// Helper: resolve organizationId (first org fallback)
-async function getOrganizationId(): Promise<string> {
+// Helper: resolve organizationId from request headers or fallback
+async function getOrganizationId(request: FastifyRequest): Promise<string> {
+  console.log('🔍 getOrganizationId - Starting resolution...');
+  
+  // 1) Try body organizationId
+  const bodyOrgId = (request.body as any)?.organizationId as string | undefined;
+  console.log('🔍 Body organizationId:', bodyOrgId);
+  if (bodyOrgId) {
+    const org = await prisma.organization.findUnique({ where: { id: bodyOrgId } });
+    if (org) {
+      console.log('✅ Organization found via body:', org.id);
+      return org.id;
+    }
+  }
+
+  // 2) Try headers
+  const headers = request.headers as Record<string, string | undefined>;
+  const headerId = headers['x-organization-id'] || headers['x-organizationid'] || headers['organization-id'];
+  const headerSlug = headers['x-organization-slug'] || headers['organization-slug'];
+  console.log('🔍 Header organizationId:', headerId);
+  console.log('🔍 Header organizationSlug:', headerSlug);
+
+  if (headerId) {
+    const org = await prisma.organization.findUnique({ where: { id: headerId } });
+    if (org) {
+      console.log('✅ Organization found via header ID:', org.id);
+      return org.id;
+    }
+  }
+
+  if (headerSlug) {
+    const org = await prisma.organization.findUnique({ where: { slug: headerSlug } });
+    if (org) {
+      console.log('✅ Organization found via header slug:', org.id);
+      return org.id;
+    }
+  }
+
+  // 3) Fallback: first organization
+  console.log('🔍 Using fallback strategy - finding first available organization...');
   const org = await prisma.organization.findFirst();
   if (!org) throw new Error('No organization found');
+  console.log('⚠️ Using first available organization as fallback:', org.id);
   return org.id;
 }
 
@@ -96,11 +135,56 @@ export async function coursesRoutes(app: FastifyInstance) {
     }
   });
 
+  // Get course techniques
+  app.get('/:id/techniques', async (request, reply) => {
+    try {
+      const { id } = request.params as any;
+
+      // Ensure course exists
+      const course = await prisma.course.findUnique({ where: { id } });
+      if (!course) {
+        return reply.code(404).send({ 
+          success: false, 
+          error: 'Curso não encontrado' 
+        });
+      }
+
+      // Fetch techniques with course association data
+      const courseTechniques = await prisma.courseTechnique.findMany({
+        where: { courseId: id },
+        include: {
+          technique: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              category: true,
+              difficulty: true,
+              description: true
+            }
+          }
+        },
+        orderBy: { orderIndex: 'asc' }
+      });
+
+      return reply.send({ 
+        success: true, 
+        data: courseTechniques 
+      });
+    } catch (error) {
+      request.log?.error(error);
+      return reply.code(500).send({ 
+        success: false, 
+        error: 'Erro ao buscar técnicas do curso' 
+      });
+    }
+  });
+
   // Import course with techniques
   app.post('/import', async (request, reply) => {
     try {
       const body = (request.body as any) || {};
-      const orgId = await getOrganizationId();
+      const orgId = await getOrganizationId(request);
 
       // Basic mapping and defaults
       const name: string = body.name?.toString().trim();
@@ -348,17 +432,52 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.post('/import-full-course', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const courseData = request.body as any;
-      const organizationId = await getOrganizationId();
+      
+      console.log('📥 ========== COURSE IMPORT STARTED ==========');
+      console.log('📦 Body keys:', Object.keys(courseData || {}));
+      console.log('📊 Techniques count:', courseData?.techniques?.length || 0);
+      console.log('📅 Schedule present:', !!courseData?.schedule);
+      console.log('🏢 Looking for organization...');
+
+      const organizationId = await getOrganizationId(request);
+      console.log('✅ Organization found:', organizationId);
+
+      // Extract createMissingTechniques flag (default: true for ease of use)
+      const createMissingTechniques = courseData.createMissingTechniques ?? true;
+      
+      console.log('🚀 createMissingTechniques:', createMissingTechniques);
+      
+      // Remove flag from course data object
+      delete courseData.createMissingTechniques;
 
       // Validate basic structure
       if (!courseData.courseId || !courseData.name || !courseData.techniques) {
+        console.log('❌ Validation failed:', {
+          hasCourseId: !!courseData.courseId,
+          hasName: !!courseData.name,
+          hasTechniques: !!courseData.techniques,
+          courseId: courseData.courseId,
+          name: courseData.name
+        });
         return reply.code(400).send({
           success: false,
-          message: 'Dados do curso inválidos. Campos obrigatórios: courseId, name, techniques'
+          message: 'Dados do curso inválidos. Campos obrigatórios: courseId, name, techniques',
+          details: {
+            hasCourseId: !!courseData.courseId,
+            hasName: !!courseData.name,
+            hasTechniques: !!courseData.techniques
+          }
         });
       }
 
-      const result = await CourseImportService.importFullCourse(courseData, organizationId);
+      console.log('✅ Validation passed');
+      console.log('🔄 Calling CourseImportService.importFullCourse...');
+
+      const result = await CourseImportService.importFullCourse(courseData, organizationId, createMissingTechniques);
+      
+      console.log('📤 Service result:', result.success ? '✅ SUCCESS' : '❌ ERROR');
+      console.log('📤 Result data:', JSON.stringify(result, null, 2));
+      console.log('📥 ========== COURSE IMPORT ENDED ==========');
       
       if (result.success) {
         reply.code(201).send(result);
@@ -367,11 +486,15 @@ export async function coursesRoutes(app: FastifyInstance) {
       }
 
     } catch (error) {
-      console.error('Erro no endpoint de importação:', error);
+      console.error('❌ ========== COURSE IMPORT FAILED ==========');
+      console.error('❌ Error:', error);
+      console.error('❌ Stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('❌ Message:', error instanceof Error ? error.message : 'Unknown error');
       reply.code(500).send({
         success: false,
         message: 'Erro interno do servidor',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
       });
     }
   });
@@ -410,27 +533,24 @@ export async function coursesRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
 
-      // Get all lesson plans for this course with their associated activities
+      // Get all lesson plans for this course with their linked techniques
       const lessonPlans = await prisma.lessonPlan.findMany({
         where: { courseId: id },
         include: {
-          activityItems: {
+          techniqueLinks: {
             include: {
-              activity: {
+              technique: {
                 select: {
                   id: true,
-                  title: true,
-                  type: true,
+                  name: true,
+                  slug: true,
+                  category: true,
+                  difficulty: true,
                   description: true
                 }
               }
             },
-            where: {
-              activity: {
-                type: 'TECHNIQUE'
-              }
-            },
-            orderBy: { ord: 'asc' }
+            orderBy: { order: 'asc' }
           }
         },
         orderBy: { lessonNumber: 'asc' }
@@ -441,13 +561,16 @@ export async function coursesRoutes(app: FastifyInstance) {
         lessonNumber: lesson.lessonNumber,
         weekNumber: lesson.weekNumber,
         title: lesson.title,
-        techniques: lesson.activityItems.map(item => ({
-          id: item.activity.id,
-          title: item.activity.title,
-          type: item.activity.type,
-          description: item.activity.description,
-          segment: item.segment,
-          order: item.ord
+        techniques: lesson.techniqueLinks.map(lt => ({
+          id: lt.technique.id,
+          title: lt.technique.name,
+          name: lt.technique.name,
+          slug: lt.technique.slug,
+          category: lt.technique.category,
+          difficulty: lt.technique.difficulty,
+          description: lt.technique.description,
+          order: lt.order,
+          allocationMinutes: lt.allocationMinutes
         }))
       }));
 

@@ -15,6 +15,10 @@ build/
 .env.test.local
 .env.production.local
 
+# Google OAuth Credentials (SENSITIVE)
+**/client_secret_*.json
+client_secret_*.json
+
 # Database
 *.db
 *.sqlite

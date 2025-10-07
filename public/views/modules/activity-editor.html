@@ -212,21 +212,37 @@
 
     function populateForm(activity) {
       document.getElementById('activity-id').value = activity.id || '';
-      document.getElementById('title').value = activity.title || '';
-      document.getElementById('type').value = activity.type || '';
+      document.getElementById('title').value = activity.title || activity.name || '';
+      document.getElementById('type').value = activity.type || 'TECHNIQUE';
       document.getElementById('description').value = activity.description || '';
       document.getElementById('difficulty').value = activity.difficulty || '';
       document.getElementById('refTechniqueId').value = activity.refTechniqueId || '';
-      document.getElementById('safety').value = activity.safety || '';
       
-      // Equipamentos como array para string
+      // For techniques, map safety from risksMitigation
+      const safetyValue = activity.safety || (activity.risksMitigation && Array.isArray(activity.risksMitigation) ? activity.risksMitigation.join(', ') : '');
+      document.getElementById('safety').value = safetyValue;
+      
+      // Equipamentos - handle both equipment and resources arrays  
+      let equipmentValue = '';
       if (activity.equipment && Array.isArray(activity.equipment)) {
-        document.getElementById('equipment').value = activity.equipment.join(', ');
+        equipmentValue = activity.equipment.join(', ');
+      } else if (activity.resources && Array.isArray(activity.resources)) {
+        equipmentValue = activity.resources.join(', ');
       }
+      document.getElementById('equipment').value = equipmentValue;
       
       // Adaptações como array para string
       if (activity.adaptations && Array.isArray(activity.adaptations)) {
         document.getElementById('adaptations').value = activity.adaptations.join(', ');
+      }
+      
+      // Show technique-specific info if available
+      if (activity.category || activity.complexity || activity.objectives) {
+        console.log('📋 Loaded technique data:', {
+          category: activity.category,
+          complexity: activity.complexity,
+          objectives: activity.objectives
+        });
       }
     }
   }, 100); // Close setTimeout
@@ -245,7 +261,7 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const activityId = urlParams.get('id');
+    const activityId = urlParams.get('activityId') || urlParams.get('id');
     const form = document.getElementById('activity-form');
     const deleteBtn = document.getElementById('delete-btn');
     const titleElement = document.getElementById('editor-title');
@@ -258,8 +274,25 @@
       try {
         const { data } = await ActivitiesService.get(activityId);
         populateForm(data);
-        titleElement.textContent = 'Editar Atividade';
-        deleteBtn.style.display = 'block';
+        // Set title based on type
+        const isActivity = data.type && data.type !== 'TECHNIQUE';
+        titleElement.textContent = isActivity ? 'Editar Atividade' : 'Visualizar Técnica';
+        deleteBtn.style.display = isActivity ? 'block' : 'none'; // Only show delete for actual activities
+        
+        // If it's a technique, make form read-only
+        if (!isActivity) {
+          const inputs = form.querySelectorAll('input, select, textarea');
+          inputs.forEach(input => {
+            input.setAttribute('readonly', true);
+            input.setAttribute('disabled', true);
+          });
+          
+          // Hide submit button for techniques
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.style.display = 'none';
+          
+          console.log('🔒 Form set to read-only mode for technique visualization');
+        }
       } catch (error) {
         console.error('Erro ao carregar atividade:', error);
         alert('Falha ao carregar dados da atividade');

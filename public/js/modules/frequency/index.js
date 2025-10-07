@@ -305,4 +305,7 @@ window.initFrequencyModule = async (container) => {
 // Export para uso como módulo ES6
 export default frequencyModule;
 
-console.log('👥 Frequency Module - Loaded');
+// Expor globalmente para compatibilidade com AcademyApp (AGENTS.md v2.1)
+window.frequency = window.frequencyModule = frequencyModule;
+
+console.log('👥 Frequency Module - Loaded and registered globally');

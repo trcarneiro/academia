@@ -34,4 +34,7 @@ export default async function turmasRoutes(fastify: FastifyInstance) {
   // Busca e filtros
   fastify.get('/turmas/search', turmasController.search.bind(turmasController));
   fastify.get('/turmas/by-instructor/:instructorId', turmasController.getByInstructor.bind(turmasController));
+
+  // Operação administrativa: limpar datas de término de todas as turmas
+  fastify.post('/turmas/clear-end-dates', turmasController.clearAllEndDates.bind(turmasController));
 }

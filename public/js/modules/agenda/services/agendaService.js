@@ -11,6 +11,14 @@ class AgendaService {
         console.log('📅 AgendaService initialized');
     }
 
+    // Local YYYY-MM-DD formatter to avoid UTC drift
+    formatLocalYMD(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     /**
      * Get classes for today
      */
@@ -20,7 +28,7 @@ class AgendaService {
         if (cached) return cached;
 
         try {
-            const today = new Date().toISOString().split('T')[0];
+            const today = this.formatLocalYMD(new Date());
             const response = await this.moduleAPI.api.get(`/api/agenda/classes?startDate=${today}&endDate=${today}`);
             
             this.setCache(cacheKey, response);

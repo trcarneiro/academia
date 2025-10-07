@@ -2,7 +2,10 @@
 // Gerencia presença dos alunos nas aulas
 
 export class TurmasAttendanceView {
-    constructor() {
+    constructor(service, controller) {
+        this.service = service;
+        this.controller = controller;
+        this.api = service.api; // ✅ API do service
         this.container = null;
         this.currentTurma = null;
         this.currentLesson = null;
@@ -171,7 +174,7 @@ export class TurmasAttendanceView {
             this.showLoading();
             
             // Carregar dados de frequência
-            const response = await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/attendance`);
+            const response = await this.api.request(`/api/turmas/${this.currentTurma.id}/attendance`);
             this.attendanceData = response.data || [];
             
             this.renderAttendanceTable();

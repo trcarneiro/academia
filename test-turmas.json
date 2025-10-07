@@ -1,0 +1,15 @@
+{
+  "name": "Teste",
+  "courseIds": ["a632e13f-ded9-43ee-aa43-f0ca6e5e857b"],
+  "startDate": "2025-06-01T00:00:00.000Z",
+  "instructorId": "52ac8d97-c355-4e6f-a7ea-c4981b8f577c",
+  "unitId": "5dfd7a44-7aa3-4f0d-8b1d-5f460c75d7fa",
+  "maxStudents": 12,
+  "schedule": {
+    "time": "19:00",
+    "duration": 60,
+    "daysOfWeek": [2, 4]
+  },
+  "type": "COLLECTIVE",
+  "organizationId": "d961f738-9552-4385-8c1d-e10d8b1047e5"
+}

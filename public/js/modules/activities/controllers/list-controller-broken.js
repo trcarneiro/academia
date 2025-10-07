@@ -496,8 +496,8 @@ export class ActivitiesListController {
             <tr class="table-row" data-activity-id="${activity.id}">
                 <td>
                     <div class="activity-info">
-                        <strong class="activity-title">${activity.title || 'Sem título'}</strong>
-                        <div class="activity-description">${activity.description || 'Sem descrição'}</div>
+                        <strong class="activity-title">${activity?.title || activity?.name || activity?.description?.substring(0, 50) || 'Atividade sem nome'}</strong>
+                        <div class="activity-description">${activity?.description || 'Sem descrição'}</div>
                     </div>
                 </td>
                 <td>

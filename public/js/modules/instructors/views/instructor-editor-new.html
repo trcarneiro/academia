@@ -1,0 +1,211 @@
+<!-- Instructor Editor Template - Activities Pattern -->
+<link rel="stylesheet" href="/css/modules/instructors.css">
+
+<div class="module-header-premium">
+    <div class="breadcrumb-premium">
+        <a href="#/instructors" class="breadcrumb-item">
+            <i class="fas fa-arrow-left"></i>
+            Instrutores
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active" id="page-title">Novo Instrutor</span>
+    </div>
+    <h1 class="module-title-premium">👨‍🏫 <span id="editor-title">Novo Instrutor</span></h1>
+</div>
+
+<!-- Loading State -->
+<div id="loading-state" class="loading-premium" style="display: none;">
+    <div class="spinner-premium"></div>
+    <p>Carregando dados do instrutor...</p>
+</div>
+
+<!-- Error State -->
+<div id="error-state" class="error-state-premium" style="display: none;">
+    <div class="error-icon-premium">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3>Erro ao carregar instrutor</h3>
+    <p class="error-message">Não foi possível carregar os dados.</p>
+    <button class="btn-primary" onclick="window.location.reload()">
+        Tentar Novamente
+    </button>
+</div>
+
+<!-- Success State -->
+<div id="success-state" class="success-state-premium" style="display: none;">
+    <div class="success-icon-premium">
+        <i class="fas fa-check-circle"></i>
+    </div>
+    <h3>Sucesso!</h3>
+    <p class="success-message">Instrutor salvo com sucesso!</p>
+</div>
+
+<!-- Form Container -->
+<div id="form-container" class="content-container">
+    <form id="instructor-form" class="form-premium">
+        <!-- Basic Information -->
+        <div class="form-section data-card-premium">
+            <div class="form-section-header">
+                <h3>📋 Informações Básicas</h3>
+                <p>Dados pessoais do instrutor</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="name" class="form-label">Nome Completo *</label>
+                    <input type="text" id="name" name="name" required 
+                           placeholder="Ex: João Silva Santos" class="form-input">
+                    <div class="field-error" id="name-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">E-mail *</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="Ex: joao@academia.com" class="form-input">
+                    <div class="field-error" id="email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">Telefone</label>
+                    <input type="tel" id="phone" name="phone" 
+                           placeholder="Ex: (11) 99999-9999" class="form-input">
+                    <div class="field-error" id="phone-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="document" class="form-label">CPF</label>
+                    <input type="text" id="document" name="document" 
+                           placeholder="Ex: 123.456.789-00" class="form-input">
+                    <div class="field-error" id="document-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="birthDate" class="form-label">Data de Nascimento</label>
+                    <input type="date" id="birthDate" name="birthDate" class="form-input">
+                    <div class="field-error" id="birthDate-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="ACTIVE">Ativo</option>
+                        <option value="INACTIVE">Inativo</option>
+                        <option value="SUSPENDED">Suspenso</option>
+                    </select>
+                    <div class="field-error" id="status-error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Information -->
+        <div class="form-section data-card-premium">
+            <div class="form-section-header">
+                <h3>🥋 Informações Profissionais</h3>
+                <p>Qualificações e especialidades</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="belt" class="form-label">Graduação/Faixa</label>
+                    <input type="text" id="belt" name="belt" 
+                           placeholder="Ex: Faixa Preta 3º Dan" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialties" class="form-label">Especialidades</label>
+                    <input type="text" id="specialties" name="specialties" 
+                           placeholder="Ex: Defesa Pessoal, Combate" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="experience" class="form-label">Experiência (anos)</label>
+                    <input type="number" id="experience" name="experience" 
+                           placeholder="Ex: 5" class="form-input" min="0">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="certifications" class="form-label">Certificações</label>
+                    <textarea id="certifications" name="certifications" rows="3" 
+                              placeholder="Liste as certificações do instrutor..." class="form-textarea"></textarea>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="bio" class="form-label">Biografia</label>
+                    <textarea id="bio" name="bio" rows="4" 
+                              placeholder="Uma breve biografia do instrutor..." class="form-textarea"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Information -->
+        <div class="form-section data-card-premium">
+            <div class="form-section-header">
+                <h3>💼 Informações de Contratação</h3>
+                <p>Dados trabalhistas e permissões</p>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="hireDate" class="form-label">Data de Contratação</label>
+                    <input type="date" id="hireDate" name="hireDate" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="salary" class="form-label">Salário</label>
+                    <input type="number" id="salary" name="salary" 
+                           placeholder="Ex: 3000" class="form-input" step="0.01" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="workload" class="form-label">Carga Horária (h/semana)</label>
+                    <input type="number" id="workload" name="workload" 
+                           placeholder="Ex: 40" class="form-input" min="0" max="60">
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="canManageStudents" name="canManageStudents" class="form-checkbox">
+                        <span class="checkbox-text">Pode gerenciar estudantes</span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="canManageClasses" name="canManageClasses" class="form-checkbox">
+                        <span class="checkbox-text">Pode gerenciar aulas</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="action-group">
+                <button type="button" class="btn-secondary" id="cancel-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn-danger" id="delete-btn" style="display: none;">
+                    <i class="fas fa-trash"></i>
+                    Excluir
+                </button>
+            </div>
+            <button type="submit" class="btn-primary" id="save-btn">
+                <i class="fas fa-save"></i>
+                <span id="save-text">Salvar Instrutor</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script src="/js/shared/api-client.js"></script>
+<script src="/js/shared/utils.js"></script>
+<script>
+    // Initialize instructor editor when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.instructorEditor && typeof window.instructorEditor.initialize === 'function') {
+            window.instructorEditor.initialize();
+        }
+    });
+</script>

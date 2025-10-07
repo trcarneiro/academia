@@ -5,6 +5,7 @@
 
 import { TurmasService } from '../services/TurmasService.js';
 import { TurmasEditorView } from '../views/TurmasEditorView.js';
+import { safeNavigateTo, safeNavigateToList } from '../../../shared/utils/navigation.js';
 
 export class TurmasEditorController {
     constructor(apiClient) {
@@ -175,9 +176,10 @@ export class TurmasEditorController {
                 this.view.showSuccessState(event.target, result.data, this.isEditing);
                 // Navigate back to list after success
                 setTimeout(() => {
-                    if (window.router) {
-                        window.router.navigate('turmas');
-                    }
+                    safeNavigateToList('turmas', {
+                        fallback: () => window.turmasModule?.controller?.showList?.(),
+                        context: 'turmas-editor:save-success'
+                    });
                 }, 2000);
             } else {
                 throw new Error(result.error || 'Erro ao salvar turma');
@@ -204,7 +206,7 @@ export class TurmasEditorController {
             endDate: formData.get('endDate') || null,
             maxStudents: parseInt(formData.get('maxStudents')) || 20,
             unitId: formData.get('unitId'),
-            organizationId: 'd961f738-9552-4385-8c1d-e10d8b1047e5', // Default organization
+            organizationId: 'a55ad715-2eb0-493c-996c-bb0f60bacec9', // Default organization
             schedule: {
                 daysOfWeek: this.getSelectedDaysOfWeek(formData),
                 time: formData.get('time') || '19:00',
@@ -290,9 +292,10 @@ export class TurmasEditorController {
      */
     handleCancel() {
         console.log('[TurmasEditor] Cancel action triggered');
-        if (window.router) {
-            window.router.navigate('turmas');
-        }
+        safeNavigateToList('turmas', {
+            fallback: () => window.turmasModule?.controller?.showList?.(),
+            context: 'turmas-editor:cancel'
+        });
     }
 
     /**
@@ -304,14 +307,13 @@ export class TurmasEditorController {
         
         switch (path) {
             case '/':
-                if (window.router) {
-                    window.router.navigate('dashboard');
-                }
+                safeNavigateTo('dashboard', { context: 'turmas-editor:breadcrumb-dashboard' });
                 break;
             case '/turmas':
-                if (window.router) {
-                    window.router.navigate('turmas');
-                }
+                safeNavigateToList('turmas', {
+                    fallback: () => window.turmasModule?.controller?.showList?.(),
+                    context: 'turmas-editor:breadcrumb-turmas'
+                });
                 break;
         }
     }

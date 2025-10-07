@@ -85,22 +85,37 @@ export default async function instructorsRoutes(
         organizationId = organization.id;
       }
 
+      console.log('Using organizationId:', organizationId);
+
       // Split name into firstName and lastName
       const nameParts = payload.name.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      // Check if user already exists
-      let user = await prisma.user.findUnique({
+      // Check if user already exists (using findFirst since no unique index on organizationId + email)
+      let user = await prisma.user.findFirst({
         where: { 
-          organizationId_email: {
-            organizationId,
-            email: payload.email
-          }
+          organizationId,
+          email: payload.email
+        },
+        include: {
+          instructor: true // Check if already has instructor profile
         }
       });
 
+      console.log('User found:', user ? 'YES' : 'NO');
+      if (user) {
+        console.log('User has instructor:', user.instructor ? 'YES' : 'NO');
+        
+        // Check if user already has an instructor profile
+        if (user.instructor) {
+          reply.code(400);
+          return { success: false, error: 'This user already has an instructor profile' };
+        }
+      }
+
       if (!user) {
+        console.log('Creating new user...');
         // Create new user
         user = await prisma.user.create({
           data: {
@@ -116,6 +131,7 @@ export default async function instructorsRoutes(
             isActive: true
           }
         });
+        console.log('User created:', user.id);
       }
 
       // Create instructor
@@ -123,18 +139,27 @@ export default async function instructorsRoutes(
         userId: user.id,
         organizationId,
         bio: payload.bio || null,
-        belt: payload.belt || null,
-        specialties: payload.specialties || null,
+        specializations: payload.specializations || payload.specialties || [],
+        martialArts: payload.martialArts || (payload.belt ? [payload.belt] : []),
         experience: payload.experience || null,
-        certifications: payload.certifications || null,
-        status: payload.status || 'ACTIVE',
-        hireDate: payload.hireDate ? new Date(payload.hireDate) : null,
-        salary: payload.salary || null,
-        workload: payload.workload || null,
-        canManageStudents: payload.canManageStudents || false,
-        canManageClasses: payload.canManageClasses || false,
+        certifications: payload.certifications || [],
+        hireDate: payload.hireDate ? new Date(payload.hireDate) : new Date(),
+        maxStudentsPerClass: payload.maxStudentsPerClass || 20,
+        preferredUnits: payload.preferredUnits || [],
         isActive: true
       };
+      
+      // Add hourlyRate only if provided (it's optional Decimal field)
+      if (payload.hourlyRate || payload.salary) {
+        instructorData.hourlyRate = payload.hourlyRate || payload.salary;
+      }
+      
+      // Add availability only if provided (it's JSON field)
+      if (payload.availability) {
+        instructorData.availability = payload.availability;
+      }
+
+      console.log('Creating instructor with data:', instructorData);
 
       const instructor = await prisma.instructor.create({
         data: instructorData,
@@ -153,6 +178,8 @@ export default async function instructorsRoutes(
         }
       });
 
+      console.log('Instructor created:', instructor.id);
+
       // Transform to frontend format
       const result = {
         id: instructor.id,
@@ -161,26 +188,36 @@ export default async function instructorsRoutes(
         phone: instructor.user.phone,
         document: instructor.user.cpf,
         birthDate: instructor.user.birthDate,
-        belt: instructor.belt,
-        specialties: instructor.specialties,
+        specializations: instructor.specializations,
         experience: instructor.experience,
         certifications: instructor.certifications,
         bio: instructor.bio,
-        status: instructor.status,
         hireDate: instructor.hireDate,
-        salary: instructor.salary,
-        workload: instructor.workload,
-        canManageStudents: instructor.canManageStudents,
-        canManageClasses: instructor.canManageClasses,
+        hourlyRate: instructor.hourlyRate,
+        maxStudentsPerClass: instructor.maxStudentsPerClass,
+        preferredUnits: instructor.preferredUnits,
+        availability: instructor.availability,
+        martialArts: instructor.martialArts,
         isActive: instructor.isActive,
         userId: instructor.userId
       };
 
       return { success: true, data: result };
     } catch (error) {
+      console.error('=== ERROR CREATING INSTRUCTOR ===');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      if (error.code) console.error('Error code:', error.code);
+      if (error.meta) console.error('Error meta:', error.meta);
+      
       request.log.error(error);
       reply.code(500);
-      return { success: false, error: 'Failed to create instructor' };
+      return { 
+        success: false, 
+        error: 'Failed to create instructor',
+        details: error.message // Add error details for debugging
+      };
     }
   });
 
@@ -190,16 +227,36 @@ export default async function instructorsRoutes(
       const { id } = request.params as any;
       const payload = request.body as any;
 
+      console.log('=== PUT INSTRUCTOR DEBUG ===');
+      console.log('ID:', id);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+
       // Find existing instructor
       const existingInstructor = await prisma.instructor.findUnique({
         where: { id },
-        include: { user: true }
+        include: { 
+          user: {
+            select: {
+              id: true,
+              organizationId: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              phone: true,
+              cpf: true,
+              birthDate: true
+            }
+          }
+        }
       });
 
       if (!existingInstructor) {
         reply.code(404);
         return { success: false, error: 'Instructor not found' };
       }
+
+      console.log('Existing instructor email:', existingInstructor.user.email);
+      console.log('New email from payload:', payload.email);
 
       // Split name into firstName and lastName if provided
       let firstName = existingInstructor.user.firstName;
@@ -222,6 +279,47 @@ export default async function instructorsRoutes(
       if (payload.document !== undefined) userUpdateData.cpf = payload.document;
       if (payload.birthDate !== undefined) userUpdateData.birthDate = payload.birthDate ? new Date(payload.birthDate) : null;
 
+      // Check for email uniqueness if email is being updated
+      if (payload.email) {
+        console.log('=== EMAIL UPDATE DEBUG ===');
+        console.log('Current email:', existingInstructor.user.email);
+        console.log('New email:', payload.email);
+        console.log('User ID:', existingInstructor.userId);
+        console.log('Organization ID:', existingInstructor.user.organizationId);
+        console.log('Email comparison:', payload.email !== existingInstructor.user.email);
+
+        // Only check for duplicates if email is actually different
+        if (payload.email.toLowerCase().trim() !== existingInstructor.user.email.toLowerCase().trim()) {
+          console.log('📧 Checking for email duplicates...');
+          
+          const existingUserWithEmail = await prisma.user.findFirst({
+            where: {
+              email: payload.email.toLowerCase().trim(),
+              organizationId: existingInstructor.user.organizationId,
+              id: { not: existingInstructor.userId } // Exclude current user
+            }
+          });
+
+          console.log('Existing user with email:', existingUserWithEmail ? {
+            id: existingUserWithEmail.id,
+            email: existingUserWithEmail.email,
+            firstName: existingUserWithEmail.firstName,
+            lastName: existingUserWithEmail.lastName
+          } : null);
+
+          if (existingUserWithEmail) {
+            console.log('❌ Email conflict detected!');
+            reply.code(400);
+            return { success: false, error: `Este email já está sendo usado por ${existingUserWithEmail.firstName} ${existingUserWithEmail.lastName}` };
+          }
+          console.log('✅ Email is unique, proceeding...');
+        } else {
+          console.log('📧 Email unchanged, skipping duplicate check');
+        }
+      } else {
+        console.log('=== NO EMAIL IN PAYLOAD ===');
+      }
+
       if (Object.keys(userUpdateData).length > 0) {
         await prisma.user.update({
           where: { id: existingInstructor.userId },
@@ -232,16 +330,15 @@ export default async function instructorsRoutes(
       // Update instructor data
       const instructorUpdateData: any = {};
       if (payload.bio !== undefined) instructorUpdateData.bio = payload.bio;
-      if (payload.belt !== undefined) instructorUpdateData.belt = payload.belt;
-      if (payload.specialties !== undefined) instructorUpdateData.specialties = payload.specialties;
+      if (payload.specializations !== undefined) instructorUpdateData.specializations = payload.specializations;
       if (payload.experience !== undefined) instructorUpdateData.experience = payload.experience;
       if (payload.certifications !== undefined) instructorUpdateData.certifications = payload.certifications;
-      if (payload.status !== undefined) instructorUpdateData.status = payload.status;
       if (payload.hireDate !== undefined) instructorUpdateData.hireDate = payload.hireDate ? new Date(payload.hireDate) : null;
-      if (payload.salary !== undefined) instructorUpdateData.salary = payload.salary;
-      if (payload.workload !== undefined) instructorUpdateData.workload = payload.workload;
-      if (payload.canManageStudents !== undefined) instructorUpdateData.canManageStudents = payload.canManageStudents;
-      if (payload.canManageClasses !== undefined) instructorUpdateData.canManageClasses = payload.canManageClasses;
+      if (payload.hourlyRate !== undefined) instructorUpdateData.hourlyRate = payload.hourlyRate;
+      if (payload.maxStudentsPerClass !== undefined) instructorUpdateData.maxStudentsPerClass = payload.maxStudentsPerClass;
+      if (payload.preferredUnits !== undefined) instructorUpdateData.preferredUnits = payload.preferredUnits;
+      if (payload.availability !== undefined) instructorUpdateData.availability = payload.availability;
+      if (payload.martialArts !== undefined) instructorUpdateData.martialArts = payload.martialArts;
       if (payload.isActive !== undefined) instructorUpdateData.isActive = payload.isActive;
 
       let updatedInstructor = existingInstructor;
@@ -273,17 +370,16 @@ export default async function instructorsRoutes(
         phone: (updatedInstructor as any).user.phone,
         document: (updatedInstructor as any).user.cpf,
         birthDate: (updatedInstructor as any).user.birthDate,
-        belt: (updatedInstructor as any).belt,
-        specialties: (updatedInstructor as any).specialties,
+        specializations: (updatedInstructor as any).specializations,
         experience: (updatedInstructor as any).experience,
         certifications: (updatedInstructor as any).certifications,
         bio: (updatedInstructor as any).bio,
-        status: (updatedInstructor as any).status,
         hireDate: (updatedInstructor as any).hireDate,
-        salary: (updatedInstructor as any).salary,
-        workload: (updatedInstructor as any).workload,
-        canManageStudents: (updatedInstructor as any).canManageStudents,
-        canManageClasses: (updatedInstructor as any).canManageClasses,
+        hourlyRate: (updatedInstructor as any).hourlyRate,
+        maxStudentsPerClass: (updatedInstructor as any).maxStudentsPerClass,
+        preferredUnits: (updatedInstructor as any).preferredUnits,
+        availability: (updatedInstructor as any).availability,
+        martialArts: (updatedInstructor as any).martialArts,
         isActive: (updatedInstructor as any).isActive,
         userId: (updatedInstructor as any).userId
       };

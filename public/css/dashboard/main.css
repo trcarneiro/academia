@@ -215,6 +215,13 @@ body {
     box-shadow: var(--shadow-subtle);
 }
 
+/* Ocultar header padrão quando módulo tem header próprio */
+.module-content:has(.module-header-premium) ~ .module-header,
+.module-content .module-header-premium ~ .module-header,
+.content-area:has(.module-header-premium) .module-header {
+    display: none !important;
+}
+
 .module-header h1 {
     font-size: 1.5rem;
     font-weight: 600;

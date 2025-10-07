@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Módulo de Instrutores</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modules/instructors.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <h1>🧪 Teste - Módulo de Instrutores</h1>
+        <div id="test-container" style="min-height: 600px; border: 2px solid #e9ecef; border-radius: 8px; padding: 1rem;">
+            <!-- Módulo será carregado aqui -->
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+            <h3>🔧 Debug Info</h3>
+            <div id="debug-info">
+                <p>Status: <span id="status">Inicializando...</span></p>
+                <p>API Client: <span id="api-status">Verificando...</span></p>
+                <p>Controller: <span id="controller-status">Verificando...</span></p>
+                <p>Module: <span id="module-status">Verificando...</span></p>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <button onclick="testModule()" class="btn-primary">🔄 Testar Módulo</button>
+                <button onclick="checkAPIs()" class="btn-primary">🌐 Verificar APIs</button>
+                <button onclick="reloadModule()" class="btn-primary">♻️ Recarregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/shared/utils.js"></script>
+    
+    <!-- Module Scripts -->
+    <script src="/js/modules/instructors/controllers/InstructorsController.js"></script>
+    <script src="/js/modules/instructors/index.js"></script>
+
+    <script>
+        // Test functions
+        async function testModule() {
+            const status = document.getElementById('status');
+            const container = document.getElementById('test-container');
+            
+            try {
+                status.textContent = 'Testando módulo...';
+                
+                // Clear container
+                container.innerHTML = '';
+                
+                // Test module initialization
+                if (typeof window.initInstructorsModule === 'function') {
+                    await window.initInstructorsModule(container);
+                    status.textContent = 'Módulo carregado com sucesso!';
+                    status.style.color = 'green';
+                } else {
+                    throw new Error('initInstructorsModule não encontrado');
+                }
+                
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                status.textContent = `Erro: ${error.message}`;
+                status.style.color = 'red';
+                
+                container.innerHTML = `
+                    <div style="color: red; padding: 2rem; text-align: center;">
+                        <h3>❌ Erro no Teste</h3>
+                        <p>${error.message}</p>
+                        <pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px; text-align: left; overflow: auto;">
+${error.stack || 'Stack trace não disponível'}
+                        </pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkAPIs() {
+            const apiStatus = document.getElementById('api-status');
+            
+            try {
+                if (window.createModuleAPI) {
+                    const api = window.createModuleAPI('Instructors');
+                    const response = await api.request('/api/instructors');
+                    apiStatus.textContent = `OK - ${response.data?.length || 0} instrutores`;
+                    apiStatus.style.color = 'green';
+                } else {
+                    throw new Error('API Client não disponível');
+                }
+            } catch (error) {
+                apiStatus.textContent = `Erro: ${error.message}`;
+                apiStatus.style.color = 'red';
+            }
+        }
+
+        function reloadModule() {
+            location.reload();
+        }
+
+        // Auto-run checks on load
+        window.addEventListener('load', async () => {
+            // Check API Client
+            setTimeout(() => {
+                const apiStatus = document.getElementById('api-status');
+                if (window.createModuleAPI) {
+                    apiStatus.textContent = 'Disponível ✅';
+                    apiStatus.style.color = 'green';
+                } else {
+                    apiStatus.textContent = 'Não disponível ❌';
+                    apiStatus.style.color = 'red';
+                }
+            }, 1000);
+
+            // Check Controller
+            setTimeout(() => {
+                const controllerStatus = document.getElementById('controller-status');
+                if (window.InstructorsController) {
+                    controllerStatus.textContent = 'Carregado ✅';
+                    controllerStatus.style.color = 'green';
+                } else {
+                    controllerStatus.textContent = 'Não carregado ❌';
+                    controllerStatus.style.color = 'red';
+                }
+            }, 500);
+
+            // Check Module
+            setTimeout(() => {
+                const moduleStatus = document.getElementById('module-status');
+                if (window.InstructorsModule) {
+                    moduleStatus.textContent = 'Carregado ✅';
+                    moduleStatus.style.color = 'green';
+                } else {
+                    moduleStatus.textContent = 'Não carregado ❌';
+                    moduleStatus.style.color = 'red';
+                }
+            }, 1500);
+
+            // Auto-test after 2 seconds
+            setTimeout(() => {
+                testModule();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

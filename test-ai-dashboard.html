@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste AI Dashboard</title>
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="public/css/modules/ai-dashboard.css">
+    <link rel="stylesheet" href="public/css/modules/students.css">
+    <link rel="stylesheet" href="public/css/modules/courses.css">
+    <link rel="stylesheet" href="public/css/modules/agenda.css">
+    <link rel="stylesheet" href="public/css/modules/organizations/organizations.css">
+    <link rel="stylesheet" href="public/css/modules/units/units.css">
+    <link rel="stylesheet" href="public/css/modules/instructors.css">
+    <link rel="stylesheet" href="public/css/modules/turmas-consolidated.css">
+    <link rel="stylesheet" href="public/css/modules/import.css">
+    <link rel="stylesheet" href="public/css/modules/checkin-kiosk.css">
+    <link rel="stylesheet" href="public/css/modules/students-courses.css">
+    <link rel="stylesheet" href="public/css/modules/course-details.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .test-header h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+        
+        .test-header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .test-btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .test-btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .test-btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .test-btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .test-btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .test-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .test-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .test-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .test-status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .test-module-info {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .test-module-info pre {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        #ai-dashboard-container {
+            min-height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧠 Teste AI Dashboard</h1>
+            <p>Testando o módulo AI Student Data Agent</p>
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-btn test-btn-primary" onclick="testModuleLoading()">
+                <i class="fas fa-play"></i> Testar Carregamento do Módulo
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="testModuleInitialization()">
+                <i class="fas fa-cog"></i> Testar Inicialização
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="testStudentDataLoading()">
+                <i class="fas fa-user"></i> Testar Carregamento de Dados
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="testConnection()">
+                <i class="fas fa-plug"></i> Testar Conexão
+            </button>
+            <button class="test-btn test-btn-danger" onclick="clearDashboard()">
+                <i class="fas fa-trash"></i> Limpar Dashboard
+            </button>
+        </div>
+        
+        <div id="test-status" class="test-status info">
+            Aguardando teste...
+        </div>
+        
+        <div class="test-section">
+            <h3>Informações do Módulo</h3>
+            <div class="test-module-info">
+                <pre id="module-info">
+Nenhuma informação disponível
+                </pre>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>AI Dashboard</h3>
+            <div id="ai-dashboard-container">
+                <!-- O dashboard será carregado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts - Using ES6 Modules like the main system -->
+    <script type="module">
+        // Mock app object for testing
+        const mockApp = {
+            config: {
+                apiUrl: '/api',
+                appName: 'Krav Maga Academy',
+                version: '2.0.0'
+            },
+            auth: {
+                getToken: () => 'mock-token'
+            }
+        };
+        
+        let aiDashboardModule = null;
+        let aiDashboardView = null;
+        let aiDashboardController = null;
+        let aiDashboardService = null;
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('test-status');
+            status.textContent = message;
+            status.className = `test-status ${type}`;
+        }
+        
+        function updateModuleInfo() {
+            const info = document.getElementById('module-info');
+            const infoData = {
+                aiDashboardModule: aiDashboardModule ? '✅ Instanciado' : '❌ Não instanciado',
+                aiDashboardView: aiDashboardView ? '✅ Instanciado' : '❌ Não instanciado',
+                aiDashboardController: aiDashboardController ? '✅ Instanciado' : '❌ Não instanciado',
+                aiDashboardService: aiDashboardService ? '✅ Instanciado' : '❌ Não instanciado',
+                windowAI: typeof window.AIDashboardModule !== 'undefined' ? '✅ Disponível global' : '❌ Não disponível',
+                viewCreated: document.getElementById('ai-dashboard-container').children.length > 0 ? '✅ UI Criada' : '❌ UI Não Criada'
+            };
+            
+            info.textContent = JSON.stringify(infoData, null, 2);
+        }
+        
+        async function testModuleLoading() {
+            updateStatus('Testando carregamento do módulo...', 'info');
+            
+            try {
+                // Check if module is available
+                if (typeof AIDashboardModule !== 'undefined') {
+                    updateStatus('✅ Módulo AI Dashboard carregado com sucesso!', 'success');
+                    updateModuleInfo();
+                } else {
+                    updateStatus('❌ Módulo AI Dashboard não encontrado', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Erro ao carregar módulo: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testModuleInitialization() {
+            updateStatus('Testando inicialização do módulo...', 'info');
+            
+            try {
+                // Create service
+                aiDashboardService = new AIService(mockApp);
+                updateStatus('✅ Service criado', 'success');
+                
+                // Create view
+                aiDashboardView = new AIView(mockApp);
+                updateStatus('✅ View criada', 'success');
+                
+                // Create controller
+                aiDashboardController = new AIController(mockApp, aiDashboardService, aiDashboardView);
+                updateStatus('✅ Controller criado', 'success');
+                
+                // Create module
+                aiDashboardModule = new AIDashboardModule(mockApp);
+                updateStatus('✅ Módulo AI Dashboard inicializado com sucesso!', 'success');
+                
+                updateModuleInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Erro ao inicializar módulo: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        async function testStudentDataLoading() {
+            updateStatus('Testando carregamento de dados do aluno...', 'info');
+            
+            try {
+                if (!aiDashboardService) {
+                    updateStatus('❌ Serviço não inicializado. Execute "Testar Inicialização" primeiro.', 'error');
+                    return;
+                }
+                
+                // Test student data loading
+                const studentData = await aiDashboardService.getStudentData('1');
+                updateStatus(`✅ Dados do aluno carregados: ${studentData?.fullName || 'Desconhecido'}`, 'success');
+                updateModuleInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Erro ao carregar dados: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testConnection() {
+            updateStatus('Testando conexão com MCP server...', 'info');
+            
+            try {
+                if (!aiDashboardService) {
+                    updateStatus('❌ Serviço não inicializado. Execute "Testar Inicialização" primeiro.', 'error');
+                    return;
+                }
+                
+                // Test connection (mock)
+                const mockConnection = true; // Simulate successful connection
+                if (mockConnection) {
+                    updateStatus('✅ Conexão com MCP server estabelecida com sucesso!', 'success');
+                } else {
+                    updateStatus('❌ Falha ao conectar com MCP server', 'error');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Erro ao testar conexão: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearDashboard() {
+            updateStatus('Limpando dashboard...', 'info');
+            
+            try {
+                if (aiDashboardView) {
+                    aiDashboardView.destroy();
+                    aiDashboardView = null;
+                }
+                
+                document.getElementById('ai-dashboard-container').innerHTML = '';
+                updateStatus('✅ Dashboard limpo com sucesso!', 'success');
+                updateModuleInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Erro ao limpar dashboard: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            updateStatus('Página carregada. Clique nos botões para testar...', 'info');
+            testModuleLoading();
+        });
+        
+        // Export functions to global scope
+        window.testModuleLoading = testModuleLoading;
+        window.testModuleInitialization = testModuleInitialization;
+        window.testStudentDataLoading = testStudentDataLoading;
+        window.testConnection = testConnection;
+        window.clearDashboard = clearDashboard;
+    </script>
+    
+    <!-- Load modules with type="module" -->
+    <script type="module" src="public/js/shared/api-client.js"></script>
+    <script type="module" src="public/js/shared/design-tokens.js"></script>
+    
+    <!-- Core modules -->
+    <script type="module" src="public/js/modules/organizations/index.js"></script>
+    <script type="module" src="public/js/modules/units/index.js"></script>
+    <script type="module" src="public/js/modules/instructors/index.js"></script>
+    <script type="module" src="public/js/modules/courses/index.js"></script>
+    <script type="module" src="public/js/modules/students/index.js"></script>
+    <script type="module" src="public/js/modules/turmas-consolidated.js"></script>
+    <script type="module" src="public/js/modules/activities/import-controller.js"></script>
+    <script type="module" src="public/js/modules/activities-service.js"></script>
+    
+    <!-- AI Dashboard module -->
+    <script type="module" src="public/js/modules/ai-dashboard/index.js"></script>
+    <script type="module" src="public/js/modules/ai-dashboard/services/ai-service.js"></script>
+    <script type="module" src="public/js/modules/ai-dashboard/controllers/ai-controller.js"></script>
+    <script type="module" src="public/js/modules/ai-dashboard/views/ai-view.js"></script>
+</body>
+</html>

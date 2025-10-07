@@ -5,20 +5,25 @@ import { z } from 'zod';
 
 const CreateTurmaSchema = z.object({
   name: z.string().min(1),
-  courseId: z.string().uuid().optional(), // Keep for backward compatibility
-  courseIds: z.array(z.string().uuid()).optional(), // New field for multiple courses
-  type: z.enum(['COLLECTIVE', 'PRIVATE']),
+  courseId: z.string().min(1).optional(), // Accept any string (UUID or custom ID like "krav-maga-faixa-branca-2025")
+  courseIds: z.array(z.string().min(1)).optional(), // Accept any string IDs
+  type: z.enum(['COLLECTIVE', 'PRIVATE', 'SEMI_PRIVATE']),
   startDate: z.string().datetime(),
-  endDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().nullable().optional(),
   maxStudents: z.number().int().positive().optional(),
   instructorId: z.string().uuid(),
   organizationId: z.string().uuid(),
   unitId: z.string().uuid(),
+  trainingAreaId: z.string().uuid().optional(),
+  room: z.string().nullable().optional(),
+  price: z.number().positive().nullable().optional(),
+  description: z.string().optional(),
   schedule: z.object({
     daysOfWeek: z.array(z.number().int().min(0).max(6)),
     time: z.string(),
     duration: z.number().int().positive()
-  })
+  }),
+  requireAttendanceForProgress: z.boolean().optional()
 }).refine(data => data.courseId || (data.courseIds && data.courseIds.length > 0), {
   message: "Either courseId or courseIds must be provided",
   path: ["courseIds"]
@@ -26,20 +31,25 @@ const CreateTurmaSchema = z.object({
 
 const UpdateTurmaSchema = z.object({
   name: z.string().min(1).optional(),
-  courseId: z.string().uuid().optional(),
-  courseIds: z.array(z.string().uuid()).optional(),
-  type: z.enum(['COLLECTIVE', 'PRIVATE']).optional(),
+  courseId: z.string().min(1).optional(), // Accept any string
+  courseIds: z.array(z.string().min(1)).optional(), // Accept any string IDs
+  type: z.enum(['COLLECTIVE', 'PRIVATE', 'SEMI_PRIVATE']).optional(),
   startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().nullable().optional(),
   maxStudents: z.number().int().positive().optional(),
   instructorId: z.string().uuid().optional(),
   organizationId: z.string().uuid().optional(),
   unitId: z.string().uuid().optional(),
+  trainingAreaId: z.string().uuid().optional(),
+  room: z.string().nullable().optional(),
+  price: z.number().positive().nullable().optional(),
+  description: z.string().optional(),
   schedule: z.object({
     daysOfWeek: z.array(z.number().int().min(0).max(6)),
     time: z.string(),
     duration: z.number().int().positive()
-  }).optional()
+  }).optional(),
+  requireAttendanceForProgress: z.boolean().optional()
 });
 
 const MarkAttendanceSchema = z.object({
@@ -100,9 +110,23 @@ export class TurmasController {
       const validatedData = CreateTurmaSchema.parse(request.body);
       console.log('[TurmasController] Validation passed, validated data:', JSON.stringify(validatedData, null, 2));
       
-      const turma = await this.turmasService.create(validatedData);
-      console.log('[TurmasController] Turma created successfully:', turma.id);
+      // Convert Instructor.id to User.id if needed
+      if (validatedData.instructorId) {
+        const instructor = await this.turmasService.getInstructorUserId(validatedData.instructorId);
+        if (!instructor) {
+          console.error('[TurmasController] Instructor not found:', validatedData.instructorId);
+          return ResponseHelper.badRequest(reply, 'Instrutor não encontrado');
+        }
+        console.log('[TurmasController] Converting Instructor.id to User.id:', instructor.userId);
+        validatedData.instructorId = instructor.userId;
+      }
       
+      const turma = await this.turmasService.create(validatedData);
+      if (!turma) {
+        console.error('[TurmasController] Service returned null on create');
+        return ResponseHelper.error(reply, 'Erro ao criar turma', 500);
+      }
+      console.log('[TurmasController] Turma created successfully:', turma.id);
       return ResponseHelper.created(reply, turma);
     } catch (error) {
       console.error('[TurmasController] Create error:', error);
@@ -135,8 +159,19 @@ export class TurmasController {
       const validatedData = UpdateTurmaSchema.parse(request.body);
       console.log('[TurmasController] Validation passed, validated data:', JSON.stringify(validatedData, null, 2));
       
+      // Convert Instructor.id to User.id if needed (same as create)
+      if (validatedData.instructorId) {
+        const instructor = await this.turmasService.getInstructorUserId(validatedData.instructorId);
+        if (!instructor) {
+          console.error('[TurmasController] Instructor not found:', validatedData.instructorId);
+          return ResponseHelper.badRequest(reply, 'Instrutor não encontrado');
+        }
+        console.log('[TurmasController] Converting Instructor.id to User.id:', instructor.userId);
+        validatedData.instructorId = instructor.userId;
+      }
+      
       console.log('[TurmasController] Calling turmasService.update...');
-      const turma = await this.turmasService.update(id, validatedData);
+      const turma = await this.turmasService.update(id, validatedData as any);
       console.log('[TurmasController] Service update completed successfully');
       
       if (!turma) {
@@ -148,11 +183,26 @@ export class TurmasController {
       return ResponseHelper.success(reply, turma);
     } catch (error) {
       console.error('[TurmasController] Update error:', error);
-      console.error('[TurmasController] Error stack:', error.stack);
+      if (error instanceof Error) {
+        console.error('[TurmasController] Error stack:', error.stack);
+      }
       
       if (error instanceof z.ZodError) {
         console.error('[TurmasController] Validation errors:', error.errors);
         return ResponseHelper.badRequest(reply, 'Dados inválidos', error.errors);
+      }
+      // Map Prisma FK errors to 400 with a helpful message
+      if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'P2003') {
+        const prismaError = error as any;
+        const field = prismaError?.meta?.field_name || 'referência';
+        return ResponseHelper.badRequest(reply, `Referência inválida: ${field}`);
+      }
+      // Handle Prisma unique constraint errors (e.g., organizationId + name)
+      if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'P2002') {
+        const prismaError = error as any;
+        if (prismaError.meta?.target?.includes('name')) {
+          return ResponseHelper.badRequest(reply, 'Já existe uma turma com esse nome nesta organização. Escolha um nome diferente.');
+        }
       }
       return ResponseHelper.error(reply, 'Erro ao atualizar turma', 500);
     }
@@ -201,7 +251,7 @@ export class TurmasController {
 
   async updateLessonStatus(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { id, lessonId } = request.params as { id: string; lessonId: string };
+  const { lessonId } = request.params as { id: string; lessonId: string };
       const { status } = request.body as { status: string };
       
       const lesson = await this.turmasService.updateLessonStatus(lessonId, status);
@@ -326,6 +376,16 @@ export class TurmasController {
       return ResponseHelper.success(reply, turmas);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao buscar turmas do instrutor', 500);
+    }
+  }
+
+  // ===== Operações administrativas =====
+  async clearAllEndDates(_request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const result = await this.turmasService.clearAllEndDates();
+      return ResponseHelper.success(reply, { updated: result.count }, 'Datas de término removidas de todas as turmas');
+    } catch (error) {
+      return ResponseHelper.error(reply, 'Erro ao limpar datas de término', 500);
     }
   }
 

@@ -187,11 +187,13 @@ export class StudentCourseService {
 
     /**
      * Buscar cursos ativos de um estudante
+     * RETORNA: { enrolledCourses, availableCourses }
      */
     static async getStudentActiveCourses(studentId: string) {
         try {
             console.log('🔍 [Service] Getting active courses for student:', studentId);
             
+            // 1. Buscar cursos matriculados (StudentCourse)
             const studentCourses = await prisma.studentCourse.findMany({
                 where: {
                     studentId,
@@ -204,7 +206,9 @@ export class StudentCourseService {
                             name: true,
                             description: true,
                             category: true,
-                            duration: true
+                            duration: true,
+                            level: true,
+                            totalClasses: true
                         }
                     },
                     class: {
@@ -224,19 +228,117 @@ export class StudentCourseService {
                 }
             });
 
-            console.log('📚 [Service] Raw data from DB:', JSON.stringify(studentCourses[0], null, 2));
+            // 2. Buscar plano ativo do aluno
+            const activeSubscription = await prisma.studentSubscription.findFirst({
+                where: {
+                    studentId,
+                    status: 'ACTIVE',
+                    isActive: true
+                },
+                include: {
+                    plan: {
+                        include: {
+                            planCourses: {
+                                include: {
+                                    course: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            description: true,
+                                            category: true,
+                                            duration: true,
+                                            level: true,
+                                            totalClasses: true,
+                                            isActive: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
 
-            const mappedData = studentCourses.map(sc => ({
+            // 3. Mapear cursos matriculados
+            const enrolledCourses = studentCourses.map(sc => ({
                 id: sc.id,
+                courseId: sc.courseId,
                 startDate: sc.startDate,
                 status: sc.status,
-                course: sc.course,
+                enrolledAt: sc.startDate,
+                course: {
+                    ...sc.course,
+                    durationTotalWeeks: sc.course.duration,
+                    totalLessons: sc.course.totalClasses,
+                    difficulty: sc.course.level
+                },
                 class: sc.class
             }));
 
-            console.log('📊 [Service] Mapped data:', JSON.stringify(mappedData[0], null, 2));
+            // 4. Identificar IDs dos cursos matriculados
+            const enrolledCourseIds = new Set(studentCourses.map(sc => sc.courseId));
 
-            return mappedData;
+            // 5. Extrair course IDs do plano (duas fontes: planCourses E features.courseIds)
+            let planCourseIds: string[] = [];
+            
+            // 5a. Buscar em planCourses (tabela intermediária)
+            if (activeSubscription?.plan?.planCourses) {
+                planCourseIds.push(...activeSubscription.plan.planCourses.map(pc => pc.courseId));
+            }
+            
+            // 5b. Buscar em features.courseIds (campo JSON) - NOVO!
+            if (activeSubscription?.plan?.features) {
+                const features = activeSubscription.plan.features as any;
+                if (features.courseIds && Array.isArray(features.courseIds)) {
+                    planCourseIds.push(...features.courseIds);
+                }
+            }
+            
+            // Remover duplicatas
+            planCourseIds = [...new Set(planCourseIds)];
+            
+            console.log('🔍 [Service] Plan course IDs:', planCourseIds);
+            console.log('🔍 [Service] Enrolled course IDs:', [...enrolledCourseIds]);
+
+            // 6. Buscar cursos disponíveis do plano
+            let availableCourses: any[] = [];
+            if (planCourseIds.length > 0) {
+                const courses = await prisma.course.findMany({
+                    where: {
+                        id: { in: planCourseIds },
+                        isActive: true
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        category: true,
+                        duration: true,
+                        level: true,
+                        totalClasses: true
+                    }
+                });
+                
+                // Filtrar cursos já matriculados
+                availableCourses = courses
+                    .filter(c => !enrolledCourseIds.has(c.id))
+                    .map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        description: c.description,
+                        category: c.category,
+                        durationTotalWeeks: c.duration,
+                        totalLessons: c.totalClasses,
+                        difficulty: c.level
+                    }));
+            }
+
+            console.log('📊 [Service] Enrolled:', enrolledCourses.length, 'Available:', availableCourses.length);
+
+            return {
+                enrolledCourses,
+                availableCourses
+            };
 
         } catch (error) {
             console.error('Error fetching student courses:', error);
@@ -272,6 +374,119 @@ export class StudentCourseService {
             console.error('Error deactivating student course:', error);
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             throw new Error(`Erro ao desativar curso: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Matricular estudante em um curso específico (manual enrollment)
+     */
+    static async enrollStudentInCourse(
+        studentId: string,
+        courseId: string,
+        organizationId: string,
+        options: {
+            status?: 'ACTIVE' | 'COMPLETED' | 'DROPPED' | 'SUSPENDED';
+            enrolledAt?: Date;
+        } = {}
+    ) {
+        try {
+            console.log('📝 [Service] Enrolling student in course:', { studentId, courseId, organizationId });
+
+            // Verificar se o curso existe
+            const course = await prisma.course.findUnique({
+                where: { id: courseId }
+            });
+
+            if (!course) {
+                throw new Error('Curso não encontrado');
+            }
+
+            // Verificar se já existe matrícula ativa
+            const existingEnrollment = await prisma.studentCourse.findFirst({
+                where: {
+                    studentId,
+                    courseId,
+                    status: 'ACTIVE'
+                }
+            });
+
+            if (existingEnrollment) {
+                throw new Error('Aluno já está matriculado neste curso');
+            }
+
+            // ✅ classId agora é opcional - matrícula manual não requer turma
+            // O aluno pode ser associado a uma turma específica posteriormente
+            console.log('✅ Creating manual enrollment without Class requirement');
+
+            // Criar matrícula
+            const enrollment = await prisma.studentCourse.create({
+                data: {
+                    studentId,
+                    courseId,
+                    // classId omitido - opcional para matrículas manuais
+                    status: options.status || 'ACTIVE',
+                    startDate: options.enrolledAt || new Date(),
+                    isActive: true
+                }
+            });
+
+            console.log('✅ [Service] Enrollment created:', enrollment.id);
+
+            return enrollment;
+
+        } catch (error) {
+            console.error('❌ [Service] Error enrolling student:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            throw new Error(`Erro ao matricular aluno: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Atualizar status de matrícula existente
+     */
+    static async updateEnrollmentStatus(
+        enrollmentId: string,
+        data: {
+            status: 'ACTIVE' | 'COMPLETED' | 'DROPPED' | 'SUSPENDED';
+            endDate?: Date;
+        }
+    ) {
+        try {
+            console.log('🔄 [Service] Updating enrollment status:', { enrollmentId, ...data });
+
+            const enrollment = await prisma.studentCourse.findUnique({
+                where: { id: enrollmentId }
+            });
+
+            if (!enrollment) {
+                throw new Error('Matrícula não encontrada');
+            }
+
+            // Preparar dados de atualização
+            const updateData: any = {
+                status: data.status,
+                updatedAt: new Date()
+            };
+
+            // Se status é COMPLETED ou DROPPED, definir completedDate
+            if (data.status === 'COMPLETED' || data.status === 'DROPPED') {
+                updateData.completedDate = data.endDate || new Date();
+                updateData.isActive = false;
+            }
+
+            const updatedEnrollment = await prisma.studentCourse.update({
+                where: { id: enrollmentId },
+                data: updateData
+            });
+
+            console.log('✅ [Service] Enrollment status updated:', updatedEnrollment.id);
+
+            return updatedEnrollment;
+
+        } catch (error) {
+            console.error('❌ [Service] Error updating enrollment status:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            throw new Error(`Erro ao atualizar status da matrícula: ${errorMessage}`);
         }
     }
 }

@@ -33,10 +33,19 @@ class AgendaModule {
             this.agendaService = new window.AgendaService(this.moduleAPI);
             this.calendarController = new window.CalendarController(this.agendaService);
             
-            // Register with core app
-            if (window.app) {
+            // Register with core app (guard against early init race)
+            if (window.app && typeof window.app.registerModule === 'function') {
                 window.app.registerModule('agenda', this);
                 window.app.dispatchEvent('module:loaded', { name: 'agenda' });
+            } else {
+                console.warn('⚠️ app.registerModule not ready; deferring agenda registration');
+                setTimeout(() => {
+                    if (window.app && typeof window.app.registerModule === 'function') {
+                        window.app.registerModule('agenda', this);
+                        window.app.dispatchEvent('module:loaded', { name: 'agenda' });
+                        console.log('📦 Agenda registered after defer');
+                    }
+                }, 300);
             }
             
             this.isInitialized = true;
@@ -173,6 +182,15 @@ class AgendaModule {
                 <div class="module-filters-premium">
                     <div class="filters-left">
                         <div class="filter-group">
+                            <label for="typeFilter">Tipo:</label>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="">Todos</option>
+                                <option value="CLASS">Aulas</option>
+                                <option value="TURMA">Turmas</option>
+                                <option value="PERSONAL_SESSION">Personal</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <label for="instructorFilter">Instrutor:</label>
                             <select id="instructorFilter" class="filter-select">
                                 <option value="">Todos os Instrutores</option>
@@ -260,6 +278,12 @@ class AgendaModule {
     viewClassDetails(classId) {
         if (this.calendarController) {
             this.calendarController.viewClassDetails(classId);
+        }
+    }
+
+    viewItemDetails(id, type) {
+        if (this.calendarController) {
+            this.calendarController.viewItemDetails(id, type);
         }
     }
 

@@ -1,5 +1,8 @@
 export class TurmasScheduleView {
-    constructor() {
+    constructor(service, controller) {
+        this.service = service;
+        this.controller = controller;
+        this.api = service.api; // ✅ Usar a API do service
         this.container = null;
         this.currentTurma = null;
         this.currentWeekStart = this.getWeekStart(new Date());
@@ -10,9 +13,35 @@ export class TurmasScheduleView {
         };
     }
 
+    extractResponseData(response, fallback = null) {
+        if (!response) return fallback;
+
+        if (Array.isArray(response)) {
+            return response;
+        }
+
+        if (typeof response === 'object') {
+            if ('success' in response) {
+                if (!response.success) {
+                    throw new Error(response.message || 'Operação inválida');
+                }
+                return response.data ?? fallback;
+            }
+
+            if ('data' in response && response.data !== undefined) {
+                return response.data;
+            }
+        }
+
+        return response ?? fallback;
+    }
+
     render(container, turma) {
         this.container = container;
         this.currentTurma = turma;
+        
+        // Registrar instância globalmente para callbacks inline
+        window.turmasScheduleView = this;
         
         container.innerHTML = `
             <div class="module-isolated-turmas">
@@ -233,12 +262,14 @@ export class TurmasScheduleView {
         }
     }
 
-    async loadScheduleData() {
+    async loadScheduleData({ skipLoadingOverlay = false } = {}) {
         try {
-            this.showLoading();
+            if (!skipLoadingOverlay) {
+                this.showLoading();
+            }
             
-            // Buscar aulas da turma
-            const response = await turmasAPI.fetchWithStates(`/api/turmas/${this.currentTurma.id}/lessons`, {
+            // Buscar aulas da turma usando a API do service
+            await this.api.fetchWithStates(`/api/turmas/${this.currentTurma.id}/lessons`, {
                 onSuccess: (data) => {
                     this.lessons = data || [];
                     this.renderCalendar();
@@ -254,7 +285,9 @@ export class TurmasScheduleView {
             console.error('Erro ao carregar dados do cronograma:', error);
             this.showError('Erro ao carregar cronograma');
         } finally {
-            this.hideLoading();
+            if (!skipLoadingOverlay) {
+                this.hideLoading();
+            }
         }
     }
 
@@ -320,11 +353,12 @@ export class TurmasScheduleView {
         
         if (lesson) {
             classes.push('has-lesson');
-            if (lesson.status === 'completed') {
+            const status = this.normalizeLessonStatus(lesson.status);
+            if (status === 'completed') {
                 classes.push('lesson-completed');
-            } else if (lesson.status === 'cancelled') {
+            } else if (status === 'cancelled') {
                 classes.push('lesson-cancelled');
-            } else if (lesson.status === 'scheduled') {
+            } else if (status === 'scheduled') {
                 classes.push('lesson-scheduled');
             }
         }
@@ -346,20 +380,46 @@ export class TurmasScheduleView {
     renderLessonInCell(lesson) {
         const statusIcon = this.getLessonStatusIcon(lesson.status);
         const duration = lesson.duration || 60;
+        const title = this.escapeHtml(this.formatLessonTitle(lesson));
         
         return `
             <div class="lesson-cell-content">
                 <div class="lesson-status">${statusIcon}</div>
                 <div class="lesson-info">
-                    <div class="lesson-title">${lesson.lessonPlan?.title || 'Aula'}</div>
+                    <div class="lesson-title">${title}</div>
                     <div class="lesson-time">${duration}min</div>
                 </div>
             </div>
         `;
     }
 
+    formatLessonTitle(lesson) {
+        if (!lesson) {
+            return 'Aula';
+        }
+
+        const number = lesson.lessonNumber;
+        const rawTitle = (lesson.title || lesson.lessonPlan?.title || '').trim();
+
+        if (!number) {
+            return rawTitle || 'Aula';
+        }
+
+        if (!rawTitle) {
+            return `Aula ${number}`;
+        }
+
+        const match = rawTitle.match(/^Aula\s+\d+\s*[-:–]?\s*(.*)$/i);
+        if (match) {
+            const suffix = match[1]?.trim();
+            return suffix ? `Aula ${number} - ${suffix}` : `Aula ${number}`;
+        }
+
+        return `Aula ${number} - ${rawTitle}`;
+    }
+
     getLessonStatusIcon(status) {
-        switch (status) {
+        switch (this.normalizeLessonStatus(status)) {
             case 'completed': return '✅';
             case 'cancelled': return '❌';
             case 'scheduled': return '📅';
@@ -380,7 +440,7 @@ export class TurmasScheduleView {
                 <div class="detail-grid">
                     <div class="detail-item">
                         <span class="label">Título:</span>
-                        <span class="value">${lesson.lessonPlan?.title || 'Não definido'}</span>
+                        <span class="value">${this.escapeHtml(this.formatLessonTitle(lesson))}</span>
                     </div>
                     <div class="detail-item">
                         <span class="label">Data/Hora:</span>
@@ -392,7 +452,7 @@ export class TurmasScheduleView {
                     </div>
                     <div class="detail-item">
                         <span class="label">Status:</span>
-                        <span class="value status-${lesson.status}">${this.getStatusText(lesson.status)}</span>
+                        <span class="value status-${this.normalizeLessonStatus(lesson.status)}">${this.getStatusText(lesson.status)}</span>
                     </div>
                 </div>
             </div>
@@ -428,7 +488,7 @@ export class TurmasScheduleView {
             </div>
 
             <div class="lesson-actions">
-                ${lesson.status === 'scheduled' ? `
+                ${this.normalizeLessonStatus(lesson.status) === 'scheduled' ? `
                     <button class="btn-action" onclick="window.turmasScheduleView.markLessonCompleted('${lesson.id}')">
                         <span>✅</span>
                         <span>Marcar como Realizada</span>
@@ -468,7 +528,7 @@ export class TurmasScheduleView {
 
     async markLessonCompleted(lessonId) {
         try {
-            await turmasAPI.fetch(`/api/turmas/lessons/${lessonId}/complete`, {
+            await this.api.request(`/api/turmas/lessons/${lessonId}/complete`, {
                 method: 'POST'
             });
             
@@ -487,7 +547,7 @@ export class TurmasScheduleView {
             'Tem certeza que deseja cancelar esta aula? Esta ação pode ser desfeita.',
             async () => {
                 try {
-                    await turmasAPI.fetch(`/api/turmas/lessons/${lessonId}/cancel`, {
+                    await this.api.request(`/api/turmas/lessons/${lessonId}/cancel`, {
                         method: 'POST'
                     });
                     
@@ -516,25 +576,82 @@ export class TurmasScheduleView {
         }
     }
 
-    async regenerateSchedule() {
+    async refresh() {
+        if (!this.currentTurma?.id) return;
+
         try {
             this.showLoading();
-            
-            await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/regenerate-schedule`, {
+
+            if (this.service?.getById) {
+                try {
+                    const response = await this.service.getById(this.currentTurma.id);
+                    const updatedTurma = this.extractResponseData(response, null);
+                    if (updatedTurma) {
+                        this.currentTurma = updatedTurma;
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar dados da turma:', error);
+                    if (window.app?.handleError) {
+                        window.app.handleError(error, { module: 'turmas', context: 'schedule:refresh:turma' });
+                    }
+                }
+            }
+
+            await this.loadScheduleData({ skipLoadingOverlay: true });
+            this.updateWeekDisplay();
+        } catch (error) {
+            console.error('Erro ao atualizar cronograma:', error);
+            this.showError('Erro ao atualizar cronograma');
+            if (window.app?.handleError) {
+                window.app.handleError(error, { module: 'turmas', context: 'schedule:refresh' });
+            }
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async regenerateSchedule() {
+        if (!this.currentTurma?.id) return;
+
+        try {
+            if (this.controller?.generateSchedule) {
+                await this.controller.generateSchedule(this.currentTurma.id);
+                return;
+            }
+
+            if (this.service?.generateSchedule) {
+                const result = await this.service.generateSchedule(this.currentTurma.id);
+                const success = result?.success !== false;
+
+                if (!success) {
+                    throw new Error(result?.message || 'Erro ao regenerar cronograma');
+                }
+
+                await this.refresh();
+
+                if (!result?.success) {
+                    this.showSuccess('Cronograma regenerado com sucesso');
+                }
+                return;
+            }
+
+            await this.api.request(`/api/turmas/${this.currentTurma.id}/schedule`, {
                 method: 'POST'
             });
-            
+            await this.refresh();
             this.showSuccess('Cronograma regenerado com sucesso');
-            this.loadScheduleData();
         } catch (error) {
             console.error('Erro ao regenerar cronograma:', error);
             this.showError('Erro ao regenerar cronograma');
+            if (window.app?.handleError) {
+                window.app.handleError(error, { module: 'turmas', context: 'schedule:regenerate' });
+            }
         }
     }
 
     async exportSchedule() {
         try {
-            const response = await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/export-schedule`);
+            const response = await this.api.request(`/api/turmas/${this.currentTurma.id}/export-schedule`);
             
             // Criar e baixar arquivo
             const blob = new Blob([JSON.stringify(response, null, 2)], { type: 'application/json' });
@@ -557,13 +674,14 @@ export class TurmasScheduleView {
     updateProgressInfo() {
         if (!this.lessons) return;
         
-        const completed = this.lessons.filter(l => l.status === 'completed').length;
+        const completed = this.lessons.filter(l => this.normalizeLessonStatus(l.status) === 'completed').length;
         const total = this.lessons.length;
         const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const now = new Date();
         
         // Encontrar próxima aula
         const nextLesson = this.lessons
-            .filter(l => l.status === 'scheduled' && new Date(l.scheduledDate) > new Date())
+            .filter(l => this.normalizeLessonStatus(l.status) === 'scheduled' && new Date(l.scheduledDate) > now)
             .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))[0];
         
         // Atualizar elementos
@@ -711,13 +829,29 @@ export class TurmasScheduleView {
         return date.toISOString().split('T')[0];
     }
 
+    normalizeLessonStatus(status) {
+        if (!status) return '';
+        return status.toString().trim().toLowerCase();
+    }
+
     getStatusText(status) {
-        switch (status) {
+        switch (this.normalizeLessonStatus(status)) {
             case 'scheduled': return 'Agendada';
             case 'completed': return 'Realizada';
             case 'cancelled': return 'Cancelada';
             default: return 'Indefinido';
         }
+    }
+
+    escapeHtml(value) {
+        if (value === undefined || value === null) return '';
+        return value
+            .toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     // Métodos públicos para eventos

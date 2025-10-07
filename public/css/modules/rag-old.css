@@ -1,0 +1,900 @@
+/**
+ * RAG Module CSS
+ * Student Data Agent Interface Styles
+ */
+
+/* Reset and Base Styles */
+.rag-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    min-height: 100vh;
+    position: relative;
+}
+
+.rag-container.rag-dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+/* Header Styles */
+.rag-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.rag-container.rag-dark-mode .rag-header {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+}
+
+.rag-header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rag-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.rag-title i {
+    font-size: 2rem;
+    color: #ffd700;
+}
+
+.rag-header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.rag-container.rag-dark-mode .btn-secondary {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: white;
+}
+
+.rag-container.rag-dark-mode .btn-secondary:hover {
+    background-color: #718096;
+    border-color: #a0aec0;
+}
+
+/* Main Content Layout */
+.rag-main-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 120px);
+}
+
+/* Sidebar Styles */
+.rag-sidebar {
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 1rem;
+}
+
+.rag-container.rag-dark-mode .rag-sidebar {
+    background: #2d3748;
+    border-right-color: #4a5568;
+}
+
+.rag-search-section,
+.rag-tools-section,
+.rag-analytics-section {
+    margin-bottom: 2rem;
+}
+
+.rag-search-section h3,
+.rag-tools-section h3,
+.rag-analytics-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.rag-container.rag-dark-mode h3 {
+    color: #cbd5e0;
+}
+
+.rag-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rag-student-id-input {
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.rag-student-id-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.rag-container.rag-dark-mode .rag-student-id-input {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: white;
+}
+
+.rag-container.rag-dark-mode .rag-student-id-input:focus {
+    border-color: #667eea;
+}
+
+.rag-tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rag-tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: #f7fafc;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    text-align: left;
+    width: 100%;
+}
+
+.rag-tool-btn:hover {
+    background-color: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.rag-tool-btn i {
+    font-size: 1rem;
+    width: 20px;
+}
+
+.rag-analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.rag-analytics-item {
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-analytics-item {
+    background: #4a5568;
+    border-color: #718096;
+}
+
+.rag-analytics-icon {
+    font-size: 1.5rem;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.rag-analytics-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rag-analytics-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.rag-container.rag-dark-mode .rag-analytics-value {
+    color: #e2e8f0;
+}
+
+.rag-analytics-label {
+    font-size: 0.75rem;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Content Area */
+.rag-content {
+    padding: 2rem;
+}
+
+.rag-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-tabs {
+    border-bottom-color: #4a5568;
+}
+
+.rag-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    color: #718096;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.rag-tab-btn:hover {
+    color: #4a5568;
+}
+
+.rag-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.rag-container.rag-dark-mode .rag-tab-btn {
+    color: #cbd5e0;
+}
+
+.rag-container.rag-dark-mode .rag-tab-btn:hover {
+    color: #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.rag-tab-content {
+    min-height: 500px;
+}
+
+.rag-tab-pane {
+    display: none;
+}
+
+.rag-tab-pane.active {
+    display: block;
+}
+
+/* Overview Grid */
+.rag-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.rag-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.rag-card-header {
+    background: #f7fafc;
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-card-header {
+    background: #4a5568;
+    border-bottom-color: #718096;
+}
+
+.rag-card-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.rag-container.rag-dark-mode .rag-card-header h3 {
+    color: #e2e8f0;
+}
+
+.rag-card-body {
+    padding: 1.5rem;
+}
+
+/* Student Info */
+.rag-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.rag-info-row:last-child {
+    border-bottom: none;
+}
+
+.rag-info-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.rag-container.rag-dark-mode .rag-info-row label {
+    color: #a0aec0;
+}
+
+.rag-info-row span {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-info-row span {
+    color: #f7fafc;
+}
+
+/* Status */
+.rag-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.rag-status.active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.rag-status.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.rag-container.rag-dark-mode .rag-status.active {
+    background-color: #065f46;
+    color: #d1fae5;
+}
+
+.rag-container.rag-dark-mode .rag-status.inactive {
+    background-color: #991b1b;
+    color: #fee2e2;
+}
+
+/* Progress Overview */
+.rag-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.rag-progress-item:last-child {
+    border-bottom: none;
+}
+
+.rag-progress-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.rag-container.rag-dark-mode .rag-progress-label {
+    color: #a0aec0;
+}
+
+.rag-progress-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-progress-value {
+    color: #f7fafc;
+}
+
+/* Courses List */
+.rag-courses-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.rag-course-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-course-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.rag-course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-course-header {
+    background: #4a5568;
+    border-bottom-color: #718096;
+}
+
+.rag-course-header h4 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-course-header h4 {
+    color: #f7fafc;
+}
+
+.rag-course-level {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.rag-course-body {
+    padding: 1.5rem;
+}
+
+.rag-course-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rag-course-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.rag-course-stat i {
+    color: #667eea;
+}
+
+.rag-course-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Attendance List */
+.rag-attendance-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.rag-attendance-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-attendance-item {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.rag-attendance-date,
+.rag-attendance-time {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.rag-container.rag-dark-mode .rag-attendance-date,
+.rag-container.rag-dark-mode .rag-attendance-time {
+    color: #a0aec0;
+}
+
+.rag-attendance-class {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-attendance-class {
+    color: #f7fafc;
+}
+
+/* Insights Section */
+.rag-insights-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.rag-insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.rag-insights-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-insights-header h3 {
+    color: #f7fafc;
+}
+
+.rag-insights-content {
+    display: grid;
+    gap: 2rem;
+}
+
+.rag-insights-section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-insights-section {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.rag-insights-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.rag-container.rag-dark-mode .rag-insights-section h4 {
+    color: #f7fafc;
+}
+
+.rag-insights-summary {
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border-left: 4px solid #667eea;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.rag-container.rag-dark-mode .rag-insights-summary {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+.rag-insights-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.rag-insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    border-left: 3px solid #667eea;
+}
+
+.rag-container.rag-dark-mode .rag-insight-item {
+    background: #4a5568;
+}
+
+.rag-insight-item i {
+    color: #667eea;
+    margin-top: 0.125rem;
+}
+
+.rag-insights-meta {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-insights-meta {
+    border-top-color: #4a5568;
+}
+
+.rag-insights-meta small {
+    color: #6b7280;
+}
+
+.rag-container.rag-dark-mode .rag-insights-meta small {
+    color: #a0aec0;
+}
+
+/* Empty States */
+.rag-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+}
+
+.rag-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #d1d5db;
+}
+
+.rag-container.rag-dark-mode .rag-empty-state i {
+    color: #4a5568;
+}
+
+.rag-empty-state p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Loading Overlay */
+.rag-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+}
+
+.rag-loading-spinner {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.rag-loading-text {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+/* Notifications */
+.rag-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 9998;
+    display: none;
+}
+
+.rag-notification-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.rag-notification-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.rag-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rag-notification-content i {
+    font-size: 1.25rem;
+}
+
+/* Export Menu */
+.rag-export-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.rag-container.rag-dark-mode .rag-export-menu {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.rag-export-title {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-export-title {
+    color: #e2e8f0;
+    border-bottom-color: #4a5568;
+}
+
+.rag-export-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    color: #4a5568;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+
+.rag-export-option:hover {
+    background-color: #f7fafc;
+}
+
+.rag-container.rag-dark-mode .rag-export-option {
+    color: #e2e8f0;
+}
+
+.rag-container.rag-dark-mode .rag-export-option:hover {
+    background-color: #4a5568;
+}
+
+.rag-export-option i {
+    color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .rag-main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .rag-sidebar {
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .rag-container.rag-dark-mode .rag-sidebar {
+        border-bottom-color: #4a5568;
+    }
+    
+    .rag-overview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .rag-course-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .rag-header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .rag-header-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .rag-content {
+        padding: 1rem;
+    }
+    
+    .rag-analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .rag-attendance-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .rag-insights-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rag-tab-pane.active {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.rag-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.rag-course-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.rag-insights-section {
+    animation: fadeIn 0.3s ease-out;
+}

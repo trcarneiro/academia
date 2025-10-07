@@ -16,10 +16,11 @@
             instructors: [],
             units: [],
             organization: null,
-            selectedCourseIds: [] // Initialize as empty array
+                selectedCourseIds: [], // Initialize as empty array
+            personalSessions: [] // Store personal sessions
     };
 
-    // API Helper
+    // API Helper (centralized API client)
     let turmaAPI = null;
 
 async function initializeTurmaEditorAPI() {
@@ -28,7 +29,7 @@ async function initializeTurmaEditorAPI() {
         console.log('[TurmaEditor] Waiting for API client...');
         await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
+
     turmaAPI = window.createModuleAPI('TurmaEditor');
     console.log('[TurmaEditor] API initialized:', !!turmaAPI);
 }
@@ -111,11 +112,14 @@ async function initializeTurmaEditor(turmaId = null) {
 function setupTabsAndCoursesUI() {
     const tabBtnGeneral = document.getElementById('tab-btn-general');
     const tabBtnCourses = document.getElementById('tab-btn-courses');
+    const tabBtnPersonal = document.getElementById('tab-btn-personal');
     const tabGeneral = document.getElementById('tab-general');
     const tabCourses = document.getElementById('tab-courses');
+    const tabPersonal = document.getElementById('tab-personal');
 
     if (tabBtnGeneral) tabBtnGeneral.addEventListener('click', () => switchEditorTab('general'));
     if (tabBtnCourses) tabBtnCourses.addEventListener('click', () => switchEditorTab('courses'));
+    if (tabBtnPersonal) tabBtnPersonal.addEventListener('click', () => switchEditorTab('personal'));
 
     // Add course button - try the centralized course picker (wait briefly if it loads later)
     const addCourseBtn = document.getElementById('add-course-btn');
@@ -150,6 +154,13 @@ function setupTabsAndCoursesUI() {
         }
     });
 
+    // Personal session controls
+    const addPersonalBtn = document.getElementById('add-personal-session-btn');
+    const importFromAgendaBtn = document.getElementById('import-from-agenda-btn');
+    
+    if (addPersonalBtn) addPersonalBtn.addEventListener('click', () => addPersonalSession());
+    if (importFromAgendaBtn) importFromAgendaBtn.addEventListener('click', () => importPersonalFromAgenda());
+
     // Render selected courses area if any
     renderSelectedCoursesArea();
 }
@@ -157,19 +168,32 @@ function setupTabsAndCoursesUI() {
 function switchEditorTab(tabName) {
     const tabBtnGeneral = document.getElementById('tab-btn-general');
     const tabBtnCourses = document.getElementById('tab-btn-courses');
+    const tabBtnPersonal = document.getElementById('tab-btn-personal');
     const tabGeneral = document.getElementById('tab-general');
     const tabCourses = document.getElementById('tab-courses');
+    const tabPersonal = document.getElementById('tab-personal');
 
-    if (tabName === 'general') {
-        if (tabBtnGeneral) tabBtnGeneral.classList.add('active');
-        if (tabBtnCourses) tabBtnCourses.classList.remove('active');
-        if (tabGeneral) tabGeneral.style.display = 'block';
-        if (tabCourses) tabCourses.style.display = 'none';
-    } else {
-        if (tabBtnGeneral) tabBtnGeneral.classList.remove('active');
-        if (tabBtnCourses) tabBtnCourses.classList.add('active');
-        if (tabGeneral) tabGeneral.style.display = 'none';
-        if (tabCourses) tabCourses.style.display = 'block';
+    // Remove active class from all tabs
+    [tabBtnGeneral, tabBtnCourses, tabBtnPersonal].forEach(btn => btn?.classList.remove('active'));
+    [tabGeneral, tabCourses, tabPersonal].forEach(panel => {
+        if (panel) panel.style.display = 'none';
+    });
+
+    // Activate selected tab
+    switch (tabName) {
+        case 'general':
+            if (tabBtnGeneral) tabBtnGeneral.classList.add('active');
+            if (tabGeneral) tabGeneral.style.display = 'block';
+            break;
+        case 'courses':
+            if (tabBtnCourses) tabBtnCourses.classList.add('active');
+            if (tabCourses) tabCourses.style.display = 'block';
+            break;
+        case 'personal':
+            if (tabBtnPersonal) tabBtnPersonal.classList.add('active');
+            if (tabPersonal) tabPersonal.style.display = 'block';
+            renderPersonalSessionsList();
+            break;
     }
 }
 
@@ -254,37 +278,27 @@ function updateEditorMode() {
     }
 }
 
-// Load form data (courses, instructors, units)
+// Load form data (courses, instructors, units) via centralized API client
 async function loadFormData() {
     console.log('[TurmaEditor] Loading form data...');
     
     try {
         showLoadingState();
 
-        // Load organization first
-        const orgsResponse = await fetch('/api/organizations');
-        const orgsData = await orgsResponse.json();
-        turmaEditorState.organization = orgsData.success && orgsData.data.length > 0 ? orgsData.data[0] : null;
+        // Parallelize fetches via ModuleAPIHelper -> underlying ApiClient
+        const [orgsRes, coursesRes, instructorsRes, unitsRes, trainingAreasRes] = await Promise.all([
+            turmaAPI.api.get('/api/organizations'),
+            turmaAPI.api.get('/api/courses'),
+            turmaAPI.api.get('/api/instructors'),
+            turmaAPI.api.get('/api/units'),
+            turmaAPI.api.get('/api/training-areas')
+        ]);
 
-        // Load courses
-        const coursesResponse = await fetch('/api/courses');
-        const coursesData = await coursesResponse.json();
-        turmaEditorState.courses = coursesData.success ? coursesData.data : [];
-
-        // Load instructors
-        const instructorsResponse = await fetch('/api/instructors');
-        const instructorsData = await instructorsResponse.json();
-        turmaEditorState.instructors = instructorsData.success ? instructorsData.data : [];
-
-        // Load units
-        const unitsResponse = await fetch('/api/units');
-        const unitsData = await unitsResponse.json();
-        turmaEditorState.units = unitsData.success ? unitsData.data : [];
-        
-        // Load training areas
-        const trainingAreasResponse = await fetch('/api/training-areas');
-        const trainingAreasData = await trainingAreasResponse.json();
-        turmaEditorState.trainingAreas = trainingAreasData.success ? trainingAreasData.data : [];
+        turmaEditorState.organization = (orgsRes.success && Array.isArray(orgsRes.data) && orgsRes.data.length > 0) ? orgsRes.data[0] : null;
+        turmaEditorState.courses = coursesRes.success ? (coursesRes.data || []) : [];
+        turmaEditorState.instructors = instructorsRes.success ? (instructorsRes.data || []) : [];
+        turmaEditorState.units = unitsRes.success ? (unitsRes.data || []) : [];
+        turmaEditorState.trainingAreas = trainingAreasRes.success ? (trainingAreasRes.data || []) : [];
 
         // Populate form selects
         populateFormSelects();
@@ -301,7 +315,7 @@ async function loadFormData() {
             const unitSelect = document.getElementById('turma-unit');
             
             if (turmaEditorState.instructors.length > 0 && !instructorSelect.value) {
-                instructorSelect.value = turmaEditorState.instructors[0].id;
+                instructorSelect.value = turmaEditorState.instructors[0].userId || turmaEditorState.instructors[0].id;
                 console.log('[TurmaEditor] Auto-selected first instructor:', turmaEditorState.instructors[0].name);
             }
             
@@ -328,7 +342,11 @@ async function loadFormData() {
 
     } catch (error) {
         console.error('[TurmaEditor] Error loading form data:', error);
-        showErrorState('Erro ao carregar dados do formulário');
+        const message = (error && error.message) ? error.message : 'Erro ao carregar dados do formulário';
+        showErrorState(message);
+        if (window.app) {
+            window.app.handleError(error, 'TurmaEditor:loadFormData');
+        }
     }
 }
 
@@ -342,7 +360,9 @@ function populateFormSelects() {
     instructorSelect.innerHTML = '<option value="">Selecione um instrutor...</option>';
     turmaEditorState.instructors.forEach(instructor => {
         const option = document.createElement('option');
+        // Use instructor.id for form value, but store userId in data attribute for database
         option.value = instructor.id;
+        option.setAttribute('data-userid', instructor.userId || instructor.id);
         option.textContent = `👨‍🏫 ${instructor.name}`;
         instructorSelect.appendChild(option);
     });
@@ -370,21 +390,20 @@ function populateFormSelects() {
     }
 }
 
-// Load turma data for editing
+// Load turma data for editing via centralized API client
 async function loadTurmaData(turmaId) {
     console.log('[TurmaEditor] Loading turma data for ID:', turmaId);
     
     try {
         showLoadingState();
 
-        const response = await fetch(`/api/turmas/${turmaId}`);
-        const data = await response.json();
+        const result = await turmaAPI.api.get(`/api/turmas/${turmaId}`);
 
-        if (!data.success) {
-            throw new Error(data.error || 'Erro ao carregar turma');
+        if (!result.success) {
+            throw new Error(result.message || 'Erro ao carregar turma');
         }
 
-        const turma = data.data;
+        const turma = result.data;
         console.log('[TurmaEditor] Turma data loaded:', turma);
 
         // Populate form with turma data
@@ -394,7 +413,10 @@ async function loadTurmaData(turmaId) {
 
     } catch (error) {
         console.error('[TurmaEditor] Error loading turma data:', error);
-        showErrorState(error.message);
+        showErrorState(error.message || 'Erro ao carregar turma');
+        if (window.app) {
+            window.app.handleError(error, 'TurmaEditor:loadTurmaData');
+        }
     }
 }
 
@@ -408,7 +430,27 @@ function populateFormWithTurmaData(turma) {
         turmaEditorState.selectedCourseIds.unshift(turma.courseId);
     }
     document.getElementById('turma-type').value = turma.classType || '';
-    document.getElementById('turma-instructor').value = turma.instructorId || '';
+    
+    // Find correct instructor option by matching turma.instructorId with data-userid attribute
+    const instructorSelect = document.getElementById('turma-instructor');
+    if (turma.instructorId && instructorSelect) {
+        // Find option where data-userid matches turma.instructorId
+        const options = instructorSelect.querySelectorAll('option');
+        let found = false;
+        for (const option of options) {
+            if (option.getAttribute('data-userid') === turma.instructorId) {
+                instructorSelect.value = option.value;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            console.warn('[TurmaEditor] Could not find instructor option for userId:', turma.instructorId);
+            instructorSelect.value = '';
+        }
+    } else {
+        instructorSelect.value = '';
+    }
 
     // Schedule
     if (turma.startDate) {
@@ -479,7 +521,7 @@ function setupEventListeners() {
     console.log('[TurmaEditor] Event listeners setup completed');
 }
 
-// Handle save turma
+// Handle save turma using centralized API client
 async function handleSaveTurma() {
     console.log('[TurmaEditor] Saving turma...');
     // Keep original button text available to restore in both try and catch
@@ -508,69 +550,33 @@ async function handleSaveTurma() {
             saveBtn.disabled = true;
         }
 
-        // API call
-        console.log('[TurmaEditor] Making API request:', {
-            method: turmaEditorState.isEditing ? 'PUT' : 'POST',
-            url: turmaEditorState.isEditing ? `/api/turmas/${turmaEditorState.currentTurmaId}` : '/api/turmas',
-            payload: JSON.stringify(formData, null, 2)
-        });
-        
-        let response;
-        if (turmaEditorState.isEditing) {
-            response = await fetch(`/api/turmas/${turmaEditorState.currentTurmaId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-        } else {
-            response = await fetch('/api/turmas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-        }
-        
-        console.log('[TurmaEditor] Response status:', response.status);
-        console.log('[TurmaEditor] Response headers:', Object.fromEntries(response.headers.entries()));
+        // API call using centralized client with feedback
+        const endpoint = turmaEditorState.isEditing
+            ? `/api/turmas/${turmaEditorState.currentTurmaId}`
+            : '/api/turmas';
+        const method = turmaEditorState.isEditing ? 'PUT' : 'POST';
 
-        // Get response text first for debugging
-        const responseText = await response.text();
-        console.log('[TurmaEditor] Raw response text:', responseText);
-        
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('[TurmaEditor] Failed to parse response as JSON:', parseError);
-            result = { success: false, error: 'Invalid response format' };
-        }
-        console.log('[TurmaEditor] Save response:', result);
+        console.log('[TurmaEditor] Making API request:', { method, endpoint, payload: formData });
+
+        const saveResult = await turmaAPI.saveWithFeedback(endpoint, formData, {
+            method,
+            onSuccess: (data) => {
+                showSuccessState(data);
+                showNotification(turmaEditorState.isEditing ? '✅ Turma atualizada com sucesso!' : '✅ Turma criada com sucesso!', 'success');
+            },
+            onError: (error) => {
+                // Prefer server-provided message when available
+                const msg = (error && error.message) ? error.message : 'Erro ao salvar turma';
+                showNotification(`❌ ${msg}`, 'error');
+            }
+        });
+
+        console.log('[TurmaEditor] Save response (normalized):', saveResult);
 
         // Restore button
         if (saveBtn) {
             saveBtn.innerHTML = originalText || (turmaEditorState.isEditing ? '💾 Atualizar Turma' : '💾 Salvar Turma');
             saveBtn.disabled = false;
-        }
-
-        if (result.success) {
-            showSuccessState(result.data);
-            showNotification(
-                turmaEditorState.isEditing ? '✅ Turma atualizada com sucesso!' : '✅ Turma criada com sucesso!',
-                'success'
-            );
-        } else {
-            // Show detailed validation errors if available
-            if (result.details && Array.isArray(result.details)) {
-                const errorMessages = result.details.map(detail => {
-                    const field = detail.path ? detail.path.join('.') : 'Campo desconhecido';
-                    return `${field}: ${detail.message}`;
-                }).join('\n');
-                
-                showNotification(`❌ Dados inválidos:\n${errorMessages}`, 'error');
-                console.error('[TurmaEditor] Validation errors:', result.details);
-            } else {
-                throw new Error(result.error || 'Erro ao salvar turma');
-            }
         }
 
     } catch (error) {
@@ -579,7 +585,9 @@ async function handleSaveTurma() {
         // More specific error handling
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
             showNotification('❌ Erro de conexão. Verifique se o servidor está funcionando.', 'error');
-        } else if (error.message.includes('500')) {
+        } else if ((window.ApiError && error instanceof window.ApiError) && error.isClientError) {
+            showNotification(`❌ ${error.message}`, 'error');
+        } else if (error.message && error.message.includes('500')) {
             showNotification('❌ Erro interno do servidor. Tente novamente em alguns instantes.', 'error');
         } else {
             showNotification(`❌ ${error.message}`, 'error');
@@ -636,23 +644,48 @@ function collectFormData() {
     // Get training area ID
     let trainingAreaId = formData.get('trainingAreaId');
     
+    // Ensure organization is available (no hardcoded fallback)
+    if (!turmaEditorState.organization || !turmaEditorState.organization.id) {
+        showNotification('❌ Organização ativa não encontrada. Recarregue a página ou selecione uma organização.', 'error');
+        return null;
+    }
+
+    // Get instructorId - form value is instructor.id but we need instructor.userId for database
+    const instructorSelect = document.getElementById('instructorId');
+    const selectedInstructorOption = instructorSelect ? instructorSelect.selectedOptions[0] : null;
+    let instructorId = formData.get('instructorId');
+    
+    // If we have the instructor option and it has a data attribute with userId, use that
+    if (selectedInstructorOption && selectedInstructorOption.getAttribute('data-userid')) {
+        instructorId = selectedInstructorOption.getAttribute('data-userid');
+    }
+    
+    console.log('[TurmaEditor] Instructor mapping:', {
+        formValue: formData.get('instructorId'),
+        finalValue: instructorId,
+        hasDataAttr: selectedInstructorOption ? !!selectedInstructorOption.getAttribute('data-userid') : false
+    });
+
     const data = {
         name: formData.get('name'),
         courseId: selectedCourses.length > 0 ? selectedCourses[0] : null, // main course for backend
         type: formData.get('type'),
-        instructorId: formData.get('instructorId'),
+        instructorId: instructorId,
         startDate: formData.get('startDate') ? new Date(formData.get('startDate')).toISOString() : null,
         endDate: formData.get('endDate') ? new Date(formData.get('endDate')).toISOString() : null,
         maxStudents: parseInt(formData.get('maxStudents')) || 20,
-        organizationId: turmaEditorState.organization ? turmaEditorState.organization.id : 'd961f738-9552-4385-8c1d-e10d8b1047e5',
+        organizationId: turmaEditorState.organization.id,
         unitId: unitId,
         trainingAreaId: trainingAreaId || null,
+        room: formData.get('room') || null,
+        price: formData.get('price') ? parseFloat(formData.get('price')) : null,
+        description: formData.get('description') || null,
         schedule: {
             daysOfWeek: daysOfWeek,
             time: formData.get('time'),
             duration: parseInt(formData.get('duration')) || 60
         }
-        // Note: Remove room, price, description, selectedCourseIds - not in backend schema
+        // Note: selectedCourseIds managed client-side; primary courseId is sent
     };
 
     console.log('[TurmaEditor] Collected data:', data);
@@ -714,8 +747,8 @@ function validateForm() {
         isValid = false;
     }
     
-    if (!durationInput.value || parseInt(durationInput.value) < 30) {
-        showFieldError('turma-duration', 'Duração deve ser pelo menos 30 minutos');
+    if (!durationInput.value || parseInt(durationInput.value) < 1) {
+        showFieldError('turma-duration', 'Duração deve ser pelo menos 1 minuto');
         missingFields.push('Duração válida');
         isValid = false;
     }
@@ -880,6 +913,153 @@ function createNotificationContainer() {
     return container;
 }
 
+// Personal Sessions Management
+function addPersonalSession() {
+    const newSession = {
+        id: 'temp_' + Date.now(),
+        studentId: null,
+        studentName: '',
+        date: new Date().toISOString().split('T')[0],
+        time: '10:00',
+        duration: 60,
+        type: 'PERSONAL',
+        status: 'SCHEDULED',
+        price: null,
+        notes: '',
+        isNew: true
+    };
+    
+    turmaEditorState.personalSessions.push(newSession);
+    renderPersonalSessionsList();
+}
+
+function removePersonalSession(sessionId) {
+    turmaEditorState.personalSessions = turmaEditorState.personalSessions.filter(s => s.id !== sessionId);
+    renderPersonalSessionsList();
+}
+
+function renderPersonalSessionsList() {
+    const container = document.getElementById('personal-sessions-list');
+    if (!container) return;
+
+    if (turmaEditorState.personalSessions.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>👤 Nenhuma sessão personal configurada</p>
+                <small>Use "Nova Sessão Personal" para adicionar</small>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = turmaEditorState.personalSessions.map(session => `
+        <div class="personal-session-item" data-session-id="${session.id}">
+            <div class="session-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Aluno</label>
+                        <input type="text" 
+                               value="${session.studentName}" 
+                               placeholder="Nome do aluno"
+                               onchange="updatePersonalSession('${session.id}', 'studentName', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" 
+                               value="${session.date}"
+                               onchange="updatePersonalSession('${session.id}', 'date', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Horário</label>
+                        <input type="time" 
+                               value="${session.time}"
+                               onchange="updatePersonalSession('${session.id}', 'time', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Duração (min)</label>
+                        <input type="number" 
+                               value="${session.duration}" 
+                               min="15" max="180" step="15"
+                               onchange="updatePersonalSession('${session.id}', 'duration', parseInt(this.value))">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" 
+                               value="${session.price || ''}" 
+                               min="0" step="0.01" placeholder="0,00"
+                               onchange="updatePersonalSession('${session.id}', 'price', parseFloat(this.value) || null)">
+                    </div>
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea placeholder="Notas sobre a sessão..."
+                                  onchange="updatePersonalSession('${session.id}', 'notes', this.value)">${session.notes}</textarea>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button type="button" class="btn btn-danger btn-sm" 
+                            onclick="removePersonalSession('${session.id}')">
+                        🗑️ Remover
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updatePersonalSession(sessionId, field, value) {
+    const session = turmaEditorState.personalSessions.find(s => s.id === sessionId);
+    if (session) {
+        session[field] = value;
+        console.log(`[TurmaEditor] Updated personal session ${sessionId}.${field} = ${value}`);
+    }
+}
+
+async function importPersonalFromAgenda() {
+    try {
+        showNotification('📅 Buscando sessões da agenda...', 'info');
+        
+        // Load personal sessions from unified agenda API
+        const today = new Date().toISOString().split('T')[0];
+        const result = await turmaAPI.api.get('/api/agenda/classes', {
+            params: { startDate: today, endDate: today, type: 'PERSONAL_SESSION' }
+        });
+        
+        if (result.success && result.data) {
+            const agendaSessions = result.data.filter(item => item.type === 'PERSONAL_SESSION');
+            
+            // Convert agenda items to personal sessions format
+            agendaSessions.forEach(item => {
+                const existing = turmaEditorState.personalSessions.find(s => s.agendaItemId === item.id);
+                if (!existing) {
+                    turmaEditorState.personalSessions.push({
+                        id: 'agenda_' + item.id,
+                        agendaItemId: item.id,
+                        studentId: item.studentId,
+                        studentName: item.studentName || 'Aluno não identificado',
+                        date: (item.date || item.startDate || '').split('T')[0],
+                        time: item.time || (item.startTime || '00:00'),
+                        duration: item.duration || 60,
+                        type: 'PERSONAL',
+                        status: item.status || 'SCHEDULED',
+                        price: item.price,
+                        notes: item.notes || '',
+                        isNew: false
+                    });
+                }
+            });
+            
+            renderPersonalSessionsList();
+            showNotification(`✅ ${agendaSessions.length} sessões importadas da agenda`, 'success');
+        } else {
+            showNotification('📭 Nenhuma sessão personal encontrada na agenda', 'info');
+        }
+        
+    } catch (error) {
+        console.error('[TurmaEditor] Error importing from agenda:', error);
+        showNotification('❌ Erro ao importar da agenda: ' + (error.message || 'Erro desconhecido'), 'error');
+    }
+}
+
 // Navigation helper
 window.navigateToTurmaEditor = function(turmaId = null) {
     console.log('[TurmaEditor] Navigating to turma editor, ID:', turmaId);
@@ -954,6 +1134,12 @@ window.navigateToTurmaEditor = function(turmaId = null) {
       collectFormData,
       renderSelectedCoursesArea
   };
+
+  // Export personal session functions globally
+  window.updatePersonalSession = updatePersonalSession;
+  window.removePersonalSession = removePersonalSession;
+  window.addPersonalSession = addPersonalSession;
+  window.importPersonalFromAgenda = importPersonalFromAgenda;
 
   console.log('📝 Turma Editor Module - Loaded');
 

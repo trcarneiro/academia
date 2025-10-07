@@ -1,0 +1,107 @@
+/* =================================
+   Turmas - Campos Editáveis Inline
+   ================================= */
+
+.module-isolated-turmas .detail-edit-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-family: inherit;
+  background-color: var(--color-surface);
+  transition: var(--transition-base);
+}
+
+.module-isolated-turmas .detail-edit-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.module-isolated-turmas .detail-edit-input.hidden {
+  display: none;
+}
+
+/* Textarea específico */
+.module-isolated-turmas textarea.detail-edit-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Seletor de dias da semana */
+.module-isolated-turmas .days-of-week-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.module-isolated-turmas .days-of-week-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.module-isolated-turmas .days-of-week-selector label:hover {
+  background-color: rgba(102, 126, 234, 0.1);
+  border-color: var(--primary-color);
+}
+
+.module-isolated-turmas .days-of-week-selector label:has(input:checked) {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.module-isolated-turmas .days-of-week-selector input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Botões de ação nas seções */
+.module-isolated-turmas .detail-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.module-isolated-turmas .section-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.module-isolated-turmas .section-actions .btn-action-secondary,
+.module-isolated-turmas .section-actions .btn-action-success {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-width: auto;
+}
+
+/* Estados de validação */
+.module-isolated-turmas .detail-edit-input.error {
+  border-color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.module-isolated-turmas .detail-edit-input.success {
+  border-color: var(--color-success);
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+/* Responsividade para campos editáveis */
+@media (max-width: 768px) {
+  .module-isolated-turmas .section-actions {
+    flex-direction: column;
+  }
+  
+  .module-isolated-turmas .days-of-week-selector {
+    justify-content: center;
+  }
+}

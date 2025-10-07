@@ -1,5 +1,6 @@
 // Módulo de Turmas - Sistema de Academia Krav Maga v2.0
 // Gestão de execução de cronogramas de cursos com datas específicas
+import { safeNavigateTo, safeRegisterRoutes } from '../../shared/utils/navigation.js';
 
 // Aguardar a disponibilidade dos recursos necessários
 async function waitForDependencies() {
@@ -41,6 +42,8 @@ class TurmasModule {
             
             this.service = new TurmasService(turmasAPI);
             this.controller = new TurmasController(this.service);
+            // Garantir CSS de edição inline carregado
+            this.loadModuleCSS();
             
             this.isInitialized = true;
             console.log('👥 [Turmas] Módulo inicializado com sucesso!');
@@ -69,7 +72,6 @@ class TurmasModule {
         try {
             await Promise.all([
                 import('./views/TurmasListView.js'),
-                import('./views/TurmasFormView.js'),
                 import('./views/TurmasDetailView.js'),
                 import('./views/TurmasScheduleView.js'),
                 import('./views/TurmasStudentsView.js'),
@@ -105,25 +107,26 @@ class TurmasModule {
         };
 
         // Registrar rotas no sistema de navegação
-        if (window.router) {
-            Object.entries(routes).forEach(([path, handler]) => {
-                window.router.register(path, handler);
-            });
-        }
+        safeRegisterRoutes(routes, { context: 'turmas:registerRoutes' });
     }
 
     loadModuleCSS() {
-        const cssPath = '/css/modules/turmas.css';
+        const cssFiles = [
+            '/css/modules/turmas.css',
+            '/css/modules/turmas-editable.css'
+        ];
         
-        // Verificar se o CSS já foi carregado
-        if (!document.querySelector(`link[href="${cssPath}"]`)) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = cssPath;
-            link.onload = () => console.log('📚 CSS do módulo Turmas carregado');
-            link.onerror = () => console.warn('⚠️ Falha ao carregar CSS do módulo Turmas');
-            document.head.appendChild(link);
-        }
+        cssFiles.forEach(cssPath => {
+            // Verificar se o CSS já foi carregado
+            if (!document.querySelector(`link[href="${cssPath}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssPath;
+                link.onload = () => console.log(`📚 CSS ${cssPath} carregado`);
+                link.onerror = () => console.warn(`⚠️ Falha ao carregar CSS ${cssPath}`);
+                document.head.appendChild(link);
+            }
+        });
     }
 
     // Métodos públicos para integração com outros módulos
@@ -165,9 +168,19 @@ class TurmasModule {
 
     // Método para navegação externa
     navigateToTurma(turmaId, view = 'view') {
-        if (window.router) {
-            window.router.navigate(`turmas/${view}/${turmaId}`);
-        }
+        const methodName = `show${view.charAt(0).toUpperCase() + view.slice(1)}`;
+        const fallback = () => {
+            const controller = this.controller;
+            if (controller && typeof controller[methodName] === 'function') {
+                return controller[methodName](turmaId);
+            }
+            return controller?.showView?.(turmaId);
+        };
+
+        safeNavigateTo(`turmas/${view}/${turmaId}`, {
+            fallback,
+            context: 'turmas-module:navigateToTurma'
+        });
     }
 
     // Cleanup

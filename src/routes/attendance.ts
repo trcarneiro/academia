@@ -35,7 +35,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },
@@ -112,7 +112,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },
@@ -148,7 +148,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },
@@ -176,7 +176,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },
@@ -184,6 +184,33 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
       },
     },
     handler: AttendanceController.getStudentByRegistration,
+  });
+
+  // Get student by ID for check-in
+  fastify.get('/student/id/:id', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get student by ID for check-in',
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'object', additionalProperties: true },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getStudentById,
   });
 
   // Search students by name or registration (multiple results)
@@ -282,7 +309,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },
@@ -311,7 +338,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            data: { type: 'object' },
+            data: { type: 'object', additionalProperties: true },
             message: { type: 'string' },
             timestamp: { type: 'string' },
           },

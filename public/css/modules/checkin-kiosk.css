@@ -361,6 +361,45 @@
     color: var(--kiosk-text-muted);
 }
 
+/* 🔥 FIX: Status badges for enrollment and plan */
+.search-result-status {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.enrollment-badge,
+.plan-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.enrollment-badge.enrolled {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--kiosk-success);
+}
+
+.enrollment-badge.not-enrolled {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--kiosk-error);
+}
+
+.plan-badge.active {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--kiosk-primary);
+}
+
+.plan-badge.inactive {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--kiosk-warning);
+}
+/* END FIX */
+
 .search-result-match {
     display: inline-flex;
     align-items: center;
@@ -481,6 +520,108 @@
     gap: 2rem;
     font-size: 1rem;
     color: var(--kiosk-text-muted);
+    flex-wrap: wrap;
+}
+
+.student-meta span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    transition: var(--kiosk-transition);
+}
+
+/* Plan Status Classes */
+.plan-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.plan-inactive {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.plan-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.plan-expiring {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.plan-expired {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.no-course {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+    color: white !important;
+    font-style: italic;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+    }
+}
+
+/* Enrollment Hint Card */
+.enrollment-hint {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--kiosk-radius-lg);
+    box-shadow: var(--kiosk-shadow);
+    animation: slide-in 0.5s ease-out;
+}
+
+.enrollment-hint h4 {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.enrollment-hint p {
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.enrollment-hint strong {
+    color: white;
+    font-weight: 700;
+}
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== STATS GRID ===== */
@@ -506,6 +647,26 @@
 .stat-card-enhanced:hover {
     transform: translateY(-4px);
     box-shadow: var(--kiosk-shadow-lg);
+}
+
+/* Progress Bar Enhancement */
+.progress-card .progress-bar-container {
+    margin-top: 1rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-icon {
@@ -569,6 +730,11 @@
     background: rgba(16, 185, 129, 0.05);
 }
 
+.class-card.not_yet {
+    border-color: var(--kiosk-warning);
+    background: rgba(245, 158, 11, 0.05);
+}
+
 .class-card.checked-in {
     border-color: var(--kiosk-primary);
     background: rgba(102, 126, 234, 0.05);
@@ -615,6 +781,12 @@
     color: white;
 }
 
+.class-status.not_yet {
+    background: var(--kiosk-warning);
+    color: white;
+    animation: pulse-warning 2s infinite;
+}
+
 .class-status.checked-in {
     background: var(--kiosk-primary);
     color: white;
@@ -623,6 +795,11 @@
 .class-status.expired {
     background: var(--kiosk-text-muted);
     color: white;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .checkin-btn {
@@ -650,6 +827,40 @@
     background: var(--kiosk-text-muted);
     cursor: not-allowed;
     transform: none;
+}
+
+/* Time remaining indicator for NOT_YET classes */
+.time-remaining {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid var(--kiosk-warning);
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--kiosk-warning);
+}
+
+/* Pulse animation for available check-in button */
+.available-pulse {
+    animation: pulse-button 2s infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+
+@keyframes pulse-button {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.available-pulse:hover {
+    animation: none;
 }
 
 /* ===== ACTIVITY LIST ===== */
@@ -815,6 +1026,95 @@
     0% { transform: scale(0.8); opacity: 0; }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== RECOMMENDATIONS SECTION ===== */
+.recommendations-section {
+    margin-bottom: 2rem;
+}
+
+.recommendations-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--kiosk-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.recommendation-card {
+    background: var(--kiosk-surface);
+    border-radius: var(--kiosk-radius);
+    padding: 1.25rem;
+    border-left: 4px solid var(--kiosk-primary);
+    box-shadow: var(--kiosk-shadow);
+    transition: var(--kiosk-transition);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.recommendation-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.recommendation-card.high-priority {
+    border-left-color: var(--kiosk-error);
+}
+
+.recommendation-card.normal-priority {
+    border-left-color: var(--kiosk-primary);
+}
+
+.recommendation-card.low-priority {
+    border-left-color: var(--kiosk-text-muted);
+}
+
+.recommendation-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.recommendation-icon {
+    font-size: 1.5rem;
+    color: var(--kiosk-primary);
+}
+
+.recommendation-content h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: var(--kiosk-text);
+}
+
+.recommendation-content p {
+    font-size: 0.875rem;
+    color: var(--kiosk-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: fadeInUp 0.6s ease-out forwards;
 }
 
 /* ===== RESPONSIVE ===== */

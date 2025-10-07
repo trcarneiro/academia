@@ -1,4 +1,5 @@
 // TurmasFormView - Formulário para criação/edição de turmas
+import { safeNavigateTo } from '../../../shared/utils/navigation.js';
 // Design premium com validação em tempo real
 
 export class TurmasFormView {
@@ -18,8 +19,9 @@ export class TurmasFormView {
         this.container = container;
         this.turmaData = turmaData;
         this.isEditMode = !!turmaData;
-    // Registrar globalmente para uso nos modais (onclick inline usa window.turmaFormView)
-    window.turmaFormView = this;
+
+        // Registrar globalmente para uso nos modais (onclick inline usa window.turmaFormView)
+        window.turmaFormView = this;
 
         await this.loadFormData();
         await this.renderHTML();
@@ -33,6 +35,7 @@ export class TurmasFormView {
 
     async loadFormData() {
         try {
+            console.log('🔄 [Turmas Form] Carregando dados do formulário...');
             // Carregar dados necessários para o formulário
             const [coursesResult, instructorsResult, organizationsResult, unitsResult] = await Promise.all([
                 this.service.getCourses(),
@@ -41,12 +44,21 @@ export class TurmasFormView {
                 this.service.getUnits()
             ]);
 
+            console.log('📋 [Turmas Form] Resultados das APIs:', {
+                courses: coursesResult,
+                instructors: instructorsResult,
+                organizations: organizationsResult,
+                units: unitsResult
+            });
+
             this.formData = {
                 courses: coursesResult.success ? coursesResult.data : [],
                 instructors: instructorsResult.success ? instructorsResult.data : [],
                 organizations: organizationsResult.success ? organizationsResult.data : [],
                 units: unitsResult.success ? unitsResult.data : []
             };
+
+            console.log('💾 [Turmas Form] Dados processados:', this.formData);
 
             // Armazenar cursos disponíveis para o modal
             this.availableCourses = this.formData.courses;
@@ -173,6 +185,7 @@ export class TurmasFormView {
                                     <label for="startDate" class="required">📅 Data de Início</label>
                                     <input type="date" id="startDate" name="startDate" 
                                            class="form-input-premium" required>
+                                    <div class="field-help">Datas no passado são permitidas; o cronograma será gerado a partir desta data e aparecerá na agenda.</div>
                                     <div class="field-error hidden" id="startDateError"></div>
                                 </div>
                                 
@@ -358,19 +371,17 @@ export class TurmasFormView {
 
         // Navegação breadcrumb
         const breadcrumbItems = this.container.querySelectorAll('.breadcrumb-item.clickable');
-        breadcrumbItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const path = e.currentTarget.dataset.navigate;
-                if (path === '/') {
-                    // Navegar para dashboard
-                    if (window.router) {
-                        window.router.navigate('dashboard');
+            breadcrumbItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const path = e.currentTarget.dataset.navigate;
+                    if (path === '/') {
+                        safeNavigateTo('dashboard', { context: 'turmas:form:breadcrumb-dashboard' });
+                    } else if (path === '/turmas') {
+                        this.controller.navigateToList();
                     }
-                } else if (path === '/turmas') {
-                    this.controller.navigateToList();
-                }
+                });
             });
-        });
+            // Fim da navegação breadcrumb
 
         // Validação em tempo real
         const inputs = this.container.querySelectorAll('input, select');
@@ -552,16 +563,7 @@ export class TurmasFormView {
         const startDate = this.container.querySelector('[name="startDate"]')?.value;
         const endDate = this.container.querySelector('[name="endDate"]')?.value;
         
-        if (startDate) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const startDateObj = new Date(startDate);
-            
-            if (startDateObj < today) {
-                this.setFieldError('startDate', 'Data de início não pode ser no passado');
-                isValid = false;
-            }
-        }
+        // startDate no passado agora é permitido; apenas validações relacionais permanecem
 
         if (startDate && endDate) {
             const startDateObj = new Date(startDate);
@@ -592,15 +594,7 @@ export class TurmasFormView {
                 break;
                 
             case 'startDate':
-                if (value) {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const dateObj = new Date(value);
-                    
-                    if (dateObj < today) {
-                        this.setFieldError(fieldName, 'Data não pode ser no passado');
-                    }
-                }
+                // Datas no passado são permitidas; nenhuma validação adicional aqui
                 break;
         }
     }

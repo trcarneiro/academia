@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { appConfig } from '@/config';
 import { logger } from '@/utils/logger';
 import { AttendancePattern, DropoutRiskAnalysis } from '@/types';
@@ -8,19 +9,51 @@ import dayjs from 'dayjs';
 export class AIService {
   private static anthropic: Anthropic | null = null;
 
-  private static getClient(): Anthropic {
-    if (!this.anthropic) {
-      if (!appConfig.ai.anthropicApiKey) {
-        logger.warn('Anthropic API key not configured - using mock responses');
-        // Return null to trigger mock mode
-        return null as any;
-      }
-      
+  private static getClient(): Anthropic | null {
+    if (!this.anthropic && appConfig.ai.anthropicApiKey) {
       this.anthropic = new Anthropic({
         apiKey: appConfig.ai.anthropicApiKey,
       });
     }
     return this.anthropic;
+  }
+
+  private static getGeminiClient() {
+    if (appConfig.ai.geminiApiKey) {
+      return new GoogleGenerativeAI(appConfig.ai.geminiApiKey);
+    }
+    return null;
+  }
+
+  private static async generateLessonPlansWithGemini(params: {
+    geminiClient: GoogleGenerativeAI;
+    courseName: string;
+    courseLevel: string;
+    documentAnalysis: string;
+    techniques: any[];
+    availableActivities?: any[] | undefined;
+    generateCount: number;
+    weekRange?: { start: number; end: number } | undefined;
+  }): Promise<any[]> {
+    const { geminiClient, courseName, courseLevel, documentAnalysis, techniques, availableActivities, generateCount, weekRange } = params;
+    
+    const model = geminiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = this.buildLessonPlanGenerationPrompt({
+      courseName,
+      courseLevel,
+      documentAnalysis,
+      techniques,
+      availableActivities,
+      generateCount,
+      weekRange,
+    });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const lessonPlansText = response.text();
+    
+    return this.parseLessonPlans(lessonPlansText);
   }
 
   static async analyzeDropoutRisk(studentId: string): Promise<DropoutRiskAnalysis> {
@@ -354,46 +387,70 @@ export class AIService {
     courseLevel: string;
     documentAnalysis: string;
     techniques: any[];
+    availableActivities?: any[];
     generateCount: number;
     weekRange?: { start: number; end: number };
     aiProvider: string;
   }): Promise<any[]> {
     try {
-      const { courseId, courseName, courseLevel, documentAnalysis, techniques, generateCount, weekRange } = params;
+      const { courseId, courseName, courseLevel, documentAnalysis, techniques, availableActivities, generateCount, weekRange } = params;
 
-      const client = this.getClient();
-      
-      // Mock mode when no API key is configured
-      if (!client) {
-        logger.info({ courseId, generateCount }, 'Using mock lesson plan generation - no API key configured');
-        return this.getMockLessonPlans(generateCount, courseLevel, techniques);
+      // Try Gemini first
+      const geminiClient = this.getGeminiClient();
+      if (geminiClient) {
+        try {
+          logger.info({ courseId, generateCount, provider: 'gemini' }, 'Using Gemini AI for lesson plan generation');
+          return await this.generateLessonPlansWithGemini({
+            geminiClient,
+            courseName,
+            courseLevel,
+            documentAnalysis,
+            techniques,
+            availableActivities,
+            generateCount,
+            weekRange,
+          });
+        } catch (geminiError) {
+          logger.warn({ geminiError }, 'Gemini failed, trying alternative providers');
+          // Continue to try other providers
+        }
       }
 
-      const prompt = this.buildLessonPlanGenerationPrompt({
-        courseName,
-        courseLevel,
-        documentAnalysis,
-        techniques,
-        generateCount,
-        weekRange,
-      });
+      // Fallback to Claude
+      const client = this.getClient();
+      if (client) {
+        logger.info({ courseId, generateCount, provider: 'claude' }, 'Using Claude AI for lesson plan generation');
+        const prompt = this.buildLessonPlanGenerationPrompt({
+          courseName,
+          courseLevel,
+          documentAnalysis,
+          techniques,
+          availableActivities,
+          generateCount,
+          weekRange,
+        });
 
-      const response = await client.messages.create({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 4000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      });
+        const response = await client.messages.create({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 4000,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        });
 
-      const lessonPlansText = response.content[0].type === 'text' ? response.content[0].text : '';
-      const lessonPlans = this.parseLessonPlans(lessonPlansText);
+        const lessonPlansText = response.content[0]?.type === 'text' ? (response.content[0] as any).text : '';
+        const lessonPlans = this.parseLessonPlans(lessonPlansText);
 
-      logger.info({ courseId, generatedCount: lessonPlans.length }, 'Lesson plans generated');
-      return lessonPlans;
+        logger.info({ courseId, generatedCount: lessonPlans.length }, 'Lesson plans generated with Claude');
+        return lessonPlans;
+      }
+      
+      // Mock mode when no API key is configured
+      logger.info({ courseId, generateCount }, 'Using mock lesson plan generation - no API key configured');
+      return this.getMockLessonPlans(generateCount, courseLevel, techniques);
     } catch (error) {
       logger.error({ error, courseId: params.courseId }, 'Failed to generate lesson plans');
       throw error;
@@ -566,50 +623,106 @@ Responda apenas com o JSON array, sem texto adicional.`;
     courseLevel: string;
     documentAnalysis: string;
     techniques: any[];
+    availableActivities?: any[] | undefined;
     generateCount: number;
-    weekRange?: { start: number; end: number };
+    weekRange?: { start: number; end: number } | undefined;
   }): string {
     const techniqueNames = params.techniques.map(t => t.name).join(', ');
     
+    // Prepare available activities context
+    const activitiesContext = params.availableActivities && params.availableActivities.length > 0 
+      ? `\n**ATIVIDADES DISPONÍVEIS NO BANCO DE DADOS:**\n${params.availableActivities.map(act => 
+          `- ${act.title || act.name}: ${act.description || 'Sem descrição'} (Tipo: ${act.type || 'N/A'}, Dificuldade: ${act.difficulty || 'N/A'})`
+        ).join('\n')}\n\n**IMPORTANTE:** Sempre que possível, use atividades existentes do banco de dados acima. Se precisar criar uma nova atividade, ela será automaticamente adicionada ao banco de dados com documentação completa para instrutores e preparação para vídeos futuros por IA.\n`
+      : '\n**NOTA:** Novas atividades sugeridas serão automaticamente criadas no banco de dados com documentação completa.\n';
+    
     return `
-Você é um especialista em Krav Maga e planejamento pedagógico. Gere ${params.generateCount} planos de aula baseados na análise do curso.
+Você é um especialista em Krav Maga e planejamento pedagógico detalhado. Gere ${params.generateCount} planos de aula MUITO DETALHADOS baseados no curso.
+${activitiesContext}
+**MODELO DE REFERÊNCIA (use como inspiração):**
+Um plano completo deve incluir:
+- Título específico com tema da aula
+- Descrição pedagógica clara dos objetivos
+- Estrutura temporal detalhada (aquecimento, técnicas, simulações, relaxamento)
+- Equipamentos específicos necessários
+- Objetivos de aprendizagem claros e mensuráveis
+- Adaptações para diferentes necessidades
+- Comandos específicos para o instrutor
+- Sistema de avaliação e feedback
 
 **Informações do Curso:**
 - Nome: ${params.courseName}
 - Nível: ${params.courseLevel}
 - Técnicas Disponíveis: ${techniqueNames}
 
-**Análise do Documento:**
+**Contexto da Aula:**
 ${params.documentAnalysis}
 
-Gere ${params.generateCount} planos de aula em formato JSON seguindo esta estrutura:
+**IMPORTANTE:** Gere planos DETALHADOS seguindo a estrutura JSON abaixo, mas com conteúdo rico e específico para Krav Maga:
 
 [
   {
-    "title": "Título da Aula",
-    "description": "Descrição dos objetivos e conteúdo",
+    "title": "Título Específico da Aula (ex: Introdução ao Krav Maga: Postura, Deslocamentos e Defesas Básicas)",
+    "description": "Descrição pedagógica detalhada dos objetivos, contexto e foco da aula",
     "lessonNumber": 1,
     "weekNumber": 1,
     "duration": 60,
-    "objectives": ["objetivos", "específicos", "da", "aula"],
+    "objectives": [
+      "Objetivo específico e mensurável 1",
+      "Objetivo específico e mensurável 2",
+      "Objetivo específico e mensurável 3",
+      "Objetivo específico e mensurável 4",
+      "Objetivo específico e mensurável 5"
+    ],
     "activities": [
       {
-        "name": "Nome da Atividade",
+        "name": "Aquecimento Dinâmico",
+        "duration": 10,
+        "description": "Descrição detalhada da atividade de aquecimento com exercícios específicos",
+        "type": "warmup"
+      },
+      {
+        "name": "Técnica Principal do Dia",
+        "duration": 20,
+        "description": "Ensino e prática detalhada da técnica principal com progressão pedagógica",
+        "type": "technique"
+      },
+      {
+        "name": "Aplicação Prática",
         "duration": 15,
-        "description": "Descrição da atividade",
-        "type": "warmup|technique|drill|sparring|cooldown"
+        "description": "Exercícios de aplicação da técnica em cenários controlados",
+        "type": "drill"
+      },
+      {
+        "name": "Simulação Realística",
+        "duration": 10,
+        "description": "Simulação em pares ou grupos da técnica aprendida",
+        "type": "drill"
+      },
+      {
+        "name": "Relaxamento e Respiração",
+        "duration": 5,
+        "description": "Exercícios de relaxamento muscular e respiração controlada",
+        "type": "cooldown"
       }
     ],
-    "materials": ["materiais", "necessários"],
-    "notes": "Observações importantes para o instrutor",
-    "assessment": "Como avaliar o progresso dos alunos",
-    "homework": "Tarefa para casa (opcional)"
+    "materials": ["Tatame ou espaço amplo", "Equipamentos específicos", "Materiais adicionais"],
+    "notes": "Observações pedagógicas importantes para o instrutor, adaptações necessárias, pontos de atenção",
+    "assessment": "Critérios específicos de avaliação e indicadores de progresso dos alunos",
+    "homework": "Tarefa específica para casa que reforce o aprendizado (opcional)"
   }
 ]
 
-Os planos devem seguir uma progressão lógica, incluir aquecimento e desaquecimento, e ser apropriados para o nível ${params.courseLevel}.
-Cada aula deve ter duração padrão de 60 minutos com atividades balanceadas.
-Responda apenas com o JSON array, sem texto adicional.`;
+**DIRETRIZES IMPORTANTES:**
+- Cada atividade deve ter duração específica totalizando 60 minutos
+- Progressão pedagógica do simples para o complexo
+- Técnicas apropriadas para o nível ${params.courseLevel}
+- Foco na segurança e execução correta
+- Incluir princípios específicos do Krav Maga
+- Atividades variadas e engajantes
+- Objetivos claros e mensuráveis
+
+Responda APENAS com o JSON array, sem texto adicional.`;
   }
 
   private static parseDropoutAnalysis(analysisText: string, studentId: string): DropoutRiskAnalysis {

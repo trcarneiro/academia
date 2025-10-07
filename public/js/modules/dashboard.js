@@ -31,7 +31,7 @@
             setupEventListeners();
             
             // Auto-load dashboard if container exists (support both old and new structure)
-            if (document.getElementById('dashboard') || document.querySelector('.dashboard-isolated')) {
+            if (document.getElementById('dashboard') || document.querySelector('.dashboard-isolated') || document.getElementById('dashboardContainer')) {
                 loadDashboard();
             }
             
@@ -74,9 +74,30 @@
     // ==========================================
     
     function loadDashboard() {
-        console.log('📊 Loading dashboard data...');
-        showLoadingState();
-        fetchDashboardData();
+        console.log('📊 Loading dashboard...');
+
+        // First load HTML content if not already loaded
+        const container = document.getElementById('dashboardContainer');
+        if (container && !container.querySelector('.dashboard-header')) {
+            console.log('📄 Loading dashboard HTML content...');
+            fetch('/views/dashboard.html')
+                .then(response => response.text())
+                .then(html => {
+                    container.innerHTML = html;
+                    console.log('✅ Dashboard HTML loaded');
+                    // Now load data
+                    showLoadingState();
+                    fetchDashboardData();
+                })
+                .catch(error => {
+                    console.error('❌ Error loading dashboard HTML:', error);
+                    showErrorState();
+                });
+        } else {
+            console.log('📊 Dashboard HTML already loaded, loading data...');
+            showLoadingState();
+            fetchDashboardData();
+        }
     }
     
     function renderDashboard(data) {
@@ -385,7 +406,7 @@
         try {
             const [studentsResponse, attendanceResponse, classesResponse] = await Promise.all([
                 fetch('/api/students').catch(() => ({ ok: false })),
-                fetch('/api/attendance').catch(() => ({ ok: false })),
+                fetch('/api/attendance/stats').catch(() => ({ ok: false })),
                 fetch('/api/classes').catch(() => ({ ok: false }))
             ]);
             

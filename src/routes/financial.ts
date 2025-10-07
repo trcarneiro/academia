@@ -344,6 +344,61 @@ export default async function financialRoutes(
     }
   });
 
+  // PATCH /api/financial/subscriptions/:id - Atualizar assinatura (alias do PUT)
+  fastify.patch('/subscriptions/:id', {
+    schema: {
+      description: 'Partially update student subscription (same as PUT)',
+      tags: ['Financial'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' }
+        },
+        required: ['id']
+      },
+      body: {
+        type: 'object',
+        properties: {
+          startDate: { type: 'string', format: 'date-time' },
+          endDate: { type: 'string', format: 'date-time' },
+          status: { type: 'string' },
+          customPrice: { type: 'number' },
+          isActive: { type: 'boolean' }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      // Derivar organização pela própria subscription
+      const sub = await prisma.studentSubscription.findUnique({ where: { id }, select: { organizationId: true } });
+      if (!sub) {
+        reply.code(404);
+        return { success: false, error: 'Subscription not found' };
+      }
+      const financialService = new FinancialService(sub.organizationId);
+      const updateData = request.body as any;
+      if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
+      if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
+      
+      const subscription = await financialService.updateSubscription(id, updateData);
+
+      return {
+        success: true,
+        data: subscription,
+        message: 'Subscription updated successfully'
+      };
+    } catch (error) {
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to update subscription',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+
   // DELETE /api/financial/subscriptions/:id - Cancelar/deletar assinatura
   fastify.delete('/subscriptions/:id', {
     schema: {

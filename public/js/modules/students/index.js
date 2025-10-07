@@ -1,223 +1,124 @@
-/**
- * Students Module - Main Entry Point
- * Guidelines.MD Compliant Implementation
- * 
- * Features:
- * - Complete CRUD operations
- * - Modern SPA architecture
- * - API Client integration
- * - Responsive design
- * - Real-time search/filtering
- */
+/*
+ Students Module - Premium UX following Activities patterns
+ - Enhanced list and editor with Activities-level UX
+ - Premium design components and comprehensive functionality
+ - Full responsive design and accessibility features
+
+ Exports globals for SPA Router: initStudentsModule, openStudentEditor
+*/
 
 import { StudentsListController } from './controllers/list-controller.js';
 import { StudentEditorController } from './controllers/editor-controller.js';
+import { PersonalTrainingController } from './controllers/personal-controller.js';
 
-// ==============================================
-// MODULE INITIALIZATION
-// ==============================================
+// Load module-specific styles
+const moduleStyles = document.createElement('link');
+moduleStyles.rel = 'stylesheet';
+moduleStyles.href = '/js/modules/students/styles/students.css';
+document.head.appendChild(moduleStyles);
 
-let studentsAPI = null;
+// Load personal training styles
+const personalStyles = document.createElement('link');
+personalStyles.rel = 'stylesheet';
+personalStyles.href = '/css/modules/personal-training.css';
+document.head.appendChild(personalStyles);
+
+// Defensive globals
+window.app = window.app || {
+	dispatchEvent: () => {},
+	handleError: (err, ctx) => console.error('AppError', ctx, err)
+};
+
+let moduleAPI = null;
 let listController = null;
 let editorController = null;
-let isModuleInitialized = false;
-let initializationPromise = null;
+let personalController = null;
 
-/**
- * Wait for API Client to be available
- */
-function waitForAPIClient() {
-    return new Promise((resolve) => {
-        if (window.createModuleAPI) {
-            resolve();
-        } else {
-            const checkAPI = setInterval(() => {
-                if (window.createModuleAPI) {
-                    clearInterval(checkAPI);
-                    resolve();
-                }
-            }, 100);
-        }
-    });
+async function initializeAPI() {
+	// createModuleAPI is provided by public/js/shared/api-client.js
+	if (!window.createModuleAPI) {
+		throw new Error('API client not loaded');
+	}
+	moduleAPI = window.createModuleAPI('Students');
 }
 
-/**
- * Initialize Students Module with anti-duplication protection
- */
-async function initStudentsModule(targetContainer) {
-    // 1. If already initialized, just render the interface
-    if (isModuleInitialized && listController && editorController) {
-        console.log('🎓 [CACHE] Módulo de Estudantes já inicializado, renderizando interface...');
-        await listController.render(targetContainer);
-        return {
-            listController,
-            editorController,
-            api: studentsAPI,
-            fromCache: true
-        };
-    }
-    
-    // 2. If currently initializing, return existing promise
-    if (initializationPromise) {
-        console.log('🎓 [CACHE] Módulo de Estudantes já está inicializando, aguardando...');
-        return initializationPromise;
-    }
-    
-    // 3. Start new initialization
-    console.log('🎓 [NETWORK] Inicializando módulo de Estudantes...');
-    
-    initializationPromise = performInitialization(targetContainer)
-        .then(result => {
-            isModuleInitialized = true;
-            initializationPromise = null; // Clear promise on success
-            return result;
-        })
-        .catch(error => {
-            initializationPromise = null; // Clear promise on error to allow retry
-            throw error;
-        });
-    
-    return initializationPromise;
+function loadModuleCSS() {
+	// Load premium CSS v2.0 for enhanced UX
+	const cssFiles = [
+		'/css/modules/students-enhanced.css',
+		'/css/modules/students-premium.css'
+	];
+	
+	cssFiles.forEach(href => {
+		if (!document.querySelector(`link[href="${href}"]`)) {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = href;
+			document.head.appendChild(link);
+			console.log(`✅ CSS carregado: ${href}`);
+		}
+	});
 }
 
-/**
- * Internal initialization logic
- */
-async function performInitialization(targetContainer) {
-    try {
-        // Wait for API Client
-        await waitForAPIClient();
-        studentsAPI = window.createModuleAPI('Students');
-        
-        // Initialize controllers
-        listController = new StudentsListController(studentsAPI);
-        editorController = new StudentEditorController(studentsAPI);
-        
-        // Load students list by default
-        await listController.render(targetContainer);
-        
-        console.log('✅ Módulo de Estudantes inicializado com sucesso');
-
-        // Notify core app that module is ready (AGENTS.md compliance)
-        try {
-            window.app?.dispatchEvent?.('module:loaded', { name: 'students' });
-        } catch (_) { /* noop */ }
-        
-        return {
-            listController,
-            editorController,
-            api: studentsAPI,
-            fromCache: false
-        };
-        
-    } catch (error) {
-        console.error('❌ Erro ao inicializar módulo de Estudantes:', error);
-        showErrorState(targetContainer, error.message);
-        // Report to global error handler (AGENTS.md compliance)
-        try {
-            window.app?.handleError?.(error, 'Students:init');
-        } catch (_) { /* noop */ }
-        throw error;
-    }
-}
-
-/**
- * Navigate to student editor
- */
-async function openStudentEditor(studentId = null, targetContainer) {
-    if (!editorController) {
-        console.error('❌ Editor controller não inicializado');
-        return;
-    }
-    
-    // Expose editor controller globally for testing
-    window.currentStudentEditor = editorController;
-    
-    await editorController.render(targetContainer, studentId);
-}
-
-/**
- * Navigate back to students list
- */
-async function openStudentsList(targetContainer) {
-    if (!listController) {
-        console.error('❌ List controller não inicializado');
-        return;
-    }
-    
-    await listController.render(targetContainer);
-}
-
-/**
- * Show error state
- */
-function showErrorState(container, message) {
-    container.innerHTML = `
-        <div class="error-state">
-            <div class="error-icon">⚠️</div>
-            <h3>Erro no Módulo de Estudantes</h3>
-            <p>${message}</p>
-            <button onclick="location.reload()" class="btn btn-primary">
-                Recarregar Página
-            </button>
-        </div>
-    `;
-}
-
-/**
- * Get module state for debugging
- */
-function getModuleState() {
-    return {
-        isInitialized: isModuleInitialized,
-        hasPromise: !!initializationPromise,
-        hasControllers: !!(listController && editorController),
-        hasAPI: !!studentsAPI
-    };
-}
-
-/**
- * Reset module state (for testing/debugging)
- */
-function resetModuleState() {
-    console.log('🔄 Resetando estado do módulo de Estudantes...');
-    isModuleInitialized = false;
-    initializationPromise = null;
-    listController = null;
-    editorController = null;
-    studentsAPI = null;
-}
-
-// ==============================================
-// GLOBAL EXPORTS
-// ==============================================
-
-// Make functions available globally for SPA router
-window.initStudentsModule = initStudentsModule;
-window.openStudentEditor = openStudentEditor;
-window.openStudentsList = openStudentsList;
-
-// Debugging utilities
-window.getStudentsModuleState = getModuleState;
-window.resetStudentsModuleState = resetModuleState;
-
-// Expose module for AcademyApp + ModuleLoader (AGENTS.md compliance)
-window.students = {
-    init: initStudentsModule,
-    openEditor: openStudentEditor,
-    openList: openStudentsList
+// Public API consumed by SPA Router
+window.initStudentsModule = async function initStudentsModule(container) {
+	console.log('🎓 [NETWORK] Inicializando módulo de Estudantes...');
+	try {
+		loadModuleCSS();
+		await initializeAPI();
+		
+		// Initialize controllers
+		listController = new StudentsListController(moduleAPI);
+		editorController = new StudentEditorController(moduleAPI);
+		personalController = new PersonalTrainingController(moduleAPI);
+		// Render list by default
+		await listController.render(container);
+		window.app.dispatchEvent?.('module:loaded', { name: 'students' });
+		// Expose controllers globally
+		window.studentEditor = editorController;
+		window.personalController = personalController;
+		
+		return { listController, editorController, personalController, api: moduleAPI };
+	} catch (err) {
+		window.app.handleError(err, 'students:init');
+		// Minimal error state
+		container.innerHTML = '<div class="error-state">Erro ao inicializar Estudantes</div>';
+		throw err;
+	}
 };
-try {
-    window.ModuleLoader?.register?.('students', window.students);
-} catch (_) { /* noop */ }
 
-// Export for module imports
-export {
-    initStudentsModule,
-    openStudentEditor,
-    openStudentsList,
-    getModuleState,
-    resetModuleState,
-    StudentsListController,
-    StudentEditorController
+// Optional: allow opening editor directly
+window.openStudentEditor = async function openStudentEditor(studentId, container) {
+	try {
+		loadModuleCSS();
+		await initializeAPI();
+		if (!editorController) editorController = new StudentEditorController(moduleAPI);
+		// Expose editor globally
+		window.studentEditor = editorController;
+		await editorController.render(container, studentId || null);
+	} catch (err) {
+		window.app.handleError(err, 'students:open-editor');
+		container.innerHTML = '<div class="error-state">Erro ao abrir editor</div>';
+	}
 };
+
+// Expose module globally for simple actions
+window.studentsModule = { 
+	init: window.initStudentsModule, 
+	openEditor: window.openStudentEditor,
+	startPersonal: (studentId) => {
+		if (window.personalController) {
+			return window.personalController.createPersonalClass(studentId);
+		}
+	},
+	schedulePersonal: (studentId, studentData) => {
+		if (window.personalController) {
+			return window.personalController.showPersonalScheduling({ student_id: studentId }, studentData);
+		}
+	}
+};
+
+// Compatibility with AcademyApp - expose as window.students
+window.students = window.studentsModule;
+
+console.log('✅ Students module (Activities-style) loaded');

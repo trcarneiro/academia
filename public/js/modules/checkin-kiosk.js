@@ -37,7 +37,7 @@ class CheckinKiosk {
             
             // Wait for API Client
             await this.waitForAPIClient();
-            
+
             // Setup DOM elements
             this.setupElements();
             
@@ -80,6 +80,141 @@ class CheckinKiosk {
                 }, 100);
             }
         });
+    }
+
+    /**
+     * Enhanced: Animate attendance progress bar
+     */
+    animateProgressBar(percentage) {
+        const progressFill = document.getElementById('attendance-progress-fill');
+        if (progressFill) {
+            // Delay to allow DOM to render
+            setTimeout(() => {
+                progressFill.style.width = `${Math.min(percentage, 100)}%`;
+            }, 100);
+        }
+    }
+
+    /**
+     * Enhanced: Render AI recommendations
+     */
+    renderAIRecommendations() {
+        const container = document.getElementById('ai-recommendations');
+        if (!container || !this.currentStudent) return;
+
+        const recommendations = this.generateRecommendations();
+        
+        container.innerHTML = recommendations.map(rec => `
+            <div class="recommendation-card ${rec.priority}-priority">
+                <div class="recommendation-header">
+                    <div class="recommendation-icon">
+                        <i class="${rec.icon}"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h4>${rec.title}</h4>
+                        <p>${rec.description}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        // Staggered animation for cards
+        const cards = container.querySelectorAll('.recommendation-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+    }
+
+    /**
+     * Enhanced: Generate smart recommendations based on student data
+     */
+    generateRecommendations() {
+        if (!this.currentStudent?.dashboard) return [];
+
+        const dashboard = this.currentStudent.dashboard;
+        const stats = dashboard.stats || {};
+        const plan = dashboard.plan;
+        const recommendations = [];
+
+        // Attendance-based recommendations
+        const attendanceRate = stats.attendanceRate || 0;
+        
+        if (attendanceRate < 70) {
+            recommendations.push({
+                priority: 'high',
+                title: 'Melhore sua Frequência',
+                description: `Sua frequência está em ${attendanceRate}%. Tente manter pelo menos 80% para melhor progresso!`,
+                icon: 'fas fa-calendar-exclamation'
+            });
+        } else if (attendanceRate >= 90) {
+            recommendations.push({
+                priority: 'normal',
+                title: 'Excelente Frequência!',
+                description: `Parabéns! Sua frequência de ${attendanceRate}% é exemplar. Continue assim!`,
+                icon: 'fas fa-trophy'
+            });
+        }
+
+        // Plan-based recommendations
+        if (plan) {
+            const planEndDate = plan.endDate ? new Date(plan.endDate) : null;
+            const today = new Date();
+            const daysUntilExpiry = planEndDate ? Math.ceil((planEndDate - today) / (1000 * 60 * 60 * 24)) : null;
+
+            if (daysUntilExpiry && daysUntilExpiry <= 7) {
+                recommendations.push({
+                    priority: 'high',
+                    title: 'Plano Vencendo',
+                    description: `Seu plano vence em ${daysUntilExpiry} dias. Renove para não perder o acesso às aulas!`,
+                    icon: 'fas fa-exclamation-triangle'
+                });
+            } else if (daysUntilExpiry && daysUntilExpiry <= 30) {
+                recommendations.push({
+                    priority: 'normal',
+                    title: 'Renovação Próxima',
+                    description: `Seu plano vence em ${daysUntilExpiry} dias. Considere renovar com desconto antecipado!`,
+                    icon: 'fas fa-calendar-check'
+                });
+            }
+        } else {
+            recommendations.push({
+                priority: 'high',
+                title: 'Ativar Plano',
+                description: 'Você não possui um plano ativo. Adquira um plano para participar das aulas!',
+                icon: 'fas fa-credit-card'
+            });
+        }
+
+        // Progress-based recommendations
+        const classesThisMonth = stats.attendanceThisMonth || 0;
+        if (classesThisMonth === 0) {
+            recommendations.push({
+                priority: 'high',
+                title: 'Primeira Aula do Mês',
+                description: 'Que tal começar o mês com força total? Faça sua primeira aula hoje!',
+                icon: 'fas fa-play-circle'
+            });
+        } else if (classesThisMonth >= 12) {
+            recommendations.push({
+                priority: 'low',
+                title: 'Guerreiro Incansável!',
+                description: `${classesThisMonth} aulas este mês! Considere um dia de descanso para recuperação.`,
+                icon: 'fas fa-bed'
+            });
+        }
+
+        // Generic recommendations if none generated
+        if (recommendations.length === 0) {
+            recommendations.push({
+                priority: 'normal',
+                title: 'Continue Praticando!',
+                description: 'Você está indo bem! Mantenha a consistência nos treinos para evoluir sempre.',
+                icon: 'fas fa-fist-raised'
+            });
+        }
+
+        // Limit to 3 recommendations maximum
+        return recommendations.slice(0, 3);
     }
 
     /**
@@ -137,6 +272,10 @@ class CheckinKiosk {
             studentName: document.getElementById('student-name'),
             studentRegistration: document.getElementById('student-registration'),
             studentLevel: document.getElementById('student-level'),
+            studentPlan: document.getElementById('student-plan'),
+            studentPlanValidity: document.getElementById('student-plan-validity'),
+            studentCourse: document.getElementById('student-course'),
+            studentTurma: document.getElementById('student-turma'),
             
             // Stats
             attendanceRate: document.getElementById('attendance-rate'),
@@ -145,7 +284,13 @@ class CheckinKiosk {
             
             // Classes and activity
             availableClasses: document.getElementById('available-classes'),
+            upcomingClasses: document.getElementById('upcoming-classes'),
             recentActivity: document.getElementById('recent-activity'),
+            // Payments
+            paymentsOverdueCount: document.getElementById('payments-overdue-count'),
+            paymentsOverdueAmount: document.getElementById('payments-overdue-amount'),
+            paymentsLast: document.getElementById('payments-last'),
+            paymentsNextDue: document.getElementById('payments-next-due'),
             
             // Buttons
             logoutBtn: document.getElementById('logout-btn'),
@@ -275,8 +420,8 @@ class CheckinKiosk {
     /**
      * Lookup student by registration or name
      */
-    async lookupStudent() {
-        const query = this.elements.registrationInput.value.trim();
+    async lookupStudent(overrideQuery = null) {
+        const query = overrideQuery || this.elements.registrationInput.value.trim();
         
         if (!query || query.length < 1) {
             this.showError('Digite pelo menos 1 caractere');
@@ -290,22 +435,28 @@ class CheckinKiosk {
         try {
             console.log('🔍 Buscando aluno:', query);
             
-            const response = await this.apiClient.get(`/api/attendance/student/${encodeURIComponent(query)}`);
+            // Check if query is a UUID (student ID) or a registration number
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+            const endpoint = isUUID ? `/api/attendance/student/id/${query}` : `/api/attendance/student/${encodeURIComponent(query)}`;
+            
+            const response = await this.apiClient.get(endpoint);
             
             console.log('🔍 Resposta da API:', response);
             console.log('🔍 Resposta da API (JSON):', JSON.stringify(response, null, 2));
-            console.log('🔍 response.data:', response.data);
-            console.log('🔍 response.data (JSON):', JSON.stringify(response.data, null, 2));
             
-            if (response.success && response.data) {
-                console.log('📊 Dados do aluno:', response.data);
-                this.currentStudent = response.data;
+            // The actual student data is nested inside the 'data' property of the response
+            const studentData = response.data;
+            console.log('🔍 Extracted student data:', studentData);
+
+            if (response.success && studentData && Object.keys(studentData).length > 0) {
+                console.log('📊 Dados do aluno:', studentData);
+                this.currentStudent = studentData;
                 console.log('👤 Current student:', this.currentStudent);
-                console.log('👤 Current student (JSON):', JSON.stringify(this.currentStudent, null, 2));
                 console.log('🆔 Current student ID:', this.currentStudent.id);
                 await this.showStudentDashboard();
             } else {
-                this.showError('Aluno não encontrado');
+                this.showError('Aluno não encontrado ou dados inválidos recebidos.');
+                console.error('Error: Invalid or empty student data received from API.', response);
             }
             
         } catch (error) {
@@ -396,7 +547,17 @@ class CheckinKiosk {
             <div class="search-results-header">
                 ${students.length} aluno(s) encontrado(s)
             </div>
-            ${students.map(student => `
+            ${students.map(student => {
+                // 🔥 FIX: Show enrollment status in search results
+                const enrollmentStatus = student.hasActiveEnrollment 
+                    ? `<span class="enrollment-badge enrolled">✅ Matriculado${student.enrollments?.[0] ? `: ${student.enrollments[0].courseName}` : ''}</span>`
+                    : `<span class="enrollment-badge not-enrolled">❌ Sem matrícula</span>`;
+                
+                const planStatus = student.hasActivePlan
+                    ? `<span class="plan-badge active">✅ Plano Ativo</span>`
+                    : `<span class="plan-badge inactive">❌ Sem plano</span>`;
+                
+                return `
                 <div class="search-result-item" onclick="window.checkinKiosk.selectStudent('${student.id}', '${student.registrationNumber}')">
                     <div class="search-result-avatar">
                         ${student.avatar ? 
@@ -407,16 +568,20 @@ class CheckinKiosk {
                     <div class="search-result-info">
                         <div class="search-result-name">${student.name}</div>
                         <div class="search-result-details">
-                            <span>📧 ${student.email}</span>
-                            <span>🎓 ${student.graduationLevel || 'Iniciante'}</span>
                             <span>🆔 ${student.registrationNumber}</span>
+                            <span>📧 ${student.email}</span>
+                        </div>
+                        <div class="search-result-status">
+                            ${enrollmentStatus}
+                            ${planStatus}
                         </div>
                     </div>
                     <div class="search-result-match ${student.matchType}">
                         ${student.matchType === 'registration' ? '🆔 Matrícula' : '👤 Nome'}
                     </div>
                 </div>
-            `).join('')}
+                `;
+            }).join('')}
         `;
         
         container.style.display = 'block';
@@ -433,9 +598,11 @@ class CheckinKiosk {
      * Select student from search results
      */
     async selectStudent(studentId, registrationNumber) {
+        // Use student ID for lookup instead of registration number when it's N/A
+        const lookupValue = (registrationNumber === 'N/A') ? studentId : registrationNumber;
         this.elements.registrationInput.value = registrationNumber;
         this.hideSearchResults();
-        await this.lookupStudent();
+        await this.lookupStudent(lookupValue);
     }
 
     /**
@@ -446,15 +613,67 @@ class CheckinKiosk {
             // Load dashboard data
             await this.loadDashboardData();
             
-            // Update student info
-            this.updateStudentInfo();
+            // Check if enhanced dashboard is available
+            if (typeof EnhancedKioskDashboard !== 'undefined') {
+                // Use enhanced dashboard
+                await this.showEnhancedDashboard();
+            } else {
+                // Fallback to original dashboard
+                this.updateStudentInfo();
+                this.switchStage('dashboard');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao carregar dashboard:', error);
+            this.showError('Erro ao carregar informações do aluno');
+        }
+    }
+
+    /**
+     * Show enhanced dashboard
+     */
+    async showEnhancedDashboard() {
+        try {
+            const enhancedDashboard = new EnhancedKioskDashboard();
+            
+            // Prepare enhanced data structure
+            const enhancedData = {
+                // Student basic info
+                id: this.currentStudent.id,
+                name: this.currentStudent.name || 
+                      [this.currentStudent.firstName, this.currentStudent.lastName].filter(Boolean).join(' '),
+                registrationNumber: this.currentStudent.registrationNumber,
+                graduationLevel: this.currentStudent.graduationLevel || 'Iniciante',
+                avatar: this.currentStudent.avatar,
+                
+                // Dashboard data
+                dashboard: this.currentStudent.dashboard,
+                
+                // Available classes for check-in
+                availableClasses: this.availableClasses || [],
+                
+                // API client for dynamic operations
+                apiClient: this.apiClient
+            };
+            
+            // Get dashboard container
+            const dashboardContainer = document.querySelector('.kiosk-stage[data-stage="dashboard"] .dashboard-content');
+            if (dashboardContainer) {
+                // Render enhanced dashboard
+                dashboardContainer.innerHTML = enhancedDashboard.renderEnhancedDashboard(enhancedData);
+                
+                // Initialize enhanced dashboard interactions
+                enhancedDashboard.initializeInteractions();
+            }
             
             // Switch to dashboard stage
             this.switchStage('dashboard');
             
         } catch (error) {
-            console.error('Erro ao carregar dashboard:', error);
-            this.showError('Erro ao carregar informações do aluno');
+            console.error('Erro ao renderizar dashboard avançado:', error);
+            // Fallback to original dashboard
+            this.updateStudentInfo();
+            this.switchStage('dashboard');
         }
     }
 
@@ -486,28 +705,106 @@ class CheckinKiosk {
      * Update student info display
      */
     updateStudentInfo() {
-        const { user, registrationNumber, graduationLevel, dashboard } = this.currentStudent;
-        
+        const s = this.currentStudent || {};
+        const dashboard = s.dashboard || {};
+    const studentDash = dashboard.student || {};
+    const plan = dashboard.plan || null;
+    const currentCourse = dashboard.currentCourse || null;
+    const currentTurma = dashboard.currentTurma || null;
+    const payments = dashboard.payments || null;
+
+        // Compute display fields with safe fallbacks
+        const displayName = s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || studentDash.name || 'Aluno';
+        const registrationNumber = s.registrationNumber ?? studentDash.registrationNumber ?? 'N/A';
+        const graduationLevel = s.graduationLevel || studentDash.graduationLevel || 'Iniciante';
+        const avatar = s.avatar || studentDash.avatar || null;
+        const stats = dashboard.stats || { attendanceRate: 0, totalClassesThisMonth: 0, attendanceThisMonth: 0 };
+
         // Basic info
-        this.elements.studentName.textContent = `${user.firstName} ${user.lastName}`;
+        this.elements.studentName.textContent = displayName;
         this.elements.studentRegistration.textContent = `Matrícula: ${registrationNumber}`;
-        this.elements.studentLevel.textContent = `Faixa: ${graduationLevel || 'Iniciante'}`;
-        
+        this.elements.studentLevel.textContent = `Faixa: ${graduationLevel}`;
+
         // Avatar
-        if (user.avatar) {
-            this.elements.studentAvatar.src = user.avatar;
+        if (avatar) {
+            this.elements.studentAvatar.src = avatar;
         }
-        
+
         // Stats
-        this.elements.attendanceRate.textContent = `${dashboard.stats.attendanceRate}%`;
-        this.elements.classesMonth.textContent = dashboard.stats.attendanceThisMonth;
-        this.elements.graduationLevel.textContent = graduationLevel || 'Iniciante';
+        this.elements.attendanceRate.textContent = `${stats.attendanceRate ?? 0}%`;
+        this.elements.classesMonth.textContent = stats.attendanceThisMonth ?? 0;
+        this.elements.graduationLevel.textContent = graduationLevel;
+
+        // Plan and course info
+        if (this.elements.studentPlan) {
+            const planStatus = plan?.isActive ? '✅ Ativo' : '❌ Inativo';
+            const planName = plan?.name || 'Sem plano';
+            this.elements.studentPlan.textContent = `Plano: ${planName} ${planStatus}`;
+            
+            // Adicionar classe CSS baseada no status
+            if (plan?.isActive) {
+                this.elements.studentPlan.classList.add('plan-active');
+                this.elements.studentPlan.classList.remove('plan-inactive');
+            } else {
+                this.elements.studentPlan.classList.add('plan-inactive');
+                this.elements.studentPlan.classList.remove('plan-active');
+            }
+        }
+        if (this.elements.studentPlanValidity) {
+            if (!plan) {
+                this.elements.studentPlanValidity.textContent = `Validade: Sem plano ativo`;
+                this.elements.studentPlanValidity.classList.add('plan-warning');
+            } else {
+                const start = plan.startDate ? new Date(plan.startDate).toLocaleDateString('pt-BR') : '-';
+                const end = plan.endDate ? new Date(plan.endDate).toLocaleDateString('pt-BR') : 'Indeterminado';
+                const daysLeft = plan.endDate ? Math.ceil((new Date(plan.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+                
+                let validityText = `Validade: ${start} até ${end}`;
+                if (daysLeft !== null && daysLeft <= 7 && daysLeft > 0) {
+                    validityText += ` ⚠️ (${daysLeft} dias restantes)`;
+                    this.elements.studentPlanValidity.classList.add('plan-expiring');
+                } else if (daysLeft !== null && daysLeft <= 0) {
+                    validityText = `❌ Plano expirado em ${end}`;
+                    this.elements.studentPlanValidity.classList.add('plan-expired');
+                }
+                
+                this.elements.studentPlanValidity.textContent = validityText;
+            }
+        }
+                if (this.elements.studentCourse) {
+                        const fallbackCourse = (dashboard.enrollments && dashboard.enrollments.length > 0)
+                            ? dashboard.enrollments[0].course
+                            : null;
+                        const courseName = currentCourse?.name || fallbackCourse?.name || null;
+                        
+                        if (courseName) {
+                            this.elements.studentCourse.textContent = `Curso: ${courseName}`;
+                            this.elements.studentCourse.classList.remove('no-course');
+                        } else {
+                            this.elements.studentCourse.textContent = `Curso: Nenhum curso matriculado`;
+                            this.elements.studentCourse.classList.add('no-course');
+                            
+                            // Mostrar dica útil
+                            if (plan?.features?.courseIds && plan.features.courseIds.length > 0) {
+                                this.showEnrollmentHint(plan.features.courseIds);
+                            }
+                        }
+                }
+                if (this.elements.studentTurma) {
+                        this.elements.studentTurma.textContent = `Turma: ${currentTurma?.name || 'Não matriculado em turma'}`;
+                }
         
         // Available classes
         this.renderAvailableClasses();
         
         // Recent activity
         this.renderRecentActivity();
+
+    // Upcoming classes
+    this.renderUpcomingClasses();
+
+    // Payments summary
+    this.renderPaymentsSummary(payments);
     }
 
     /**
@@ -529,13 +826,31 @@ class CheckinKiosk {
 
         container.innerHTML = this.availableClasses.map(classInfo => {
             const statusText = {
-                'AVAILABLE': 'Disponível',
-                'CHECKED_IN': 'Check-in Feito',
-                'NOT_YET': 'Ainda não disponível',
-                'EXPIRED': 'Expirado'
+                'AVAILABLE': '✅ Check-in Liberado',
+                'CHECKED_IN': '✓ Check-in Feito',
+                'NOT_YET': '⏰ Aguardando Liberação',
+                'EXPIRED': '⌛ Período Encerrado'
             };
 
             const statusClass = classInfo.status.toLowerCase();
+            
+            // Calculate time remaining until check-in opens (for NOT_YET status)
+            let timeInfo = '';
+            if (classInfo.status === 'NOT_YET') {
+                const startTime = new Date(classInfo.startTime);
+                const checkInStart = new Date(startTime.getTime() - 60 * 60 * 1000); // 1 hora antes
+                const now = new Date();
+                const diffMs = checkInStart - now;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const remainingMins = diffMins % 60;
+                
+                if (diffHours > 0) {
+                    timeInfo = `<div class="time-remaining">⏱️ Check-in abre em ${diffHours}h ${remainingMins}min</div>`;
+                } else {
+                    timeInfo = `<div class="time-remaining">⏱️ Check-in abre em ${diffMins} minutos</div>`;
+                }
+            }
             
             return `
                 <div class="class-card ${statusClass}">
@@ -543,18 +858,21 @@ class CheckinKiosk {
                         ${statusText[classInfo.status]}
                     </div>
                     <div class="class-name">${classInfo.name}</div>
+                    ${timeInfo}
                     <div class="class-meta">
                         <span><i class="fas fa-clock"></i> ${this.formatTime(classInfo.startTime)} - ${this.formatTime(classInfo.endTime)}</span>
                         <span><i class="fas fa-user"></i> ${classInfo.instructor?.name || 'Instrutor não definido'}</span>
                         <span><i class="fas fa-users"></i> ${classInfo.enrolled}/${classInfo.capacity} alunos</span>
                     </div>
                     ${classInfo.canCheckIn ? `
-                        <button class="checkin-btn" onclick="window.checkinKiosk.requestCheckin('${classInfo.id}')">
-                            <i class="fas fa-check"></i> Fazer Check-in
+                        <button class="checkin-btn available-pulse" onclick="window.checkinKiosk.requestCheckin('${classInfo.id}')">
+                            <i class="fas fa-check-circle"></i> FAZER CHECK-IN AGORA
                         </button>
                     ` : `
                         <button class="checkin-btn" disabled>
-                            ${classInfo.hasCheckedIn ? 'Check-in Realizado' : 'Não Disponível'}
+                            ${classInfo.hasCheckedIn ? '✓ Check-in Realizado' : 
+                              classInfo.status === 'NOT_YET' ? '🔒 Aguardando' : 
+                              '⌛ Indisponível'}
                         </button>
                     `}
                 </div>
@@ -589,6 +907,60 @@ class CheckinKiosk {
                 <div class="activity-status">${attendance.status}</div>
             </div>
         `).join('');
+    }
+
+    /**
+     * Render upcoming classes from dashboard
+     */
+    renderUpcomingClasses() {
+        const container = this.elements.upcomingClasses;
+        const upcoming = this.currentStudent.dashboard?.upcomingClasses || [];
+
+        if (!container) return;
+
+        if (!upcoming || upcoming.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar"></i>
+                    <h3>Nenhuma aula futura</h3>
+                    <p>Próximas aulas aparecerão aqui</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = upcoming.map(cls => `
+            <div class="class-card not_yet">
+                <div class="class-status not_yet">Agendada</div>
+                <div class="class-name">${cls.name}</div>
+                <div class="class-meta">
+                    <span><i class="fas fa-calendar-day"></i> ${this.formatDate(cls.date)}</span>
+                    <span><i class="fas fa-clock"></i> ${this.formatTime(cls.startTime)}</span>
+                    <span><i class="fas fa-user"></i> ${cls.instructor || 'Instrutor não definido'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Render payments summary
+     */
+    renderPaymentsSummary(payments) {
+        if (!payments) return;
+        const fmtBRL = (v) => (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        if (this.elements.paymentsOverdueCount) {
+            this.elements.paymentsOverdueCount.textContent = payments.overdueCount ?? 0;
+        }
+        if (this.elements.paymentsOverdueAmount) {
+            this.elements.paymentsOverdueAmount.textContent = fmtBRL(payments.overdueAmount);
+        }
+        if (this.elements.paymentsLast) {
+            const lp = payments.lastPayment;
+            this.elements.paymentsLast.textContent = lp ? `${fmtBRL(lp.amount)} em ${this.formatDate(lp.paidDate)}` : '—';
+        }
+        if (this.elements.paymentsNextDue) {
+            this.elements.paymentsNextDue.textContent = payments.nextDueDate ? this.formatDate(payments.nextDueDate) : '—';
+        }
     }
 
     /**
@@ -711,6 +1083,27 @@ class CheckinKiosk {
         } else if (type === 'success') {
             this.elements.successModal.style.display = 'flex';
         }
+    }
+
+    /**
+     * Show enrollment hint when student has no courses
+     */
+    showEnrollmentHint(availableCourseIds) {
+        const container = this.elements.aiRecommendations;
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="recommendation-card enrollment-hint">
+                <div class="recommendation-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="recommendation-content">
+                    <h4>📚 Matricule-se em um curso!</h4>
+                    <p>Seu plano inclui acesso a ${availableCourseIds.length} curso(s).</p>
+                    <p><strong>Procure a recepção</strong> para se matricular e começar a treinar!</p>
+                </div>
+            </div>
+        `;
     }
 
     /**

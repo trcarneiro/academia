@@ -96,7 +96,12 @@ export const courseController = {
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
       const organizationId = await getOrganizationId(request);
-      const courses = await courseService.getAllCourses(organizationId);
+      
+      // Get query parameters
+      const query = request.query as { active?: string };
+      const activeFilter = query.active === 'true' ? true : query.active === 'false' ? false : undefined;
+      
+      const courses = await courseService.getAllCourses(organizationId, activeFilter);
       reply.send({ success: true, data: courses });
     } catch (error) {
       console.error('❌ list courses error', error);

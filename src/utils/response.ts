@@ -8,6 +8,8 @@ export class ResponseHelper {
     statusCode: number = 200
   ): FastifyReply {
     console.log('🔧 ResponseHelper.success - Input data:', data);
+    console.log('🔧 ResponseHelper.success - Input data type:', typeof data);
+    console.log('🔧 ResponseHelper.success - Input data keys:', data ? Object.keys(data) : 'no data');
     
     const response = {
       success: true,
@@ -16,8 +18,9 @@ export class ResponseHelper {
       timestamp: new Date().toISOString(),
     } as any;
 
-    console.log('📤 ResponseHelper.success - Final response:', response);
-    console.log('📤 ResponseHelper.success - Final response JSON:', JSON.stringify(response, null, 2));
+    console.log('📤 ResponseHelper.success - Response object:', response);
+    console.log('📤 ResponseHelper.success - Response.data:', response.data);
+    console.log('📤 ResponseHelper.success - Response JSON:', JSON.stringify(response, null, 2));
 
     return reply.status(statusCode).send(response);
   }

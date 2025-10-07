@@ -12,16 +12,12 @@ export class AuthController {
     try {
       const userData = await AuthService.register(request.body);
       
-      // Generate JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // Return Supabase session token instead of local JWT
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          token: userData.token, // Supabase session.access_token from AuthService
         },
         'Usuário registrado com sucesso',
         201
@@ -44,16 +40,12 @@ export class AuthController {
     try {
       const userData = await AuthService.login(request.body);
       
-      // Generate JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // Return Supabase session token
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          token: userData.token, // Supabase session.access_token
         },
         'Login realizado com sucesso'
       );
@@ -141,18 +133,15 @@ export class AuthController {
 
       const userData = await AuthService.findUserById(request.user.id);
       
-      // Generate new JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // For Supabase, refresh is handled client-side; here return user data for session update
+      // Frontend calls Supabase refreshSession
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          // No new token, frontend handles refresh
         },
-        'Token renovado com sucesso'
+        'Sessão renovada com sucesso'
       );
     } catch (error) {
       logger.error({ error, userId: request.user?.id }, 'Token refresh failed');

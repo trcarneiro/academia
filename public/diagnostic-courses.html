@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnóstico de Cursos - API Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        h2 { color: #764ba2; margin-top: 0; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { opacity: 0.9; }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; font-weight: bold; }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico de Cursos - API Test</h1>
+    
+    <div class="test-section">
+        <h2>Teste 1: API Direta (SEM Header)</h2>
+        <button onclick="test1()">🚀 Executar Teste 1</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Teste 2: API com Header (x-organization-id minúsculo)</h2>
+        <button onclick="test2()">🚀 Executar Teste 2</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Teste 3: API com Header (X-Organization-Id maiúsculo)</h2>
+        <button onclick="test3()">🚀 Executar Teste 3</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Teste 4: Via API Client (como o frontend usa)</h2>
+        <button onclick="test4()">🚀 Executar Teste 4</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Teste 5: Verificar Cache do Browser</h2>
+        <button onclick="test5()">🚀 Executar Teste 5</button>
+        <button onclick="clearCache()">🗑️ Limpar Cache</button>
+        <div id="result5" class="result"></div>
+    </div>
+
+    <script>
+        const ORG_ID = 'a55ad715-2eb0-493c-996c-bb0f60bacec9';
+        const API_BASE = 'http://localhost:3000';
+
+        function displayResult(elementId, success, data) {
+            const el = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (success) {
+                const courses = data.data || [];
+                el.innerHTML = `
+                    <p class="success">✅ SUCESSO (${timestamp})</p>
+                    <p><strong>Cursos encontrados:</strong> ${courses.length}</p>
+                    ${courses.length > 0 ? `
+                        <p><strong>Primeiro curso:</strong></p>
+                        <ul>
+                            <li>ID: ${courses[0].id}</li>
+                            <li>Nome: ${courses[0].name}</li>
+                            <li>Aulas: ${courses[0].totalLessons}</li>
+                            <li>Nível: ${courses[0].level}</li>
+                        </ul>
+                    ` : '<p class="error">❌ Array vazio - curso não encontrado!</p>'}
+                    <details>
+                        <summary>Ver resposta completa</summary>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                `;
+            } else {
+                el.innerHTML = `
+                    <p class="error">❌ ERRO (${timestamp})</p>
+                    <p>${data.message || data}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function test1() {
+            try {
+                console.log('🧪 Teste 1: SEM header');
+                const response = await fetch(`${API_BASE}/api/courses`);
+                const data = await response.json();
+                console.log('📊 Resposta:', data);
+                displayResult('result1', data.success, data);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                displayResult('result1', false, error);
+            }
+        }
+
+        async function test2() {
+            try {
+                console.log('🧪 Teste 2: Header minúsculo');
+                const response = await fetch(`${API_BASE}/api/courses`, {
+                    headers: {
+                        'x-organization-id': ORG_ID
+                    }
+                });
+                const data = await response.json();
+                console.log('📊 Resposta:', data);
+                displayResult('result2', data.success, data);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                displayResult('result2', false, error);
+            }
+        }
+
+        async function test3() {
+            try {
+                console.log('🧪 Teste 3: Header maiúsculo');
+                const response = await fetch(`${API_BASE}/api/courses`, {
+                    headers: {
+                        'X-Organization-Id': ORG_ID
+                    }
+                });
+                const data = await response.json();
+                console.log('📊 Resposta:', data);
+                displayResult('result3', data.success, data);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                displayResult('result3', false, error);
+            }
+        }
+
+        async function test4() {
+            try {
+                console.log('🧪 Teste 4: Via API Client');
+                
+                // Esperar API client carregar
+                if (typeof window.createModuleAPI === 'undefined') {
+                    displayResult('result4', false, {
+                        message: 'API Client não carregado. Abra o sistema principal primeiro.'
+                    });
+                    return;
+                }
+
+                const api = window.createModuleAPI('DiagnosticTest');
+                const data = await api.request('/api/courses', {
+                    method: 'GET'
+                });
+                
+                console.log('📊 Resposta:', data);
+                displayResult('result4', data.success, data);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                displayResult('result4', false, error);
+            }
+        }
+
+        async function test5() {
+            const el = document.getElementById('result5');
+            el.innerHTML = `
+                <p class="info">🔍 Informações de Cache:</p>
+                <ul>
+                    <li><strong>Cache-Control:</strong> Verifique o Network tab</li>
+                    <li><strong>Service Worker:</strong> ${navigator.serviceWorker ? 'Ativo' : 'Não ativo'}</li>
+                    <li><strong>LocalStorage:</strong> ${localStorage.length} itens</li>
+                    <li><strong>SessionStorage:</strong> ${sessionStorage.length} itens</li>
+                </ul>
+                <p>💡 <strong>Dica:</strong> Pressione Ctrl+Shift+R para hard reload</p>
+            `;
+        }
+
+        async function clearCache() {
+            try {
+                // Limpar LocalStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Tentar limpar Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                }
+                
+                // Limpar cache da API
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                }
+                
+                alert('✅ Cache limpo! Pressione Ctrl+Shift+R para recarregar completamente.');
+            } catch (error) {
+                alert('❌ Erro ao limpar cache: ' + error.message);
+            }
+        }
+
+        // Auto-executar Teste 1 ao carregar
+        window.addEventListener('load', () => {
+            console.log('🚀 Página carregada. Executando diagnóstico automático...');
+            setTimeout(test1, 500);
+        });
+    </script>
+</body>
+</html>

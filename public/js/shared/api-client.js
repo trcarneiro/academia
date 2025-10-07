@@ -162,8 +162,17 @@ class ApiClient {
             try {
                 const ls = (typeof window !== 'undefined') ? window.localStorage : null;
                 const ss = (typeof window !== 'undefined') ? window.sessionStorage : null;
-                const orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
+                let orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
                 const orgSlug = (ls?.getItem('activeOrganizationSlug')) || (ss?.getItem('activeOrganizationSlug')) || (typeof window !== 'undefined' ? window.currentOrganizationSlug : null);
+                
+                // 🔧 TEMPORARY FIX: Hardcoded fallback para única org na base
+                // TODO: Remover quando integração com Supabase login estiver completa
+                // Ver task em AGENTS.md > "Integrar organizationId do Supabase no API Client"
+                if (!orgId && !orgSlug) {
+                    orgId = 'a55ad715-2eb0-493c-996c-bb0f60bacec9'; // Academia Demo
+                    console.warn('⚠️ Using hardcoded organization ID (temporary fix)');
+                }
+                
                 if (orgId) orgHeaders['X-Organization-Id'] = orgId;
                 else if (orgSlug) orgHeaders['X-Organization-Slug'] = orgSlug;
             } catch (_) {}
@@ -538,6 +547,23 @@ if (typeof window !== 'undefined') {
         }
         
         return moduleAPI;
+    };
+
+    // Wait for API client to be ready
+    window.waitForAPIClient = async function() {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds (50 * 100ms)
+        
+        while (!window.createModuleAPI && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.createModuleAPI) {
+            throw new Error('API client not available after waiting 5 seconds');
+        }
+        
+        return true;
     };
 
     console.log('🌐 API Client carregado - Guidelines.MD compliance');

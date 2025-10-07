@@ -38,8 +38,8 @@
             <button class="tab-btn" data-tab="schedule" id="tabSchedule">
                 📅 Cronograma
             </button>
-            <button class="tab-btn" data-tab="rag-generation" id="tabRAG">
-                🧠 Geração RAG
+            <button class="tab-btn" data-tab="ai-generation" id="tabAI">
+                � Geração IA
             </button>
         </div>
 
@@ -76,24 +76,92 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="courseTarget">
-                            Público-alvo <span class="required">*</span>
+                        <label class="form-label" for="courseCategory">
+                            Categoria (Público-alvo) <span class="required">*</span>
                         </label>
-                        <select class="form-select" id="courseTarget" required>
-                            <option value="">Selecione o público</option>
-                            <option value="ADULTS">Adultos</option>
-                            <option value="TEENS">Adolescentes</option>
+                        <select class="form-select" id="courseCategory" required>
+                            <option value="">Selecione a categoria</option>
+                            <option value="ADULT">Adultos</option>
+                            <option value="TEEN">Adolescentes</option>
                             <option value="KIDS">Crianças</option>
-                            <option value="SENIORS">Idosos</option>
-                            <option value="ALL">Todos</option>
+                            <option value="SENIOR">Idosos</option>
+                            <option value="WOMEN">Mulheres</option>
+                            <option value="MEN">Homens</option>
+                            <option value="MIXED">Misto (Todos)</option>
+                            <option value="LAW_ENFORCEMENT">Forças de Segurança</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label" for="courseDuration">
-                            Duração (semanas)
+                            Duração (semanas) <span class="required">*</span>
                         </label>
-                        <input type="number" class="form-input" id="courseDuration" min="1" max="52" value="16">
+                        <input type="number" class="form-input" id="courseDuration" min="1" max="52" value="16" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseClassesPerWeek">
+                            Aulas por Semana <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-input" id="courseClassesPerWeek" min="1" max="7" value="2" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseTotalClasses">
+                            Total de Aulas <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-input" id="courseTotalClasses" min="1" value="32" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseMinAge">
+                            Idade Mínima <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-input" id="courseMinAge" min="4" max="99" value="16" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseMaxAge">
+                            Idade Máxima
+                        </label>
+                        <input type="number" class="form-input" id="courseMaxAge" min="4" max="99" placeholder="Deixe vazio para sem limite">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseOrderIndex">
+                            Ordem de Exibição
+                        </label>
+                        <input type="number" class="form-input" id="courseOrderIndex" min="1" value="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseSequence">
+                            Sequência na Progressão
+                        </label>
+                        <input type="number" class="form-input" id="courseSequence" min="1" value="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="courseImageUrl">
+                            URL da Imagem
+                        </label>
+                        <input type="url" class="form-input" id="courseImageUrl" placeholder="https://exemplo.com/imagem.jpg">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Opções
+                        </label>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="courseIsBaseCourse" style="cursor: pointer;">
+                                <span>Curso Base (primeiro da progressão)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="courseIsActive" checked style="cursor: pointer;">
+                                <span>Curso Ativo</span>
+                            </label>
+                        </div>
                     </div>
                     
                     <div class="form-group full-width">
@@ -102,14 +170,6 @@
                         </label>
                         <textarea class="form-textarea" id="courseDescription" rows="4" 
                                   placeholder="Descrição detalhada do curso, metodologia e objetivos gerais..."></textarea>
-                    </div>
-                    
-                    <div class="form-group full-width">
-                        <label class="form-label" for="courseMethodology">
-                            Metodologia de Ensino
-                        </label>
-                        <textarea class="form-textarea" id="courseMethodology" rows="3" 
-                                  placeholder="Descreva a metodologia de ensino utilizada no curso..."></textarea>
                     </div>
                 </div>
             </section>
@@ -218,24 +278,54 @@
             <!-- Tab Content: Schedule -->
             <div class="tab-content" id="tabContentSchedule" style="display: none;">
                 <section class="form-section">
-                    <h2 class="section-title">📅 Cronograma de Aulas</h2>
+                    <h2 class="section-title">📅 Cronograma & Técnicas</h2>
                     <div class="section-description">
-                        Configure as aulas com técnicas/atividades específicas
+                        Gerencie as aulas do curso e as técnicas associadas
                     </div>
                     
                     <div class="schedule-section">
-                        <div class="schedule-header">
-                            <div class="schedule-controls">
-                                <div class="control-group">
-                                    <label for="totalWeeks">Total de Semanas:</label>
-                                    <input type="number" id="totalWeeks" min="1" max="52" value="16" class="form-input">
+                        <!-- Técnicas do Curso -->
+                        <div class="techniques-section">
+                            <div class="techniques-header">
+                                <h3>🥋 Técnicas do Curso</h3>
+                                <button type="button" class="btn btn-primary" id="addTechniqueBtn">
+                                    + Adicionar Técnica
+                                </button>
+                            </div>
+                            
+                            <div class="techniques-stats">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="totalTechniquesCount">0</span>
+                                    <span class="stat-label">Técnicas no Curso</span>
                                 </div>
-                                <div class="control-group">
-                                    <label for="lessonsPerWeek">Aulas por Semana:</label>
-                                    <input type="number" id="lessonsPerWeek" min="1" max="7" value="2" class="form-input">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="assignedInLessonsCount">0</span>
+                                    <span class="stat-label">Atribuídas em Aulas</span>
                                 </div>
-                                <div class="control-group">
-                                    <button type="button" class="btn btn-primary" id="generateScheduleBtn">
+                            </div>
+                            
+                            <div class="techniques-list" id="techniquesList">
+                                <div class="techniques-empty-state">
+                                    <p>🥋 Nenhuma técnica associada</p>
+                                    <p class="empty-hint">Clique em "Adicionar Técnica" para começar</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cronograma de Aulas -->
+                        <div class="lessons-section">
+                            <div class="schedule-header">
+                                <h3>📅 Aulas do Curso</h3>
+                                <div class="schedule-controls">
+                                    <div class="control-group">
+                                        <label for="totalWeeks">Semanas:</label>
+                                        <input type="number" id="totalWeeks" min="1" max="52" value="16" class="form-input small">
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="lessonsPerWeek">Aulas/Semana:</label>
+                                        <input type="number" id="lessonsPerWeek" min="1" max="7" value="2" class="form-input small">
+                                    </div>
+                                    <button type="button" class="btn btn-secondary" id="generateScheduleBtn">
                                         🔄 Gerar Cronograma
                                     </button>
                                 </div>
@@ -254,30 +344,30 @@
                             
                             <div class="schedule-tools">
                                 <button type="button" class="btn btn-secondary" id="importScheduleBtn">
-                                    📁 Importar Cronograma
+                                    📁 Importar
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="exportScheduleBtn">
-                                    📤 Exportar Cronograma
+                                    📤 Exportar
                                 </button>
                             </div>
-                        </div>
-                        
-                        <div class="schedule-grid" id="scheduleGrid">
-                            <div class="schedule-empty-state">
-                                <p>📋 Nenhum cronograma carregado</p>
-                                <p>Importe um curso com cronograma para ver as aulas</p>
+                            
+                            <div class="schedule-grid" id="scheduleGrid">
+                                <div class="schedule-empty-state">
+                                    <p>📋 Nenhum cronograma carregado</p>
+                                    <p class="empty-hint">Importe um curso ou gere um cronograma</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <!-- Tab Content: RAG Generation -->
-            <div class="tab-content" id="tabContentRAG" style="display: none;">
+            <!-- Tab Content: AI Generation -->
+            <div class="tab-content" id="tabContentAI" style="display: none;">
                 <section class="form-section">
-                    <h2 class="section-title">🧠 Geração Inteligente com RAG</h2>
+                    <h2 class="section-title">� Geração Inteligente com IA</h2>
                     <div class="section-description">
-                        Use IA para gerar planos de aula baseados no cronograma e técnicas
+                        Use Inteligência Artificial para gerar planos de aula baseados no cronograma e técnicas
                     </div>
                     
                     <div class="rag-section">

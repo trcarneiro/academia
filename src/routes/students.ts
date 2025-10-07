@@ -5,60 +5,41 @@ import FinancialService from '@/services/financialService';
 
 export default async function studentsRoutes(fastify: FastifyInstance) {
   // Add request logging for debugging
-  fastify.addHook('onRequest', async (request, reply) => {
+  fastify.addHook('onRequest', async (request, _reply) => {
     logger.info(`Students route - ${request.method} ${request.url}`);
   });
   
   // Get all students
-  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       const students = await prisma.student.findMany({
         include: {
-          // Ensure user info is loaded for listing screen
-          user: true,
-          subscriptions: {
-            where: { status: 'ACTIVE' },
-            include: {
-              plan: {
-                select: {
-                  id: true,
-                  name: true,
-                  price: true,
-                  billingType: true
-                }
-              }
-            }
-          },
-          attendances: {
-            take: 10,
-            orderBy: { createdAt: 'desc' }
-          },
+          user: true, // Essential for displaying name/email
           _count: {
             select: {
               attendances: true,
-              subscriptions: true
-            }
-          }
+              subscriptions: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: 'desc'
-        }
+          createdAt: 'desc',
+        },
       });
 
+      // Simplified data transformation
       const studentsWithStats = students.map(student => {
-        const activeSubscription = student.subscriptions[0];
         const totalAttendances = student._count.attendances;
-        // Adjust: no 'present' boolean in Attendance; use status === 'PRESENT' (or similar)
-        const presentAttendances = student.attendances?.filter(a => (a as any).status === 'PRESENT').length || 0;
-        const attendanceRate = totalAttendances > 0 ? Math.round((presentAttendances / totalAttendances) * 100) : 0;
-
+        const totalSubscriptions = student._count.subscriptions;
+        
         return {
           ...student,
-          activeSubscription,
+          totalAttendances,
+          totalSubscriptions,
           stats: {
             totalAttendances,
-            attendanceRate,
-            totalSubscriptions: student._count.subscriptions
+            attendanceRate: 0, // Will be calculated with proper attendance data when needed
+            totalSubscriptions
           }
         };
       });
@@ -197,12 +178,10 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       logger.info('Mapped category:', category);
 
       // Check if user already exists with this email
-      const existingUser = await prisma.user.findUnique({
+      const existingUser = await prisma.user.findFirst({
         where: {
-          organizationId_email: {
-            organizationId: orgId!,
-            email: email
-          }
+          organizationId: orgId!,
+          email: email
         }
       });
 
@@ -282,6 +261,81 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       });
       
       logger.info('Student created successfully:', result);
+
+      // 🆕 AUTOMATIC ENROLLMENT IN BASE COURSE FROM PLAN
+      if (body.enrollment && body.enrollment.packageId) {
+        try {
+          logger.info('🎯 Processing automatic enrollment for package:', body.enrollment.packageId);
+          
+          // Get plan with courses
+          const plan = await prisma.billingPlan.findUnique({
+            where: { id: body.enrollment.packageId }
+          });
+          
+          if (!plan) {
+            logger.warn('⚠️ Plan not found, skipping auto-enrollment');
+          } else {
+            logger.info('📦 Found plan:', plan.name);
+            
+            // Get course IDs from plan features
+            const planFeatures = plan.features as any;
+            const courseIds = planFeatures?.courseIds || [];
+            
+            logger.info('📚 Plan courses:', courseIds);
+            
+            if (courseIds.length === 0) {
+              logger.warn('⚠️ No courses in plan, skipping auto-enrollment');
+            } else {
+              // Find base course among plan courses
+              // Note: Filtering by isBaseCourse in code until Prisma Client regenerates
+              const planCourses = await prisma.course.findMany({
+                where: {
+                  id: { in: courseIds },
+                  organizationId: orgId!,
+                  isActive: true
+                },
+                include: {
+                  martialArt: true
+                }
+              });
+              
+              // Filter for base course
+              const baseCourse = planCourses.find((c: any) => c.isBaseCourse === true);
+              
+              if (!baseCourse) {
+                logger.warn('⚠️ No base course found in plan courses, skipping auto-enrollment');
+              } else {
+                logger.info('✅ Found base course:', baseCourse.name, 'from', baseCourse.martialArt?.name);
+                
+                // Auto-enroll student in base course
+                const expectedEndDate = new Date();
+                expectedEndDate.setMonth(expectedEndDate.getMonth() + 12); // 12 months duration
+                
+                const enrollment = await prisma.courseEnrollment.create({
+                  data: {
+                    studentId: result.id,
+                    courseId: baseCourse.id,
+                    enrolledAt: body.enrollment.enrollmentDate ? new Date(body.enrollment.enrollmentDate) : new Date(),
+                    expectedEndDate,
+                    status: 'ACTIVE',
+                    category: category as any,
+                    gender: body.gender || body.user?.gender || 'MALE'
+                  }
+                });
+                
+                logger.info('🎓 Student auto-enrolled in base course:', {
+                  course: baseCourse.name,
+                  martialArt: baseCourse.martialArt?.name,
+                  enrollmentId: enrollment.id
+                });
+              }
+            }
+          }
+        } catch (enrollmentError) {
+          logger.error('Error during auto-enrollment (non-fatal):', enrollmentError);
+          // Don't fail the student creation if enrollment fails
+        }
+      }
 
       return reply.code(201).send({
         success: true,
@@ -410,12 +464,10 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params;
 
-      // Note: This assumes you have an enrollment/course system
-      // You may need to adjust based on your actual schema
-      const enrollments = await (prisma as any).enrollment?.findMany?.({
+      // Get student course enrollments
+      const enrollments = await prisma.courseEnrollment.findMany({
         where: { 
-          studentId: id,
-          status: 'ACTIVE'
+          studentId: id
         },
         include: {
           course: {
@@ -430,7 +482,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           }
         },
         orderBy: { enrolledAt: 'desc' }
-      }) || [];
+      });
 
       return reply.send({
         success: true,
@@ -441,6 +493,209 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch student enrollments'
+      });
+    }
+  });
+
+  // Create student enrollment
+  fastify.post('/:id/enrollments', async (request: FastifyRequest<{ 
+    Params: { id: string },
+    Body: { courseId: string, status?: string, enrolledAt?: string, currentLevel?: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id: studentId } = request.params;
+      const { courseId, status = 'ACTIVE', enrolledAt } = request.body;
+
+      // Verify student exists
+      const student = await prisma.student.findUnique({
+        where: { id: studentId }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      // Verify course exists
+      const course = await prisma.course.findUnique({
+        where: { id: courseId }
+      });
+
+      if (!course) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Course not found'
+        });
+      }
+
+      // Check if student is already enrolled
+      const existingEnrollment = await prisma.courseEnrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId,
+            courseId
+          }
+        }
+      });
+
+      if (existingEnrollment) {
+        return reply.code(409).send({
+          success: false,
+          message: 'Student is already enrolled in this course'
+        });
+      }
+
+      // Calculate expected end date based on course duration
+      const enrollmentDate = enrolledAt ? new Date(enrolledAt) : new Date();
+      const expectedEndDate = new Date(enrollmentDate);
+      expectedEndDate.setDate(expectedEndDate.getDate() + ((course.duration || 12) * 7)); // weeks to days
+
+      // Create enrollment
+      const enrollment = await prisma.courseEnrollment.create({
+        data: {
+          studentId,
+          courseId,
+          enrolledAt: enrollmentDate,
+          expectedEndDate,
+          status: status as any,
+          category: student.category || 'ADULT',
+          gender: 'OTHER', // Default gender, can be updated based on student profile
+          currentLevel: 1,
+          lessonsCompleted: 0,
+          attendanceRate: 0,
+          currentXP: 0
+        },
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              category: true,
+              level: true,
+              duration: true
+            }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: enrollment
+      });
+
+    } catch (error) {
+      logger.error('Error creating student enrollment:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to create student enrollment'
+      });
+    }
+  });
+
+  // Delete student enrollment
+  fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{ 
+    Params: { id: string, enrollmentId: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id: studentId, enrollmentId } = request.params;
+
+      // Verify enrollment exists and belongs to the student
+      const enrollment = await prisma.courseEnrollment.findFirst({
+        where: {
+          id: enrollmentId,
+          studentId: studentId
+        }
+      });
+
+      if (!enrollment) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Enrollment not found'
+        });
+      }
+
+      // Delete the enrollment
+      await prisma.courseEnrollment.delete({
+        where: { id: enrollmentId }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Enrollment deleted successfully'
+      });
+
+    } catch (error) {
+      logger.error('Error deleting student enrollment:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to delete student enrollment'
+      });
+    }
+  });
+
+  // Get available courses for student (not enrolled yet)
+  fastify.get('/:id/available-courses', async (request: FastifyRequest<{ 
+    Params: { id: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id: studentId } = request.params;
+
+      // Get student's enrolled courses
+      const enrolledCourses = await prisma.courseEnrollment.findMany({
+        where: { studentId },
+        select: { courseId: true }
+      });
+
+      const enrolledCourseIds = enrolledCourses.map(e => e.courseId);
+
+      // Get student to check their organization
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { organizationId: true }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      // Get all active courses not enrolled yet
+      const availableCourses = await prisma.course.findMany({
+        where: {
+          organizationId: student.organizationId,
+          isActive: true,
+          id: {
+            notIn: enrolledCourseIds
+          }
+        },
+        include: {
+          martialArt: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: availableCourses
+      });
+
+    } catch (error) {
+      logger.error('Error fetching available courses:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch available courses'
       });
     }
   });
@@ -646,6 +901,437 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch student course progress'
+      });
+    }
+  });
+
+  // Bulk import students
+  fastify.post('/bulk-import', async (request: FastifyRequest<{
+    Body: {
+      students: Array<{
+        nome: string;
+        email?: string;
+        telefone?: string;
+        documento?: string;
+        endereco?: string;
+        valor_mensalidade?: string;
+        empresa?: string;
+      }>;
+    }
+  }>, reply: FastifyReply) => {
+    try {
+      const { students } = request.body;
+      
+      if (!students || !Array.isArray(students)) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Invalid students data format'
+        });
+      }
+
+      logger.info(`Starting bulk import of ${students.length} students`);
+
+      const results = {
+        imported: 0,
+        skipped: 0,
+        errors: [] as string[]
+      };
+
+      for (const studentData of students) {
+        try {
+          // Validate required fields
+          if (!studentData.nome || studentData.nome.length < 2) {
+            results.skipped++;
+            results.errors.push(`Estudante ignorado: Nome inválido (${studentData.nome})`);
+            continue;
+          }
+
+          // Get default organization (first one available)
+          const defaultOrg = await prisma.organization.findFirst({
+            where: { isActive: true }
+          });
+
+          if (!defaultOrg) {
+            results.errors.push('Nenhuma organização ativa encontrada');
+            break;
+          }
+
+          // Split full name into firstName and lastName
+          const nameParts = studentData.nome.trim().split(' ');
+          const firstName = nameParts[0] || studentData.nome;
+          const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+          // Create user first (email is optional now)
+          const userData: any = {
+            organizationId: defaultOrg.id,
+            firstName: firstName,
+            lastName: lastName,
+            password: 'temp123', // Temporary password
+            role: 'STUDENT'
+          };
+
+          // Only add email if provided and valid
+          if (studentData.email && studentData.email.includes('@')) {
+            userData.email = studentData.email;
+          }
+
+          const user = await prisma.user.create({
+            data: userData
+          });
+
+          // Update user with phone and cpf if available
+          if (studentData.telefone || studentData.documento) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                phone: studentData.telefone || null,
+                cpf: studentData.documento || null
+              }
+            });
+          }
+
+          // Create student record with available fields
+          const student = await prisma.student.create({
+            data: {
+              organizationId: defaultOrg.id,
+              userId: user.id,
+              emergencyContact: studentData.telefone || null
+            }
+          });
+
+          results.imported++;
+          logger.info(`Student imported: ${studentData.nome} (ID: ${student.id})`);
+
+        } catch (studentError: any) {
+          results.skipped++;
+          const errorMsg = `Erro ao importar ${studentData.nome}: ${studentError.message}`;
+          results.errors.push(errorMsg);
+          logger.error(errorMsg, studentError);
+        }
+      }
+
+      logger.info(`Bulk import completed: ${results.imported} imported, ${results.skipped} skipped`);
+
+      return reply.send({
+        success: true,
+        data: {
+          ...results,
+          total: students.length
+        },
+        message: `Importação concluída: ${results.imported} estudantes importados, ${results.skipped} ignorados`
+      });
+
+    } catch (error) {
+      logger.error('Error in bulk import:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to import students'
+      });
+    }
+  });
+
+  // ===== NEW STUDENT TAB ENDPOINTS =====
+
+  // Get student overview data
+  fastify.get('/:id/overview', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+
+      // Get student basic info
+      const student = await prisma.student.findUnique({
+        where: { id },
+        include: { user: true }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      // Get attendance statistics
+      const attendances = await prisma.attendance.findMany({
+        where: { studentId: id },
+        include: {
+          class: {
+            select: { date: true, title: true }
+          }
+        }
+      });
+
+      const totalClasses = attendances.length;
+      const presentClasses = attendances.filter(att => att.status === 'PRESENT').length;
+      const attendanceRate = totalClasses > 0 ? Math.round((presentClasses / totalClasses) * 100) : 0;
+
+      // Get techniques learned from real data
+      const techniquesLearned = 0; // TODO: Calculate from actual technique progress
+
+      // Get course progress
+      const enrollments = await prisma.courseEnrollment.findMany({
+        where: { studentId: id },
+        include: {
+          course: { select: { name: true, duration: true } }
+        }
+      });
+
+      const activeEnrollments = enrollments.filter(e => e.status === 'ACTIVE');
+      const courseProgress = activeEnrollments.length > 0 
+        ? Math.round(activeEnrollments.reduce((acc, e) => acc + (e.attendanceRate || 0), 0) / activeEnrollments.length)
+        : 0;
+
+      // Generate goals based on actual progress
+      const nextGoals = [];
+      if (attendanceRate < 80) {
+        nextGoals.push({ icon: '📅', description: 'Melhorar frequência nas aulas' });
+      }
+      if (activeEnrollments.length === 0) {
+        nextGoals.push({ icon: '🎓', description: 'Matricular-se em um curso' });
+      }
+      if (nextGoals.length === 0) {
+        nextGoals.push({ icon: '🎯', description: 'Manter progresso atual' });
+      }
+
+      return reply.send({
+        success: true,
+        data: {
+          attendanceRate,
+          techniquesLearned,
+          courseProgress,
+          nextGoals,
+          lastUpdate: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching student overview:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student overview'
+      });
+    }
+  });
+
+  // Get student attendance data
+  fastify.get('/:id/attendance', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+
+      const attendances = await prisma.attendance.findMany({
+        where: { studentId: id },
+        include: {
+          class: {
+            select: {
+              title: true,
+              date: true,
+              course: {
+                select: { name: true }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+      });
+
+      // Calculate statistics
+      const totalClasses = attendances.length;
+      const attendedClasses = attendances.filter(att => att.status === 'PRESENT').length;
+      const missedClasses = totalClasses - attendedClasses;
+      const attendanceRate = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
+
+      // Format attendance history
+      const attendanceHistory = attendances.map(att => ({
+        date: att.class.date,
+        className: att.class.title,
+        course: att.class.course?.name || 'Curso não informado',
+        status: att.status.toLowerCase()
+      }));
+
+      return reply.send({
+        success: true,
+        data: {
+          totalClasses,
+          attendedClasses,
+          missedClasses,
+          attendanceRate,
+          attendanceHistory
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching student attendance:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student attendance'
+      });
+    }
+  });
+
+  // Get student techniques data
+  fastify.get('/:id/techniques', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+
+      // TODO: Implement real techniques tracking system
+      // For now, return empty data structure
+      
+      return reply.send({
+        success: true,
+        data: {
+          categorySummary: {},
+          totalAvailable: {},
+          techniquesByCategory: {}
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching student techniques:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student techniques'
+      });
+    }
+  });
+
+  // Get student progress data
+  fastify.get('/:id/progress', async (
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { id } = request.params;
+
+      // Get student enrollments
+      const enrollments = await prisma.courseEnrollment.findMany({
+        where: { 
+          studentId: id,
+          status: 'ACTIVE'
+        },
+        include: {
+          course: {
+            select: {
+              name: true,
+              duration: true,
+              level: true
+            }
+          }
+        }
+      });
+
+      if (enrollments.length === 0) {
+        return reply.send({
+          success: true,
+          data: {
+            currentCourse: null,
+            overallProgress: 0,
+            missingContent: [],
+            estimatedCompletion: null
+          }
+        });
+      }
+
+      // Take the first active enrollment as current course
+      const currentEnrollment = enrollments[0];
+      if (!currentEnrollment) {
+        return reply.send({
+          success: true,
+          data: {
+            currentCourse: null,
+            overallProgress: 0,
+            missingContent: [],
+            estimatedCompletion: null
+          }
+        });
+      }
+      
+      // Calculate progress based on lessons completed and attendance
+      const lessonsCompleted = currentEnrollment.lessonsCompleted || 0;
+      const totalLessons = currentEnrollment.course.duration || 12;
+      const overallProgress = Math.round((lessonsCompleted / totalLessons) * 100);
+
+      // Calculate real technique progress (TODO: implement when technique system is ready)
+      const basicTechniques = {
+        completed: 0,
+        total: 0,
+        progress: 0
+      };
+
+      const advancedTechniques = {
+        completed: 0,
+        total: 0,
+        progress: 0
+      };
+
+      // Get attendance info
+      const attendances = await prisma.attendance.findMany({
+        where: { studentId: id },
+        include: { class: true }
+      });
+
+      const attended = attendances.filter(att => att.status === 'PRESENT').length;
+      const required = Math.floor(totalLessons * 0.8); // 80% attendance required
+
+      const classAttendance = {
+        attended,
+        required,
+        progress: Math.round((attended / required) * 100)
+      };
+
+      // Generate missing content based on real progress
+      const missingContent = [];
+      
+      if (classAttendance.progress < 80) {
+        missingContent.push({
+          category: 'Frequência',
+          items: [
+            { icon: '📅', name: `${Math.max(0, required - attended)} aulas para atingir frequência mínima`, priority: 'high' }
+          ]
+        });
+      }
+
+      if (lessonsCompleted < totalLessons) {
+        const remainingLessons = totalLessons - lessonsCompleted;
+        missingContent.push({
+          category: 'Curso',
+          items: [
+            { icon: '�', name: `${remainingLessons} aulas restantes no curso`, priority: 'medium' }
+          ]
+        });
+      }
+
+      // Calculate realistic completion estimate
+      const remainingLessons = Math.max(0, totalLessons - lessonsCompleted);
+      const estimatedCompletion = remainingLessons > 0 
+        ? `${Math.ceil(remainingLessons / 2)} semanas` 
+        : 'Curso concluído';
+
+      return reply.send({
+        success: true,
+        data: {
+          currentCourse: {
+            name: currentEnrollment.course.name,
+            level: currentEnrollment.course.level
+          },
+          overallProgress,
+          basicTechniques,
+          advancedTechniques,
+          classAttendance,
+          missingContent,
+          estimatedCompletion
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching student progress:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student progress'
       });
     }
   });

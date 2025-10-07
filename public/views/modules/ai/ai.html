@@ -4,7 +4,7 @@
     <header class="module-header-premium">
         <div class="header-left">
             <div class="breadcrumb">
-                <span>Home</span> / <span>Cursos</span> / <span class="active">IA</span>
+                <span>Home</span> / <span class="active">Inteligência Artificial</span>
             </div>
             <h1 class="page-title">
                 <span class="title-icon">🤖</span>
@@ -160,19 +160,10 @@
                         <div class="form-group">
                             <label class="form-label" for="aiProvider">Provedor de IA</label>
                             <select id="aiProvider" class="form-select">
-                                <option value="claude">Claude (Anthropic)</option>
-                                <option value="openai">GPT-4 (OpenAI)</option>
-                                <option value="gemini">Gemini (Google)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="difficultyLevel">Nível de Dificuldade</label>
-                            <select id="difficultyLevel" class="form-select">
-                                <option value="auto">Automático (baseado no curso)</option>
-                                <option value="beginner">Iniciante</option>
-                                <option value="intermediate">Intermediário</option>
-                                <option value="advanced">Avançado</option>
+                                <option value="gemini">🤖 Gemini (Google) - Recomendado</option>
+                                <option value="claude">🧠 Claude (Anthropic)</option>
+                                <option value="openai">💡 GPT-4 (OpenAI)</option>
+                                <option value="openrouter">🚀 OpenRouter</option>
                             </select>
                         </div>
                         
@@ -225,6 +216,99 @@
                                 <div class="btn-description">Técnicas + Planos de Aula</div>
                             </div>
                         </button>
+                        
+                        <button id="generateSingleLessonBtn" class="generation-btn generation-btn-highlight" disabled>
+                            <div class="btn-icon">🎯</div>
+                            <div class="btn-content">
+                                <div class="btn-title">Gerar Aula Individual</div>
+                                <div class="btn-description">Plano detalhado para aula específica</div>
+                            </div>
+                        </button>
+                        
+                        <button id="generateBatchLessonsBtn" class="generation-btn generation-btn-batch" disabled>
+                            <div class="btn-icon">🚀</div>
+                            <div class="btn-content">
+                                <div class="btn-title">Gerar Múltiplos Planos</div>
+                                <div class="btn-description">Lote de aulas sequenciais</div>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <!-- Single Lesson Configuration -->
+                    <div id="singleLessonConfig" class="single-lesson-config" style="display: none;">
+                        <h3>🎯 Configuração da Aula Individual</h3>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label>Número da Aula:</label>
+                                <input type="number" id="lessonNumberInput" min="1" max="100" value="1" placeholder="Ex: 16">
+                            </div>
+                            <div class="config-item">
+                                <label>Semana do Curso:</label>
+                                <input type="number" id="weekNumberInput" min="1" max="50" value="1" placeholder="Ex: 8">
+                            </div>
+                            <div class="config-item">
+                                <label>Provedor AI:</label>
+                                <select id="aiProviderSelect">
+                                    <option value="gemini">🤖 Google Gemini (Recomendado)</option>
+                                    <option value="openrouter">🚀 OpenRouter</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="config-actions">
+                            <button id="generateNowBtn" class="btn-generate-now">
+                                <span class="btn-icon">⚡</span>
+                                Gerar Aula Agora
+                            </button>
+                            <button id="cancelLessonBtn" class="btn-cancel">
+                                <span class="btn-icon">❌</span>
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Batch Generation Configuration -->
+                    <div id="batchGenerationConfig" class="batch-generation-config" style="display: none;">
+                        <h3>🚀 Geração em Lote - Múltiplos Planos</h3>
+                        <div class="batch-config-grid">
+                            <div class="config-item">
+                                <label>Aula Inicial:</label>
+                                <input type="number" id="batchStartLesson" min="1" max="100" value="1" placeholder="Ex: 1">
+                            </div>
+                            <div class="config-item">
+                                <label>Aula Final:</label>
+                                <input type="number" id="batchEndLesson" min="1" max="100" value="5" placeholder="Ex: 5">
+                            </div>
+                            <div class="config-item">
+                                <label>Quantidade Total:</label>
+                                <input type="number" id="batchCount" min="1" max="50" value="5" readonly placeholder="Calculado automaticamente">
+                            </div>
+                            <div class="config-item">
+                                <label>Provedor AI:</label>
+                                <select id="batchAiProviderSelect">
+                                    <option value="gemini">🤖 Google Gemini (Recomendado)</option>
+                                    <option value="openrouter">🚀 OpenRouter</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="batch-preview">
+                            <h4>📋 Planos que serão gerados:</h4>
+                            <div id="batchPreviewList" class="batch-preview-list">
+                                <!-- Preview será gerado automaticamente -->
+                            </div>
+                        </div>
+                        
+                        <div class="config-actions">
+                            <button id="generateBatchBtn" class="btn-generate-batch">
+                                <span class="btn-icon">🚀</span>
+                                Gerar Todos os Planos
+                            </button>
+                            <button id="cancelBatchBtn" class="btn-cancel">
+                                <span class="btn-icon">❌</span>
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="generationProgress" class="progress-container" style="display: none;">
@@ -258,5 +342,10 @@
                 </div>
             </section>
         </div>
+    </div>
+
+    <!-- Enhanced AI Module v2.0 Container -->
+    <div id="ai-module-container" class="ai-enhanced-container" style="margin-top: 2rem;">
+        <!-- Enhanced content will be populated by JavaScript -->
     </div>
 </div>

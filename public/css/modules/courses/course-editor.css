@@ -214,11 +214,11 @@
     to { transform: rotate(360deg); }
 }
 
-/* Form Container */
+/* Form Container - Clean design without border */
 .course-editor-isolated .form-container {
     background: rgba(30,41,59,0.9);
     backdrop-filter: blur(4px);
-    border: 1px solid rgba(148, 163, 184, 0.15);
+    border: none; /* ✅ Removed black/gray border */
     border-radius: 12px;
     padding: 2rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);

@@ -8,7 +8,7 @@
 // STATE MANAGER
 // ==============================================
 
-export class StateManager {
+class StateManager {
     constructor(options = {}) {
         this.state = new Map();
         this.persistentKeys = new Set();
@@ -393,7 +393,7 @@ export class StateManager {
 }
 
 // ==============================================
-// DEFAULT EXPORT
+// DEFAULT EXPORT (CommonJS style for browser compatibility)
 // ==============================================
 
-export default StateManager;
+window.StateManager = StateManager;

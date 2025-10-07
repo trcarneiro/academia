@@ -4,6 +4,8 @@
  * 
  * Integra: Planos + Assinaturas + Créditos + Conciliação Bancária
  * Seguindo: Guidelines.MD + AcademyApp Integration + Premium UI
+ * 
+ * @version 2.0.1 - Fixed emoji encoding issue
  */
 
 class PackagesModule {
@@ -95,7 +97,7 @@ class PackagesModule {
         // Criar módulo API helper com headers padrão para organização
         this.apiHelper = window.createModuleAPI('Packages', {
             defaultHeaders: {
-                'x-organization-id': 'd961f738-9552-4385-8c1d-e10d8b1047e5' // ID da organização padrão
+                'x-organization-id': 'a55ad715-2eb0-493c-996c-bb0f60bacec9' // ID da organização padrão (Academia Demo)
             }
         });
         // manter alias para compatibilidade
@@ -214,7 +216,7 @@ class PackagesModule {
             <div class="packages-dashboard">
                 <div class="stats-grid">
                     <div class="stat-card-enhanced primary">
-                        <div class="stat-icon">�</div>
+                        <div class="stat-icon">💰</div>
                         <div class="stat-content">
                             <div class="stat-value">${this.formatCurrency(m.totalRevenue || 0)}</div>
                             <div class="stat-label">Receita Total</div>
@@ -922,7 +924,9 @@ class PackagesModule {
             if (packageData.billingType === 'SUBSCRIPTION') {
                 document.getElementById('subscriptionPrice').value = packageData.price || '';
                 document.getElementById('billingCycle').value = packageData.billingCycle || 'MONTHLY';
-                document.getElementById('classesPerWeek').value = packageData.classesPerWeek || '';
+                // Para planos ilimitados ou com 0 aulas, deixar campo vazio para evitar erro de validação
+                const classesValue = packageData.isUnlimitedAccess || packageData.classesPerWeek === 0 ? '' : (packageData.classesPerWeek || '');
+                document.getElementById('classesPerWeek').value = classesValue;
                 document.getElementById('unlimitedClasses').checked = packageData.unlimitedClasses || false;
                 window.toggleUnlimited(packageData.unlimitedClasses || false);
             } else if (packageData.billingType === 'CREDIT') {
@@ -992,10 +996,14 @@ class PackagesModule {
             
             packageData = {
                 ...packageData,
-                price: subscriptionPrice,
-                classesPerWeek: isUnlimited ? null : classesPerWeek,
+                price: subscriptionPrice.toString(),
                 isUnlimitedAccess: isUnlimited
             };
+            
+            // Only set classesPerWeek if not unlimited
+            if (!isUnlimited) {
+                packageData.classesPerWeek = classesPerWeek;
+            }
         }
         
         // Campos específicos para créditos
@@ -1019,8 +1027,8 @@ class PackagesModule {
             packageData = {
                 ...packageData,
                 maxClasses: creditQuantity,
-                pricePerClass: pricePerClass,
-                price: totalPrice,
+                pricePerClass: pricePerClass.toString(),
+                price: totalPrice.toString(),
                 creditsValidity: creditsValidity || 90
             };
         }
@@ -1029,6 +1037,16 @@ class PackagesModule {
             const isEdit = !!existingPackageData;
             const endpoint = isEdit ? `/api/billing-plans/${existingPackageData.id}` : '/api/billing-plans';
             const method = isEdit ? 'PUT' : 'POST';
+            
+            // Log data being sent
+            console.log('📦 Sending package data:', JSON.stringify(packageData, null, 2));
+            console.log('📊 Package data types:', {
+                price: typeof packageData.price,
+                priceValue: packageData.price,
+                pricePerClass: packageData.pricePerClass ? typeof packageData.pricePerClass : 'undefined',
+                maxClasses: packageData.maxClasses ? typeof packageData.maxClasses : 'undefined',
+                classesPerWeek: packageData.classesPerWeek ? typeof packageData.classesPerWeek : 'undefined'
+            });
             
             // Send as object, not stringified JSON - Fastify will handle serialization
             const response = await this.apiHelper.api.request(method, endpoint, packageData, {
@@ -1048,13 +1066,25 @@ class PackagesModule {
                 }, 1000);
                 
             } else {
-                throw new Error(response.message || 'Erro ao salvar pacote');
+                throw new Error(response.message || response.details || 'Erro ao salvar pacote');
             }
             
         } catch (error) {
-            console.error('Erro ao salvar pacote:', error);
+            console.error('❌ Erro ao salvar pacote:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                response: error.response,
+                data: error.data
+            });
+            
+            // Show more detailed error message
+            let errorMessage = error.message;
+            if (error.data?.details) {
+                errorMessage = `${errorMessage} - ${error.data.details}`;
+            }
+            
             this.showNotification(
-                `❌ Erro ao ${existingPackageData ? 'atualizar' : 'criar'} pacote: ${error.message}`, 
+                `❌ Erro ao ${existingPackageData ? 'atualizar' : 'criar'} pacote: ${errorMessage}`, 
                 'error'
             );
         }
@@ -1160,7 +1190,9 @@ class PackagesModule {
             if (packageData.billingType === 'SUBSCRIPTION') {
                 document.getElementById('subscriptionPrice').value = packageData.price || '';
                 document.getElementById('billingCycle').value = packageData.billingCycle || 'MONTHLY';
-                document.getElementById('classesPerWeek').value = packageData.classesPerWeek || '';
+                // Para planos ilimitados ou com 0 aulas, deixar campo vazio para evitar erro de validação
+                const classesValue = packageData.isUnlimitedAccess || packageData.classesPerWeek === 0 ? '' : (packageData.classesPerWeek || '');
+                document.getElementById('classesPerWeek').value = classesValue;
                 document.getElementById('unlimitedClasses').checked = packageData.unlimitedClasses || false;
                 window.toggleUnlimited(packageData.unlimitedClasses || false);
             } else if (packageData.billingType === 'CREDIT') {

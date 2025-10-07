@@ -33,11 +33,11 @@
                 break;
             case 'courses':
                 viewPath = '/modules/courses/courses.html';
-                scriptPath = '/modules/courses/courses-manager.js';
+                scriptPath = '/js/modules/courses/index.js';
                 break;
             case 'course-editor':
                 viewPath = '/modules/courses/course-editor.html';
-                scriptPath = '/js/modules/course-editor.js';
+                scriptPath = '/js/modules/courses/controllers/courseFormController.js';
                 break;
             case 'knowledge-base':
                 viewPath = '/views/knowledge-base.html';

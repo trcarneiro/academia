@@ -265,6 +265,46 @@ export class AttendanceController {
     }
   }
 
+  static async getStudentById(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) {
+    console.log('🔥 getStudentById called with ID:', request.params.id);
+    
+    try {
+      const student = await AttendanceService.findStudentById(
+        request.params.id
+      );
+
+      console.log('🔥 Raw student from service:', student);
+
+      if (!student) {
+        return ResponseHelper.error(reply, 'Aluno não encontrado', 404);
+      }
+
+      // NUCLEAR SERIALIZATION: Convert to JSON and back to ensure clean object
+      const cleanStudent = JSON.parse(JSON.stringify(student));
+      console.log('🔥 Clean student after JSON roundtrip:', cleanStudent);
+      console.log('🔥 Clean student keys:', Object.keys(cleanStudent));
+      console.log('🔥 Clean student as JSON string:', JSON.stringify(cleanStudent));
+
+      const result = ResponseHelper.success(reply, cleanStudent, 'Aluno encontrado');
+      console.log('🔥 ResponseHelper.success returned:', result);
+      return result;
+    } catch (error) {
+      logger.error({
+        error,
+        studentId: request.params.id,
+      }, 'Find student by ID failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
   static async searchStudents(
     request: FastifyRequest<{ 
       Params: { query: string }; 
@@ -369,16 +409,34 @@ export class AttendanceController {
 
       reply.header('Content-Type', 'application/json; charset=utf-8');
       return reply.send(JSON.stringify(response));
-    } catch (error) {
+    } catch (error: any) {
       logger.error({
         error,
         studentId: request.params.studentId,
       }, 'Get student dashboard failed');
-      
+
+      // If database is unreachable, return a minimal dashboard so the kiosk UI still works
+      if (error?.code === 'P1001') {
+        const minimal = {
+          student: { name: '', avatar: null, registrationNumber: '', graduationLevel: null, joinDate: null },
+          plan: null,
+          currentCourse: null,
+          currentTurma: null,
+          payments: { overdueCount: 0, overdueAmount: 0, lastPayment: null, nextDueDate: null },
+          stats: { attendanceThisMonth: 0, totalClassesThisMonth: 0, attendanceRate: 0 },
+          recentAttendances: [],
+          upcomingClasses: [],
+          enrollments: [],
+        };
+        const response = { success: true, data: minimal, message: 'Dashboard parcial (offline DB)', timestamp: new Date().toISOString() };
+        reply.header('Content-Type', 'application/json; charset=utf-8');
+        return reply.send(JSON.stringify(response));
+      }
+
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 400);
       }
-      
+
       return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
     }
   }

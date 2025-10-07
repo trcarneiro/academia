@@ -39,6 +39,10 @@ export class TurmasListView {
                                 <i class="icon">🔄</i>
                                 <span>Atualizar</span>
                             </button>
+                            <button class="btn-action-secondary" id="btnClearAllEndDates" title="Remover datas de término de todas as turmas">
+                                <i class="icon">🧹</i>
+                                <span>Limpar Fim de Todas</span>
+                            </button>
                         </div>
                     </div>
                     <h1 class="module-title">👥 Gestão de Turmas</h1>
@@ -189,6 +193,7 @@ export class TurmasListView {
         const btnCreate = this.container.querySelector('#btnCreateTurma');
         const btnCreateFromEmpty = this.container.querySelector('#btnCreateFromEmpty');
         const btnRefresh = this.container.querySelector('#btnRefresh');
+    const btnClearAllEndDates = this.container.querySelector('#btnClearAllEndDates');
         const btnRetry = this.container.querySelector('#btnRetry');
         const btnClearFilters = this.container.querySelector('#btnClearFilters');
 
@@ -197,6 +202,22 @@ export class TurmasListView {
         btnRefresh?.addEventListener('click', () => this.loadData());
         btnRetry?.addEventListener('click', () => this.loadData());
         btnClearFilters?.addEventListener('click', () => this.clearFilters());
+        btnClearAllEndDates?.addEventListener('click', async () => {
+            if (!confirm('Tem certeza que deseja remover as datas de término de TODAS as turmas?')) return;
+            try {
+                const res = await this.service.clearAllEndDates?.();
+                if (res?.success) {
+                    if (window.app?.showSuccess) window.app.showSuccess('Datas de término removidas de todas as turmas');
+                    await this.loadData();
+                } else {
+                    const msg = res?.message || 'Falha ao limpar datas de término';
+                    if (window.app?.showError) window.app.showError(msg); else alert(msg);
+                }
+            } catch (e) {
+                console.error('Erro ao limpar datas de término em massa:', e);
+                if (window.app?.handleError) window.app.handleError(e, 'clearAllEndDates');
+            }
+        });
 
         // Filtros
         const filterSearch = this.container.querySelector('#filterSearch');
@@ -256,7 +277,12 @@ export class TurmasListView {
 
     renderGrid(turmas) {
         const grid = this.container.querySelector('#turmasGrid');
-        
+
+        if (!grid) {
+            console.error('❌ Elemento #turmasGrid não encontrado no container');
+            return;
+        }
+
         grid.innerHTML = turmas.map(turma => {
             const formattedTurma = this.service.formatTurmaData(turma);
             
@@ -328,7 +354,12 @@ export class TurmasListView {
 
     renderTable(turmas) {
         const tbody = this.container.querySelector('#turmasTableBody');
-        
+
+        if (!tbody) {
+            console.error('❌ Elemento #turmasTableBody não encontrado no container');
+            return;
+        }
+
         tbody.innerHTML = turmas.map(turma => {
             const formattedTurma = this.service.formatTurmaData(turma);
             

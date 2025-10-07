@@ -3,9 +3,53 @@ import { logger } from '@/utils/logger';
 import { QRCodeService } from '@/utils/qrcode';
 import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, AttendanceStatsQuery } from '@/schemas/attendance';
 import { AttendanceStatus, CheckInMethod, UserRole, ClassStatus } from '@/types';
+import { EnrollmentStatus, SubscriptionStatus } from '@prisma/client';
 import dayjs from 'dayjs';
 
 export class AttendanceService {
+  // Helper: course eligibility for a student based on active enrollments and active turma associations
+  private static async getEligibleCourseIds(studentId: string): Promise<string[]> {
+    try {
+      const [studentCourses, turmaLinks] = await Promise.all([
+        // ✅ FIX: Use StudentCourse (correct table) instead of CourseEnrollment (legacy)
+        prisma.studentCourse.findMany({
+          where: { 
+            studentId, 
+            status: EnrollmentStatus.ACTIVE,
+            isActive: true 
+          },
+          select: { courseId: true },
+        }),
+        prisma.turmaStudent.findMany({
+          where: { studentId, isActive: true },
+          select: {
+            turma: {
+              select: {
+                courseId: true,
+                courses: { select: { courseId: true } },
+              },
+            },
+          },
+        }),
+      ]);
+
+      const courseIds = new Set<string>();
+      // Add courses from StudentCourse table
+      studentCourses.forEach((sc) => sc.courseId && courseIds.add(sc.courseId));
+      // Add courses from Turma associations
+      turmaLinks.forEach((ts) => {
+        const t: any = ts.turma;
+        if (!t) return;
+        if (t.courseId) courseIds.add(t.courseId);
+        (t.courses || []).forEach((c: any) => c?.courseId && courseIds.add(c.courseId));
+      });
+
+      return Array.from(courseIds);
+    } catch (err) {
+      logger.warn({ err, studentId }, 'Failed to derive eligible course IDs');
+      return [];
+    }
+  }
   static async checkInToClass(studentId: string, data: CheckInInput) {
     const { classId, method, location, notes } = data;
 
@@ -601,88 +645,138 @@ export class AttendanceService {
     const startOfDay = today.startOf('day').toDate();
     const endOfDay = today.endOf('day').toDate();
 
-    // Get classes for today
-    const classes = await prisma.class.findMany({
+    // If student provided, restrict classes by eligible courses
+    let eligibleCourseIds: string[] = [];
+    if (studentId) {
+      eligibleCourseIds = await this.getEligibleCourseIds(studentId);
+    }
+
+    // 🔍 DEBUG: Log date filters
+    logger.info('🔍 [DEBUG] getAvailableClasses filters', {
+      now: now.toISOString(),
+      today: today.format('YYYY-MM-DD HH:mm:ss'),
+      startOfDay: startOfDay.toISOString(),
+      endOfDay: endOfDay.toISOString(),
+      studentId,
+      eligibleCourseIds,
+      eligibleCoursesCount: eligibleCourseIds.length
+    });
+
+    // ✅ BUSCAR EM TURMALESSON (aulas de Turmas) - onde as aulas realmente estão!
+    const turmaLessons = await prisma.turmaLesson.findMany({
       where: {
-        date: {
+        scheduledDate: {
           gte: startOfDay,
           lte: endOfDay,
         },
-        status: {
-          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS]
-        },
+        isActive: true,
+        status: 'SCHEDULED', // ✅ CORRIGIDO: Apenas SCHEDULED (TurmaStatus válido)
+        // Filtrar por curso se aluno fornecido
+        ...(studentId && eligibleCourseIds.length > 0
+          ? {
+              turma: {
+                courseId: { in: eligibleCourseIds },
+              },
+            }
+          : {}),
       },
       include: {
-        schedule: true,
-        instructor: {
+        turma: {
           include: {
-            user: {
+            instructor: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+            course: {
               select: {
-                firstName: true,
-                lastName: true,
+                name: true,
+                level: true,
               },
             },
           },
         },
-        course: {
-          select: {
-            name: true,
-            level: true,
-          },
-        },
-        attendances: studentId ? {
-          where: { studentId },
-        } : false,
+        attendances: studentId
+          ? {
+              where: { studentId },
+            }
+          : false,
+      },
+      orderBy: {
+        scheduledDate: 'asc',
       },
     });
 
-    return classes.map(classInfo => {
-      const hasCheckedIn = studentId && classInfo.attendances?.length > 0;
-      const startTime = dayjs(classInfo.startTime);
-      const checkInStart = startTime.subtract(30, 'minute');
+    // 🔍 DEBUG: Log TurmaLessons found
+    logger.info('🔍 [DEBUG] TurmaLessons found from database', {
+      turmaLessonsCount: turmaLessons.length,
+      turmaLessons: turmaLessons.map((t) => ({
+        id: t.id,
+        title: t.title,
+        scheduledDate: t.scheduledDate?.toISOString(),
+        status: t.status,
+        turmaId: t.turmaId,
+        courseId: t.turma.courseId,
+      })),
+    });
+
+    // Mapear TurmaLessons para o formato esperado
+    return turmaLessons.map((turmaLesson) => {
+      const hasCheckedIn = studentId && turmaLesson.attendances && turmaLesson.attendances.length > 0;
+      const startTime = dayjs(turmaLesson.scheduledDate);
+      const checkInStart = startTime.subtract(60, 'minute'); // ✅ 1 hora antes da aula
       const checkInEnd = startTime.add(15, 'minute');
       const currentTime = dayjs();
-      
-      const canCheckIn = !hasCheckedIn && 
-        currentTime.isAfter(checkInStart) && 
+
+      const canCheckIn =
+        !hasCheckedIn &&
+        currentTime.isAfter(checkInStart) &&
         currentTime.isBefore(checkInEnd);
 
       return {
-        id: classInfo.id,
-        name: classInfo.title || classInfo.course?.name,
-        startTime: classInfo.startTime,
-        endTime: classInfo.endTime,
-        instructor: classInfo.instructor ? {
-          name: `${classInfo.instructor.user.firstName} ${classInfo.instructor.user.lastName}`,
-        } : null,
-        course: classInfo.course,
-        capacity: classInfo.maxStudents,
-        enrolled: classInfo.attendances?.length || 0,
+        id: turmaLesson.id,
+        name: turmaLesson.title || turmaLesson.turma.course?.name || 'Aula',
+        startTime: turmaLesson.scheduledDate,
+        endTime: dayjs(turmaLesson.scheduledDate).add(turmaLesson.duration || 60, 'minute').toDate(),
+        instructor: turmaLesson.turma.instructor
+          ? {
+              name: `${turmaLesson.turma.instructor.user.firstName} ${turmaLesson.turma.instructor.user.lastName}`,
+            }
+          : null,
+        course: turmaLesson.turma.course,
+        capacity: null, // TurmaLesson não tem capacity
+        enrolled: turmaLesson.attendances ? turmaLesson.attendances.length : 0,
         canCheckIn,
         hasCheckedIn,
-        status: hasCheckedIn ? 'CHECKED_IN' : 
-               canCheckIn ? 'AVAILABLE' : 
-               currentTime.isBefore(checkInStart) ? 'NOT_YET' : 'EXPIRED',
+        status: hasCheckedIn
+          ? 'CHECKED_IN'
+          : canCheckIn
+          ? 'AVAILABLE'
+          : currentTime.isBefore(checkInStart)
+          ? 'NOT_YET'
+          : 'EXPIRED',
       };
     });
   }
 
   static async getStudentDashboard(studentId: string) {
+    // Fetch student basic profile first
     const student = await prisma.student.findUnique({
       where: { id: studentId },
       include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-          },
-        },
-        enrollments: {
-          where: { status: 'ACTIVE' },
-          include: {
-            course: true,
-          },
+        user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+        // 🔥 FIX: Use correct relation name 'studentCourses' instead of 'enrollments'
+        studentCourses: { 
+          include: { 
+            course: { 
+              select: { id: true, name: true, level: true }
+            } 
+          } 
         },
       },
     });
@@ -691,81 +785,306 @@ export class AttendanceService {
       throw new Error('Aluno não encontrado');
     }
 
-    // Get recent attendance (last 10)
-    const recentAttendances = await prisma.attendance.findMany({
-      where: { studentId },
-      take: 10,
-      orderBy: { checkInTime: 'desc' },
-      include: {
-        class: {
-          select: {
-            title: true,
-            date: true,
-            startTime: true,
-          },
-        },
-      },
-    });
+    // 🔥 DEBUG: Log ALL studentCourses found (without filter)
+    logger.info({ 
+      studentId, 
+      studentCoursesFound: student.studentCourses?.length || 0,
+      studentCourses: student.studentCourses?.map(e => ({ 
+        courseId: e.course.id, 
+        courseName: e.course.name,
+        status: (e as any).status,
+        isActive: (e as any).isActive
+      }))
+    }, '🔍 [DEBUG] StudentCourses loaded from database (correct relation)');
 
-    // Get attendance stats for current month
+    // Parallel with resilience: allow partial failures without aborting the whole dashboard
     const currentMonth = dayjs().startOf('month');
-    const attendanceStats = await prisma.attendance.count({
-      where: {
-        studentId,
-        checkInTime: {
-          gte: currentMonth.toDate(),
+    const settled = await Promise.allSettled([
+      prisma.attendance.findMany({
+        where: { studentId },
+        take: 10,
+        orderBy: { checkInTime: 'desc' },
+        include: { class: { select: { title: true, date: true, startTime: true } } },
+      }),
+      prisma.attendance.count({
+        where: { studentId, checkInTime: { gte: currentMonth.toDate() }, status: AttendanceStatus.PRESENT },
+      }),
+      prisma.class.count({
+        where: {
+          date: { gte: currentMonth.toDate(), lte: dayjs().endOf('month').toDate() },
+          status: { in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS, ClassStatus.COMPLETED] },
         },
-        status: AttendanceStatus.PRESENT,
-      },
-    });
+      }),
+      (async () => {
+        try {
+          const nowTs = new Date();
+          const [overduePayments, pendingPayments, lastPaid] = await Promise.all([
+            prisma.payment.findMany({ where: { studentId, status: 'PENDING', dueDate: { lt: nowTs } }, select: { amount: true, dueDate: true } }),
+            prisma.payment.findMany({ where: { studentId, status: 'PENDING', dueDate: { gte: nowTs } }, select: { amount: true, dueDate: true }, orderBy: { dueDate: 'asc' }, take: 1 }),
+            prisma.payment.findFirst({ where: { studentId, status: 'PAID' }, orderBy: { paidDate: 'desc' }, select: { amount: true, paidDate: true, description: true } }),
+          ]);
+          return { overduePayments, pendingPayments, lastPaid };
+        } catch (e) {
+          logger.warn({ e, studentId }, 'Payments lookup failed; continuing with empty payments');
+          return { overduePayments: [], pendingPayments: [], lastPaid: null } as any;
+        }
+      })(),
+      (async () => {
+        try {
+          return await prisma.studentSubscription.findFirst({
+            where: { 
+              studentId, 
+              status: SubscriptionStatus.ACTIVE,
+              isActive: true
+            },
+            include: { plan: { select: { id: true, name: true, billingType: true, classesPerWeek: true, hasPersonalTraining: true, hasNutrition: true } } },
+            orderBy: { createdAt: 'desc' },
+          });
+        } catch (e) {
+          logger.warn({ e, studentId }, 'Subscription lookup failed; continuing without plan');
+          return null as any;
+        }
+      })(),
+      this.getEligibleCourseIds(studentId),
+      (async () => {
+        try {
+          return await prisma.turmaStudent.findMany({ where: { studentId, isActive: true }, select: { turmaId: true } });
+        } catch (e) {
+          logger.warn({ e, studentId }, 'Turma links lookup failed; assuming none');
+          return [] as any[];
+        }
+      })(),
+      (async () => {
+        try {
+          return await prisma.turmaStudent.findFirst({
+            where: { studentId, isActive: true },
+            include: { turma: { include: { courses: { include: { course: true } } } } },
+            orderBy: { createdAt: 'desc' },
+          });
+        } catch (e) {
+          logger.warn({ e, studentId }, 'Turma enrollment lookup failed; continuing without turma');
+          return null as any;
+        }
+      })(),
+    ]);
 
-    // Get total classes this month
-    const totalClassesThisMonth = await prisma.class.count({
-      where: {
-        date: {
-          gte: currentMonth.toDate(),
-          lte: dayjs().endOf('month').toDate(),
-        },
-        status: {
-          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS, ClassStatus.COMPLETED]
-        },
-      },
-    });
+    const get = <T>(idx: number, def: T): T => {
+      const r = settled[idx];
+      if (!r) return def;
+      if (r.status === 'fulfilled') {
+        return r.value as T;
+      }
+      return def;
+    };
 
-    // Get next classes (upcoming 5)
-    const upcomingClasses = await prisma.class.findMany({
-      where: {
-        date: {
-          gte: new Date(),
+    const recentAttendances = get<any[]>(0, []);
+    const attendanceStats = get<number>(1, 0);
+    const totalClassesThisMonth = get<number>(2, 0);
+    const paymentsTuple = get<{ overduePayments: any[]; pendingPayments: any[]; lastPaid: any | null }>(3, { overduePayments: [], pendingPayments: [], lastPaid: null });
+    const subscription = get<any | null>(4, null);
+    const eligibleCourseIds = get<string[]>(5, []);
+    const studentTurmas = get<any[]>(6, []);
+    const turmaEnrollment = get<any | null>(7, null);
+
+    // Debug logs para auditoria
+    logger.info({ 
+      studentId, 
+      enrollmentsCount: student.studentCourses?.length || 0,
+      hasPlan: !!subscription,
+      planName: subscription?.plan?.name,
+      eligibleCourseIds: eligibleCourseIds.length,
+      studentTurmasCount: studentTurmas.length,
+      hasTurmaEnrollment: !!turmaEnrollment
+    }, '📊 Dashboard data loaded');
+
+    // Unlimited plan support: if plan is unlimited and no explicit course enrollments, allow all courses
+    const unlimitedPlan = !!(subscription && (
+      subscription.billingType === 'UNLIMITED' ||
+      subscription.isActive === true ||
+      (subscription.plan?.name && String(subscription.plan.name).toLowerCase().includes('ilimit'))
+    ));
+
+    logger.info({ unlimitedPlan, billingType: subscription?.billingType }, '🔓 Plan type detection');
+
+  // Determine eligibility upfront (already fetched in parallel)
+
+    // Next classes (up to 5), filtered by eligibility
+  let upcomingClasses: any[] = [];
+    try {
+      const classWhere: any = {
+        date: { gte: new Date() },
+        status: { in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS] },
+      };
+
+      // Se não é plano ilimitado E tem courseIds elegíveis, filtrar por eles
+      if (!unlimitedPlan && eligibleCourseIds.length > 0) {
+        classWhere.courseId = { in: eligibleCourseIds };
+      }
+
+      upcomingClasses = await prisma.class.findMany({
+        where: classWhere,
+        take: 5,
+        orderBy: { date: 'asc' },
+        include: {
+          instructor: { include: { user: { select: { firstName: true, lastName: true } } } },
+          course: { select: { id: true, name: true } },
         },
-        status: {
-          in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS]
-        },
-      },
-      take: 5,
-      orderBy: { date: 'asc' },
-      include: {
-        schedule: true,
-        instructor: {
+      });
+
+      logger.info({ 
+        studentId, 
+        upcomingClassesCount: upcomingClasses.length,
+        unlimitedPlan,
+        eligibleCourseIds: eligibleCourseIds.length 
+      }, '📅 Upcoming classes loaded');
+    } catch (e) {
+      logger.warn({ e, studentId }, 'Upcoming classes query failed; continuing empty');
+    }
+
+    let upcomingTurmaLessons: any[] = [];
+    if (studentTurmas.length > 0) {
+      try {
+        const turmaIds = studentTurmas.map((t: any) => t.turmaId);
+        upcomingTurmaLessons = await prisma.turmaLesson.findMany({
+          where: {
+            turmaId: { in: turmaIds },
+            scheduledDate: { gte: new Date() },
+            status: 'SCHEDULED',
+          },
+          orderBy: { scheduledDate: 'asc' },
+          take: 5,
           include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
+            turma: {
+              include: {
+                instructor: { select: { firstName: true, lastName: true } },
+                course: { select: { id: true, name: true } },
               },
             },
           },
-        },
-      },
-    });
+        });
+      } catch (e) {
+        logger.warn({ e, studentId }, 'Upcoming turma lessons query failed; continuing empty');
+      }
+    }
+
+    // Fallback: if the student isn't linked to a turma (or too few upcoming), derive by eligible courses
+    if (upcomingTurmaLessons.length < 5 && (eligibleCourseIds.length > 0 || unlimitedPlan)) {
+      try {
+        const fill = 5 - upcomingTurmaLessons.length;
+        // Find turmas matching eligible courses (or any if unlimited)
+        const turmasByCourse = await prisma.turma.findMany({
+          where: {
+            ...(unlimitedPlan || eligibleCourseIds.length === 0
+              ? {}
+              : { OR: [
+                  { courseId: { in: eligibleCourseIds } },
+                  { courses: { some: { courseId: { in: eligibleCourseIds } } } as any },
+                ]
+                }
+            ),
+            status: { in: ['SCHEDULED', 'ACTIVE', 'RESCHEDULED'] as any },
+            isActive: true as any,
+          },
+          select: { id: true },
+          take: 10,
+        });
+
+        const turmaIdsByCourse = turmasByCourse.map((t) => t.id);
+        if (turmaIdsByCourse.length > 0) {
+          const extraLessons = await prisma.turmaLesson.findMany({
+            where: {
+              turmaId: { in: turmaIdsByCourse },
+              scheduledDate: { gte: new Date() },
+              status: 'SCHEDULED',
+            },
+            orderBy: { scheduledDate: 'asc' },
+            take: fill,
+            include: {
+              turma: {
+                include: {
+                  instructor: { select: { firstName: true, lastName: true } },
+                  course: { select: { id: true, name: true } },
+                },
+              },
+            },
+          });
+
+          // Merge without duplicates
+          const seen = new Set(upcomingTurmaLessons.map((l: any) => l.id));
+          for (const l of extraLessons) {
+            if (!seen.has(l.id)) {
+              upcomingTurmaLessons.push(l);
+              seen.add(l.id);
+            }
+          }
+        }
+      } catch (e) {
+        logger.warn({ e, studentId }, 'Fallback turma lessons query failed; continuing');
+      }
+    }
+
+    // Payments summary
+  const { overduePayments, pendingPayments, lastPaid } = paymentsTuple;
+
+    const overdueAmount = overduePayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const nextDue = pendingPayments[0]?.dueDate || null;
+
+    // Get current active subscription/plan
+  // subscription already loaded
+
+    // Derive current course and turma
+  const currentEnrollment = student.studentCourses?.[0];
+    let currentCourse = currentEnrollment?.course ? {
+      id: currentEnrollment.course.id,
+      name: currentEnrollment.course.name,
+      level: (currentEnrollment.course as any).level ?? null,
+    } : null;
+
+    // If course missing, try from active turma enrollment
+  // turmaEnrollment already loaded
+
+    const currentTurma = turmaEnrollment?.turma ? {
+      id: turmaEnrollment.turma.id,
+      name: turmaEnrollment.turma.name,
+      status: turmaEnrollment.turma.status,
+      startDate: turmaEnrollment.turma.startDate,
+      endDate: turmaEnrollment.turma.endDate,
+    } : null;
+
+    if (!currentCourse && turmaEnrollment?.turma?.courses?.length) {
+      const c = turmaEnrollment.turma.courses[0].course;
+      currentCourse = c ? { id: c.id, name: c.name, level: (c as any).level ?? null } : null;
+    }
 
     return {
       student: {
         name: `${student.user.firstName} ${student.user.lastName}`,
-        avatar: student.user.avatar || null,
+  avatar: (student.user as any).avatarUrl || null,
         registrationNumber: student.registrationNumber,
-        graduationLevel: student.graduationLevel || null,
+  graduationLevel: (student as any).graduationLevel || null,
         joinDate: student.createdAt,
+      },
+      plan: subscription ? {
+        id: subscription.planId,
+        name: subscription.plan.name,
+        startDate: subscription.startDate,
+        endDate: subscription.endDate,
+        billingType: subscription.billingType,
+        nextBillingDate: subscription.nextBillingDate,
+        isActive: subscription.isActive,
+        classesPerWeek: subscription.plan.classesPerWeek,
+      } : null,
+  currentCourse,
+  currentTurma,
+      payments: {
+        overdueCount: overduePayments.length,
+        overdueAmount,
+        lastPayment: lastPaid ? {
+          amount: Number(lastPaid.amount),
+          paidDate: lastPaid.paidDate,
+          description: lastPaid.description,
+        } : null,
+        nextDueDate: nextDue,
       },
       stats: {
         attendanceThisMonth: attendanceStats,
@@ -780,150 +1099,274 @@ export class AttendanceService {
         checkInTime: att.checkInTime,
         status: att.status,
       })),
-      upcomingClasses: upcomingClasses.map(cls => ({
-        id: cls.id,
-        name: cls.title || cls.course?.name || 'Aula sem título',
-        date: cls.date,
-        startTime: cls.startTime,
-        instructor: cls.instructor ? 
-          `${cls.instructor.user.firstName} ${cls.instructor.user.lastName}` : 
-          'Instrutor não definido',
-      })),
-      enrollments: student.enrollments.map(enrollment => ({
-        course: enrollment.package.name,
-        startDate: enrollment.startDate,
-        endDate: enrollment.endDate,
-        isActive: enrollment.isActive,
-      })),
+  upcomingClasses: [
+        // From Class model
+        ...upcomingClasses.map(cls => ({
+          id: cls.id,
+          name: cls.title || cls.course?.name || 'Aula sem título',
+          date: cls.date,
+          startTime: cls.startTime,
+          instructor: cls.instructor ? 
+            `${cls.instructor.user.firstName} ${cls.instructor.user.lastName}` : 
+            'Instrutor não definido',
+        })),
+        // From TurmaLesson model
+        ...upcomingTurmaLessons.map(les => ({
+          id: les.id,
+          name: les.title || les.turma?.course?.name || les.turma?.name || 'Aula da turma',
+          date: les.scheduledDate,
+          startTime: les.scheduledDate,
+          instructor: les.turma?.instructor ? 
+            `${les.turma.instructor.firstName} ${les.turma.instructor.lastName}` : 
+            'Instrutor não definido',
+        }))
+      ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5),
+      // 🔥 FIX: Filter ACTIVE studentCourses manually and map with proper fields
+      enrollments: student.studentCourses
+        .filter(e => (e as any).status === 'ACTIVE' && (e as any).isActive === true)
+        .map(enrollment => ({
+          course: enrollment.course?.name,
+          courseId: enrollment.course?.id,
+          courseLevel: (enrollment.course as any)?.level || null,
+          startDate: (enrollment as any).startDate ?? null,
+          endDate: (enrollment as any).endDate ?? null,
+          status: (enrollment as any).status,
+          isActive: (enrollment as any).isActive ?? true,
+        })),
     };
   }
 
   static async searchStudents(query: string, limit: number = 10) {
-    const searchTerm = query.toLowerCase().trim();
-    
-    if (searchTerm.length < 2) {
-      return [];
-    }
+    try {
+      const searchTerm = query?.toLowerCase()?.trim();
+      
+      if (!searchTerm || searchTerm.length < 2) {
+        return [];
+      }
 
-    const students = await prisma.student.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          {
-            registrationNumber: {
-              contains: searchTerm,
-              mode: 'insensitive',
+      const students = await prisma.student.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            {
+              registrationNumber: {
+                contains: searchTerm,
+                mode: 'insensitive',
+              },
             },
+            {
+              user: {
+                OR: [
+                  {
+                    firstName: {
+                      contains: searchTerm,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: searchTerm,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    email: {
+                      contains: searchTerm,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+          // 🔥 FIX: Use correct relation 'studentCourses' instead of 'enrollments'
+          studentCourses: {
+            where: {
+              status: 'ACTIVE',
+            },
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  name: true,
+                  level: true,
+                },
+              },
+            },
+          },
+          // 🔥 FIX: Include subscriptions to show plan info in kiosk
+          subscriptions: {
+            where: {
+              status: 'ACTIVE',
+              endDate: {
+                gte: new Date(),
+              },
+            },
+            select: {
+              id: true,
+              status: true,
+              startDate: true,
+              endDate: true,
+              package: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+            orderBy: {
+              endDate: 'desc',
+            },
+            take: 1,
+          },
+        },
+        take: limit,
+        orderBy: [
+          {
+            registrationNumber: 'asc',
           },
           {
             user: {
-              OR: [
-                {
-                  firstName: {
-                    contains: searchTerm,
-                    mode: 'insensitive',
-                  },
-                },
-                {
-                  lastName: {
-                    contains: searchTerm,
-                    mode: 'insensitive',
-                  },
-                },
-                {
-                  email: {
-                    contains: searchTerm,
-                    mode: 'insensitive',
-                  },
-                },
-              ],
+              firstName: 'asc',
             },
           },
         ],
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            avatarUrl: true,
-          },
-        },
-      },
-      take: limit,
-      orderBy: [
-        {
-          // Prioritize exact registration number matches
-          registrationNumber: 'asc',
-        },
-        {
-          user: {
-            firstName: 'asc',
-          },
-        },
-      ],
-    });
+      });
 
-    return students.map(student => ({
-      id: student.id,
-      registrationNumber: student.registrationNumber,
-      name: `${student.user.firstName} ${student.user.lastName}`,
-      email: student.user.email,
-      avatar: student.user.avatar,
-      graduationLevel: student.graduationLevel,
-      matchType: student.registrationNumber.toLowerCase().includes(searchTerm) 
-        ? 'registration' 
-        : 'name',
-    }));
+      return students.map(student => ({
+        id: student.id,
+        registrationNumber: student.registrationNumber || 'N/A',
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        email: student.user.email,
+        avatar: student.user.avatarUrl,
+        matchType: student.registrationNumber?.toLowerCase().includes(searchTerm) 
+          ? 'registration' 
+          : 'name',
+        // 🔥 FIX: Add enrollment and subscription info for kiosk
+        hasActiveEnrollment: student.studentCourses && student.studentCourses.length > 0,
+        enrollments: student.studentCourses?.map(e => ({
+          courseId: e.course.id,
+          courseName: e.course.name,
+          courseLevel: e.course.level,
+          status: e.status,
+        })) || [],
+        hasActivePlan: student.subscriptions && student.subscriptions.length > 0,
+        activePlan: student.subscriptions?.[0] ? {
+          id: student.subscriptions[0].id,
+          name: student.subscriptions[0].package.name,
+          status: student.subscriptions[0].status,
+          startDate: student.subscriptions[0].startDate,
+          endDate: student.subscriptions[0].endDate,
+        } : null,
+      }));
+    } catch (error) {
+      logger.error({ error, query }, 'Error in searchStudents');
+      return [];
+    }
+  }
+
+  static async findStudentById(studentId: string) {
+    try {
+      const student = await prisma.student.findUnique({
+        where: {
+          id: studentId,
+          isActive: true,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      });
+
+      if (!student) {
+        return null;
+      }
+
+      return {
+        id: student.id,
+        registrationNumber: student.registrationNumber || 'N/A',
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        firstName: student.user.firstName,
+        lastName: student.user.lastName,
+        email: student.user.email,
+        avatar: student.user.avatarUrl,
+        userId: student.userId,
+        category: student.category,
+        isActive: student.isActive,
+      };
+    } catch (error) {
+      logger.error({ error, studentId }, 'Error in findStudentById');
+      return null;
+    }
   }
 
   static async getAllActiveStudents() {
-    const students = await prisma.student.findMany({
-      where: {
-        isActive: true,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            avatarUrl: true,
-          },
+    try {
+      const students = await prisma.student.findMany({
+        where: {
+          isActive: true,
         },
-      },
-      orderBy: [
-        {
-          registrationNumber: 'asc',
-        },
-        {
+        include: {
           user: {
-            firstName: 'asc',
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatarUrl: true,
+            },
           },
         },
-      ],
-    });
+        orderBy: [
+          {
+            registrationNumber: 'asc',
+          },
+          {
+            user: {
+              firstName: 'asc',
+            },
+          },
+        ],
+      });
 
-    return students.map(student => ({
-      id: student.id,
-      registrationNumber: student.registrationNumber,
-      name: `${student.user.firstName} ${student.user.lastName}`,
-      firstName: student.user.firstName,
-      lastName: student.user.lastName,
-      email: student.user.email,
-      avatar: student.user.avatar,
-      graduationLevel: student.graduationLevel,
-      // Pre-computed search strings for faster client-side filtering
-      searchString: [
-        student.registrationNumber,
-        student.user.firstName.toLowerCase(),
-        student.user.lastName.toLowerCase(),
-        student.user.email.toLowerCase(),
-        `${student.user.firstName} ${student.user.lastName}`.toLowerCase()
-      ].join(' '),
-    }));
+      return students.map(student => ({
+        id: student.id,
+        registrationNumber: student.registrationNumber || 'N/A',
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        firstName: student.user.firstName,
+        lastName: student.user.lastName,
+        email: student.user.email,
+        avatar: student.user.avatarUrl,
+        // Pre-computed search strings for faster client-side filtering
+        searchString: [
+          student.registrationNumber || '',
+          student.user.firstName?.toLowerCase() || '',
+          student.user.lastName?.toLowerCase() || '',
+          student.user.email?.toLowerCase() || '',
+          `${student.user.firstName} ${student.user.lastName}`.toLowerCase()
+        ].join(' '),
+      }));
+    } catch (error) {
+      logger.error({ error }, 'Error in getAllActiveStudents');
+      return [];
+    }
   }
 }

@@ -2,12 +2,12 @@
 // Gerencia todas as visualizações e interações do usuário
 
 import { TurmasListView } from '../views/TurmasListView.js';
-import { TurmasFormView } from '../views/TurmasFormView.js';
 import { TurmasDetailView } from '../views/TurmasDetailView.js';
 import { TurmasScheduleView } from '../views/TurmasScheduleView.js';
 import { TurmasStudentsView } from '../views/TurmasStudentsView.js';
 import { TurmasAttendanceView } from '../views/TurmasAttendanceView.js';
 import { TurmasReportsView } from '../views/TurmasReportsView.js';
+import { safeNavigateTo, safeNavigateToList } from '../../../shared/utils/navigation.js';
 
 export class TurmasController {
     constructor(turmasService) {
@@ -27,9 +27,9 @@ export class TurmasController {
     }
 
     initializeContainer() {
-        this.container = document.getElementById('main-content');
+        this.container = document.getElementById('module-container');
         if (!this.container) {
-            console.error('❌ Container main-content não encontrado');
+            console.error('❌ Container module-container não encontrado');
             return;
         }
     }
@@ -56,15 +56,13 @@ export class TurmasController {
     async showCreate() {
         try {
             this.clearCurrentView();
-            
-            const view = new TurmasFormView(this.service, this);
+            const view = new TurmasDetailView(this.service, this);
             this.currentView = view;
-            
-            // Registrar view globalmente para os modais
-            window.turmaFormView = view;
-            
-            await view.render(this.container);
-            
+
+            await view.render(this.container, null, {
+                isCreateMode: true
+            });
+
             this.updateNavigation('turmas/create');
             
         } catch (error) {
@@ -82,14 +80,13 @@ export class TurmasController {
                 throw new Error('Turma não encontrada');
             }
             
-            const view = new TurmasFormView(this.service, this);
+            const view = new TurmasDetailView(this.service, this);
             this.currentView = view;
-            
-            // Registrar view globalmente para os modais
-            window.turmaFormView = view;
-            
-            await view.render(this.container, turma);
-            
+
+            await view.render(this.container, turma, {
+                autoEditSections: ['basic', 'schedule']
+            });
+
             this.updateNavigation(`turmas/edit/${turmaId}`);
             
         } catch (error) {
@@ -565,19 +562,25 @@ export class TurmasController {
     // ===== Navegação Externa =====
 
     navigateToTurma(turmaId, view = 'view') {
-        if (window.router) {
-            window.router.navigate(`turmas/${view}/${turmaId}`);
-        } else {
-            this[`show${view.charAt(0).toUpperCase() + view.slice(1)}`](turmaId);
-        }
+        const methodName = `show${view.charAt(0).toUpperCase() + view.slice(1)}`;
+        const fallback = () => {
+            if (typeof this[methodName] === 'function') {
+                return this[methodName](turmaId);
+            }
+            return this.showView(turmaId);
+        };
+
+        safeNavigateTo(`turmas/${view}/${turmaId}`, {
+            fallback,
+            context: 'turmas:navigateToTurma'
+        });
     }
 
     navigateToList() {
-        if (window.router) {
-            window.router.navigate('turmas');
-        } else {
-            this.showList();
-        }
+        safeNavigateToList('turmas', {
+            fallback: () => this.showList(),
+            context: 'turmas:navigateToList'
+        });
     }
 
     // ===== Integração com outros módulos =====

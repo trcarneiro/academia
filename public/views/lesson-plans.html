@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/design-system/tokens.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/modules/lesson-plans.css">
+    <link rel="stylesheet" href="../css/modules/lesson-plans-ai.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -25,23 +26,38 @@
             </div>
         </div>
 
-        <!-- Statistics Cards Enhanced -->
-        <div class="module-stats">
-            <div class="stat-card-enhanced">
-                <div class="stat-value" id="totalLessonPlans">2</div>
-                <div class="stat-label">Total de Planos</div>
-            </div>
-            <div class="stat-card-enhanced">
-                <div class="stat-value" id="activeCourses">2</div>
-                <div class="stat-label">Cursos Ativos</div>
-            </div>
-            <div class="stat-card-enhanced">
-                <div class="stat-value" id="avgDuration">60</div>
-                <div class="stat-label">Duração Média (min)</div>
-            </div>
+        <!-- Tabs Navigation -->
+        <div class="module-tabs-premium">
+            <button class="tab-btn active" data-tab="list" id="list-tab-btn">
+                <i class="fas fa-list"></i> 📋 Listagem
+            </button>
+            <button class="tab-btn" data-tab="editor" id="editor-tab-btn">
+                <i class="fas fa-edit"></i> ✏️ Editor
+            </button>
+            <button class="tab-btn" data-tab="ai-generator" id="ai-generator-tab-btn">
+                <i class="fas fa-robot"></i> 🤖 Gerar com IA
+            </button>
         </div>
 
-        <!-- Filters Premium -->
+        <!-- Tab: List View -->
+        <div id="list-tab-content" class="tab-content active">
+            <!-- Statistics Cards Enhanced -->
+            <div class="module-stats">
+                <div class="stat-card-enhanced">
+                    <div class="stat-value" id="totalLessonPlans">2</div>
+                    <div class="stat-label">Total de Planos</div>
+                </div>
+                <div class="stat-card-enhanced">
+                    <div class="stat-value" id="activeCourses">2</div>
+                    <div class="stat-label">Cursos Ativos</div>
+                </div>
+                <div class="stat-card-enhanced">
+                    <div class="stat-value" id="avgDuration">60</div>
+                    <div class="stat-label">Duração Média (min)</div>
+                </div>
+            </div>
+
+            <!-- Filters Premium -->
         <div class="module-filters-premium">
             <div class="filter-row">
                 <div class="search-input-group">
@@ -111,10 +127,33 @@
                 </div>
             </div>
         </div>
+        <!-- End Tab: List View -->
+
+        <!-- Tab: Editor (placeholder for now) -->
+        <div id="editor-tab-content" class="tab-content" style="display: none;">
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h3>✏️ Editor de Planos de Aula</h3>
+                    <p>Editor será carregado ao selecionar um plano</p>
+                </div>
+                <div style="padding: 2rem;">
+                    <p>Selecione um plano na listagem para editar.</p>
+                </div>
+            </div>
+        </div>
+        <!-- End Tab: Editor -->
+
+        <!-- Tab: AI Generator -->
+        <div id="ai-generator-tab-content" class="tab-content" style="display: none;">
+            <!-- AI Generator interface will be loaded here dynamically -->
+            <div id="ai-generator-container"></div>
+        </div>
+        <!-- End Tab: AI Generator -->
+
     </div>
+    <!-- End lessonPlansContainer -->
 
     <!-- Create Lesson Plan Modal -->
-    <div id="create-lesson-plan-modal" class="lesson-plan-modal hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-container">
             <div class="modal-panel modal-large">

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🥋 Krav Maga Academy - Terminal de Check-in</title>
+    <!-- Enhanced Kiosk Dashboard Styles -->
+    <link rel="stylesheet" href="css/modules/enhanced-kiosk-dashboard.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -859,6 +861,26 @@
             btn.style.background = '#8B5CF6';
             result.innerHTML = '';
         }
+    </script>
+
+    <!-- Enhanced Dashboard Module -->
+    <script src="js/modules/checkin-kiosk/enhanced-dashboard.js"></script>
+    
+    <!-- Main Kiosk Module -->
+    <script src="js/modules/checkin-kiosk.js"></script>
+    
+    <script>
+        // Initialize kiosk when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const kiosk = new CheckinKiosk();
+                await kiosk.init();
+                window.kiosk = kiosk; // Make globally available for debugging
+            } catch (error) {
+                console.error('Erro ao inicializar kiosk:', error);
+                alert('Erro ao inicializar o sistema. Recarregue a página.');
+            }
+        });
     </script>
 </body>
 </html>

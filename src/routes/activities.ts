@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { fastifyActivityController } from '../controllers/fastifyActivityController';
+import { importActivitiesHandler } from './activities-import-unified';
 
 export default async function activitiesRoutes(app: FastifyInstance) {
   // Main CRUD routes
@@ -10,6 +11,9 @@ export default async function activitiesRoutes(app: FastifyInstance) {
   app.post('/', fastifyActivityController.create);
   app.put('/:id', fastifyActivityController.update);
   app.delete('/:id', fastifyActivityController.delete);
+  
+  // Unified import endpoint
+  app.post('/import', importActivitiesHandler);
   
   // Health check
   app.get('/healthz/activities', async () => ({ ok: true }));

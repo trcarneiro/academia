@@ -11,7 +11,8 @@ class CalendarController {
         this.currentFilters = {
             instructor: '',
             course: '',
-            status: ''
+            status: '',
+            type: ''
         };
         console.log('📅 CalendarController initialized');
     }
@@ -24,6 +25,14 @@ class CalendarController {
         await this.renderCurrentView();
         
         console.log('✅ CalendarController initialized');
+    }
+
+    // Format a Date to local YYYY-MM-DD (avoids UTC drift when using toISOString)
+    formatLocalYMD(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
     }
 
     attachEventListeners() {
@@ -49,6 +58,10 @@ class CalendarController {
         
         document.getElementById('statusFilter')?.addEventListener('change', (e) => {
             this.currentFilters.status = e.target.value;
+            this.renderCurrentView();
+        });
+        document.getElementById('typeFilter')?.addEventListener('change', (e) => {
+            this.currentFilters.type = e.target.value;
             this.renderCurrentView();
         });
         
@@ -119,7 +132,7 @@ class CalendarController {
 
     async loadAndUpdateStats() {
         try {
-            const today = new Date().toISOString().split('T')[0];
+            const today = this.formatLocalYMD(new Date());
             const response = await this.agendaService.getAgendaStats(today);
             const stats = response?.data || {};
             
@@ -182,7 +195,7 @@ class CalendarController {
         console.log('📅 Rendering today view');
 
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const todayStr = this.formatLocalYMD(today);
 
         // Update title
         const titleEl = document.getElementById('calendarTitle');
@@ -267,12 +280,17 @@ class CalendarController {
         const statusClass = this.getStatusClass(classItem.status);
         const checkedInCount = classItem.attendanceCount || 0;
         const totalStudents = classItem.maxStudents || 0;
+        const isVirtual = !!classItem.isVirtual;
+        const itemType = classItem.type || (isVirtual ? 'TURMA' : 'CLASS');
+        const typeBadge = itemType === 'PERSONAL_SESSION'
+            ? '<span class="type-badge type-personal">Personal</span>'
+            : (isVirtual ? '<span class="type-badge type-turma">Turma</span>' : '<span class="type-badge type-class">Aula</span>');
         
         return `
-            <div class="class-card ${statusClass}" data-class-id="${classItem.id}">
+            <div class="class-card ${statusClass}" data-class-id="${classItem.id}" data-item-type="${itemType}">
                 <div class="class-header">
                     <div class="class-title">
-                        <h4>${classItem.title || 'Aula'}</h4>
+                        <h4>${classItem.title || 'Aula'} ${typeBadge}</h4>
                         <span class="course-name">${classItem.course?.name || 'Curso'}</span>
                     </div>
                     <div class="class-status">
@@ -306,7 +324,7 @@ class CalendarController {
                         <span class="btn-icon">🏃</span>
                         <span class="btn-text">Check-in</span>
                     </button>
-                    <button class="btn-action btn-details" onclick="window.agendaModule.viewClassDetails('${classItem.id}')">
+                    <button class="btn-action btn-details" onclick="window.agendaModule.viewItemDetails('${classItem.id}', '${itemType}')">
                         <span class="btn-icon">👁️</span>
                         <span class="btn-text">Detalhes</span>
                     </button>
@@ -319,8 +337,8 @@ class CalendarController {
         console.log('📅 Rendering week view');
 
         const weekDates = this.agendaService.getWeekDates(this.currentDate);
-        const startDate = weekDates[0].toISOString().split('T')[0];
-        const endDate = weekDates[6].toISOString().split('T')[0];
+        const startDate = this.formatLocalYMD(weekDates[0]);
+        const endDate = this.formatLocalYMD(weekDates[6]);
 
         // Update title
         const titleEl = document.getElementById('calendarTitle');
@@ -330,7 +348,7 @@ class CalendarController {
         if (subtitleEl) subtitleEl.textContent =
             `${this.agendaService.formatDate(weekDates[0])} - ${this.agendaService.formatDate(weekDates[6])}`;
 
-        // Load week's classes
+        // Load week's classes (using local YYYY-MM-DD to avoid timezone issues)
         const response = await this.agendaService.getClasses(startDate, endDate, this.currentFilters);
         const classes = response?.data || [];
 
@@ -369,10 +387,16 @@ class CalendarController {
             html += `<div class="time-label">${time}</div>`;
             
             weekDates.forEach(date => {
-                const dateStr = date.toISOString().split('T')[0];
-                const dayClasses = classes.filter(c => 
-                    c.date === dateStr && c.startTime === time + ':00'
-                );
+                const dateStr = this.formatLocalYMD(date);
+                const dayClasses = classes.filter(c => {
+                    try {
+                        const cDateStr = this.formatLocalYMD(new Date(c.startTime));
+                        const cTime = new Date(c.startTime).toTimeString().slice(0, 5);
+                        return cDateStr === dateStr && cTime === time;
+                    } catch (_e) {
+                        return false;
+                    }
+                });
                 
                 html += `<div class="day-cell">`;
                 dayClasses.forEach(classItem => {
@@ -394,8 +418,8 @@ class CalendarController {
         console.log('📅 Rendering month view');
 
         const monthInfo = this.agendaService.getMonthDates(this.currentDate);
-        const startDate = monthInfo.firstDay.toISOString().split('T')[0];
-        const endDate = monthInfo.lastDay.toISOString().split('T')[0];
+        const startDate = this.formatLocalYMD(monthInfo.firstDay);
+        const endDate = this.formatLocalYMD(monthInfo.lastDay);
 
         // Update title
         const titleEl = document.getElementById('calendarTitle');
@@ -421,10 +445,10 @@ class CalendarController {
             return;
         }
 
-        // Group classes by date
+        // Group classes by local date
         const classesByDate = {};
         classes.forEach(cls => {
-            const dateKey = new Date(cls.startTime).toISOString().split('T')[0];
+            const dateKey = this.formatLocalYMD(new Date(cls.startTime));
             if (!classesByDate[dateKey]) {
                 classesByDate[dateKey] = [];
             }
@@ -457,7 +481,7 @@ class CalendarController {
         const today = new Date();
         
         while (currentDate <= endOfCalendar) {
-            const dateStr = currentDate.toISOString().split('T')[0];
+            const dateStr = this.formatLocalYMD(currentDate);
             const isCurrentMonth = currentDate.getMonth() === firstDay.getMonth();
             const isToday = currentDate.toDateString() === today.toDateString();
             const dayClasses = classesByDate[dateStr] || [];
@@ -474,7 +498,7 @@ class CalendarController {
                         ${dayClasses.slice(0, 3).map(cls => `
                             <div class="mini-class-event ${this.getStatusClass(cls.status)}" 
                                  title="${cls.title || 'Aula'} - ${cls.course?.name || 'Curso'}"
-                                 onclick="window.agendaModule.viewClassDetails('${cls.id}')">
+                                 onclick="window.agendaModule.viewItemDetails('${cls.id}', '${cls.type || (cls.isVirtual ? 'TURMA' : 'CLASS')}')">
                                 <span class="class-time">${this.formatTimeFromISO(cls.startTime)}</span>
                                 <span class="class-title">${(cls.title || cls.course?.name || 'Aula').substring(0, 20)}</span>
                             </div>
@@ -527,10 +551,13 @@ class CalendarController {
 
     renderMiniClassCard(classItem) {
         const statusClass = this.getStatusClass(classItem.status);
+        const isVirtual = !!classItem.isVirtual;
+        const itemType = classItem.type || (isVirtual ? 'TURMA' : 'CLASS');
+        const typeIcon = itemType === 'PERSONAL_SESSION' ? '👤' : (isVirtual ? '👥' : '📘');
         
         return `
-            <div class="mini-class-card ${statusClass}" data-class-id="${classItem.id}">
-                <div class="mini-class-title">${classItem.course?.name}</div>
+            <div class="mini-class-card ${statusClass}" data-class-id="${classItem.id}" data-item-type="${classItem.type || (classItem.isVirtual ? 'TURMA' : 'CLASS')}">
+                <div class="mini-class-title">${typeIcon} ${classItem.course?.name || classItem.title || 'Aula'}</div>
                 <div class="mini-class-info">${classItem.instructor?.name}</div>
             </div>
         `;
@@ -539,7 +566,9 @@ class CalendarController {
     generateTimeSlots() {
         const slots = [];
         for (let hour = 6; hour <= 22; hour++) {
-            slots.push(`${hour.toString().padStart(2, '0')}:00`);
+            for (const minute of [0, 15, 30, 45]) {
+                slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+            }
         }
         return slots;
     }
@@ -550,12 +579,35 @@ class CalendarController {
             card.addEventListener('click', (e) => {
                 if (!e.target.closest('.btn-action')) {
                     const classId = card.dataset.classId;
-                    this.viewClassDetails(classId);
+                    const itemType = card.dataset.itemType;
+                    this.viewItemDetails(classId, itemType);
                 }
             });
         });
     }
 
+    async viewItemDetails(id, type) {
+        // Deep-link using hash so SPA router can resolve the first segment and keep params
+        if (type === 'PERSONAL_SESSION') {
+            const route = `turma-editor/personal/${id}`;
+            window.location.hash = `#${route}`;
+            // Ensure SPA router loads the route without clobbering subpath
+            if (window.router?.navigateTo) window.router.navigateTo('turma-editor');
+            return;
+        }
+        if (type === 'TURMA' && id?.startsWith('turma-')) {
+            // Parse virtual turma class id: turma-{turmaId}-YYYY-MM-DD
+            const match = id.match(/^turma-(.+)-\d{4}-\d{2}-\d{2}$/);
+            const turmaId = match ? match[1] : null;
+            if (turmaId) {
+                const route = `turma-editor/${turmaId}`;
+                window.location.hash = `#${route}`;
+                if (window.router?.navigateTo) window.router.navigateTo('turma-editor');
+                return;
+            }
+        }
+        return this.viewClassDetails(id);
+    }
     async viewClassDetails(classId) {
         console.log(`📅 Viewing details for class ${classId}`);
         
@@ -566,6 +618,14 @@ class CalendarController {
             const response = await this.agendaService.moduleAPI.api.get(`/api/agenda/class/${classId}`);
             
             if (response?.success && response.data) {
+                // Route virtual turma classes directly to Turmas editor (no modals per UI standard)
+                if (response.data.isVirtual && response.data.turmaId) {
+                    // Navigate directly to turma editor; avoid opening modal
+                    const route = `turma-editor/${response.data.turmaId}`;
+                    window.location.hash = `#${route}`;
+                    if (window.router?.navigateTo) window.router.navigateTo('turma-editor');
+                    return;
+                }
                 this.showClassDetailsModal(response.data);
             } else {
                 window.showFeedback?.('Erro ao carregar detalhes da aula', 'error');
@@ -588,18 +648,17 @@ class CalendarController {
                         <h2>📚 Detalhes da Aula</h2>
                         <button class="modal-close" onclick="this.closest('.class-details-modal').remove()">×</button>
                     </div>
-                    
                     <div class="modal-body">
                         <div class="class-detail-section">
                             <h3>Informações Gerais</h3>
                             <div class="detail-grid">
                                 <div class="detail-item">
                                     <label>Título:</label>
-                                    <span>${classData.title || 'Não informado'}</span>
+                                    <span id="edit-title">${classData.title || 'Não informado'}</span>
                                 </div>
                                 <div class="detail-item">
                                     <label>Status:</label>
-                                    <span class="status-badge ${this.getStatusClass(classData.status)}">${this.getStatusText(classData.status)}</span>
+                                    <span class="status-badge ${this.getStatusClass(classData.status)}" id="edit-status">${this.getStatusText(classData.status)}</span>
                                 </div>
                                 <div class="detail-item">
                                     <label>Horário:</label>
@@ -615,7 +674,6 @@ class CalendarController {
                                 </div>
                             </div>
                         </div>
-
                         ${classData.course ? `
                             <div class="class-detail-section">
                                 <h3>Curso</h3>
@@ -631,7 +689,6 @@ class CalendarController {
                                 </div>
                             </div>
                         ` : ''}
-
                         ${classData.instructor ? `
                             <div class="class-detail-section">
                                 <h3>Instrutor</h3>
@@ -647,20 +704,35 @@ class CalendarController {
                                 </div>
                             </div>
                         ` : ''}
-
                         ${classData.description ? `
                             <div class="class-detail-section">
                                 <h3>Descrição</h3>
-                                <p>${classData.description}</p>
+                                <p id="edit-description">${classData.description}</p>
                             </div>
                         ` : ''}
-
                         <div class="class-detail-section">
                             <h3>Presenças (${classData.attendances?.length || 0})</h3>
                             ${this.renderAttendancesList(classData.attendances || [])}
                         </div>
+                        <div class="class-detail-section">
+                            <button class="btn-primary" id="edit-class-btn">Editar Aula</button>
+                            <form id="edit-class-form" style="display:none; margin-top:1em;">
+                                <label>Status:
+                                    <select name="status" id="edit-status-input">
+                                        <option value="SCHEDULED" ${classData.status==='SCHEDULED'?'selected':''}>Agendada</option>
+                                        <option value="IN_PROGRESS" ${classData.status==='IN_PROGRESS'?'selected':''}>Em Andamento</option>
+                                        <option value="COMPLETED" ${classData.status==='COMPLETED'?'selected':''}>Finalizada</option>
+                                        <option value="CANCELLED" ${classData.status==='CANCELLED'?'selected':''}>Cancelada</option>
+                                    </select>
+                                </label>
+                                <label>Notas:<br>
+                                    <textarea name="notes" id="edit-notes-input" rows="2">${classData.notes||''}</textarea>
+                                </label>
+                                <button type="submit" class="btn-primary">Salvar</button>
+                                <button type="button" class="btn-secondary" id="cancel-edit-btn">Cancelar</button>
+                            </form>
+                        </div>
                     </div>
-                    
                     <div class="modal-footer">
                         <button class="btn-secondary" onclick="this.closest('.class-details-modal').remove()">Fechar</button>
                         <button class="btn-primary" onclick="window.agendaModule.openCheckinModal('${classData.id}'); this.closest('.class-details-modal').remove();">
@@ -670,8 +742,44 @@ class CalendarController {
                 </div>
             </div>
         `;
-
         document.body.appendChild(modal);
+
+        // Edição inline
+        const editBtn = modal.querySelector('#edit-class-btn');
+        const editForm = modal.querySelector('#edit-class-form');
+        const cancelEditBtn = modal.querySelector('#cancel-edit-btn');
+        editBtn?.addEventListener('click', () => {
+            editForm.style.display = 'block';
+            editBtn.style.display = 'none';
+        });
+        cancelEditBtn?.addEventListener('click', () => {
+            editForm.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+        });
+        editForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = editForm.querySelector('#edit-status-input').value;
+            const notes = editForm.querySelector('#edit-notes-input').value;
+            try {
+                // PUT para turmaLesson se for virtual, ou para aula normal
+                let url = '';
+                if (classData.isVirtual && classData.turmaId && classData.turmaLessonId) {
+                    url = `/api/turmas/${classData.turmaId}/lessons/${classData.turmaLessonId}`;
+                } else {
+                    url = `/api/agenda/class/${classData.id}`;
+                }
+                const result = await this.agendaService.moduleAPI.api.put(url, { status, notes });
+                if (result.success) {
+                    window.showFeedback?.('Aula atualizada com sucesso', 'success');
+                    modal.remove();
+                    this.renderCurrentView();
+                } else {
+                    window.showFeedback?.('Falha ao atualizar aula', 'error');
+                }
+            } catch (err) {
+                window.showFeedback?.('Erro ao atualizar aula', 'error');
+            }
+        });
     }
 
     renderAttendancesList(attendances) {

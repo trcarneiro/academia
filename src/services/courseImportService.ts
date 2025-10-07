@@ -92,22 +92,66 @@ export class CourseImportService {
   /**
    * Import a complete course with schedule and techniques
    */
-  static async importFullCourse(courseData: CourseImportData, organizationId: string) {
+  static async importFullCourse(courseData: CourseImportData, organizationId: string, createMissingTechniques: boolean = false) {
     try {
       console.log('🔍 Starting course import for:', courseData.name);
+      console.log('✨ Create missing techniques:', createMissingTechniques);
 
       // 1. Validate techniques exist in system
       const techniqueValidation = await this.validateTechniques(courseData.techniques);
       
+      let techniquesCreated = 0;
+      
       if (!techniqueValidation.allValid) {
         console.log('❌ Missing techniques found:', techniqueValidation.missing);
-        return createResponse.error('Algumas técnicas não foram encontradas no sistema', {
-          missingTechniques: techniqueValidation.missing,
-          existingTechniques: techniqueValidation.existing.length
-        });
+        
+        if (createMissingTechniques) {
+          console.log('✨ Creating missing techniques automatically...');
+          
+          // Criar técnicas faltantes
+          for (const missingTech of techniqueValidation.missing) {
+            try {
+              // Extrair categoria do nome (se possível)
+              const category = this.extractCategoryFromName(missingTech.name);
+              
+              const newTechnique = await prisma.technique.create({
+                data: {
+                  id: missingTech.id,
+                  name: missingTech.name,
+                  slug: missingTech.name.toLowerCase().replace(/\s+/g, '-'),
+                  category: category,
+                  description: `Técnica importada automaticamente do curso ${courseData.name}`,
+                  difficulty: 1 // BEGINNER = 1
+                }
+              });
+              
+              techniquesCreated++;
+              console.log(`✅ Técnica criada: ${newTechnique.name}`);
+              
+              // Adicionar ao mapeamento
+              if (!techniqueValidation.slugMapping) {
+                techniqueValidation.slugMapping = new Map();
+              }
+              techniqueValidation.slugMapping.set(missingTech.id, newTechnique.id);
+              techniqueValidation.existing.push({ id: newTechnique.id, name: newTechnique.name });
+              
+            } catch (error) {
+              console.error(`❌ Erro ao criar técnica ${missingTech.name}:`, error);
+            }
+          }
+          
+          console.log(`✨ ${techniquesCreated} técnicas criadas automaticamente`);
+          
+        } else {
+          return createResponse.error('Algumas técnicas não foram encontradas no sistema', {
+            missingTechniques: techniqueValidation.missing,
+            existingTechniques: techniqueValidation.existing.length,
+            hint: 'Ative a opção "Criar técnicas automaticamente" para criar as técnicas faltantes'
+          });
+        }
       }
 
-      console.log('✅ All techniques validated successfully');
+      console.log('✅ All techniques validated/created successfully');
 
       // 2. Create or update the main course
       const course = await this.createOrUpdateCourse(courseData, organizationId);
@@ -118,7 +162,7 @@ export class CourseImportService {
       console.log('✅ Techniques associated:', courseData.techniques.length);
 
       // 4. Create detailed schedule
-      await this.createSchedule(course.id, courseData.schedule);
+      const scheduleResult = await this.createSchedule(course.id, courseData.schedule);
       console.log('✅ Schedule created for', courseData.schedule.weeks, 'weeks');
 
       // 5. Add extended metadata
@@ -134,9 +178,10 @@ export class CourseImportService {
       return createResponse.success('Curso importado com sucesso', {
         courseId: course.id,
         courseName: course.name,
-        techniquesAssociated: courseData.techniques.length,
+        techniqueCount: courseData.techniques.length,
+        techniquesCreated: techniquesCreated,
+        lessonCount: scheduleResult?.lessonCount || courseData.totalLessons,
         weeksCreated: courseData.schedule.weeks,
-        totalLessons: courseData.totalLessons,
         hasGamification: !!courseData.gamification,
         importTimestamp: new Date().toISOString()
       });
@@ -151,17 +196,49 @@ export class CourseImportService {
   }
 
   /**
+   * Extract category from technique name
+   */
+  private static extractCategoryFromName(name: string): string {
+    const nameLower = name.toLowerCase();
+    
+    if (nameLower.includes('soco') || nameLower.includes('jab') || nameLower.includes('direto')) {
+      return 'PUNCH';
+    } else if (nameLower.includes('chute') || nameLower.includes('kick')) {
+      return 'KICK';
+    } else if (nameLower.includes('defesa') || nameLower.includes('defense')) {
+      return 'DEFENSE';
+    } else if (nameLower.includes('cotovelo')) {
+      return 'ELBOW';
+    } else if (nameLower.includes('joelho')) {
+      return 'KNEE';
+    } else if (nameLower.includes('queda') || nameLower.includes('rolamento')) {
+      return 'FALL';
+    } else if (nameLower.includes('postura') || nameLower.includes('guarda')) {
+      return 'STANCE';
+    } else if (nameLower.includes('agarramento') || nameLower.includes('estrangulamento')) {
+      return 'GRAPPLING';
+    }
+    
+    return 'OTHER';
+  }
+
+  /**
    * Validate that all techniques exist in the system
    */
   static async validateTechniques(techniques: Array<{ id: string; name: string }>): Promise<TechniqueValidation> {
+    console.log(`🔍 Validating ${techniques.length} techniques...`);
+    
     // First try to find by ID in technique table (exact match)
     const techniqueIds = techniques.map(t => t.id);
+    
+    console.log(`🔍 Looking for techniques by ID...`);
     const existingById = await prisma.technique.findMany({
       where: {
         id: { in: techniqueIds }
       },
       select: { id: true, name: true }
     });
+    console.log(`✅ Found ${existingById.length} techniques by ID`);
 
     // If not found by ID, try intelligent name mapping
     const notFoundByIds = techniques.filter(t => !existingById.find(e => e.id === t.id));
@@ -170,70 +247,79 @@ export class CourseImportService {
     const existingByName: Array<{ id: string; name: string }> = [];
     
     if (notFoundByIds.length > 0) {
-      console.log(`🔍 Need to map ${notFoundByIds.length} techniques by name similarity`);
+      console.log(`⚠️ ${notFoundByIds.length} techniques not found by ID, will try name matching`);
+      console.log(`⚠️ Missing IDs:`, notFoundByIds.map(t => t.id).slice(0, 5).join(', '), '...');
       
-      // Get all techniques from database for comparison
-      const allTechniques = await prisma.technique.findMany({
-        select: { id: true, name: true }
-      });
-      
-      for (const jsonTech of notFoundByIds) {
-        // Extract keywords from JSON technique name
-        const jsonKeywords = jsonTech.name
-          .toLowerCase()
-          .split(/[-\s,]+/)
-          .filter(word => word.length > 2 && !['com', 'para', 'por', 'pela', 'pelo', 'contra', 'dos', 'das'].includes(word));
+      // OPTIMIZATION: Only do name matching if < 50 missing (otherwise too slow)
+      if (notFoundByIds.length < 50) {
+        console.log(`🔍 Starting name similarity matching...`);
         
-        let bestMatch = null;
-        let bestScore = 0;
+        // Get all techniques from database for comparison
+        const allTechniques = await prisma.technique.findMany({
+          select: { id: true, name: true }
+        });
+        console.log(`📊 Database has ${allTechniques.length} techniques to compare`);
         
-        // Evaluate each technique in database
-        for (const dbTech of allTechniques) {
-          const dbName = dbTech.name.toLowerCase();
-          const dbId = dbTech.id.toLowerCase();
-          let score = 0;
+        for (const jsonTech of notFoundByIds) {
+          // Extract keywords from JSON technique name
+          const jsonKeywords = jsonTech.name
+            .toLowerCase()
+            .split(/[-\s,]+/)
+            .filter(word => word.length > 2 && !['com', 'para', 'por', 'pela', 'pelo', 'contra', 'dos', 'das'].includes(word));
+          
+          let bestMatch = null;
+          let bestScore = 0;
+          
+          // Evaluate each technique in database
+          for (const dbTech of allTechniques) {
+            const dbName = dbTech.name.toLowerCase();
+            const dbId = dbTech.id.toLowerCase();
+            let score = 0;
 
-          // Calculate score based on keyword matches
-          for (const keyword of jsonKeywords) {
-            if (dbName.includes(keyword) || dbId.includes(keyword)) {
-              score += keyword.length; // Longer words have more weight
+            // Calculate score based on keyword matches
+            for (const keyword of jsonKeywords) {
+              if (dbName.includes(keyword) || dbId.includes(keyword)) {
+                score += keyword.length; // Longer words have more weight
+              }
+            }
+
+            // Bonus for exact matches of specific words
+            if (jsonKeywords.includes('soco') && (dbName.includes('soco') || dbId.includes('soco'))) {
+              score += 10;
+            }
+            if (jsonKeywords.includes('defesa') && (dbName.includes('defesa') || dbId.includes('defesa'))) {
+              score += 10;
+            }
+            if (jsonKeywords.includes('estrangulamento') && (dbName.includes('estrangulamento') || dbId.includes('estrangulamento'))) {
+              score += 15;
+            }
+            if (jsonKeywords.includes('uppercut') && (dbName.includes('uppercut') || dbId.includes('uppercut'))) {
+              score += 15;
+            }
+            if (jsonKeywords.includes('combinação') && (dbName.includes('combinação') || dbId.includes('combinacao'))) {
+              score += 15;
+            }
+            if (jsonKeywords.includes('cotovelada') && (dbName.includes('cotovelada') || dbId.includes('cotovelada'))) {
+              score += 15;
+            }
+
+            if (score > bestScore) {
+              bestScore = score;
+              bestMatch = dbTech;
             }
           }
-
-          // Bonus for exact matches of specific words
-          if (jsonKeywords.includes('soco') && (dbName.includes('soco') || dbId.includes('soco'))) {
-            score += 10;
-          }
-          if (jsonKeywords.includes('defesa') && (dbName.includes('defesa') || dbId.includes('defesa'))) {
-            score += 10;
-          }
-          if (jsonKeywords.includes('estrangulamento') && (dbName.includes('estrangulamento') || dbId.includes('estrangulamento'))) {
-            score += 15;
-          }
-          if (jsonKeywords.includes('uppercut') && (dbName.includes('uppercut') || dbId.includes('uppercut'))) {
-            score += 15;
-          }
-          if (jsonKeywords.includes('combinação') && (dbName.includes('combinação') || dbId.includes('combinacao'))) {
-            score += 15;
-          }
-          if (jsonKeywords.includes('cotovelada') && (dbName.includes('cotovelada') || dbId.includes('cotovelada'))) {
-            score += 15;
-          }
-
-          if (score > bestScore) {
-            bestScore = score;
-            bestMatch = dbTech;
+          
+          // Only map if confidence score is high enough
+          if (bestMatch && bestScore >= 5) {
+            nameMapping.set(jsonTech.id, bestMatch.id);
+            existingByName.push(bestMatch);
+            console.log(`🔍 Mapped "${jsonTech.name}" -> "${bestMatch.name}" (${bestMatch.id}) [score: ${bestScore}]`);
+          } else {
+            console.log(`⚠️ Could not find good match for "${jsonTech.name}" (best score: ${bestScore})`);
           }
         }
-        
-        // Only map if confidence score is high enough
-        if (bestMatch && bestScore >= 5) {
-          nameMapping.set(jsonTech.id, bestMatch.id);
-          existingByName.push(bestMatch);
-          console.log(`🔍 Mapped "${jsonTech.name}" -> "${bestMatch.name}" (${bestMatch.id}) [score: ${bestScore}]`);
-        } else {
-          console.log(`⚠️ Could not find good match for "${jsonTech.name}" (best score: ${bestScore})`);
-        }
+      } else {
+        console.log(`⏭️ Skipping name matching (too many missing: ${notFoundByIds.length})`);
       }
     } else {
       console.log(`✅ All ${existingById.length} techniques found by exact ID match`);
@@ -251,6 +337,8 @@ export class CourseImportService {
     ]);
 
     const missing = techniques.filter(t => !existingIds.has(t.id) && !nameMapping.has(t.id));
+
+    console.log(`📊 Validation complete: ${existing.length} found, ${missing.length} missing`);
 
     return {
       allValid: missing.length === 0,
@@ -369,7 +457,7 @@ export class CourseImportService {
       isRequired: boolean;
     }> = [];
 
-    techniques.forEach((technique, index) => {
+    techniques.forEach((technique) => {
       // Use mapped ID if available, otherwise use original ID
       const techniqueId = slugMapping?.get(technique.id) || technique.id;
       
@@ -399,44 +487,156 @@ export class CourseImportService {
 
   /**
    * Create detailed schedule entries
+   * OPTIMIZED: Uses batch operations to avoid N+1 queries
    */
   private static async createSchedule(courseId: string, schedule: CourseImportData['schedule']) {
-    // First, check if we have a course_schedule table or need to use a JSON field
-    // For now, we'll store in the course metadata since the schema doesn't show a separate schedule table
+    console.log(`📅 Creating schedule for course ${courseId}: ${schedule.weeks} weeks, ${schedule.lessonsPerWeek.length} week entries`);
     
-    // Create lesson plans for each week/lesson combination
+    // 🧹 CLEANUP: Delete existing lesson plans for this course to avoid unique constraint errors
+    const existingLessonPlans = await prisma.lessonPlan.findMany({
+      where: { courseId: courseId, isActive: true },
+      select: { id: true, lessonNumber: true }
+    });
+    
+    if (existingLessonPlans.length > 0) {
+      console.log(`  🧹 Found ${existingLessonPlans.length} existing lesson plans, deleting...`);
+      
+      // Delete technique links first (foreign key constraint)
+      await prisma.lessonPlanTechnique.deleteMany({
+        where: {
+          lessonPlanId: { in: existingLessonPlans.map(lp => lp.id) }
+        }
+      });
+      
+      // Delete lesson plans
+      await prisma.lessonPlan.deleteMany({
+        where: { courseId: courseId, isActive: true }
+      });
+      
+      console.log(`  ✅ Cleanup complete, ready for fresh import`);
+    }
+    
+    // OPTIMIZATION: Prepare all lesson plans data first
+    const lessonPlansToCreate: any[] = [];
+    const lessonTechniquesMap = new Map<number, Array<{ id: string; name: string }>>();
+    
     let lessonNumber = 1;
     
     for (const weekData of schedule.lessonsPerWeek) {
+      console.log(`  📌 Week ${weekData.week}: ${weekData.lessons} lessons, focus: ${weekData.focus?.length || 0} items`);
+      
       for (let lesson = 1; lesson <= weekData.lessons; lesson++) {
         const lessonName = `${courseId} - Semana ${weekData.week} - Aula ${lesson}`;
         
-        // Create lesson plan
-        const lessonPlan = await prisma.lessonPlan.create({
-          data: {
-            courseId: courseId,
-            title: lessonName,
-            description: `Plano de aula da semana ${weekData.week}, aula ${lesson}`,
-            lessonNumber: lessonNumber,
-            weekNumber: weekData.week,
-            objectives: this.extractObjectivesFromFocus(weekData.focus),
-            equipment: [],
-            activities: [],
-            warmup: {},
-            techniques: {},
-            simulations: {},
-            cooldown: {},
-            duration: 60, // Default lesson duration
-            createdAt: new Date()
-          }
+        // Prepare lesson plan data
+        lessonPlansToCreate.push({
+          courseId: courseId,
+          title: lessonName,
+          description: `Plano de aula da semana ${weekData.week}, aula ${lesson}`,
+          lessonNumber: lessonNumber,
+          weekNumber: weekData.week,
+          objectives: this.extractObjectivesFromFocus(weekData.focus),
+          equipment: [],
+          activities: [],
+          warmup: {},
+          techniques: {},
+          simulations: {},
+          cooldown: {},
+          duration: 60,
+          createdAt: new Date()
         });
-
-        // Associate activities/techniques with this lesson plan
-        await this.addActivitiesToLessonPlan(lessonPlan.id, weekData.focus);
+        
+        // Store techniques for this lesson
+        if (weekData.focus && weekData.focus.length > 0) {
+          const techniques = weekData.focus
+            .filter(item => typeof item === 'object' && item.id)
+            .map(item => ({ id: (item as any).id, name: (item as any).name }));
+          
+          if (techniques.length > 0) {
+            lessonTechniquesMap.set(lessonNumber, techniques);
+          }
+        }
         
         lessonNumber++;
       }
     }
+    
+    console.log(`  ⚡ Creating ${lessonPlansToCreate.length} lesson plans in batch...`);
+    
+    // BATCH INSERT: Create all lesson plans at once
+    const createdLessonPlans = await prisma.$transaction(
+      lessonPlansToCreate.map(data => prisma.lessonPlan.create({ data }))
+    );
+    
+    console.log(`  ✅ Created ${createdLessonPlans.length} lesson plans`);
+    
+    // Now link techniques to lesson plans
+    if (lessonTechniquesMap.size > 0) {
+      console.log(`  🔗 Linking techniques to ${lessonTechniquesMap.size} lessons...`);
+      
+      // Fetch all techniques we need (batch fetch)
+      const allTechniqueIds = Array.from(lessonTechniquesMap.values())
+        .flat()
+        .map(t => t.id);
+      
+      const uniqueTechniqueIds = [...new Set(allTechniqueIds)];
+      
+      console.log(`  🔍 Fetching ${uniqueTechniqueIds.length} unique techniques...`);
+      
+      const techniques = await prisma.technique.findMany({
+        where: { id: { in: uniqueTechniqueIds } },
+        select: { id: true, name: true }
+      });
+      
+      const techniqueMap = new Map(techniques.map(t => [t.id, t]));
+      console.log(`  ✅ Found ${techniques.length} techniques in database`);
+      
+      // Prepare all technique links
+      const techniqueLinksToCreate: any[] = [];
+      
+      for (const lessonPlan of createdLessonPlans) {
+        const lessonTechniques = lessonTechniquesMap.get(lessonPlan.lessonNumber);
+        
+        if (lessonTechniques && lessonTechniques.length > 0) {
+          let order = 1;
+          
+          for (const tech of lessonTechniques) {
+            const technique = techniqueMap.get(tech.id);
+            
+            if (technique) {
+              techniqueLinksToCreate.push({
+                lessonPlanId: lessonPlan.id,
+                techniqueId: technique.id,
+                order: order++,
+                allocationMinutes: 15,
+                objectiveMapping: [`Praticar técnica: ${technique.name}`]
+              });
+            } else {
+              console.warn(`    ⚠️ Technique not found: ${tech.id} (${tech.name})`);
+            }
+          }
+        }
+      }
+      
+      if (techniqueLinksToCreate.length > 0) {
+        console.log(`  ⚡ Creating ${techniqueLinksToCreate.length} technique links in batch...`);
+        
+        // BATCH INSERT: Create all technique links at once
+        await prisma.lessonPlanTechniques.createMany({
+          data: techniqueLinksToCreate,
+          skipDuplicates: true
+        });
+        
+        console.log(`  ✅ Created ${techniqueLinksToCreate.length} technique links`);
+      }
+    }
+    
+    console.log(`✅ Schedule created: ${createdLessonPlans.length} lessons total`);
+    
+    return {
+      lessonCount: createdLessonPlans.length,
+      weeks: schedule.weeks
+    };
   }
 
   /**
@@ -552,31 +752,65 @@ export class CourseImportService {
 
   /**
    * Helper: Add activities to lesson plan based on focus
+   * @deprecated Not used anymore - functionality moved to createSchedule for batch operations
    */
-  private static async addActivitiesToLessonPlan(lessonPlanId: string, focus: Array<any>) {
-    let orderIndex = 1;
+  /* private static async addActivitiesToLessonPlan(lessonPlanId: string, focus: Array<any>) {
+    if (!focus || focus.length === 0) {
+      console.log(`  ⏭️ No focus items for lesson ${lessonPlanId}`);
+      return;
+    }
+    
+    console.log(`  🎯 Processing ${focus.length} focus items for lesson ${lessonPlanId}`);
+    
+    // Collect all technique IDs from focus array
+    const techniqueIds = focus
+      .filter(item => typeof item === 'object' && item.id)
+      .map(item => item.id);
+    
+    // Batch fetch all techniques at once (OPTIMIZATION: 1 query instead of N queries)
+    let techniques: Array<{ id: string; name: string }> = [];
+    if (techniqueIds.length > 0) {
+      console.log(`  🔍 Fetching ${techniqueIds.length} techniques...`);
+      techniques = await prisma.technique.findMany({
+        where: { id: { in: techniqueIds } },
+        select: { id: true, name: true }
+      });
+      console.log(`  ✅ Found ${techniques.length} techniques in database`);
+    }
+    
+    const techniqueMap = new Map(techniques.map(t => [t.id, t]));
+    
+    let order = 1;
+    const techniquesToLink = [];
 
     for (const focusItem of focus) {
       if (typeof focusItem === 'object' && focusItem.id) {
         // This is a technique reference
-        const technique = await prisma.activity.findUnique({
-          where: { id: focusItem.id }
-        });
+        const technique = techniqueMap.get(focusItem.id);
 
         if (technique) {
-          await prisma.lessonPlanActivity.create({
-            data: {
-              lessonPlanId: lessonPlanId,
-              activityId: technique.id,
-              segment: 'TECHNIQUE',
-              ord: orderIndex++,
-              objectives: `Praticar técnica: ${focusItem.name}`,
-              createdAt: new Date()
-            }
+          techniquesToLink.push({
+            lessonPlanId: lessonPlanId,
+            techniqueId: technique.id,
+            order: order++,
+            allocationMinutes: 15, // Default 15 minutes per technique
+            objectiveMapping: [`Praticar técnica: ${technique.name}`]
           });
+        } else {
+          console.warn(`  ⚠️ Technique not found: ${focusItem.id} (${focusItem.name})`);
         }
+      } else if (typeof focusItem === 'string') {
+        // Handle activity types like "STRETCH", "DRILL", "CHALLENGE"
+        console.log(`  ℹ️ Activity type: ${focusItem}`);
       }
-      // Could also handle string-based activities like "STRETCH", "DRILL", etc.
     }
-  }
+    
+    // Batch create all technique links (OPTIMIZATION: 1 query instead of N queries)
+    if (techniquesToLink.length > 0) {
+      await prisma.lessonPlanTechniques.createMany({
+        data: techniquesToLink
+      });
+      console.log(`  ✅ Created ${techniquesToLink.length} lesson plan technique links`);
+    }
+  } */
 }

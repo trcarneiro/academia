@@ -13,11 +13,44 @@ export const ActivitiesService = {
   },
 
   async get(id) {
-    const response = await fetch(`/api/activities/${id}`);
+    // First try to fetch from activities
+    let response = await fetch(`/api/activities/${id}`);
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to fetch activity');
+      // If not found in activities, try techniques
+      console.log(`🔍 Activity ${id} not found, trying techniques endpoint...`);
+      response = await fetch(`/api/techniques/${id}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Atividade não encontrada');
+      }
+      
+      // Convert technique format to activity format
+      const techniqueData = await response.json();
+      if (techniqueData.success && techniqueData.data && techniqueData.data.technique) {
+        const technique = techniqueData.data.technique;
+        console.log(`✅ Found technique: ${technique.name}`);
+        return {
+          success: true,
+          data: {
+            id: technique.id,
+            title: technique.name,
+            type: 'TECHNIQUE',
+            description: technique.description,
+            difficulty: technique.difficulty,
+            // Map other technique fields to activity fields
+            shortDescription: technique.shortDescription,
+            complexity: technique.complexity,
+            objectives: technique.objectives,
+            resources: technique.resources,
+            assessmentCriteria: technique.assessmentCriteria,
+            instructions: technique.instructions,
+            tags: technique.tags,
+            category: technique.category
+          }
+        };
+      }
     }
     
     return response.json();

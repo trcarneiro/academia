@@ -39,6 +39,13 @@
         <div id="list-test-result"></div>
     </div>
 
+    <div class="test-section">
+        <h2>Test 4: Navigation Test</h2>
+        <button onclick="testStandaloneEditor()">Open Standalone Editor</button>
+        <button onclick="testSPANavigation()">Test SPA Navigation</button>
+        <div id="navigation-test-result"></div>
+    </div>
+
     <script>
         const API_BASE = 'http://localhost:3000/api';
 
@@ -122,6 +129,27 @@
         window.addEventListener('load', function() {
             setTimeout(testAPIConnection, 1000);
         });
+
+        function testStandaloneEditor() {
+            const resultDiv = document.getElementById('navigation-test-result');
+            resultDiv.innerHTML = '<div class="success">🚀 Opening standalone editor...</div>';
+            
+            // Open standalone editor in new tab
+            window.open('/standalone-instructor-editor.html', '_blank');
+        }
+
+        function testSPANavigation() {
+            const resultDiv = document.getElementById('navigation-test-result');
+            resultDiv.innerHTML = '<div class="success">🔄 Testing SPA navigation...</div>';
+            
+            // Simulate SPA navigation
+            try {
+                window.location.href = '#/instructors/new';
+                resultDiv.innerHTML += '<div class="success">✅ Hash navigation executed</div>';
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="error">❌ Navigation failed: ${error.message}</div>`;
+            }
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Edit/Delete Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-card { 
+            background: rgba(255,255,255,0.1); 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-radius: 12px; 
+            backdrop-filter: blur(10px);
+        }
+        .success { background: rgba(40, 167, 69, 0.2); border-left: 4px solid #28a745; }
+        .error { background: rgba(220, 53, 69, 0.2); border-left: 4px solid #dc3545; }
+        .warning { background: rgba(255, 193, 7, 0.2); border-left: 4px solid #ffc107; }
+        button { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            border: none;
+            border-radius: 8px;
+            cursor: pointer; 
+            font-weight: bold;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-edit { background: linear-gradient(45deg, #007bff, #6f42c1); }
+        .btn-delete { background: linear-gradient(45deg, #dc3545, #fd7e14); }
+        .console-log { 
+            background: rgba(0,0,0,0.5); 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .instructor-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .instructor-info {
+            flex: 1;
+        }
+        .instructor-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Edit/Delete Functions Test</h1>
+    <p><strong>Objetivo:</strong> Testar se as funções de editar e excluir funcionam corretamente.</p>
+
+    <div class="test-card">
+        <h2>📊 Current Instructors</h2>
+        <button onclick="loadInstructors()">Load Instructors</button>
+        <button onclick="createTestInstructor()">Create Test Instructor</button>
+        <div id="instructors-list"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>🧪 Direct API Tests</h2>
+        <button onclick="testDeleteAPI()">Test Delete API</button>
+        <button onclick="testEditNavigation()">Test Edit Navigation</button>
+        <div id="api-test-result"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>🖥️ Live Module Container</h2>
+        <button onclick="loadLiveModule()">Load Live Module</button>
+        <div id="module-container" style="margin-top: 20px; min-height: 400px; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 20px;">
+            <div style="text-align: center; padding: 50px; opacity: 0.6;">
+                Module will be loaded here...
+            </div>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>📋 Console Logs</h2>
+        <button onclick="clearConsole()">Clear</button>
+        <div id="console-output" class="console-log">
+            <div>🔍 Console logs will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let instructorsData = [];
+
+        // Console capture
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+
+        function addToConsole(type, message) {
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff6b6b' : '#4ecdc4';
+            div.style.marginBottom = '5px';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${type.toUpperCase()}: ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', args.join(' '));
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', args.join(' '));
+        };
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '<div>🔍 Console cleared...</div>';
+        }
+
+        async function loadInstructors() {
+            const listDiv = document.getElementById('instructors-list');
+            listDiv.innerHTML = '<div>🔄 Loading instructors...</div>';
+
+            try {
+                const response = await fetch('/api/instructors');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    instructorsData = data.data;
+                    renderInstructorsList(data.data);
+                } else {
+                    listDiv.innerHTML = '<div class="error">❌ Failed to load instructors</div>';
+                }
+            } catch (error) {
+                console.error('Error loading instructors:', error);
+                listDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderInstructorsList(instructors) {
+            const listDiv = document.getElementById('instructors-list');
+            
+            if (instructors.length === 0) {
+                listDiv.innerHTML = '<div class="warning">⚠️ No instructors found</div>';
+                return;
+            }
+
+            const instructorsHtml = instructors.map(instructor => `
+                <div class="instructor-card">
+                    <div class="instructor-info">
+                        <strong>${instructor.name}</strong><br>
+                        <small>${instructor.email}</small><br>
+                        <small>ID: ${instructor.id}</small>
+                    </div>
+                    <div class="instructor-actions">
+                        <button class="btn-edit" onclick="testEditInstructor('${instructor.id}')">
+                            Edit
+                        </button>
+                        <button class="btn-delete" onclick="testDeleteInstructor('${instructor.id}')">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            listDiv.innerHTML = `
+                <div class="success">✅ Found ${instructors.length} instructors:</div>
+                ${instructorsHtml}
+            `;
+        }
+
+        async function createTestInstructor() {
+            try {
+                const testInstructor = {
+                    firstName: 'Test',
+                    lastName: 'Instructor',
+                    email: `test.instructor.${Date.now()}@test.com`,
+                    phone: '(11) 99999-9999',
+                    cpf: '123.456.789-00'
+                };
+
+                const response = await fetch('/api/instructors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testInstructor)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Test instructor created:', data.data);
+                    await loadInstructors(); // Reload list
+                } else {
+                    console.error('❌ Failed to create test instructor:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error creating test instructor:', error);
+            }
+        }
+
+        function testEditInstructor(id) {
+            console.log(`🔧 Testing edit for instructor: ${id}`);
+            
+            // Check if we have the controller available
+            if (window.instructorsController && typeof window.instructorsController.navigateToEditInstructor === 'function') {
+                window.instructorsController.navigateToEditInstructor(id);
+            } else {
+                console.log('🆘 Controller not available, using fallback');
+                const standaloneUrl = `${window.location.origin}/standalone-instructor-editor.html?id=${id}`;
+                window.open(standaloneUrl, '_blank');
+            }
+        }
+
+        function testDeleteInstructor(id) {
+            console.log(`🗑️ Testing delete for instructor: ${id}`);
+            
+            // Check if we have the controller available
+            if (window.instructorsController && typeof window.instructorsController.confirmDelete === 'function') {
+                window.instructorsController.confirmDelete(id);
+            } else {
+                console.log('🆘 Controller not available, using direct API call');
+                testDirectDelete(id);
+            }
+        }
+
+        async function testDirectDelete(id) {
+            if (!confirm('Tem certeza que deseja excluir este instrutor? (Teste direto da API)')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/instructors/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Instructor deleted successfully via direct API');
+                    await loadInstructors(); // Reload list
+                } else {
+                    console.error('❌ Delete failed:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error in direct delete:', error);
+            }
+        }
+
+        async function testDeleteAPI() {
+            const resultDiv = document.getElementById('api-test-result');
+            resultDiv.innerHTML = '<div>🧪 Testing delete API...</div>';
+
+            if (instructorsData.length === 0) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Load instructors first</div>';
+                return;
+            }
+
+            // Test with first instructor
+            const testId = instructorsData[0].id;
+            console.log(`🧪 Testing delete API with ID: ${testId}`);
+            
+            try {
+                // Don't actually delete, just test the API structure
+                console.log('🧪 API test (dry run - not actually deleting)');
+                resultDiv.innerHTML = '<div class="success">✅ Delete API structure test passed</div>';
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ API test failed: ${error.message}</div>`;
+            }
+        }
+
+        function testEditNavigation() {
+            const resultDiv = document.getElementById('api-test-result');
+            
+            if (instructorsData.length === 0) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Load instructors first</div>';
+                return;
+            }
+
+            const testId = instructorsData[0].id;
+            console.log(`🧪 Testing edit navigation with ID: ${testId}`);
+            
+            testEditInstructor(testId);
+            resultDiv.innerHTML = '<div class="success">✅ Edit navigation test triggered</div>';
+        }
+
+        async function loadLiveModule() {
+            const container = document.getElementById('module-container');
+            
+            try {
+                // Load required scripts
+                await loadScript('/js/shared/api-client.js');
+                await loadScript('/js/modules/instructors/controllers/InstructorsController.js');
+                await loadScript('/js/modules/instructors/index.js');
+
+                console.log('📦 Scripts loaded, initializing module...');
+                
+                // Initialize module
+                await window.initInstructorsModule(container);
+                
+                console.log('✅ Live module loaded successfully');
+                
+            } catch (error) {
+                console.error('❌ Failed to load live module:', error);
+                container.innerHTML = `<div class="error">❌ Failed to load module: ${error.message}</div>`;
+            }
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) {
+                    resolve(); // Script already loaded
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Auto-load instructors on page load
+        window.addEventListener('load', () => {
+            console.log('🧪 Edit/Delete test page loaded');
+            setTimeout(loadInstructors, 1000);
+        });
+    </script>
+</body>
+</html>

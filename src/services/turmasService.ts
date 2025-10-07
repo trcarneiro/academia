@@ -1,24 +1,29 @@
-import { PrismaClient } from '@prisma/client';
-import { addDays, format, parseISO, isAfter, isBefore } from 'date-fns';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { addDays, parseISO } from 'date-fns';
 
 const prisma = new PrismaClient();
 
 export interface CreateTurmaData {
   name: string;
-  courseId?: string; // Keep for backward compatibility
-  courseIds?: string[]; // New field for multiple courses
-  type: 'COLLECTIVE' | 'PRIVATE';
+  courseId?: string | undefined; // Keep for backward compatibility
+  courseIds?: string[] | undefined; // New field for multiple courses
+  type: 'COLLECTIVE' | 'PRIVATE' | 'SEMI_PRIVATE';
   startDate: string;
-  endDate?: string;
-  maxStudents?: number;
+  endDate?: string | null | undefined;
+  maxStudents?: number | undefined;
   instructorId: string;
   organizationId: string;
   unitId: string;
+  trainingAreaId?: string | undefined;
+  room?: string | null | undefined;
+  price?: number | null | undefined;
+  description?: string | undefined;
   schedule: {
     daysOfWeek: number[];
     time: string;
     duration: number;
   };
+  requireAttendanceForProgress?: boolean | undefined;
 }
 
 export interface TurmaFilters {
@@ -48,6 +53,28 @@ export interface ReportFilters {
 }
 
 export class TurmasService {
+  /**
+   * Helper method to convert Instructor.id to User.id
+   * Frontend sends Instructor.id, but Turma FK expects User.id
+   */
+  async getInstructorUserId(instructorId: string) {
+    // Try to find by Instructor.id first
+    let instructor = await prisma.instructor.findUnique({
+      where: { id: instructorId },
+      select: { userId: true, id: true }
+    });
+    
+    // If not found, try finding by User.id (fallback for frontend sending userId)
+    if (!instructor) {
+      instructor = await prisma.instructor.findFirst({
+        where: { userId: instructorId },
+        select: { userId: true, id: true }
+      });
+    }
+    
+    return instructor;
+  }
+
   async list(filters: TurmaFilters = {}) {
     const where: any = {};
 
@@ -98,6 +125,9 @@ export class TurmasService {
             }
           }
         },
+        courses: {
+          include: { course: true }
+        },
         instructor: true,
         organization: true,
         unit: true,
@@ -124,17 +154,24 @@ export class TurmasService {
   }
 
   async create(data: CreateTurmaData) {
-    // Handle courseIds (multiple courses) or fallback to single courseId
-    const courseIds = data.courseIds && data.courseIds.length > 0 ? data.courseIds : (data.courseId ? [data.courseId] : []);
+    console.log('[TurmasService] Create method called with data:', JSON.stringify(data, null, 2));
+    
+  // Handle courseIds (multiple courses) or fallback to single courseId
+  const courseIds = data.courseIds && data.courseIds.length > 0 ? data.courseIds : (data.courseId ? [data.courseId] : []);
+    console.log('[TurmasService] Processed courseIds:', courseIds);
     
     if (courseIds.length === 0) {
+      console.error('[TurmasService] No courses provided');
       throw new Error('At least one course must be provided');
     }
 
     // Use the first course as the primary course for backward compatibility
     const primaryCourseId = courseIds[0];
+    console.log('[TurmasService] Primary course ID:', primaryCourseId);
 
-    const turma = await prisma.$transaction(async (tx) => {
+    try {
+      console.log('[TurmasService] Starting transaction...');
+      const turma = await prisma.$transaction(async (tx) => {
       // Create the turma
       const createdTurma = await tx.turma.create({
         data: {
@@ -145,10 +182,16 @@ export class TurmasService {
           endDate: data.endDate ? parseISO(data.endDate) : null,
           maxStudents: data.maxStudents || 20,
           schedule: data.schedule,
-          courseId: primaryCourseId, // Set primary course for backward compatibility
+          courseId: primaryCourseId!, // Set primary course for backward compatibility (validated earlier)
           instructorId: data.instructorId,
           organizationId: data.organizationId,
-          unitId: data.unitId
+          unitId: data.unitId,
+          trainingAreaId: data.trainingAreaId || null,
+          room: data.room || null,
+          // Prisma expects Decimal for price; allow null if absent
+          price: typeof data.price === 'number' ? new Prisma.Decimal(data.price) : null,
+          description: data.description || null,
+          // requireAttendanceForProgress may not exist in current Prisma client; set via update if needed
         }
       });
 
@@ -190,6 +233,10 @@ export class TurmasService {
     }
 
     return completeTurma;
+    } catch (error) {
+      console.error('[TurmasService] Error in create method:', error);
+      throw error;
+    }
   }
 
   async update(id: string, data: Partial<CreateTurmaData>) {
@@ -205,31 +252,119 @@ export class TurmasService {
         console.log('[TurmasService] Processing startDate:', data.startDate);
         updateData.startDate = parseISO(data.startDate);
       }
-      if (data.endDate) {
-        console.log('[TurmasService] Processing endDate:', data.endDate);
-        updateData.endDate = parseISO(data.endDate);
+      if ('endDate' in data) {
+        if (data.endDate) {
+          console.log('[TurmasService] Processing endDate:', data.endDate);
+          updateData.endDate = parseISO(data.endDate);
+        } else {
+          // explicit null clears endDate
+          updateData.endDate = null;
+        }
       }
-      if (data.maxStudents) updateData.maxStudents = data.maxStudents;
+      if (typeof data.maxStudents !== 'undefined') updateData.maxStudents = data.maxStudents;
       if (data.schedule) {
         console.log('[TurmasService] Processing schedule:', JSON.stringify(data.schedule));
         updateData.schedule = data.schedule;
       }
       if (data.instructorId) updateData.instructorId = data.instructorId;
+      if (data.unitId) updateData.unitId = data.unitId;
+      if (data.trainingAreaId !== undefined) updateData.trainingAreaId = data.trainingAreaId || null;
+      if (data.room !== undefined) updateData.room = data.room || null;
+      if ('price' in data) {
+        updateData.price = data.price === undefined || data.price === null ? null : new Prisma.Decimal(data.price);
+      }
+      if (data.description !== undefined) updateData.description = data.description || null;
+      if (typeof data.requireAttendanceForProgress !== 'undefined') {
+        updateData.requireAttendanceForProgress = Boolean(data.requireAttendanceForProgress);
+      }
 
       console.log('[TurmasService] Final update data:', JSON.stringify(updateData, null, 2));
 
-      const turma = await prisma.turma.update({
-        where: { id },
-        data: updateData,
-        include: {
-          course: true,
-          instructor: true,
-          organization: true,
-          unit: true
+      // If courseIds were provided, set primary courseId to the first item
+      if (data.courseIds && data.courseIds.length > 0) {
+        updateData.courseId = data.courseIds[0];
+      }
+      // Or if a single courseId is provided, also update
+      if (data.courseId) {
+        updateData.courseId = data.courseId;
+      }
+
+      // Run update and optional course-relations sync in a transaction
+      const turma = await prisma.$transaction(async (tx) => {
+        const updated = await tx.turma.update({
+          where: { id },
+          data: updateData,
+          include: {
+            course: true,
+            courses: { include: { course: true } },
+            instructor: true,
+            organization: true,
+            unit: true,
+          }
+        });
+
+        // Sync TurmaCourse relations if courseIds provided
+        if (data.courseIds) {
+          const desired = new Set(data.courseIds);
+          const existing = await tx.turmaCourse.findMany({ where: { turmaId: id } });
+          const existingSet = new Set(existing.map(e => e.courseId));
+
+          // Add missing
+          const toAdd = [...desired].filter(c => !existingSet.has(c));
+          if (toAdd.length) {
+            await tx.turmaCourse.createMany({
+              data: toAdd.map(courseId => ({ turmaId: id, courseId }))
+            });
+          }
+
+          // Remove extras
+          const toRemove = [...existingSet].filter(c => !desired.has(c));
+          if (toRemove.length) {
+            await tx.turmaCourse.deleteMany({
+              where: { turmaId: id, courseId: { in: toRemove } }
+            });
+          }
         }
+
+        // After syncing relations, refetch the complete turma within the transaction
+        const refreshed = await tx.turma.findUnique({
+          where: { id },
+          include: {
+            course: true,
+            courses: { include: { course: true } },
+            instructor: true,
+            organization: true,
+            unit: true,
+            students: { include: { student: true } },
+            lessons: {
+              include: {
+                lessonPlan: true,
+                attendances: { include: { student: true } }
+              },
+              orderBy: { scheduledDate: 'asc' }
+            }
+          }
+        });
+
+        // Fallback to the previously updated object if refetch somehow fails
+        return refreshed ?? updated;
+      },
+      {
+        maxWait: 10000, // default: 2000
+        timeout: 15000, // default: 5000
       });
 
       console.log('[TurmasService] Update successful');
+
+      // Regenerate schedule if course or timing changed
+      if (data.courseIds || data.schedule || data.startDate || data.endDate) {
+        try {
+          console.log('[TurmasService] Regenerating schedule after update...');
+          await this.regenerateSchedule(id);
+        } catch (err) {
+          console.error('[TurmasService] Failed to regenerate schedule:', err);
+        }
+      }
 
       // Regenerar cronograma se as datas ou horários mudaram
       // Temporariamente comentado para debug
@@ -241,11 +376,18 @@ export class TurmasService {
       return turma;
     } catch (error) {
       console.error('[TurmasService] Update error:', error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          const target = error.meta?.target as string[];
+          if (target && target.includes('name') && target.includes('organizationId')) {
+            // Lançar um erro específico que o controller pode capturar
+            throw new Error('DUPLICATE_TURMA_NAME');
+          }
+        }
+      }
       throw error;
     }
-  }
-
-  async delete(id: string) {
+  }  async delete(id: string) {
     try {
       await prisma.turma.delete({
         where: { id }
@@ -277,30 +419,91 @@ export class TurmasService {
     // Cast schedule to proper type
     const scheduleData = schedule as { daysOfWeek: number[]; time: string; duration: number };
 
+    if (!scheduleData?.daysOfWeek || scheduleData.daysOfWeek.length === 0) {
+      console.warn(`Turma ${turmaId} possui cronograma sem dias da semana definidos. Ignorando geração de aulas.`);
+      return [];
+    }
+
     const lessons: any[] = [];
-    let currentDate = new Date(startDate);
+
+    const toLocalDate = (value: Date | string | null | undefined) => {
+      if (!value) return null;
+      const date = new Date(value);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    };
+
+    const startLocal = toLocalDate(startDate);
+    if (!startLocal) {
+      console.warn(`Turma ${turmaId} possui startDate inválida. Ignorando geração de aulas.`);
+      return [];
+    }
+
+    const endLocal = toLocalDate(endDate);
+    if (endLocal) {
+      endLocal.setHours(23, 59, 59, 999);
+    }
+
+    const maxDate = endLocal ? new Date(endLocal) : addDays(new Date(startLocal), 365);
+    const rawDays = Array.isArray(scheduleData.daysOfWeek) ? scheduleData.daysOfWeek : [];
+    const scheduleDays = rawDays
+      .map((day) => Number(day))
+      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
+
+    if (scheduleDays.length === 0) {
+      console.warn(`Turma ${turmaId} possui cronograma sem dias válidos. Ignorando geração de aulas.`);
+      return [];
+    }
+
+    const timeParts = (scheduleData.time || '00:00').split(':');
+    const scheduleHour = Number.parseInt(timeParts[0] ?? '0', 10);
+    const scheduleMinute = Number.parseInt(timeParts[1] ?? '0', 10);
+
+    // Encontrar o primeiro dia alinhado ao cronograma a partir da data inicial
+    let currentDate = new Date(startLocal);
+    let alignmentGuard = 0;
+    while (!scheduleDays.includes(currentDate.getDay()) && currentDate <= maxDate) {
+      currentDate = addDays(currentDate, 1);
+      alignmentGuard += 1;
+      if (alignmentGuard > 14) {
+        console.warn(`Turma ${turmaId} não possui correspondência de dia da semana dentro das duas primeiras semanas. Abortando geração.`);
+        return [];
+      }
+    }
+
     let lessonIndex = 0;
+    const lessonLimit = lessonPlans.length > 0 ? lessonPlans.length * 104 : 0;
 
-    // Determinar data limite
-    const maxDate = endDate ? new Date(endDate) : addDays(currentDate, 365);
+    while (currentDate <= maxDate) {
+      if (scheduleDays.includes(currentDate.getDay())) {
+        const lessonPlan = lessonPlans.length
+          ? lessonPlans[lessonIndex % lessonPlans.length]
+          : null;
 
-    while (lessonIndex < lessonPlans.length && isBefore(currentDate, maxDate)) {
-      const dayOfWeek = currentDate.getDay();
-
-      if (scheduleData.daysOfWeek.includes(dayOfWeek)) {
-        const lessonPlan = lessonPlans[lessonIndex];
+        const scheduledDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          Number.isFinite(scheduleHour) ? scheduleHour : 0,
+          Number.isFinite(scheduleMinute) ? scheduleMinute : 0,
+          0,
+          0
+        );
 
         lessons.push({
           turmaId,
           lessonPlanId: lessonPlan?.id || null,
           lessonNumber: lessonIndex + 1,
-          title: lessonPlan?.title || `Aula ${lessonIndex + 1}`,
-          scheduledDate: new Date(currentDate),
+          title: this.buildLessonTitle(lessonPlan?.title, lessonIndex + 1),
+          scheduledDate,
           status: 'SCHEDULED',
           duration: scheduleData.duration || 60
         });
 
-        lessonIndex++;
+        lessonIndex += 1;
+
+        if (!endLocal && lessonLimit && lessonIndex >= lessonLimit) {
+          break;
+        }
       }
 
       currentDate = addDays(currentDate, 1);
@@ -341,9 +544,32 @@ export class TurmasService {
   }
 
   async updateLessonStatus(lessonId: string, status: string) {
+    // If trying to complete a lesson, and turma requires attendance progression and is personal/semi-private, enforce rule
+    if (status === 'COMPLETED') {
+      const lesson = await prisma.turmaLesson.findUnique({
+        where: { id: lessonId },
+        include: {
+          turma: { include: { students: true } },
+          attendances: true,
+        }
+      });
+
+      if (lesson && lesson.turma) {
+        const turma = lesson.turma as any;
+        const requires = Boolean(turma.requireAttendanceForProgress) && (turma.classType === 'PRIVATE' || turma.classType === 'SEMI_PRIVATE');
+        if (requires) {
+          const totalStudents = (turma.students || []).length;
+          const presentCount = (lesson.attendances || []).filter((a: any) => a.present).length;
+          if (totalStudents > 0 && presentCount < totalStudents) {
+            throw new Error('ATTENDANCE_REQUIRED');
+          }
+        }
+      }
+    }
+
     return await prisma.turmaLesson.update({
       where: { id: lessonId },
-      data: { status },
+      data: { status: status as any },
       include: {
         lessonPlan: true,
         attendances: {
@@ -355,15 +581,21 @@ export class TurmasService {
     });
   }
 
+  // ===== Operações administrativas =====
+  async clearAllEndDates() {
+    const result = await prisma.turma.updateMany({
+      data: { endDate: null }
+    });
+    return result; // { count: number }
+  }
+
   async getStudents(turmaId: string) {
     return await prisma.turmaStudent.findMany({
       where: { turmaId },
       include: {
         student: true
       },
-      orderBy: {
-        joinedAt: 'asc'
-      }
+      // No explicit order because TurmaStudent doesn't have joinedAt in schema
     });
   }
 
@@ -397,8 +629,7 @@ export class TurmasService {
     return await prisma.turmaStudent.create({
       data: {
         turmaId,
-        studentId,
-        joinedAt: new Date()
+        studentId
       },
       include: {
         student: true
@@ -450,43 +681,64 @@ export class TurmasService {
         }
       },
       orderBy: [
-        { lesson: { scheduledDate: 'desc' } },
-        { student: { name: 'asc' } }
+        { lesson: { scheduledDate: 'desc' } }
       ]
     });
   }
 
-  async markAttendance(turmaId: string, data: MarkAttendanceData) {
-    return await prisma.turmaAttendance.upsert({
-      where: {
-        lessonId_studentId: {
-          lessonId: data.lessonId,
-          studentId: data.studentId
+  
+    async markAttendance(turmaId: string, data: MarkAttendanceData) {
+      // Map status string to boolean flags
+      const present = data.status === 'PRESENT' || data.status === 'LATE' || data.status === 'EXCUSED';
+      const late = data.status === 'LATE';
+      const justified = data.status === 'EXCUSED';
+
+      // Find TurmaStudentId (required by schema)
+      const turmaStudent = await prisma.turmaStudent.findUnique({
+        where: {
+          turmaId_studentId: { turmaId, studentId: data.studentId }
         }
-      },
-      update: {
-        status: data.status,
-        markedAt: new Date()
-      },
-      create: {
-        turmaId,
-        lessonId: data.lessonId,
-        studentId: data.studentId,
-        status: data.status,
-        markedAt: new Date()
-      },
-      include: {
-        student: true,
-        lesson: {
-          include: {
-            lessonPlan: true
+      });
+
+      if (!turmaStudent) {
+        throw new Error('Aluno não está matriculado nesta turma');
+      }
+
+      return await prisma.turmaAttendance.upsert({
+        where: {
+          turmaLessonId_studentId: {
+            turmaLessonId: data.lessonId,
+            studentId: data.studentId
+          }
+        },
+        update: {
+          present,
+          late,
+          justified,
+          checkedAt: new Date()
+        },
+        create: {
+          turmaId,
+          turmaLessonId: data.lessonId,
+          turmaStudentId: turmaStudent.id,
+          studentId: data.studentId,
+          present,
+          late,
+          justified,
+          checkedAt: new Date()
+        },
+        include: {
+          student: true,
+          lesson: {
+            include: {
+              lessonPlan: true
+            }
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  async getReports(turmaId: string, filters: ReportFilters = {}) {
+  async getReports(turmaId: string, _filters: ReportFilters = {}) {
     const turma = await this.getById(turmaId);
     if (!turma) throw new Error('Turma não encontrada');
 
@@ -504,13 +756,25 @@ export class TurmasService {
     });
 
     // Frequência por aluno
-    const attendanceByStudent = await prisma.turmaAttendance.groupBy({
-      by: ['studentId', 'status'],
-      where: { turmaId },
-      _count: true
+    // Frequência por aluno (compute from boolean flags)
+    const attendances = await prisma.turmaAttendance.findMany({
+      where: { turmaId }
     });
 
-    // Relatório de progresso
+    const attendanceMap: Record<string, { studentId: string; present: number; absent: number; late: number; excused: number; total: number }> = {};
+    for (const a of attendances) {
+      const rec = attendanceMap[a.studentId] || { studentId: a.studentId, present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+      if (a.present) rec.present += 1; else rec.absent += 1;
+      if (a.late) rec.late += 1;
+      if (a.justified) rec.excused += 1;
+      rec.total += 1;
+      attendanceMap[a.studentId] = rec;
+    }
+    const attendanceReport = Object.values(attendanceMap).map(s => ({
+      ...s,
+      attendanceRate: s.total > 0 ? (s.present / s.total) * 100 : 0
+    }));
+
     const progressReport = {
       turma: {
         id: turma.id,
@@ -524,7 +788,7 @@ export class TurmasService {
         progressPercentage: totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0,
         totalStudents
       },
-      attendance: this.formatAttendanceReport(attendanceByStudent),
+      attendance: attendanceReport,
       lessons: turma.lessons.map(lesson => ({
         id: lesson.id,
         title: lesson.lessonPlan?.title,
@@ -537,30 +801,7 @@ export class TurmasService {
     return progressReport;
   }
 
-  private formatAttendanceReport(attendanceData: any[]) {
-    const byStudent: { [key: string]: any } = {};
-
-    attendanceData.forEach(item => {
-      if (!byStudent[item.studentId]) {
-        byStudent[item.studentId] = {
-          studentId: item.studentId,
-          present: 0,
-          absent: 0,
-          late: 0,
-          excused: 0,
-          total: 0
-        };
-      }
-
-      byStudent[item.studentId][item.status.toLowerCase()] = item._count;
-      byStudent[item.studentId].total += item._count;
-    });
-
-    return Object.values(byStudent).map((student: any) => ({
-      ...student,
-      attendanceRate: student.total > 0 ? (student.present / student.total) * 100 : 0
-    }));
-  }
+  
 
   async search(query: string, filters: any = {}) {
     const where: any = {
@@ -700,5 +941,26 @@ export class TurmasService {
         courseId
       }
     });
+  }
+
+  private buildLessonTitle(rawTitle: string | null | undefined, lessonNumber: number) {
+    const normalizedNumber = Number.isFinite(lessonNumber) ? Number(lessonNumber) : null;
+    const baseTitle = (rawTitle ?? '').trim();
+
+    if (!normalizedNumber) {
+      return baseTitle || 'Aula';
+    }
+
+    if (!baseTitle) {
+      return `Aula ${normalizedNumber}`;
+    }
+
+    const match = baseTitle.match(/^Aula\s+\d+\s*[-:–]?\s*(.*)$/i);
+    if (match) {
+      const suffix = match[1]?.trim();
+      return suffix ? `Aula ${normalizedNumber} - ${suffix}` : `Aula ${normalizedNumber}`;
+    }
+
+    return `Aula ${normalizedNumber} - ${baseTitle}`;
   }
 }

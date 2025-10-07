@@ -21,7 +21,107 @@ export class LessonPlanEditorController {
         // Bind methods to preserve context
         this.handleInputChange = this.handleInputChange.bind(this);
         this.handleSave = this.handleSave.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
+    }
+
+    /**
+     * Collect form data
+     */
+    collectFormData() {
+        console.log('🗂️ Collecting form data...');
+        const container = this.container;
+        if (!container) {
+            console.error('❌ No container found for form data collection');
+            return {};
+        }
+        
+        const data = {};
+        
+        // Basic text fields
+        const basicFields = [
+            'courseId', 'title', 'description', 'unit', 'tacticalModule',
+            'videoUrl', 'thumbnailUrl'
+        ];
+        
+        basicFields.forEach(field => {
+            const element = container.querySelector(`[name="${field}"], #${field}`);
+            if (element && element.value && element.value.trim()) {
+                data[field] = element.value.trim();
+            }
+        });
+
+        // Numeric fields
+        const numericFields = ['lessonNumber', 'weekNumber', 'level', 'difficulty', 'duration'];
+        numericFields.forEach(field => {
+            const element = container.querySelector(`[name="${field}"], #${field}`);
+            if (element && element.value) {
+                data[field] = parseInt(element.value) || 0;
+            }
+        });
+
+        // Array fields (split by lines)
+        const objectivesElement = container.querySelector('[name="objectives"], #objectives');
+        if (objectivesElement && objectivesElement.value) {
+            data.objectives = objectivesElement.value
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => line.trim());
+        }
+
+        const equipmentElement = container.querySelector('[name="equipment"], #equipment');
+        if (equipmentElement && equipmentElement.value) {
+            data.equipment = equipmentElement.value
+                .split('\n')
+                .filter(line => line.trim())
+                .map(line => line.trim());
+        }
+
+        // JSON/Text fields for lesson structure
+        const structureFields = ['warmup', 'techniques', 'simulations', 'cooldown'];
+        structureFields.forEach(field => {
+            const element = container.querySelector(`[name="${field}"], #${field}`);
+            if (element && element.value && element.value.trim()) {
+                try {
+                    // Try to parse as JSON first (for structured data)
+                    data[field] = JSON.parse(element.value);
+                } catch (e) {
+                    // If not JSON, treat as string
+                    data[field] = element.value.trim();
+                }
+            }
+        });
+
+        // Optional fields
+        const optionalFields = ['mentalModule', 'adaptations'];
+        optionalFields.forEach(field => {
+            const element = container.querySelector(`[name="${field}"], #${field}`);
+            if (element && element.value && element.value.trim()) {
+                try {
+                    // Try to parse as JSON if it looks like JSON
+                    if (element.value.trim().startsWith('{') || element.value.trim().startsWith('[')) {
+                        data[field] = JSON.parse(element.value);
+                    } else {
+                        data[field] = element.value.trim();
+                    }
+                } catch (e) {
+                    data[field] = element.value.trim();
+                }
+            }
+        });
+
+        console.log('📝 Collected form data:', data);
+        return data;
+    }
+
+    /**
+     * Destroy controller
+     */
+    destroy() {
+        // Clear auto-save timeout
+        if (this.autoSaveTimeout) {
+            clearTimeout(this.autoSaveTimeout);
+        }
+        
+        console.log('✅ Lesson Plan editor controller destruído');
     }
 
     /**
@@ -104,10 +204,32 @@ export class LessonPlanEditorController {
                     <div class="loading-text">Carregando plano de aula...</div>
                 </div>
 
+                <!-- Tabs Navigation -->
+                ${isEditing ? `
+                <div class="tabs-premium">
+                    <nav class="tabs-nav">
+                        <button class="tab-btn active" data-tab="details" type="button">
+                            <span class="tab-icon">📝</span>
+                            <span class="tab-label">Detalhes do Plano</span>
+                        </button>
+                        <button class="tab-btn" data-tab="courses" type="button">
+                            <span class="tab-icon">📚</span>
+                            <span class="tab-label">Cursos Vinculados</span>
+                        </button>
+                        <button class="tab-btn" data-tab="financial" type="button">
+                            <span class="tab-icon">💰</span>
+                            <span class="tab-label">Informações Financeiras</span>
+                        </button>
+                    </nav>
+                </div>
+                ` : ''}
+
                 <!-- Form Section -->
                 <div class="module-content">
-                    <form id="lesson-plan-form" class="lesson-plan-form">
-                        <div class="form-grid">
+                    <!-- Tab: Details -->
+                    <div id="tab-details" class="tab-panel active">
+                        <form id="lesson-plan-form" class="lesson-plan-form">
+                            <div class="form-grid">
                             <!-- Basic Information -->
                             <div class="form-section">
                                 <h3 class="section-title">Informações Básicas</h3>
@@ -302,6 +424,60 @@ export class LessonPlanEditorController {
                             </div>
                         ` : ''}
                     </form>
+                    </div>
+                    <!-- End Tab: Details -->
+
+                    <!-- Tab: Courses -->
+                    ${isEditing ? `
+                    <div id="tab-courses" class="tab-panel">
+                        <div class="data-card-premium">
+                            <div class="module-header-premium">
+                                <div class="header-content">
+                                    <div class="header-left">
+                                        <h3 class="section-title">
+                                            <span class="section-icon">📚</span>
+                                            Cursos Utilizando Este Plano
+                                        </h3>
+                                        <p class="section-subtitle">Cursos que incluem este plano de aula em seu cronograma</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="courses-content" class="section-body">
+                                <div class="loading-state">
+                                    <div class="loading-spinner"></div>
+                                    <p>Carregando cursos...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <!-- End Tab: Courses -->
+
+                    <!-- Tab: Financial -->
+                    ${isEditing ? `
+                    <div id="tab-financial" class="tab-panel">
+                        <div class="data-card-premium">
+                            <div class="module-header-premium">
+                                <div class="header-content">
+                                    <div class="header-left">
+                                        <h3 class="section-title">
+                                            <span class="section-icon">💰</span>
+                                            Informações Financeiras
+                                        </h3>
+                                        <p class="section-subtitle">Custo e valor associado a este plano de aula</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="financial-content" class="section-body">
+                                <div class="loading-state">
+                                    <div class="loading-spinner"></div>
+                                    <p>Carregando informações financeiras...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <!-- End Tab: Financial -->
                 </div>
             </div>
         `;
@@ -362,6 +538,18 @@ export class LessonPlanEditorController {
 
             // Real-time validation
             this.setupValidation(container);
+        }
+
+        // Tab navigation (only for edit mode)
+        if (this.planId) {
+            const tabBtns = container.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabName = btn.dataset.tab;
+                    this.switchTab(tabName);
+                });
+            });
         }
     }
 
@@ -622,13 +810,22 @@ export class LessonPlanEditorController {
      * Handle save
      */
     async handleSave() {
-        if (this.isReadOnly) return;
+        console.log('💾 HandleSave called! isReadOnly:', this.isReadOnly);
+        
+        if (this.isReadOnly) {
+            console.log('❌ Save blocked: read-only mode');
+            return;
+        }
         
         try {
+            console.log('🔍 Validating form...');
             if (!this.validateForm()) {
+                console.log('❌ Form validation failed');
                 this.updateSaveStatus('Preencha os campos obrigatórios', 'error');
                 return;
             }
+            
+            console.log('✅ Form validation passed');
             
             const planData = this.collectFormData();
             const url = this.planId ? `/api/lesson-plans/${this.planId}` : '/api/lesson-plans';
@@ -783,6 +980,1041 @@ export class LessonPlanEditorController {
                 statusElement.className = 'save-status';
             }, 3000);
         }
+    }
+
+    // ============================================================================
+    // TAB NAVIGATION & CONTENT LOADING
+    // ============================================================================
+
+    /**
+     * Switch between tabs
+     */
+    switchTab(tabName) {
+        if (!this.container) return;
+
+        // Update tab buttons
+        const tabBtns = this.container.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update tab panels
+        const tabPanels = this.container.querySelectorAll('.tab-panel');
+        tabPanels.forEach(panel => {
+            if (panel.id === `tab-${tabName}`) {
+                panel.classList.add('active');
+            } else {
+                panel.classList.remove('active');
+            }
+        });
+
+        // Load tab content if needed
+        if (tabName === 'courses') {
+            this.loadCoursesTab();
+        } else if (tabName === 'financial') {
+            this.loadFinancialTab();
+        }
+    }
+
+    /**
+     * Load courses tab content
+     */
+    async loadCoursesTab() {
+        if (!this.planId) return;
+
+        const coursesContent = this.container.querySelector('#courses-content');
+        if (!coursesContent) return;
+
+        coursesContent.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Carregando cursos...</p>
+            </div>
+        `;
+
+        try {
+            // Buscar cursos que usam este lesson plan
+            const response = await this.api.api.get(`/api/lesson-plans/${this.planId}/courses`);
+            const courses = response?.data || [];
+
+            if (courses.length === 0) {
+                coursesContent.innerHTML = `
+                    <div class="module-isolated-empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h4>Nenhum curso vinculado</h4>
+                        <p>Este plano de aula ainda não está sendo utilizado em nenhum curso ativo.</p>
+                        <button class="btn-form btn-primary-form" onclick="window.openCoursesList()">
+                            <i class="fas fa-plus"></i>
+                            Adicionar a um Curso
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Renderizar lista de cursos
+            coursesContent.innerHTML = `
+                <div class="courses-list-premium">
+                    ${courses.map(course => `
+                        <div class="course-card-premium" data-course-id="${course.id}">
+                            <div class="course-header">
+                                <div class="course-info">
+                                    <h4 class="course-name">${course.name}</h4>
+                                    <p class="course-description">${course.description || 'Sem descrição'}</p>
+                                </div>
+                                <div class="course-badge">
+                                    <span class="badge ${course.isActive ? 'badge-success' : 'badge-secondary'}">
+                                        ${course.isActive ? '✅ Ativo' : '⏸️ Inativo'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="course-details">
+                                <div class="detail-row">
+                                    <div class="detail-item">
+                                        <span class="detail-label">📅 Aula Número:</span>
+                                        <span class="detail-value">${this.plan?.lessonNumber || '—'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">📆 Semana:</span>
+                                        <span class="detail-value">${this.plan?.weekNumber || '—'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">⏱️ Duração:</span>
+                                        <span class="detail-value">${this.plan?.duration || 60} min</span>
+                                    </div>
+                                </div>
+
+                                ${course.studentsCount ? `
+                                <div class="detail-row">
+                                    <div class="detail-item">
+                                        <span class="detail-label">👥 Alunos Matriculados:</span>
+                                        <span class="detail-value">${course.studentsCount}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">📊 Taxa de Conclusão:</span>
+                                        <span class="detail-value">
+                                            ${course.completionRate || 0}%
+                                        </span>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="course-actions">
+                                <button class="btn-small btn-secondary" onclick="window.openCourseEditor('${course.id}')">
+                                    <i class="fas fa-eye"></i>
+                                    Ver Curso
+                                </button>
+                                <button class="btn-small btn-primary" onclick="window.openCourseSchedule('${course.id}')">
+                                    <i class="fas fa-calendar"></i>
+                                    Ver Cronograma
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="courses-summary">
+                    <div class="summary-card">
+                        <div class="summary-icon">📊</div>
+                        <div class="summary-content">
+                            <div class="summary-value">${courses.length}</div>
+                            <div class="summary-label">
+                                ${courses.length === 1 ? 'Curso Utilizando' : 'Cursos Utilizando'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-icon">👥</div>
+                        <div class="summary-content">
+                            <div class="summary-value">
+                                ${courses.reduce((sum, c) => sum + (c.studentsCount || 0), 0)}
+                            </div>
+                            <div class="summary-label">Alunos Impactados</div>
+                        </div>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-icon">✅</div>
+                        <div class="summary-content">
+                            <div class="summary-value">
+                                ${courses.filter(c => c.isActive).length}
+                            </div>
+                            <div class="summary-label">Cursos Ativos</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('❌ Erro ao carregar cursos:', error);
+            coursesContent.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao Carregar Cursos</h3>
+                    <p>${error.message || 'Não foi possível carregar os cursos vinculados'}</p>
+                    <button class="btn-form btn-primary-form" onclick="this.loadCoursesTab()">
+                        <i class="fas fa-redo"></i>
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+            window.app?.handleError?.(error, 'lesson-plans:courses-tab');
+        }
+    }
+
+    /**
+     * Load financial tab content
+     */
+    async loadFinancialTab() {
+        if (!this.planId) return;
+
+        const financialContent = this.container.querySelector('#financial-content');
+        if (!financialContent) return;
+
+        financialContent.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Carregando informações financeiras...</p>
+            </div>
+        `;
+
+        try {
+            // Buscar dados financeiros do plano
+            const response = await this.api.api.get(`/api/lesson-plans/${this.planId}/financial`);
+            const financial = response?.data || {};
+
+            // Renderizar informações financeiras
+            financialContent.innerHTML = `
+                <div class="financial-overview-premium">
+                    <!-- Custo e Valor -->
+                    <div class="stats-grid">
+                        <div class="stat-card-enhanced stat-gradient-info">
+                            <div class="stat-header">
+                                <span class="stat-icon">💵</span>
+                                <span class="stat-label">Custo de Produção</span>
+                            </div>
+                            <div class="stat-value">
+                                R$ ${financial.productionCost?.toFixed(2) || '0,00'}
+                            </div>
+                            <div class="stat-meta">
+                                Materiais, equipamentos e preparação
+                            </div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-success">
+                            <div class="stat-header">
+                                <span class="stat-icon">💰</span>
+                                <span class="stat-label">Valor de Mercado</span>
+                            </div>
+                            <div class="stat-value">
+                                R$ ${financial.marketValue?.toFixed(2) || '0,00'}
+                            </div>
+                            <div class="stat-meta">
+                                Valor estimado por aula
+                            </div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-primary">
+                            <div class="stat-header">
+                                <span class="stat-icon">📊</span>
+                                <span class="stat-label">ROI Estimado</span>
+                            </div>
+                            <div class="stat-value">
+                                ${financial.roi ? `${financial.roi}%` : '—'}
+                            </div>
+                            <div class="stat-meta">
+                                Retorno sobre investimento
+                            </div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-warning">
+                            <div class="stat-header">
+                                <span class="stat-icon">⏱️</span>
+                                <span class="stat-label">Horas de Preparação</span>
+                            </div>
+                            <div class="stat-value">
+                                ${financial.preparationHours || 0}h
+                            </div>
+                            <div class="stat-meta">
+                                Tempo investido no plano
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulário de Edição Financeira -->
+                    <div class="data-card-premium" style="margin-top: 2rem;">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">✏️</span>
+                                        Editar Informações Financeiras
+                                    </h3>
+                                    <p class="section-subtitle">Atualize custos e valores associados a este plano</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            <form id="financial-form" class="form-premium">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">Custo de Produção</span>
+                                            <span class="label-optional">(R$)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input type="number" 
+                                                   id="production-cost" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   min="0"
+                                                   value="${financial.productionCost || 0}"
+                                                   placeholder="0,00">
+                                        </div>
+                                        <small class="form-help">Materiais, equipamentos, etc.</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">Valor de Mercado</span>
+                                            <span class="label-optional">(R$)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input type="number" 
+                                                   id="market-value" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   min="0"
+                                                   value="${financial.marketValue || 0}"
+                                                   placeholder="0,00">
+                                        </div>
+                                        <small class="form-help">Valor estimado da aula</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">Horas de Preparação</span>
+                                        </label>
+                                        <input type="number" 
+                                               id="preparation-hours" 
+                                               class="form-input" 
+                                               step="0.5" 
+                                               min="0"
+                                               value="${financial.preparationHours || 0}"
+                                               placeholder="0">
+                                        <small class="form-help">Tempo investido na criação</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">ROI Estimado</span>
+                                            <span class="label-optional">(%)</span>
+                                        </label>
+                                        <div class="input-with-suffix">
+                                            <input type="number" 
+                                                   id="roi" 
+                                                   class="form-input" 
+                                                   step="1" 
+                                                   min="0"
+                                                   value="${financial.roi || 0}"
+                                                   placeholder="0">
+                                            <span class="input-suffix">%</span>
+                                        </div>
+                                        <small class="form-help">Retorno esperado</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label class="form-label">
+                                            <span class="label-text">Observações Financeiras</span>
+                                        </label>
+                                        <textarea id="financial-notes" 
+                                                  class="form-textarea" 
+                                                  rows="3"
+                                                  placeholder="Notas adicionais sobre custos, investimentos, etc.">${financial.notes || ''}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" id="save-financial" class="btn-form btn-primary-form">
+                                        <i class="fas fa-save"></i>
+                                        Salvar Informações Financeiras
+                                    </button>
+                                    <button type="button" id="reset-financial" class="btn-form btn-secondary-form">
+                                        <i class="fas fa-undo"></i>
+                                        Resetar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Análise de Custos -->
+                    <div class="data-card-premium" style="margin-top: 2rem;">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">📈</span>
+                                        Análise de Custos
+                                    </h3>
+                                    <p class="section-subtitle">Comparativo com outros planos de aula</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="cost-analysis">
+                                <div class="analysis-item">
+                                    <div class="analysis-label">Custo vs Média do Curso</div>
+                                    <div class="analysis-bar">
+                                        <div class="progress-bar-mini">
+                                            <div class="progress-fill ${financial.costVsAverage > 100 ? 'progress-warning' : 'progress-success'}" 
+                                                 style="width: ${Math.min(financial.costVsAverage || 0, 100)}%"></div>
+                                        </div>
+                                        <span class="analysis-value">${financial.costVsAverage || 0}%</span>
+                                    </div>
+                                </div>
+
+                                <div class="analysis-item">
+                                    <div class="analysis-label">Valor vs Mercado</div>
+                                    <div class="analysis-bar">
+                                        <div class="progress-bar-mini">
+                                            <div class="progress-fill progress-info" 
+                                                 style="width: ${Math.min(financial.valueVsMarket || 0, 100)}%"></div>
+                                        </div>
+                                        <span class="analysis-value">${financial.valueVsMarket || 0}%</span>
+                                    </div>
+                                </div>
+
+                                <div class="analysis-item">
+                                    <div class="analysis-label">Eficiência (Valor/Custo)</div>
+                                    <div class="analysis-bar">
+                                        <div class="progress-bar-mini">
+                                            <div class="progress-fill progress-primary" 
+                                                 style="width: ${Math.min(financial.efficiency || 0, 100)}%"></div>
+                                        </div>
+                                        <span class="analysis-value">${financial.efficiency || 0}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Setup financial form events
+            this.setupFinancialFormEvents();
+
+        } catch (error) {
+            console.error('❌ Erro ao carregar financeiro:', error);
+            financialContent.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao Carregar Informações Financeiras</h3>
+                    <p>${error.message || 'Não foi possível carregar os dados financeiros'}</p>
+                    <button class="btn-form btn-primary-form" onclick="this.loadFinancialTab()">
+                        <i class="fas fa-redo"></i>
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+            window.app?.handleError?.(error, 'lesson-plans:financial-tab');
+        }
+    }
+
+    /**
+     * Setup financial form event listeners
+     */
+    setupFinancialFormEvents() {
+        const saveBtn = this.container.querySelector('#save-financial');
+        const resetBtn = this.container.querySelector('#reset-financial');
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                await this.saveFinancialData();
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.loadFinancialTab(); // Reload to reset
+            });
+        }
+    }
+
+    /**
+     * Save financial data
+     */
+    async saveFinancialData() {
+        if (!this.planId) return;
+
+        const productionCost = parseFloat(this.container.querySelector('#production-cost')?.value || 0);
+        const marketValue = parseFloat(this.container.querySelector('#market-value')?.value || 0);
+        const preparationHours = parseFloat(this.container.querySelector('#preparation-hours')?.value || 0);
+        const roi = parseFloat(this.container.querySelector('#roi')?.value || 0);
+        const notes = this.container.querySelector('#financial-notes')?.value?.trim() || '';
+
+        const saveBtn = this.container.querySelector('#save-financial');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        }
+
+        try {
+            await this.api.api.patch(`/api/lesson-plans/${this.planId}/financial`, {
+                productionCost,
+                marketValue,
+                preparationHours,
+                roi,
+                notes
+            });
+
+            window.app?.showToast?.('Informações financeiras salvas com sucesso!', 'success');
+            
+            // Reload tab to show updated data
+            await this.loadFinancialTab();
+
+        } catch (error) {
+            console.error('❌ Erro ao salvar financeiro:', error);
+            window.app?.handleError?.(error, 'lesson-plans:save-financial');
+            window.app?.showToast?.('Erro ao salvar informações financeiras', 'error');
+
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Informações Financeiras';
+            }
+        }
+    }
+
+    /**
+     * Load courses data for the lesson plan
+     */
+    async loadCoursesData(lessonPlanId) {
+        const panel = this.container.querySelector('#tab-courses');
+        if (!panel) return;
+
+        panel.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner">🔄</div>
+                <p>Carregando cursos relacionados...</p>
+            </div>
+        `;
+
+        try {
+            // Carregar cursos que usam este plano de aula e cursos disponíveis
+            const [relatedCoursesRes, availableCoursesRes] = await Promise.all([
+                this.api.get(`/api/lesson-plans/${lessonPlanId}/courses`),
+                this.api.get('/api/courses?active=true&pageSize=100')
+            ]);
+
+            const relatedCourses = relatedCoursesRes?.data || [];
+            const availableCourses = availableCoursesRes?.data || [];
+            const relatedCourseIds = new Set(relatedCourses.map(c => c.id));
+
+            panel.innerHTML = `
+                <div class="courses-management">
+                    <!-- Cursos que Utilizam Este Plano -->
+                    ${relatedCourses.length > 0 ? `
+                    <div class="data-card-premium" style="margin-bottom: 1.5rem;">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">📚</span>
+                                        Cursos que Utilizam Este Plano
+                                    </h3>
+                                    <p class="section-subtitle">${relatedCourses.length} curso(s) ativo(s)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="courses-grid">
+                                ${relatedCourses.map(course => `
+                                    <div class="course-card">
+                                        <div class="course-header">
+                                            <div class="course-info">
+                                                <h4 class="course-name">${course.name || 'Curso sem nome'}</h4>
+                                                <p class="course-description">${course.description || 'Sem descrição'}</p>
+                                            </div>
+                                            <div class="course-status">
+                                                <span class="status-badge status-${(course.isActive ? 'active' : 'inactive').toLowerCase()}">
+                                                    ${course.isActive ? '✅ Ativo' : '⏸️ Inativo'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="course-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-icon">👥</span>
+                                                <span class="stat-label">Alunos:</span>
+                                                <span class="stat-value">${course.studentsCount || 0}</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-icon">📅</span>
+                                                <span class="stat-label">Aulas:</span>
+                                                <span class="stat-value">${course.lessonsCount || 0}</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-icon">⏱️</span>
+                                                <span class="stat-label">Duração:</span>
+                                                <span class="stat-value">${course.duration || 'N/A'} semanas</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="course-meta">
+                                            <div class="meta-item">
+                                                <span class="meta-label">Modalidade:</span>
+                                                <span class="meta-value">${course.modality || 'Presencial'}</span>
+                                            </div>
+                                            <div class="meta-item">
+                                                <span class="meta-label">Nível:</span>
+                                                <span class="meta-value">${course.level || 'Iniciante'}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="course-actions">
+                                            <button class="btn-small btn-secondary" onclick="window.openCourseDetails('${course.id}')">
+                                                👁️ Ver Detalhes
+                                            </button>
+                                            <button class="btn-small btn-warning" onclick="window.removeLessonPlanFromCourse('${course.id}', '${lessonPlanId}')">
+                                                ❌ Desvincular
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="module-isolated-empty-state" style="margin-bottom: 1.5rem;">
+                        <div class="empty-icon">📚</div>
+                        <h4>Nenhum curso vinculado</h4>
+                        <p>Este plano de aula ainda não está sendo usado por nenhum curso</p>
+                    </div>
+                    `}
+
+                    <!-- Cursos Disponíveis para Vincular -->
+                    <div class="data-card-premium">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">➕</span>
+                                        Vincular a Novos Cursos
+                                    </h3>
+                                    <p class="section-subtitle">Adicione este plano de aula a mais cursos</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            ${availableCourses.length === 0 ? `
+                                <div class="module-isolated-empty-state">
+                                    <div class="empty-icon">📭</div>
+                                    <h4>Nenhum curso disponível</h4>
+                                    <p>Não há cursos ativos disponíveis no momento</p>
+                                    <button class="btn-form btn-primary-form" onclick="window.openCoursesManager()">
+                                        Gerenciar Cursos
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="courses-grid">
+                                    ${availableCourses.filter(c => !relatedCourseIds.has(c.id)).map(course => `
+                                        <div class="course-card available" data-course-id="${course.id}">
+                                            <div class="course-header">
+                                                <div class="course-info">
+                                                    <h4 class="course-name">${course.name}</h4>
+                                                    <p class="course-description">${course.description || 'Sem descrição'}</p>
+                                                </div>
+                                                <div class="course-level">
+                                                    <span class="level-badge">${course.level || 'Iniciante'}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="course-meta">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Duração:</span>
+                                                    <span class="meta-value">${course.duration || 'N/A'} semanas</span>
+                                                </div>
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Modalidade:</span>
+                                                    <span class="meta-value">${course.modality || 'Presencial'}</span>
+                                                </div>
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Alunos:</span>
+                                                    <span class="meta-value">${course.studentsCount || 0}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="course-actions">
+                                                <button class="btn-form btn-primary-form btn-block" 
+                                                        onclick="window.linkLessonPlanToCourse('${lessonPlanId}', '${course.id}', '${course.name}')">
+                                                    ✅ Vincular ao Curso
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                ${availableCourses.filter(c => !relatedCourseIds.has(c.id)).length === 0 ? `
+                                    <div class="module-isolated-empty-state">
+                                        <div class="empty-icon">✅</div>
+                                        <h4>Todos os cursos já vinculados</h4>
+                                        <p>Este plano de aula já está vinculado a todos os cursos disponíveis</p>
+                                    </div>
+                                ` : ''}
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('❌ Erro ao carregar cursos:', error);
+            panel.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao Carregar Cursos</h3>
+                    <p>${error.message || 'Erro desconhecido'}</p>
+                    <button class="btn-form btn-primary-form" onclick="lessonPlanEditor.loadCoursesData('${lessonPlanId}')">
+                        🔄 Tentar Novamente
+                    </button>
+                </div>
+            `;
+            window.app?.handleError?.(error, 'lesson-plans:load-courses');
+        }
+    }
+
+    /**
+     * Load financial data for the lesson plan
+     */
+    async loadFinancialData(lessonPlanId) {
+        const panel = this.container.querySelector('#tab-financial');
+        if (!panel) return;
+
+        panel.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner">🔄</div>
+                <p>Carregando informações financeiras...</p>
+            </div>
+        `;
+
+        try {
+            // Carregar dados financeiros do plano de aula
+            const response = await this.api.get(`/api/lesson-plans/${lessonPlanId}/financial`);
+            const financial = response?.data || {};
+
+            panel.innerHTML = `
+                <div class="financial-management">
+                    <!-- Stats Overview -->
+                    <div class="stats-grid" style="margin-bottom: 2rem;">
+                        <div class="stat-card-enhanced stat-gradient-primary">
+                            <div class="stat-header">
+                                <span class="stat-icon">💰</span>
+                                <span class="stat-label">Custo por Aula</span>
+                            </div>
+                            <div class="stat-value">R$ ${financial.costPerClass || '0,00'}</div>
+                            <div class="stat-meta">Valor estimado</div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-success">
+                            <div class="stat-header">
+                                <span class="stat-icon">👥</span>
+                                <span class="stat-label">Alunos Impactados</span>
+                            </div>
+                            <div class="stat-value">${financial.totalStudents || 0}</div>
+                            <div class="stat-meta">Em ${financial.totalCourses || 0} curso(s)</div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-info">
+                            <div class="stat-header">
+                                <span class="stat-icon">📊</span>
+                                <span class="stat-label">Receita Estimada</span>
+                            </div>
+                            <div class="stat-value">R$ ${financial.estimatedRevenue || '0,00'}</div>
+                            <div class="stat-meta">Por ciclo completo</div>
+                        </div>
+
+                        <div class="stat-card-enhanced stat-gradient-warning">
+                            <div class="stat-header">
+                                <span class="stat-icon">⏱️</span>
+                                <span class="stat-label">Tempo de Instrução</span>
+                            </div>
+                            <div class="stat-value">${financial.totalHours || 0}h</div>
+                            <div class="stat-meta">${financial.totalClasses || 0} aula(s)</div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações Financeiras -->
+                    <div class="data-card-premium">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">⚙️</span>
+                                        Configurações Financeiras
+                                    </h3>
+                                    <p class="section-subtitle">Custos e valores associados ao plano de aula</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            <form id="financial-form" class="form-premium">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">💰 Custo por Aula</span>
+                                            <span class="label-optional">(opcional)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input id="cost-per-class" 
+                                                   type="number" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   placeholder="50,00"
+                                                   value="${financial.costPerClass || ''}"
+                                                   min="0">
+                                        </div>
+                                        <small class="form-help">Custo estimado para executar uma aula deste plano</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">👨‍🏫 Custo do Instrutor</span>
+                                            <span class="label-optional">(opcional)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input id="instructor-cost" 
+                                                   type="number" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   placeholder="100,00"
+                                                   value="${financial.instructorCost || ''}"
+                                                   min="0">
+                                        </div>
+                                        <small class="form-help">Remuneração do instrutor por aula</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">📦 Custo de Materiais</span>
+                                            <span class="label-optional">(opcional)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input id="materials-cost" 
+                                                   type="number" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   placeholder="30,00"
+                                                   value="${financial.materialsCost || ''}"
+                                                   min="0">
+                                        </div>
+                                        <small class="form-help">Custo de materiais e equipamentos por aula</small>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <span class="label-text">🏢 Custos Operacionais</span>
+                                            <span class="label-optional">(opcional)</span>
+                                        </label>
+                                        <div class="input-with-prefix">
+                                            <span class="input-prefix">R$</span>
+                                            <input id="operational-cost" 
+                                                   type="number" 
+                                                   class="form-input" 
+                                                   step="0.01" 
+                                                   placeholder="20,00"
+                                                   value="${financial.operationalCost || ''}"
+                                                   min="0">
+                                        </div>
+                                        <small class="form-help">Aluguel, energia, limpeza, etc. por aula</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label class="form-label">
+                                            <span class="label-text">📝 Observações Financeiras</span>
+                                            <span class="label-optional">(opcional)</span>
+                                        </label>
+                                        <textarea id="financial-notes" 
+                                                  class="form-textarea" 
+                                                  rows="3" 
+                                                  placeholder="Detalhes adicionais sobre custos, investimentos especiais..."
+                                                  maxlength="500">${financial.notes || ''}</textarea>
+                                        <small class="form-help">Anotações sobre custos e investimentos</small>
+                                    </div>
+                                </div>
+
+                                <!-- Calculated Totals -->
+                                <div class="financial-summary">
+                                    <div class="summary-card">
+                                        <div class="summary-label">💰 Custo Total por Aula</div>
+                                        <div class="summary-value" id="total-cost-display">R$ 0,00</div>
+                                    </div>
+                                    <div class="summary-card">
+                                        <div class="summary-label">📊 Margem Estimada</div>
+                                        <div class="summary-value" id="margin-display">—</div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" id="save-financial-btn" class="btn-form btn-primary-form">
+                                        <i class="fas fa-save"></i>
+                                        Salvar Informações Financeiras
+                                    </button>
+                                    <button type="button" id="reset-financial-btn" class="btn-form btn-secondary-form">
+                                        <i class="fas fa-undo"></i>
+                                        Resetar Valores
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Análise de Rentabilidade -->
+                    ${financial.totalCourses > 0 ? `
+                    <div class="data-card-premium" style="margin-top: 1.5rem;">
+                        <div class="module-header-premium">
+                            <div class="header-content">
+                                <div class="header-left">
+                                    <h3 class="section-title">
+                                        <span class="section-icon">📈</span>
+                                        Análise de Rentabilidade
+                                    </h3>
+                                    <p class="section-subtitle">Impacto financeiro dos cursos que usam este plano</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-body">
+                            <div class="profitability-breakdown">
+                                ${(financial.courseBreakdown || []).map(course => `
+                                    <div class="course-financial-item">
+                                        <div class="course-info-compact">
+                                            <h4>${course.courseName}</h4>
+                                            <span class="course-students">${course.studentsCount} aluno(s)</span>
+                                        </div>
+                                        <div class="course-financials">
+                                            <div class="financial-metric">
+                                                <span class="metric-label">Receita:</span>
+                                                <span class="metric-value positive">+ R$ ${course.revenue || '0,00'}</span>
+                                            </div>
+                                            <div class="financial-metric">
+                                                <span class="metric-label">Custos:</span>
+                                                <span class="metric-value negative">- R$ ${course.costs || '0,00'}</span>
+                                            </div>
+                                            <div class="financial-metric">
+                                                <span class="metric-label">Lucro:</span>
+                                                <span class="metric-value ${course.profit >= 0 ? 'positive' : 'negative'}">
+                                                    ${course.profit >= 0 ? '+' : ''} R$ ${course.profit || '0,00'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Setup event listeners
+            this.setupFinancialEventListeners(lessonPlanId);
+
+        } catch (error) {
+            console.error('❌ Erro ao carregar financeiro:', error);
+            panel.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Erro ao Carregar Dados Financeiros</h3>
+                    <p>${error.message || 'Erro desconhecido'}</p>
+                    <button class="btn-form btn-primary-form" onclick="lessonPlanEditor.loadFinancialData('${lessonPlanId}')">
+                        🔄 Tentar Novamente
+                    </button>
+                </div>
+            `;
+            window.app?.handleError?.(error, 'lesson-plans:load-financial');
+        }
+    }
+
+    /**
+     * Setup financial form event listeners
+     */
+    setupFinancialEventListeners(lessonPlanId) {
+        const costInputs = [
+            this.container.querySelector('#cost-per-class'),
+            this.container.querySelector('#instructor-cost'),
+            this.container.querySelector('#materials-cost'),
+            this.container.querySelector('#operational-cost')
+        ];
+
+        const totalDisplay = this.container.querySelector('#total-cost-display');
+        const marginDisplay = this.container.querySelector('#margin-display');
+
+        // Calculate total costs on input change
+        const updateTotals = () => {
+            const total = costInputs.reduce((sum, input) => {
+                const value = parseFloat(input?.value || '0');
+                return sum + (isNaN(value) ? 0 : value);
+            }, 0);
+
+            if (totalDisplay) {
+                totalDisplay.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            }
+
+            // Simple margin calculation (assuming average class revenue of R$ 150)
+            if (marginDisplay) {
+                const avgRevenue = 150;
+                const margin = ((avgRevenue - total) / avgRevenue * 100).toFixed(1);
+                marginDisplay.textContent = `${margin}%`;
+                marginDisplay.style.color = margin > 0 ? 'var(--color-success)' : 'var(--color-error)';
+            }
+        };
+
+        costInputs.forEach(input => {
+            input?.addEventListener('input', updateTotals);
+        });
+
+        // Initial calculation
+        updateTotals();
+
+        // Save button
+        const saveBtn = this.container.querySelector('#save-financial-btn');
+        saveBtn?.addEventListener('click', () => this.saveFinancialData(lessonPlanId));
+
+        // Reset button
+        const resetBtn = this.container.querySelector('#reset-financial-btn');
+        resetBtn?.addEventListener('click', () => {
+            costInputs.forEach(input => {
+                if (input) input.value = '';
+            });
+            const notesInput = this.container.querySelector('#financial-notes');
+            if (notesInput) notesInput.value = '';
+            updateTotals();
+        });
     }
 
     /**

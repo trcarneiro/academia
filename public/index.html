@@ -13,15 +13,22 @@
     <link rel="stylesheet" href="css/dashboard/main.css">
     <!-- Correção de emergência para o menu -->
     <link rel="stylesheet" href="css/menu-fix.css">
+    <!-- Global Premium Colors - Academia v2.0 -->
+    <link rel="stylesheet" href="css/global-premium-colors.css">
     <!-- Module CSS -->
     <link rel="stylesheet" href="css/modules/courses.css">
+    <link rel="stylesheet" href="css/modules/courses-premium.css">
+    <link rel="stylesheet" href="css/modules/course-editor-premium.css">
     <link rel="stylesheet" href="css/modules/turmas.css">
     <link rel="stylesheet" href="css/modules/turmas-courses.css">
     <link rel="stylesheet" href="css/modules/turmas-tabs.css">
     <link rel="stylesheet" href="css/modules/frequency-basic.css">
     <link rel="stylesheet" href="css/modules/import.css">
+    <link rel="stylesheet" href="css/modules/import-enhanced.css">
     <link rel="stylesheet" href="css/modules/agenda.css">
     <link rel="stylesheet" href="css/modules/units.css">
+    <link rel="stylesheet" href="css/modules/students-premium.css">
+    <link rel="stylesheet" href="css/modules/crm.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -51,8 +58,11 @@
                 <li data-module="students">
                     <i>👥</i> <span>Alunos</span>
                 </li>
+                <li data-module="crm">
+                    <i>🎯</i> <span>CRM & Leads</span>
+                </li>
                 <li data-module="packages">
-                    <i>�</i> <span>Pacotes</span>
+                    <i>📦</i> <span>Pacotes</span>
                 </li>
                 <li data-module="activities">
                     <i>🏃</i> <span>Atividades</span>
@@ -74,6 +84,9 @@
                 </li>
                 <li data-module="instructors">
                     <i>👨‍🏫</i> <span>Instrutores</span>
+                </li>
+                <li data-module="checkin-kiosk">
+                    <i>✅</i> <span>Check-in Kiosk</span>
                 </li>
                 <li data-module="agenda">
                     <i>📅</i> <span>Agenda</span>
@@ -127,22 +140,26 @@
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
     <script src="js/dashboard/ui-controller.js"></script>
-    
+
     <!-- Students Module -->
-    <script type="module" src="js/modules/students/students.js"></script>
-    
+    <script type="module" src="js/modules/students/index.js"></script>
+
     <!-- Turmas Module -->
     <script type="module" src="js/modules/turmas/index.js"></script>
-    
+
     <!-- Frequency Module -->
     <script type="module" src="js/modules/frequency/index.js"></script>
-    
+
     <!-- Import Module -->
+    <script src="js/modules/import/controllers/importControllerEnhanced.js"></script>
     <script type="module" src="js/modules/import/index.js"></script>
-    
-    <!-- Test Guide for Anti-Duplication System -->
-    <script type="module" src="js/modules/students/services/test-guide.js"></script>
-    
+
+    <!-- CRM Module -->
+    <script type="module" src="js/modules/crm/index.js"></script>
+
+    <!-- Test Guide for Anti-Duplication System - REMOVED: file does not exist -->
+    <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->
+
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
 </body>
 </html>

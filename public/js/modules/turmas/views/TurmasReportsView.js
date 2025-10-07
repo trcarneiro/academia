@@ -2,7 +2,10 @@
 // Gera relatórios e análises sobre o desempenho das turmas
 
 export class TurmasReportsView {
-    constructor() {
+    constructor(service, controller) {
+        this.service = service;
+        this.controller = controller;
+        this.api = service.api; // ✅ API do service
         this.container = null;
         this.currentTurma = null;
         this.reportData = null;
@@ -232,7 +235,7 @@ export class TurmasReportsView {
     async loadSummaryData() {
         try {
             // Carregar dados resumidos
-            const response = await turmasAPI.fetch(`/api/turmas/${this.currentTurma.id}/summary`);
+            const response = await this.api.request(`/api/turmas/${this.currentTurma.id}/summary`);
             this.reportData = response.data || {};
             
             this.updateSummary();
