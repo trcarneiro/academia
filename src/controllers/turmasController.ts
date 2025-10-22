@@ -136,14 +136,6 @@ export class TurmasController {
         return ResponseHelper.badRequest(reply, 'Dados inválidos', error.errors);
       }
       
-      // Handle Prisma unique constraint errors
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-        const prismaError = error as any;
-        if (prismaError.meta?.target?.includes('name')) {
-          return ResponseHelper.badRequest(reply, 'Já existe uma turma com esse nome nesta organização. Escolha um nome diferente.');
-        }
-      }
-      
       return ResponseHelper.error(reply, 'Erro ao criar turma', 500);
     }
   }
@@ -196,13 +188,6 @@ export class TurmasController {
         const prismaError = error as any;
         const field = prismaError?.meta?.field_name || 'referência';
         return ResponseHelper.badRequest(reply, `Referência inválida: ${field}`);
-      }
-      // Handle Prisma unique constraint errors (e.g., organizationId + name)
-      if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'P2002') {
-        const prismaError = error as any;
-        if (prismaError.meta?.target?.includes('name')) {
-          return ResponseHelper.badRequest(reply, 'Já existe uma turma com esse nome nesta organização. Escolha um nome diferente.');
-        }
       }
       return ResponseHelper.error(reply, 'Erro ao atualizar turma', 500);
     }

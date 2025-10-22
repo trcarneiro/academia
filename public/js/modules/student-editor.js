@@ -646,7 +646,11 @@ function sendNotification() {
 // Financial action functions
 function editSubscription(subscriptionId) {
     console.log('✏️ Editing subscription:', subscriptionId);
-    showMessage('Editor de assinatura será implementado em breve', 'info');
+    if (window.studentEditor && typeof window.studentEditor.editSubscription === 'function') {
+        window.studentEditor.editSubscription(subscriptionId);
+    } else {
+        showMessage('❌ Editor de assinatura não disponível', 'error');
+    }
 }
 
 function cancelSubscription(subscriptionId) {

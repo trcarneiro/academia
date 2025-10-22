@@ -13,7 +13,7 @@ class PackagesModule {
         this.name = 'packages';
         this.version = '1.0.0';
         this.api = null;
-        this.currentView = 'dashboard';
+        this.currentView = 'subscriptions';
         
         // Estado unificado
         this.state = {
@@ -97,7 +97,7 @@ class PackagesModule {
         // Criar módulo API helper com headers padrão para organização
         this.apiHelper = window.createModuleAPI('Packages', {
             defaultHeaders: {
-                'x-organization-id': 'a55ad715-2eb0-493c-996c-bb0f60bacec9' // ID da organização padrão (Academia Demo)
+                'x-organization-id': '452c0b35-1822-4890-851e-922356c812fb' // ID da organização padrão (Academia Demo)
             }
         });
         // manter alias para compatibilidade
@@ -141,19 +141,15 @@ class PackagesModule {
                         <div class="breadcrumb">
                             <span>Academia</span>
                             <span class="breadcrumb-separator">›</span>
-                            <span class="breadcrumb-current">📦 Pacotes</span>
+                            <span class="breadcrumb-current">🏷️ Comercial</span>
                         </div>
-                        <h2>Gestão de Pacotes</h2>
-                        <p class="header-subtitle">Planos, assinaturas, créditos e conciliação financeira</p>
+                        <h2>Gestão Comercial</h2>
+                        <p class="header-subtitle">Assinaturas e créditos dos alunos</p>
                     </div>
                 </div>
                 <div class="packages-navigation" role="tablist">
-                    <button class="nav-tab active" data-view="dashboard" role="tab" aria-selected="true">📊 Dashboard</button>
-                    <button class="nav-tab" data-view="packages" role="tab">📦 Pacotes</button>
-                    <button class="nav-tab" data-view="subscriptions" role="tab">📅 Assinaturas</button>
+                    <button class="nav-tab active" data-view="subscriptions" role="tab" aria-selected="true"> Assinaturas</button>
                     <button class="nav-tab" data-view="credits" role="tab">🎫 Créditos</button>
-                    <button class="nav-tab" data-view="payments" role="tab">💳 Pagamentos</button>
-                    <button class="nav-tab" data-view="reports" role="tab">📈 Relatórios</button>
                 </div>
                 <div id="packages-content" class="packages-content" aria-live="polite"></div>
             </div>
@@ -170,11 +166,26 @@ class PackagesModule {
     }
 
     navigateTo(view, params = {}) {
+        // Navegação especial para o editor full-screen
+        if (view === 'package-editor') {
+            this.currentView = view;
+            this.openPackageEditor(params?.id ?? null);
+            return;
+        }
+
         this.currentView = view;
+
+        // Garantir que a estrutura principal esteja renderizada
+        if (!document.getElementById('packages-content')) {
+            this.render();
+        }
+
         document.querySelectorAll('.nav-tab').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.view === view);
-            btn.setAttribute('aria-selected', btn.dataset.view === view ? 'true' : 'false');
+            const isActive = btn.dataset.view === view || (view === 'packages' && btn.dataset.view === 'subscriptions');
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
         });
+
         this.renderCurrentView(params);
     }
 
@@ -182,30 +193,20 @@ class PackagesModule {
         const content = document.getElementById('packages-content');
         if (!content) return;
         switch (this.currentView) {
-            case 'dashboard':
-                content.innerHTML = this.renderDashboard();
+            case 'subscriptions':
+                content.innerHTML = this.renderSubscriptions();
                 break;
             case 'packages':
-                content.innerHTML = this.renderPackages();
-                break;
-            case 'package-editor':
-                content.innerHTML = '<div id="packageEditorMount"></div>';
-                this.openPackageEditor(params?.id || null, document.getElementById('packageEditorMount'));
-                break;
-            case 'subscriptions':
                 content.innerHTML = this.renderSubscriptions();
                 break;
             case 'credits':
                 content.innerHTML = this.renderCredits();
                 break;
-            case 'payments':
-                content.innerHTML = this.renderPayments();
-                break;
-            case 'reports':
-                content.innerHTML = this.renderReports();
-                break;
+            case 'package-editor':
+                this.openPackageEditor(params?.id ?? null);
+                return;
             default:
-                content.innerHTML = this.renderDashboard();
+                content.innerHTML = this.renderSubscriptions();
         }
         this.attachViewEventListeners();
     }
@@ -421,19 +422,197 @@ class PackagesModule {
 
     // View placeholders - implementar conforme necessário
     renderSubscriptions() {
-        return `<div class="view-placeholder">🚧 View Assinaturas em desenvolvimento...</div>`;
+        const packages = this.state.packages || [];
+        
+        return `
+            <div class="subscriptions-view">
+                <div class="view-header">
+                    <div class="view-title">
+                        <h2>� Planos de Assinatura</h2>
+                        <p>Gerencie os planos disponíveis para seus alunos</p>
+                    </div>
+                    <div class="view-actions">
+                        <button class="btn-primary" onclick="window.packagesModule.createPackage()">
+                            ➕ Novo Plano
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="module-filters-premium">
+                    <select class="filter-select" id="subscriptionStatusFilter">
+                        <option value="all">Todos os status</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                    </select>
+                </div>
+
+                <div class="data-card-premium">
+                    ${this.renderPackagesTable(packages)}
+                </div>
+            </div>
+        `;
+    }
+
+    renderPackagesTable(packages) {
+        if (packages.length === 0) {
+            return `
+                <div class="empty-state">
+                    <div class="empty-icon">�</div>
+                    <h3>Nenhum plano cadastrado</h3>
+                    <p>Crie o primeiro plano de assinatura</p>
+                    <button class="btn-primary" onclick="window.packagesModule.createPackage()">
+                        ➕ Criar Primeiro Plano
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Plano</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Tipo</th>
+                        <th>Alunos Ativos</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${packages.map(pkg => `
+                        <tr ondblclick="window.packagesModule.editPackage('${pkg.id}')">
+                            <td>
+                                <div class="package-info">
+                                    <strong>${pkg.name || 'N/A'}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="package-description">${pkg.description || '-'}</span>
+                            </td>
+                            <td><span class="price">${this.formatCurrency(pkg.price || 0)}</span></td>
+                            <td>
+                                <span class="subscription-type-badge ${pkg.billingType?.toLowerCase() || 'monthly'}">
+                                    ${pkg.billingType === 'MONTHLY' ? 'Mensal' : 
+                                      pkg.billingType === 'YEARLY' ? 'Anual' : 
+                                      pkg.billingType === 'QUARTERLY' ? 'Trimestral' :
+                                      pkg.billingType === 'CREDITS' ? 'Créditos' : 'Outro'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="subscribers-count">${pkg._count?.subscriptions || 0} aluno${(pkg._count?.subscriptions || 0) !== 1 ? 's' : ''}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${pkg.isActive ? 'active' : 'inactive'}">
+                                    ${pkg.isActive ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" onclick="window.packagesModule.editPackage('${pkg.id}')" title="Editar">
+                                        ✏️
+                                    </button>
+                                    <button class="btn-icon" onclick="window.packagesModule.togglePackage('${pkg.id}')" title="Ativar/Desativar">
+                                        ${pkg.isActive ? '⏸️' : '▶️'}
+                                    </button>
+                                    <button class="btn-icon" onclick="window.packagesModule.viewPackageSubscribers('${pkg.id}')" title="Ver Alunos">
+                                        👥
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     renderCredits() {
-        return `<div class="view-placeholder">🚧 View Créditos em desenvolvimento...</div>`;
+        const credits = this.state.creditPurchases || [];
+        
+        return `
+            <div class="credits-view">
+                <div class="view-header">
+                    <div class="view-title">
+                        <h2>🎫 Créditos de Aula</h2>
+                        <p>Gerenciar pacotes de créditos avulsos</p>
+                    </div>
+                    <div class="view-actions">
+                        <button class="btn-primary" onclick="window.packagesModule.sellCredits()">
+                            ➕ Vender Créditos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-card-premium">
+                    ${this.renderCreditsTable(credits)}
+                </div>
+            </div>
+        `;
     }
 
-    renderPayments() {
-        return `<div class="view-placeholder">🚧 View Pagamentos em desenvolvimento...</div>`;
-    }
+    renderCreditsTable(credits) {
+        if (credits.length === 0) {
+            return `
+                <div class="empty-state">
+                    <div class="empty-icon">🎫</div>
+                    <h3>Nenhum crédito vendido</h3>
+                    <p>Venda o primeiro pacote de créditos para um aluno</p>
+                    <button class="btn-primary" onclick="window.packagesModule.sellCredits()">
+                        ➕ Vender Créditos
+                    </button>
+                </div>
+            `;
+        }
 
-    renderReports() {
-        return `<div class="view-placeholder">🚧 View Relatórios em desenvolvimento...</div>`;
+        return `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Créditos Comprados</th>
+                        <th>Créditos Restantes</th>
+                        <th>Valor Pago</th>
+                        <th>Data da Compra</th>
+                        <th>Validade</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${credits.map(credit => `
+                        <tr ondblclick="window.packagesModule.viewCreditDetails('${credit.id}')">
+                            <td>
+                                <div class="student-info">
+                                    <strong>${credit.student?.firstName || 'N/A'} ${credit.student?.lastName || ''}</strong>
+                                </div>
+                            </td>
+                            <td><span class="credits-total">${credit.creditsTotal || 0}</span></td>
+                            <td><span class="credits-remaining ${credit.creditsRemaining < 5 ? 'low' : ''}">${credit.creditsRemaining || 0}</span></td>
+                            <td><span class="price">${this.formatCurrency(credit.price || 0)}</span></td>
+                            <td>${this.formatDate(credit.purchaseDate || credit.createdAt)}</td>
+                            <td>${this.formatDate(credit.expirationDate)}</td>
+                            <td>
+                                <span class="status-badge ${credit.creditsRemaining > 0 ? 'active' : 'inactive'}">
+                                    ${credit.creditsRemaining > 0 ? 'Ativo' : 'Esgotado'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-icon" onclick="window.packagesModule.viewCreditDetails('${credit.id}')" title="Ver Detalhes">
+                                        👁️
+                                    </button>
+                                    <button class="btn-icon" onclick="window.packagesModule.adjustCredits('${credit.id}')" title="Ajustar">
+                                        ⚙️
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     /**
@@ -479,17 +658,25 @@ class PackagesModule {
         return types[type] || type;
     }
 
-    /**
-     * Action methods - implementar conforme necessário
-     */
-    async createPackage() {
-    console.log('➕ Criando novo pacote (full-screen)...');
-    this.navigateTo('package-editor', { id: null });
+    normalizeBillingType(billingType) {
+        if (!billingType) return '';
+        const upper = billingType.toUpperCase();
+        if (upper === 'SUBSCRIPTION') {
+            return 'MONTHLY';
+        }
+        if (upper === 'CREDIT') {
+            return 'CREDITS';
+        }
+        return upper;
     }
 
-    async editPackage(id) {
-    console.log('✏️ Editando pacote (full-screen):', id);
-    this.navigateTo('package-editor', { id });
+    isSubscriptionBillingType(billingType) {
+        const normalized = this.normalizeBillingType(billingType);
+        return ['MONTHLY', 'QUARTERLY', 'YEARLY', 'CREDIT_CARD_INSTALLMENT'].includes(normalized);
+    }
+
+    isCreditBillingType(billingType) {
+        return this.normalizeBillingType(billingType) === 'CREDITS';
     }
 
     /**
@@ -507,7 +694,7 @@ class PackagesModule {
         let packageData = null;
         if (packageId) {
             try {
-                const response = await this.apiHelper.api.request('GET', `/api/billing-plans/${packageId}`);
+                const response = await this.apiHelper.api.request('GET', `/api/packages/${packageId}`);
                 if (response.success) {
                     packageData = response.data;
                 } else {
@@ -640,8 +827,8 @@ class PackagesModule {
                             <label for="billingType">Tipo de Pacote *</label>
                             <select id="billingType" name="billingType" required onchange="window.packagesModule.togglePackageFields(this.value)">
                                 <option value="">Selecione o tipo</option>
-                                <option value="RECURRING" ${packageData?.billingType === 'RECURRING' ? 'selected' : ''}>📅 Assinatura Recorrente</option>
-                                <option value="MONTHLY" ${packageData?.billingType === 'MONTHLY' ? 'selected' : ''}>💳 Pacote de Créditos</option>
+                                <option value="MONTHLY" ${this.isSubscriptionBillingType(packageData?.billingType) ? 'selected' : ''}>📅 Assinatura Recorrente</option>
+                                <option value="CREDITS" ${this.isCreditBillingType(packageData?.billingType) ? 'selected' : ''}>💳 Pacote de Créditos</option>
                             </select>
                             <small class="form-help">Defina como será cobrado este pacote</small>
                         </div>
@@ -674,11 +861,12 @@ class PackagesModule {
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="checkbox-label">
+                            <label class="checkbox-label" for="unlimitedClasses">
                                 <input type="checkbox" name="isUnlimitedAccess" id="unlimitedClasses" 
                                        onchange="window.packagesModule.toggleUnlimited(this.checked)"
                                        ${packageData?.isUnlimitedAccess ? 'checked' : ''}>
-                                <span>Permitir aulas ilimitadas</span>
+                                <span class="checkbox-custom" aria-hidden="true"></span>
+                                <span class="checkbox-label-text">Permitir aulas ilimitadas</span>
                             </label>
                             <small class="form-help">Se ativado, remove limite de aulas por semana</small>
                         </div>
@@ -855,86 +1043,55 @@ class PackagesModule {
      * Inicializar comportamentos do editor full-screen
      */
     initializeEditorBehavior(packageData) {
-        // Configurar funções globais para o formulário (mesmo do modal)
-        window.togglePackageFields = (billingType) => {
-            const subscriptionSection = document.getElementById('subscriptionSection');
-            const creditsSection = document.getElementById('creditsSection');
-            
-            if (billingType === 'RECURRING') {
-                subscriptionSection.style.display = 'block';
-                creditsSection.style.display = 'none';
-                
-                // Tornar campos de assinatura obrigatórios
-                document.getElementById('subscriptionPrice').required = true;
-                document.getElementById('classesPerWeek').required = true;
-                
-                // Remover obrigatoriedade dos campos de crédito
-                document.getElementById('creditQuantity').required = false;
-                document.getElementById('pricePerClass').required = false;
-                
-            } else if (billingType === 'MONTHLY') {
-                subscriptionSection.style.display = 'none';
-                creditsSection.style.display = 'block';
-                
-                // Tornar campos de crédito obrigatórios
-                document.getElementById('creditQuantity').required = true;
-                document.getElementById('pricePerClass').required = true;
-                
-                // Remover obrigatoriedade dos campos de assinatura
-                document.getElementById('subscriptionPrice').required = false;
-                document.getElementById('classesPerWeek').required = false;
-                
-            } else {
-                subscriptionSection.style.display = 'none';
-                creditsSection.style.display = 'none';
-                
-                // Remover todas as obrigatoriedades
-                document.getElementById('subscriptionPrice').required = false;
-                document.getElementById('classesPerWeek').required = false;
-                document.getElementById('creditQuantity').required = false;
-                document.getElementById('pricePerClass').required = false;
-            }
-        };
+        // Expor helpers globais utilizados pelos atributos inline
+        window.togglePackageFields = (billingType) => this.togglePackageFields(billingType);
+        window.toggleUnlimited = (isUnlimited) => this.toggleUnlimited(isUnlimited);
+        window.calculateTotalCredits = () => this.calculateTotalCredits();
 
-        window.toggleUnlimited = (isUnlimited) => {
+        const normalizedType = this.normalizeBillingType(packageData?.billingType);
+        if (!normalizedType) {
+            return;
+        }
+
+        this.togglePackageFields(normalizedType);
+
+        if (this.isSubscriptionBillingType(normalizedType)) {
+            const subscriptionPriceInput = document.getElementById('subscriptionPrice');
+            if (subscriptionPriceInput) {
+                subscriptionPriceInput.value = packageData?.price || '';
+            }
+
             const classesPerWeekInput = document.getElementById('classesPerWeek');
-            if (isUnlimited) {
-                classesPerWeekInput.disabled = true;
-                classesPerWeekInput.value = '';
-                classesPerWeekInput.required = false;
-            } else {
-                classesPerWeekInput.disabled = false;
-                classesPerWeekInput.required = true;
+            if (classesPerWeekInput) {
+                const classesValue = packageData?.isUnlimitedAccess || packageData?.classesPerWeek === 0
+                    ? ''
+                    : (packageData?.classesPerWeek || '');
+                classesPerWeekInput.value = classesValue;
             }
-        };
 
-        window.calculateTotalCredits = () => {
-            const quantity = parseFloat(document.getElementById('creditQuantity').value) || 0;
-            const pricePerClass = parseFloat(document.getElementById('pricePerClass').value) || 0;
-            const total = quantity * pricePerClass;
-            
-            document.getElementById('totalPackagePrice').value = total.toFixed(2);
-        };
-
-        // Mostrar seção correta baseada no tipo existente
-        if (packageData?.billingType) {
-            window.togglePackageFields(packageData.billingType);
-            
-            // Preencher campos específicos do tipo
-            if (packageData.billingType === 'SUBSCRIPTION') {
-                document.getElementById('subscriptionPrice').value = packageData.price || '';
-                document.getElementById('billingCycle').value = packageData.billingCycle || 'MONTHLY';
-                // Para planos ilimitados ou com 0 aulas, deixar campo vazio para evitar erro de validação
-                const classesValue = packageData.isUnlimitedAccess || packageData.classesPerWeek === 0 ? '' : (packageData.classesPerWeek || '');
-                document.getElementById('classesPerWeek').value = classesValue;
-                document.getElementById('unlimitedClasses').checked = packageData.unlimitedClasses || false;
-                window.toggleUnlimited(packageData.unlimitedClasses || false);
-            } else if (packageData.billingType === 'CREDIT') {
-                document.getElementById('creditQuantity').value = packageData.maxClasses || '';
-                document.getElementById('pricePerClass').value = packageData.pricePerClass || '';
-                document.getElementById('creditsValidity').value = packageData.creditsValidity || 90;
-                window.calculateTotalCredits();
+            const unlimitedCheckbox = document.getElementById('unlimitedClasses');
+            const isUnlimited = Boolean(packageData?.isUnlimitedAccess);
+            if (unlimitedCheckbox) {
+                unlimitedCheckbox.checked = isUnlimited;
             }
+            this.toggleUnlimited(isUnlimited);
+        } else if (this.isCreditBillingType(normalizedType)) {
+            const creditQuantityInput = document.getElementById('creditQuantity');
+            if (creditQuantityInput) {
+                creditQuantityInput.value = packageData?.maxClasses || '';
+            }
+
+            const pricePerClassInput = document.getElementById('pricePerClass');
+            if (pricePerClassInput) {
+                pricePerClassInput.value = packageData?.pricePerClass || '';
+            }
+
+            const creditsValidityInput = document.getElementById('creditsValidity');
+            if (creditsValidityInput) {
+                creditsValidityInput.value = packageData?.creditsValidity || 90;
+            }
+
+            this.calculateTotalCredits();
         }
     }
 
@@ -946,7 +1103,8 @@ class PackagesModule {
         
         const form = e.target;
         const formData = new FormData(form);
-        const billingType = formData.get('billingType');
+    const rawBillingType = formData.get('billingType');
+    const billingType = this.normalizeBillingType(rawBillingType);
         
         // Validação específica por tipo
         if (!billingType) {
@@ -957,7 +1115,7 @@ class PackagesModule {
         let packageData = {
             name: formData.get('name'),
             description: formData.get('description'),
-            billingType: billingType,
+            billingType,
             hasPersonalTraining: formData.has('hasPersonalTraining'),
             hasNutrition: formData.has('hasNutrition'),
             isActive: formData.has('isActive'),
@@ -979,7 +1137,7 @@ class PackagesModule {
         }
         
         // Campos específicos para assinatura
-        if (billingType === 'RECURRING') {
+    if (this.isSubscriptionBillingType(billingType)) {
             const subscriptionPrice = parseFloat(formData.get('price'));
             const classesPerWeek = parseInt(formData.get('classesPerWeek'));
             const isUnlimited = formData.has('isUnlimitedAccess');
@@ -997,17 +1155,22 @@ class PackagesModule {
             packageData = {
                 ...packageData,
                 price: subscriptionPrice.toString(),
-                isUnlimitedAccess: isUnlimited
+                isUnlimitedAccess: isUnlimited,
+                // Explicitly set classesPerWeek to null when unlimited, otherwise use the value
+                classesPerWeek: isUnlimited ? null : classesPerWeek
             };
             
-            // Only set classesPerWeek if not unlimited
-            if (!isUnlimited) {
-                packageData.classesPerWeek = classesPerWeek;
-            }
+            // DEBUG: Log subscription-specific data
+            console.log('🔍 Subscription data added:', {
+                isUnlimited,
+                classesPerWeek: packageData.classesPerWeek,
+                price: packageData.price,
+                fullPackageData: packageData
+            });
         }
         
         // Campos específicos para créditos
-        else if (billingType === 'MONTHLY') {
+    else if (this.isCreditBillingType(billingType)) {
             const creditQuantity = parseInt(formData.get('maxClasses'));
             const pricePerClass = parseFloat(formData.get('pricePerClass'));
             const creditsValidity = parseInt(formData.get('creditsValidity'));
@@ -1035,8 +1198,17 @@ class PackagesModule {
         
         try {
             const isEdit = !!existingPackageData;
-            const endpoint = isEdit ? `/api/billing-plans/${existingPackageData.id}` : '/api/billing-plans';
+            const endpoint = isEdit ? `/api/packages/${existingPackageData.id}` : '/api/packages';
             const method = isEdit ? 'PUT' : 'POST';
+            
+            // DEBUG: Check if classesPerWeek is present in the object
+            console.log('🔍 Pre-send check:', {
+                hasClassesPerWeek: 'classesPerWeek' in packageData,
+                classesPerWeekValue: packageData.classesPerWeek,
+                classesPerWeekType: typeof packageData.classesPerWeek,
+                isUnlimitedAccess: packageData.isUnlimitedAccess,
+                objectKeys: Object.keys(packageData)
+            });
             
             // Log data being sent
             console.log('📦 Sending package data:', JSON.stringify(packageData, null, 2));
@@ -1090,117 +1262,59 @@ class PackagesModule {
         }
     }
 
-    async togglePackage(id) {
-        console.log('🔄 Alternando status do pacote:', id);
-        try {
-            const package_ = this.state.packages.find(p => p.id === id);
-            if (!package_) {
-                console.error('❌ Pacote não encontrado:', id);
-                return;
-            }
-
-            const newStatus = !package_.isActive;
-            await this.apiHelper.fetchWithStates(`/api/billing-plans/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ isActive: newStatus }),
-                headers: { 'Content-Type': 'application/json' },
-                onSuccess: (data) => {
-                    console.log('✅ Status do pacote atualizado');
-                    this.loadPackages(); // Recarregar lista
-                },
-                onError: (error) => {
-                    console.error('❌ Erro ao atualizar status:', error);
-                }
-            });
-        } catch (error) {
-            console.error('❌ Erro ao alternar status do pacote:', error);
-        }
-    }
-
     /**
      * Inicializar comportamentos do formulário
      */
     initializeFormBehavior(packageData) {
         // Configurar funções globais para o formulário
-        window.togglePackageFields = (billingType) => {
-            const subscriptionSection = document.getElementById('subscriptionSection');
-            const creditsSection = document.getElementById('creditsSection');
-            
-            if (billingType === 'SUBSCRIPTION') {
-                subscriptionSection.style.display = 'block';
-                creditsSection.style.display = 'none';
-                
-                // Tornar campos de assinatura obrigatórios
-                document.getElementById('subscriptionPrice').required = true;
-                document.getElementById('classesPerWeek').required = true;
-                
-                // Remover obrigatoriedade dos campos de crédito
-                document.getElementById('creditQuantity').required = false;
-                document.getElementById('pricePerClass').required = false;
-                
-            } else if (billingType === 'CREDIT') {
-                subscriptionSection.style.display = 'none';
-                creditsSection.style.display = 'block';
-                
-                // Tornar campos de crédito obrigatórios
-                document.getElementById('creditQuantity').required = true;
-                document.getElementById('pricePerClass').required = true;
-                
-                // Remover obrigatoriedade dos campos de assinatura
-                document.getElementById('subscriptionPrice').required = false;
-                document.getElementById('classesPerWeek').required = false;
-                
-            } else {
-                subscriptionSection.style.display = 'none';
-                creditsSection.style.display = 'none';
-                
-                // Remover todas as obrigatoriedades
-                document.getElementById('subscriptionPrice').required = false;
-                document.getElementById('classesPerWeek').required = false;
-                document.getElementById('creditQuantity').required = false;
-                document.getElementById('pricePerClass').required = false;
-            }
-        };
+        window.togglePackageFields = (billingType) => this.togglePackageFields(billingType);
+        window.toggleUnlimited = (isUnlimited) => this.toggleUnlimited(isUnlimited);
+        window.calculateTotalCredits = () => this.calculateTotalCredits();
 
-        window.toggleUnlimited = (isUnlimited) => {
+        const normalizedType = this.normalizeBillingType(packageData?.billingType);
+        if (!normalizedType) {
+            return;
+        }
+
+        this.togglePackageFields(normalizedType);
+
+        if (this.isSubscriptionBillingType(normalizedType)) {
+            const subscriptionPriceInput = document.getElementById('subscriptionPrice');
+            if (subscriptionPriceInput) {
+                subscriptionPriceInput.value = packageData?.price || '';
+            }
+
             const classesPerWeekInput = document.getElementById('classesPerWeek');
-            if (isUnlimited) {
-                classesPerWeekInput.disabled = true;
-                classesPerWeekInput.value = '';
-                classesPerWeekInput.required = false;
-            } else {
-                classesPerWeekInput.disabled = false;
-                classesPerWeekInput.required = true;
+            if (classesPerWeekInput) {
+                const classesValue = packageData?.isUnlimitedAccess || packageData?.classesPerWeek === 0
+                    ? ''
+                    : (packageData?.classesPerWeek || '');
+                classesPerWeekInput.value = classesValue;
             }
-        };
 
-        window.calculateTotalCredits = () => {
-            const quantity = parseFloat(document.getElementById('creditQuantity').value) || 0;
-            const pricePerClass = parseFloat(document.getElementById('pricePerClass').value) || 0;
-            const total = quantity * pricePerClass;
-            
-            document.getElementById('totalPackagePrice').value = total.toFixed(2);
-        };
-
-        // Mostrar seção correta baseada no tipo existente
-        if (packageData?.billingType) {
-            window.togglePackageFields(packageData.billingType);
-            
-            // Preencher campos específicos do tipo
-            if (packageData.billingType === 'SUBSCRIPTION') {
-                document.getElementById('subscriptionPrice').value = packageData.price || '';
-                document.getElementById('billingCycle').value = packageData.billingCycle || 'MONTHLY';
-                // Para planos ilimitados ou com 0 aulas, deixar campo vazio para evitar erro de validação
-                const classesValue = packageData.isUnlimitedAccess || packageData.classesPerWeek === 0 ? '' : (packageData.classesPerWeek || '');
-                document.getElementById('classesPerWeek').value = classesValue;
-                document.getElementById('unlimitedClasses').checked = packageData.unlimitedClasses || false;
-                window.toggleUnlimited(packageData.unlimitedClasses || false);
-            } else if (packageData.billingType === 'CREDIT') {
-                document.getElementById('creditQuantity').value = packageData.maxClasses || '';
-                document.getElementById('pricePerClass').value = packageData.pricePerClass || '';
-                document.getElementById('creditsValidity').value = packageData.creditsValidity || 90;
-                window.calculateTotalCredits();
+            const unlimitedCheckbox = document.getElementById('unlimitedClasses');
+            const isUnlimited = Boolean(packageData?.isUnlimitedAccess);
+            if (unlimitedCheckbox) {
+                unlimitedCheckbox.checked = isUnlimited;
             }
+            this.toggleUnlimited(isUnlimited);
+        } else if (this.isCreditBillingType(normalizedType)) {
+            const creditQuantityInput = document.getElementById('creditQuantity');
+            if (creditQuantityInput) {
+                creditQuantityInput.value = packageData?.maxClasses || '';
+            }
+
+            const pricePerClassInput = document.getElementById('pricePerClass');
+            if (pricePerClassInput) {
+                pricePerClassInput.value = packageData?.pricePerClass || '';
+            }
+
+            const creditsValidityInput = document.getElementById('creditsValidity');
+            if (creditsValidityInput) {
+                creditsValidityInput.value = packageData?.creditsValidity || 90;
+            }
+
+            this.calculateTotalCredits();
         }
     }
 
@@ -1263,7 +1377,7 @@ class PackagesModule {
                 hasNutrition: formData.has('hasNutrition')
             };
 
-            const url = isEdit ? `/api/billing-plans/${packageId}` : '/api/billing-plans';
+            const url = isEdit ? `/api/packages/${packageId}` : '/api/packages';
             const method = isEdit ? 'PUT' : 'POST';
 
             await this.apiHelper.fetchWithStates(url, {
@@ -1309,9 +1423,10 @@ class PackagesModule {
         try {
             await Promise.all([
                 this.loadPackages(),
+                this.loadSubscriptions(),
             ]);
             this.calculateMetrics();
-            if (this.currentView === 'dashboard') {
+            if (this.currentView === 'dashboard' || this.currentView === 'subscriptions') {
                 this.renderCurrentView();
             }
         } catch (error) {
@@ -1325,7 +1440,7 @@ class PackagesModule {
      */
     async loadPackages() {
         try {
-            const res = await this.apiHelper.api.request('GET', '/api/billing-plans');
+            const res = await this.apiHelper.api.request('GET', '/api/packages');
             if (res?.success) {
                 this.state.packages = Array.isArray(res.data) ? res.data : [];
                 if (this.currentView === 'packages') {
@@ -1334,6 +1449,23 @@ class PackagesModule {
             }
         } catch (error) {
             console.error('Erro ao carregar pacotes:', error);
+        }
+    }
+
+    /**
+     * Buscar assinaturas ativas dos alunos
+     */
+    async loadSubscriptions() {
+        try {
+            const res = await this.apiHelper.api.request('GET', '/api/subscriptions');
+            if (res?.success) {
+                this.state.subscriptions = Array.isArray(res.data) ? res.data : [];
+                if (this.currentView === 'subscriptions') {
+                    this.renderCurrentView();
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar assinaturas:', error);
         }
     }
 
@@ -1559,10 +1691,11 @@ class PackagesModule {
      * Alternar campos baseado no tipo de pacote
      */
     togglePackageFields(billingType) {
+        const normalizedType = this.normalizeBillingType(billingType);
         const subscriptionSection = document.getElementById('subscriptionSection');
         const creditsSection = document.getElementById('creditsSection');
-        
-        if (billingType === 'RECURRING') {
+
+        if (this.isSubscriptionBillingType(normalizedType)) {
             if (subscriptionSection) subscriptionSection.style.display = 'block';
             if (creditsSection) creditsSection.style.display = 'none';
             
@@ -1578,7 +1711,7 @@ class PackagesModule {
             if (creditQuantity) creditQuantity.required = false;
             if (pricePerClass) pricePerClass.required = false;
             
-        } else if (billingType === 'MONTHLY') {
+        } else if (this.isCreditBillingType(normalizedType)) {
             if (subscriptionSection) subscriptionSection.style.display = 'none';
             if (creditsSection) creditsSection.style.display = 'block';
             
@@ -1614,12 +1747,17 @@ class PackagesModule {
         const classesPerWeekInput = document.getElementById('classesPerWeek');
         if (classesPerWeekInput) {
             if (isUnlimited) {
+                classesPerWeekInput.dataset.previousValue = classesPerWeekInput.value;
                 classesPerWeekInput.disabled = true;
                 classesPerWeekInput.value = '';
                 classesPerWeekInput.required = false;
             } else {
                 classesPerWeekInput.disabled = false;
                 classesPerWeekInput.required = true;
+                if (classesPerWeekInput.dataset.previousValue) {
+                    classesPerWeekInput.value = classesPerWeekInput.dataset.previousValue;
+                    delete classesPerWeekInput.dataset.previousValue;
+                }
             }
         }
     }
@@ -1639,6 +1777,97 @@ class PackagesModule {
             
             totalField.value = total.toFixed(2);
         }
+    }
+
+    /**
+     * Ações do módulo Comercial
+     */
+
+    createPackage() {
+        console.log('➕ Criar novo plano');
+        this.navigateTo('package-editor', { id: null });
+    }
+
+    editPackage(id) {
+        console.log('✏️ Editar plano:', id);
+        if (!id) {
+            this.showNotification('ID do plano inválido para edição', 'error');
+            return;
+        }
+        this.navigateTo('package-editor', { id });
+    }
+
+    async togglePackage(id) {
+        console.log('⏸️ Ativar/Desativar plano:', id);
+        if (!id) {
+            this.showNotification('ID do plano inválido', 'error');
+            return;
+        }
+
+        const targetPlan = this.state.packages.find(pkg => pkg.id === id);
+        if (!targetPlan) {
+            this.showNotification('Plano não encontrado na lista atual', 'error');
+            return;
+        }
+
+        const newStatus = !targetPlan.isActive;
+
+        try {
+            await this.apiHelper.api.request('PATCH', `/api/packages/${id}/status`, {
+                isActive: newStatus
+            }, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            this.showNotification(`Plano ${newStatus ? 'ativado' : 'desativado'} com sucesso`, 'success');
+            await this.loadPackages();
+            this.renderCurrentView();
+        } catch (error) {
+            console.error('❌ Erro ao alternar status do plano:', error);
+            this.showNotification('Não foi possível atualizar o status do plano', 'error');
+        }
+    }
+
+    viewPackageSubscribers(id) {
+        console.log('👥 Ver alunos do plano:', id);
+        // TODO: Implementar listagem de alunos matriculados neste plano
+        alert(`Funcionalidade em desenvolvimento: Ver Alunos do Plano ${id}`);
+    }
+    
+    createSubscription() {
+        console.log('➕ Criar nova assinatura');
+        // TODO: Implementar modal/página de criação
+        alert('Funcionalidade em desenvolvimento: Criar Assinatura');
+    }
+
+    editSubscription(id) {
+        console.log('✏️ Editar assinatura:', id);
+        // TODO: Implementar modal/página de edição
+        alert(`Funcionalidade em desenvolvimento: Editar Assinatura ${id}`);
+    }
+
+    toggleSubscription(id) {
+        console.log('⏸️ Ativar/Desativar assinatura:', id);
+        // TODO: Implementar toggle de status
+        alert(`Funcionalidade em desenvolvimento: Toggle Assinatura ${id}`);
+    }
+
+    sellCredits() {
+        console.log('🎫 Vender créditos');
+        // TODO: Implementar modal/página de venda
+        alert('Funcionalidade em desenvolvimento: Vender Créditos');
+    }
+
+    viewCreditDetails(id) {
+        console.log('👁️ Ver detalhes de crédito:', id);
+        // TODO: Implementar modal/página de detalhes
+        alert(`Funcionalidade em desenvolvimento: Detalhes Crédito ${id}`);
+    }
+
+    adjustCredits(id) {
+        console.log('⚙️ Ajustar créditos:', id);
+        // TODO: Implementar ajuste manual
+        alert(`Funcionalidade em desenvolvimento: Ajustar Créditos ${id}`);
     }
 
     /**

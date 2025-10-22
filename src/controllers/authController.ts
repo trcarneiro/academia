@@ -5,6 +5,40 @@ import { logger } from '@/utils/logger';
 import { RegisterInput, LoginInput } from '@/schemas/auth';
 
 export class AuthController {
+  static async getUserByEmail(
+    request: FastifyRequest<{ Querystring: { email: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { email } = request.query;
+      
+      const user = await AuthService.findUserByEmail(email);
+      
+      if (!user) {
+        return ResponseHelper.error(reply, 'Usuário não encontrado', 404);
+      }
+
+      return ResponseHelper.success(
+        reply,
+        {
+          id: user.id,
+          email: user.email,
+          organizationId: user.organizationId,
+          role: user.role,
+        },
+        'Usuário encontrado'
+      );
+    } catch (error) {
+      logger.error({ error, email: request.query.email }, 'Get user by email failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
   static async register(
     request: FastifyRequest<{ Body: RegisterInput }>,
     reply: FastifyReply

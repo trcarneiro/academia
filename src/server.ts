@@ -8,6 +8,7 @@ import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import staticFiles from '@fastify/static';
 import path from 'path';
+import { readFileSync } from 'fs';
 
 import { appConfig } from '@/config';
 import { errorHandler } from '@/middlewares/error';
@@ -19,6 +20,27 @@ function normalizePlugin(mod: any, name: string): any {
   if (mod && typeof mod.default === 'function') return mod.default as any;
   const type = mod === null ? 'null' : typeof mod;
   throw Object.assign(new Error(`Invalid Fastify plugin for ${name}. Expected function, got ${type}.`), { plugin: name, received: mod });
+}
+
+// ✅ HTTPS Configuration
+const useHTTPS = process.env.USE_HTTPS === 'true';
+let httpsOptions = {};
+
+if (useHTTPS) {
+  try {
+    const certsPath = path.join(__dirname, '..', 'certs');
+    httpsOptions = {
+      https: {
+        key: readFileSync(path.join(certsPath, 'server.key')),
+        cert: readFileSync(path.join(certsPath, 'server.pem'))
+      }
+    };
+    logger.info('🔒 HTTPS enabled with self-signed certificate');
+  } catch (error) {
+    logger.warn('⚠️ HTTPS certificates not found, falling back to HTTP');
+    logger.warn('   Run: npm run cert:generate');
+    logger.warn('   Error:', error instanceof Error ? error.message : String(error));
+  }
 }
 
 // Routes
@@ -45,9 +67,13 @@ import feedbackRoutes from '@/routes/feedback';
 import gamificationRoutes from '@/routes/gamification';
 import { aiRoutes } from '@/routes/ai';
 import { ragRoutes } from '@/routes/rag';
+import agentsRoutes from '@/routes/agents';
+import curriculumAgentRoutes from '@/routes/curriculum-agent';
 import turmasRoutes from '@/routes/turmas';
 import testRoutes from '@/routes/test';
 import usersRoutes from '@/routes/users';
+import activityExecutionsRoutes from '@/routes/activityExecutions';
+import progressionRoutes from '@/routes/progression';
 import instructorsRoutes from '@/routes/instructors';
 import unitsRoutes from '@/routes/units';
 import trainingAreasRoutes from '@/routes/trainingAreas';
@@ -56,9 +82,18 @@ import settingsRoutes from '@/routes/settings';
 import crmRoutes from '@/routes/crm';
 import googleAdsRoutes from '@/routes/googleAds';
 import devAuthRoutes from '@/routes/dev-auth';
+import packagesRoutes from '@/routes/packages-simple';
+import subscriptionsRoutes from '@/routes/subscriptions';
+import graduationRoutes from '@/routes/graduation';
+import creditsRoutes from '@/routes/credits';
+import biometricRoutes from '@/routes/biometric';
+const frequencyRoutes = require('./routes/frequency');
 // import packagesRoutes from '@/routes/packages';
 
-const server = Fastify({ logger: fastifyLoggerOptions });
+const server = Fastify({ 
+  logger: fastifyLoggerOptions,
+  ...httpsOptions  // ✅ Apply HTTPS options if available
+});
 
 const start = async (): Promise<void> => {
   try {
@@ -108,11 +143,15 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(feedbackRoutes, 'feedbackRoutes'), { prefix: '/api/feedback' } as any);
     await server.register(normalizePlugin(gamificationRoutes, 'gamificationRoutes'), { prefix: '/api/gamification' } as any);
     await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
-    await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
-    await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
+    // await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
+    // await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
+    await server.register(normalizePlugin(agentsRoutes, 'agentsRoutes'), { prefix: '/api/agents' } as any);
+    await server.register(normalizePlugin(curriculumAgentRoutes, 'curriculumAgentRoutes'), { prefix: '/api/agents/curriculum' } as any);
   await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);
   await server.register(normalizePlugin(testRoutes, 'testRoutes'), { prefix: '/api' } as any);
   await server.register(normalizePlugin(usersRoutes, 'usersRoutes'), { prefix: '/api/users' } as any);
+  await server.register(normalizePlugin(activityExecutionsRoutes, 'activityExecutionsRoutes'), { prefix: '/api/lesson-activity-executions' } as any);
+  await server.register(normalizePlugin(progressionRoutes, 'progressionRoutes'), { prefix: '/api/progression' } as any);
   await server.register(normalizePlugin(instructorsRoutes, 'instructorsRoutes'), { prefix: '/api/instructors' } as any);
   await server.register(normalizePlugin(unitsRoutes, 'unitsRoutes'), { prefix: '/api/units' } as any);
   await server.register(normalizePlugin(trainingAreasRoutes, 'trainingAreasRoutes'), { prefix: '/api/training-areas' } as any);
@@ -121,7 +160,32 @@ const start = async (): Promise<void> => {
   await server.register(normalizePlugin(crmRoutes, 'crmRoutes'), { prefix: '/api/crm' } as any);
   await server.register(normalizePlugin(googleAdsRoutes, 'googleAdsRoutes'), { prefix: '/api/google-ads' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
-  // await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
+  
+  logger.info('📊 Registrando frequency routes...');
+  const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
+  console.log('frequencyRoutes type:', typeof frequencyRoutesFunction);
+  await server.register(normalizePlugin(frequencyRoutesFunction, 'frequencyRoutes'), { prefix: '/api/frequency' } as any);
+  logger.info('✅ Frequency routes registered');
+  
+  logger.info('📦 Registrando packages routes...');
+  await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
+  logger.info('✅ Packages routes registered');
+  
+  logger.info('📅 Registrando subscriptions routes...');
+  await server.register(normalizePlugin(subscriptionsRoutes, 'subscriptionsRoutes'), { prefix: '/api/subscriptions' } as any);
+  logger.info('✅ Subscriptions routes registered');
+
+  logger.info('🎓 Registrando graduation routes...');
+  await server.register(normalizePlugin(graduationRoutes, 'graduationRoutes'), { prefix: '/api/graduation' } as any);
+  logger.info('✅ Graduation routes registered');
+
+  logger.info('💳 Registrando credits routes...');
+  await server.register(normalizePlugin(creditsRoutes, 'creditsRoutes'), { prefix: '/api/credits' } as any);
+  logger.info('✅ Credits routes registered');
+
+  logger.info('📸 Registrando biometric routes...');
+  await server.register(normalizePlugin(biometricRoutes, 'biometricRoutes'), { prefix: '/api/biometric' } as any);
+  logger.info('✅ Biometric routes registered');
 
     server.setErrorHandler(errorHandler);
 

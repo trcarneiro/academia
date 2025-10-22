@@ -1618,6 +1618,7 @@
         gap: var(--spacing-sm);
     }
     
+    
     .course-meta {
         flex-direction: column;
         align-items: flex-start;
@@ -1648,4 +1649,117 @@
         padding: var(--spacing-md);
         min-height: 300px;
     }
+}
+
+/* Subscriptions & Credits Views - Comercial Module */
+.subscriptions-view,
+.credits-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.view-title h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.view-title p {
+    color: #64748b;
+    margin: 0;
+}
+
+.view-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+/* Subscription Type Badges */
+.subscription-type-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.subscription-type-badge.monthly {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.subscription-type-badge.yearly {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.subscription-type-badge.outro {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* Credits Display */
+.credits-total {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.credits-remaining {
+    font-weight: 700;
+    color: #10b981;
+}
+
+.credits-remaining.low {
+    color: #f59e0b;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Student Info in Tables */
+.student-info strong {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Price Display */
+.price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+/* Empty State Enhancements */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: #64748b;
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: #1e293b;
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    margin-bottom: var(--spacing-lg);
 }

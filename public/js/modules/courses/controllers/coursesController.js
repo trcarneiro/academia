@@ -608,11 +608,14 @@ class CoursesController {
      */
     switchView(view, savePreference = true) {
         const grid = document.getElementById('coursesGrid');
-        const table = document.getElementById('coursesTable');
-        const gridBtn = document.getElementById('gridViewBtn');
-        const tableBtn = document.getElementById('tableViewBtn');
+        const table = document.getElementById('coursesTableView'); // FIX: era 'coursesTable' (container pai)
+        const gridBtn = document.querySelector('.view-btn[data-view="grid"]');
+        const tableBtn = document.querySelector('.view-btn[data-view="table"]');
 
-        if (!grid || !table) return;
+        if (!grid || !table) {
+            console.warn('⚠️ switchView: Grid or table element not found', { grid: !!grid, table: !!table });
+            return;
+        }
 
         if (view === 'grid') {
             grid.style.display = 'grid';

@@ -1,0 +1,137 @@
+{
+  "timestamp": "2025-10-15T19:53:27.684Z",
+  "config": {
+    "organizationId": "452c0b35-1822-4890-851e-922356c812fb",
+    "defaultPlanId": "18f7d0e9-c375-4792-afb3-f59b2e4c2157",
+    "csvPath": "H:\\projetos\\academia\\scripts\\alunos-asaas-import.csv",
+    "dryRun": true,
+    "skipExisting": true
+  },
+  "summary": {
+    "total": 23,
+    "successful": 21,
+    "skipped": 2,
+    "failed": 0
+  },
+  "results": [
+    {
+      "success": true,
+      "skipped": true,
+      "reason": "Email mari.oliveiravidal@gmail.com já cadastrado",
+      "email": "mari.oliveiravidal@gmail.com",
+      "cpf": "01882078640"
+    },
+    {
+      "success": true,
+      "email": "nathalia.sena.goulart@gmail.com",
+      "cpf": "13190484635"
+    },
+    {
+      "success": true,
+      "email": "joaoalvaro866@gmail.com",
+      "cpf": "10740316605"
+    },
+    {
+      "success": true,
+      "email": "brenoharantes@hotmail.com",
+      "cpf": "08946466642"
+    },
+    {
+      "success": true,
+      "email": "gustavo@ontic.com.br",
+      "cpf": "03797000693"
+    },
+    {
+      "success": true,
+      "email": "tpratesnogueira@gmail.com",
+      "cpf": "76146588687"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "reason": "Email karineoliveirastudy@gmail.com já cadastrado",
+      "email": "karineoliveirastudy@gmail.com",
+      "cpf": "15259401638"
+    },
+    {
+      "success": true,
+      "email": "saramartins298@gmail.com",
+      "cpf": "15680812789"
+    },
+    {
+      "success": true,
+      "email": "anamfbicalho@gmail.com",
+      "cpf": "11479184659"
+    },
+    {
+      "success": true,
+      "email": "rodrigocomercial78@gmail.com",
+      "cpf": "03954690667"
+    },
+    {
+      "success": true,
+      "email": "sarahgarciamm@gmail.com",
+      "cpf": "11438123604"
+    },
+    {
+      "success": true,
+      "email": "fellipe.santos@gmail.com",
+      "cpf": "01345547609"
+    },
+    {
+      "success": true,
+      "email": "marciavgl@gmail.com",
+      "cpf": "03753021660"
+    },
+    {
+      "success": true,
+      "email": "adrianobaiao@otimisaeventos.com.br",
+      "cpf": "91286557615"
+    },
+    {
+      "success": true,
+      "email": "adryze@gmail.com",
+      "cpf": "00233002642"
+    },
+    {
+      "success": true,
+      "email": "roger@agpsa.com.br",
+      "cpf": "42205972634"
+    },
+    {
+      "success": true,
+      "email": "antonio.lucio@unisys.com",
+      "cpf": "42962528600"
+    },
+    {
+      "success": true,
+      "email": "henriquecesarb2@gmail.com",
+      "cpf": "13054713695"
+    },
+    {
+      "success": true,
+      "email": "aluno18@academia.demo",
+      "cpf": "44554672620"
+    },
+    {
+      "success": true,
+      "email": "lorrainechrissouza@gmail.com",
+      "cpf": "09348256610"
+    },
+    {
+      "success": true,
+      "email": "julicmol@hotmail.com",
+      "cpf": "78547622012"
+    },
+    {
+      "success": true,
+      "email": "wollscheid@uol.com.br",
+      "cpf": "67565190691"
+    },
+    {
+      "success": true,
+      "email": "aluno22@academia.demo",
+      "cpf": "02780485604"
+    }
+  ]
+}

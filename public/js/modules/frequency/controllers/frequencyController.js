@@ -5,6 +5,8 @@
 
 import { FrequencyService } from '../services/frequencyService.js';
 import { ValidationService } from '../services/validationService.js';
+import { DashboardView } from '../views/dashboardView.js';
+import { HistoryView } from '../views/historyView.js';
 
 export class FrequencyController {
     constructor() {
@@ -13,6 +15,8 @@ export class FrequencyController {
         this.validationService = new ValidationService();
         this.currentView = 'checkin';
         this.api = null;
+        this.dashboardView = null; // 🆕 Dashboard View instance
+        this.historyView = null; // 🆕 History View instance (Fase 3)
     }
 
     /**
@@ -27,7 +31,7 @@ export class FrequencyController {
         try {
             await this.setupMainStructure();
             await this.setupNavigation();
-            await this.loadCheckinView();
+            await this.loadDashboardView(); // 🆕 Dashboard como view padrão
             
             console.log('✅ [FrequencyController] Initialized successfully');
         } catch (error) {
@@ -68,14 +72,17 @@ export class FrequencyController {
                 <!-- Navigation Tabs -->
                 <nav class="module-navigation">
                     <div class="nav-tabs">
-                        <button class="nav-tab active" data-view="checkin">
+                        <button class="nav-tab active" data-view="dashboard">
+                            <i>📊</i> Dashboard
+                        </button>
+                        <button class="nav-tab" data-view="checkin">
                             <i>✅</i> Check-in
                         </button>
                         <button class="nav-tab" data-view="history">
                             <i>📋</i> Histórico
                         </button>
                         <button class="nav-tab" data-view="reports">
-                            <i>📊</i> Relatórios
+                            <i>�</i> Relatórios
                         </button>
                     </div>
                 </nav>
@@ -118,6 +125,9 @@ export class FrequencyController {
         this.currentView = viewName;
         
         switch (viewName) {
+            case 'dashboard':
+                await this.loadDashboardView();
+                break;
             case 'checkin':
                 await this.loadCheckinView();
                 break;
@@ -130,6 +140,29 @@ export class FrequencyController {
             default:
                 console.warn(`Unknown view: ${viewName}`);
         }
+    }
+
+    /**
+     * Load dashboard view (🆕 Fase 2B)
+     */
+    async loadDashboardView() {
+        console.log('📊 [FrequencyController] Loading Dashboard View...');
+        
+        const contentArea = this.container.querySelector('#frequency-content');
+        
+        // Destruir dashboard anterior se existir
+        if (this.dashboardView) {
+            this.dashboardView.destroy();
+            this.dashboardView = null;
+        }
+        
+        // Criar nova instância
+        this.dashboardView = new DashboardView(this.api);
+        
+        // Renderizar dashboard
+        await this.dashboardView.render(contentArea);
+        
+        console.log('✅ [FrequencyController] Dashboard View loaded');
     }
 
     /**
@@ -271,22 +304,33 @@ export class FrequencyController {
      */
     async searchStudents(query) {
         try {
-            // Mock data for now - replace with actual API call
-            const mockStudents = [
-                { id: '1', name: 'João Silva', registration: '001', phone: '(11) 99999-9999' },
-                { id: '2', name: 'Maria Santos', registration: '002', phone: '(11) 88888-8888' },
-                { id: '3', name: 'Pedro Costa', registration: '003', phone: '(11) 77777-7777' }
-            ];
+            // Buscar alunos via API
+            const response = await window.moduleAPI.request('/api/attendance/students/all', {
+                method: 'GET'
+            });
 
-            const filteredStudents = mockStudents.filter(student => 
-                student.name.toLowerCase().includes(query.toLowerCase()) ||
-                student.registration.includes(query) ||
-                student.phone.includes(query)
-            );
+            if (!response.success) {
+                throw new Error(response.message || 'Erro ao buscar alunos');
+            }
+
+            const students = response.data || [];
+            
+            // Filtrar por query
+            const filteredStudents = students.filter(student => {
+                const searchStr = student.searchString || 
+                    `${student.registrationNumber} ${student.name} ${student.email}`.toLowerCase();
+                return searchStr.toLowerCase().includes(query.toLowerCase());
+            }).map(student => ({
+                id: student.id,
+                name: student.name,
+                registration: student.registrationNumber || 'N/A',
+                phone: student.email // Usar email como fallback
+            }));
 
             this.renderSearchResults(filteredStudents);
         } catch (error) {
             console.error('Error searching students:', error);
+            window.app?.handleError(error, { module: 'frequency', action: 'searchStudents' });
         }
     }
 
@@ -345,20 +389,36 @@ export class FrequencyController {
         try {
             const sessionSelect = this.container.querySelector('#session-select');
             
-            // Mock sessions - replace with actual API call
-            const mockSessions = [
-                { id: '1', name: 'Krav Maga - Iniciante (19:00-20:00)', time: '19:00', available: true },
-                { id: '2', name: 'Krav Maga - Avançado (20:00-21:00)', time: '20:00', available: true },
-                { id: '3', name: 'Defesa Pessoal - Básico (18:00-19:00)', time: '18:00', available: true }
-            ];
+            // Buscar aulas disponíveis para o aluno via API
+            const response = await window.moduleAPI.request(`/api/attendance/classes/available?studentId=${studentId}`, {
+                method: 'GET'
+            });
 
-            sessionSelect.innerHTML = '<option value="">Selecione uma sessão</option>';
+            if (!response.success) {
+                throw new Error(response.message || 'Erro ao buscar aulas');
+            }
+
+            const sessions = response.data || [];
+
+            sessionSelect.innerHTML = '<option value="">Selecione uma aula</option>';
             
-            mockSessions.forEach(session => {
+            sessions.forEach(session => {
                 const option = document.createElement('option');
                 option.value = session.id;
-                option.textContent = session.name;
-                option.disabled = !session.available;
+                
+                // Formatar nome da aula com horário
+                const startTime = new Date(session.startTime).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const endTime = new Date(session.endTime).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                option.textContent = `${session.name} (${startTime}-${endTime})`;
+                option.disabled = !session.canCheckIn;
+                
                 sessionSelect.appendChild(option);
             });
 
@@ -372,6 +432,7 @@ export class FrequencyController {
 
         } catch (error) {
             console.error('Error loading sessions:', error);
+            window.app?.handleError(error, { module: 'frequency', action: 'loadStudentSessions' });
         }
     }
 
@@ -436,20 +497,33 @@ export class FrequencyController {
      * Load today statistics
      */
     async loadTodayStats() {
-        // Mock data - replace with actual API calls
-        const stats = {
-            todayCheckins: 24,
-            activeSessions: 3,
-            attendanceRate: 85
-        };
+        try {
+            // Buscar estatísticas do dia via API
+            const response = await window.moduleAPI.request('/api/frequency/dashboard-stats', {
+                method: 'GET'
+            });
 
-        const todayElement = this.container.querySelector('#today-checkins');
-        const activeElement = this.container.querySelector('#active-sessions');
-        const rateElement = this.container.querySelector('#attendance-rate');
+            if (!response.success) {
+                throw new Error(response.message || 'Erro ao buscar estatísticas');
+            }
 
-        if (todayElement) todayElement.textContent = stats.todayCheckins;
-        if (activeElement) activeElement.textContent = stats.activeSessions;
-        if (rateElement) rateElement.textContent = `${stats.attendanceRate}%`;
+            const stats = response.data || {
+                todayCheckins: 0,
+                activeSessions: 0,
+                attendanceRate: 0
+            };
+
+            const todayElement = this.container.querySelector('#today-checkins');
+            const activeElement = this.container.querySelector('#active-sessions');
+            const rateElement = this.container.querySelector('#attendance-rate');
+
+            if (todayElement) todayElement.textContent = stats.todayCheckins || stats.checkInsToday || 0;
+            if (activeElement) activeElement.textContent = stats.activeSessions || stats.activeClasses || 0;
+            if (rateElement) rateElement.textContent = `${stats.attendanceRate || stats.averageAttendance || 0}%`;
+        } catch (error) {
+            console.error('Error loading today stats:', error);
+            window.app?.handleError(error, { module: 'frequency', action: 'loadTodayStats' });
+        }
     }
 
     /**
@@ -459,50 +533,71 @@ export class FrequencyController {
         const container = this.container.querySelector('#recent-checkins');
         if (!container) return;
         
-        // Mock data - replace with actual API calls
-        const recentCheckins = [
-            { id: '1', studentName: 'João Silva', sessionName: 'Krav Maga Iniciante', time: '19:05', status: 'present' },
-            { id: '2', studentName: 'Maria Santos', sessionName: 'Krav Maga Avançado', time: '19:03', status: 'present' },
-            { id: '3', studentName: 'Pedro Costa', sessionName: 'Defesa Pessoal', time: '19:01', status: 'present' }
-        ];
+        try {
+            // Buscar check-ins recentes via API
+            const response = await window.moduleAPI.request('/api/attendance/history?limit=10&sortBy=checkInTime&sortOrder=desc', {
+                method: 'GET'
+            });
 
-        if (recentCheckins.length === 0) {
-            container.innerHTML = '<div class="empty-state">Nenhum check-in registrado hoje</div>';
-            return;
-        }
+            if (!response.success) {
+                throw new Error(response.message || 'Erro ao buscar check-ins');
+            }
 
-        const checkinsHTML = recentCheckins.map(checkin => `
-            <div class="checkin-item">
-                <div class="checkin-student">${checkin.studentName}</div>
-                <div class="checkin-session">${checkin.sessionName}</div>
-                <div class="checkin-time">${checkin.time}</div>
-                <div class="checkin-status status-${checkin.status}">
-                    <i>✅</i> Presente
+            const recentCheckins = (response.data || []).map(checkin => ({
+                id: checkin.id,
+                studentName: checkin.student?.user 
+                    ? `${checkin.student.user.firstName} ${checkin.student.user.lastName}`.trim()
+                    : checkin.student?.name || 'Aluno Desconhecido',
+                sessionName: checkin.lesson?.name || checkin.turmaLesson?.title || 'Aula não especificada',
+                time: new Date(checkin.checkInTime).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                }),
+                status: checkin.status || 'present'
+            }));
+
+            if (recentCheckins.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhum check-in registrado hoje</div>';
+                return;
+            }
+
+            const checkinsHTML = recentCheckins.map(checkin => `
+                <div class="checkin-item">
+                    <div class="checkin-student">${checkin.studentName}</div>
+                    <div class="checkin-session">${checkin.sessionName}</div>
+                    <div class="checkin-time">${checkin.time}</div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
 
-        container.innerHTML = checkinsHTML;
+            container.innerHTML = checkinsHTML;
+        } catch (error) {
+            console.error('Error loading recent checkins:', error);
+            container.innerHTML = '<div class="empty-state">Erro ao carregar check-ins recentes</div>';
+            window.app?.handleError(error, { module: 'frequency', action: 'loadRecentCheckins' });
+        }
     }
 
     /**
-     * Load history view (placeholder)
+     * Load history view (🆕 Fase 3)
      */
     async loadHistoryView() {
+        console.log('📋 [FrequencyController] Loading History View...');
+        
         const contentArea = this.container.querySelector('#frequency-content');
-        contentArea.innerHTML = `
-            <div class="history-view">
-                <div class="data-card-premium">
-                    <div class="card-header">
-                        <h3>Histórico de Frequência</h3>
-                    </div>
-                    <div class="card-content">
-                        <p>View de histórico em desenvolvimento...</p>
-                        <p>Aqui serão exibidos filtros avançados e listagem completa de presenças.</p>
-                    </div>
-                </div>
-            </div>
-        `;
+        
+        // Destruir history anterior se existir
+        if (this.historyView) {
+            this.historyView.destroy();
+            this.historyView = null;
+        }
+        
+        // Criar nova instância
+        this.historyView = new HistoryView(this.api);
+        
+        // Renderizar history
+        await this.historyView.render(contentArea);
+        
+        console.log('✅ [FrequencyController] History View loaded');
     }
 
     /**

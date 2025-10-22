@@ -2,6 +2,18 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
+import { authenticateToken, allRoles } from '@/middlewares/auth';
+
+/**
+ * Helper: Extrai organizationId de JWT, query param ou fallback
+ * Suporta desenvolvimento sem autenticação
+ */
+function getOrganizationId(request: any): string {
+  return request.user?.organizationId || 
+         (request.query as any).organizationId || 
+         (request.headers['x-organization-id'] as string) ||
+         '452c0b35-1822-4890-851e-922356c812fb'; // Academia Krav Maga Demo (fallback)
+}
 
 // Schemas de validação para pacotes
 const CreatePackageSchema = z.object({
@@ -36,7 +48,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // GET /api/packages - Listar todos os pacotes
   fastify.get('/', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       querystring: PackageQuerySchema,
       tags: ['Packages'],
@@ -44,7 +56,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     try {
-      const { organizationId } = request.user;
+      const organizationId = getOrganizationId(request);
       const query = request.query as z.infer<typeof PackageQuerySchema>;
       
       // Construir filtros
@@ -126,7 +138,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // GET /api/packages/:id - Buscar pacote específico
   fastify.get('/:id', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       params: z.object({ id: z.string().cuid() }),
       tags: ['Packages'],
@@ -176,7 +188,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // POST /api/packages - Criar novo pacote
   fastify.post('/', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       body: CreatePackageSchema,
       tags: ['Packages'],
@@ -212,7 +224,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // PUT /api/packages/:id - Atualizar pacote
   fastify.put('/:id', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       params: z.object({ id: z.string().cuid() }),
       body: UpdatePackageSchema,
@@ -256,7 +268,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // DELETE /api/packages/:id - Excluir/desativar pacote
   fastify.delete('/:id', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       params: z.object({ id: z.string().cuid() }),
       tags: ['Packages'],
@@ -311,7 +323,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // GET /api/packages/analytics - Métricas e analytics
   fastify.get('/analytics', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       querystring: z.object({
         period: z.enum(['week', 'month', 'quarter', 'year']).default('month')
@@ -410,7 +422,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // POST /api/packages/:id/subscribe - Criar assinatura para pacote
   fastify.post('/:id/subscribe', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       params: z.object({ id: z.string().cuid() }),
       body: z.object({
@@ -461,12 +473,18 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
         return ResponseHelper.badRequest(reply, 'Aluno já possui assinatura ativa');
       }
       
+      // Buscar responsável financeiro do aluno
+      let payerId = studentId;
+      if (student.financialResponsibleId) {
+        payerId = student.financialResponsibleId;
+      }
       // Criar assinatura
       const subscription = await prisma.studentSubscription.create({
         data: {
           organizationId,
           studentId,
           planId: id,
+          payerId,
           currentPrice: customPrice || packageData.price,
           billingType: packageData.billingType,
           startDate: startDate ? new Date(startDate) : new Date(),
@@ -487,7 +505,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   
   // POST /api/packages/:id/purchase-credits - Comprar créditos
   fastify.post('/:id/purchase-credits', {
-    preHandler: [authGuard],
+    preHandler: [authenticateToken, allRoles],
     schema: {
       params: z.object({ id: z.string().cuid() }),
       body: z.object({

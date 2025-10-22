@@ -158,6 +158,7 @@ export class AttendanceList {
                             <th>👤 Aluno</th>
                             <th>🎓 Curso</th>
                             <th>🏃 Sessão</th>
+                            <th>🎯 Atividades</th>
                             <th>✅ Status</th>
                             <th>📱 Dispositivo</th>
                             <th>⚙️ Ações</th>
@@ -223,6 +224,10 @@ export class AttendanceList {
                     </div>
                 </td>
                 
+                <td class="activities-cell">
+                    ${this.renderActivitiesProgress(record)}
+                </td>
+                
                 <td class="status-cell">
                     <span class="status-badge ${statusClass}">
                         ${statusIcon} ${this.getStatusText(record.status)}
@@ -243,6 +248,13 @@ export class AttendanceList {
                         <button class="btn-icon btn-view" onclick="viewAttendance('${record.id}')" title="Ver detalhes">
                             👁️
                         </button>
+                        ${record.turmaLesson?.lessonPlanId ? `
+                            <button class="btn-icon btn-activities" 
+                                    onclick="viewLessonExecution('${record.turmaLesson.id}')" 
+                                    title="Ver Execução de Atividades">
+                                🎯
+                            </button>
+                        ` : ''}
                         ${record.status === 'PENDING' ? `
                             <button class="btn-icon btn-confirm" onclick="confirmAttendance('${record.id}')" title="Confirmar">
                                 ✅
@@ -305,6 +317,53 @@ export class AttendanceList {
             'kiosk': '🖥️'
         };
         return icons[device] || '💻';
+    }
+
+    /**
+     * Renderizar progresso de atividades
+     */
+    renderActivitiesProgress(record) {
+        // Se não tem turmaLesson ou lessonPlanId, mostrar N/A
+        if (!record.turmaLesson || !record.turmaLesson.lessonPlanId) {
+            return `
+                <div class="activities-none">
+                    <span class="text-muted">Sem plano</span>
+                </div>
+            `;
+        }
+
+        // Se tem activityExecutions, calcular progresso
+        if (record.activityExecutions && Array.isArray(record.activityExecutions)) {
+            const total = record.turmaLesson._count?.activities || 0;
+            const completed = record.activityExecutions.filter(exec => exec.completed).length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            // Classe CSS baseada no progresso
+            let progressClass = 'progress-low';
+            if (completionRate >= 80) progressClass = 'progress-high';
+            else if (completionRate >= 50) progressClass = 'progress-medium';
+            
+            return `
+                <div class="activities-progress">
+                    <div class="progress-text">
+                        <span class="completed-count">${completed}/${total}</span>
+                        <span class="completion-rate ${progressClass}">${completionRate}%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar ${progressClass}" style="width: ${completionRate}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Se tem plano mas ainda não executou nenhuma atividade
+        const totalActivities = record.turmaLesson._count?.activities || 0;
+        return `
+            <div class="activities-pending">
+                <span class="activities-count">0/${totalActivities}</span>
+                <span class="text-muted">Não iniciado</span>
+            </div>
+        `;
     }
 
     /**

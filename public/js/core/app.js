@@ -10,8 +10,44 @@ class AcademyApp {
 
   async init() {
     console.log('🚀 Initializing AcademyApp...');
+    this.initializeOrganizationContext();
     await this.loadModules();
     console.log('✅ AcademyApp initialized');
+  }
+
+  initializeOrganizationContext() {
+    // 🔧 TEMPORARY: Populate organization context for dev until Supabase auth is integrated
+    // TODO: Remove this when proper auth/session is implemented
+    try {
+      const orgId = localStorage.getItem('activeOrganizationId') || 
+                    sessionStorage.getItem('activeOrganizationId') ||
+                    window.currentOrganizationId;
+      
+      if (!orgId) {
+        // Fallback to dev organization for development/demo
+        // This is ONLY for local development with single org
+        const DEV_ORG_ID = '452c0b35-1822-4890-851e-922356c812fb';
+        localStorage.setItem('activeOrganizationId', DEV_ORG_ID);
+        window.currentOrganizationId = DEV_ORG_ID;
+        console.log('🔧 [DEV MODE] Organization context initialized with fallback org:', DEV_ORG_ID);
+      } else {
+        window.currentOrganizationId = orgId;
+        console.log('✅ Organization context initialized:', orgId);
+      }
+      
+      // Also add helper to ensure org is available (useful for modules needing guarantee)
+      window.ensureOrganizationContext = async () => {
+        let attempts = 0;
+        while (attempts < 50 && !window.currentOrganizationId) {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          attempts++;
+        }
+        return window.currentOrganizationId;
+      };
+      
+    } catch (err) {
+      console.warn('⚠️ Error initializing organization context:', err.message);
+    }
   }
 
   async loadModules() {
@@ -27,7 +63,7 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'rag', 'ai', 'ai-dashboard', 'ai-monitor', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm'
+      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'rag', 'ai', 'ai-dashboard', 'ai-monitor', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk'
     ];
 
     moduleList.forEach(moduleName => {

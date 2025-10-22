@@ -171,6 +171,9 @@ export class GoogleAdsService {
             throw new Error('Google Ads configuration not loaded');
         }
 
+        // Suppress google-ads-api schema warnings globally (they appear during queries, not just init)
+        this.suppressGoogleAdsWarnings();
+
         this.client = new GoogleAdsApi({
             client_id: this.config.clientId,
             client_secret: this.config.clientSecret,
@@ -178,6 +181,24 @@ export class GoogleAdsService {
         });
 
         logger.info('Google Ads API client initialized', { organizationId: this.organizationId });
+    }
+
+    /**
+     * Suppress non-critical google-ads-api library warnings globally
+     * These warnings don't affect functionality and pollute logs
+     */
+    private suppressGoogleAdsWarnings() {
+        const originalWarn = console.warn;
+        
+        console.warn = (...args: any[]) => {
+            const msg = args[0]?.toString?.() || '';
+            // Only suppress data type warnings from google-ads-api library
+            if (msg.includes('No data type found for')) {
+                return; // Silently ignore
+            }
+            // Pass through all other warnings
+            originalWarn(...args);
+        };
     }
 
     // ========================================================================
@@ -193,29 +214,115 @@ export class GoogleAdsService {
         }
 
         if (!this.client || !this.config?.customerId || !this.config?.refreshToken) {
-            throw new Error('Google Ads client not properly initialized');
+            const missing = [];
+            if (!this.client) missing.push('client');
+            if (!this.config?.customerId) missing.push('customerId');
+            if (!this.config?.refreshToken) missing.push('refreshToken');
+            throw new Error(`Google Ads client not properly initialized. Missing: ${missing.join(', ')}`);
         }
 
         try {
-            const customer = this.client.Customer({
-                customer_id: this.config.customerId,
-                refresh_token: this.config.refreshToken,
+            // Remove hyphens from customer ID (API expects format: 1234567890)
+            const cleanCustomerId = this.config.customerId.replace(/-/g, '');
+            
+            // Validate refresh token format
+            if (!this.config.refreshToken || this.config.refreshToken.trim().length < 20) {
+                throw new Error('Invalid or missing refresh token. Please complete OAuth authorization.');
+            }
+            
+            logger.info('🔄 Creating Google Ads customer instance', {
+                customerId: cleanCustomerId,
+                hasRefreshToken: !!this.config.refreshToken,
+                refreshTokenLength: this.config.refreshToken.length
             });
 
+            let customer;
+            try {
+                customer = this.client.Customer({
+                    customer_id: cleanCustomerId,
+                    refresh_token: this.config.refreshToken,
+                });
+            } catch (customerError) {
+                logger.error('❌ Failed to create Google Ads customer instance', {
+                    error: customerError instanceof Error ? customerError.message : String(customerError),
+                    customerId: cleanCustomerId
+                });
+                throw new Error(
+                    'Failed to initialize Google Ads customer. The refresh token may be expired or invalid. ' +
+                    'Please re-authorize the integration.'
+                );
+            }
+
             // Query campaigns with metrics
-            const campaigns = await customer.query(`
-                SELECT
-                    campaign.id,
-                    campaign.name,
-                    campaign.status,
-                    metrics.impressions,
-                    metrics.clicks,
-                    metrics.cost_micros,
-                    metrics.conversions
-                FROM campaign
-                WHERE campaign.status != 'REMOVED'
-                AND segments.date DURING LAST_30_DAYS
-            `);
+            logger.info('🔍 Querying Google Ads campaigns...', {
+                customerId: cleanCustomerId,
+                refreshTokenFirst10: this.config.refreshToken.substring(0, 10) + '...',
+                refreshTokenLast10: '...' + this.config.refreshToken.substring(this.config.refreshToken.length - 10)
+            });
+            
+            let campaigns;
+            try {
+                // Wrap query with detailed error capture
+                logger.info('📤 Sending query to Google Ads API...');
+                
+                campaigns = await customer.query(`
+                    SELECT
+                        campaign.id,
+                        campaign.name,
+                        campaign.status,
+                        metrics.impressions,
+                        metrics.clicks,
+                        metrics.cost_micros,
+                        metrics.conversions
+                    FROM campaign
+                    WHERE campaign.status != 'REMOVED'
+                    AND segments.date DURING LAST_30_DAYS
+                `);
+                
+                logger.info('✅ Query completed successfully', {
+                    campaignsCount: campaigns?.length || 0
+                });
+            } catch (queryError: any) {
+                // Log RAW error before library processes it
+                logger.error('❌ Google Ads query FAILED - RAW ERROR:', {
+                    errorType: typeof queryError,
+                    errorConstructor: queryError?.constructor?.name,
+                    errorKeys: queryError ? Object.keys(queryError) : [],
+                    errorStringified: JSON.stringify(queryError, Object.getOwnPropertyNames(queryError), 2),
+                    hasMessage: !!queryError?.message,
+                    hasCode: !!queryError?.code,
+                    hasDetails: !!queryError?.details,
+                    hasMetadata: !!queryError?.metadata,
+                    hasStack: !!queryError?.stack
+                });
+                
+                logger.error('❌ Google Ads query failed', {
+                    errorType: queryError?.constructor?.name,
+                    errorMessage: queryError?.message,
+                    errorCode: queryError?.code,
+                    errorDetails: queryError?.details,
+                    fullError: JSON.stringify(queryError, null, 2)
+                });
+                
+                // Check if it's an authentication error
+                if (queryError?.message?.includes('UNAUTHENTICATED') || 
+                    queryError?.code === 16 ||
+                    queryError?.message?.includes('invalid_grant')) {
+                    throw new Error(
+                        '🔐 Google Ads authentication failed: Invalid or expired credentials.\n\n' +
+                        '📋 Possible causes:\n' +
+                        '1. Refresh token expired (re-authorize needed)\n' +
+                        '2. Google account used doesn\'t have access to Customer ID ' + cleanCustomerId + '\n' +
+                        '3. Developer token not approved or invalid\n\n' +
+                        '🔧 How to fix:\n' +
+                        '1. Click "Desconectar" to clear old credentials\n' +
+                        '2. Click "Conectar Google Ads" again\n' +
+                        '3. Make sure to login with the account that owns Customer ID ' + cleanCustomerId
+                    );
+                }
+                
+                throw queryError;
+            }
 
             let syncedCount = 0;
 
@@ -253,10 +360,84 @@ export class GoogleAdsService {
                 syncedCount++;
             }
 
-            logger.info(`Synced ${syncedCount} campaigns from Google Ads`, { organizationId: this.organizationId });
+            logger.info(`✅ Synced ${syncedCount} campaigns from Google Ads`, { organizationId: this.organizationId });
             return syncedCount;
         } catch (error) {
-            logger.error('Error syncing campaigns from Google Ads', { error, organizationId: this.organizationId });
+            // Enhanced error logging with full details
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorDetails = {
+                message: errorMessage,
+                name: error instanceof Error ? error.name : 'Unknown',
+                stack: error instanceof Error ? error.stack : undefined,
+                organizationId: this.organizationId,
+                config: {
+                    hasClient: !!this.client,
+                    hasCustomerId: !!this.config?.customerId,
+                    hasRefreshToken: !!this.config?.refreshToken,
+                    refreshTokenLength: this.config?.refreshToken?.length || 0,
+                    customerId: this.config?.customerId || 'NOT_SET',
+                }
+            };
+            
+            logger.error('❌ Error syncing campaigns from Google Ads', errorDetails);
+            console.error('[GOOGLE ADS SYNC ERROR]', JSON.stringify(errorDetails, null, 2));
+            
+            // Detect specific error types and provide actionable messages
+            
+            // Generic library error - usually means refresh token is invalid/expired
+            if (errorMessage.includes('Cannot read properties of undefined')) {
+                throw new Error(
+                    '🔐 Google Ads authentication error: The refresh token is invalid or expired.\n\n' +
+                    '📋 How to fix:\n' +
+                    '1. Click "Conectar Google Ads" button\n' +
+                    '2. Complete the OAuth authorization flow\n' +
+                    '3. Make sure to grant all requested permissions\n' +
+                    '4. Try syncing again after authorization completes'
+                );
+            }
+            
+            // Invalid or missing refresh token
+            if (errorMessage.includes('Invalid or missing refresh token')) {
+                throw new Error(
+                    '🔐 Missing Google Ads authorization.\n\n' +
+                    '📋 Action required:\n' +
+                    '1. Click "Conectar Google Ads" button above\n' +
+                    '2. Log in with your Google Ads account\n' +
+                    '3. Grant permissions when asked\n' +
+                    '4. Wait for "Conectado" status before syncing'
+                );
+            }
+            
+            // Explicit token expiration
+            if (errorMessage.includes('invalid_grant') || errorMessage.includes('Token expired')) {
+                throw new Error(
+                    '⏰ Google Ads refresh token expired.\n\n' +
+                    '📋 Action required:\n' +
+                    'Click "Conectar Google Ads" to re-authorize the integration.'
+                );
+            }
+            
+            // Customer ID issues
+            if (errorMessage.includes('Customer not found') || errorMessage.includes('Invalid customer')) {
+                throw new Error(
+                    `❌ Google Ads Customer ID "${this.config?.customerId}" not found.\n\n` +
+                    '📋 Action required:\n' +
+                    '1. Log in to Google Ads: https://ads.google.com\n' +
+                    '2. Find your Customer ID (top-right, format: XXX-XXX-XXXX)\n' +
+                    '3. Update the Customer ID field above\n' +
+                    '4. Save and try syncing again'
+                );
+            }
+            
+            // Developer token issues
+            if (errorMessage.includes('Developer token') || errorMessage.includes('DEVELOPER_TOKEN')) {
+                throw new Error(
+                    '🔑 Google Ads Developer Token issue.\n\n' +
+                    '📋 Action required:\n' +
+                    'Verify that your Developer Token is valid and approved in Google Ads API Center.'
+                );
+            }
+            
             throw error;
         }
     }
@@ -473,24 +654,51 @@ export class GoogleAdsService {
                 throw new Error('Google Ads client not properly initialized');
             }
 
+            const cleanCustomerId = this.config.customerId.replace(/-/g, '');
+            
+            logger.info('📤 Creating customer instance for test', {
+                customerId: cleanCustomerId,
+                hasRefreshToken: !!this.config.refreshToken
+            });
+
             const customer = this.client.Customer({
-                customer_id: this.config.customerId,
+                customer_id: cleanCustomerId,
                 refresh_token: this.config.refreshToken,
             });
 
+            logger.info('📤 Executing test query...');
+
             // Simple query to test connection
-            const result = await customer.query(`
-                SELECT customer.id, customer.descriptive_name
-                FROM customer
-                LIMIT 1
-            `);
+            let result;
+            try {
+                result = await customer.query(`
+                    SELECT customer.id, customer.descriptive_name
+                    FROM customer
+                    LIMIT 1
+                `);
+                
+                logger.info('✅ Query executed successfully', { resultLength: result?.length });
+            } catch (queryErr: any) {
+                logger.error('❌ Query execution failed', {
+                    errorType: typeof queryErr,
+                    errorConstructor: queryErr?.constructor?.name,
+                    errorMessage: queryErr?.message,
+                    errorKeys: Object.keys(queryErr || {}),
+                    fullError: JSON.stringify(queryErr, null, 2)
+                });
+                throw queryErr;
+            }
 
             return {
                 success: true,
-                customerId: result[0]?.customer?.id?.toString(),
+                customerId: result?.[0]?.customer?.id?.toString(),
             };
         } catch (error: any) {
-            logger.error('Google Ads connection test failed', { error, organizationId: this.organizationId });
+            logger.error('Google Ads connection test failed', { 
+                error: error.message,
+                errorType: error?.constructor?.name,
+                organizationId: this.organizationId 
+            });
             return {
                 success: false,
                 error: error.message,

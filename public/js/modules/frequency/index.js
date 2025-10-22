@@ -36,6 +36,15 @@ class FrequencyModule {
             // Aguardar API Client
             await this.waitForAPIClient();
 
+            // Verificar se createModuleAPI está disponível
+            if (!window.createModuleAPI) {
+                throw new Error('createModuleAPI não está disponível. Verifique se api-client.js foi carregado.');
+            }
+
+            // Criar Module API
+            this.moduleAPI = window.createModuleAPI('Frequency');
+            console.log('🌐 Module API criado:', this.moduleAPI);
+
             // Inicializar serviços
             this.validationService = new ValidationService();
             this.service = new FrequencyService(this.validationService);
@@ -280,7 +289,7 @@ window.initFrequencyModule = async (container) => {
         // Inicializar o controller com container
         const frequencyContainer = container.querySelector('#frequency-container');
         if (frequencyModule.controller && frequencyContainer) {
-            await frequencyModule.controller.initialize(frequencyContainer, window.apiClient);
+            await frequencyModule.controller.initialize(frequencyContainer, frequencyModule.moduleAPI);
         } else {
             console.error('❌ Controller or container not available');
         }
@@ -307,5 +316,18 @@ export default frequencyModule;
 
 // Expor globalmente para compatibilidade com AcademyApp (AGENTS.md v2.1)
 window.frequency = window.frequencyModule = frequencyModule;
+
+// Função global para navegação para execução de atividades
+window.viewLessonExecution = (turmaLessonId) => {
+    console.log('🎯 Navegando para execução de atividades da aula:', turmaLessonId);
+    
+    // Usar router do AcademyApp se disponível
+    if (window.app && window.app.navigate) {
+        window.app.navigate(`lesson-execution/${turmaLessonId}`);
+    } else {
+        // Fallback para hash navigation
+        window.location.hash = `#lesson-execution/${turmaLessonId}`;
+    }
+};
 
 console.log('👥 Frequency Module - Loaded and registered globally');

@@ -17,6 +17,7 @@ const createResponse = {
 };
 
 export interface CourseImportData {
+  id?: string;
   courseId: string;
   name: string;
   description: string;
@@ -24,6 +25,7 @@ export interface CourseImportData {
   totalLessons: number;
   lessonDurationMinutes: number;
   objectives: string[];
+  requirements?: string[];
   equipment: string[];
   difficulty: string;
   techniques: Array<{ id: string; name: string }>;
@@ -79,6 +81,100 @@ export interface CourseImportData {
     type: string;
     date: string;
   };
+  
+  // ==========================================
+  // NOVOS CAMPOS v2.0 (Enhanced Course Model)
+  // ==========================================
+  
+  graduation?: {
+    currentBelt: string;
+    nextBelt: string;
+    beltColor?: string;
+    nextBeltColor?: string;
+    progressionSystem: {
+      type: string;
+      totalDegrees: number;
+      degreePercentageIncrement: number;
+      description?: string;
+    };
+    degrees: Array<{
+      degree: number;
+      name: string;
+      requiredPercentage: number;
+      requiredLessons: number;
+      badge?: string;
+      color?: string;
+      description?: string;
+      keyTechniques?: string[];
+      estimatedWeeks?: string;
+    }>;
+    requirements: {
+      forGraduation: {
+        minimumAttendanceRate: number;
+        minimumQualityRating: number;
+        minimumRepetitionsTotal: number;
+        minimumMonthsEnrolled: number;
+        requiresInstructorApproval: boolean;
+        requiresSimulationPass?: boolean;
+      };
+    };
+  };
+  
+  activityCategories?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+    order: number;
+    minimumForGraduation: number;
+  }>;
+  
+  lessons?: Array<{
+    lessonNumber: number;
+    name: string;
+    description?: string;
+    durationMinutes?: number;
+    objectives?: string[];
+    isCheckpoint?: boolean;
+    checkpointType?: string;
+    degreeAchieved?: number;
+    completionMessage?: string;
+    nextStepMessage?: string;
+    celebrationMessage?: string;
+    isFinalExam?: boolean;
+    
+    activities: Array<{
+      name: string;
+      description?: string;
+      categoryId: string;
+      durationMinutes: number;
+      repetitionsPerClass: number;
+      intensityMultiplier: number;
+      minimumForGraduation?: number;
+      keyPoints?: string[];
+      notes?: string;
+      isEvaluation?: boolean;
+      isSimulation?: boolean;
+      requiresPass?: boolean;
+      passingScore?: number;
+    }>;
+    
+    totalRepetitionsPlanned?: number;
+    estimatedIntensity?: string;
+  }>;
+  
+  metadata?: {
+    totalPlannedRepetitions?: number;
+    averageRepetitionsPerLesson?: number;
+    estimatedCompletionTimeWeeks?: number;
+    requiredWeeklyFrequency?: number;
+    createdAt?: string;
+    updatedAt?: string;
+    version?: string;
+    author?: string;
+    notes?: string[];
+  };
 }
 
 export interface TechniqueValidation {
@@ -95,7 +191,26 @@ export class CourseImportService {
   static async importFullCourse(courseData: CourseImportData, organizationId: string, createMissingTechniques: boolean = false) {
     try {
       console.log('🔍 Starting course import for:', courseData.name);
+      console.log('📊 Course model version:', courseData.metadata?.version || 'legacy');
       console.log('✨ Create missing techniques:', createMissingTechniques);
+
+      const courseIdValue = courseData.courseId ?? courseData.id;
+      if (!courseIdValue) {
+        return createResponse.error('courseId é obrigatório para importação do curso');
+      }
+
+      // 0. Check for existing course with same ID
+      const existingCourse = await prisma.course.findUnique({
+        where: { id: courseIdValue }
+      });
+
+      if (existingCourse) {
+        console.log('❌ Course with this ID already exists:', existingCourse.name);
+        return createResponse.error(
+          `Curso já existe com ID "${courseIdValue}". Delete o curso existente antes de importar novamente.`,
+          { existingCourseId: existingCourse.id, existingCourseName: existingCourse.name }
+        );
+      }
 
       // 1. Validate techniques exist in system
       const techniqueValidation = await this.validateTechniques(courseData.techniques);
@@ -109,8 +224,12 @@ export class CourseImportService {
           console.log('✨ Creating missing techniques automatically...');
           
           // Criar técnicas faltantes
+          const failedTechniques: Array<{ id: string; name: string; error: string }> = [];
+          
           for (const missingTech of techniqueValidation.missing) {
             try {
+              console.log(`🔄 Tentando criar técnica: "${missingTech.name}" (ID: ${missingTech.id})`);
+              
               // Extrair categoria do nome (se possível)
               const category = this.extractCategoryFromName(missingTech.name);
               
@@ -121,12 +240,22 @@ export class CourseImportService {
                   slug: missingTech.name.toLowerCase().replace(/\s+/g, '-'),
                   category: category,
                   description: `Técnica importada automaticamente do curso ${courseData.name}`,
-                  difficulty: 1 // BEGINNER = 1
+                  difficulty: 1, // BEGINNER = 1
+                  objectives: [`Dominar a técnica: ${missingTech.name}`],
+                  resources: [],
+                  assessmentCriteria: [],
+                  risksMitigation: [],
+                  tags: [],
+                  references: [],
+                  prerequisites: [],
+                  instructions: [],
+                  stepByStep: [],
+                  bnccCompetencies: []
                 }
               });
               
               techniquesCreated++;
-              console.log(`✅ Técnica criada: ${newTechnique.name}`);
+              console.log(`✅ Técnica criada com sucesso: ${newTechnique.name} (ID: ${newTechnique.id})`);
               
               // Adicionar ao mapeamento
               if (!techniqueValidation.slugMapping) {
@@ -136,8 +265,30 @@ export class CourseImportService {
               techniqueValidation.existing.push({ id: newTechnique.id, name: newTechnique.name });
               
             } catch (error) {
-              console.error(`❌ Erro ao criar técnica ${missingTech.name}:`, error);
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              console.error(`❌ ERRO ao criar técnica "${missingTech.name}" (ID: ${missingTech.id}):`, errorMessage);
+              failedTechniques.push({
+                id: missingTech.id,
+                name: missingTech.name,
+                error: errorMessage
+              });
             }
+          }
+          
+          console.log(`✨ ${techniquesCreated} técnicas criadas automaticamente`);
+          
+          // SE ALGUMA TÉCNICA FALHOU, PARAR A IMPORTAÇÃO
+          if (failedTechniques.length > 0) {
+            console.error(`❌ ${failedTechniques.length} técnicas falharam na criação!`);
+            console.error('Técnicas com falha:', JSON.stringify(failedTechniques, null, 2));
+            return createResponse.error(
+              `Falha ao criar ${failedTechniques.length} técnica(s). Importação cancelada.`,
+              {
+                failedTechniques,
+                successfulTechniques: techniquesCreated,
+                totalAttempted: techniqueValidation.missing.length
+              }
+            );
           }
           
           console.log(`✨ ${techniquesCreated} técnicas criadas automaticamente`);
@@ -158,14 +309,52 @@ export class CourseImportService {
       console.log('✅ Course created/updated:', course.id);
 
       // 3. Associate techniques with the course
-      await this.associateTechniques(course.id, courseData.techniques, techniqueValidation.slugMapping);
-      console.log('✅ Techniques associated:', courseData.techniques.length);
+  await this.associateTechniques(course.id, courseData.techniques, techniqueValidation.slugMapping);
+  console.log('✅ Techniques associated:', courseData.techniques.length);
 
-      // 4. Create detailed schedule
-      const scheduleResult = await this.createSchedule(course.id, courseData.schedule);
-      console.log('✅ Schedule created for', courseData.schedule.weeks, 'weeks');
+  const techniqueLookup = this.buildTechniqueLookup(courseData.techniques, techniqueValidation.slugMapping);
 
-      // 5. Add extended metadata
+      // ==========================================
+      // NEW v2.0: Enhanced Course Model Support
+      // ==========================================
+      
+      let graduationResult = null;
+      let categoriesResult = null;
+      let lessonsResult = null;
+      
+      // 4a. NEW: Create graduation system if present
+      if (courseData.graduation) {
+        graduationResult = await this.createGraduationSystem(course.id, courseData.graduation);
+      }
+      
+      // 4b. NEW: Create activity categories if present
+      if (courseData.activityCategories) {
+        categoriesResult = await this.createActivityCategories(course.id, courseData.activityCategories);
+      }
+      
+      // 4c. NEW/MODIFIED: Create lessons with activities OR use legacy schedule
+      if (courseData.lessons && courseData.lessons.length > 0) {
+        // NEW v2.0 format: lessons array with activities
+        lessonsResult = await this.createLessonsWithActivities(
+          course.id,
+          course.organizationId,
+          courseData.lessons,
+          techniqueLookup,
+          categoriesResult?.courseCategoryLookup
+        );
+      } else if (courseData.schedule) {
+        // LEGACY format: schedule.lessonsPerWeek
+        const scheduleResult = await this.createSchedule(course.id, courseData.schedule);
+        console.log('✅ Legacy schedule created for', courseData.schedule.weeks, 'weeks');
+        lessonsResult = { lessonsCount: scheduleResult?.lessonCount || 0, activitiesCount: 0 };
+      }
+      
+      // 4d. NEW: Save metadata
+      if (courseData.metadata) {
+        await this.saveMetadata(course.id, courseData.metadata);
+      }
+
+      // 5. Add extended metadata (legacy fields)
       await this.addExtendedMetadata(course.id, courseData);
       console.log('✅ Extended metadata added');
 
@@ -178,11 +367,31 @@ export class CourseImportService {
       return createResponse.success('Curso importado com sucesso', {
         courseId: course.id,
         courseName: course.name,
+        version: courseData.metadata?.version || 'legacy',
+        
+        // Techniques
         techniqueCount: courseData.techniques.length,
         techniquesCreated: techniquesCreated,
-        lessonCount: scheduleResult?.lessonCount || courseData.totalLessons,
-        weeksCreated: courseData.schedule.weeks,
+        
+        // Graduation (v2.0)
+        graduation: graduationResult ? {
+          currentBelt: graduationResult.currentBelt,
+          nextBelt: graduationResult.nextBelt,
+          degreesCount: graduationResult.degreesCount
+        } : null,
+        
+        // Activity Categories (v2.0)
+        activityCategories: categoriesResult?.categoriesCount || 0,
+        
+        // Lessons & Activities (v2.0 or legacy)
+        lessonsCount: lessonsResult?.lessonsCount || 0,
+        activitiesCount: lessonsResult?.activitiesCount || 0,
+        totalRepetitionsPlanned: lessonsResult?.totalRepetitionsPlanned || 0,
+        
+        // Legacy
+        weeksCreated: courseData.schedule?.weeks || null,
         hasGamification: !!courseData.gamification,
+        
         importTimestamp: new Date().toISOString()
       });
 
@@ -398,31 +607,43 @@ export class CourseImportService {
   private static async createOrUpdateCourse(courseData: CourseImportData, organizationId: string) {
     const courseLevel = this.mapDifficultyToLevel(courseData.difficulty);
 
+    const courseIdValue = courseData.courseId ?? courseData.id;
+    if (!courseIdValue) {
+      throw new Error('Course ID is required for import');
+    }
+
     // Check if course already exists
     const existingCourse = await prisma.course.findFirst({
       where: {
-        id: courseData.courseId
+        id: courseIdValue
       }
     });
 
+    const durationWeeks = this.resolveDurationWeeks(courseData);
+    const classesPerWeek = this.resolveClassesPerWeek(courseData, durationWeeks);
+    const totalClasses = this.resolveTotalClasses(courseData, durationWeeks, classesPerWeek);
+    const objectives = this.normalizeStringArray(courseData.objectives);
+    const requirementsSource = courseData.requirements ?? courseData.equipment;
+    const requirements = this.normalizeStringArray(requirementsSource);
+
     const courseCreateData = {
-      id: courseData.courseId,
+  id: courseIdValue,
       organizationId: organizationId,
       name: courseData.name,
       description: courseData.description,
       level: courseLevel,
-      duration: courseData.durationTotalWeeks,
-      classesPerWeek: Math.ceil(courseData.totalLessons / courseData.durationTotalWeeks),
-      totalClasses: courseData.totalLessons,
-      objectives: courseData.objectives,
-      requirements: courseData.equipment,
+      duration: durationWeeks,
+      classesPerWeek: classesPerWeek,
+      totalClasses: totalClasses,
+      objectives: objectives,
+      requirements: requirements,
       isActive: true,
       updatedAt: new Date()
     };
 
     if (existingCourse) {
       return await prisma.course.update({
-        where: { id: courseData.courseId },
+        where: { id: courseIdValue },
         data: courseCreateData
       });
     } else {
@@ -433,6 +654,137 @@ export class CourseImportService {
         }
       });
     }
+  }
+
+  private static resolveDurationWeeks(courseData: any): number {
+    const direct = Number(courseData?.durationTotalWeeks);
+    if (Number.isFinite(direct) && direct > 0) {
+      return Math.round(direct);
+    }
+
+    const scheduleWeeks = Number(courseData?.schedule?.weeks);
+    if (Number.isFinite(scheduleWeeks) && scheduleWeeks > 0) {
+      return Math.round(scheduleWeeks);
+    }
+
+    const parsedFromString = this.extractWeeksFromDuration(courseData?.duration);
+    if (parsedFromString) {
+      return parsedFromString;
+    }
+
+    const lessonsCount = this.resolveTotalClasses(courseData, 0, 0);
+    const avgLessonsPerWeek = this.calculateAverageLessonsPerWeek(courseData);
+    if (lessonsCount > 0 && avgLessonsPerWeek > 0) {
+      return Math.max(1, Math.round(lessonsCount / avgLessonsPerWeek));
+    }
+
+    return 1;
+  }
+
+  private static resolveClassesPerWeek(courseData: any, durationWeeks: number): number {
+    const averageFromSchedule = this.calculateAverageLessonsPerWeek(courseData);
+    if (averageFromSchedule > 0) {
+      return Math.max(1, Math.round(averageFromSchedule));
+    }
+
+    const lessonsCountRaw = courseData?.totalLessons ?? (Array.isArray(courseData?.lessons) ? courseData.lessons.length : undefined);
+    const lessonsCount = Number(lessonsCountRaw);
+    if (Number.isFinite(lessonsCount) && lessonsCount > 0 && durationWeeks > 0) {
+      return Math.max(1, Math.round(lessonsCount / durationWeeks));
+    }
+
+    return 1;
+  }
+
+  private static resolveTotalClasses(courseData: any, durationWeeks?: number, classesPerWeek?: number): number {
+    const lessonsCount = Number(courseData?.totalLessons);
+    if (Number.isFinite(lessonsCount) && lessonsCount > 0) {
+      return Math.round(lessonsCount);
+    }
+
+    if (Array.isArray(courseData?.lessons) && courseData.lessons.length > 0) {
+      return courseData.lessons.length;
+    }
+
+    const scheduleLessons = Array.isArray(courseData?.schedule?.lessonsPerWeek)
+      ? (courseData.schedule.lessonsPerWeek as Array<{ lessons?: number }>)
+      : [];
+    const scheduleTotal = scheduleLessons
+      .map((item) => Number(item?.lessons ?? 0))
+      .filter((value: number) => Number.isFinite(value) && value > 0)
+      .reduce((sum: number, value: number) => sum + value, 0);
+    if (scheduleTotal > 0) {
+      return scheduleTotal;
+    }
+
+    if (durationWeeks && durationWeeks > 0 && classesPerWeek && classesPerWeek > 0) {
+      return durationWeeks * classesPerWeek;
+    }
+
+    return 1;
+  }
+
+  private static calculateAverageLessonsPerWeek(courseData: any): number {
+    if (!Array.isArray(courseData?.schedule?.lessonsPerWeek)) {
+      return 0;
+    }
+
+    const lessonsPerWeek = courseData.schedule.lessonsPerWeek as Array<{ lessons?: number }>;
+    const values = lessonsPerWeek
+      .map((item) => Number(item?.lessons ?? 0))
+      .filter((value: number) => Number.isFinite(value) && value > 0);
+
+    if (!values.length) {
+      return 0;
+    }
+
+    const average = values.reduce((sum: number, value: number) => sum + value, 0) / values.length;
+    return average;
+  }
+
+  private static extractWeeksFromDuration(duration: any): number | undefined {
+    if (typeof duration !== 'string') {
+      return undefined;
+    }
+
+    const match = duration.match(/(\d+(?:[.,]\d+)?)\s*(?:semanas?|weeks?)/i);
+    if (!match || !match[1]) {
+      return undefined;
+    }
+
+    const value = Number(match[1].replace(',', '.'));
+    if (!Number.isFinite(value) || value <= 0) {
+      return undefined;
+    }
+
+    return Math.round(value);
+  }
+
+  private static normalizeStringArray(value: any): string[] {
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => {
+          if (typeof entry === 'string') {
+            return entry.trim();
+          }
+          if (entry && typeof entry === 'object') {
+            if ('description' in entry && typeof entry.description === 'string') {
+              return entry.description.trim();
+            }
+            if ('name' in entry && typeof entry.name === 'string') {
+              return entry.name.trim();
+            }
+          }
+          return undefined;
+        })
+        .filter((entry): entry is string => !!entry && entry.length > 0);
+    }
+
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return [value.trim()];
+    }
+
+    return [];
   }
 
   /**
@@ -502,7 +854,7 @@ export class CourseImportService {
       console.log(`  🧹 Found ${existingLessonPlans.length} existing lesson plans, deleting...`);
       
       // Delete technique links first (foreign key constraint)
-      await prisma.lessonPlanTechnique.deleteMany({
+      await prisma.lessonPlanTechniques.deleteMany({
         where: {
           lessonPlanId: { in: existingLessonPlans.map(lp => lp.id) }
         }
@@ -671,6 +1023,12 @@ export class CourseImportService {
    * Setup gamification for the course
    */
   private static async setupGamification(courseId: string, gamificationData: any) {
+    // Validate gamificationData has rewards array
+    if (!gamificationData || !gamificationData.rewards || !Array.isArray(gamificationData.rewards)) {
+      console.log('⚠️ No rewards array in gamificationData, skipping gamification setup');
+      return;
+    }
+
     // Create challenges based on gamification rewards
     let weekNumber = 1;
     for (const reward of gamificationData.rewards) {
@@ -686,6 +1044,465 @@ export class CourseImportService {
           createdAt: new Date()
         }
       });
+    }
+  }
+
+  // ==========================================
+  // NOVOS MÉTODOS v2.0 (Enhanced Course Model)
+  // ==========================================
+
+  /**
+   * Create graduation system for course (v2.0)
+   * Imports CourseGraduationLevel with degrees and requirements
+   */
+  private static async createGraduationSystem(courseId: string, graduation: any) {
+    console.log('🎓 Creating graduation system...');
+    
+    try {
+      // Delete existing graduation system if any
+      await prisma.courseGraduationLevel.deleteMany({
+        where: { courseId }
+      });
+      
+      // Create CourseGraduationLevel record
+      await prisma.courseGraduationLevel.create({
+        data: {
+          courseId,
+          currentBelt: graduation.currentBelt,
+          nextBelt: graduation.nextBelt,
+          totalDegrees: graduation.progressionSystem.totalDegrees,
+          degreePercentageIncrement: graduation.progressionSystem.degreePercentageIncrement,
+          minimumAttendanceRate: graduation.requirements.forGraduation.minimumAttendanceRate,
+          minimumQualityRating: graduation.requirements.forGraduation.minimumQualityRating,
+          minimumRepetitionsTotal: graduation.requirements.forGraduation.minimumRepetitionsTotal,
+          minimumMonthsEnrolled: graduation.requirements.forGraduation.minimumMonthsEnrolled,
+          requiresInstructorApproval: graduation.requirements.forGraduation.requiresInstructorApproval
+        }
+      });
+      
+      console.log(`✅ Graduation system created: ${graduation.currentBelt} → ${graduation.nextBelt} (${graduation.degrees.length} degrees)`);
+      
+      return {
+        currentBelt: graduation.currentBelt,
+        nextBelt: graduation.nextBelt,
+        degreesCount: graduation.degrees.length
+      };
+    } catch (error) {
+      console.error('❌ Error creating graduation system:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create activity categories for course (v2.0)
+   * Imports ActivityCategory records with minimums for graduation
+   */
+  private static async createActivityCategories(courseId: string, categories: any[]) {
+    console.log('📂 Creating activity categories for course:', courseId);
+    
+    try {
+      // Categories are global in the schema, but we'll store courseId reference in name
+      const createdCategories = [];
+      const courseCategoryLookup = new Map<string, { id: string; name: string }>();
+      
+      for (const category of categories) {
+        // Check if category already exists (global)
+        let existingCategory = await prisma.activityCategory.findFirst({
+          where: { name: category.name }
+        });
+        
+        if (!existingCategory) {
+          existingCategory = await prisma.activityCategory.create({
+            data: {
+              name: category.name,
+              description: category.description || null,
+              color: category.color || null,
+              icon: category.icon || null,
+              order: category.order,
+              minimumForGraduation: category.minimumForGraduation
+            }
+          });
+          console.log(`  ✅ Created category: ${category.name} (min: ${category.minimumForGraduation})`);
+        } else {
+          console.log(`  ℹ️  Category already exists: ${category.name}`);
+        }
+        
+        createdCategories.push(existingCategory);
+
+        if (category.id) {
+          courseCategoryLookup.set(category.id, {
+            id: existingCategory.id,
+            name: existingCategory.name
+          });
+        }
+      }
+      
+      console.log(`✅ Activity categories processed: ${createdCategories.length}`);
+      
+      return {
+        categoriesCount: createdCategories.length,
+        categories: createdCategories.map(c => c.name),
+        courseCategoryLookup
+      };
+    } catch (error) {
+      console.error('❌ Error creating activity categories:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create lessons with activities array (v2.0)
+   * Imports LessonPlan records with LessonPlanActivity children
+   */
+  private static buildTechniqueLookup(
+    techniques: Array<{ id: string; name: string }> = [],
+    slugMapping?: Map<string, string>
+  ): Map<string, string> {
+    const lookup = new Map<string, string>();
+
+    const addKey = (key: string | undefined, value: string) => {
+      if (!key) {
+        return;
+      }
+      const normalized = key.trim();
+      if (!normalized) {
+        return;
+      }
+      if (!lookup.has(normalized)) {
+        lookup.set(normalized, value);
+      }
+      const lower = normalized.toLowerCase();
+      if (!lookup.has(lower)) {
+        lookup.set(lower, value);
+      }
+    };
+
+    techniques.forEach((technique) => {
+      if (!technique?.id || !technique?.name) {
+        return;
+      }
+      const resolvedId = slugMapping?.get(technique.id) ?? technique.id;
+      const slugFromName = this.generateTechniqueSlug(technique.name);
+      const slugFromId = this.generateTechniqueSlug(technique.id);
+
+      addKey(technique.id, resolvedId);
+      addKey(resolvedId, resolvedId);
+      addKey(technique.name, resolvedId);
+      addKey(slugFromName, resolvedId);
+      addKey(slugFromId, resolvedId);
+    });
+
+    return lookup;
+  }
+
+  private static async buildActivityCategoryLookup() {
+    const categories = await prisma.activityCategory.findMany({
+      select: { id: true, name: true }
+    });
+
+    const lookup = new Map<string, { id: string; name: string }>();
+
+    const register = (key: string | undefined, value: { id: string; name: string }) => {
+      if (!key) {
+        return;
+      }
+      const normalized = key.trim();
+      if (!normalized) {
+        return;
+      }
+
+      const variants = new Set<string>([
+        normalized,
+        normalized.toLowerCase(),
+        this.generateTechniqueSlug(normalized)
+      ]);
+
+      for (const variant of variants) {
+        if (variant && !lookup.has(variant)) {
+          lookup.set(variant, value);
+        }
+      }
+    };
+
+    for (const category of categories) {
+      register(category.id, category);
+      register(category.name, category);
+    }
+
+    return lookup;
+  }
+
+  private static resolveActivityCategory(
+    rawValue: string | undefined,
+    categoryLookup: Map<string, { id: string; name: string }>
+  ) {
+    if (!rawValue) {
+      return undefined;
+    }
+
+    const raw = rawValue.trim();
+    if (!raw) {
+      return undefined;
+    }
+
+    const candidates = [
+      raw,
+      raw.toLowerCase(),
+      this.generateTechniqueSlug(raw)
+    ];
+
+    for (const candidate of candidates) {
+      const match = categoryLookup.get(candidate);
+      if (match) {
+        return match;
+      }
+    }
+
+    return undefined;
+  }
+
+  private static generateTechniqueSlug(value: string): string {
+    return value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  private static resolveTechniqueIdForActivity(
+    activity: any,
+    techniqueLookup: Map<string, string>
+  ): string | undefined {
+    if (!activity || techniqueLookup.size === 0) {
+      return undefined;
+    }
+
+    const candidates = new Set<string>();
+
+    const directId = activity?.techniqueId ?? activity?.technique?.id;
+    if (typeof directId === 'string') {
+      candidates.add(directId);
+      candidates.add(directId.toLowerCase());
+      candidates.add(this.generateTechniqueSlug(directId));
+    }
+
+    if (typeof activity?.name === 'string') {
+      candidates.add(activity.name);
+      candidates.add(activity.name.toLowerCase());
+      candidates.add(this.generateTechniqueSlug(activity.name));
+    }
+
+    for (const candidate of candidates) {
+      const directHit = techniqueLookup.get(candidate);
+      if (directHit) {
+        return directHit;
+      }
+    }
+
+    return undefined;
+  }
+
+  private static async createLessonsWithActivities(
+    courseId: string,
+    organizationId: string,
+    lessons: any[],
+    techniqueLookup: Map<string, string>,
+    activityCategoryLookupFromCourse?: Map<string, { id: string; name: string }>
+  ) {
+    console.log('📚 Creating lessons with activities...');
+    
+    try {
+      const categoryLookup = await this.buildActivityCategoryLookup();
+
+      if (activityCategoryLookupFromCourse && activityCategoryLookupFromCourse.size > 0) {
+        for (const [key, value] of activityCategoryLookupFromCourse.entries()) {
+          const variants = new Set<string>([
+            key,
+            key.toLowerCase(),
+            this.generateTechniqueSlug(key),
+            value.name,
+            value.name.toLowerCase(),
+            this.generateTechniqueSlug(value.name)
+          ]);
+
+          for (const variant of variants) {
+            if (variant && !categoryLookup.has(variant)) {
+              categoryLookup.set(variant, value);
+            }
+          }
+        }
+      }
+      let totalActivitiesCreated = 0;
+      let totalTechniqueLinks = 0;
+      const createdLessons = [];
+      
+      for (const lesson of lessons) {
+        // Create LessonPlan
+        const lessonPlan = await prisma.lessonPlan.create({
+          data: {
+            courseId,
+            title: lesson.name,
+            description: lesson.description || null,
+            lessonNumber: lesson.lessonNumber,
+            weekNumber: Math.ceil(lesson.lessonNumber / 2), // Assuming 2 lessons per week
+            objectives: lesson.objectives || [],
+            duration: lesson.durationMinutes || 60,
+            warmup: lesson.warmup || {},
+            techniques: lesson.techniques || {},
+            simulations: lesson.simulations || {},
+            cooldown: lesson.cooldown || {},
+            activities: lesson.activities?.map((a: any) => a.name) || [],
+            equipment: []
+          }
+        });
+
+        const lessonTechniqueLinks: Array<{ techniqueId: string; order: number; allocationMinutes: number; objectiveMapping: string[] }> = [];
+        const lessonTechniqueSet = new Set<string>();
+        
+        // Create activities for this lesson
+        let activityOrder = 1;
+        for (const activity of lesson.activities) {
+          // Support both 'category' and 'categoryId' fields
+          const categoryValue = activity.category || activity.categoryId;
+          
+          if (!categoryValue) {
+            console.warn(`  ⚠️  Activity missing category: ${activity.name}, skipping`);
+            continue;
+          }
+          
+          // Find the ActivityCategory by name (from categoryId field)
+          const category = this.resolveActivityCategory(categoryValue, categoryLookup);
+          
+          if (!category) {
+            console.warn(`  ⚠️  Category not found: ${categoryValue}, skipping activity: ${activity.name}`);
+            continue;
+          }
+          
+          // Create a generic Activity record if it doesn't exist
+          let activityRecord = await prisma.activity.findFirst({
+            where: { 
+              title: activity.name,
+              categoryId: category.id
+            }
+          });
+          
+          if (!activityRecord) {
+            activityRecord = await prisma.activity.create({
+              data: {
+                organizationId: organizationId,
+                type: 'EXERCISE', // Default activity type
+                title: activity.name,
+                categoryId: category.id,
+                description: activity.description || null,
+                difficulty: 1,
+                equipment: [],
+                adaptations: []
+              }
+            });
+          }
+          
+          // Create LessonPlanActivity link
+          await prisma.lessonPlanActivity.create({
+            data: {
+              lessonPlanId: lessonPlan.id,
+              activityId: activityRecord.id,
+              segment: 'TECHNIQUE', // Default segment (singular)
+              ord: activityOrder++,
+              repetitionsPerClass: activity.repetitionsPerClass,
+              intensityMultiplier: activity.intensityMultiplier,
+              minimumForGraduation: activity.minimumForGraduation || null,
+              objectives: activity.keyPoints?.join(', ') || null,
+              safetyNotes: activity.notes || null
+            }
+          });
+          
+          totalActivitiesCreated++;
+
+          const resolvedTechniqueId = this.resolveTechniqueIdForActivity(activity, techniqueLookup);
+          if (resolvedTechniqueId && !lessonTechniqueSet.has(resolvedTechniqueId)) {
+            lessonTechniqueSet.add(resolvedTechniqueId);
+            lessonTechniqueLinks.push({
+              techniqueId: resolvedTechniqueId,
+              order: lessonTechniqueLinks.length + 1,
+              allocationMinutes: Math.max(5, Math.round((lesson.durationMinutes || 60) / Math.max(lessonTechniqueLinks.length + 1, 1))),
+              objectiveMapping: [`Praticar técnica: ${activity.name}`]
+            });
+          } else if (!resolvedTechniqueId) {
+            console.warn(`  ⚠️  Could not resolve technique for activity: ${activity.name}`);
+          }
+        }
+        
+        if (lessonTechniqueLinks.length > 0) {
+          const payload = lessonTechniqueLinks.map((link) => ({
+            lessonPlanId: lessonPlan.id,
+            techniqueId: link.techniqueId,
+            order: link.order,
+            allocationMinutes: link.allocationMinutes,
+            objectiveMapping: link.objectiveMapping
+          }));
+
+          await prisma.lessonPlanTechniques.createMany({
+            data: payload,
+            skipDuplicates: true
+          });
+
+          totalTechniqueLinks += payload.length;
+        }
+
+        createdLessons.push(lessonPlan);
+        
+        if (lesson.isCheckpoint) {
+          console.log(`  🎯 Checkpoint lesson created: #${lesson.lessonNumber} - ${lesson.name} (${lesson.activities.length} activities)`);
+        } else {
+          console.log(`  ✅ Lesson created: #${lesson.lessonNumber} - ${lesson.name} (${lesson.activities.length} activities)`);
+        }
+      }
+      
+      console.log(`✅ Lessons created: ${createdLessons.length} with ${totalActivitiesCreated} activities total`);
+      console.log(`✅ Lesson technique links created: ${totalTechniqueLinks}`);
+      
+      return {
+        lessonsCount: createdLessons.length,
+        activitiesCount: totalActivitiesCreated,
+        totalRepetitionsPlanned: lessons.reduce((sum, l) => sum + (l.totalRepetitionsPlanned || 0), 0)
+      };
+    } catch (error) {
+      console.error('❌ Error creating lessons with activities:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save course metadata (v2.0)
+   */
+  private static async saveMetadata(courseId: string, metadata: any) {
+    console.log('💾 Saving course metadata...');
+    
+    try {
+      // Update course with metadata in prerequisites field (as JSON)
+      await prisma.course.update({
+        where: { id: courseId },
+        data: {
+          prerequisites: [JSON.stringify({
+            version: metadata.version || '2.0.0',
+            totalPlannedRepetitions: metadata.totalPlannedRepetitions,
+            averageRepetitionsPerLesson: metadata.averageRepetitionsPerLesson,
+            estimatedCompletionTimeWeeks: metadata.estimatedCompletionTimeWeeks,
+            requiredWeeklyFrequency: metadata.requiredWeeklyFrequency,
+            author: metadata.author,
+            notes: metadata.notes || [],
+            importDate: new Date().toISOString()
+          })]
+        }
+      });
+      
+      console.log(`✅ Metadata saved (v${metadata.version})`);
+    } catch (error) {
+      console.error('❌ Error saving metadata:', error);
+      throw error;
     }
   }
 

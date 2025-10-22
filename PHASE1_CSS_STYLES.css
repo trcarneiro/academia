@@ -1,0 +1,370 @@
+/**
+ * PHASE 1: CSS para Google Ads Sync Dashboard
+ * 
+ * Arquivo: public/css/modules/crm.css
+ * Local: Adicionar ao final do arquivo, antes da última chave de fechamento
+ * 
+ * Classes isoladas com prefixo .module-isolated-crm-*
+ */
+
+/* ========================================================================
+   Google Ads Sync Status Dashboard Styles
+   ======================================================================== */
+
+.sync-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem 0;
+}
+
+/* Sync Metrics Grid */
+.sync-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.sync-metric-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-color);
+}
+
+.sync-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.metric-content {
+    flex: 1;
+}
+
+.metric-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.metric-time {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+/* Sync Actions */
+.sync-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sync-actions .btn-primary,
+.sync-actions .btn-secondary {
+    flex: 0 1 auto;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 14px;
+    color: #4b5563;
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+/* Sync Progress */
+.sync-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.progress-item span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    animation: progressPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes progressPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Campaign Performance Table */
+#campaigns-performance-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e5e7eb;
+}
+
+#campaigns-performance-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.campaigns-roi-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.campaigns-roi-table thead {
+    background: #f3f4f6;
+}
+
+.campaigns-roi-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.campaigns-roi-table tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s ease;
+}
+
+.campaigns-roi-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.campaigns-roi-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.campaigns-roi-table strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* ROI Badge Colors */
+.roi-positive {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.roi-neutral {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.roi-negative {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sync-metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .sync-actions {
+        flex-direction: column;
+    }
+
+    .sync-actions .btn-primary,
+    .sync-actions .btn-secondary {
+        width: 100%;
+    }
+
+    .campaigns-roi-table {
+        font-size: 12px;
+    }
+
+    .campaigns-roi-table th,
+    .campaigns-roi-table td {
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sync-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sync-metric-card {
+        flex-direction: row;
+    }
+
+    .metric-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .metric-value {
+        font-size: 24px;
+    }
+
+    #campaigns-performance-section {
+        overflow-x: auto;
+    }
+
+    .campaigns-roi-table {
+        min-width: 500px;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sync-status-container {
+    animation: slideIn 0.3s ease;
+}
+
+/* Loading State */
+.spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.empty-state i {
+    font-size: 32px;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}

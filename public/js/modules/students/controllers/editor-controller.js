@@ -141,6 +141,10 @@ export class StudentEditorController {
                             <i class="fas fa-chart-line"></i>
                             Visão Geral
                         </button>
+                        <button class="tab-button" data-tab="responsible">
+                            <i class="fas fa-user-tie"></i>
+                            Responsável Financeiro
+                        </button>
                         <button class="tab-button" data-tab="financial">
                             <i class="fas fa-credit-card"></i>
                             Financeiro
@@ -155,6 +159,46 @@ export class StudentEditorController {
                     <div class="tab-panels">
                         <!-- Dados Pessoais Tab -->
                         <section class="tab-panel active" id="tab-dados">
+                            <!-- Seção de Foto para Reconhecimento Facial -->
+                            <div class="form-section biometric-capture-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-camera"></i>
+                                    Foto para Reconhecimento Facial
+                                </h3>
+                                <div class="biometric-capture-container">
+                                    <div class="capture-preview-area">
+                                        <div id="photo-preview" class="photo-preview ${s?.biometric?.faceDescriptor ? 'has-photo' : ''}">
+                                            ${s?.biometric?.photoUrl ? `
+                                                <img src="${s.biometric.photoUrl}" alt="Foto do aluno" class="captured-photo">
+                                                <div class="photo-status">
+                                                    <span class="status-badge success">✅ Cadastrado</span>
+                                                </div>
+                                            ` : `
+                                                <div class="no-photo-placeholder">
+                                                    <i class="fas fa-user-circle"></i>
+                                                    <p>Nenhuma foto cadastrada</p>
+                                                </div>
+                                            `}
+                                        </div>
+                                        <div class="capture-actions">
+                                            <button type="button" id="btn-capture-photo" class="btn-form btn-primary-form">
+                                                <i class="fas fa-camera"></i>
+                                                ${s?.biometric?.photoUrl ? 'Atualizar Foto' : 'Capturar Foto'}
+                                            </button>
+                                            ${s?.biometric?.photoUrl ? `
+                                                <button type="button" id="btn-remove-photo" class="btn-form btn-danger-form">
+                                                    <i class="fas fa-trash"></i>
+                                                    Remover Foto
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                        <div class="capture-help">
+                                            <p><i class="fas fa-info-circle"></i> A foto será usada para check-in automático via reconhecimento facial</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="form-section">
                                 <h3 class="section-title">
                                     <i class="fas fa-user"></i>
@@ -480,6 +524,27 @@ export class StudentEditorController {
                             </div>
                         </section>
                         
+                        <!-- Responsible Tab 🆕 -->
+                        <section class="tab-panel" id="tab-responsible">
+                            <div class="module-header-premium">
+                                <div class="header-content">
+                                    <div class="header-left">
+                                        <h3 class="section-title">
+                                            <span class="section-icon">👤</span>
+                                            Responsável Financeiro
+                                        </h3>
+                                        <p class="section-subtitle">Pessoa responsável por receber as cobranças</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-body">
+                                <div id="student-responsible-container">
+                                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                                </div>
+                            </div>
+                        </section>
+                        
                         <!-- Financial Tab -->
                         <section class="tab-panel" id="tab-financial">
                             <div class="module-header-premium">
@@ -596,24 +661,34 @@ export class StudentEditorController {
         // Enhanced tab switching with lazy loading for new tabs
         this.container.querySelectorAll('.tab-button').forEach(btn => {
             btn.addEventListener('click', async () => {
+                console.log('🖱️ [Tab Click] Clicked on tab:', btn.getAttribute('data-tab'));
+                
                 // Prevenir clique em abas desabilitadas
                 if (btn.disabled) {
+                    console.warn('⏸️ [Tab Click] Tab is disabled, ignoring...');
                     return;
                 }
                 
                 this.container.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const tab = btn.getAttribute('data-tab');
+                console.log('🎯 [Tab Click] Activating tab:', tab);
+                
                 this.container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 const targetPanel = this.container.querySelector(`#tab-${tab}`);
                 if (targetPanel) {
                     targetPanel.classList.add('active');
+                    console.log('✅ [Tab Click] Panel displayed:', targetPanel.id);
                 }
                 
                 // Lazy load tab content
+                console.log('🔍 [Tab Click] Checking if tab needs loading... loaded:', btn.dataset.loaded, 'studentId:', this.current?.id);
                 if (!btn.dataset.loaded && this.current?.id) {
+                    console.log('📡 [Tab Click] Loading tab content...');
                     btn.dataset.loaded = '1';
                     await this.loadTabContent(tab, this.current.id);
+                } else {
+                    console.warn('⚠️ [Tab Click] Tab already loaded or no student ID. loaded:', btn.dataset.loaded, 'studentId:', this.current?.id);
                 }
                 
                 // Load packages for plan tab (new student)
@@ -641,6 +716,18 @@ export class StudentEditorController {
         this.trackFormChanges();
         this.setupFieldMasks();
         this.setupAutoSave();
+        
+        // Biometric photo capture events
+        const btnCapturePhoto = this.container.querySelector('#btn-capture-photo');
+        const btnRemovePhoto = this.container.querySelector('#btn-remove-photo');
+        
+        if (btnCapturePhoto) {
+            btnCapturePhoto.addEventListener('click', () => this.openPhotoCaptureModal());
+        }
+        
+        if (btnRemovePhoto) {
+            btnRemovePhoto.addEventListener('click', () => this.removeStudentPhoto());
+        }
     }
 
     async save() {
@@ -665,18 +752,34 @@ export class StudentEditorController {
             const payload = this.collectFormData();
             console.log('📊 Payload:', payload);
             
+            let studentId;
+            let studentResponse;
+            
             if (this.current?.id) {
                 console.log('🔄 Updating student:', this.current.id);
-                await this.api.saveWithFeedback(`/api/students/${this.current.id}`, payload, { 
+                studentResponse = await this.api.saveWithFeedback(`/api/students/${this.current.id}`, payload, { 
                     method: 'PUT',
                     successMessage: 'Estudante atualizado com sucesso!'
                 });
+                studentId = this.current.id;
             } else {
                 console.log('➕ Creating new student');
-                await this.api.saveWithFeedback('/api/students', payload, { 
+                studentResponse = await this.api.saveWithFeedback('/api/students', payload, { 
                     method: 'POST',
                     successMessage: 'Estudante cadastrado com sucesso!'
                 });
+                // Extract ID from response
+                studentId = studentResponse?.data?.id || studentResponse?.id;
+                console.log('✅ New student created with ID:', studentId);
+            }
+            
+            // Upload biometric photo if captured
+            if (this.capturedPhoto && studentId) {
+                console.log('📸 Uploading biometric photo...');
+                if (saveBtn) {
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando foto...';
+                }
+                await this.uploadBiometricPhoto(studentId);
             }
             
             console.log('✅ Save successful! Redirecting...');
@@ -693,6 +796,42 @@ export class StudentEditorController {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalText;
             }
+        }
+    }
+
+    async uploadBiometricPhoto(studentId) {
+        if (!this.capturedPhoto) return;
+        
+        try {
+            const formData = new FormData();
+            formData.append('photo', this.capturedPhoto.blob, 'student-photo.jpg');
+            
+            if (this.capturedPhoto.descriptor) {
+                formData.append('descriptor', JSON.stringify(Array.from(this.capturedPhoto.descriptor)));
+            }
+            
+            const response = await fetch(`/api/biometric/register/${studentId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'x-organization-id': window.academyApp?.organizationId || localStorage.getItem('organizationId')
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Biometric photo uploaded:', result);
+            
+            // Clear captured photo after successful upload
+            this.capturedPhoto = null;
+            this.currentFaceDescriptor = null;
+            
+        } catch (error) {
+            console.error('❌ Error uploading biometric photo:', error);
+            this.showMessage('⚠️ Aluno salvo, mas houve erro ao enviar a foto. Tente adicionar novamente.', 'warning');
         }
     }
 
@@ -840,6 +979,272 @@ export class StudentEditorController {
         }, 30000);
     }
 
+    // =========================================================================
+    // BIOMETRIC PHOTO CAPTURE - Reconhecimento Facial
+    // =========================================================================
+
+    openPhotoCaptureModal() {
+        // Create full-screen modal for photo capture
+        const modal = document.createElement('div');
+        modal.id = 'photo-capture-modal';
+        modal.className = 'photo-capture-modal';
+        modal.innerHTML = `
+            <div class="modal-content-photo">
+                <div class="modal-header-photo">
+                    <h2><i class="fas fa-camera"></i> Captura de Foto para Reconhecimento Facial</h2>
+                    <button class="btn-close-modal" id="close-photo-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body-photo">
+                    <div class="camera-preview-container">
+                        <video id="photo-video" autoplay playsinline></video>
+                        <canvas id="photo-canvas" style="display: none;"></canvas>
+                        <div id="face-detection-feedback" class="face-feedback"></div>
+                    </div>
+                    <div class="capture-instructions">
+                        <h3><i class="fas fa-info-circle"></i> Instruções:</h3>
+                        <ul>
+                            <li>✅ Posicione o rosto centralizado na câmera</li>
+                            <li>✅ Mantenha boa iluminação no ambiente</li>
+                            <li>✅ Olhe diretamente para a câmera</li>
+                            <li>✅ Aguarde a detecção facial (✅ verde)</li>
+                            <li>❌ Evite óculos escuros ou bonés</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer-photo">
+                    <button class="btn-form btn-secondary-form" id="cancel-capture">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button class="btn-form btn-primary-form" id="capture-photo" disabled>
+                        <i class="fas fa-camera"></i> Capturar Foto
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Start camera and face detection
+        this.startPhotoCamera();
+        
+        // Event listeners
+        modal.querySelector('#close-photo-modal')?.addEventListener('click', () => this.closePhotoCaptureModal());
+        modal.querySelector('#cancel-capture')?.addEventListener('click', () => this.closePhotoCaptureModal());
+        modal.querySelector('#capture-photo')?.addEventListener('click', () => this.captureStudentPhoto());
+    }
+
+    async startPhotoCamera() {
+        const video = document.getElementById('photo-video');
+        const feedback = document.getElementById('face-detection-feedback');
+        const captureBtn = document.getElementById('capture-photo');
+        
+        try {
+            feedback.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando câmera...';
+            feedback.className = 'face-feedback loading';
+            
+            // Request camera access
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
+            
+            video.srcObject = stream;
+            this.currentStream = stream;
+            
+            // Wait for video to load
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resolve();
+                };
+            });
+            
+            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Câmera iniciada! Aguarde detecção facial...';
+            feedback.className = 'face-feedback success';
+            
+            // Start face detection (if face-api.js is available)
+            if (window.faceapi) {
+                this.startFaceDetection(video, feedback, captureBtn);
+            } else {
+                // Fallback: just enable capture button after 2s
+                setTimeout(() => {
+                    captureBtn.disabled = false;
+                    feedback.innerHTML = '<i class="fas fa-camera"></i> Pronto para capturar!';
+                    feedback.className = 'face-feedback ready';
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error starting camera:', error);
+            feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro ao acessar câmera: ${error.message}`;
+            feedback.className = 'face-feedback error';
+        }
+    }
+
+    async startFaceDetection(video, feedback, captureBtn) {
+        // Ensure face-api models are loaded
+        try {
+            const detectionInterval = setInterval(async () => {
+                const detection = await window.faceapi
+                    .detectSingleFace(video, new window.faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+                
+                if (detection) {
+                    feedback.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Rosto detectado! Pode capturar.';
+                    feedback.className = 'face-feedback detected';
+                    captureBtn.disabled = false;
+                    this.currentFaceDescriptor = detection.descriptor;
+                } else {
+                    feedback.innerHTML = '<i class="fas fa-search"></i> Procurando rosto...';
+                    feedback.className = 'face-feedback searching';
+                    captureBtn.disabled = true;
+                }
+            }, 500);
+            
+            this.detectionInterval = detectionInterval;
+            
+        } catch (error) {
+            console.error('❌ Face detection error:', error);
+            // Fallback: enable capture anyway
+            captureBtn.disabled = false;
+            feedback.innerHTML = '<i class="fas fa-camera"></i> Pronto para capturar!';
+            feedback.className = 'face-feedback ready';
+        }
+    }
+
+    async captureStudentPhoto() {
+        const video = document.getElementById('photo-video');
+        const canvas = document.getElementById('photo-canvas');
+        const context = canvas.getContext('2d');
+        
+        // Set canvas size to video size
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw current video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+            // Store photo data
+            this.capturedPhoto = {
+                blob: blob,
+                dataUrl: canvas.toDataURL('image/jpeg', 0.9),
+                descriptor: this.currentFaceDescriptor || null,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('📸 Photo captured!', {
+                size: blob.size,
+                hasDescriptor: !!this.currentFaceDescriptor
+            });
+            
+            // Close modal and update preview
+            this.closePhotoCaptureModal();
+            this.updatePhotoPreview();
+            
+            // Show success message
+            this.showMessage('✅ Foto capturada com sucesso! Salve o aluno para registrar.', 'success');
+            
+        }, 'image/jpeg', 0.9);
+    }
+
+    closePhotoCaptureModal() {
+        // Stop camera stream
+        if (this.currentStream) {
+            this.currentStream.getTracks().forEach(track => track.stop());
+            this.currentStream = null;
+        }
+        
+        // Stop face detection
+        if (this.detectionInterval) {
+            clearInterval(this.detectionInterval);
+            this.detectionInterval = null;
+        }
+        
+        // Remove modal
+        const modal = document.getElementById('photo-capture-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    updatePhotoPreview() {
+        if (!this.capturedPhoto) return;
+        
+        const preview = this.container.querySelector('#photo-preview');
+        if (!preview) return;
+        
+        preview.innerHTML = `
+            <img src="${this.capturedPhoto.dataUrl}" alt="Foto capturada" class="captured-photo">
+            <div class="photo-status">
+                <span class="status-badge warning">⚠️ Não salvo</span>
+            </div>
+        `;
+        preview.classList.add('has-photo');
+        
+        // Update button text
+        const captureBtn = this.container.querySelector('#btn-capture-photo');
+        if (captureBtn) {
+            captureBtn.innerHTML = '<i class="fas fa-camera"></i> Atualizar Foto';
+        }
+        
+        // Show remove button if not exists
+        const removeBtn = this.container.querySelector('#btn-remove-photo');
+        if (!removeBtn) {
+            const actionsDiv = this.container.querySelector('.capture-actions');
+            if (actionsDiv) {
+                const newRemoveBtn = document.createElement('button');
+                newRemoveBtn.type = 'button';
+                newRemoveBtn.id = 'btn-remove-photo';
+                newRemoveBtn.className = 'btn-form btn-danger-form';
+                newRemoveBtn.innerHTML = '<i class="fas fa-trash"></i> Remover Foto';
+                newRemoveBtn.addEventListener('click', () => this.removeStudentPhoto());
+                actionsDiv.appendChild(newRemoveBtn);
+            }
+        }
+    }
+
+    removeStudentPhoto() {
+        if (!confirm('Tem certeza que deseja remover a foto?')) return;
+        
+        this.capturedPhoto = null;
+        this.currentFaceDescriptor = null;
+        
+        const preview = this.container.querySelector('#photo-preview');
+        if (preview) {
+            preview.innerHTML = `
+                <div class="no-photo-placeholder">
+                    <i class="fas fa-user-circle"></i>
+                    <p>Nenhuma foto cadastrada</p>
+                </div>
+            `;
+            preview.classList.remove('has-photo');
+        }
+        
+        // Update button text
+        const captureBtn = this.container.querySelector('#btn-capture-photo');
+        if (captureBtn) {
+            captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capturar Foto';
+        }
+        
+        // Remove delete button
+        const removeBtn = this.container.querySelector('#btn-remove-photo');
+        if (removeBtn) {
+            removeBtn.remove();
+        }
+        
+        this.showMessage('Foto removida. As alterações serão aplicadas ao salvar.', 'info');
+    }
+
+
     showMessage(message, type = 'info') {
         const messageDiv = this.container.querySelector('#form-messages');
         messageDiv.innerHTML = `
@@ -862,9 +1267,14 @@ export class StudentEditorController {
     // =========================================================================
 
     async loadTabContent(tab, studentId) {
+        console.log('🔵 [LoadTabContent] Called with tab:', tab, 'studentId:', studentId);
         switch (tab) {
             case 'overview':
                 await this.renderOverviewTab(studentId);
+                break;
+            case 'responsible':
+                console.log('🎯 [LoadTabContent] Routing to renderResponsibleTab...');
+                await this.renderResponsibleTab(studentId);
                 break;
             case 'courses':
                 await this.renderCoursesTab(studentId);
@@ -872,6 +1282,8 @@ export class StudentEditorController {
             case 'financial':
                 await this.renderFinancialTab(studentId);
                 break;
+            default:
+                console.warn('⚠️ [LoadTabContent] Unknown tab:', tab);
         }
     }
 
@@ -951,6 +1363,406 @@ export class StudentEditorController {
             console.error('Error loading overview:', error);
             summaryDiv.innerHTML = '<p class="error-message">Erro ao carregar dados. Tente novamente.</p>';
             goalsDiv.innerHTML = '<p class="error-message">Erro ao carregar objetivos.</p>';
+        }
+    }
+
+    // 🆕 Renderizar aba "Responsável Financeiro"
+    async renderResponsibleTab(studentId) {
+        console.log('🔵 [ResponsibleTab] Starting render for student:', studentId);
+        
+        const container = this.container.querySelector('#student-responsible-container');
+        if (!container) {
+            console.error('❌ [ResponsibleTab] Container not found!');
+            return;
+        }
+
+        // Prevenir múltiplas chamadas simultâneas
+        if (this._renderingResponsible) {
+            console.log('⏸️ [ResponsibleTab] Already rendering, skipping...');
+            return;
+        }
+        this._renderingResponsible = true;
+        console.log('🔓 [ResponsibleTab] Lock acquired');
+
+        try {
+            // Mostrar loading
+            console.log('⏳ [ResponsibleTab] Showing loading spinner...');
+            container.innerHTML = '<div class="loading-spinner">Carregando...</div>';
+
+            // Carregar dados do aluno (com financialResponsible e financialResponsibleStudent incluídos)
+            console.log('📡 [ResponsibleTab] Fetching student data...');
+            console.log('📡 [ResponsibleTab] Fetching student data...');
+            const studentRes = await this.api.request(`/api/students/${studentId}`);
+            console.log('✅ [ResponsibleTab] Student data received:', studentRes);
+            
+            if (!studentRes || !studentRes.success) {
+                throw new Error('Failed to load student data');
+            }
+            const student = studentRes.data || {};
+            console.log('📦 [ResponsibleTab] Student:', student.user?.firstName, student.user?.lastName);
+            
+            // Carregar lista de TODOS os alunos (para selecionar outro aluno como responsável)
+            console.log('📡 [ResponsibleTab] Fetching all students...');
+            const allStudentsRes = await this.api.request('/api/students');
+            console.log('✅ [ResponsibleTab] All students received:', allStudentsRes?.data?.length);
+            const allStudents = (allStudentsRes.data || []).filter(s => s.id !== studentId); // Excluir o próprio aluno
+            
+            // Carregar lista de responsáveis financeiros (cadastros separados)
+            let responsibles = [];
+            try {
+                const responsiblesRes = await this.api.request('/api/students/financial-responsibles');
+                responsibles = responsiblesRes.data || [];
+            } catch (err) {
+                console.warn('Financial responsibles endpoint not available:', err);
+            }
+
+            // Carregar dependentes financeiros com tratamento de erro robusto
+            let dependentsData = { dependents: [], consolidatedCharges: [], totalDependents: 0, totalAmount: 0 };
+            try {
+                const dependentsRes = await this.api.request(`/api/students/${studentId}/financial-dependents`);
+                if (dependentsRes && dependentsRes.success && dependentsRes.data) {
+                    dependentsData = dependentsRes.data;
+                }
+            } catch (depError) {
+                console.warn('Could not load dependents (non-critical):', depError);
+                // Continuar mesmo se falhar - não é crítico
+            }
+
+            // Renderizar conteúdo
+            container.innerHTML = `
+                <div class="data-card-premium">
+                    <!-- Seção: Quem é o responsável deste aluno? -->
+                    <div class="card-section">
+                        <h4 class="card-title">
+                            <i class="fas fa-user-shield"></i>
+                            Responsável Financeiro deste Aluno
+                        </h4>
+                        
+                        ${student.financialResponsibleStudent ? `
+                            <div class="responsible-info" style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                                <div class="info-badge">
+                                    <i class="fas fa-user-graduate" style="color: #28a745;"></i>
+                                    <strong>👤 Outro Aluno: ${student.financialResponsibleStudent.user?.name || 'Sem nome'}</strong>
+                                </div>
+                                <div class="info-detail">
+                                    <span class="label">Email:</span>
+                                    <span class="value">${student.financialResponsibleStudent.user?.email || 'Não informado'}</span>
+                                </div>
+                            </div>
+                        ` : student.financialResponsible ? `
+                            <div class="responsible-info" style="background: #e3f2fd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                                <div class="info-badge">
+                                    <i class="fas fa-user-tie" style="color: #2196f3;"></i>
+                                    <strong>📋 Cadastro Separado: ${student.financialResponsible.name}</strong>
+                                </div>
+                                <div class="info-detail">
+                                    <span class="label">Email:</span>
+                                    <span class="value">${student.financialResponsible.email || 'Não informado'}</span>
+                                </div>
+                                <div class="info-detail">
+                                    <span class="label">Telefone:</span>
+                                    <span class="value">${student.financialResponsible.phone || 'Não informado'}</span>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="empty-info">
+                                <i class="fas fa-inbox" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem;"></i>
+                                <p style="color: #999;">Nenhum responsável financeiro vinculado</p>
+                                <small style="color: #bbb;">Todas as cobranças serão direcionadas ao próprio aluno</small>
+                            </div>
+                        `}
+
+                        <!-- Form para selecionar responsável -->
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                            <h5 style="margin-bottom: 1rem; color: #555;">
+                                <i class="fas fa-edit"></i> Alterar Responsável Financeiro
+                            </h5>
+
+                            <!-- Opção 1: Selecionar outro aluno -->
+                            <div class="form-group">
+                                <label for="responsibleStudentSelect" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-user-graduate" style="color: #28a745;"></i>
+                                    <strong>Opção 1:</strong> Outro Aluno da Academia
+                                </label>
+                                <select id="responsibleStudentSelect" class="form-control">
+                                    <option value="">-- Selecionar Aluno --</option>
+                                    ${allStudents.map(s => `
+                                        <option value="${s.id}" ${student.financialResponsibleStudentId === s.id ? 'selected' : ''}>
+                                            ${s.user?.name || 'Sem nome'} - ${s.user?.email || 'Sem email'}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                                <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos, etc.</small>
+                            </div>
+
+                            <!-- Opção 2: Responsável cadastrado separadamente -->
+                            <div class="form-group" style="margin-top: 1.5rem;">
+                                <label for="responsibleSelect" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-user-tie" style="color: #2196f3;"></i>
+                                    <strong>Opção 2:</strong> Responsável Cadastrado (não é aluno)
+                                </label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <select id="responsibleSelect" class="form-control" style="flex: 1;">
+                                        <option value="">-- Selecionar Responsável --</option>
+                                        ${responsibles.map(r => `
+                                            <option value="${r.id}" ${student.financialResponsibleId === r.id ? 'selected' : ''}>
+                                                ${r.name} - ${r.email || ''}
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                    <button id="showCreateResponsible" class="btn-form btn-sm btn-secondary-form" title="Criar novo responsável">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <small class="field-help">💡 Ideal para responsáveis que não são alunos</small>
+                            </div>
+
+                            <!-- Form de criar novo responsável (inicialmente oculto) -->
+                            <div id="createResponsibleForm" style="display: none; margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 6px;">
+                                <h5 style="margin-bottom: 1rem; color: var(--primary-color);">📝 Criar Novo Responsável</h5>
+                                <div class="form-group">
+                                    <label>Nome *</label>
+                                    <input id="newResponsibleName" type="text" class="form-control" placeholder="Nome completo" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input id="newResponsibleEmail" type="email" class="form-control" placeholder="email@exemplo.com" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input id="newResponsiblePhone" type="tel" class="form-control" placeholder="(11) 99999-9999" />
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="saveNewResponsible" class="btn-form btn-primary-form">
+                                        <i class="fas fa-check"></i> Salvar
+                                    </button>
+                                    <button id="cancelNewResponsible" class="btn-form btn-link">Cancelar</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                <button id="saveResponsible" class="btn-form btn-primary-form">
+                                    <i class="fas fa-save"></i> Salvar Responsável
+                                </button>
+                                <button id="removeResponsible" class="btn-form btn-warning-form">
+                                    <i class="fas fa-times"></i> Remover Vínculo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Dependentes financeiros (se este aluno for responsável por outros) -->
+                    ${dependentsData.totalDependents > 0 ? `
+                        <div class="card-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #667eea;">
+                            <h4 class="card-title">
+                                <i class="fas fa-users"></i>
+                                Este aluno é Responsável Financeiro por ${dependentsData.totalDependents} ${dependentsData.totalDependents === 1 ? 'pessoa' : 'pessoas'}
+                            </h4>
+
+                            <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                                <strong>💰 Total Consolidado: R$ ${dependentsData.totalAmount.toFixed(2)}</strong>
+                            </div>
+
+                            <div class="dependents-list">
+                                ${(dependentsData.dependents || []).map(dep => {
+                                    const userName = dep?.user?.name || 'Nome não disponível';
+                                    const subsLength = (dep?.subscriptions || []).length;
+                                    const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
+                                        return sum + (sub?.plan?.price || 0);
+                                    }, 0);
+                                    
+                                    return `
+                                        <div class="dependent-card" style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <strong>${userName}</strong>
+                                                    <div style="color: #666; font-size: 0.85rem;">
+                                                        ${subsLength} plano(s) ativo(s)
+                                                    </div>
+                                                </div>
+                                                <div style="text-align: right;">
+                                                    <strong style="color: #28a745;">
+                                                        R$ ${totalPrice.toFixed(2)}
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            <details style="margin-top: 1rem;">
+                                <summary style="cursor: pointer; color: #667eea; font-weight: 500;">
+                                    <i class="fas fa-file-invoice-dollar"></i> Ver Cobranças Detalhadas
+                                </summary>
+                                <div style="margin-top: 1rem;">
+                                    ${(dependentsData.consolidatedCharges || []).map(charge => {
+                                        const studentName = charge?.studentName || 'Aluno';
+                                        const planName = charge?.planName || 'Plano';
+                                        const amount = charge?.amount || 0;
+                                        const status = charge?.status || 'Desconhecido';
+                                        const endDateStr = charge?.endDate ? `(vence em ${new Date(charge.endDate).toLocaleDateString()})` : '';
+                                        
+                                        return `
+                                            <div style="padding: 0.75rem; border-left: 3px solid #667eea; background: #f0f4ff; margin-bottom: 0.5rem;">
+                                                <strong>${studentName}</strong> - ${planName}<br>
+                                                <span style="color: #666;">
+                                                    R$ ${amount.toFixed(2)} - ${status}
+                                                    ${endDateStr}
+                                                </span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </details>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Event listeners
+            const responsibleStudentSelect = container.querySelector('#responsibleStudentSelect');
+            const responsibleSelect = container.querySelector('#responsibleSelect');
+            const showCreateBtn = container.querySelector('#showCreateResponsible');
+            const createForm = container.querySelector('#createResponsibleForm');
+            const cancelCreateBtn = container.querySelector('#cancelNewResponsible');
+            const saveNewResponsibleBtn = container.querySelector('#saveNewResponsible');
+            const saveResponsibleBtn = container.querySelector('#saveResponsible');
+            const removeResponsibleBtn = container.querySelector('#removeResponsible');
+
+            // Sincronizar selects: quando um é selecionado, limpar o outro
+            responsibleStudentSelect.onchange = () => {
+                if (responsibleStudentSelect.value) {
+                    responsibleSelect.value = '';
+                }
+            };
+
+            responsibleSelect.onchange = () => {
+                if (responsibleSelect.value) {
+                    responsibleStudentSelect.value = '';
+                }
+            };
+
+            // Mostrar/ocultar form de criar
+            showCreateBtn.onclick = () => {
+                createForm.style.display = 'block';
+                showCreateBtn.style.display = 'none';
+            };
+
+            cancelCreateBtn.onclick = () => {
+                createForm.style.display = 'none';
+                showCreateBtn.style.display = '';
+                container.querySelector('#newResponsibleName').value = '';
+                container.querySelector('#newResponsibleEmail').value = '';
+                container.querySelector('#newResponsiblePhone').value = '';
+            };
+
+            // Salvar novo responsável
+            saveNewResponsibleBtn.onclick = async () => {
+                const name = container.querySelector('#newResponsibleName').value.trim();
+                const email = container.querySelector('#newResponsibleEmail').value.trim();
+                const phone = container.querySelector('#newResponsiblePhone').value.trim();
+
+                if (!name) {
+                    window.app?.showToast?.('❌ Nome é obrigatório', 'error');
+                    return;
+                }
+
+                const res = await this.api.request('/api/students/financial-responsibles', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, phone }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (res.success) {
+                    window.app?.showToast?.('✅ Responsável criado! Recarregue a página para ver mudanças.', 'success');
+                    // NÃO chamar renderResponsibleTab - causa loop infinito
+                } else {
+                    window.app?.showToast?.(`❌ ${res.message || 'Erro ao criar'}`, 'error');
+                }
+            };
+
+            // Salvar seleção de responsável
+            saveResponsibleBtn.onclick = async () => {
+                const selectedStudentId = responsibleStudentSelect.value;
+                const selectedResponsibleId = responsibleSelect.value;
+
+                // Determinar qual tipo de responsável foi selecionado
+                if (selectedStudentId) {
+                    // Vincular outro aluno como responsável
+                    const res = await this.api.request(`/api/students/${studentId}/financial-responsible-student`, {
+                        method: 'POST',
+                        body: JSON.stringify({ responsibleStudentId: selectedStudentId }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (res.success) {
+                        window.app?.showToast?.('✅ Aluno responsável vinculado! Recarregue a página para ver mudanças.', 'success');
+                        // NÃO chamar renderResponsibleTab - causa loop infinito
+                    } else {
+                        window.app?.showToast?.(`❌ ${res.message}`, 'error');
+                    }
+                } else if (selectedResponsibleId) {
+                    // Vincular responsável cadastrado separadamente
+                    const res = await this.api.request(`/api/students/${studentId}/financial-responsible`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ financialResponsibleId: selectedResponsibleId }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (res.success) {
+                        window.app?.showToast?.('✅ Responsável vinculado! Recarregue a página para ver mudanças.', 'success');
+                        // NÃO chamar renderResponsibleTab - causa loop infinito
+                    } else {
+                        window.app?.showToast?.(`❌ ${res.message}`, 'error');
+                    }
+                } else {
+                    window.app?.showToast?.('⚠️ Selecione um responsável primeiro', 'warning');
+                }
+            };
+
+            // Remover vínculo
+            removeResponsibleBtn.onclick = async () => {
+                const confirmed = await window.app?.confirm?.('Desvinculará o responsável financeiro. Cobranças irão para o aluno. Continuar?');
+                if (!confirmed) return;
+
+                // Remover ambos os tipos de responsável
+                const promises = [
+                    this.api.request(`/api/students/${studentId}/financial-responsible-student`, {
+                        method: 'POST',
+                        body: JSON.stringify({ responsibleStudentId: null }),
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    this.api.request(`/api/students/${studentId}/financial-responsible`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ financialResponsibleId: null }),
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                ];
+
+                try {
+                    await Promise.all(promises);
+                    window.app?.showToast?.('✅ Vínculo removido! Recarregue a página para ver mudanças.', 'success');
+                    // NÃO chamar renderResponsibleTab - causa loop infinito
+                } catch (error) {
+                    window.app?.showToast?.('❌ Erro ao remover vínculo', 'error');
+                }
+            };
+        } catch (error) {
+            console.error('❌ [ResponsibleTab] Error loading responsible tab:', error);
+            container.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc3545;"></i>
+                    <p>Erro ao carregar aba de responsável financeiro</p>
+                    <p style="font-size: 0.9rem; color: #666;">${error.message}</p>
+                    <button onclick="location.reload()" class="btn-form btn-secondary-form" style="margin-top: 1rem;">
+                        🔄 Recarregar Página
+                    </button>
+                </div>
+            `;
+        } finally {
+            console.log('🔓 [ResponsibleTab] Lock released');
+            this._renderingResponsible = false;
         }
     }
 
@@ -1346,22 +2158,64 @@ export class StudentEditorController {
         const panel = this.container.querySelector('#tab-financial');
         
         try {
+            // First, get student full record to check if they're a financial responsible
+            const studentRes = await this.api.request(`/api/students/${studentId}`);
+            const studentFull = studentRes.data || {};
+            
+            // Check if viewing as a responsible (has dependents)
+            let consolidatedData = null;
+            let subscriptions = [];
+            let payments = [];
+            let packages = [];
+            let totalPaid = 0;
+            let activeSubscriptions = [];
+            let pendingPayments = 0;
+
+            // If this student has dependents (is a financial responsible), show consolidated view
+            if (studentFull.financialDependents && studentFull.financialDependents.length > 0) {
+                // Load consolidated charges instead
+                const consolidatedRes = await this.api.request(`/api/students/${studentId}/consolidated-charges`);
+                consolidatedData = consolidatedRes.data || { charges: [], totalAmount: 0 };
+            }
+
+            // Load individual subscriptions and packages
             const [subscriptionsRes, paymentsRes, packagesRes] = await Promise.all([
                 this.api.request(`/api/students/${studentId}/subscriptions`),
                 this.api.request(`/api/students/${studentId}/payments`),
                 this.api.request('/api/billing-plans')
             ]);
 
-            const subscriptions = subscriptionsRes.data || [];
-            const payments = paymentsRes.data || [];
-            const packages = packagesRes.data || [];
+            subscriptions = subscriptionsRes.data || [];
+            payments = paymentsRes.data || [];
+            packages = packagesRes.data || [];
 
-            const activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
-            const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-            const pendingPayments = payments.filter(p => p.status === 'PENDING').length;
+            // Load available responsibles
+            const responsiblesRes = await this.api.request('/api/students/financial-responsibles');
+            const responsibles = responsiblesRes.data || [];
+
+            activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
+            totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            pendingPayments = payments.filter(p => p.status === 'PENDING').length;
+
+            // Determine if this is a responsible-only profile (no personal subscriptions)
+            const isResponsibleOnly = consolidatedData && consolidatedData.charges.length > 0 && subscriptions.length === 0;
 
             panel.innerHTML = `
                 <div class="financial-container">
+                    ${isResponsibleOnly ? `
+                    <!-- Responsible Financial Badge -->
+                    <div class="responsible-financial-badge data-card-premium" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">👤💼</div>
+                        <h2 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.5rem;">Responsável Financeira</h2>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 1.1rem;">
+                            Esta pessoa é responsável pelo pagamento de <strong>${consolidatedData.charges.length}</strong> ${consolidatedData.charges.length === 1 ? 'dependente' : 'dependentes'}
+                        </p>
+                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 0.5rem;">Fatura Mensal Total</div>
+                            <div style="font-size: 2.5rem; font-weight: bold; color: white;">R$ ${consolidatedData.totalAmount?.toFixed(2) || '0.00'}</div>
+                        </div>
+                    </div>
+                    ` : `
                     <!-- Financial Overview -->
                     <div class="financial-stats">
                         <div class="stat-card-enhanced stat-gradient-success">
@@ -1386,13 +2240,42 @@ export class StudentEditorController {
                             </div>
                         </div>
                     </div>
+                    `}
 
-                    <!-- Active Subscriptions -->
+                    <!-- Financial Responsible -->
+                    <div class="financial-responsible-section data-card-premium">
+                        <h4><i class="fas fa-user-tie"></i> Responsável Financeiro</h4>
+                        <div id="student-financial-responsible">
+                            <div class="current-responsible">
+                                ${studentFull.financialResponsible ? `
+                                    <div class="info-badge info-badge-success">
+                                        <i>✅</i> ${studentFull.financialResponsible.name}
+                                    </div>
+                                    <div class="field-help">${studentFull.financialResponsible.email || ''} ${studentFull.financialResponsible.phone ? '• ' + studentFull.financialResponsible.phone : ''}</div>
+                                ` : `<div class="field-help">Nenhum responsável financeiro vinculado</div>`}
+                            </div>
+
+                            <div class="form-group" style="margin-top:1rem;">
+                                <label for="financialResponsibleSelect">Selecionar Responsável Financeiro</label>
+                                <select id="financialResponsibleSelect" class="form-control">
+                                    <option value="">-- Selecionar --</option>
+                                    ${responsibles.map(r => `<option value="${r.id}" ${studentFull.financialResponsibleId === r.id ? 'selected' : ''}>${r.name} - ${r.email || ''}</option>`).join('')}
+                                </select>
+                                <div style="margin-top:.5rem;">
+                                    <button id="save-financial-responsible" class="btn-form btn-primary-form"><i class="fas fa-save"></i> Salvar</button>
+                                    <button id="remove-financial-responsible" class="btn-form btn-link" style="margin-left:.5rem;"><i class="fas fa-times"></i> Remover vínculo</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${!isResponsibleOnly ? `
+                    <!-- Active Subscriptions (Only show if user has personal subscriptions) -->
                     <div class="subscriptions-section data-card-premium">
                         <div class="section-header">
                             <h3>
                                 <i class="fas fa-file-invoice-dollar"></i>
-                                Pacotes Ativos
+                                Pacotes Pessoais
                             </h3>
                             <button class="btn-form btn-primary-form" onclick="window.openPackageSelector('${studentId}')">
                                 <i class="fas fa-plus"></i>
@@ -1448,6 +2331,82 @@ export class StudentEditorController {
                             </div>
                         `}
                     </div>
+                    ` : ''}
+
+                    <!-- Consolidated Plans (for Financial Responsibles) -->
+                    ${consolidatedData && consolidatedData.charges.length > 0 ? `
+                    <div class="consolidated-section data-card-premium" style="${isResponsibleOnly ? 'border: 3px solid #667eea; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);' : ''}">
+                        <div class="section-header">
+                            <h3>
+                                <i class="fas fa-users"></i>
+                                ${isResponsibleOnly ? 'Dependentes Financeiros' : 'Planos dos Dependentes'}
+                            </h3>
+                            <span class="badge-consolidated">${consolidatedData.charges.length} ${consolidatedData.charges.length === 1 ? 'dependente' : 'dependentes'}</span>
+                        </div>
+                        
+                        ${isResponsibleOnly ? `
+                        <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-info-circle" style="color: #667eea; font-size: 1.2rem;"></i>
+                                <strong style="color: #2c3e50; font-size: 1.05rem;">Como Funciona a Cobrança</strong>
+                            </div>
+                            <p style="margin: 0; color: #555; line-height: 1.6;">
+                                A fatura mensal será gerada com o <strong>valor total consolidado</strong> de todos os planos abaixo. 
+                                Você receberá <strong>uma única cobrança</strong> no valor de <strong style="color: #667eea;">R$ ${consolidatedData.totalAmount?.toFixed(2)}</strong> 
+                                que inclui todos os dependentes.
+                            </p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="consolidated-info">
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-calculator"></i> Total de Planos:</span>
+                                <span class="info-value">${consolidatedData.totalCharges}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-file-invoice-dollar"></i> Valor da Fatura Mensal:</span>
+                                <span class="info-value price" style="font-size: 1.3rem; font-weight: 600; color: #667eea;">R$ ${consolidatedData.totalAmount?.toFixed(2) || '0.00'}</span>
+                            </div>
+                        </div>
+                        <div class="consolidated-table-container">
+                            <table class="consolidated-table">
+                                <thead>
+                                    <tr>
+                                        <th>Dependente</th>
+                                        <th>Plano</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Início</th>
+                                        <th>Renovação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${consolidatedData.charges.map(charge => `
+                                        <tr class="consolidated-row">
+                                            <td class="dependent-name">
+                                                <span class="dependent-icon"><i class="fas fa-user"></i></span>
+                                                <div>
+                                                    <div class="strong">${charge.dependentName}</div>
+                                                    <div class="text-muted small">${charge.dependentEmail}</div>
+                                                </div>
+                                            </td>
+                                            <td>${charge.planName || 'Plano'}</td>
+                                            <td class="plan-price">R$ ${charge.planPrice?.toFixed(2) || '0.00'}</td>
+                                            <td>
+                                                <span class="status-badge status-${(charge.subscriptionStatus || 'active').toLowerCase()}">
+                                                    <i class="fas fa-circle"></i>
+                                                    ${charge.subscriptionStatus === 'active' ? 'Ativo' : charge.subscriptionStatus || 'Ativo'}
+                                                </span>
+                                            </td>
+                                            <td class="text-muted">${new Date(charge.subscriptionStartDate).toLocaleDateString('pt-BR')}</td>
+                                            <td class="text-muted">${charge.subscriptionEndDate ? new Date(charge.subscriptionEndDate).toLocaleDateString('pt-BR') : 'Sem data'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    ` : ''}
 
                     <!-- Payment History -->
                     <div class="payments-section data-card-premium">
@@ -1913,1222 +2872,6 @@ export class StudentEditorController {
         return levels[mastery] || 0;
     }
 
-    // === TAB CONTENT LOADERS ===
-    
-    async loadTabContent(tabName, studentId) {
-        try {
-            switch (tabName) {
-                case 'overview':
-                    await this.loadOverviewTab(studentId);
-                    break;
-                case 'courses':
-                    await this.loadCoursesTab(studentId);
-                    break;
-                case 'financial':
-                    await this.loadFinancial(studentId);
-                    break;
-            }
-        } catch (error) {
-            window.app?.handleError?.(error, `Erro ao carregar aba ${tabName}`);
-        }
-    }
-
-    async loadOverviewTab(studentId) {
-        const summaryElement = this.container.querySelector('#overview-summary');
-        const goalsElement = this.container.querySelector('#overview-goals');
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/overview`, {
-            loadingElement: summaryElement,
-            onSuccess: (data) => {
-                summaryElement.innerHTML = `
-                    <div class="summary-metrics">
-                        <div class="metric">
-                            <span class="metric-value">${data.attendanceRate || 0}%</span>
-                            <span class="metric-label">Frequência</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value">${data.techniquesLearned || 0}</span>
-                            <span class="metric-label">Técnicas</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-value">${data.courseProgress || 0}%</span>
-                            <span class="metric-label">Progresso</span>
-                        </div>
-                    </div>
-                `;
-
-                goalsElement.innerHTML = `
-                    <div class="goals-list">
-                        ${(data.nextGoals || []).map(goal => `
-                            <div class="goal-item">
-                                <span class="goal-icon">${goal.icon || '🎯'}</span>
-                                <span class="goal-text">${goal.description || 'Nenhum objetivo definido'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            },
-            onEmpty: () => {
-                summaryElement.innerHTML = '<p class="empty-state">Dados insuficientes para análise</p>';
-                goalsElement.innerHTML = '<p class="empty-state">Nenhum objetivo definido</p>';
-            },
-            onError: (error) => {
-                summaryElement.innerHTML = '<p class="error-state">Erro ao carregar resumo</p>';
-                goalsElement.innerHTML = '<p class="error-state">Erro ao carregar objetivos</p>';
-            }
-        });
-        
-        // Load courses from plan
-        await this.loadCoursesInOverview(studentId);
-    }
-
-    async loadAttendanceTab(studentId) {
-        const statsElement = this.container.querySelector('#attendance-stats');
-        const historyElement = this.container.querySelector('#attendance-history');
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/attendance`, {
-            loadingElement: statsElement,
-            onSuccess: (data) => {
-                // Attendance Statistics
-                statsElement.innerHTML = `
-                    <div class="attendance-stats-grid">
-                        <div class="stat-card">
-                            <h4>Total de Aulas</h4>
-                            <span class="stat-number">${data.totalClasses || 0}</span>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Presenças</h4>
-                            <span class="stat-number present">${data.attendedClasses || 0}</span>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Faltas</h4>
-                            <span class="stat-number absent">${data.missedClasses || 0}</span>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Taxa de Frequência</h4>
-                            <span class="stat-number rate">${data.attendanceRate || 0}%</span>
-                        </div>
-                    </div>
-                `;
-
-                // Attendance History
-                historyElement.innerHTML = `
-                    <div class="attendance-timeline">
-                        ${(data.attendanceHistory || []).map(record => `
-                            <div class="timeline-item ${record.status}">
-                                <div class="timeline-date">${this.formatDate(record.date)}</div>
-                                <div class="timeline-content">
-                                    <h5>${record.className}</h5>
-                                    <p>${record.course || 'Curso não informado'}</p>
-                                    <span class="status-badge ${record.status}">
-                                        ${record.status === 'present' ? '✅ Presente' : '❌ Faltou'}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            },
-            onEmpty: () => {
-                statsElement.innerHTML = '<p class="empty-state">Nenhum registro de frequência encontrado</p>';
-                historyElement.innerHTML = '<p class="empty-state">Histórico vazio</p>';
-            },
-            onError: () => {
-                statsElement.innerHTML = '<p class="error-state">Erro ao carregar estatísticas</p>';
-                historyElement.innerHTML = '<p class="error-state">Erro ao carregar histórico</p>';
-            }
-        });
-    }
-
-    async loadTechniquesTab(studentId) {
-        const statsElement = this.container.querySelector('#techniques-stats');
-        const listElement = this.container.querySelector('#techniques-list');
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/techniques`, {
-            loadingElement: statsElement,
-            onSuccess: (data) => {
-                // Techniques Statistics by Category
-                statsElement.innerHTML = `
-                    <div class="techniques-categories">
-                        ${Object.entries(data.categorySummary || {}).map(([category, count]) => `
-                            <div class="category-card">
-                                <h4>${category}</h4>
-                                <span class="category-count">${count} técnicas</span>
-                                <div class="category-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${(count / (data.totalAvailable?.[category] || 1)) * 100}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-
-                // Detailed Techniques List
-                listElement.innerHTML = `
-                    <div class="techniques-detailed">
-                        ${Object.entries(data.techniquesByCategory || {}).map(([category, techniques]) => `
-                            <div class="category-section">
-                                <h4 class="category-title">${category}</h4>
-                                <div class="techniques-grid">
-                                    ${techniques.map(technique => `
-                                        <div class="technique-card ${technique.masteryLevel || 'beginner'}">
-                                            <h5>${technique.name}</h5>
-                                            <p>${technique.description || 'Sem descrição'}</p>
-                                            <div class="mastery-level">
-                                                <span class="mastery-label">Nível:</span>
-                                                <span class="mastery-value">${this.getMasteryLabel(technique.masteryLevel)}</span>
-                                            </div>
-                                            <div class="practice-date">
-                                                Última prática: ${this.formatDate(technique.lastPracticed)}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            },
-            onEmpty: () => {
-                statsElement.innerHTML = '<p class="empty-state">Nenhuma técnica registrada</p>';
-                listElement.innerHTML = '<p class="empty-state">O aluno ainda não praticou técnicas</p>';
-            },
-            onError: () => {
-                statsElement.innerHTML = '<p class="error-state">Erro ao carregar técnicas</p>';
-                listElement.innerHTML = '<p class="error-state">Erro ao carregar lista de técnicas</p>';
-            }
-        });
-    }
-
-    async loadProgressTab(studentId) {
-        const progressElement = this.container.querySelector('#course-progress');
-        const missingElement = this.container.querySelector('#missing-content');
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/progress`, {
-            loadingElement: progressElement,
-            onSuccess: (data) => {
-                // Course Progress
-                progressElement.innerHTML = `
-                    <div class="course-progress-detail">
-                        <div class="course-header">
-                            <h4>${data.currentCourse?.name || 'Nenhum curso ativo'}</h4>
-                            <div class="progress-percentage">${data.overallProgress || 0}%</div>
-                        </div>
-                        <div class="progress-bar-large">
-                            <div class="progress-fill" style="width: ${data.overallProgress || 0}%"></div>
-                        </div>
-                        <div class="progress-breakdown">
-                            ${data.basicTechniques ? `
-                            <div class="breakdown-item">
-                                <span>Técnicas Básicas</span>
-                                <div class="mini-progress">
-                                    <div class="progress-fill" style="width: ${data.basicTechniques.progress}%"></div>
-                                </div>
-                                <span>${data.basicTechniques.completed}/${data.basicTechniques.total}</span>
-                            </div>
-                            ` : ''}
-                            ${data.advancedTechniques ? `
-                            <div class="breakdown-item">
-                                <span>Técnicas Avançadas</span>
-                                <div class="mini-progress">
-                                    <div class="progress-fill" style="width: ${data.advancedTechniques.progress}%"></div>
-                                </div>
-                                <span>${data.advancedTechniques.completed}/${data.advancedTechniques.total}</span>
-                            </div>
-                            ` : ''}
-                            ${data.classAttendance ? `
-                            <div class="breakdown-item">
-                                <span>Aulas Frequentadas</span>
-                                <div class="mini-progress">
-                                    <div class="progress-fill" style="width: ${data.classAttendance.progress}%"></div>
-                                </div>
-                                <span>${data.classAttendance.attended}/${data.classAttendance.required}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-
-                // Missing Content
-                missingElement.innerHTML = `
-                    <div class="missing-content-detail">
-                        <div class="missing-sections">
-                            ${(data.missingContent || []).map(section => `
-                                <div class="missing-section">
-                                    <h5>${section.category}</h5>
-                                    <div class="missing-items">
-                                        ${section.items.map(item => `
-                                            <div class="missing-item">
-                                                <span class="item-icon">${item.icon || '📝'}</span>
-                                                <span class="item-name">${item.name}</span>
-                                                <span class="item-priority priority-${item.priority}">${item.priority}</span>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ${data.estimatedCompletion ? `
-                        <div class="completion-estimate">
-                            <h5>Estimativa de Conclusão</h5>
-                            <p>Com frequência regular, você completará o curso em aproximadamente <strong>${data.estimatedCompletion}</strong>.</p>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-            },
-            onEmpty: () => {
-                progressElement.innerHTML = '<p class="empty-state">Aluno não matriculado em curso ativo</p>';
-                missingElement.innerHTML = '<p class="empty-state">Nenhum conteúdo pendente</p>';
-            },
-            onError: () => {
-                progressElement.innerHTML = '<p class="error-state">Erro ao carregar progresso</p>';
-                missingElement.innerHTML = '<p class="error-state">Erro ao carregar conteúdo faltante</p>';
-            }
-        });
-    }
-
-    async loadCourses(studentId) {
-        const enrolledElement = this.container.querySelector('#enrolled-courses');
-        const availableElement = this.container.querySelector('#available-courses');
-
-        if (!enrolledElement || !availableElement) {
-            console.warn('Courses tab elements not found');
-            return;
-        }
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/courses`, {
-            loadingElement: enrolledElement,
-            onSuccess: (data) => {
-                console.log('🎯 [loadCourses] onSuccess chamado!', data);
-                
-                const enrolledCourses = data.enrolledCourses || [];
-                const availableCourses = data.availableCourses || [];
-                
-                console.log('📚 Enrolled:', enrolledCourses.length, 'Available:', availableCourses.length);
-
-                // ========== ENROLLED COURSES ==========
-                if (enrolledCourses.length === 0) {
-                    enrolledElement.innerHTML = `
-                        <div class="empty-state-premium">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                            <h3>Nenhum Curso Matriculado</h3>
-                            <p>O aluno ainda não está matriculado em nenhum curso.</p>
-                            <p class="empty-state-hint">Matricule-o em um dos cursos disponíveis abaixo.</p>
-                        </div>
-                    `;
-                } else {
-                    enrolledElement.innerHTML = `
-                        <div class="courses-grid">
-                            ${enrolledCourses.map(enrollment => `
-                                <div class="course-card-premium enrolled">
-                                    <div class="course-card-header">
-                                        <div class="course-title-section">
-                                            <h4 class="course-title">${enrollment.course?.name || 'Curso sem nome'}</h4>
-                                            <span class="badge badge-success">✓ Matriculado</span>
-                                        </div>
-                                        <span class="course-category-badge ${(enrollment.course?.category || 'ADULT').toLowerCase()}">${this.formatCategory(enrollment.course?.category)}</span>
-                                    </div>
-                                    
-                                    <div class="course-stats-grid">
-                                        <div class="stat-item">
-                                            <i class="far fa-clock"></i>
-                                            <span>${enrollment.course?.durationTotalWeeks || 0} semanas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-list-alt"></i>
-                                            <span>${enrollment.course?.totalLessons || 0} aulas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="fas fa-signal"></i>
-                                            <span>${enrollment.course?.difficulty || 'N/A'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-calendar"></i>
-                                            <span>${this.formatDate(enrollment.enrolledAt)}</span>
-                                        </div>
-                                    </div>
-
-                                    ${enrollment.course?.description ? `
-                                        <p class="course-description">${enrollment.course.description}</p>
-                                    ` : ''}
-
-                                    <div class="course-actions-row">
-                                        <button class="btn-action btn-primary" onclick="window.studentEditor?.viewCourseSchedule('${enrollment.courseId}', '${enrollment.course?.name || 'Curso'}')">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            Ver Cronograma
-                                        </button>
-                                        <button class="btn-action btn-danger" onclick="window.studentEditor?.unenrollFromCourse('${studentId}', '${enrollment.id}', '${enrollment.course?.name || 'curso'}')">
-                                            <i class="fas fa-times-circle"></i>
-                                            Desmatricular
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                // ========== AVAILABLE COURSES ==========
-                if (availableCourses.length === 0) {
-                    availableElement.innerHTML = `
-                        <div class="empty-state-info">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                            <h3>Nenhum Curso Disponível</h3>
-                            <p>Este plano não inclui cursos adicionais ou o aluno já está matriculado em todos os cursos disponíveis.</p>
-                        </div>
-                    `;
-                } else {
-                    const availableHTML = `
-                        <div class="courses-grid">
-                            ${availableCourses.map(course => `
-                                <div class="course-card-premium available">
-                                    <div class="course-card-header">
-                                        <div class="course-title-section">
-                                            <h4 class="course-title">${course.name || 'Curso sem nome'}</h4>
-                                            <span class="badge badge-info">Disponível no Plano</span>
-                                        </div>
-                                        <span class="course-category-badge ${(course.category || 'ADULT').toLowerCase()}">${this.formatCategory(course.category)}</span>
-                                    </div>
-                                    
-                                    <div class="course-stats-grid">
-                                        <div class="stat-item">
-                                            <i class="far fa-clock"></i>
-                                            <span>${course.durationTotalWeeks || 0} semanas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-list-alt"></i>
-                                            <span>${course.totalLessons || 0} aulas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="fas fa-signal"></i>
-                                            <span>${course.difficulty || 'Iniciante'}</span>
-                                        </div>
-                                    </div>
-
-                                    ${course.description ? `
-                                        <p class="course-description">${course.description}</p>
-                                    ` : ''}
-
-                                    <div class="course-actions-row">
-                                        <button class="btn-action btn-secondary" onclick="window.studentEditor?.viewCourseSchedule('${course.id}', '${course.name || 'Curso'}')">
-                                            <i class="fas fa-eye"></i>
-                                            Ver Cronograma
-                                        </button>
-                                        <button class="btn-action btn-success" onclick="window.studentEditor?.enrollInCourse('${studentId}', '${course.id}', '${course.name || 'curso'}')">
-                                            <i class="fas fa-plus-circle"></i>
-                                            Matricular
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                    
-                    console.log('🎨 Rendering available courses HTML:', availableHTML.length, 'chars');
-                    availableElement.innerHTML = availableHTML;
-                    console.log('✅ availableElement.innerHTML set!', availableElement);
-                }
-            },
-            onEmpty: () => {
-                enrolledElement.innerHTML = `
-                    <div class="empty-state-premium">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <h3>Nenhum Curso Matriculado</h3>
-                        <p>O aluno ainda não está matriculado em nenhum curso.</p>
-                    </div>
-                `;
-                availableElement.innerHTML = `
-                    <div class="empty-state-info">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                        <h3>Nenhum Curso Disponível</h3>
-                        <p>Nenhum curso encontrado no plano do aluno.</p>
-                    </div>
-                `;
-            },
-            onError: (error) => {
-                const is404 = error?.message?.includes('404') || error?.status === 404;
-                if (is404) {
-                    enrolledElement.innerHTML = `
-                        <div class="info-state">
-                            <i class="fas fa-info-circle"></i>
-                            <p>Endpoint <code>/api/students/${studentId}/courses</code> não implementado ainda.</p>
-                            <p class="hint">Esta funcionalidade será adicionada em breve.</p>
-                        </div>
-                    `;
-                    availableElement.innerHTML = '';
-                } else {
-                    enrolledElement.innerHTML = '<p class="error-state">Erro ao carregar cursos matriculados</p>';
-                    availableElement.innerHTML = '<p class="error-state">Erro ao carregar cursos disponíveis</p>';
-                }
-            }
-        });
-    }
-
-    async loadFinancial(studentId) {
-        const subscriptionsElement = this.container.querySelector('#student-subscriptions');
-        const paymentsElement = this.container.querySelector('#student-payments');
-
-        if (!subscriptionsElement || !paymentsElement) {
-            console.warn('Financial tab elements not found');
-            return;
-        }
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/financial-summary`, {
-            loadingElement: subscriptionsElement,
-            onSuccess: (response) => {
-                const { payments = [], summary = {} } = response.data || {};
-                
-                // Get active subscriptions from this.current
-                const activeSubscriptions = (this.current?.subscriptions || []).filter(sub => sub.status === 'ACTIVE');
-                
-                // Build subscriptions HTML section (show ALL active plans)
-                let subscriptionsHTML = '';
-                if (activeSubscriptions.length > 0) {
-                    const planCards = activeSubscriptions.map(plan => `
-                        <div class="subscription-card">
-                            <div class="subscription-header">
-                                <h6>${plan.plan?.name || 'Plano'}</h6>
-                                <span class="subscription-price">R$ ${parseFloat(plan.currentPrice || 0).toFixed(2)}/mês</span>
-                            </div>
-                            <div class="subscription-details">
-                                <div class="detail-item">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>Início: ${this.formatDate(plan.startDate)}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-sync-alt"></i>
-                                    <span>Próximo: ${this.formatDate(plan.nextBillingDate)}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>${plan.billingType === 'RECURRING' ? 'Recorrente' : 'Único'}</span>
-                                </div>
-                                ${plan.plan?.description ? `
-                                <div class="detail-item">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span>${plan.plan.description}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                            <div class="subscription-actions">
-                                <button class="btn-action btn-warning" onclick="window.studentEditor.confirmEndSubscription('${plan.id}')" title="Finalizar (inativa mas mantém histórico)">
-                                    <i class="fas fa-pause-circle"></i> Finalizar
-                                </button>
-                                <button class="btn-action btn-danger" onclick="window.studentEditor.confirmDeleteSubscription('${plan.id}')" title="Deletar (remove permanentemente)">
-                                    <i class="fas fa-trash-alt"></i> Deletar
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                    subscriptionsHTML = `
-                        <div class="active-subscriptions">
-                            <h5><i class="fas fa-check-circle"></i> ${activeSubscriptions.length > 1 ? `Planos Ativos (${activeSubscriptions.length})` : 'Plano Ativo'}</h5>
-                            <div class="subscriptions-grid ${activeSubscriptions.length > 1 ? 'multiple' : 'single'}">
-                                ${planCards}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                // Financial Summary Cards with Add Plan Button
-                subscriptionsElement.innerHTML = `
-                    <div class="financial-header">
-                        <h4>Resumo Financeiro</h4>
-                        <button class="btn-add-plan" onclick="window.studentEditor.showAddPlanModal()">
-                            <i class="fas fa-plus"></i> Adicionar Plano
-                        </button>
-                    </div>
-                    
-                    <div class="financial-summary">
-                        <div class="summary-card">
-                            <h4>Total Pago</h4>
-                            <span class="amount-paid">R$ ${(summary.totalPaid || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="summary-card">
-                            <h4>Total Pendente</h4>
-                            <span class="amount-pending">R$ ${(summary.totalPending || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="summary-card">
-                            <h4>Total Atrasado</h4>
-                            <span class="amount-overdue">R$ ${(summary.totalOverdue || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="summary-card">
-                            <h4>Último Pagamento</h4>
-                            <span class="last-payment">${summary.lastPayment ? this.formatDate(summary.lastPayment.dueDate) : 'Nenhum'}</span>
-                        </div>
-                    </div>
-                    
-                    ${subscriptionsHTML}
-                `;
-
-                // Payment History
-                paymentsElement.innerHTML = `
-                    <div class="payments-list">
-                        <h5>Histórico de Pagamentos (Últimos 20)</h5>
-                        ${payments.length > 0 ? payments.map(payment => {
-                            // Converter Decimal para número
-                            const amount = typeof payment.amount === 'object' ? parseFloat(payment.amount.toString()) : payment.amount;
-                            const planName = payment.subscription?.plan?.name || 'Plano não informado';
-                            const subscriptionId = payment.subscription?.id || '';
-                            const isPaid = payment.status === 'RECEIVED' || payment.status === 'PAID';
-                            
-                            return `
-                            <div class="payment-item ${payment.status?.toLowerCase()}">
-                                <div class="payment-date">
-                                    <span class="date">${this.formatDate(payment.dueDate)}</span>
-                                    <span class="status-badge ${payment.status?.toLowerCase()}">${payment.status || 'Pendente'}</span>
-                                </div>
-                                <div class="payment-details">
-                                    <span class="payment-description">${planName}</span>
-                                    <span class="payment-method">${payment.paymentMethod || 'Não informado'}</span>
-                                    ${subscriptionId ? `<span class="subscription-id">Assinatura: ${subscriptionId.slice(0, 8)}...</span>` : ''}
-                                </div>
-                                <div class="payment-amount">
-                                    <span class="amount ${isPaid ? 'paid' : 'pending'}">
-                                        R$ ${(amount || 0).toFixed(2)}
-                                    </span>
-                                </div>
-                                <!-- TODO: Implementar endpoints PATCH /api/payments/:id e /api/subscriptions/:id
-                                <div class="payment-actions">
-                                    ${!isPaid ? `
-                                        <button class="btn-action btn-mark-paid" onclick="window.studentEditor.markPaymentAsPaid('${payment.id}')" title="Marcar como pago">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    ` : ''}
-                                    ${subscriptionId ? `
-                                        <button class="btn-action btn-end-subscription" onclick="window.studentEditor.confirmEndSubscription('${subscriptionId}')" title="Finalizar assinatura">
-                                            <i class="fas fa-stop-circle"></i>
-                                        </button>
-                                    ` : ''}
-                                </div>
-                                -->
-                            </div>
-                        `}).join('') : '<p class="empty-state">Nenhum pagamento registrado</p>'}
-                    </div>
-                `;
-            },
-            onEmpty: () => {
-                subscriptionsElement.innerHTML = '<p class="empty-state">Nenhuma informação financeira encontrada</p>';
-                paymentsElement.innerHTML = '<p class="empty-state">Nenhum pagamento registrado</p>';
-            },
-            onError: (error) => {
-                const is404 = error?.message?.includes('404') || error?.status === 404;
-                if (is404) {
-                    subscriptionsElement.innerHTML = `
-                        <div class="info-state">
-                            <i class="fas fa-info-circle"></i>
-                            <p>Endpoint <code>/api/students/${studentId}/financial-summary</code> não implementado ainda.</p>
-                            <p class="hint">Esta funcionalidade será adicionada em breve.</p>
-                        </div>
-                    `;
-                    paymentsElement.innerHTML = '';
-                } else {
-                    subscriptionsElement.innerHTML = '<p class="error-state">Erro ao carregar informações financeiras</p>';
-                    paymentsElement.innerHTML = '<p class="error-state">Erro ao carregar histórico de pagamentos</p>';
-                }
-            }
-        });
-    }
-
-    // Show Add Plan Modal
-    async showAddPlanModal() {
-        try {
-            // Buscar planos disponíveis
-            const response = await this.api.api.get('/api/billing-plans');
-            const plans = response.data || [];
-
-            if (plans.length === 0) {
-                alert('Nenhum plano disponível no sistema.');
-                return;
-            }
-
-            // Criar modal
-            const modalHTML = `
-                <div class="modal-overlay" id="add-plan-modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3><i class="fas fa-plus-circle"></i> Adicionar Plano ao Aluno</h3>
-                            <button class="modal-close" onclick="window.studentEditor.closeAddPlanModal()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="add-plan-form">
-                                <div class="form-group">
-                                    <label for="plan-select">Selecione o Plano:</label>
-                                    <select id="plan-select" class="form-control" required>
-                                        <option value="">-- Selecione --</option>
-                                        ${plans.map(plan => `
-                                            <option value="${plan.id}" data-price="${plan.price}">
-                                                ${plan.name} - R$ ${parseFloat(plan.price || 0).toFixed(2)}/mês
-                                            </option>
-                                        `).join('')}
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="payment-method">Forma de Pagamento:</label>
-                                    <select id="payment-method" class="form-control" required>
-                                        <option value="">-- Selecione --</option>
-                                        <option value="CARTAO_CREDITO">Cartão de Crédito</option>
-                                        <option value="BOLETO">Boleto</option>
-                                        <option value="PIX">PIX</option>
-                                        <option value="DINHEIRO">Dinheiro</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="due-day">Dia de Vencimento:</label>
-                                    <input type="number" id="due-day" class="form-control" min="1" max="31" value="10" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="start-date">Data de Início:</label>
-                                    <input type="date" id="start-date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
-                                </div>
-
-                                <div class="modal-actions">
-                                    <button type="button" class="btn-secondary" onclick="window.studentEditor.closeAddPlanModal()">
-                                        Cancelar
-                                    </button>
-                                    <button type="submit" class="btn-primary">
-                                        <i class="fas fa-check"></i> Adicionar Plano
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Adicionar modal ao DOM
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-            // Event listener para o formulário
-            document.getElementById('add-plan-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.addPlanToStudent();
-            });
-
-        } catch (error) {
-            window.app?.handleError?.(error, 'showAddPlanModal');
-        }
-    }
-
-    // Close Add Plan Modal
-    closeAddPlanModal() {
-        const modal = document.getElementById('add-plan-modal');
-        if (modal) {
-            modal.remove();
-        }
-    }
-
-    // Add Plan to Student
-    async addPlanToStudent() {
-        try {
-            const planId = document.getElementById('plan-select').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-            const dueDay = document.getElementById('due-day').value;
-            const startDate = document.getElementById('start-date').value;
-
-            if (!planId || !paymentMethod) {
-                alert('Por favor, preencha todos os campos obrigatórios');
-                return;
-            }
-
-            // Obter studentId do aluno atual
-            const studentId = this.current?.id || this.currentStudentId;
-            
-            if (!studentId) {
-                alert('Erro: ID do aluno não encontrado. Recarregue a página e tente novamente.');
-                console.error('Student ID missing:', { current: this.current, currentStudentId: this.currentStudentId });
-                return;
-            }
-
-            console.log('Creating subscription with:', { studentId, planId, startDate });
-
-            // Criar assinatura (API aceita apenas studentId, planId e startDate)
-            const response = await this.api.api.post('/api/financial/subscriptions', {
-                studentId: studentId,
-                planId: planId,
-                startDate: new Date(startDate).toISOString()
-            });
-
-            if (response.success) {
-                // If replacing an old plan, end the previous subscription
-                if (this.subscriptionToReplace) {
-                    try {
-                        console.log('🔄 Finalizando plano anterior:', this.subscriptionToReplace);
-                        await this.endSubscription(this.subscriptionToReplace, true); // true = silent mode
-                        this.subscriptionToReplace = null;
-                    } catch (error) {
-                        console.warn('⚠️ Erro ao finalizar plano anterior:', error);
-                        // Continue anyway, new plan was created successfully
-                    }
-                }
-                
-                this.closeAddPlanModal();
-                window.app?.showFeedback?.('Plano adicionado com sucesso!', 'success');
-                
-                // Reload student data to get updated subscriptions
-                await this.loadStudent(studentId);
-                await this.loadFinancial(studentId);
-            } else {
-                alert(response.message || 'Erro ao adicionar plano');
-            }
-
-        } catch (error) {
-            console.error('Erro ao adicionar plano:', error);
-            alert('Erro ao adicionar plano. Verifique os dados e tente novamente.');
-            window.app?.handleError?.(error, 'addPlanToStudent');
-        }
-    }
-
-    // Mark Payment as Paid
-    async markPaymentAsPaid(paymentId) {
-        if (!confirm('Confirmar pagamento como recebido?')) {
-            return;
-        }
-
-        try {
-            const response = await this.api.api.patch(`/api/payments/${paymentId}`, {
-                status: 'RECEIVED',
-                paidAt: new Date().toISOString()
-            });
-
-            if (response.success) {
-                window.app?.showFeedback?.('Pagamento marcado como recebido!', 'success');
-                // Recarregar aba financeira
-                const studentId = this.current?.id || this.currentStudentId;
-                await this.loadFinancial(studentId);
-            }
-
-        } catch (error) {
-            window.app?.handleError?.(error, 'markPaymentAsPaid');
-        }
-    }
-
-    // Confirm Delete Subscription (PERMANENT removal)
-    confirmDeleteSubscription(subscriptionId) {
-        if (!confirm('⚠️ TEM CERTEZA QUE DESEJA DELETAR PERMANENTEMENTE ESTA ASSINATURA?\n\n🚨 ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\n❌ Isso vai APAGAR:\n- A assinatura do banco de dados\n- Todo o histórico de pagamentos relacionado\n- Não poderá ser desfeito\n\n💡 Se quiser apenas inativar (mantendo histórico), use "Finalizar" ao invés de "Deletar".\n\nContinuar com a DELEÇÃO PERMANENTE?')) {
-            return;
-        }
-
-        this.deleteSubscription(subscriptionId);
-    }
-
-    // Delete Subscription (PERMANENT removal via DELETE endpoint)
-    async deleteSubscription(subscriptionId) {
-        try {
-            const response = await this.api.api.delete(`/api/financial/subscriptions/${subscriptionId}`);
-
-            if (response.success) {
-                window.app?.showFeedback?.('✅ Assinatura deletada permanentemente!', 'success');
-                // Recarregar dados do aluno e aba financeira
-                const studentId = this.current?.id || this.currentStudentId;
-                if (studentId) {
-                    await this.loadStudent(studentId);
-                    await this.loadFinancial(studentId);
-                }
-            }
-
-        } catch (error) {
-            console.error('❌ Erro ao deletar assinatura:', error);
-            window.app?.handleError?.(error, 'deleteSubscription');
-        }
-    }
-
-    // Confirm End Subscription (INATIVA mas mantém histórico)
-    confirmEndSubscription(subscriptionId) {
-        if (!confirm('Tem certeza que deseja FINALIZAR esta assinatura?\n\nIsso vai:\n- Encerrar a assinatura (status INACTIVE)\n- Parar de gerar novos pagamentos\n- Manter o histórico de pagamentos\n\n💡 Para remover permanentemente, use "Deletar".')) {
-            return;
-        }
-
-        this.endSubscription(subscriptionId);
-    }
-
-    // End Subscription
-    async endSubscription(subscriptionId, silent = false) {
-        try {
-            const response = await this.api.api.patch(`/api/financial/subscriptions/${subscriptionId}`, {
-                status: 'INACTIVE',
-                endDate: new Date().toISOString(),
-                isActive: false
-            });
-
-            if (response.success) {
-                if (!silent) {
-                    window.app?.showFeedback?.('Assinatura finalizada com sucesso!', 'success');
-                }
-                // Recarregar dados do aluno e aba financeira
-                const studentId = this.current?.id || this.currentStudentId;
-                if (studentId) {
-                    await this.loadStudent(studentId);
-                    await this.loadFinancial(studentId);
-                }
-            }
-
-        } catch (error) {
-            console.error('Erro ao finalizar assinatura:', error);
-            if (!silent) {
-                window.app?.handleError?.(error, 'endSubscription');
-            }
-        }
-    }
-
-    // ==================== COURSES IN OVERVIEW TAB ====================
-    
-    async loadCoursesInOverview(studentId) {
-        const coursesElement = this.container.querySelector('#overview-courses-list');
-
-        if (!coursesElement) {
-            console.warn('Courses in overview tab element not found');
-            return;
-        }
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/courses`, {
-            loadingElement: coursesElement,
-            onSuccess: (data) => {
-                const availableCourses = data.availableCourses || [];
-
-                if (availableCourses.length === 0) {
-                    coursesElement.innerHTML = `
-                        <div class="empty-state-simple">
-                            <i class="fas fa-graduation-cap"></i>
-                            <p>Nenhum curso base encontrado no plano ativo.</p>
-                        </div>
-                    `;
-                } else {
-                    coursesElement.innerHTML = `
-                        <div class="courses-compact-list">
-                            ${availableCourses.map(course => `
-                                <div class="course-compact-card available">
-                                    <div class="course-compact-icon">
-                                        <i class="fas fa-graduation-cap"></i>
-                                    </div>
-                                    <div class="course-compact-info">
-                                        <h6>${course.name || 'Curso sem nome'}</h6>
-                                        <span class="course-compact-meta">
-                                            ${course.durationTotalWeeks || 0} semanas • 
-                                            ${course.totalLessons || 0} aulas • 
-                                            ${course.difficulty || 'Iniciante'}
-                                        </span>
-                                        ${course.description ? `<p class="course-compact-desc">${course.description}</p>` : ''}
-                                        <span class="course-compact-badge auto">Automático pelo Plano</span>
-                                    </div>
-                                    <div class="course-compact-actions">
-                                        <button class="btn-compact btn-primary" onclick="window.studentEditor?.viewCourseSchedule('${course.id}', \`${course.name || 'Curso'}\`)" title="Ver Cronograma Completo">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-            },
-            onEmpty: () => {
-                coursesElement.innerHTML = `
-                    <div class="empty-state-simple">
-                        <i class="fas fa-graduation-cap"></i>
-                        <p>Nenhum curso encontrado no plano.</p>
-                    </div>
-                `;
-            },
-            onError: (error) => {
-                coursesElement.innerHTML = '<p class="error-state">Erro ao carregar cursos do plano</p>';
-            }
-        });
-    }
-
-    // ==================== COURSES TAB (Dedicated) ====================
-    
-    async loadCoursesTab(studentId) {
-        const enrolledElement = this.container.querySelector('#enrolled-courses-tab');
-        const availableElement = this.container.querySelector('#available-courses-tab');
-
-        if (!enrolledElement || !availableElement) {
-            console.warn('Courses tab elements not found');
-            return;
-        }
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/courses`, {
-            loadingElement: enrolledElement,
-            onSuccess: (data) => {
-                const enrolledCourses = data.enrolledCourses || [];
-                const availableCourses = data.availableCourses || [];
-
-                // ========== ENROLLED COURSES (with End Enrollment button) ==========
-                if (enrolledCourses.length === 0) {
-                    enrolledElement.innerHTML = `
-                        <div class="empty-state-premium">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                            <h3>Nenhum Curso Matriculado</h3>
-                            <p>O aluno ainda não possui matrícula ativa em nenhum curso.</p>
-                            <p class="empty-state-hint">Verifique os cursos disponíveis abaixo.</p>
-                        </div>
-                    `;
-                } else {
-                    enrolledElement.innerHTML = `
-                        <div class="courses-grid">
-                            ${enrolledCourses.map(enrollment => `
-                                <div class="course-card-premium enrolled">
-                                    <div class="course-card-header">
-                                        <div class="course-title-section">
-                                            <h4 class="course-title">${enrollment.course?.name || 'Curso sem nome'}</h4>
-                                            <span class="badge badge-success">✓ Matriculado</span>
-                                        </div>
-                                        <span class="course-category-badge ${(enrollment.course?.category || 'ADULT').toLowerCase()}">${this.formatCategory(enrollment.course?.category)}</span>
-                                    </div>
-                                    
-                                    <div class="course-stats-grid">
-                                        <div class="stat-item">
-                                            <i class="far fa-clock"></i>
-                                            <span>${enrollment.course?.durationTotalWeeks || 0} semanas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-list-alt"></i>
-                                            <span>${enrollment.course?.totalLessons || 0} aulas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="fas fa-signal"></i>
-                                            <span>${enrollment.course?.difficulty || 'N/A'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-calendar"></i>
-                                            <span>Desde ${this.formatDate(enrollment.enrolledAt)}</span>
-                                        </div>
-                                    </div>
-
-                                    ${enrollment.course?.description ? `
-                                        <p class="course-description">${enrollment.course.description}</p>
-                                    ` : ''}
-
-                                    <div class="course-actions-row">
-                                        <button class="btn-action btn-primary" onclick="window.studentEditor?.viewCourseSchedule('${enrollment.courseId}', \`${enrollment.course?.name || 'Curso'}\`)" title="Ver Cronograma">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            Ver Cronograma
-                                        </button>
-                                        <button class="btn-action btn-warning" onclick="window.studentEditor?.endCourseEnrollment('${enrollment.id}', \`${enrollment.course?.name || 'curso'}\`)" title="Encerrar Matrícula">
-                                            <i class="fas fa-times-circle"></i>
-                                            Encerrar Matrícula
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                // ========== AVAILABLE COURSES (not enrolled or inactive) ==========
-                if (availableCourses.length === 0) {
-                    availableElement.innerHTML = `
-                        <div class="empty-state-info">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-check-double"></i>
-                            </div>
-                            <h3>Todos os Cursos Matriculados!</h3>
-                            <p>O aluno já está matriculado em todos os cursos disponíveis no plano.</p>
-                        </div>
-                    `;
-                } else {
-                    availableElement.innerHTML = `
-                        <div class="courses-grid">
-                            ${availableCourses.map(course => `
-                                <div class="course-card-premium available">
-                                    <div class="course-card-header">
-                                        <div class="course-title-section">
-                                            <h4 class="course-title">${course.name || 'Curso sem nome'}</h4>
-                                            <span class="badge badge-info">Disponível</span>
-                                        </div>
-                                        <span class="course-category-badge ${(course.category || 'ADULT').toLowerCase()}">${this.formatCategory(course.category)}</span>
-                                    </div>
-                                    
-                                    <div class="course-stats-grid">
-                                        <div class="stat-item">
-                                            <i class="far fa-clock"></i>
-                                            <span>${course.durationTotalWeeks || 0} semanas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="far fa-list-alt"></i>
-                                            <span>${course.totalLessons || 0} aulas</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <i class="fas fa-signal"></i>
-                                            <span>${course.difficulty || 'Iniciante'}</span>
-                                        </div>
-                                    </div>
-
-                                    ${course.description ? `
-                                        <p class="course-description">${course.description}</p>
-                                    ` : ''}
-
-                                    <div class="course-actions-row">
-                                        <button class="btn-action btn-secondary" onclick="window.studentEditor?.viewCourseSchedule('${course.id}', \`${course.name || 'Curso'}\`)" title="Ver Cronograma">
-                                            <i class="fas fa-eye"></i>
-                                            Ver Detalhes
-                                        </button>
-                                        <button class="btn-action btn-success" onclick="window.studentEditor?.enrollInCourseFromTab('${course.id}', \`${course.name || 'curso'}\`)" title="Matricular neste curso">
-                                            <i class="fas fa-plus-circle"></i>
-                                            Matricular
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-            },
-            onEmpty: () => {
-                enrolledElement.innerHTML = `
-                    <div class="empty-state-premium">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <h3>Nenhum Curso</h3>
-                        <p>Nenhum curso encontrado.</p>
-                    </div>
-                `;
-                availableElement.innerHTML = `
-                    <div class="empty-state-info">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                        <h3>Nenhum Curso Disponível</h3>
-                        <p>Nenhum curso disponível no momento.</p>
-                    </div>
-                `;
-            },
-            onError: (error) => {
-                enrolledElement.innerHTML = '<p class="error-state">Erro ao carregar cursos matriculados</p>';
-                availableElement.innerHTML = '<p class="error-state">Erro ao carregar cursos disponíveis</p>';
-            }
-        });
-    }
-
-    // ==================== COURSES IN FINANCIAL TAB ====================
-    
-    async loadCoursesInFinancial(studentId) {
-        const enrolledElement = this.container.querySelector('#enrolled-courses-financial');
-        const availableElement = this.container.querySelector('#available-courses-financial');
-
-        if (!enrolledElement || !availableElement) {
-            console.warn('Courses in financial tab elements not found');
-            return;
-        }
-
-        await this.api.fetchWithStates(`/api/students/${studentId}/courses`, {
-            loadingElement: enrolledElement,
-            onSuccess: (data) => {
-                const enrolledCourses = data.enrolledCourses || [];
-                const availableCourses = data.availableCourses || [];
-
-                // ========== ENROLLED COURSES (Simplified for Financial Tab) ==========
-                if (enrolledCourses.length === 0) {
-                    enrolledElement.innerHTML = `
-                        <div class="empty-state-simple">
-                            <i class="fas fa-graduation-cap"></i>
-                            <p>Nenhum curso matriculado ainda.</p>
-                        </div>
-                    `;
-                } else {
-                    enrolledElement.innerHTML = `
-                        <div class="courses-compact-list">
-                            ${enrolledCourses.map(enrollment => `
-                                <div class="course-compact-card enrolled">
-                                    <div class="course-compact-icon">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="course-compact-info">
-                                        <h6>${enrollment.course?.name || 'Curso sem nome'}</h6>
-                                        <span class="course-compact-meta">
-                                            ${enrollment.course?.durationTotalWeeks || 0} semanas • 
-                                            ${enrollment.course?.totalLessons || 0} aulas
-                                        </span>
-                                    </div>
-                                    <div class="course-compact-actions">
-                                        <button class="btn-compact btn-primary" onclick="window.studentEditor?.viewCourseSchedule('${enrollment.courseId}', \`${enrollment.course?.name || 'Curso'}\`)" title="Ver Cronograma">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-
-                // ========== AVAILABLE COURSES (Simplified for Financial Tab) ==========
-                if (availableCourses.length === 0) {
-                    availableElement.innerHTML = `
-                        <div class="empty-state-simple">
-                            <i class="fas fa-book-open"></i>
-                            <p>Todos os cursos do plano já estão matriculados ou nenhum disponível.</p>
-                        </div>
-                    `;
-                } else {
-                    availableElement.innerHTML = `
-                        <div class="courses-compact-list">
-                            ${availableCourses.map(course => `
-                                <div class="course-compact-card available">
-                                    <div class="course-compact-icon">
-                                        <i class="fas fa-plus-circle"></i>
-                                    </div>
-                                    <div class="course-compact-info">
-                                        <h6>${course.name || 'Curso sem nome'}</h6>
-                                        <span class="course-compact-meta">
-                                            ${course.durationTotalWeeks || 0} semanas • 
-                                            ${course.totalLessons || 0} aulas
-                                        </span>
-                                        <span class="course-compact-badge">${this.formatCategory(course.category)}</span>
-                                    </div>
-                                    <div class="course-compact-actions">
-                                        <button class="btn-compact btn-secondary" onclick="window.studentEditor?.viewCourseSchedule('${course.id}', \`${course.name || 'Curso'}\`)" title="Ver Cronograma">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn-compact btn-success" onclick="window.studentEditor?.enrollInCourse('${studentId}', '${course.id}', \`${course.name || 'curso'}\`)" title="Matricular">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-            },
-            onEmpty: () => {
-                enrolledElement.innerHTML = `
-                    <div class="empty-state-simple">
-                        <i class="fas fa-graduation-cap"></i>
-                        <p>Nenhum curso matriculado.</p>
-                    </div>
-                `;
-                availableElement.innerHTML = `
-                    <div class="empty-state-simple">
-                        <i class="fas fa-book-open"></i>
-                        <p>Nenhum curso disponível no plano.</p>
-                    </div>
-                `;
-            },
-            onError: (error) => {
-                enrolledElement.innerHTML = '<p class="error-state">Erro ao carregar cursos</p>';
-                availableElement.innerHTML = '<p class="error-state">Erro ao carregar cursos disponíveis</p>';
-            }
-        });
-    }
-
     // ==================== COURSE ACTIONS ====================
 
     // Format course category for display
@@ -3283,6 +3026,16 @@ export class StudentEditorController {
     formatDate(dateString) {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('pt-BR');
+    }
+
+    // Converter data para formato YYYY-MM-DD para input type="date"
+    getDateForInput(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     getMasteryLabel(level) {

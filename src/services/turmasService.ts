@@ -327,6 +327,7 @@ export class TurmasService {
         }
 
         // After syncing relations, refetch the complete turma within the transaction
+        // ❌ REMOVIDO lessons do include para evitar timeout - 53+ aulas com attendances causam query N+1
         const refreshed = await tx.turma.findUnique({
           where: { id },
           include: {
@@ -335,14 +336,8 @@ export class TurmasService {
             instructor: true,
             organization: true,
             unit: true,
-            students: { include: { student: true } },
-            lessons: {
-              include: {
-                lessonPlan: true,
-                attendances: { include: { student: true } }
-              },
-              orderBy: { scheduledDate: 'asc' }
-            }
+            students: { include: { student: true } }
+            // lessons removido - frontend carrega separadamente se necessário
           }
         });
 
@@ -350,20 +345,20 @@ export class TurmasService {
         return refreshed ?? updated;
       },
       {
-        maxWait: 10000, // default: 2000
-        timeout: 15000, // default: 5000
+        maxWait: 5000, // Reduzido de 10000 - sem lessons o query é rápido
+        timeout: 8000, // Reduzido de 15000
       });
 
       console.log('[TurmasService] Update successful');
 
       // Regenerate schedule if course or timing changed
+      // 🔥 FIX: Run in background to avoid timeout (53+ lessons = 10s+)
       if (data.courseIds || data.schedule || data.startDate || data.endDate) {
-        try {
-          console.log('[TurmasService] Regenerating schedule after update...');
-          await this.regenerateSchedule(id);
-        } catch (err) {
-          console.error('[TurmasService] Failed to regenerate schedule:', err);
-        }
+        console.log('[TurmasService] Schedule regeneration queued (will run in background)...');
+        // Fire and forget - não bloqueia o response
+        this.regenerateSchedule(id).catch(err => {
+          console.error('[TurmasService] Background schedule regeneration failed:', err);
+        });
       }
 
       // Regenerar cronograma se as datas ou horários mudaram
@@ -399,16 +394,32 @@ export class TurmasService {
   }
 
   async generateSchedule(turmaId: string) {
-    const turma = await this.getById(turmaId);
+    const turma = await prisma.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        course: {
+          include: {
+            lessonPlans: true
+          }
+        }
+      }
+    });
+    
     if (!turma) throw new Error('Turma não encontrada');
 
     const { course, schedule, startDate, endDate } = turma;
-    const lessonPlans = course.lessonPlans;
+    const lessonPlans = course?.lessonPlans || [];
 
     // Limpar cronograma existente
-    await prisma.turmaLesson.deleteMany({
-      where: { turmaId }
-    });
+    // 🔥 OPTIMIZATION: Only delete if we're actually going to create new lessons
+    const existingCount = await prisma.turmaLesson.count({ where: { turmaId } });
+    
+    if (existingCount > 0) {
+      console.log(`[TurmasService] Deleting ${existingCount} existing lessons for turma ${turmaId}...`);
+      await prisma.turmaLesson.deleteMany({
+        where: { turmaId }
+      });
+    }
 
     // If no lesson plans, skip schedule generation
     if (!lessonPlans || lessonPlans.length === 0) {

@@ -1,0 +1,27 @@
+﻿AUDITORIA DE SANITIZACAO - ACADEMIA
+Data: 19/10/2025 15:00:58
+
+=== RESUMO GERAL ===
+Total de arquivos: 48855
+Arquivos para mover: 44060
+
+=== ARQUIVOS POR CATEGORIA ===
+
+DUPLICATES: 72 arquivos
+OLD_MODULES: 57 arquivos
+DEPENDENCIES: 43751 arquivos
+GENERATED_DOCS: 118 arquivos
+BACKUP_FILES: 43 arquivos
+TEMP_LOGS: 8 arquivos
+IDE_BUILD: 11 arquivos
+
+=== CRITICAS (NAO SERÃƒO MOVIDAS) ===
+- AGENTS.md
+- AGENTS.md.bak
+- AUDIT_REPORT.md
+- src/
+- public/
+- prisma/
+- package.json
+- .git/
+

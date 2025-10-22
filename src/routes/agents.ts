@@ -1,373 +1,473 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ResponseHelper } from '@/utils/response'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { agentService } from '@/services/AgentService';
+import { agentExecutorService } from '@/services/AgentExecutorService';
+import { logger } from '@/utils/logger';
+import { z } from 'zod';
 
-interface CreateAgentBody {
-    name: string
-    specialization: string
-    model: string
-    instructions: string
-}
+// Validation schemas
+const createAgentSchema = z.object({
+  name: z.string().min(3).max(100),
+  description: z.string().optional(),
+  specialization: z.enum(['pedagogical', 'analytical', 'support', 'progression', 'commercial', 'curriculum']),
+  model: z.enum([
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-pro',
+    'gemini-1.5-pro-exp-0827',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-1.0-pro'
+  ]),
+  systemPrompt: z.string().min(50).max(10000),
+  ragSources: z.array(z.string()).optional().default([]),
+  mcpTools: z.array(z.string()).optional().default([]),
+  temperature: z.number().min(0).max(1).optional().default(0.7),
+  maxTokens: z.number().min(256).max(8192).optional().default(2048),
+  isActive: z.boolean().optional().default(true),
+  isPublic: z.boolean().optional().default(false)
+});
 
-interface AgentChatBody {
-    agentId: string
-    message: string
-    context?: string
-}
+const updateAgentSchema = z.object({
+  name: z.string().min(3).max(100).optional(),
+  description: z.string().optional(),
+  specialization: z.enum(['pedagogical', 'analytical', 'support', 'progression', 'commercial', 'curriculum']).optional(),
+  model: z.enum([
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-pro',
+    'gemini-1.5-pro-exp-0827',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b',
+    'gemini-1.0-pro'
+  ]).optional(),
+  systemPrompt: z.string().min(50).max(10000).optional(),
+  ragSources: z.array(z.string()).optional(),
+  mcpTools: z.array(z.string()).optional(),
+  temperature: z.number().min(0).max(1).optional(),
+  maxTokens: z.number().min(256).max(8192).optional(),
+  isActive: z.boolean().optional(),
+  isPublic: z.boolean().optional()
+});
+
+const createConversationSchema = z.object({
+  agentId: z.string().uuid(),
+  studentId: z.string().uuid().optional(),
+  message: z.string().min(1),
+  conversationId: z.string().uuid().optional() // Para continuar conversa existente
+});
+
+const updateConversationSchema = z.object({
+  messages: z.array(z.any()).optional(),
+  rating: z.number().min(1).max(5).optional(),
+  feedback: z.string().optional()
+});
 
 export default async function agentsRoutes(fastify: FastifyInstance) {
-    // Create new AI Agent
-    fastify.post('/', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Create a new AI Agent',
-            body: {
-                type: 'object',
-                required: ['name', 'specialization', 'model', 'instructions'],
-                properties: {
-                    name: { type: 'string' },
-                    specialization: { type: 'string' },
-                    model: { type: 'string' },
-                    instructions: { type: 'string' }
-                }
-            },
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                name: { type: 'string' },
-                                specialization: { type: 'string' },
-                                model: { type: 'string' },
-                                status: { type: 'string' },
-                                createdAt: { type: 'string' }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }, async (request: FastifyRequest<{ Body: CreateAgentBody }>, reply: FastifyReply) => {
+    /**
+     * GET /api/agents
+     * List all agents for an organization
+     */
+    fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const { name, specialization, model, instructions } = request.body
+            const organizationId = request.headers['x-organization-id'] as string;
 
-            // Mock agent creation
-            const agent = {
-                id: `agent_${Date.now()}`,
-                name,
-                specialization,
-                model,
-                instructions,
-                status: 'active',
-                tasksCompleted: 0,
-                accuracy: 1.0,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+            if (!organizationId) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Organization ID is required'
+                });
             }
 
-            return ResponseHelper.success(reply, agent, 'Agent created successfully')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
-        }
-    })
+            // Parse query filters
+            const { specialization, isActive } = request.query as any;
 
-    // Get all agents
-    fastify.get('/', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Get all AI Agents',
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: {
-                            type: 'array',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    id: { type: 'string' },
-                                    name: { type: 'string' },
-                                    specialization: { type: 'string' },
-                                    model: { type: 'string' },
-                                    status: { type: 'string' },
-                                    tasksCompleted: { type: 'number' },
-                                    accuracy: { type: 'number' },
-                                    createdAt: { type: 'string' }
-                                }
-                            }
-                        }
-                    }
-                }
+            const filters: any = {};
+            if (specialization) {
+                filters.specialization = specialization;
             }
+            if (isActive !== undefined) {
+                filters.isActive = isActive === 'true' || isActive === true;
+            }
+
+            const agents = await agentService.getAgents(organizationId, filters);
+
+            return reply.send({
+                success: true,
+                data: agents,
+                total: agents.length
+            });
+        } catch (error: any) {
+            logger.error('Error fetching agents:', error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to fetch agents',
+                error: error.message
+            });
         }
-    }, async (request: FastifyRequest, reply: FastifyReply) => {
+    });
+
+    /**
+     * GET /api/agents/stats
+     * Get agent statistics for an organization
+     */
+    fastify.get('/stats', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const agents = [
-                {
-                    id: 'agent_1',
-                    name: 'Analytics Pro',
-                    specialization: 'analytics',
-                    model: 'gpt-4',
-                    status: 'active',
-                    tasksCompleted: 25,
-                    accuracy: 0.94,
-                    createdAt: new Date().toISOString()
+            const organizationId = request.headers['x-organization-id'] as string;
+
+            if (!organizationId) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Organization ID is required'
+                });
+            }
+
+            const stats = await agentService.getAgentStats(organizationId);
+
+            return reply.send({
+                success: true,
+                data: stats
+            });
+        } catch (error: any) {
+            logger.error('Error fetching agent stats:', error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to fetch agent statistics',
+                error: error.message
+            });
+        }
+    });
+
+    /**
+     * GET /api/agents/:id
+     * Get a single agent by ID
+     */
+    fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+        try {
+            const { id } = request.params;
+
+            const agent = await agentService.getAgentById(id);
+
+            if (!agent) {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Agent not found'
+                });
+            }
+
+            return reply.send({
+                success: true,
+                data: agent
+            });
+        } catch (error: any) {
+            logger.error(`Error fetching agent ${request.params.id}:`, error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to fetch agent',
+                error: error.message
+            });
+        }
+    });
+
+    /**
+     * POST /api/agents
+     * Create a new agent
+     */
+    fastify.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const organizationId = request.headers['x-organization-id'] as string;
+
+            if (!organizationId) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Organization ID is required'
+                });
+            }
+
+            // Validate request body
+            const validatedData = createAgentSchema.parse(request.body);
+
+            // Additional validation
+            agentService.validateAgentConfig(validatedData as any);
+
+            // Create agent
+            const agent = await agentService.createAgent({
+                ...validatedData,
+                organizationId,
+                noCodeMode: true, // Always enforce
+                organization: {
+                    connect: { id: organizationId }
+                }
+            });
+
+            return reply.code(201).send({
+                success: true,
+                data: agent,
+                message: 'Agent created successfully'
+            });
+        } catch (error: any) {
+            logger.error('Error creating agent:', error);
+
+            // Handle validation errors
+            if (error.name === 'ZodError') {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors
+                });
+            }
+
+            return reply.code(400).send({
+                success: false,
+                message: error.message || 'Failed to create agent'
+            });
+        }
+    });
+
+    /**
+     * PATCH /api/agents/:id
+     * Update an agent
+     */
+    fastify.patch('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+        try {
+            const { id } = request.params;
+
+            // Validate request body
+            const validatedData = updateAgentSchema.parse(request.body);
+
+            // Update agent
+            const agent = await agentService.updateAgent(id, validatedData);
+
+            return reply.send({
+                success: true,
+                data: agent,
+                message: 'Agent updated successfully'
+            });
+        } catch (error: any) {
+            logger.error(`Error updating agent ${request.params.id}:`, error);
+
+            // Handle validation errors
+            if (error.name === 'ZodError') {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors
+                });
+            }
+
+            if (error.code === 'P2025') {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Agent not found'
+                });
+            }
+
+            return reply.code(400).send({
+                success: false,
+                message: error.message || 'Failed to update agent'
+            });
+        }
+    });
+
+    /**
+     * PATCH /api/agents/:id/toggle
+     * Toggle agent active status
+     */
+    fastify.patch('/:id/toggle', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+        try {
+            const { id } = request.params;
+
+            const agent = await agentService.toggleAgent(id);
+
+            return reply.send({
+                success: true,
+                data: agent,
+                message: `Agent ${agent.isActive ? 'activated' : 'deactivated'} successfully`
+            });
+        } catch (error: any) {
+            logger.error(`Error toggling agent ${request.params.id}:`, error);
+            return reply.code(400).send({
+                success: false,
+                message: error.message || 'Failed to toggle agent'
+            });
+        }
+    });
+
+    /**
+     * DELETE /api/agents/:id
+     * Delete an agent
+     */
+    fastify.delete('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+        try {
+            const { id } = request.params;
+
+            await agentService.deleteAgent(id);
+
+            return reply.send({
+                success: true,
+                message: 'Agent deleted successfully'
+            });
+        } catch (error: any) {
+            logger.error(`Error deleting agent ${request.params.id}:`, error);
+
+            if (error.code === 'P2025') {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Agent not found'
+                });
+            }
+
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to delete agent'
+            });
+        }
+    });
+
+    /**
+     * GET /api/agents/:id/conversations
+     * Get conversation history for an agent
+     */
+    fastify.get('/:id/conversations', async (request: FastifyRequest<{
+        Params: { id: string };
+        Querystring: { limit?: string };
+    }>, reply: FastifyReply) => {
+        try {
+            const { id } = request.params;
+            const limit = request.query.limit ? parseInt(request.query.limit) : 50;
+
+            const conversations = await agentService.getAgentConversations(id, limit);
+
+            return reply.send({
+                success: true,
+                data: conversations,
+                total: conversations.length
+            });
+        } catch (error: any) {
+            logger.error(`Error fetching conversations for agent ${request.params.id}:`, error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to fetch conversations',
+                error: error.message
+            });
+        }
+    });
+
+    /**
+     * POST /api/agents/chat
+     * Send a message to an agent (creates or continues conversation)
+     */
+    fastify.post('/chat', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const { agentId, studentId, message, conversationId } = createConversationSchema.parse(request.body);
+            const userId = request.headers['x-user-id'] as string;
+
+            // Get agent to validate it exists and is active
+            const agent = await agentService.getAgentById(agentId);
+
+            if (!agent) {
+                return reply.code(404).send({
+                    success: false,
+                    message: 'Agent not found'
+                });
+            }
+
+            if (!agent.isActive) {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Agent is not active'
+                });
+            }
+
+            // Create context for agent execution
+            const context = {
+                userId,
+                studentId,
+                metadata: {
+                    requestSource: 'api_chat',
+                    timestamp: new Date().toISOString()
+                }
+            };
+
+            // If conversationId provided, continue existing conversation
+            let conversation;
+            if (conversationId) {
+                conversation = await agentExecutorService.continueConversation(
+                    conversationId,
+                    message,
+                    context
+                );
+            } else {
+                // Create new conversation and execute agent
+                conversation = await agentExecutorService.createConversationAndExecute(
+                    agentId,
+                    message,
+                    context
+                );
+            }
+
+            return reply.send({
+                success: true,
+                data: {
+                    conversationId: conversation.id,
+                    messages: conversation.messages,
+                    agent: {
+                        id: agent.id,
+                        name: agent.name,
+                        specialization: agent.specialization
+                    },
+                    metadata: conversation.metadata
                 },
-                {
-                    id: 'agent_2',
-                    name: 'Curriculum Expert',
-                    specialization: 'curriculum',
-                    model: 'claude',
-                    status: 'active',
-                    tasksCompleted: 18,
-                    accuracy: 0.89,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 'agent_3',
-                    name: 'Student Helper',
-                    specialization: 'student-support',
-                    model: 'gpt-3.5-turbo',
-                    status: 'active',
-                    tasksCompleted: 42,
-                    accuracy: 0.91,
-                    createdAt: new Date().toISOString()
-                }
-            ]
+                message: 'Message sent successfully'
+            });
+        } catch (error: any) {
+            logger.error('Error sending message to agent:', error);
 
-            return ResponseHelper.success(reply, agents, 'Agents retrieved successfully')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
-        }
-    })
-
-    // Chat with agent
-    fastify.post('/chat', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Chat with an AI Agent',
-            body: {
-                type: 'object',
-                required: ['agentId', 'message'],
-                properties: {
-                    agentId: { type: 'string' },
-                    message: { type: 'string' },
-                    context: { type: 'string' }
-                }
-            },
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                response: { type: 'string' },
-                                agentId: { type: 'string' },
-                                timestamp: { type: 'string' },
-                                model: { type: 'string' },
-                                confidence: { type: 'number' }
-                            }
-                        }
-                    }
-                }
+            // Handle validation errors
+            if (error.name === 'ZodError') {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors
+                });
             }
+
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to send message',
+                error: error.message
+            });
         }
-    }, async (request: FastifyRequest<{ Body: AgentChatBody }>, reply: FastifyReply) => {
+    });
+
+    /**
+     * PATCH /api/agents/conversations/:id
+     * Update a conversation (add rating, feedback)
+     */
+    fastify.patch('/conversations/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
         try {
-            const { agentId, message, context } = request.body
+            const { id } = request.params;
+            const validatedData = updateConversationSchema.parse(request.body);
 
-            // Mock agent response based on specialization
-            const response = generateAgentResponse(agentId, message, context)
+            const conversation = await agentService.updateConversation(id, validatedData);
 
-            const result = {
-                response: response.message,
-                agentId,
-                timestamp: new Date().toISOString(),
-                model: response.model,
-                confidence: response.confidence
+            return reply.send({
+                success: true,
+                data: conversation,
+                message: 'Conversation updated successfully'
+            });
+        } catch (error: any) {
+            logger.error(`Error updating conversation ${request.params.id}:`, error);
+
+            if (error.name === 'ZodError') {
+                return reply.code(400).send({
+                    success: false,
+                    message: 'Validation error',
+                    errors: error.errors
+                });
             }
 
-            return ResponseHelper.success(reply, result, 'Agent response generated')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
+            return reply.code(400).send({
+                success: false,
+                message: error.message || 'Failed to update conversation'
+            });
         }
-    })
-
-    // Get agent statistics
-    fastify.get('/stats', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Get AI Agents statistics',
-            response: {
-                200: {
-                    type: 'object',
-                    properties: {
-                        success: { type: 'boolean' },
-                        data: {
-                            type: 'object',
-                            properties: {
-                                totalAgents: { type: 'number' },
-                                activeAgents: { type: 'number' },
-                                totalTasks: { type: 'number' },
-                                avgAccuracy: { type: 'number' },
-                                totalConversations: { type: 'number' }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }, async (request: FastifyRequest, reply: FastifyReply) => {
-        try {
-            const stats = {
-                totalAgents: 3,
-                activeAgents: 3,
-                totalTasks: 85,
-                avgAccuracy: 0.92,
-                totalConversations: 147
-            }
-
-            return ResponseHelper.success(reply, stats, 'Agent statistics retrieved')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
-        }
-    })
-
-    // Update agent
-    fastify.put('/:id', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Update an AI Agent',
-            params: {
-                type: 'object',
-                required: ['id'],
-                properties: {
-                    id: { type: 'string' }
-                }
-            },
-            body: {
-                type: 'object',
-                properties: {
-                    name: { type: 'string' },
-                    specialization: { type: 'string' },
-                    model: { type: 'string' },
-                    instructions: { type: 'string' },
-                    status: { type: 'string' }
-                }
-            }
-        }
-    }, async (request: FastifyRequest<{ Params: { id: string }, Body: Partial<CreateAgentBody> }>, reply: FastifyReply) => {
-        try {
-            const { id } = request.params
-            const updates = request.body
-
-            // Mock update
-            const updatedAgent = {
-                id,
-                ...updates,
-                updatedAt: new Date().toISOString()
-            }
-
-            return ResponseHelper.success(reply, updatedAgent, 'Agent updated successfully')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
-        }
-    })
-
-    // Delete agent
-    fastify.delete('/:id', {
-        schema: {
-            tags: ['AI Agents'],
-            summary: 'Delete an AI Agent',
-            params: {
-                type: 'object',
-                required: ['id'],
-                properties: {
-                    id: { type: 'string' }
-                }
-            }
-        }
-    }, async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-        try {
-            const { id } = request.params
-
-            // Mock deletion
-            console.log(`Deleting agent ${id}`)
-
-            return ResponseHelper.success(reply, null, 'Agent deleted successfully')
-        } catch (error) {
-            return ResponseHelper.error(reply, error instanceof Error ? error.message : 'Unknown error')
-        }
-    })
-}
-
-function generateAgentResponse(agentId: string, message: string, context?: string) {
-    const lowerMessage = message.toLowerCase()
-
-    // Analytics Agent responses
-    if (agentId === 'agent_1' || agentId.includes('analytics')) {
-        if (lowerMessage.includes('desempenho') || lowerMessage.includes('performance')) {
-            return {
-                message: 'Analisando os dados de performance dos alunos, observo que 78% dos estudantes mostram melhoria consistente nos primeiros 3 meses. Recomendo focar em exercícios de condicionamento específicos para maximizar os resultados.',
-                model: 'gpt-4',
-                confidence: 0.94
-            }
-        }
-        if (lowerMessage.includes('evasão') || lowerMessage.includes('abandono')) {
-            return {
-                message: 'Os dados indicam que 23% dos alunos abandonam nas primeiras 6 semanas. Os principais fatores são: dificuldade inicial (45%), conflitos de horário (32%) e expectativas não atendidas (23%). Sugiro implementar programa de mentoria.',
-                model: 'gpt-4',
-                confidence: 0.91
-            }
-        }
-    }
-
-    // Curriculum Agent responses  
-    if (agentId === 'agent_2' || agentId.includes('curriculum')) {
-        if (lowerMessage.includes('curso') || lowerMessage.includes('programa')) {
-            return {
-                message: 'Para estruturar um programa eficaz, recomendo 4 módulos: Fundamentos (4 semanas), Técnicas Básicas (6 semanas), Aplicação Prática (4 semanas) e Avaliação (2 semanas). Cada módulo deve incluir teoria, prática e avaliação.',
-                model: 'claude',
-                confidence: 0.89
-            }
-        }
-        if (lowerMessage.includes('técnica') || lowerMessage.includes('exercício')) {
-            return {
-                message: 'As técnicas devem ser introduzidas progressivamente: 1) Demonstração lenta, 2) Prática em duplas, 3) Aplicação com resistência crescente, 4) Integração em cenários realistas. Sempre priorizando segurança.',
-                model: 'claude',
-                confidence: 0.92
-            }
-        }
-    }
-
-    // Student Support Agent responses
-    if (agentId === 'agent_3' || agentId.includes('student')) {
-        if (lowerMessage.includes('motivação') || lowerMessage.includes('engajamento')) {
-            return {
-                message: 'Para manter os alunos motivados, sugiro: metas semanais claras, reconhecimento de progressos pequenos, variedade nos exercícios e criação de senso de comunidade. O feedback positivo é essencial.',
-                model: 'gpt-3.5-turbo',
-                confidence: 0.91
-            }
-        }
-        if (lowerMessage.includes('dificuldade') || lowerMessage.includes('problema')) {
-            return {
-                message: 'Identifiquei que você está enfrentando desafios. Vamos trabalhar juntos para superá-los. Posso sugerir exercícios adaptativos, sessões de revisão ou até mesmo uma abordagem diferenciada. Como posso ajudar especificamente?',
-                model: 'gpt-3.5-turbo',
-                confidence: 0.88
-            }
-        }
-    }
-
-    // Default response
-    return {
-        message: 'Entendi sua solicitação. Com base na minha especialização, posso fornecer insights específicos sobre esta área. Você poderia dar mais detalhes sobre o que especificamente gostaria de saber?',
-        model: 'gpt-3.5-turbo',
-        confidence: 0.85
-    }
+    });
 }

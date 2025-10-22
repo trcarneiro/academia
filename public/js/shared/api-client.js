@@ -165,16 +165,15 @@ class ApiClient {
                 let orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
                 const orgSlug = (ls?.getItem('activeOrganizationSlug')) || (ss?.getItem('activeOrganizationSlug')) || (typeof window !== 'undefined' ? window.currentOrganizationSlug : null);
                 
-                // 🔧 TEMPORARY FIX: Hardcoded fallback para única org na base
-                // TODO: Remover quando integração com Supabase login estiver completa
-                // Ver task em AGENTS.md > "Integrar organizationId do Supabase no API Client"
-                if (!orgId && !orgSlug) {
-                    orgId = 'a55ad715-2eb0-493c-996c-bb0f60bacec9'; // Academia Demo
-                    console.warn('⚠️ Using hardcoded organization ID (temporary fix)');
-                }
+                // Note: org context may be available shortly after page load; only warn if truly missing after app initialization
+                // Modules should call ensureOrganizationContext() before making API calls to avoid timing issues
                 
-                if (orgId) orgHeaders['X-Organization-Id'] = orgId;
-                else if (orgSlug) orgHeaders['X-Organization-Slug'] = orgSlug;
+                // ✅ FIX: Use lowercase para compatibilidade com Fastify schema validation
+                if (orgId) orgHeaders['x-organization-id'] = orgId;
+                else if (orgSlug) orgHeaders['x-organization-slug'] = orgSlug;
+                
+                // Removed warning here - it was firing before org context was ready and causing confusion
+                // Org context is set during app.js initialization and should be available within 500ms
             } catch (_) {}
 
             const fetchOptions = {
@@ -186,8 +185,9 @@ class ApiClient {
                 }
             };
 
-            // Only add Content-Type for methods that send data
-            if (data && ['POST', 'PUT', 'PATCH'].includes(method)) {
+            // Only add Content-Type and body for methods that send data
+            // DELETE without body should NOT include Content-Type (Fastify 400 fix)
+            if (data) {
                 fetchOptions.headers['Content-Type'] = 'application/json';
                 fetchOptions.body = JSON.stringify(data);
             }
@@ -274,8 +274,22 @@ class ApiClient {
      * Build cache key
      */
     buildCacheKey(method, url, data) {
-        const dataHash = data ? btoa(JSON.stringify(data)).slice(0, 10) : '';
+        // Safe hash for Unicode strings (emojis, special chars)
+        const dataHash = data ? this.hashString(JSON.stringify(data)).slice(0, 10) : '';
         return `${method}:${url}:${dataHash}`;
+    }
+
+    /**
+     * Simple hash function for Unicode strings (replaces btoa)
+     */
+    hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return Math.abs(hash).toString(36); // Base36 encoding
     }
 
     /**
@@ -383,7 +397,13 @@ class ModuleAPIHelper {
         } catch (error) {
             console.error(`❌ ${this.moduleName} fetch error:`, error);
             this._setState(UI_STATES.ERROR, { targetElement, onError, error });
-            throw error;
+            
+            // Não re-lançar erro se há um handler onError (previne "Uncaught in promise")
+            if (options.onError) {
+                return { success: false, message: error.message, error };
+            }
+            
+            throw error; // Apenas lança se não há handler
         }
     }
 
@@ -480,6 +500,15 @@ class ModuleAPIHelper {
                 </div>
             `;
         }
+    }
+
+    /**
+     * Wrapper para método request do apiClient (convenience method)
+     */
+    async request(url, options = {}) {
+        const method = options.method || 'GET';
+        const data = options.body ? JSON.parse(options.body) : null;
+        return this.api.request(method, url, data, options);
     }
 }
 

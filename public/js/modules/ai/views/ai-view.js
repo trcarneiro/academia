@@ -21,6 +21,25 @@ class AIView {
     }
 
     /**
+     * Render the view into a target container
+     * @param {HTMLElement} targetContainer - Optional target container
+     */
+    render(targetContainer = null) {
+        const target = targetContainer || this.container?.parentNode || document.getElementById('module-container');
+        
+        if (!target) {
+            console.error('❌ AI View: No target container found for rendering');
+            return;
+        }
+        
+        // Clear target and append AI dashboard
+        target.innerHTML = '';
+        target.appendChild(this.container);
+        
+        console.log('✅ AI View rendered successfully');
+    }
+
+    /**
      * Create main container for AI Dashboard
      */
     createContainer() {
@@ -102,6 +121,9 @@ class AIView {
                         <button class="ai-dashboard-tab-btn" data-tab="insights">
                             <i class="fas fa-lightbulb"></i> Insights AI
                         </button>
+                        <button class="ai-dashboard-tab-btn" data-tab="agents">
+                            <i class="fas fa-robot"></i> Agentes IA
+                        </button>
                     </div>
                     
                     <div class="ai-dashboard-tab-content">
@@ -149,6 +171,51 @@ class AIView {
                                 </div>
                                 <div class="ai-dashboard-insights-content" id="ai-dashboard-insights-content">
                                     <!-- Insights will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-dashboard-tab-pane" id="ai-dashboard-agents">
+                            <div class="agents-container">
+                                <div class="agents-header">
+                                    <div class="agents-header-content">
+                                        <h2>🤖 Agentes IA</h2>
+                                        <p>Configure agentes especializados com acesso a RAG e ferramentas do sistema</p>
+                                    </div>
+                                    <div class="agents-header-actions">
+                                        <button class="btn btn-primary" id="ai-create-agent-btn">
+                                            <i class="fas fa-plus"></i> Novo Agente
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="agents-filters">
+                                    <select id="agents-filter-specialization" class="filter-select">
+                                        <option value="all">Todas as especializações</option>
+                                        <option value="pedagogical">🎓 Pedagógico</option>
+                                        <option value="analytical">📊 Analítico</option>
+                                        <option value="support">💬 Suporte</option>
+                                        <option value="progression">🎯 Progressão</option>
+                                        <option value="commercial">💰 Comercial</option>
+                                    </select>
+                                    
+                                    <select id="agents-filter-status" class="filter-select">
+                                        <option value="all">Todos os status</option>
+                                        <option value="active">Ativos</option>
+                                        <option value="inactive">Inativos</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="agents-list" id="ai-agents-list">
+                                    <!-- Agents will be populated here -->
+                                    <div class="empty-state">
+                                        <div class="empty-icon">🤖</div>
+                                        <h3>Nenhum agente cadastrado</h3>
+                                        <p>Crie seu primeiro agente IA para começar</p>
+                                        <button class="btn btn-primary" onclick="document.getElementById('ai-create-agent-btn').click()">
+                                            <i class="fas fa-plus"></i> Criar Primeiro Agente
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -217,6 +284,28 @@ class AIView {
         document.getElementById('ai-dashboard-generate-insights').addEventListener('click', () => {
             this.emitEvent('ai-dashboard-generate-insights');
         });
+
+        // Agents tab event listeners
+        const createAgentBtn = document.getElementById('ai-create-agent-btn');
+        if (createAgentBtn) {
+            createAgentBtn.addEventListener('click', () => {
+                this.showAgentForm();
+            });
+        }
+
+        const agentSpecializationFilter = document.getElementById('agents-filter-specialization');
+        if (agentSpecializationFilter) {
+            agentSpecializationFilter.addEventListener('change', (e) => {
+                this.filterAgents(e.target.value, null);
+            });
+        }
+
+        const agentStatusFilter = document.getElementById('agents-filter-status');
+        if (agentStatusFilter) {
+            agentStatusFilter.addEventListener('change', (e) => {
+                this.filterAgents(null, e.target.value);
+            });
+        }
     }
 
     /**
@@ -245,6 +334,11 @@ class AIView {
         });
 
         this.currentView = tabName;
+
+        // Load agents when switching to agents tab
+        if (tabName === 'agents') {
+            this.loadAgents();
+        }
     }
 
     /**
@@ -680,6 +774,535 @@ class AIView {
     emitEvent(eventName, detail = {}) {
         const event = new CustomEvent(eventName, { detail });
         document.dispatchEvent(event);
+    }
+
+    // ========================================
+    // AGENTS TAB METHODS
+    // ========================================
+
+    /**
+     * Render agents list
+     * @param {Array} agents - List of AI agents
+     */
+    renderAgentsList(agents = []) {
+        const container = document.getElementById('ai-agents-list');
+        if (!container) return;
+
+        if (!agents || agents.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 60px 20px;">
+                    <i class="fas fa-robot" style="font-size: 64px; color: var(--primary-color); opacity: 0.3; margin-bottom: 20px;"></i>
+                    <h3 style="color: var(--text-color); margin-bottom: 10px;">Nenhum agente cadastrado</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 30px;">
+                        Crie seu primeiro agente de IA para começar a automatizar processos
+                    </p>
+                    <button class="btn-primary" onclick="window.ai?.view?.showAgentForm()">
+                        <i class="fas fa-plus"></i> Criar Primeiro Agente
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="agents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                ${agents.map(agent => this.renderAgentCard(agent)).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * Render individual agent card
+     * @param {Object} agent - Agent object
+     * @returns {string} HTML string
+     */
+    renderAgentCard(agent) {
+        const icons = {
+            pedagogical: '🎓',
+            analytical: '📊',
+            support: '💬',
+            progression: '🎯',
+            commercial: '💰'
+        };
+
+        const icon = icons[agent.specialization] || '🤖';
+        const statusClass = agent.isActive ? 'active' : 'inactive';
+        const statusText = agent.isActive ? 'Ativo' : 'Inativo';
+        const interactionCount = agent._count?.conversations || 0;
+        const avgRating = agent.averageRating ? agent.averageRating.toFixed(1) : 'N/A';
+
+        return `
+            <div class="agent-card module-isolated-ai-agent-card" data-agent-id="${agent.id}" style="
+                background: var(--card-background);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 24px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            ">
+                <div class="agent-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 32px;">${icon}</span>
+                        <div>
+                            <h3 style="margin: 0; font-size: 18px; color: var(--text-color);">${agent.name}</h3>
+                            <span class="agent-status status-${statusClass}" style="
+                                display: inline-block;
+                                padding: 4px 12px;
+                                border-radius: 12px;
+                                font-size: 12px;
+                                font-weight: 600;
+                                background: ${agent.isActive ? 'var(--success-color)' : 'var(--warning-color)'};
+                                color: white;
+                                margin-top: 4px;
+                            ">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                    ${agent.description || 'Sem descrição'}
+                </p>
+
+                <div class="agent-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div style="text-align: center; padding: 12px; background: var(--background-secondary); border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--primary-color);">${interactionCount}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Interações</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background: var(--background-secondary); border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--primary-color);">
+                            ${avgRating} <i class="fas fa-star" style="font-size: 14px; color: #FFC107;"></i>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Avaliação</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background: var(--background-secondary); border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--primary-color);">${agent.model === 'gemini-1.5-pro' ? 'Pro' : 'Flash'}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Modelo</div>
+                    </div>
+                </div>
+
+                <div class="agent-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn-secondary btn-sm" onclick="window.ai?.view?.chatWithAgent('${agent.id}'); event.stopPropagation();" style="
+                        flex: 1;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        border: 1px solid var(--primary-color);
+                        background: transparent;
+                        color: var(--primary-color);
+                        font-size: 13px;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-comments"></i> Chat
+                    </button>
+                    <button class="btn-secondary btn-sm" onclick="window.ai?.view?.showAgentForm('${agent.id}'); event.stopPropagation();" style="
+                        flex: 1;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        border: 1px solid var(--border-color);
+                        background: transparent;
+                        color: var(--text-color);
+                        font-size: 13px;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button class="btn-secondary btn-sm" onclick="window.ai?.view?.toggleAgent('${agent.id}'); event.stopPropagation();" style="
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        border: 1px solid var(--border-color);
+                        background: transparent;
+                        color: var(--text-color);
+                        font-size: 13px;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-power-off"></i>
+                    </button>
+                    <button class="btn-secondary btn-sm btn-danger" onclick="window.ai?.view?.deleteAgent('${agent.id}'); event.stopPropagation();" style="
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        border: 1px solid var(--danger-color);
+                        background: transparent;
+                        color: var(--danger-color);
+                        font-size: 13px;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Show agent creation/edit form
+     * @param {string|null} agentId - Agent ID for editing, null for creating
+     */
+    async showAgentForm(agentId = null) {
+        const isEdit = !!agentId;
+        let agent = null;
+
+        if (isEdit) {
+            // TODO: Fetch agent data from API
+            // agent = await fetch(`/api/agents/${agentId}`).then(r => r.json());
+            this.showNotification('Função de edição em desenvolvimento', 'info');
+            return;
+        }
+
+        const formHtml = `
+            <div class="modal-overlay" id="agent-form-modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                padding: 20px;
+            ">
+                <div class="modal-content" style="
+                    background: var(--card-background);
+                    border-radius: 16px;
+                    max-width: 800px;
+                    width: 100%;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                ">
+                    <div class="modal-header" style="
+                        padding: 24px;
+                        border-bottom: 1px solid var(--border-color);
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    ">
+                        <h2 style="margin: 0; color: var(--text-color);">
+                            <i class="fas fa-robot"></i> ${isEdit ? 'Editar Agente' : 'Novo Agente'}
+                        </h2>
+                        <button onclick="document.getElementById('agent-form-modal').remove();" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            color: var(--text-muted);
+                            cursor: pointer;
+                        ">×</button>
+                    </div>
+
+                    <form id="agent-form" style="padding: 24px;">
+                        <!-- Basic Info -->
+                        <div class="form-section" style="margin-bottom: 24px;">
+                            <h3 style="font-size: 16px; color: var(--text-color); margin-bottom: 16px;">
+                                <i class="fas fa-info-circle"></i> Informações Básicas
+                            </h3>
+                            
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                    Nome do Agente <span style="color: var(--danger-color);">*</span>
+                                </label>
+                                <input type="text" name="name" required 
+                                    placeholder="Ex: Assistente Pedagógico" 
+                                    value="${agent?.name || ''}"
+                                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary);">
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                    Descrição
+                                </label>
+                                <textarea name="description" rows="3" 
+                                    placeholder="Descreva o propósito deste agente..."
+                                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary); resize: vertical;"
+                                >${agent?.description || ''}</textarea>
+                            </div>
+
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                <div class="form-group">
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                        Especialização <span style="color: var(--danger-color);">*</span>
+                                    </label>
+                                    <select name="specialization" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary);">
+                                        <option value="pedagogical">🎓 Pedagógico</option>
+                                        <option value="analytical">📊 Analítico</option>
+                                        <option value="support">💬 Suporte</option>
+                                        <option value="progression">🎯 Progressão</option>
+                                        <option value="commercial">💰 Comercial</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                        Modelo IA <span style="color: var(--danger-color);">*</span>
+                                    </label>
+                                    <select name="model" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary);">
+                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (Rápido)</option>
+                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Avançado)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Prompt -->
+                        <div class="form-section" style="margin-bottom: 24px;">
+                            <h3 style="font-size: 16px; color: var(--text-color); margin-bottom: 16px;">
+                                <i class="fas fa-code"></i> Prompt do Sistema
+                            </h3>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                    Instruções para o Agente <span style="color: var(--danger-color);">*</span>
+                                </label>
+                                <textarea name="systemPrompt" rows="6" required
+                                    placeholder="Você é um assistente especializado em... Suas responsabilidades incluem..."
+                                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary); font-family: 'Courier New', monospace; font-size: 13px; resize: vertical;"
+                                >${agent?.systemPrompt || ''}</textarea>
+                                <small style="color: var(--text-muted); display: block; margin-top: 4px;">
+                                    Define o comportamento e personalidade do agente. Seja específico e claro.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- RAG Sources -->
+                        <div class="form-section" style="margin-bottom: 24px;">
+                            <h3 style="font-size: 16px; color: var(--text-color); margin-bottom: 16px;">
+                                <i class="fas fa-database"></i> Fontes de Conhecimento (RAG)
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                    <input type="checkbox" name="ragSources" value="courses">
+                                    <span style="color: var(--text-color);">📚 Cursos e Programas</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="ragSources" value="techniques">
+                                    <span style="color: var(--text-color);">🥋 Técnicas e Golpes</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="ragSources" value="faqs">
+                                    <span style="color: var(--text-color);">❓ FAQs e Documentação</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="ragSources" value="evaluations">
+                                    <span style="color: var(--text-color);">📊 Avaliações e Feedbacks</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- MCP Tools -->
+                        <div class="form-section" style="margin-bottom: 24px;">
+                            <h3 style="font-size: 16px; color: var(--text-color); margin-bottom: 16px;">
+                                <i class="fas fa-tools"></i> Ferramentas MCP (Ações)
+                            </h3>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="mcpTools" value="getStudentData">
+                                    <div>
+                                        <div style="color: var(--text-color); font-weight: 500;">getStudentData</div>
+                                        <small style="color: var(--text-muted);">Buscar dados completos de alunos</small>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="mcpTools" value="getCourseData">
+                                    <div>
+                                        <div style="color: var(--text-color); font-weight: 500;">getCourseData</div>
+                                        <small style="color: var(--text-muted);">Buscar informações de cursos e turmas</small>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="mcpTools" value="executeQuery">
+                                    <div>
+                                        <div style="color: var(--text-color); font-weight: 500;">executeQuery</div>
+                                        <small style="color: var(--text-muted);">Executar consultas personalizadas no banco</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Settings -->
+                        <div class="form-section" style="margin-bottom: 24px;">
+                            <h3 style="font-size: 16px; color: var(--text-color); margin-bottom: 16px;">
+                                <i class="fas fa-sliders-h"></i> Configurações Avançadas
+                            </h3>
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                        Temperatura (Criatividade)
+                                    </label>
+                                    <input type="range" name="temperature" min="0" max="1" step="0.1" value="0.7"
+                                        oninput="this.nextElementSibling.textContent = this.value"
+                                        style="width: 100%;">
+                                    <span style="color: var(--text-muted); font-size: 14px;">0.7</span>
+                                </div>
+                                <div class="form-group">
+                                    <label style="display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500;">
+                                        Max Tokens
+                                    </label>
+                                    <input type="number" name="maxTokens" value="2048" min="256" max="8192" step="256"
+                                        style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background-secondary);">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="isActive" checked>
+                                    <span style="color: var(--text-color);">Agente ativo (disponível para uso)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                            <button type="button" onclick="document.getElementById('agent-form-modal').remove();" style="
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                border: 1px solid var(--border-color);
+                                background: transparent;
+                                color: var(--text-color);
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">Cancelar</button>
+                            <button type="submit" style="
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                border: none;
+                                background: var(--primary-color);
+                                color: white;
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">
+                                <i class="fas fa-save"></i> ${isEdit ? 'Salvar Alterações' : 'Criar Agente'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', formHtml);
+
+        // Form submission handler
+        document.getElementById('agent-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.saveAgent(new FormData(e.target));
+        });
+    }
+
+    /**
+     * Save agent (create or update)
+     * @param {FormData} formData - Form data
+     */
+    async saveAgent(formData) {
+        const agentData = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            specialization: formData.get('specialization'),
+            model: formData.get('model'),
+            systemPrompt: formData.get('systemPrompt'),
+            ragSources: formData.getAll('ragSources'),
+            mcpTools: formData.getAll('mcpTools'),
+            temperature: parseFloat(formData.get('temperature')),
+            maxTokens: parseInt(formData.get('maxTokens')),
+            isActive: formData.get('isActive') === 'on',
+            noCodeMode: true, // Always enforce no-code mode
+            organizationId: localStorage.getItem('activeOrganizationId') || 'a55ad715-2eb0-493c-996c-bb0f60bacec9'
+        };
+
+        try {
+            // TODO: Replace with actual API call
+            console.log('Creating agent:', agentData);
+            
+            // Simulated API call
+            // const response = await fetch('/api/agents', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(agentData)
+            // });
+            
+            this.showNotification('Agente criado com sucesso! (Backend em desenvolvimento)', 'success');
+            document.getElementById('agent-form-modal')?.remove();
+            
+            // Refresh agents list
+            // await this.loadAgents();
+        } catch (error) {
+            console.error('Error saving agent:', error);
+            this.showNotification('Erro ao salvar agente: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Toggle agent active status
+     * @param {string} agentId - Agent ID
+     */
+    async toggleAgent(agentId) {
+        try {
+            // TODO: Implement API call
+            console.log('Toggling agent:', agentId);
+            this.showNotification('Função em desenvolvimento', 'info');
+        } catch (error) {
+            console.error('Error toggling agent:', error);
+            this.showNotification('Erro ao alterar status do agente', 'error');
+        }
+    }
+
+    /**
+     * Delete agent
+     * @param {string} agentId - Agent ID
+     */
+    async deleteAgent(agentId) {
+        if (!confirm('Tem certeza que deseja excluir este agente? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+
+        try {
+            // TODO: Implement API call
+            console.log('Deleting agent:', agentId);
+            this.showNotification('Função em desenvolvimento', 'info');
+        } catch (error) {
+            console.error('Error deleting agent:', error);
+            this.showNotification('Erro ao excluir agente', 'error');
+        }
+    }
+
+    /**
+     * Open chat interface with agent
+     * @param {string} agentId - Agent ID
+     */
+    async chatWithAgent(agentId) {
+        // TODO: Implement chat interface
+        console.log('Opening chat with agent:', agentId);
+        this.showNotification('Interface de chat em desenvolvimento', 'info');
+    }
+
+    /**
+     * Load agents from API
+     */
+    async loadAgents() {
+        try {
+            // TODO: Replace with actual API call
+            // const response = await fetch('/api/agents');
+            // const agents = await response.json();
+            
+            // For now, render empty state
+            this.renderAgentsList([]);
+        } catch (error) {
+            console.error('Error loading agents:', error);
+            this.showNotification('Erro ao carregar agentes', 'error');
+        }
+    }
+
+    /**
+     * Filter agents by specialization and status
+     * @param {string|null} specialization - Specialization filter
+     * @param {string|null} status - Status filter (active/inactive)
+     */
+    async filterAgents(specialization, status) {
+        try {
+            // TODO: Implement filtering logic
+            // This will filter the agents array based on selected filters
+            console.log('Filtering agents:', { specialization, status });
+            
+            // For now, just reload all agents
+            await this.loadAgents();
+        } catch (error) {
+            console.error('Error filtering agents:', error);
+        }
     }
 
     /**

@@ -127,12 +127,199 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
                 settings.googleAdsCustomerId || ''
             );
             
-            // Redirect to CRM settings page
-            return reply.redirect('/crm?tab=settings&success=google-ads-connected');
+            // Redirect to CRM settings page with success indicator
+            // Use client-side routing by returning HTML with hash navigation
+            return reply.type('text/html').send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>✅ Google Ads Conectado com Sucesso</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            min-height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 20px;
+                        }
+                        .success-container {
+                            background: white;
+                            border-radius: 16px;
+                            padding: 3rem;
+                            max-width: 500px;
+                            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                            text-align: center;
+                            animation: slideUp 0.5s ease;
+                        }
+                        @keyframes slideUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(20px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        .success-icon {
+                            font-size: 4rem;
+                            margin-bottom: 1rem;
+                            animation: pulse 0.8s ease infinite;
+                        }
+                        @keyframes pulse {
+                            0%, 100% { transform: scale(1); }
+                            50% { transform: scale(1.1); }
+                        }
+                        h1 {
+                            color: #10b981;
+                            font-size: 1.75rem;
+                            margin-bottom: 1rem;
+                        }
+                        p {
+                            color: #6b7280;
+                            font-size: 1rem;
+                            margin-bottom: 0.5rem;
+                            line-height: 1.6;
+                        }
+                        .loading-text {
+                            color: #9ca3af;
+                            font-size: 0.9rem;
+                            margin-top: 2rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 0.5rem;
+                        }
+                        .dot {
+                            display: inline-block;
+                            width: 8px;
+                            height: 8px;
+                            background: #667eea;
+                            border-radius: 50%;
+                            animation: bounce 1.4s infinite;
+                        }
+                        .dot:nth-child(2) { animation-delay: 0.2s; }
+                        .dot:nth-child(3) { animation-delay: 0.4s; }
+                        @keyframes bounce {
+                            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+                            40% { transform: scale(1); opacity: 1; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="success-container">
+                        <div class="success-icon">✅</div>
+                        <h1>Conectado com Sucesso!</h1>
+                        <p>Google Ads foi integrado à sua conta Academia.</p>
+                        <p>Você será redirecionado para as configurações em alguns segundos...</p>
+                        <div class="loading-text">
+                            Redirecionando<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                    </div>
+                    <script>
+                        // Redirect to SPA route with hash navigation after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = '/#crm?tab=settings&success=google-ads-connected';
+                        }, 2000);
+                    </script>
+                </body>
+                </html>
+            `);
             
         } catch (error: any) {
             logger.error('Error in OAuth callback:', error);
-            return reply.redirect('/crm?tab=settings&error=google-ads-connection-failed');
+            return reply.type('text/html').send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>❌ Erro na Conexão</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            min-height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 20px;
+                        }
+                        .error-container {
+                            background: white;
+                            border-radius: 16px;
+                            padding: 3rem;
+                            max-width: 500px;
+                            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                            text-align: center;
+                            animation: slideUp 0.5s ease;
+                        }
+                        @keyframes slideUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(20px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        .error-icon {
+                            font-size: 4rem;
+                            margin-bottom: 1rem;
+                        }
+                        h1 {
+                            color: #ef4444;
+                            font-size: 1.75rem;
+                            margin-bottom: 1rem;
+                        }
+                        p {
+                            color: #6b7280;
+                            font-size: 1rem;
+                            margin-bottom: 0.5rem;
+                            line-height: 1.6;
+                        }
+                        .retry-link {
+                            display: inline-block;
+                            margin-top: 2rem;
+                            padding: 0.75rem 1.5rem;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            text-decoration: none;
+                            border-radius: 8px;
+                            transition: transform 0.3s ease;
+                        }
+                        .retry-link:hover {
+                            transform: translateY(-2px);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="error-container">
+                        <div class="error-icon">❌</div>
+                        <h1>Erro na Conexão</h1>
+                        <p>Não foi possível conectar sua conta Google Ads.</p>
+                        <p>Possíveis causas:</p>
+                        <ul style="text-align: left; color: #6b7280; margin: 1rem 0;">
+                            <li>E-mail não autorizado (adicione em Test Users no Google Console)</li>
+                            <li>Credenciais inválidas ou expiradas</li>
+                            <li>Redirect URI não registrado</li>
+                        </ul>
+                        <a href="/#crm?tab=settings" class="retry-link">🔄 Tentar Novamente</a>
+                    </div>
+                </body>
+                </html>
+            `);
         }
     });
     
@@ -349,16 +536,22 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
             
             return reply.send({
                 success: true,
-                message: `Successfully synced ${count} campaigns`,
-                data: { count }
+                message: `✅ Successfully synced ${count} campaigns`,
+                data: { count, synced: true }
             });
             
         } catch (error: any) {
-            logger.error('Error syncing campaigns:', error);
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            logger.error('❌ Error syncing campaigns endpoint', {
+                message: errorMsg,
+                stack: error?.stack
+            });
+            
+            // Use the specific error message from the service (with user-friendly instructions)
             return reply.code(500).send({
                 success: false,
-                message: 'Failed to sync campaigns',
-                error: error.message
+                message: errorMsg, // This will be the user-friendly message from GoogleAdsService
+                error: errorMsg
             });
         }
     });

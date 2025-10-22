@@ -23,6 +23,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "seed:demo": "tsx scripts/seed-demo-data.ts",
     "seed:quick": "tsx scripts/seed-quick-demo.ts",
+    "seed:graduation": "tsx scripts/seed-graduation-test.ts",
     "clean:demo": "tsx scripts/clean-demo-safe.ts",
     "reset:demo": "tsx scripts/reset-demo.ts",
     "reset:demo:quick": "tsx scripts/reset-demo.ts --quick",
@@ -36,7 +37,10 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "cert:generate": "powershell -ExecutionPolicy Bypass -File ./scripts/generate-cert.ps1",
+    "cert:trust": "powershell -ExecutionPolicy Bypass -File ./scripts/trust-cert.ps1",
+    "dev:https": "set \"USE_HTTPS=true\" && set \"NODE_OPTIONS=-r tsconfig-paths/register\" && tsx watch src/server.ts"
   },
   "keywords": [
     "krav-maga",

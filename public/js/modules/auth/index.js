@@ -1,420 +1,235 @@
-console.log('🔐 Auth Module (Single-File) - Script loaded');
+﻿// AUTH MODULE v2.0 - Supabase Integration
+console.log('Auth Module v2.0 loaded');
 
-// Supabase configuration
-const supabaseUrl = 'https://yawfuymgwukericlhgxh.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
+const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
+const BACKEND_URL = 'http://localhost:3000';
 
-// Global supabase client - will be initialized when available
 let supabaseClient = null;
 
-// Initialize Supabase when available
 function initializeSupabase() {
   if (window.supabase && !supabaseClient) {
-    console.log('🔐 Initializing Supabase client...');
-    supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        autoRefreshToken: true,     // ✅ Renovar token automaticamente
-        persistSession: true,        // ✅ Manter sessão após F5
-        detectSessionInUrl: true,    // ✅ Detectar session após OAuth redirect
-        flowType: 'pkce',           // ✅ Flow seguro para OAuth
-        storage: window.localStorage // ✅ Usar localStorage para persistência
-      }
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true, flowType: 'pkce' }
     });
-    console.log('✅ Supabase client initialized with session persistence');
     return true;
   }
   return false;
 }
 
-// Check for Supabase availability periodically
-const supabaseCheckInterval = setInterval(() => {
-  if (initializeSupabase()) {
-    clearInterval(supabaseCheckInterval);
-    console.log('🔐 Supabase initialization complete');
-  }
-}, 100);
+if (typeof window !== 'undefined') {
+  const checkInterval = setInterval(() => {
+    if (initializeSupabase()) clearInterval(checkInterval);
+  }, 100);
+}
 
 const AuthModule = {
-  container: document.body,
-  initialized: false,
+  container: null,
   currentUser: null,
-  currentOrgId: null,
+  currentOrganization: null,
+  authAPI: null,
 
-  async init() {
-    console.log('🔐 Auth Module - Starting init...');
-    this.container = document.body;
-
-    // Wait for Supabase to be ready
-    console.log('🔐 Auth Module - Waiting for Supabase...');
-    let attempts = 0;
-    while (!supabaseClient && attempts < 50) { // 5 seconds max
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-
-    if (!supabaseClient) {
-      throw new Error('Supabase client not available after timeout');
-    }
-
-    console.log('🔐 Auth Module - Rendering login form...');
+  async init(container) {
+    this.container = container || document.body;
+    await this.waitForSupabase();
+    await this.initializeAPI();
     this.renderLoginForm();
-    console.log('🔐 Auth Module - Setting up events...');
     this.setupEvents();
-
-    // Check current session on initialization
-    const checkSession = async () => {
-      try {
-        console.log('🔐 [DEBUG] Checking session...');
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
-        
-        console.log('🔐 [DEBUG] Session check result:', { 
-          hasSession: !!session, 
-          hasError: !!error,
-          errorMessage: error?.message 
-        });
-
-        if (session && !error) {
-          console.log('🔐 ✅ Existing session found!');
-          console.log('🔐 [DEBUG] Session details:', {
-            userId: session.user?.id,
-            email: session.user?.email,
-            expiresAt: new Date(session.expires_at * 1000).toLocaleString()
-          });
-          
-          this.currentUser = session.user;
-          this.currentOrgId = session.user.app_metadata?.orgId || localStorage.getItem('orgId');
-          
-          // Salvar token no localStorage
-          localStorage.setItem('token', session.access_token);
-          console.log('🔐 ✅ Token saved to localStorage');
-
-          // If we're on login page and user is already logged in, redirect to dashboard
-          const currentPath = window.location.pathname;
-          if (currentPath === '/index.html' || currentPath === '/') {
-            console.log('🔐 User already logged in, redirecting to dashboard...');
-            setTimeout(() => {
-              window.location.href = '/dashboard.html';
-            }, 1000); // Small delay to show login form briefly
-          }
-        } else {
-          console.log('🔐 ❌ No existing session, showing login form');
-          if (error) {
-            console.error('🔐 [ERROR] Session check error:', error);
-          }
-        }
-      } catch (error) {
-        console.error('🔐 [ERROR] Fatal error checking session:', error);
-      }
-    };
-
-    // Check session on init
-    checkSession();
-
-    console.log('🔐 Auth Module - Setting up auth state change listener...');
-    // Session persistence with Supabase onAuthStateChange
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      console.log('🔐 ⚡ [AUTH STATE CHANGE]', event, session ? 'with session' : 'no session');
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        console.log('🔐 ✅ User signed in or token refreshed!');
-        console.log('🔐 [DEBUG] Session data:', {
-          userId: session?.user?.id,
-          email: session?.user?.email,
-          expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'unknown'
-        });
-
-        this.currentUser = session.user;
-        this.currentOrgId = session.user.app_metadata?.orgId || localStorage.getItem('orgId');
-        
-        // ⭐ SALVAR TOKEN
-        localStorage.setItem('token', session.access_token);
-        console.log('🔐 ✅ Token saved to localStorage:', session.access_token.substring(0, 20) + '...');
-        
-        // Verificar se salvou
-        const savedToken = localStorage.getItem('token');
-        console.log('🔐 [DEBUG] Token verification:', savedToken ? '✅ Saved successfully' : '❌ FAILED TO SAVE');
-        
-        // Dispatch for other modules
-        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
-
-        // Only redirect if we're on the login page and not already going to dashboard
-        const currentPath = window.location.pathname;
-        if (currentPath === '/index.html' || currentPath === '/') {
-          console.log('🔐 Redirecting to dashboard from login page...');
-          window.location.href = '/dashboard.html';
-        }
-      } else if (event === 'SIGNED_OUT') {
-        localStorage.removeItem('token');
-        this.currentUser = null;
-        this.currentOrgId = null;
-        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: event }));
-
-        // Only redirect to login if we're not already on the login page
-        const currentPath = window.location.pathname;
-        if (currentPath !== '/index.html' && currentPath !== '/') {
-          console.log('🔐 Redirecting to login from other page...');
-          window.location.href = '/index.html';
-        }
-      } else if (event === 'PASSWORD_RECOVERY') {
-        // Handle password reset redirect
-        this.showMessage('Senha redefinida com sucesso! Você pode fazer login agora.', 'success');
-      }
-    });
-
-    console.log('🔐 Auth Module - Registering globally...');
-    // Register module globally
+    await this.checkSession();
+    this.setupAuthStateListener();
     window.authModule = this;
-
-    // Dispatch module loaded event
-    if (window.app) {
-      window.app.dispatchEvent('module:loaded', { name: 'auth' });
-    }
-
-    this.initialized = true;
-    console.log('✅ Auth Module - Loaded (Single-File)');
-
+    if (window.app) window.app.dispatchEvent('module:loaded', { name: 'auth' });
     return this;
   },
 
+  async waitForSupabase() {
+    let attempts = 0;
+    while (!supabaseClient && attempts < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      attempts++;
+    }
+    if (!supabaseClient) throw new Error('Supabase timeout');
+  },
+
+  async initializeAPI() {
+    if (typeof window.waitForAPIClient === 'function') await window.waitForAPIClient();
+    else {
+      let attempts = 0;
+      while (!window.createModuleAPI && attempts < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
+      }
+    }
+    if (window.createModuleAPI) this.authAPI = window.createModuleAPI('Auth');
+  },
+
+  async checkSession() {
+    try {
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      if (error) return;
+      if (session) {
+        await this.syncUserWithBackend(session);
+        this.currentUser = session.user;
+        this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
+        // Session válida - esconder overlay de login
+        const authOverlay = document.getElementById('auth-overlay');
+        if (authOverlay) authOverlay.style.display = 'none';
+        console.log('✅ Session válida - usuário autenticado');
+      } else {
+        // Sem session - mostrar login
+        const authOverlay = document.getElementById('auth-overlay');
+        if (authOverlay) authOverlay.style.display = 'block';
+        this.renderLoginForm();
+      }
+    } catch (e) { console.error('Session check error:', e); }
+  },
+
+  setupAuthStateListener() {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await this.syncUserWithBackend(session);
+        this.currentUser = session.user;
+        this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
+        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
+        // Após login, recarregar página para mostrar dashboard com menu lateral
+        if (event === 'SIGNED_IN') {
+          console.log('✅ Login realizado - recarregando dashboard');
+          window.location.reload();
+        }
+      } else if (event === 'SIGNED_OUT') {
+        this.currentUser = null;
+        this.currentOrganization = null;
+        ['token', 'organizationId', 'userId', 'userRole'].forEach(k => localStorage.removeItem(k));
+        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
+        // Após logout, recarregar página para mostrar login
+        console.log('✅ Logout realizado - recarregando para login');
+        window.location.reload();
+      }
+    });
+  },
+
+  async syncUserWithBackend(session) {
+    try {
+      const user = session.user;
+      let orgId = user.user_metadata?.organizationId || user.app_metadata?.organizationId;
+      
+      // Hardcoded organization for trcampos@gmail.com
+      if (user.email === 'trcampos@gmail.com') {
+        orgId = '452c0b35-1822-4890-851e-922356c812fb';
+        console.log('✅ Using hardcoded organizationId for trcampos@gmail.com');
+      }
+      
+      if (!orgId) {
+        const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email);
+        if (fetchedOrgId) {
+          orgId = fetchedOrgId;
+          localStorage.setItem('organizationId', fetchedOrgId);
+        }
+        if (!orgId) {
+          console.warn('⚠️ No organizationId found for user');
+          return;
+        }
+      }
+      
+      localStorage.setItem('token', session.access_token);
+      localStorage.setItem('organizationId', orgId);
+      localStorage.setItem('userId', user.id);
+      localStorage.setItem('userEmail', user.email);
+      console.log(`✅ User synced: ${user.email} → Org: ${orgId.substring(0, 8)}...`);
+    } catch (e) { console.error('Sync error:', e); }
+  },
+
+  async fetchOrganizationFromBackend(email) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/users/by-email?email=${encodeURIComponent(email)}`);
+      if (res.ok) return (await res.json()).data?.organizationId;
+    } catch (e) { console.error('Fetch org error:', e); }
+    return null;
+  },
+
   renderLoginForm() {
-    // Check if we're in development mode (localhost)
-    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
+    const isDev = window.location.hostname === 'localhost';
     this.container.innerHTML = `
       <div class="module-header-premium">
-        <div class="breadcrumb">
-          <span class="breadcrumb-item active">Login</span>
-        </div>
-        <h1 class="module-title-premium">🔐 Login</h1>
-        <div class="module-subtitle">Acesse sua conta na academia</div>
+        <h1>Login</h1>
+        <p>Powered by Supabase</p>
       </div>
-
       <div class="data-card-premium">
-        ${isDevelopment ? `
-        <div class="dev-login-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: white;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <span style="font-size: 1.2rem;">🔧</span>
-            <strong>Modo Desenvolvimento</strong>
-          </div>
-          <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
-            Auto-login disponível com usuário de desenvolvimento
-          </p>
-          <button type="button" id="dev-auto-login-btn" class="btn btn-primary" style="margin-top: 1rem; width: 100%; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
-            ⚡ Login Automático (dev@academia.com)
-          </button>
-        </div>
-        ` : ''}
-        
-        <form id="login-form" class="auth-form">
+        ${isDev ? '<div style="background:#667eea;color:white;padding:1rem;border-radius:8px;margin-bottom:1rem"><strong>Dev Mode</strong><p>Use trcampos@gmail.com</p></div>' : ''}
+        <form id="login-form">
           <div class="form-group">
             <label for="email">Email *</label>
-            <input type="email" id="email" name="email" required ${isDevelopment ? 'value="dev@academia.com"' : ''}>
+            <input type="email" id="email" required placeholder="seu@email.com" ${isDev ? 'value="trcampos@gmail.com"' : ''}>
           </div>
-
           <div class="form-group">
             <label for="password">Senha *</label>
-            <input type="password" id="password" name="password" required ${isDevelopment ? 'value="dev123"' : ''}>
+            <input type="password" id="password" required placeholder="">
           </div>
-
-          <button type="submit" class="btn btn-primary">Entrar</button>
+          <button type="submit" class="btn btn-primary" id="login-btn">Entrar</button>
         </form>
-
-        <div id="auth-message"></div>
-
-        <div class="social-login">
-          <button type="button" id="google-signin" class="btn btn-secondary">
-            <i class="fab fa-google"></i> Google
-          </button>
-        </div>
+        <div id="auth-message" style="margin-top:1rem"></div>
+        <div style="text-align:center;margin:2rem 0;color:#999"><span style="background:white;padding:0 1rem">ou</span></div>
+        <button type="button" id="google-signin" class="btn btn-secondary" style="width:100%">Google</button>
+        <div style="text-align:center;margin-top:2rem"><a href="/reset-password.html" style="color:#667eea">Esqueceu sua senha?</a></div>
       </div>
     `;
   },
 
   setupEvents() {
     const form = document.getElementById('login-form');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await this.handleLogin();
-      });
-    }
-
-    // Dev auto-login button
-    const devAutoLoginBtn = document.getElementById('dev-auto-login-btn');
-    if (devAutoLoginBtn) {
-      devAutoLoginBtn.addEventListener('click', async () => {
-        await this.handleDevAutoLogin();
-      });
-    }
-
-    // Google sign-in button
+    if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleLogin(); });
     const googleBtn = document.getElementById('google-signin');
-    if (googleBtn) {
-      googleBtn.addEventListener('click', async () => {
-        await this.handleGoogleSignIn();
-      });
-    }
-  },
-
-  async handleDevAutoLogin() {
-    console.log('🔧 [DEV] Auto-login triggered...');
-    
-    try {
-      const devAutoLoginBtn = document.getElementById('dev-auto-login-btn');
-      if (devAutoLoginBtn) {
-        devAutoLoginBtn.disabled = true;
-        devAutoLoginBtn.textContent = '⏳ Criando usuário e fazendo login...';
-      }
-
-      // Call backend to create/get dev user
-      const response = await fetch('http://localhost:3000/api/dev-auth/auto-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to auto-login');
-      }
-
-      console.log('🔧 [DEV] Auto-login successful:', result.data.user);
-
-      // Save token and user data
-      localStorage.setItem('token', result.data.token);
-      localStorage.setItem('orgId', result.data.user.organizationId);
-      localStorage.setItem('userId', result.data.user.id);
-      localStorage.setItem('userRole', result.data.user.role);
-      localStorage.setItem('userEmail', result.data.user.email);
-      localStorage.setItem('userName', `${result.data.user.firstName} ${result.data.user.lastName}`);
-
-      this.currentUser = result.data.user;
-      this.currentOrgId = result.data.user.organizationId;
-
-      console.log('🔧 [DEV] Saved data to localStorage:', {
-        token: result.data.token.substring(0, 20) + '...',
-        orgId: result.data.user.organizationId,
-        userId: result.data.user.id,
-        role: result.data.user.role
-      });
-
-      // Show success message
-      this.showMessage(`✅ Login automático bem-sucedido! Bem-vindo, ${result.data.user.firstName}!`, 'success');
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = '/dashboard.html';
-      }, 1000);
-
-    } catch (error) {
-      console.error('🔧 [DEV] Auto-login error:', error);
-      this.showMessage('❌ Erro no auto-login: ' + error.message, 'error');
-      
-      const devAutoLoginBtn = document.getElementById('dev-auto-login-btn');
-      if (devAutoLoginBtn) {
-        devAutoLoginBtn.disabled = false;
-        devAutoLoginBtn.textContent = '⚡ Login Automático (dev@academia.com)';
-      }
-    }
+    if (googleBtn) googleBtn.addEventListener('click', async () => await this.handleGoogleSignIn());
   },
 
   async handleLogin() {
-    if (!supabaseClient) {
-      this.showMessage('Sistema de autenticação não está pronto. Tente novamente.', 'error');
-      return;
-    }
-
-    const email = document.getElementById('email').value;
+    if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-      this.showMessage('Preencha todos os campos', 'error');
-      return;
-    }
-
+    const btn = document.getElementById('login-btn');
+    if (!email || !password) { this.showMessage('Preencha todos os campos', 'error'); return; }
     try {
-      console.log('🔐 [LOGIN] Attempting login with email:', email);
+      if (btn) { btn.disabled = true; btn.textContent = 'Autenticando...'; }
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        console.error('🔐 [LOGIN ERROR]', error);
-        throw error;
-      }
-
-      console.log('🔐 ✅ Login successful!');
-      console.log('🔐 [DEBUG] Session data:', {
-        userId: data.session?.user?.id,
-        email: data.session?.user?.email,
-        hasAccessToken: !!data.session?.access_token
-      });
-
-      // Salvar token explicitamente
-      localStorage.setItem('token', data.session.access_token);
-      console.log('🔐 ✅ Token saved to localStorage');
-      
-      // Verificar se salvou
-      const savedToken = localStorage.getItem('token');
-      console.log('🔐 [DEBUG] Token verification:', savedToken ? '✅ Saved' : '❌ FAILED');
-      
-      // onAuthStateChange should handle redirect, but force it just in case
-      console.log('🔐 Redirecting to dashboard...');
-      window.location.href = '/dashboard.html';
-    } catch (error) {
-      console.error('🔐 [LOGIN ERROR]', error);
-      this.showMessage(error.message, 'error');
+      if (error) throw error;
+      this.showMessage('Login bem-sucedido!', 'success');
+    } catch (e) {
+      let msg = e.message;
+      if (msg.includes('Invalid login')) msg = 'Email ou senha incorretos';
+      this.showMessage(msg, 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
     }
   },
 
   async handleGoogleSignIn() {
-    if (!supabaseClient) {
-      this.showMessage('Sistema de autenticação não está pronto. Tente novamente.', 'error');
-      return;
-    }
-
+    if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
     try {
-      console.log('🔐 Iniciando Google OAuth...');
-      
-      // ✅ Redirect para a mesma página (index.html) - Supabase detectará automaticamente
-      const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/index.html',
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+        options: { redirectTo: window.location.origin + '/index.html' }
       });
-      
       if (error) throw error;
-
-      console.log('🔐 Google OAuth iniciado, aguardando redirect...', data);
-      // Não precisa redirecionar manualmente - o Supabase faz isso
-      
-    } catch (error) {
-      console.error('🔐 Erro no Google OAuth:', error);
-      this.showMessage(error.message, 'error');
-    }
+    } catch (e) { this.showMessage(e.message, 'error'); }
   },
 
-  showMessage(message, type) {
-    const messageEl = document.getElementById('auth-message');
-    if (messageEl) {
-      messageEl.innerHTML = `<div class="notification-${type}">${message}</div>`;
-    }
+  async handleLogout() {
+    if (!supabaseClient) return;
+    try {
+      await supabaseClient.auth.signOut();
+    } catch (e) { console.error('Logout error:', e); }
+  },
+
+  showMessage(msg, type) {
+    const el = document.getElementById('auth-message');
+    if (!el) return;
+    const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+    const icons = { success: '', error: '', warning: '', info: 'ℹ' };
+    el.innerHTML = `<div style="padding:1rem;border-radius:8px;background:${colors[type]}22;border:1px solid ${colors[type]};color:${colors[type]}">${icons[type]} ${msg}</div>`;
+    if (type === 'success') setTimeout(() => el.innerHTML = '', 5000);
   }
 };
 
-// Global registration
 window.AuthModule = AuthModule;
 window.authModule = AuthModule;
-
-// Initialization function
-window.initAuthModule = async function(container) {
-  AuthModule.container = container || document.body;
-  return await AuthModule.init();
-};
-
-console.log('🔐 Auth Module (Single-File) loaded and ready');
+window.initAuthModule = async (c) => { AuthModule.container = c || document.body; return await AuthModule.init(c); };
+window.logout = async () => { if (window.authModule) await window.authModule.handleLogout(); };

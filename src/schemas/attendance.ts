@@ -3,6 +3,7 @@ import { CheckInMethod, AttendanceStatus } from '@/types';
 
 export const checkInSchema = z.object({
   classId: z.string().uuid('ID da aula inválido'),
+  studentId: z.string().uuid('ID do estudante inválido').optional(), // ✅ KIOSK: studentId opcional (presente apenas no kiosk)
   method: z.nativeEnum(CheckInMethod).default(CheckInMethod.MANUAL),
   location: z.string().optional(),
   notes: z.string().optional(),

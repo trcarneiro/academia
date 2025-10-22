@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in Kiosk - UX Preview 50x50</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .preview-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .breakpoint-selector {
+            padding: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .breakpoint-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .breakpoint-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .breakpoint-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .viewport {
+            padding: 2rem;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            border: 2px dashed #ccc;
+            margin: 2rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        /* Desktop - 1440px */
+        .viewport.desktop {
+            width: 100%;
+            max-width: 1440px;
+        }
+
+        /* Tablet - 1024px */
+        .viewport.tablet {
+            width: 100%;
+            max-width: 1024px;
+        }
+
+        /* Mobile - 768px */
+        .viewport.mobile {
+            width: 100%;
+            max-width: 768px;
+        }
+
+        /* Small Mobile - 480px */
+        .viewport.small-mobile {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* Camera Section Grid */
+        .camera-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+            width: 100%;
+        }
+
+        /* Responsive Grids */
+        .tablet .camera-section {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .mobile .camera-section {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .small-mobile .camera-section {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        /* Camera Container */
+        .camera-container {
+            position: relative;
+            aspect-ratio: 3 / 4;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 3px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tablet .camera-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .mobile .camera-container {
+            width: 100%;
+        }
+
+        .checkin-video-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .face-detection-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            max-width: 250px;
+            max-height: 300px;
+            border: 3px solid #667eea;
+            border-radius: 20px;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .face-status {
+            position: absolute;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .status-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Detection Stats */
+        .detection-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem 1rem;
+        }
+
+        .tablet .detection-stats {
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .mobile .detection-stats {
+            padding: 0.5rem;
+            gap: 1rem;
+        }
+
+        .small-mobile .detection-stats {
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .mobile .stat-card {
+            padding: 1rem;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .small-mobile .stat-card {
+            padding: 0.75rem;
+            flex-direction: column;
+        }
+
+        .stat-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stat-label {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .mobile .stat-label {
+            font-size: 1rem;
+        }
+
+        .quality-badge,
+        .match-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .mobile .quality-badge,
+        .mobile .match-badge {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+        .quality-badge {
+            background: rgba(0, 208, 132, 0.1);
+            color: #00d084;
+        }
+
+        .quality-badge::before {
+            content: '●';
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .match-badge {
+            background: rgba(0, 208, 132, 0.1);
+            color: #00d084;
+        }
+
+        /* Fallback Section */
+        .fallback-section {
+            grid-column: 1 / -1;
+            background: #fafafa;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .mobile .fallback-section {
+            padding: 1.5rem;
+        }
+
+        .small-mobile .fallback-section {
+            padding: 1rem;
+        }
+
+        .fallback-section h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.25rem;
+            color: #333;
+        }
+
+        .mobile .fallback-section h3 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .mobile .search-box {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            font-size: 1.125rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            flex: 0 0 auto;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .mobile .search-btn {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* History Section */
+        .checkins-history {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .mobile .history-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .history-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #333;
+        }
+
+        .checkin-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .history-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .mobile .history-list {
+            grid-template-columns: 1fr;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .info-section {
+            padding: 2rem;
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            margin: 2rem;
+        }
+
+        .info-section h3 {
+            margin: 0 0 1rem 0;
+            color: #667eea;
+            font-size: 1.125rem;
+        }
+
+        .info-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .info-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer {
+            padding: 2rem;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="header">
+            <h1>📸 Check-in Kiosk</h1>
+            <p>UX Otimizada - Preview 50x50 Layout</p>
+        </div>
+
+        <div class="breakpoint-selector">
+            <button class="breakpoint-btn active" onclick="switchBreakpoint('desktop')">
+                🖥️ Desktop (1440px)
+            </button>
+            <button class="breakpoint-btn" onclick="switchBreakpoint('tablet')">
+                📱 Tablet (1024px)
+            </button>
+            <button class="breakpoint-btn" onclick="switchBreakpoint('mobile')">
+                📱 Mobile (768px)
+            </button>
+            <button class="breakpoint-btn" onclick="switchBreakpoint('small-mobile')">
+                📱 Small (480px)
+            </button>
+        </div>
+
+        <div class="viewport desktop" id="viewport">
+            <div class="camera-section">
+                <div class="camera-container">
+                    <div class="checkin-video-placeholder">
+                        📹 CAMERA
+                    </div>
+                    <div class="face-detection-overlay"></div>
+                    <div class="face-status">
+                        <div class="status-spinner"></div>
+                        <span>📍 Detectando rosto...</span>
+                    </div>
+                </div>
+
+                <div class="detection-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">Qualidade:</span>
+                        <span class="quality-badge">EXCELENTE</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Status:</span>
+                        <span class="match-badge">👤 ENCONTRADO</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fallback-section">
+                <h3>💡 Ou busque manualmente:</h3>
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        placeholder="Digite matrícula, CPF ou nome..." 
+                        class="search-input"
+                    />
+                    <button class="search-btn">🔍 Buscar</button>
+                </div>
+            </div>
+
+            <div class="checkins-history">
+                <div class="history-header">
+                    <h3>📋 Check-ins de Hoje</h3>
+                    <span class="checkin-badge">0</span>
+                </div>
+                <div class="history-list">
+                    <div class="empty-state">
+                        <p>Nenhum check-in registrado ainda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>✨ Melhorias Implementadas</h3>
+            <ul>
+                <li><strong>Layout 50x50:</strong> Camera em 50% da tela (grid 2-colunas no desktop, 1-coluna em mobile)</li>
+                <li><strong>Responsivo:</strong> Breakpoints em 480px, 768px, 1024px e 1440px</li>
+                <li><strong>Animações:</strong> Spinner face detection + pulsing quality badge</li>
+                <li><strong>Color States:</strong> Quality badges (Good/Fair/Poor) + Match badges (Found/Waiting/Not Found)</li>
+                <li><strong>Mobile-First:</strong> Layouts empilhados, buttons full-width, inputs adaptáveis</li>
+                <li><strong>Design Premium:</strong> Gradientes, shadows, hover effects, transitions suaves</li>
+                <li><strong>Acessibilidade:</strong> Contrast ratios, readable fonts, touch-friendly spacing</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Preview Interativo - Versão 1.0 | Check-in Kiosk UX Otimizada | 11 de janeiro de 2025</p>
+        </div>
+    </div>
+
+    <script>
+        function switchBreakpoint(bp) {
+            // Remove all active classes
+            document.querySelectorAll('.breakpoint-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Remove all viewport classes
+            const viewport = document.getElementById('viewport');
+            viewport.classList.remove('desktop', 'tablet', 'mobile', 'small-mobile');
+            
+            // Add selected class
+            event.target.classList.add('active');
+            viewport.classList.add(bp);
+        }
+    </script>
+</body>
+</html>

@@ -60,6 +60,13 @@ const CrmModule = {
 
     async initializeAPI() {
         console.log('🌐 Initializing API Client for CRM...');
+        
+        // Ensure organization context is available before proceeding
+        if (typeof window.ensureOrganizationContext === 'function') {
+            await window.ensureOrganizationContext();
+            console.log('✅ Organization context ready:', window.currentOrganizationId);
+        }
+        
         await waitForAPIClient();
         this.moduleAPI = window.createModuleAPI('CRM');
         console.log('✅ CRM API helper initialized');
@@ -1442,7 +1449,7 @@ const CrmModule = {
                             </p>
 
                             <div class="action-buttons">
-                                <button class="btn-primary" onclick="crm.syncGoogleAdsCampaigns()">
+                                <button class="btn-primary" onclick="crm.syncGoogleAdsCampaigns(event)">
                                     <i class="fas fa-sync"></i>
                                     Sincronizar Campanhas
                                 </button>
@@ -1657,19 +1664,44 @@ const CrmModule = {
                 
                 // Update status badge
                 const badge = document.getElementById('google-ads-status-badge');
+                const btnConnect = document.getElementById('btn-connect-google-ads');
+                const connectionStatus = document.getElementById('connection-status');
+                
                 if (connected) {
-                    badge.innerHTML = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Conectado</span>';
+                    badge.innerHTML = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> ✅ Conectado</span>';
+                    if (btnConnect) {
+                        btnConnect.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Conectado';
+                        btnConnect.disabled = true;
+                        btnConnect.style.backgroundColor = '#10b981';
+                    }
+                    if (connectionStatus) {
+                        connectionStatus.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> ✅ Google Ads conectado com sucesso! Seus dados estão sendo sincronizados.</div>';
+                    }
                     document.getElementById('campaigns-section').style.display = 'block';
                     document.getElementById('conversion-section').style.display = 'block';
-                    document.getElementById('btn-connect-google-ads').style.display = 'none';
                     document.getElementById('btn-test-connection').style.display = 'inline-block';
                     document.getElementById('btn-disconnect').style.display = 'inline-block';
                 } else if (clientId && clientSecret && developerToken) {
-                    badge.innerHTML = '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Credenciais Salvas - Conectar</span>';
-                    document.getElementById('btn-connect-google-ads').style.display = 'inline-block';
+                    badge.innerHTML = '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Credenciais Salvas</span>';
+                    if (btnConnect) {
+                        btnConnect.innerHTML = '<i class="fas fa-link"></i> Conectar Google Ads';
+                        btnConnect.disabled = false;
+                        btnConnect.style.backgroundColor = '';
+                    }
+                    if (connectionStatus) {
+                        connectionStatus.innerHTML = '<div class="alert alert-warning"><i class="fas fa-info-circle"></i> Credenciais salvas. Clique no botão abaixo para autorizar o acesso.</div>';
+                    }
                     console.log('[GOOGLE ADS] Credentials saved, ready to connect');
                 } else {
                     badge.innerHTML = '<span class="badge badge-secondary"><i class="fas fa-times-circle"></i> Não Configurado</span>';
+                    if (btnConnect) {
+                        btnConnect.innerHTML = '<i class="fas fa-link"></i> Conectar Google Ads';
+                        btnConnect.disabled = false;
+                        btnConnect.style.backgroundColor = '';
+                    }
+                    if (connectionStatus) {
+                        connectionStatus.innerHTML = '<div class="alert alert-secondary"><i class="fas fa-exclamation-circle"></i> Configure e salve as credenciais para começar.</div>';
+                    }
                     console.log('[GOOGLE ADS] No credentials saved');
                 }
 
@@ -1785,37 +1817,181 @@ const CrmModule = {
     },
 
     async testGoogleAdsConnection() {
+        const statusEl = document.getElementById('connection-status');
+        
+        const tests = [
+            { name: 'Cliente ID configurado', key: 'clientId' },
+            { name: 'Client Secret configurado', key: 'clientSecret' },
+            { name: 'Developer Token configurado', key: 'developerToken' },
+            { name: 'Customer ID configurado', key: 'customerId' },
+            { name: 'Refresh Token válido', key: 'refreshToken' },
+            { name: 'Conexão com Google Ads API', key: 'apiConnection' }
+        ];
+        
         try {
-            document.getElementById('connection-status').innerHTML = '<div class="spinner-small"></div> Testando conexão...';
+            // Show progress container
+            statusEl.innerHTML = `
+                <div class="test-progress-container">
+                    <div class="test-progress-header">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Testando conexão...</span>
+                    </div>
+                    <div class="test-progress-list" id="test-progress-list"></div>
+                    <div class="test-progress-bar">
+                        <div class="test-progress-fill" id="test-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            `;
+            
+            const listEl = document.getElementById('test-progress-list');
+            const progressBar = document.getElementById('test-progress-fill');
+            
+            // Get settings from API
+            await this.updateTestProgress(listEl, progressBar, 0, tests.length, 
+                'Carregando configurações', 'testing');
+            
+            const settingsResponse = await this.moduleAPI.request('/api/google-ads/auth/status');
+            const settings = settingsResponse?.data || {};
+            
+            // Test 1: Client ID
+            await this.updateTestProgress(listEl, progressBar, 0, tests.length, 
+                tests[0].name, 'testing');
+            await this.sleep(300);
+            const hasClientId = !!settings.clientId?.trim();
+            await this.updateTestProgress(listEl, progressBar, 1, tests.length, 
+                tests[0].name, hasClientId ? 'success' : 'error');
+            
+            if (!hasClientId) {
+                throw new Error('Client ID não configurado');
+            }
+            
+            // Test 2: Client Secret
+            await this.updateTestProgress(listEl, progressBar, 1, tests.length, 
+                tests[1].name, 'testing');
+            await this.sleep(300);
+            const hasClientSecret = !!settings.clientSecret?.trim();
+            await this.updateTestProgress(listEl, progressBar, 2, tests.length, 
+                tests[1].name, hasClientSecret ? 'success' : 'error');
+            
+            if (!hasClientSecret) {
+                throw new Error('Client Secret não configurado');
+            }
+            
+            // Test 3: Developer Token
+            await this.updateTestProgress(listEl, progressBar, 2, tests.length, 
+                tests[2].name, 'testing');
+            await this.sleep(300);
+            const hasDeveloperToken = !!settings.developerToken?.trim();
+            await this.updateTestProgress(listEl, progressBar, 3, tests.length, 
+                tests[2].name, hasDeveloperToken ? 'success' : 'error');
+            
+            if (!hasDeveloperToken) {
+                throw new Error('Developer Token não configurado');
+            }
+            
+            // Test 4: Customer ID
+            await this.updateTestProgress(listEl, progressBar, 3, tests.length, 
+                tests[3].name, 'testing');
+            await this.sleep(300);
+            const hasCustomerId = !!settings.customerId?.trim();
+            await this.updateTestProgress(listEl, progressBar, 4, tests.length, 
+                tests[3].name, hasCustomerId ? 'success' : 'error');
+            
+            if (!hasCustomerId) {
+                throw new Error('Customer ID não configurado');
+            }
+            
+            // Test 5 & 6: API Connection (includes refresh token check)
+            await this.updateTestProgress(listEl, progressBar, 4, tests.length, 
+                tests[4].name, 'testing');
+            await this.sleep(300);
+            
+            // Check if connected (has refresh token)
+            if (!settings.connected) {
+                await this.updateTestProgress(listEl, progressBar, 5, tests.length, 
+                    tests[4].name, 'error', 'OAuth não autorizado');
+                throw new Error('Clique em "Conectar Google Ads" para autorizar o acesso');
+            }
             
             const response = await this.moduleAPI.request('/api/google-ads/auth/test', {
                 method: 'POST'
             });
 
             if (response.success) {
-                document.getElementById('connection-status').innerHTML = `
-                    <div class="success-message">
+                await this.updateTestProgress(listEl, progressBar, 5, tests.length, 
+                    tests[4].name, 'success');
+                await this.sleep(200);
+                await this.updateTestProgress(listEl, progressBar, 5, tests.length, 
+                    tests[5].name, 'testing');
+                await this.sleep(300);
+                await this.updateTestProgress(listEl, progressBar, 6, tests.length, 
+                    tests[5].name, 'success');
+                
+                // Show final success message
+                await this.sleep(500);
+                statusEl.innerHTML = `
+                    <div class="success-message" style="animation: slideInUp 0.3s ease;">
                         <i class="fas fa-check-circle"></i>
-                        Conexão OK! Customer ID: ${response.data.customerId}
+                        <strong>Conexão estabelecida com sucesso!</strong>
+                        <br>
+                        <small>Customer ID: ${response.data?.customerId || 'N/A'}</small>
                     </div>
                 `;
             } else {
-                document.getElementById('connection-status').innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-times-circle"></i>
-                        ${response.message || 'Erro ao testar conexão'}
-                    </div>
-                `;
+                await this.updateTestProgress(listEl, progressBar, 5, tests.length, 
+                    tests[4].name, 'error', response.message);
+                throw new Error(response.message || 'Erro ao testar conexão com API');
             }
         } catch (error) {
             console.error('Error testing connection:', error);
-            document.getElementById('connection-status').innerHTML = `
-                <div class="error-message">
+            
+            // Show error state
+            await this.sleep(300);
+            statusEl.innerHTML = `
+                <div class="error-message" style="animation: slideInUp 0.3s ease;">
                     <i class="fas fa-times-circle"></i>
-                    Erro ao testar conexão
+                    <strong>${error.message || 'Erro ao testar conexão'}</strong>
+                    <br>
+                    <small>Verifique as configurações e tente novamente</small>
                 </div>
             `;
         }
+    },
+    
+    async updateTestProgress(listEl, progressBar, current, total, testName, status, errorMsg = '') {
+        const percentage = Math.round((current / total) * 100);
+        progressBar.style.width = `${percentage}%`;
+        
+        const icons = {
+            testing: '<i class="fas fa-spinner fa-spin" style="color: #667eea;"></i>',
+            success: '<i class="fas fa-check-circle" style="color: #10b981;"></i>',
+            error: '<i class="fas fa-times-circle" style="color: #ef4444;"></i>'
+        };
+        
+        const existingItem = listEl.querySelector(`[data-test="${testName}"]`);
+        
+        if (existingItem) {
+            existingItem.innerHTML = `
+                ${icons[status]}
+                <span>${testName}</span>
+                ${errorMsg ? `<small style="color: #ef4444;">${errorMsg}</small>` : ''}
+            `;
+            existingItem.className = `test-progress-item test-${status}`;
+        } else {
+            const item = document.createElement('div');
+            item.className = `test-progress-item test-${status}`;
+            item.setAttribute('data-test', testName);
+            item.innerHTML = `
+                ${icons[status]}
+                <span>${testName}</span>
+                ${errorMsg ? `<small style="color: #ef4444;">${errorMsg}</small>` : ''}
+            `;
+            listEl.appendChild(item);
+        }
+    },
+    
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     },
 
     async disconnectGoogleAds() {
@@ -1840,9 +2016,22 @@ const CrmModule = {
         }
     },
 
-    async syncGoogleAdsCampaigns() {
+    async syncGoogleAdsCampaigns(evt) {
+        let btn = null;
+        
         try {
-            const btn = event.target;
+            // Get button reference from event if available, otherwise find it by ID
+            if (evt?.target) {
+                btn = evt.target;
+            } else {
+                btn = document.querySelector('button[onclick*="syncGoogleAdsCampaigns"]');
+            }
+            
+            if (!btn) {
+                console.warn('Could not find sync button element');
+                return;
+            }
+            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
 
@@ -1860,9 +2049,10 @@ const CrmModule = {
             console.error('Error syncing campaigns:', error);
             this.showNotification('Erro ao sincronizar campanhas', 'error');
         } finally {
-            const btn = event.target;
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar Campanhas';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar Campanhas';
+            }
         }
     },
 

@@ -276,9 +276,69 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="/js/shared/api-client.js"></script>
-    <script src="/js/modules/checkin-kiosk.js"></script>
-    <script src="/js/modules/kiosk-enhancements.js"></script>
+    <!-- face-api.js Library for Face Detection -->
+    <script async defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <!-- Check-in Kiosk Module - Services Layer -->
+    <script src="/js/modules/checkin-kiosk/services/FaceRecognitionService.js"></script>
+    <script src="/js/modules/checkin-kiosk/services/CameraService.js"></script>
+    <script src="/js/modules/checkin-kiosk/services/BiometricService.js"></script>
+    <script src="/js/modules/checkin-kiosk/services/AttendanceService.js"></script>
+
+    <!-- Check-in Kiosk Module - Views Layer -->
+    <script src="/js/modules/checkin-kiosk/views/CameraView.js"></script>
+    <script src="/js/modules/checkin-kiosk/views/ConfirmationView.js"></script>
+    <script src="/js/modules/checkin-kiosk/views/SuccessView.js"></script>
+
+    <!-- Check-in Kiosk Module - Controller & Entry Point -->
+    <script src="/js/modules/checkin-kiosk/controllers/CheckinController.js"></script>
+    <script src="/js/modules/checkin-kiosk/index.js"></script>
+
+    <script>
+        // Initialize Check-in Kiosk once page is loaded
+        (async function() {
+            try {
+                // Ensure API client is available
+                if (typeof window.createModuleAPI === 'undefined') {
+                    console.warn('⚠️ API client not yet loaded, waiting...');
+                    let retries = 0;
+                    while (retries < 50 && typeof window.createModuleAPI === 'undefined') {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        retries++;
+                    }
+                }
+
+                // Initialize the module
+                if (typeof window.CheckinKiosk !== 'undefined') {
+                    console.log('🎬 Initializing CheckinKiosk module...');
+                    await window.CheckinKiosk.init('main-content');
+                    console.log('✅ CheckinKiosk module initialized successfully');
+                } else {
+                    console.error('❌ CheckinKiosk module not found!');
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('main-content').innerHTML = `
+                        <div class="error-state" style="text-align: center; padding: 40px;">
+                            <h2>❌ Erro ao Carregar</h2>
+                            <p>O módulo Check-in Kiosk não foi carregado corretamente.</p>
+                            <p>Detalhes: Arquivo checkin-kiosk/index.js não foi encontrado.</p>
+                            <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px;">Recarregar Página</button>
+                        </div>
+                    `;
+                    document.getElementById('main-content').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('❌ Error initializing CheckinKiosk:', error);
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-content').innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 40px;">
+                        <h2>❌ Erro na Inicialização</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 20px;">Recarregar Página</button>
+                    </div>
+                `;
+                document.getElementById('main-content').style.display = 'block';
+            }
+        })();
+    </script>
 </body>
 </html>

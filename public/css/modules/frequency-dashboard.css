@@ -1,0 +1,489 @@
+/**
+ * Frequency Dashboard - Premium Styles
+ * Design System compliant: tokens.css + premium patterns
+ */
+
+/* ========================================
+   DASHBOARD LAYOUT
+   ======================================== */
+
+.frequency-dashboard {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Header Premium */
+.frequency-dashboard .module-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.frequency-dashboard .header-content h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.frequency-dashboard .breadcrumb {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.frequency-dashboard .breadcrumb a {
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.frequency-dashboard .breadcrumb a:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.frequency-dashboard .header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ========================================
+   STATS CARDS GRID
+   ======================================== */
+
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* Stat Card Enhanced */
+.stat-card-enhanced {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.stat-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+  transition: height 0.3s ease;
+}
+
+.stat-card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.stat-card-enhanced:hover::before {
+  height: 6px;
+}
+
+/* Card Icons */
+.stat-card-enhanced .card-icon {
+  font-size: 48px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+/* Card Content */
+.stat-card-enhanced .card-content {
+  flex: 1;
+}
+
+.stat-card-enhanced h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.stat-card-enhanced .card-value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.stat-card-enhanced .card-subtitle {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Card Trends */
+.stat-card-enhanced .card-trend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.trend-up {
+  color: #10b981;
+}
+
+.trend-down {
+  color: #ef4444;
+}
+
+.trend-neutral {
+  color: #64748b;
+}
+
+/* Card Color Variants */
+.stat-card-enhanced.card-primary::before {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card-enhanced.card-success::before {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-card-enhanced.card-info::before {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.stat-card-enhanced.card-warning::before {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Loading State */
+.stat-card-enhanced.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading-skeleton {
+  display: inline-block;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  min-width: 60px;
+  height: 1em;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Button Link (in cards) */
+.btn-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 8px;
+  transition: color 0.2s;
+}
+
+.btn-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* ========================================
+   CHARTS SECTION
+   ======================================== */
+
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 28px;
+  margin-bottom: 32px;
+}
+
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.chart-header {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.chart-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.chart-canvas-wrapper {
+  position: relative;
+  height: 300px;
+}
+
+.chart-canvas-wrapper canvas {
+  max-height: 100%;
+}
+
+/* ========================================
+   POLLING STATUS
+   ======================================== */
+
+.polling-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 24px;
+}
+
+.polling-status #pollingIndicator {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.polling-status .status-active {
+  color: #10b981;
+}
+
+.polling-status .status-paused {
+  color: #f59e0b;
+}
+
+.polling-status #lastUpdate {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ========================================
+   ERROR STATE
+   ======================================== */
+
+.error-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.error-state .error-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.error-state h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ef4444;
+  margin: 0 0 12px 0;
+}
+
+.error-state p {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-secondary:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet (1024px) */
+@media (max-width: 1024px) {
+  .frequency-dashboard .module-header-premium {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-canvas-wrapper {
+    height: 250px;
+  }
+}
+
+/* Mobile (768px) */
+@media (max-width: 768px) {
+  .frequency-dashboard {
+    padding: 16px;
+  }
+
+  .frequency-dashboard .module-header-premium {
+    padding: 20px;
+  }
+
+  .frequency-dashboard .header-content h1 {
+    font-size: 22px;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card-enhanced {
+    padding: 20px;
+  }
+
+  .stat-card-enhanced .card-icon {
+    font-size: 36px;
+  }
+
+  .stat-card-enhanced .card-value {
+    font-size: 28px;
+  }
+
+  .dashboard-charts {
+    gap: 16px;
+  }
+
+  .chart-container {
+    padding: 20px;
+  }
+
+  .chart-canvas-wrapper {
+    height: 220px;
+  }
+
+  .polling-status {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .frequency-dashboard .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .frequency-dashboard .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Mobile Small (480px) */
+@media (max-width: 480px) {
+  .stat-card-enhanced {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .chart-header h3 {
+    font-size: 16px;
+  }
+}

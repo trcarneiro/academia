@@ -67,6 +67,12 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         where: { id },
         include: {
           user: true,
+          financialResponsible: true,
+          financialResponsibleStudent: {
+            include: {
+              user: true
+            }
+          },
           subscriptions: {
             include: {
               plan: true
@@ -1171,16 +1177,14 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       });
     }
   });
-
   // Get student techniques data
   fastify.get('/:id/techniques', async (
-    request: FastifyRequest<{ Params: { id: string } }>,
+    _request: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
   ) => {
     try {
-      const { id } = request.params;
+      // const { id } = _request.params; // TODO: Implement real techniques tracking system
 
-      // TODO: Implement real techniques tracking system
       // For now, return empty data structure
       
       return reply.send({
@@ -1332,6 +1336,352 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch student progress'
+      });
+    }
+  });
+
+  // =====================================================================
+  // 📊 FINANCIAL RESPONSIBLE ENDPOINTS
+  // =====================================================================
+
+  // GET /api/students/financial-responsibles - List all financial responsibles
+  fastify.get('/financial-responsibles', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const organizationId = (request.headers['x-organization-id'] as string) || '452c0b35-1822-4890-851e-922356c812fb';
+
+      const responsibles = await prisma.financialResponsible.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return reply.send({
+        success: true,
+        data: responsibles
+      });
+    } catch (error) {
+      logger.error('Error fetching financial responsibles:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch financial responsibles'
+      });
+    }
+  });
+
+  // POST /api/students/financial-responsibles - Create new financial responsible
+  fastify.post('/financial-responsibles', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const organizationId = (request.headers['x-organization-id'] as string) || '452c0b35-1822-4890-851e-922356c812fb';
+      
+      const body = request.body as { name?: string; cpfCnpj?: string; email?: string; phone?: string };
+      const { name, cpfCnpj, email, phone } = body;
+
+      // Validate required fields
+      if (!name?.trim()) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Name is required'
+        });
+      }
+
+      if (!cpfCnpj?.trim()) {
+        return reply.code(400).send({
+          success: false,
+          message: 'CPF/CNPJ is required'
+        });
+      }
+
+      if (!email?.trim()) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Email is required'
+        });
+      }
+
+      const responsible = await prisma.financialResponsible.create({
+        data: {
+          organizationId,
+          name: name.trim(),
+          cpfCnpj: cpfCnpj.trim(),
+          email: email.trim(),
+          phone: phone?.trim() || null
+        }
+      });
+
+      return reply.code(201).send({
+        success: true,
+        data: responsible
+      });
+    } catch (error) {
+      logger.error('Error creating financial responsible:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to create financial responsible'
+      });
+    }
+  });
+
+  // PATCH /api/students/:id/financial-responsible - Link/unlink financial responsible to student
+  fastify.patch('/:id/financial-responsible', async (request: FastifyRequest<{ Params: { id: string }; Body: { financialResponsibleId?: string | null } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const body = request.body as { financialResponsibleId?: string | null };
+      const { financialResponsibleId } = body;
+
+      const student = await prisma.student.update({
+        where: { id },
+        data: {
+          financialResponsibleId: financialResponsibleId || null
+        },
+        include: {
+          user: true,
+          financialResponsible: true
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: student,
+        message: 'Financial responsible updated successfully'
+      });
+    } catch (error) {
+      logger.error('Error updating financial responsible:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to update financial responsible'
+      });
+    }
+  });
+
+  // Set another student as financial responsible
+  fastify.post('/:studentId/financial-responsible-student', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { studentId } = request.params as { studentId: string };
+      const { responsibleStudentId } = request.body as { responsibleStudentId: string | null };
+
+      // Validate student exists
+      const student = await prisma.student.findUnique({
+        where: { id: studentId }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      // If setting a responsible, validate they exist
+      if (responsibleStudentId) {
+        const responsibleStudent = await prisma.student.findUnique({
+          where: { id: responsibleStudentId }
+        });
+
+        if (!responsibleStudent) {
+          return reply.code(404).send({
+            success: false,
+            message: 'Responsible student not found'
+          });
+        }
+
+        // Prevent circular dependency
+        if (responsibleStudentId === studentId) {
+          return reply.code(400).send({
+            success: false,
+            message: 'Student cannot be their own financial responsible'
+          });
+        }
+      }
+
+      // Update student
+      const updatedStudent = await prisma.student.update({
+        where: { id: studentId },
+        data: {
+          financialResponsibleStudentId: responsibleStudentId
+        },
+        include: {
+          financialResponsibleStudent: {
+            include: {
+              user: true
+            }
+          }
+        }
+      });
+
+      logger.info(`Financial responsible student ${responsibleStudentId ? 'set' : 'removed'} for student ${studentId}`);
+
+      return reply.send({
+        success: true,
+        data: updatedStudent,
+        message: responsibleStudentId 
+          ? 'Responsável financeiro vinculado com sucesso' 
+          : 'Responsável financeiro removido com sucesso'
+      });
+    } catch (error) {
+      logger.error('Error setting financial responsible student:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to set financial responsible student'
+      });
+    }
+  });
+
+  // Get all financial dependents for a student
+  fastify.get('/:studentId/financial-dependents', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { studentId } = request.params as { studentId: string };
+
+      const dependents = await prisma.student.findMany({
+        where: {
+          financialResponsibleStudentId: studentId
+        },
+        include: {
+          user: true,
+          subscriptions: {
+            where: {
+              isActive: true
+            },
+            include: {
+              plan: true
+            }
+          },
+          _count: {
+            select: {
+              subscriptions: true
+            }
+          }
+        }
+      });
+
+      // Calculate consolidated charges
+      const consolidatedCharges = dependents.flatMap(dep => 
+        dep.subscriptions.map(sub => ({
+          studentId: dep.id,
+          studentName: `${dep.user.firstName} ${dep.user.lastName}`,
+          planName: sub.plan.name,
+          amount: sub.plan.price,
+          status: sub.status,
+          startDate: sub.startDate,
+          endDate: sub.endDate
+        }))
+      );
+
+      return reply.send({
+        success: true,
+        data: {
+          dependents,
+          consolidatedCharges,
+          totalDependents: dependents.length,
+          totalAmount: consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0)
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching financial dependents:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch financial dependents'
+      });
+    }
+  });
+
+  // Get student subscriptions
+  fastify.get('/:id/subscriptions', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+
+      const subscriptions = await prisma.studentSubscription.findMany({
+        where: { studentId: id },
+        include: {
+          plan: true
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return reply.send({
+        success: true,
+        data: subscriptions
+      });
+    } catch (error) {
+      logger.error('Error fetching subscriptions:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch subscriptions'
+      });
+    }
+  });
+
+  // Get student payments (fallback to empty for now - table doesn't exist)
+  fastify.get('/:id/payments', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+
+      // For now, return empty array since Charge table structure unclear
+      // In future: fetch from Charge/Invoice/Payment table
+      // This endpoint intentionally returns empty to avoid 500 errors
+      
+      return reply.send({
+        success: true,
+        data: []
+      });
+    } catch (error) {
+      logger.error('Error fetching payments:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch payments'
+      });
+    }
+  });
+
+  // 🆕 Get consolidated charges for a responsible (sees all dependents + their subscriptions)
+  fastify.get('/:id/consolidated-charges', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+
+      // Get all students where this student is the financial responsible
+      const dependents = await prisma.student.findMany({
+        where: { financialResponsibleStudentId: id },
+        include: {
+          user: true,
+          subscriptions: {
+            include: { plan: true }
+          }
+        }
+      });
+
+      // Build consolidated charges from all dependents' subscriptions
+      const consolidatedCharges = dependents.flatMap(dependent =>
+        dependent.subscriptions.map(subscription => ({
+          dependentId: dependent.id,
+          dependentName: `${dependent.user.firstName} ${dependent.user.lastName}`,
+          dependentEmail: dependent.user.email,
+          planId: subscription.plan.id,
+          planName: subscription.plan.name,
+          planPrice: subscription.plan.price,
+          subscriptionStatus: subscription.status,
+          subscriptionStartDate: subscription.startDate,
+          subscriptionEndDate: subscription.endDate,
+          createdAt: subscription.createdAt
+        }))
+      );
+
+      const totalAmount = consolidatedCharges.reduce(
+        (sum, charge) => sum + Number(charge.planPrice),
+        0
+      );
+
+      return reply.send({
+        success: true,
+        data: {
+          dependents: dependents.length,
+          charges: consolidatedCharges,
+          totalAmount,
+          totalCharges: consolidatedCharges.length
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching consolidated charges:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch consolidated charges'
       });
     }
   });

@@ -3,9 +3,9 @@ import { UserRole } from '@prisma/client';
 export const DEV_CONFIG = {
   // Organização padrão para desenvolvimento
   DEFAULT_ORGANIZATION: {
-    id: 'a55ad715-2eb0-493c-996c-bb0f60bacec9',
-    name: 'Academia Demo',
-    slug: 'demo'
+    id: '452c0b35-1822-4890-851e-922356c812fb',
+    name: 'Krav Maga Academy',
+    slug: 'academia'
   },
 
   // Usuário padrão (sem necessidade de login)
@@ -15,7 +15,7 @@ export const DEV_CONFIG = {
     firstName: 'Admin',
     lastName: 'User',
     role: UserRole.ADMIN,
-    organizationId: 'a55ad715-2eb0-493c-996c-bb0f60bacec9'
+    organizationId: '452c0b35-1822-4890-851e-922356c812fb'
   },
 
   // Flag para indicar se estamos em modo desenvolvimento

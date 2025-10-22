@@ -1,0 +1,195 @@
+{
+  "courseId": "krav-maga-faixa-branca-2025",
+  "name": "Krav Maga - Faixa Branca",
+  "description": "Curso completo de fundamentos do Krav Maga para iniciantes. Aborda posturas básicas, socos, chutes, defesas e movimentações essenciais em 48 aulas, com foco em personalização e simulações realistas.",
+  "level": "BEGINNER",
+  "duration": "6 meses / 24 semanas",
+  "totalLessons": 48,
+  "schedule": {
+    "weeks": 24,
+    "lessonsPerWeek": 2
+  },
+  "techniques": [
+    { "id": "guarda-de-boxe", "name": "Guarda de Boxe", "category": "POSTURAS" },
+    { "id": "jab", "name": "Jab", "category": "SOCOS" },
+    { "id": "posicao-ortodoxa", "name": "Posição Ortodoxa", "category": "POSTURAS" },
+    { "id": "direto", "name": "Direto", "category": "SOCOS" },
+    { "id": "defesa-360", "name": "Defesa 360°", "category": "DEFESAS" },
+    { "id": "posicao-canhota", "name": "Posição Canhota", "category": "POSTURAS" },
+    { "id": "jab-direto", "name": "Jab + Direto", "category": "COMBINAÇÕES" },
+    { "id": "gancho-esqdir", "name": "Gancho Esq./Dir.", "category": "SOCOS" },
+    { "id": "defesa-contra-soco-reto", "name": "Defesa contra Soco Reto", "category": "DEFESAS" },
+    { "id": "uppercut-esqdir", "name": "Uppercut Esq./Dir.", "category": "SOCOS" },
+    { "id": "defesa-estrangulamento", "name": "Defesa Estrangulamento", "category": "DEFESAS" },
+    { "id": "jab-gancho", "name": "Jab + Gancho", "category": "COMBINAÇÕES" },
+    { "id": "chute-reto", "name": "Chute Reto", "category": "CHUTES" },
+    { "id": "direto-uppercut", "name": "Direto + Uppercut", "category": "COMBINAÇÕES" },
+    { "id": "chute-lateral", "name": "Chute Lateral", "category": "CHUTES" },
+    { "id": "chute-circular-baixo", "name": "Chute Circular Baixo", "category": "CHUTES" },
+    { "id": "jab-joelhada", "name": "Jab + Joelhada", "category": "COMBINAÇÕES" },
+    { "id": "jab-cotovelada", "name": "Jab + Cotovelada", "category": "COMBINAÇÕES" },
+    { "id": "cotovelada-lateral", "name": "Cotovelada Lateral", "category": "SOCOS" },
+    { "id": "defesa-agarramento-frontal", "name": "Defesa Agarramento Frontal", "category": "DEFESAS" },
+    { "id": "cotovelada-frontal", "name": "Cotovelada Frontal", "category": "SOCOS" },
+    { "id": "defesa-estrangulamento-posterior", "name": "Defesa Estrangulamento Posterior", "category": "DEFESAS" },
+    { "id": "cotovelada-uppercut", "name": "Cotovelada Uppercut", "category": "SOCOS" },
+    { "id": "defesa-empurrao-posterior", "name": "Defesa Empurrão Posterior", "category": "DEFESAS" },
+    { "id": "jab-direto-chute-reto", "name": "Jab + Direto + Chute Reto", "category": "COMBINAÇÕES" },
+    { "id": "cotovelada-martelo", "name": "Cotovelada Martelo", "category": "SOCOS" },
+    { "id": "queda-frente-suave", "name": "Queda Frente Suave", "category": "QUEDAS" },
+    { "id": "queda-para-tras", "name": "Queda para Trás", "category": "QUEDAS" },
+    { "id": "queda-lateral", "name": "Queda Lateral", "category": "QUEDAS" },
+    { "id": "direto-chute-circular", "name": "Direto + Chute Circular", "category": "COMBINAÇÕES" },
+    { "id": "defesa-contra-soco-gancho", "name": "Defesa contra Soco Gancho", "category": "DEFESAS" },
+    { "id": "shadow-boxing", "name": "Shadow Boxing com Socos e Chutes", "category": "COMBINAÇÕES" },
+    { "id": "queda-frente-dura", "name": "Queda Frente Dura", "category": "QUEDAS" },
+    { "id": "defesa-360-contraataque", "name": "Defesa 360° + Contra-ataque", "category": "DEFESAS" },
+    { "id": "jab-uppercut-chute-lateral", "name": "Jab + Uppercut + Chute Lateral", "category": "COMBINAÇÕES" },
+    { "id": "defesa-agarramento-imobilizacao", "name": "Defesa Agarramento com Imobilização", "category": "DEFESAS" },
+    { "id": "jab-cotovelada-chute-reto", "name": "Jab + Cotovelada + Chute Reto", "category": "COMBINAÇÕES" },
+    { "id": "rolamento-tras", "name": "Rolamento Trás", "category": "QUEDAS" },
+    { "id": "direto-joelhada-defesa-soco-reto", "name": "Direto + Joelhada + Defesa Soco Reto", "category": "COMBINAÇÕES" },
+    { "id": "jab-chute-circular-defesa-360", "name": "Jab + Chute Circular + Defesa 360°", "category": "COMBINAÇÕES" },
+    { "id": "treino-reacao-rapida", "name": "Treino de Reação Rápida", "category": "COMBINAÇÕES" },
+    { "id": "treino-sequencia-criativa", "name": "Treino de Sequência Criativa", "category": "COMBINAÇÕES" },
+    { "id": "revisao-socos", "name": "Revisão Socos", "category": "SOCOS" },
+    { "id": "chutes-geral", "name": "Chutes", "category": "CHUTES" },
+    { "id": "defesas-basicas", "name": "Defesas Básicas", "category": "DEFESAS" },
+    { "id": "revisao-cotoveladas", "name": "Revisão Cotoveladas", "category": "SOCOS" },
+    { "id": "quedas-geral", "name": "Quedas", "category": "QUEDAS" },
+    { "id": "defesas-avancadas", "name": "Defesas Avançadas", "category": "DEFESAS" },
+    { "id": "revisao-evento-final", "name": "Revisão para Evento Final", "category": "COMBINAÇÕES" },
+    { "id": "simulacao-completa", "name": "Simulação Completa", "category": "COMBINAÇÕES" },
+    { "id": "revisao-final", "name": "Revisão Final", "category": "COMBINAÇÕES" },
+    { "id": "simulacao-pratica", "name": "Simulação Prática", "category": "COMBINAÇÕES" }
+  ],
+  "graduation": {
+    "currentBelt": "BRANCA",
+    "nextBelt": "AMARELA",
+    "beltColor": "#FFFFFF",
+    "nextBeltColor": "#FFD700",
+    "progressionSystem": {
+      "type": "PERCENTAGE_BASED",
+      "totalDegrees": 4,
+      "degreePercentageIncrement": 25,
+      "description": "Sistema de 4 graus baseado nos 5 Mini-Testes Modulares do curso de 48 aulas."
+    },
+    "degrees": [
+      {
+        "degree": 1,
+        "name": "1º Grau - Fundamentos (Mini-Teste 1)",
+        "requiredPercentage": 20,
+        "requiredLessons": 8,
+        "badge": "⭐",
+        "color": "#FFD700",
+        "description": "Domínio de posturas básicas e socos iniciais (Guarda, Jab, Direto)",
+        "estimatedWeeks": "4 semanas (2 aulas/semana)"
+      },
+      {
+        "degree": 2,
+        "name": "2º Grau - Ataque Básico (Mini-Teste 2)",
+        "requiredPercentage": 40,
+        "requiredLessons": 16,
+        "badge": "⭐⭐",
+        "color": "#FFA500",
+        "description": "Socos e chutes fundamentais com potência",
+        "estimatedWeeks": "8 semanas (2 aulas/semana)"
+      },
+      {
+        "degree": 3,
+        "name": "3º Grau - Defesa Intermediária (Mini-Teste 3)",
+        "requiredPercentage": 60,
+        "requiredLessons": 24,
+        "badge": "⭐⭐⭐",
+        "color": "#FF6347",
+        "description": "Defesas contra estrangulamentos, agarramentos e quedas básicas",
+        "estimatedWeeks": "12 semanas (2 aulas/semana)"
+      },
+      {
+        "degree": 4,
+        "name": "4º Grau - Preparação Final (Mini-Teste 4)",
+        "requiredPercentage": 80,
+        "requiredLessons": 32,
+        "badge": "⭐⭐⭐⭐",
+        "color": "#DC143C",
+        "description": "Refinamento técnico, defesas avançadas e preparação para simulações",
+        "estimatedWeeks": "16 semanas (2 aulas/semana)",
+        "requiresSimulation": true
+      }
+    ],
+    "requirements": {
+      "forGraduation": {
+        "minimumAttendanceRate": 80,
+        "minimumQualityRating": 3,
+        "minimumRepetitionsTotal": 3000,
+        "minimumMonthsEnrolled": 3,
+        "requiresInstructorApproval": true,
+        "requiresSimulationPass": true
+      }
+    }
+  },
+  "activityCategories": [
+    {
+      "id": "posturas",
+      "name": "POSTURAS E GUARDAS",
+      "description": "Posições fundamentais de combate e defesa (4 técnicas)",
+      "color": "#3B82F6",
+      "icon": "🥋",
+      "order": 1,
+      "minimumForGraduation": 100
+    },
+    {
+      "id": "socos",
+      "name": "SOCOS E GOLPES DE MÃO",
+      "description": "Técnicas de ataque com mãos e punhos (7 técnicas incluindo combinações)",
+      "color": "#EF4444",
+      "icon": "👊",
+      "order": 2,
+      "minimumForGraduation": 200
+    },
+    {
+      "id": "chutes",
+      "name": "CHUTES E JOELHADAS",
+      "description": "Técnicas de ataque com pernas e joelhos (5 técnicas)",
+      "color": "#F59E0B",
+      "icon": "🦵",
+      "order": 3,
+      "minimumForGraduation": 150
+    },
+    {
+      "id": "defesas",
+      "name": "DEFESAS E BLOQUEIOS",
+      "description": "Proteção contra ataques diversos (17 técnicas de defesa e 4 gerais)",
+      "color": "#10B981",
+      "icon": "🛡️",
+      "order": 4,
+      "minimumForGraduation": 150
+    },
+    {
+      "id": "quedas",
+      "name": "QUEDAS E ROLAMENTOS",
+      "description": "Técnicas de proteção ao cair (4 técnicas)",
+      "color": "#8B5CF6",
+      "icon": "🤸",
+      "order": 5,
+      "minimumForGraduation": 80
+    },
+    {
+      "id": "combinacoes",
+      "name": "COMBINAÇÕES",
+      "description": "Sequências de técnicas encadeadas",
+      "color": "#EC4899",
+      "icon": "⚡",
+      "order": 6,
+      "minimumForGraduation": 100
+    }
+  ],
+  "metadata": {
+    "totalPlannedRepetitions": 5000,
+    "averageRepetitionsPerLesson": 104,
+    "estimatedCompletionTimeWeeks": 24,
+    "requiredWeeklyFrequency": 2,
+    "version": "3.0.0_UNIFIED_FINAL",
+    "author": "Smart Defence - Sistema de Currículo Unificado"
+  }
+}

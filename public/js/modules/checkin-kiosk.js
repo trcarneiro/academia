@@ -824,60 +824,75 @@ class CheckinKiosk {
             return;
         }
 
-        container.innerHTML = this.availableClasses.map(classInfo => {
-            const statusText = {
-                'AVAILABLE': '✅ Check-in Liberado',
-                'CHECKED_IN': '✓ Check-in Feito',
-                'NOT_YET': '⏰ Aguardando Liberação',
-                'EXPIRED': '⌛ Período Encerrado'
-            };
+        // Group classes by status for better UX
+        const grouped = {
+            AVAILABLE: this.availableClasses.filter(c => c.status === 'AVAILABLE'),
+            CHECKED_IN: this.availableClasses.filter(c => c.status === 'CHECKED_IN'),
+            NOT_YET: this.availableClasses.filter(c => c.status === 'NOT_YET'),
+            EXPIRED: this.availableClasses.filter(c => c.status === 'EXPIRED')
+        };
 
-            const statusClass = classInfo.status.toLowerCase();
-            
-            // Calculate time remaining until check-in opens (for NOT_YET status)
-            let timeInfo = '';
-            if (classInfo.status === 'NOT_YET') {
-                const startTime = new Date(classInfo.startTime);
-                const checkInStart = new Date(startTime.getTime() - 60 * 60 * 1000); // 1 hora antes
-                const now = new Date();
-                const diffMs = checkInStart - now;
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMins / 60);
-                const remainingMins = diffMins % 60;
-                
-                if (diffHours > 0) {
-                    timeInfo = `<div class="time-remaining">⏱️ Check-in abre em ${diffHours}h ${remainingMins}min</div>`;
-                } else {
-                    timeInfo = `<div class="time-remaining">⏱️ Check-in abre em ${diffMins} minutos</div>`;
-                }
+        const statusConfig = {
+            'AVAILABLE': { 
+                title: '✅ Disponíveis Agora', 
+                subtitle: 'Você pode fazer check-in nestas aulas',
+                icon: 'fa-check-circle',
+                color: '#10b981',
+                defaultOpen: true
+            },
+            'CHECKED_IN': { 
+                title: '✓ Check-ins Realizados', 
+                subtitle: 'Você já fez check-in hoje',
+                icon: 'fa-calendar-check',
+                color: '#3b82f6',
+                defaultOpen: true
+            },
+            'NOT_YET': { 
+                title: '⏰ Próximas Aulas', 
+                subtitle: 'Check-in ainda não liberado',
+                icon: 'fa-clock',
+                color: '#f59e0b',
+                defaultOpen: false
+            },
+            'EXPIRED': { 
+                title: '⌛ Aulas Encerradas', 
+                subtitle: 'Período de check-in expirado',
+                icon: 'fa-history',
+                color: '#ef4444',
+                defaultOpen: false
             }
-            
-            return `
-                <div class="class-card ${statusClass}">
-                    <div class="class-status ${statusClass}">
-                        ${statusText[classInfo.status]}
+        };
+
+        let html = '';
+
+        // Render each group
+        for (const [status, classes] of Object.entries(grouped)) {
+            if (classes.length === 0) continue;
+
+            const config = statusConfig[status];
+            const sectionId = `section-${status.toLowerCase()}`;
+            const isOpen = config.defaultOpen;
+
+            html += `
+                <div class="class-group" data-status="${status}">
+                    <div class="class-group-header ${isOpen ? 'open' : ''}" onclick="window.checkinKiosk.toggleGroup('${sectionId}')">
+                        <div class="group-title">
+                            <i class="fas ${config.icon}" style="color: ${config.color}"></i>
+                            <div>
+                                <h3>${config.title}</h3>
+                                <p>${config.subtitle} (${classes.length})</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
-                    <div class="class-name">${classInfo.name}</div>
-                    ${timeInfo}
-                    <div class="class-meta">
-                        <span><i class="fas fa-clock"></i> ${this.formatTime(classInfo.startTime)} - ${this.formatTime(classInfo.endTime)}</span>
-                        <span><i class="fas fa-user"></i> ${classInfo.instructor?.name || 'Instrutor não definido'}</span>
-                        <span><i class="fas fa-users"></i> ${classInfo.enrolled}/${classInfo.capacity} alunos</span>
+                    <div class="class-group-content ${isOpen ? 'open' : ''}" id="${sectionId}">
+                        ${classes.map(classInfo => this.renderClassCard(classInfo)).join('')}
                     </div>
-                    ${classInfo.canCheckIn ? `
-                        <button class="checkin-btn available-pulse" onclick="window.checkinKiosk.requestCheckin('${classInfo.id}')">
-                            <i class="fas fa-check-circle"></i> FAZER CHECK-IN AGORA
-                        </button>
-                    ` : `
-                        <button class="checkin-btn" disabled>
-                            ${classInfo.hasCheckedIn ? '✓ Check-in Realizado' : 
-                              classInfo.status === 'NOT_YET' ? '🔒 Aguardando' : 
-                              '⌛ Indisponível'}
-                        </button>
-                    `}
                 </div>
             `;
-        }).join('');
+        }
+
+        container.innerHTML = html;
     }
 
     /**
@@ -988,6 +1003,10 @@ class CheckinKiosk {
      */
     async performCheckin() {
         if (!this.currentCheckinClass) return;
+        if (!this.currentStudent?.id) {
+            this.showError('Estudante não selecionado');
+            return;
+        }
 
         this.setLoading(true);
         this.hideModal('confirmation');
@@ -995,6 +1014,7 @@ class CheckinKiosk {
         try {
             const checkinData = {
                 classId: this.currentCheckinClass.id,
+                studentId: this.currentStudent.id, // ✅ KIOSK: enviar studentId
                 method: 'MANUAL',
                 location: 'KIOSK',
                 notes: 'Check-in via kiosk'
@@ -1146,6 +1166,92 @@ class CheckinKiosk {
             this.elements.lookupBtn.disabled = value.length < 2;
             this.elements.lookupBtn.innerHTML = '<i class="fas fa-search"></i> Buscar Aluno';
         }
+    }
+
+    /**
+     * Toggle class group collapse
+     */
+    toggleGroup(sectionId) {
+        const section = document.getElementById(sectionId);
+        const header = section.previousElementSibling;
+        
+        if (section.classList.contains('open')) {
+            section.classList.remove('open');
+            header.classList.remove('open');
+        } else {
+            section.classList.add('open');
+            header.classList.add('open');
+        }
+    }
+
+    /**
+     * Render individual class card
+     */
+    renderClassCard(classInfo) {
+        const statusText = {
+            'AVAILABLE': '✅ Check-in Liberado',
+            'CHECKED_IN': '✓ Check-in Feito',
+            'NOT_YET': '⏰ Aguardando Liberação',
+            'EXPIRED': '⌛ Período Encerrado'
+        };
+
+        const statusClass = classInfo.status.toLowerCase();
+        
+        // Calculate time remaining until check-in opens (for NOT_YET status)
+        let timeInfo = '';
+        if (classInfo.status === 'NOT_YET') {
+            const startTime = new Date(classInfo.startTime);
+            const checkInStart = new Date(startTime.getTime() - 30 * 60 * 1000); // 30 min antes
+            const now = new Date();
+            const diffMs = checkInStart - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const remainingMins = diffMins % 60;
+            
+            if (diffHours > 0) {
+                timeInfo = `<div class="time-remaining countdown">⏱️ Check-in abre em ${diffHours}h ${remainingMins}min</div>`;
+            } else if (diffMins > 0) {
+                timeInfo = `<div class="time-remaining countdown">⏱️ Check-in abre em ${diffMins} minutos</div>`;
+            } else {
+                timeInfo = `<div class="time-remaining countdown">⏱️ Check-in abrindo...</div>`;
+            }
+        } else if (classInfo.status === 'AVAILABLE') {
+            const startTime = new Date(classInfo.startTime);
+            const checkInEnd = new Date(startTime.getTime() + 15 * 60 * 1000); // 15 min depois
+            const now = new Date();
+            const diffMs = checkInEnd - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins > 0) {
+                timeInfo = `<div class="time-remaining countdown available">⏳ Janela fecha em ${diffMins} minutos</div>`;
+            }
+        }
+        
+        return `
+            <div class="class-card ${statusClass}">
+                <div class="class-status ${statusClass}">
+                    ${statusText[classInfo.status]}
+                </div>
+                <div class="class-name">${classInfo.name}</div>
+                ${timeInfo}
+                <div class="class-meta">
+                    <span><i class="fas fa-clock"></i> ${this.formatTime(classInfo.startTime)} - ${this.formatTime(classInfo.endTime)}</span>
+                    <span><i class="fas fa-user"></i> ${classInfo.instructor?.name || 'Instrutor não definido'}</span>
+                    <span><i class="fas fa-users"></i> ${classInfo.enrolled}/${classInfo.capacity} alunos</span>
+                </div>
+                ${classInfo.canCheckIn ? `
+                    <button class="checkin-btn available-pulse" onclick="window.checkinKiosk.requestCheckin('${classInfo.id}')">
+                        <i class="fas fa-check-circle"></i> FAZER CHECK-IN AGORA
+                    </button>
+                ` : `
+                    <button class="checkin-btn" disabled>
+                        ${classInfo.hasCheckedIn ? '✓ Check-in Realizado' : 
+                          classInfo.status === 'NOT_YET' ? '🔒 Aguardando' : 
+                          '⌛ Indisponível'}
+                    </button>
+                `}
+            </div>
+        `;
     }
 
     /**

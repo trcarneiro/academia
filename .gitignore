@@ -23,6 +23,14 @@ client_secret_*.json
 *.db
 *.sqlite
 
+# SSL Certificates (SENSITIVE - Never commit!)
+certs/
+*.pem
+*.key
+*.pfx
+*.crt
+*.p12
+
 # Logs
 logs/
 *.log
@@ -59,3 +67,4 @@ prisma/migrations/
 
 # Docker
 .dockerignore
+OLD_191025

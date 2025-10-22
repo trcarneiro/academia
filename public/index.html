@@ -2,10 +2,31 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewpo                              <li data-module="frequency">
+                    <i>📊</i> <span>Frequência</span>
+                </li>
+                <li data-module="ai">
+                    <i>🤖</i> <span>IA & Agentes</span>
+                </li>a-module="frequency">
+                    <i>📊</i> <span>Frequência</span>
+                </li>
+                <li data-module="ai">
+                    <i>🤖</i> <span>IA & Agentes</span>
+                </li>
+                <li data-module="import">
+                    <i>📥</i> <span>Importação</span>
+                </li>
+                <li data-module="reports">
+                    <i>📈</i> <span>Relatórios</span>
+                </li>
+                <li data-module="settings">
+                    <i>⚙️</i> <span>Configurações</span>
+                </li>=device-width, initial-scale=1.0">
     <title>Academia Dashboard</title>
     <!-- FORÇA RESET - Para garantir design minimalista -->
     <link rel="stylesheet" href="css/force-reset.css">
+    <!-- LAYOUT CENTER FIX - Correção de centralização -->
+    <link rel="stylesheet" href="css/layout-center-fix.css">
     <!-- FORMULÁRIOS UX PROFISSIONAIS -->
     <link rel="stylesheet" href="css/forms-ux.css">
     <!-- Design System - Guidelines.MD Compliance -->
@@ -23,12 +44,18 @@
     <link rel="stylesheet" href="css/modules/turmas-courses.css">
     <link rel="stylesheet" href="css/modules/turmas-tabs.css">
     <link rel="stylesheet" href="css/modules/frequency-basic.css">
+    <link rel="stylesheet" href="css/modules/frequency-dashboard.css">
+    <link rel="stylesheet" href="css/modules/frequency-history.css">
+    <link rel="stylesheet" href="css/modules/lesson-execution.css">
     <link rel="stylesheet" href="css/modules/import.css">
     <link rel="stylesheet" href="css/modules/import-enhanced.css">
     <link rel="stylesheet" href="css/modules/agenda.css">
     <link rel="stylesheet" href="css/modules/units.css">
     <link rel="stylesheet" href="css/modules/students-premium.css">
+    <link rel="stylesheet" href="css/modules/student-progress.css">
+    <link rel="stylesheet" href="css/modules/graduation.css">
     <link rel="stylesheet" href="css/modules/crm.css">
+    <link rel="stylesheet" href="css/modules/checkin-kiosk.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -62,7 +89,7 @@
                     <i>🎯</i> <span>CRM & Leads</span>
                 </li>
                 <li data-module="packages">
-                    <i>📦</i> <span>Pacotes</span>
+                    <i>🏷️</i> <span>Comercial</span>
                 </li>
                 <li data-module="activities">
                     <i>🏃</i> <span>Atividades</span>
@@ -94,11 +121,20 @@
                 <li data-module="frequency">
                     <i>📊</i> <span>Frequência</span>
                 </li>
+                <li data-module="student-progress">
+                    <i>📈</i> <span>Progresso</span>
+                </li>
+                <li data-module="graduation">
+                    <i>🎓</i> <span>Graduação</span>
+                </li>
+                <li data-module="crm">
+                    <i>🎯</i> <span>CRM</span>
+                </li>
+                <li data-module="ai">
+                    <i>�</i> <span>IA & Agentes</span>
+                </li>
                 <li data-module="import">
                     <i>📥</i> <span>Importação</span>
-                </li>
-                <li data-module="rag">
-                    <i>🧠</i> <span>RAG System</span>
                 </li>
                 <li data-module="reports">
                     <i>📈</i> <span>Relatórios</span>
@@ -128,6 +164,14 @@
         </div>
     </main>
 
+    <!-- Auth Container (sobrepõe tudo quando não há session) -->
+    <div id="auth-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;z-index:9999;overflow:auto">
+      <div id="auth-container"></div>
+    </div>
+
+    <!-- Chart.js for Dashboard Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="js/shared/utils/feedback.js"></script>
     <script src="js/shared/api-client.js"></script>
@@ -136,6 +180,45 @@
 
     <!-- Course RAG Integration -->
     <script src="js/modules/course-rag-integration.js"></script>
+
+    <!-- ✅ SUPABASE AUTH - MUST LOAD BEFORE ROUTER -->
+    <!-- Supabase Auth JS Library v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Auth Module (Initialize login/session) -->
+    <script src="js/modules/auth/index.js"></script>
+    
+    <!-- Initialize Auth Module -->
+    <script>
+      document.addEventListener('DOMContentLoaded', async () => {
+        console.log('[Auth Init] Starting authentication module...');
+        
+        if (typeof AuthModule !== 'undefined') {
+          try {
+            // Initialize with auth container (not body)
+            const authContainer = document.getElementById('auth-container');
+            const authOverlay = document.getElementById('auth-overlay');
+            
+            await AuthModule.init(authContainer);
+            console.log('✅ [Auth Init] Auth module initialized successfully');
+            
+            // If no session, show overlay (login form)
+            // Auth module will hide overlay if session exists
+            if (!localStorage.getItem('sb-yawfuymgwukericlhgxh-auth-token')) {
+              console.log('[Auth Init] No session found - showing login');
+              authOverlay.style.display = 'block';
+            } else {
+              console.log('[Auth Init] Session found - showing dashboard');
+              authOverlay.style.display = 'none';
+            }
+          } catch (error) {
+            console.error('❌ [Auth Init] Auth initialization failed:', error);
+          }
+        } else {
+          console.error('❌ [Auth Init] AuthModule is not defined');
+        }
+      });
+    </script>
 
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
@@ -150,12 +233,18 @@
     <!-- Frequency Module -->
     <script type="module" src="js/modules/frequency/index.js"></script>
 
+    <!-- Lesson Execution Module (Activity Tracking) -->
+    <script type="module" src="js/modules/lesson-execution/index.js"></script>
+
     <!-- Import Module -->
     <script src="js/modules/import/controllers/importControllerEnhanced.js"></script>
     <script type="module" src="js/modules/import/index.js"></script>
 
     <!-- CRM Module -->
     <script type="module" src="js/modules/crm/index.js"></script>
+
+    <!-- Packages Module (Comercial) -->
+    <script type="module" src="js/modules/packages/index.js"></script>
 
     <!-- Test Guide for Anti-Duplication System - REMOVED: file does not exist -->
     <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->

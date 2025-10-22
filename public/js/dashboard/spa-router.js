@@ -298,6 +298,10 @@ class SPARouter {
             'unit-editor': {
                 css: 'css/modules/unit-editor.css'
             },
+            'lesson-execution': {
+                css: 'css/modules/lesson-execution.css',
+                js: 'js/modules/lesson-execution/index.js'
+            },
             'instructors': {
                 css: 'css/modules/instructors.css',
                 js: 'js/modules/instructors/index.js'
@@ -305,12 +309,38 @@ class SPARouter {
             'instructor-editor': {
                 css: 'css/modules/instructor-editor.css'
             },
+            'checkin-kiosk': {
+                css: 'css/modules/checkin-kiosk.css',
+                js: [
+                    'js/modules/checkin-kiosk/services/FaceRecognitionService.js',
+                    'js/modules/checkin-kiosk/services/CameraService.js',
+                    'js/modules/checkin-kiosk/services/BiometricService.js',
+                    'js/modules/checkin-kiosk/services/AttendanceService.js',
+                    'js/modules/checkin-kiosk/views/CameraView.js',
+                    'js/modules/checkin-kiosk/views/ConfirmationView.js',
+                    'js/modules/checkin-kiosk/views/SuccessView.js',
+                    'js/modules/checkin-kiosk/controllers/CheckinController.js',
+                    'js/modules/checkin-kiosk/index.js'
+                ]
+            },
             'agenda': {
                 css: 'css/modules/agenda.css',
                 js: [
                     'js/modules/agenda/services/agendaService.js',
                     'js/modules/agenda/controllers/calendarController.js',
                     'js/modules/agenda/index.js'
+                ]
+            },
+            'frequency': {
+                css: 'css/modules/frequency.css',
+                js: [
+                    'js/modules/frequency/services/frequencyService.js',
+                    'js/modules/frequency/services/validationService.js',
+                    'js/modules/frequency/controllers/frequencyController.js',
+                    'js/modules/frequency/components/attendanceList.js',
+                    'js/modules/frequency/views/checkinView.js',
+                    'js/modules/frequency/views/historyView.js',
+                    'js/modules/frequency/index.js'
                 ]
             },
             'crm': {
@@ -401,7 +431,10 @@ class SPARouter {
         // Verificar se é um módulo ES6 (baseado no caminho)
         if (url.includes('student-editor') || url.includes('techniques') || 
             url.includes('students/index.js') || url.includes('lesson-plans') ||
-            url.includes('services/')) {
+            url.includes('services/') || url.includes('controllers/') || 
+            url.includes('components/') || url.includes('views/') ||
+            url.includes('frequency/') || url.includes('agenda/') ||
+            url.includes('activities/') || url.includes('checkin-kiosk/')) {
             script.type = 'module';
         } else {
             script.type = 'application/javascript';
@@ -1727,44 +1760,79 @@ router.registerRoute('hybrid-agenda', async () => {
 });
 
 // Check-in Kiosk Route
-router.registerRoute('checkin-kiosk', () => {
-    console.log('🖥️ Redirecionando para Kiosk de Check-in...');
+router.registerRoute('checkin-kiosk', async () => {
+    console.log('🖥️ Inicializando Kiosk de Check-in...');
     
-    // Redirect to standalone kiosk page
-    window.open('/views/checkin-kiosk.html', '_blank');
-    
-    // Show info in current page
     const container = document.getElementById('module-container');
-    container.innerHTML = `
-        <div class="kiosk-redirect-info">
-            <div class="kiosk-icon">🖥️</div>
-            <h2>Kiosk de Check-in</h2>
-            <p>O kiosk foi aberto em uma nova janela/aba.</p>
-            <div class="kiosk-features">
-                <h3>Funcionalidades do Kiosk:</h3>
-                <ul>
-                    <li>✅ Busca por matrícula</li>
-                    <li>📊 Dashboard do aluno</li>
-                    <li>📅 Aulas disponíveis</li>
-                    <li>⚡ Check-in rápido</li>
-                    <li>📱 Interface touch-friendly</li>
-                </ul>
-            </div>
-            <div class="kiosk-actions">
-                <button onclick="window.open('/views/checkin-kiosk.html', '_blank')" class="btn btn-primary">
-                    🖥️ Abrir Kiosk Novamente
-                </button>
-                <button onclick="router.navigateTo('frequency')" class="btn btn-secondary">
-                    📊 Ir para Frequência
-                </button>
-            </div>
-        </div>
-    `;
-    
+    if (!container) {
+        console.error('❌ Container not found');
+        return;
+    }
+
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Kiosk de Check-in';
-    document.querySelector('.breadcrumb').textContent = 'Home / Frequência / Kiosk';
+    document.querySelector('.module-header h1').textContent = '📸 Check-in Kiosk';
+    document.querySelector('.breadcrumb').textContent = 'Home / Check-in Kiosk';
+
+    // Clear container
+    container.innerHTML = '<div class="loading-spinner"><p>⏳ Carregando módulo...</p></div>';
+
+    try {
+        // 1. Load CheckinKiosk module assets (in order)
+        console.log('📦 Loading CheckinKiosk assets...');
+        await loadScriptsSequentially([
+            'js/modules/checkin-kiosk/services/FaceRecognitionService.js',
+            'js/modules/checkin-kiosk/services/CameraService.js',
+            'js/modules/checkin-kiosk/services/BiometricService.js',
+            'js/modules/checkin-kiosk/services/AttendanceService.js',
+            'js/modules/checkin-kiosk/views/CameraView.js',
+            'js/modules/checkin-kiosk/views/ConfirmationView.js',
+            'js/modules/checkin-kiosk/views/SuccessView.js',
+            'js/modules/checkin-kiosk/controllers/CheckinController.js',
+            'js/modules/checkin-kiosk/index.js'
+        ]);
+        console.log('✅ CheckinKiosk assets loaded');
+
+        // 2. Load face-api.js library
+        if (typeof faceapi === 'undefined') {
+            console.log('⏳ Loading face-api.js...');
+            await loadExternalScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
+            console.log('✅ face-api.js loaded');
+        }
+
+        // 3. Initialize CheckinKiosk
+        console.log('🎬 Initializing CheckinKiosk.init()...');
+        await initializeCheckinKiosk(container);
+        console.log('✅ CheckinKiosk initialized successfully');
+
+    } catch (error) {
+        console.error('❌ CheckinKiosk initialization failed:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <h2>❌ Erro ao Carregar</h2>
+                <p>${error.message || 'Falha desconhecida ao inicializar Check-in Kiosk'}</p>
+                <button onclick="location.reload()">Recarregar Página</button>
+            </div>
+        `;
+    }
 });
+
+/**
+ * Initialize CheckinKiosk module
+ */
+async function initializeCheckinKiosk(container) {
+    if (typeof window.CheckinKiosk === 'undefined') {
+        throw new Error('CheckinKiosk module not loaded - window.CheckinKiosk is undefined');
+    }
+
+    try {
+        console.log('🎬 Initializing CheckinKiosk.init()...');
+        await window.CheckinKiosk.init('module-container');
+        console.log('✅ CheckinKiosk initialized successfully');
+    } catch (error) {
+        console.error('❌ Error initializing CheckinKiosk:', error);
+        throw error; // Re-throw to be handled by caller
+    }
+}
 
 // Import Module Route
 router.registerRoute('import', async () => {
@@ -1817,6 +1885,62 @@ router.registerRoute('import', async () => {
                 <p>${error.message}</p>
                 <button onclick="location.reload()" class="btn btn-primary">
                     Recarregar Página
+                </button>
+            </div>
+        `;
+    }
+});
+
+// Lesson Execution Module Route (Activity Tracking Live Interface)
+router.registerRoute('lesson-execution/:lessonId', async (params) => {
+    console.log('🎯 Inicializando módulo de execução de aula ao vivo...', params);
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container and show loading
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando execução de aula ao vivo...</p>
+        </div>
+    `;
+    
+    try {
+        // Load module assets
+        router.loadModuleAssets('lesson-execution');
+        
+        // Wait for module to be available
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds (100 * 100ms)
+        
+        while (!window.initLessonExecution && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.initLessonExecution) {
+            await window.initLessonExecution(params.lessonId, container);
+            console.log('✅ Módulo de execução de aula inicializado com sucesso');
+        } else {
+            throw new Error('Módulo de execução de aula não foi carregado após 10 segundos');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de execução de aula:', error);
+        container.innerHTML = `
+            <div class="error-state data-card-premium">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na inicialização</h3>
+                <p>${error.message}</p>
+                <button onclick="router.navigateTo('frequency')" class="btn btn-primary">
+                    ← Voltar para Frequência
+                </button>
+                <button onclick="location.reload()" class="btn btn-secondary">
+                    🔄 Recarregar Página
                 </button>
             </div>
         `;
@@ -1887,6 +2011,182 @@ router.registerRoute('agenda', async () => {
     // Update header
     document.querySelector('.module-header h1').textContent = 'Agenda';
     document.querySelector('.breadcrumb').textContent = 'Home / Agenda';
+});
+
+// Frequency Module Route
+router.registerRoute('frequency', async () => {
+    console.log('📊 Inicializando módulo de frequência...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container first
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando módulo de frequência...</p>
+        </div>
+    `;
+
+    try {
+        // Load module assets
+        router.loadModuleAssets('frequency');
+        
+        // Wait for module to be available
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds (100 * 100ms)
+        
+        while (!window.initFrequencyModule && !window.frequencyModule && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.initFrequencyModule) {
+            // Use SPA initialization function if available
+            await window.initFrequencyModule(container);
+            console.log('✅ Módulo de frequência inicializado com sucesso (via initFrequencyModule)');
+        } else if (window.frequencyModule) {
+            // Fallback: use module's initialize method
+            await window.frequencyModule.initialize();
+            
+            // Get the controller and initialize with container
+            if (window.frequencyModule.controller) {
+                container.innerHTML = '<div id="frequency-container"></div>';
+                const frequencyContainer = container.querySelector('#frequency-container');
+                await window.frequencyModule.controller.initialize(frequencyContainer, window.apiClient);
+            }
+            
+            console.log('✅ Módulo de frequência inicializado com sucesso (via frequencyModule)');
+        } else {
+            throw new Error('Módulo de frequência não foi carregado após 10 segundos');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de frequência:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na Frequência</h3>
+                <p>Falha ao carregar o módulo de frequência: ${error.message}</p>
+                <button onclick="router.navigateTo('frequency')" class="btn btn-primary">
+                    🔄 Tentar Novamente
+                </button>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-secondary">
+                    🏠 Voltar ao Dashboard
+                </button>
+            </div>
+        `;
+    }
+    
+    // Update header
+    const headerH1 = document.querySelector('.module-header h1');
+    const breadcrumb = document.querySelector('.breadcrumb');
+    if (headerH1) headerH1.textContent = 'Gestão de Frequência';
+    if (breadcrumb) breadcrumb.textContent = 'Home / Frequência';
+});
+
+// Graduation Module Route
+router.registerRoute('graduation', async () => {
+    console.log('🎓 Inicializando módulo de Graduação...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container first
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando módulo de graduação...</p>
+        </div>
+    `;
+
+    try {
+        // Helper to load scripts
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) { 
+                    console.log(`✅ Script já carregado: ${src}`);
+                    resolve(); 
+                    return; 
+                }
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = () => {
+                    console.log(`✅ Script carregado: ${src}`);
+                    resolve();
+                };
+                s.onerror = () => {
+                    console.error(`❌ Erro ao carregar script: ${src}`);
+                    reject(new Error(`Falha ao carregar ${src}`));
+                };
+                document.body.appendChild(s);
+            });
+        }
+        
+        // API client should already be loaded, but verify
+        if (!window.createModuleAPI) {
+            console.warn('⚠️ API Client not found, loading...');
+            await loadScript('/js/shared/api-client.js');
+        }
+        
+        // Load view HTML
+        const viewResponse = await fetch('/views/graduation.html');
+        if (!viewResponse.ok) {
+            throw new Error(`HTTP ${viewResponse.status}: ${viewResponse.statusText}`);
+        }
+        const viewHTML = await viewResponse.text();
+        
+        // Insert view into container
+        container.innerHTML = viewHTML;
+        
+        // Load module JavaScript
+        await loadScript('/js/modules/graduation/index.js');
+        
+        // Wait for module to be available
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds (50 * 100ms)
+        
+        while (!window.graduationModule && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.graduationModule) {
+            throw new Error('Módulo de graduação não foi carregado após 5 segundos');
+        }
+        
+        // Initialize module
+        await window.graduationModule.init();
+        console.log('✅ Módulo de graduação inicializado com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de graduação:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro na Graduação</h3>
+                <p>Falha ao carregar o módulo de graduação: ${error.message}</p>
+                <button onclick="router.navigateTo('graduation')" class="btn btn-primary">
+                    🔄 Tentar Novamente
+                </button>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-secondary">
+                    🏠 Voltar ao Dashboard
+                </button>
+            </div>
+        `;
+    }
+    
+    // Update header
+    const headerH1 = document.querySelector('.module-header h1');
+    const breadcrumb = document.querySelector('.breadcrumb');
+    if (headerH1) headerH1.textContent = 'Gestão de Graduação';
+    if (breadcrumb) breadcrumb.textContent = 'Home / Graduação';
 });
 
 // CRM Module Route
@@ -2009,6 +2309,78 @@ router.registerRoute('settings', async () => {
 
     }
 });
+
+// ============================================================================
+// UTILITY FUNCTIONS FOR CHECKIN-KIOSK MODULE LOADING
+// ============================================================================
+
+/**
+ * Load external scripts sequentially (waits for each to complete)
+ * @param {string[]} urls - Array of script URLs
+ */
+async function loadScriptsSequentially(urls) {
+    for (const url of urls) {
+        await loadScript(url);
+    }
+}
+
+/**
+ * Load a single script and wait for it to complete
+ * @param {string} url - Script URL
+ */
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        // Avoid duplicate loading
+        if (document.querySelector(`script[src="${url}"]`)) {
+            console.log(`✓ Script already loaded: ${url}`);
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = url;
+        script.type = 'application/javascript';
+        
+        script.onload = () => {
+            console.log(`✓ Script loaded: ${url}`);
+            resolve();
+        };
+        
+        script.onerror = () => {
+            const error = new Error(`Failed to load script: ${url}`);
+            console.error('❌', error.message);
+            reject(error);
+        };
+        
+        document.body.appendChild(script);
+    });
+}
+
+/**
+ * Load external script (like face-api.js)
+ * @param {string} url - External script URL
+ */
+function loadExternalScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+            console.log(`✓ External script loaded: ${url}`);
+            resolve();
+        };
+        
+        script.onerror = () => {
+            const error = new Error(`Failed to load external script: ${url}`);
+            console.error('❌', error.message);
+            reject(error);
+        };
+        
+        document.head.appendChild(script);
+    });
+}
 
 // ✅ PREVENT MULTIPLE INITIALIZATIONS
 if (!window._routerInitialized) {

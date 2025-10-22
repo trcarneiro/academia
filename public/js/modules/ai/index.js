@@ -117,6 +117,37 @@ class AIDashboardModule {
 // Expose globally for AcademyApp compatibility
 window.ai = window.aiModule = AIDashboardModule;
 
+// Global initialization function for SPA router
+window.initializeAIModule = function() {
+    console.log('🤖 Initializing AI Module...');
+    
+    const container = document.getElementById('ai-module-container') || document.getElementById('module-container');
+    
+    if (!container) {
+        console.error('❌ AI Module: Container not found');
+        return;
+    }
+    
+    // Create instance
+    const aiModule = new AIDashboardModule(window.app || {});
+    
+    // Render AI view into container
+    if (aiModule.view && typeof aiModule.view.render === 'function') {
+        aiModule.view.container = container;
+        aiModule.view.render();
+        
+        // Load initial data (empty state for agents)
+        if (aiModule.view.loadAgents) {
+            aiModule.view.loadAgents();
+        }
+    }
+    
+    // Store instance globally
+    window.aiModuleInstance = aiModule;
+    
+    console.log('✅ AI Module initialized successfully');
+};
+
 // Export for use in other files
 export { AIDashboardModule };
 export default AIDashboardModule;

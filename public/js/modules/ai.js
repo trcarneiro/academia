@@ -1635,21 +1635,29 @@
                                 <div class="form-group">
                                     <label>Especialização</label>
                                     <select id="agent-specialization">
-                                        <option value="analytics">📊 Análise de Dados</option>
-                                        <option value="curriculum">📚 Desenvolvimento Curricular</option>
-                                        <option value="student-support">👥 Suporte ao Aluno</option>
-                                        <option value="performance">⚡ Otimização de Performance</option>
-                                        <option value="marketing">📢 Marketing e Vendas</option>
-                                        <option value="finance">💰 Análise Financeira</option>
+                                        <option value="pedagogical">🎓 Pedagógico</option>
+                                        <option value="curriculum">📚 Curricular (Planos de Curso/Aula)</option>
+                                        <option value="analytical">� Análise de Dados</option>
+                                        <option value="support">👥 Suporte ao Aluno</option>
+                                        <option value="progression">⚡ Progressão e Performance</option>
+                                        <option value="commercial">💰 Comercial e Financeiro</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label>Modelo IA</label>
                                     <select id="agent-model">
-                                        <option value="gpt-4">GPT-4 (Mais inteligente)</option>
-                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Mais rápido)</option>
-                                        <option value="claude">Claude (Análise detalhada)</option>
-                                        <option value="gemini">Gemini (Multilíngue)</option>
+                                        <optgroup label="🚀 Série Gemini 2.0 (Mais Recente)">
+                                            <option value="gemini-2.0-flash-exp">⚡ Gemini 2.0 Flash (Experimental)</option>
+                                        </optgroup>
+                                        <optgroup label="🧠 Série Gemini 1.5 (Produção)">
+                                            <option value="gemini-1.5-pro">🧠 Gemini 1.5 Pro (Mais inteligente)</option>
+                                            <option value="gemini-1.5-pro-exp-0827">🧠 Gemini 1.5 Pro Exp 0827</option>
+                                            <option value="gemini-1.5-flash" selected>⚡ Gemini 1.5 Flash (Mais rápido)</option>
+                                            <option value="gemini-1.5-flash-8b">⚡ Gemini 1.5 Flash-8B (Ultra rápido)</option>
+                                        </optgroup>
+                                        <optgroup label="📱 Série Gemini 1.0 (Legacy)">
+                                            <option value="gemini-1.0-pro">📊 Gemini 1.0 Pro</option>
+                                        </optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -1701,15 +1709,33 @@
             const name = document.getElementById('agent-name')?.value?.trim();
             const specialization = document.getElementById('agent-specialization')?.value;
             const model = document.getElementById('agent-model')?.value;
-            const instructions = document.getElementById('agent-instructions')?.value?.trim();
+            const systemPrompt = document.getElementById('agent-instructions')?.value?.trim();
 
-            if (!name || !instructions) {
-                alert('Nome e instruções são obrigatórios');
+            if (!name || !systemPrompt) {
+                alert('Nome e instruções do sistema são obrigatórios');
+                return;
+            }
+
+            if (systemPrompt.length < 50) {
+                alert('As instruções do sistema devem ter pelo menos 50 caracteres');
                 return;
             }
 
             try {
-                const response = await this.api.post('/api/agents', { name, specialization, model, instructions });
+                // Dados do agente seguindo schema Prisma
+                const agentData = {
+                    name,
+                    specialization,
+                    model,
+                    systemPrompt,
+                    temperature: 0.7,
+                    maxTokens: 2048,
+                    isActive: true,
+                    ragSources: [],
+                    mcpTools: []
+                };
+
+                const response = await this.api.post('/api/agents', agentData);
 
                 if (response.success) {
                     // Clear form
@@ -1720,13 +1746,13 @@
                     await this.loadAgents();
                     await this.loadAgentsStats();
                     
-                    alert('Agente criado com sucesso!');
+                    alert('✅ Agente criado com sucesso!');
                 } else {
-                    alert('Erro ao criar agente: ' + (response.error || 'Erro desconhecido'));
+                    alert('❌ Erro ao criar agente: ' + (response.error || response.message || 'Erro desconhecido'));
                 }
             } catch (error) {
                 console.error('Error creating agent:', error);
-                alert('Erro de conexão ao criar agente');
+                alert('❌ Erro de conexão ao criar agente: ' + error.message);
             }
         }
 
@@ -1789,13 +1815,12 @@
                                 <div class="agent-avatar">${this.getSpecializationIcon(agent.specialization)}</div>
                                 <div class="agent-info">
                                     <h4>${agent.name}</h4>
-                                    <span class="agent-status ${agent.status}">${agent.status === 'active' ? '🟢 Ativo' : '🔴 Inativo'}</span>
+                                    <span class="agent-status ${agent.isActive ? 'active' : 'inactive'}">${agent.isActive ? '🟢 Ativo' : '🔴 Inativo'}</span>
                                 </div>
                             </div>
-                            <div class="agent-stats">
-                                <span>📊 ${agent.tasksCompleted || 0} tarefas</span>
-                                <span>⚡ ${agent.model}</span>
-                                <span>🎯 ${(agent.accuracy * 100).toFixed(1)}%</span>
+                            <div class="agent-meta">
+                                <small>� ${agent.model || 'N/A'}</small>
+                                ${agent.description ? `<p class="agent-description">${agent.description}</p>` : ''}
                             </div>
                             <div class="agent-actions">
                                 <button class="btn-primary btn-sm" onclick="enhancedAI.agentsService.chatWithAgent('${agent.id}')">
@@ -1816,12 +1841,12 @@
 
         getSpecializationIcon(specialization) {
             const icons = {
-                'analytics': '📊',
+                'pedagogical': '🎓',
                 'curriculum': '📚', 
-                'student-support': '👥',
-                'performance': '⚡',
-                'marketing': '📢',
-                'finance': '💰'
+                'analytical': '�',
+                'support': '👥',
+                'progression': '⚡',
+                'commercial': '💰'
             };
             return icons[specialization] || '🤖';
         }
@@ -1919,12 +1944,177 @@
 
         async editAgent(agentId) {
             console.log('⚙️ Editing agent:', agentId);
+            
+            try {
+                // Buscar dados do agente
+                const response = await this.api.get(`/api/agents/${agentId}`);
+                
+                if (!response.success) {
+                    alert('❌ Erro ao carregar dados do agente');
+                    return;
+                }
+                
+                const agent = response.data;
+                
+                // Criar modal de edição
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content modal-large">
+                        <div class="modal-header">
+                            <h2>⚙️ Configurar Agente: ${agent.name}</h2>
+                            <button class="btn-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nome do Agente *</label>
+                                    <input type="text" id="edit-agent-name" value="${agent.name}" placeholder="Nome do agente">
+                                </div>
+                                <div class="form-group">
+                                    <label>Especialização *</label>
+                                    <select id="edit-agent-specialization">
+                                        <option value="pedagogical" ${agent.specialization === 'pedagogical' ? 'selected' : ''}>🎓 Pedagógico</option>
+                                        <option value="curriculum" ${agent.specialization === 'curriculum' ? 'selected' : ''}>📚 Curricular (Planos de Curso/Aula)</option>
+                                        <option value="analytical" ${agent.specialization === 'analytical' ? 'selected' : ''}>📊 Análise de Dados</option>
+                                        <option value="support" ${agent.specialization === 'support' ? 'selected' : ''}>👥 Suporte ao Aluno</option>
+                                        <option value="progression" ${agent.specialization === 'progression' ? 'selected' : ''}>⚡ Progressão e Performance</option>
+                                        <option value="commercial" ${agent.specialization === 'commercial' ? 'selected' : ''}>💰 Comercial e Financeiro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Modelo IA *</label>
+                                    <select id="edit-agent-model">
+                                        <optgroup label="🚀 Série Gemini 2.0 (Mais Recente)">
+                                            <option value="gemini-2.0-flash-exp" ${agent.model === 'gemini-2.0-flash-exp' ? 'selected' : ''}>⚡ Gemini 2.0 Flash (Experimental)</option>
+                                        </optgroup>
+                                        <optgroup label="🧠 Série Gemini 1.5 (Produção)">
+                                            <option value="gemini-1.5-pro" ${agent.model === 'gemini-1.5-pro' ? 'selected' : ''}>🧠 Gemini 1.5 Pro (Mais inteligente)</option>
+                                            <option value="gemini-1.5-pro-exp-0827" ${agent.model === 'gemini-1.5-pro-exp-0827' ? 'selected' : ''}>🧠 Gemini 1.5 Pro Exp 0827</option>
+                                            <option value="gemini-1.5-flash" ${agent.model === 'gemini-1.5-flash' ? 'selected' : ''}>⚡ Gemini 1.5 Flash (Mais rápido)</option>
+                                            <option value="gemini-1.5-flash-8b" ${agent.model === 'gemini-1.5-flash-8b' ? 'selected' : ''}>⚡ Gemini 1.5 Flash-8B (Ultra rápido)</option>
+                                        </optgroup>
+                                        <optgroup label="📱 Série Gemini 1.0 (Legacy)">
+                                            <option value="gemini-1.0-pro" ${agent.model === 'gemini-1.0-pro' ? 'selected' : ''}>📊 Gemini 1.0 Pro</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Temperatura (${agent.temperature || 0.7})</label>
+                                    <input type="range" id="edit-agent-temperature" min="0" max="1" step="0.1" value="${agent.temperature || 0.7}" 
+                                           oninput="document.getElementById('temp-value').textContent = this.value">
+                                    <small id="temp-value">${agent.temperature || 0.7}</small>
+                                    <small class="text-muted">0 = Preciso, 1 = Criativo</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Max Tokens</label>
+                                    <input type="number" id="edit-agent-max-tokens" value="${agent.maxTokens || 2048}" min="256" max="8192" step="256">
+                                </div>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select id="edit-agent-active">
+                                        <option value="true" ${agent.isActive ? 'selected' : ''}>🟢 Ativo</option>
+                                        <option value="false" ${!agent.isActive ? 'selected' : ''}>🔴 Inativo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Instruções do Sistema (System Prompt) *</label>
+                                <textarea id="edit-agent-system-prompt" rows="8" placeholder="Descreva como o agente deve se comportar...">${agent.systemPrompt || ''}</textarea>
+                                <small class="text-muted">Mínimo 50 caracteres</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição (Opcional)</label>
+                                <textarea id="edit-agent-description" rows="3" placeholder="Descrição do agente para outros usuários...">${agent.description || ''}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                            <button class="btn-primary" onclick="enhancedAI.agentsService.saveAgentEdit('${agentId}')">
+                                💾 Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+            } catch (error) {
+                console.error('Error loading agent for edit:', error);
+                alert('❌ Erro ao carregar agente: ' + error.message);
+            }
+        }
+
+        async saveAgentEdit(agentId) {
+            const name = document.getElementById('edit-agent-name')?.value?.trim();
+            const specialization = document.getElementById('edit-agent-specialization')?.value;
+            const model = document.getElementById('edit-agent-model')?.value;
+            const temperature = parseFloat(document.getElementById('edit-agent-temperature')?.value || 0.7);
+            const maxTokens = parseInt(document.getElementById('edit-agent-max-tokens')?.value || 2048);
+            const isActive = document.getElementById('edit-agent-active')?.value === 'true';
+            const systemPrompt = document.getElementById('edit-agent-system-prompt')?.value?.trim();
+            const description = document.getElementById('edit-agent-description')?.value?.trim();
+
+            if (!name || !systemPrompt) {
+                alert('❌ Nome e instruções do sistema são obrigatórios');
+                return;
+            }
+
+            if (systemPrompt.length < 50) {
+                alert('❌ As instruções do sistema devem ter pelo menos 50 caracteres');
+                return;
+            }
+
+            try {
+                const agentData = {
+                    name,
+                    specialization,
+                    model,
+                    temperature,
+                    maxTokens,
+                    isActive,
+                    systemPrompt,
+                    description: description || undefined
+                };
+
+                const response = await this.api.patch(`/api/agents/${agentId}`, agentData);
+
+                if (response.success) {
+                    // Fechar modal
+                    document.querySelector('.modal-overlay')?.remove();
+                    
+                    // Recarregar lista
+                    await this.loadAgents();
+                    await this.loadAgentsStats();
+                    
+                    alert('✅ Agente atualizado com sucesso!');
+                } else {
+                    alert('❌ Erro ao atualizar agente: ' + (response.error || response.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Error updating agent:', error);
+                alert('❌ Erro ao atualizar agente: ' + error.message);
+            }
         }
 
         async deleteAgent(agentId) {
-            if (confirm('Tem certeza que deseja excluir este agente?')) {
-                console.log('🗑️ Deleting agent:', agentId);
-                await this.loadAgents();
+            if (!confirm('⚠️ Tem certeza que deseja excluir este agente?\n\nEsta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                const response = await this.api.delete(`/api/agents/${agentId}`);
+                
+                if (response.success) {
+                    alert('✅ Agente excluído com sucesso!');
+                    await this.loadAgents();
+                    await this.loadAgentsStats();
+                } else {
+                    alert('❌ Erro ao excluir agente: ' + (response.error || response.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Error deleting agent:', error);
+                alert('❌ Erro ao excluir agente: ' + error.message);
             }
         }
     }

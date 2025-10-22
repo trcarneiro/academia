@@ -1,678 +1,609 @@
 /**
- * HistoryView - View para histórico de frequência
+ * History View - Frequency Module (Fase 3)
+ * Exibe histórico de aulas com participantes em tabela expansível
+ * 
+ * Features:
+ * - Tabela paginada (20 aulas por página)
+ * - Linha expansível com lista de participantes
+ * - Filtros: turma, status, período
+ * - Exportação CSV
+ * 
+ * @requires API Client (window.createModuleAPI)
  */
 
 export class HistoryView {
-    constructor() {
-        this.template = null;
+  constructor(moduleAPI) {
+    this.moduleAPI = moduleAPI;
+    this.container = null;
+    this.currentPage = 1;
+    this.pageSize = 20;
+    this.filters = {
+      turmaId: null,
+      status: null,
+      startDate: null,
+      endDate: null
+    };
+    this.expandedRows = new Set(); // IDs das linhas expandidas
+    this.lessons = []; // Cache das aulas
+  }
+
+  /**
+   * Renderiza a view completa
+   */
+  async render(container) {
+    this.container = container;
+    
+    // HTML estrutura
+    this.container.innerHTML = this.getHTML();
+    
+    // Carrega dados iniciais
+    await this.loadLessonsHistory();
+    
+    // Configura eventos
+    this.setupEvents();
+    
+    console.log('✅ History View renderizada');
+  }
+
+  /**
+   * HTML da history view
+   */
+  getHTML() {
+    return `
+      <div class="frequency-history">
+        <!-- Header -->
+        <div class="module-header-premium">
+          <div class="header-content">
+            <h1>📋 Histórico de Aulas</h1>
+            <nav class="breadcrumb">
+              <a href="#home">Home</a> › 
+              <a href="#frequency">Frequência</a> › 
+              <span>Histórico</span>
+            </nav>
+          </div>
+          <div class="header-actions">
+            <button id="exportHistoryCSV" class="btn btn-secondary">
+              📥 Exportar CSV
+            </button>
+            <button id="refreshHistory" class="btn btn-secondary">
+              🔄 Atualizar
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="history-filters">
+          <div class="filter-group">
+            <label for="filterTurma">Turma</label>
+            <select id="filterTurma" class="filter-select">
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus" class="filter-select">
+              <option value="">Todos os status</option>
+              <option value="COMPLETED">Completa</option>
+              <option value="SCHEDULED">Agendada</option>
+              <option value="CANCELLED">Cancelada</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filterStartDate">Data Início</label>
+            <input type="date" id="filterStartDate" class="filter-input" />
+          </div>
+
+          <div class="filter-group">
+            <label for="filterEndDate">Data Fim</label>
+            <input type="date" id="filterEndDate" class="filter-input" />
+          </div>
+
+          <div class="filter-actions">
+            <button id="applyFilters" class="btn btn-primary">
+              Aplicar Filtros
+            </button>
+            <button id="clearFilters" class="btn btn-secondary">
+              Limpar
+            </button>
+          </div>
+        </div>
+
+        <!-- Lessons Table -->
+        <div class="history-table-container">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;"></th>
+                <th style="width: 80px;">Nº</th>
+                <th>Título</th>
+                <th style="width: 150px;">Turma</th>
+                <th style="width: 150px;">Data</th>
+                <th style="width: 100px;">Status</th>
+                <th style="width: 120px;">Presença</th>
+                <th style="width: 100px;">Taxa</th>
+              </tr>
+            </thead>
+            <tbody id="lessonsTableBody">
+              <tr class="loading-row">
+                <td colspan="8" style="text-align: center; padding: 40px;">
+                  <div class="loading-spinner"></div>
+                  <p>Carregando histórico...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="history-pagination">
+          <div class="pagination-info">
+            Mostrando <strong id="paginationInfo">0</strong> de <strong id="totalLessons">0</strong> aulas
+          </div>
+          <div class="pagination-controls">
+            <button id="prevPage" class="btn-pagination" disabled>
+              ← Anterior
+            </button>
+            <span id="pageNumbers" class="page-numbers"></span>
+            <button id="nextPage" class="btn-pagination" disabled>
+              Próxima →
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <div class="empty-icon">📭</div>
+          <h3>Nenhuma aula encontrada</h3>
+          <p>Ajuste os filtros ou aguarde novas aulas serem agendadas.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Carrega histórico de aulas da API
+   */
+  async loadLessonsHistory() {
+    try {
+      this.showLoading();
+
+      const queryParams = new URLSearchParams({
+        page: this.currentPage,
+        pageSize: this.pageSize,
+        ...(this.filters.turmaId && { turmaId: this.filters.turmaId }),
+        ...(this.filters.status && { status: this.filters.status }),
+        ...(this.filters.startDate && { startDate: this.filters.startDate }),
+        ...(this.filters.endDate && { endDate: this.filters.endDate })
+      });
+
+      const response = await this.moduleAPI.request(
+        `/api/frequency/lessons-history?${queryParams}`
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || 'Erro ao carregar histórico');
+      }
+
+      // Armazena aulas no cache
+      this.lessons = response.data;
+
+      // Renderiza tabela
+      this.renderLessonsTable(response.data);
+
+      // Atualiza paginação
+      this.updatePagination(response.pagination);
+
+      // Esconde empty state
+      this.hideEmptyState();
+
+      // Se não há dados, mostra empty state
+      if (response.data.length === 0) {
+        this.showEmptyState();
+      }
+
+    } catch (error) {
+      console.error('❌ Erro ao carregar histórico:', error);
+      this.showError(error.message);
+      window.app?.handleError(error, { module: 'Frequency', context: 'loadLessonsHistory' });
+    }
+  }
+
+  /**
+   * Renderiza tabela de aulas
+   */
+  renderLessonsTable(lessons) {
+    const tbody = this.container.querySelector('#lessonsTableBody');
+    if (!tbody) return;
+
+    if (lessons.length === 0) {
+      tbody.innerHTML = '';
+      return;
     }
 
-    /**
-     * Renderizar view de histórico
-     */
-    render(historyData = []) {
-        return `
-            <div class="frequency-history-view">
-                <!-- Header da Página -->
-                <div class="module-header-premium">
-                    <div class="header-content">
-                        <div class="header-title">
-                            <h1>📊 Histórico de Frequência</h1>
-                            <p>Consulte e analise o histórico de presenças</p>
-                        </div>
-                        <div class="header-actions">
-                            <button class="btn-secondary" id="export-history">
-                                📥 Exportar
-                            </button>
-                            <button class="btn-secondary" id="advanced-filters">
-                                🔍 Filtros Avançados
-                            </button>
-                            <button class="btn-primary" id="refresh-history">
-                                🔄 Atualizar
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Breadcrumb Navigation -->
-                    <nav class="breadcrumb-nav">
-                        <span class="breadcrumb-item">Academia</span>
-                        <span class="breadcrumb-separator">></span>
-                        <span class="breadcrumb-item">✅ Frequência</span>
-                        <span class="breadcrumb-separator">></span>
-                        <span class="breadcrumb-item active">📊 Histórico</span>
-                    </nav>
-                </div>
+    tbody.innerHTML = lessons.map(lesson => this.getLessonRowHTML(lesson)).join('');
 
-                <!-- Summary Stats -->
-                <div class="history-summary">
-                    <div class="summary-grid">
-                        <div class="stat-card-enhanced">
-                            <div class="stat-icon">📈</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="total-records">${historyData.length}</div>
-                                <div class="stat-label">Total de Registros</div>
-                                <div class="stat-trend trend-up">
-                                    📈 +5% este mês
-                                </div>
-                            </div>
-                        </div>
+    // Adiciona eventos de clique nas linhas
+    lessons.forEach(lesson => {
+      const row = tbody.querySelector(`[data-lesson-id="${lesson.id}"]`);
+      if (row) {
+        row.addEventListener('click', (e) => {
+          // Não expandir se clicar no botão
+          if (e.target.classList.contains('expand-btn')) return;
+          this.toggleRow(lesson.id);
+        });
+      }
+    });
+  }
 
-                        <div class="stat-card-enhanced">
-                            <div class="stat-icon">📅</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="period-days">30</div>
-                                <div class="stat-label">Últimos Dias</div>
-                                <div class="stat-additional">
-                                    Período selecionado
-                                </div>
-                            </div>
-                        </div>
+  /**
+   * HTML de uma linha da tabela
+   */
+  getLessonRowHTML(lesson) {
+    const isExpanded = this.expandedRows.has(lesson.id);
+    const statusClass = this.getStatusClass(lesson.status);
+    const statusLabel = this.getStatusLabel(lesson.status);
+    
+    // Suporta ambos formatos: lesson.stats.attendanceRate (antigo) e lesson.attendanceRate (novo)
+    const attendanceRate = lesson.stats?.attendanceRate ?? lesson.attendanceRate ?? 0;
+    const attendanceRateClass = this.getAttendanceRateClass(attendanceRate);
 
-                        <div class="stat-card-enhanced">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="unique-students">0</div>
-                                <div class="stat-label">Alunos Únicos</div>
-                                <div class="stat-additional">
-                                    No período
-                                </div>
-                            </div>
-                        </div>
+    const scheduledDate = new Date(lesson.scheduledDate);
+    const dateFormatted = scheduledDate.toLocaleDateString('pt-BR');
+    const timeFormatted = scheduledDate.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
 
-                        <div class="stat-card-enhanced">
-                            <div class="stat-icon">📊</div>
-                            <div class="stat-content">
-                                <div class="stat-value" id="avg-daily">0</div>
-                                <div class="stat-label">Média Diária</div>
-                                <div class="stat-additional">
-                                    Check-ins/dia
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    const expandedRowHTML = isExpanded ? this.getExpandedRowHTML(lesson) : '';
 
-                <!-- Filters and Search -->
-                <div class="history-filters data-card-premium">
-                    <div class="filters-header">
-                        <h4>🔍 Filtros e Busca</h4>
-                        <button class="btn-link" id="toggle-filters">
-                            Expandir Filtros ▼
-                        </button>
-                    </div>
-                    
-                    <div class="filters-content" id="filters-content">
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label for="search-student">👤 Buscar Aluno</label>
-                                <input type="text" id="search-student" class="search-input" 
-                                       placeholder="Digite o nome do aluno...">
-                            </div>
-                            
-                            <div class="filter-group">
-                                <label for="filter-period">📅 Período</label>
-                                <select id="filter-period" class="filter-select">
-                                    <option value="7">Últimos 7 dias</option>
-                                    <option value="30" selected>Últimos 30 dias</option>
-                                    <option value="90">Últimos 3 meses</option>
-                                    <option value="365">Último ano</option>
-                                    <option value="custom">Período customizado</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group" id="custom-period" style="display: none;">
-                                <label>Período Customizado</label>
-                                <div class="date-range">
-                                    <input type="date" id="date-from" class="filter-input">
-                                    <span>até</span>
-                                    <input type="date" id="date-to" class="filter-input">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label for="filter-course">🎓 Curso</label>
-                                <select id="filter-course" class="filter-select">
-                                    <option value="">Todos os cursos</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group">
-                                <label for="filter-instructor">👨‍🏫 Instrutor</label>
-                                <select id="filter-instructor" class="filter-select">
-                                    <option value="">Todos os instrutores</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group">
-                                <label for="filter-status">✅ Status</label>
-                                <select id="filter-status" class="filter-select">
-                                    <option value="">Todos os status</option>
-                                    <option value="CONFIRMED">Confirmado</option>
-                                    <option value="PENDING">Pendente</option>
-                                    <option value="CANCELLED">Cancelado</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group">
-                                <label for="filter-device">📱 Dispositivo</label>
-                                <select id="filter-device" class="filter-select">
-                                    <option value="">Todos os dispositivos</option>
-                                    <option value="mobile">Mobile</option>
-                                    <option value="desktop">Desktop</option>
-                                    <option value="kiosk">Kiosk</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="filter-actions">
-                            <button class="btn-secondary" id="clear-all-filters">
-                                🗑️ Limpar Todos
-                            </button>
-                            <button class="btn-primary" id="apply-filters">
-                                🔍 Aplicar Filtros
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    return `
+      <tr class="lesson-row ${isExpanded ? 'expanded' : ''}" data-lesson-id="${lesson.id}">
+        <td class="expand-cell">
+          <button class="expand-btn" aria-label="Expandir" onclick="event.stopPropagation()">
+            ${isExpanded ? '▼' : '▶'}
+          </button>
+        </td>
+        <td class="lesson-number">${lesson.lessonNumber}</td>
+        <td class="lesson-title">${lesson.title}</td>
+        <td class="lesson-turma">${lesson.turmaName || lesson.turma?.name || 'N/A'}</td>
+        <td class="lesson-date">
+          ${dateFormatted}<br>
+          <small>${timeFormatted}</small>
+        </td>
+        <td class="lesson-status">
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </td>
+        <td class="lesson-attendance">
+          ${lesson.presentStudents ?? lesson.stats?.presentStudents ?? 0} / ${lesson.totalStudents ?? lesson.stats?.totalStudents ?? 0}
+        </td>
+        <td class="lesson-rate">
+          <span class="rate-badge ${attendanceRateClass}">
+            ${attendanceRate}%
+          </span>
+        </td>
+      </tr>
+      ${expandedRowHTML}
+    `;
+  }
 
-                <!-- Results and Analytics -->
-                <div class="history-content">
-                    <div class="content-layout">
-                        <!-- Table Section -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <h4>📋 Registros de Frequência</h4>
-                                <div class="table-controls">
-                                    <div class="view-options">
-                                        <button class="view-btn active" data-view="table">📋 Tabela</button>
-                                        <button class="view-btn" data-view="timeline">🕒 Timeline</button>
-                                        <button class="view-btn" data-view="calendar">📅 Calendário</button>
-                                    </div>
-                                    <div class="pagination-info" id="pagination-info">
-                                        <!-- Info da paginação -->
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="table-container" id="attendance-list-container">
-                                <!-- AttendanceList component será renderizado aqui -->
-                            </div>
-                        </div>
+  /**
+   * HTML da linha expandida (participantes)
+   */
+  getExpandedRowHTML(lesson) {
+    const presentStudents = lesson.participants.filter(p => p.present);
+    const absentStudents = lesson.participants.filter(p => !p.present);
 
-                        <!-- Analytics Sidebar -->
-                        <div class="analytics-sidebar">
-                            <!-- Quick Insights -->
-                            <div class="insights-panel data-card-premium">
-                                <h4>💡 Insights Rápidos</h4>
-                                <div class="insights-list" id="quick-insights">
-                                    <div class="insight-item">
-                                        <div class="insight-icon">📊</div>
-                                        <div class="insight-text">Analisando dados...</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Top Students -->
-                            <div class="ranking-panel data-card-premium">
-                                <h4>🏆 Top Alunos do Período</h4>
-                                <div class="ranking-list" id="period-ranking">
-                                    <!-- Ranking será renderizado aqui -->
-                                </div>
-                            </div>
-
-                            <!-- Attendance Patterns -->
-                            <div class="patterns-panel data-card-premium">
-                                <h4>🔄 Padrões de Frequência</h4>
-                                <div class="patterns-content" id="attendance-patterns">
-                                    <!-- Padrões serão renderizados aqui -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline View (hidden by default) -->
-                <div class="timeline-view" id="timeline-view" style="display: none;">
-                    <div class="timeline-container" id="timeline-container">
-                        <!-- Timeline será renderizada aqui -->
-                    </div>
-                </div>
-
-                <!-- Calendar View (hidden by default) -->
-                <div class="calendar-view" id="calendar-view" style="display: none;">
-                    <div class="calendar-container" id="calendar-container">
-                        <!-- Calendário será renderizado aqui -->
-                    </div>
-                </div>
+    return `
+      <tr class="expanded-row" data-lesson-id="${lesson.id}">
+        <td colspan="8">
+          <div class="participants-container">
+            <div class="participants-section">
+              <h4>✅ Presentes (${presentStudents.length})</h4>
+              <div class="participants-list">
+                ${presentStudents.map(p => `
+                  <div class="participant-item present">
+                    <span class="participant-name">${p.studentName}</span>
+                    ${p.late ? '<span class="badge-late">Atrasado</span>' : ''}
+                    ${p.checkedAt ? `<small>Check-in: ${new Date(p.checkedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</small>` : ''}
+                  </div>
+                `).join('')}
+                ${presentStudents.length === 0 ? '<p class="no-participants">Nenhum aluno presente</p>' : ''}
+              </div>
             </div>
-        `;
-    }
 
-    /**
-     * Renderizar insights rápidos
-     */
-    renderQuickInsights(data) {
-        const insights = this.generateInsights(data);
-        const container = document.getElementById('quick-insights');
-        
-        if (!container) return;
-        
-        container.innerHTML = insights.map(insight => `
-            <div class="insight-item ${insight.type}">
-                <div class="insight-icon">${insight.icon}</div>
-                <div class="insight-text">${insight.text}</div>
+            <div class="participants-section">
+              <h4>❌ Ausentes (${absentStudents.length})</h4>
+              <div class="participants-list">
+                ${absentStudents.map(p => `
+                  <div class="participant-item absent">
+                    <span class="participant-name">${p.studentName}</span>
+                    ${p.justified ? '<span class="badge-justified">Justificado</span>' : ''}
+                  </div>
+                `).join('')}
+                ${absentStudents.length === 0 ? '<p class="no-participants">Nenhum aluno ausente</p>' : ''}
+              </div>
             </div>
-        `).join('');
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  /**
+   * Toggle expansão de linha
+   */
+  toggleRow(lessonId) {
+    if (this.expandedRows.has(lessonId)) {
+      this.expandedRows.delete(lessonId);
+    } else {
+      this.expandedRows.add(lessonId);
     }
 
-    /**
-     * Gerar insights automáticos
-     */
-    generateInsights(data) {
-        const insights = [];
-        
-        if (data.length === 0) {
-            return [{
-                type: 'info',
-                icon: 'ℹ️',
-                text: 'Nenhum dado para análise'
-            }];
+    // Re-renderiza tabela mantendo o cache
+    this.renderLessonsTable(this.lessons);
+  }
+
+  /**
+   * Atualiza paginação
+   */
+  updatePagination(pagination) {
+    const { page, pageSize, total, totalPages } = pagination;
+
+    // Info
+    const infoElement = this.container.querySelector('#paginationInfo');
+    const totalElement = this.container.querySelector('#totalLessons');
+    if (infoElement && totalElement) {
+      const start = (page - 1) * pageSize + 1;
+      const end = Math.min(page * pageSize, total);
+      infoElement.textContent = total > 0 ? `${start}-${end}` : '0';
+      totalElement.textContent = total;
+    }
+
+    // Buttons
+    const prevBtn = this.container.querySelector('#prevPage');
+    const nextBtn = this.container.querySelector('#nextPage');
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+
+    // Page numbers
+    const pageNumbersElement = this.container.querySelector('#pageNumbers');
+    if (pageNumbersElement) {
+      pageNumbersElement.innerHTML = this.getPageNumbersHTML(page, totalPages);
+    }
+  }
+
+  /**
+   * HTML dos números de página
+   */
+  getPageNumbersHTML(currentPage, totalPages) {
+    if (totalPages <= 1) return '';
+
+    let html = '';
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage < maxVisible - 1) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const isActive = i === currentPage;
+      html += `
+        <button class="page-number ${isActive ? 'active' : ''}" data-page="${i}">
+          ${i}
+        </button>
+      `;
+    }
+
+    return html;
+  }
+
+  /**
+   * Configura eventos
+   */
+  setupEvents() {
+    // Botão Refresh
+    const refreshBtn = this.container.querySelector('#refreshHistory');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => this.handleRefresh());
+    }
+
+    // Botão Export CSV
+    const exportBtn = this.container.querySelector('#exportHistoryCSV');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.handleExportCSV());
+    }
+
+    // Filtros
+    const applyBtn = this.container.querySelector('#applyFilters');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => this.handleApplyFilters());
+    }
+
+    const clearBtn = this.container.querySelector('#clearFilters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.handleClearFilters());
+    }
+
+    // Paginação
+    const prevBtn = this.container.querySelector('#prevPage');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => this.handlePrevPage());
+    }
+
+    const nextBtn = this.container.querySelector('#nextPage');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => this.handleNextPage());
+    }
+
+    // Page numbers (event delegation)
+    const pageNumbersContainer = this.container.querySelector('#pageNumbers');
+    if (pageNumbersContainer) {
+      pageNumbersContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('page-number')) {
+          const page = parseInt(e.target.dataset.page, 10);
+          this.handleGoToPage(page);
         }
-
-        // Insight sobre horário mais frequente
-        const hourCounts = {};
-        data.forEach(record => {
-            const hour = new Date(record.checkinTime).getHours();
-            hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-        });
-        
-        const peakHour = Object.keys(hourCounts).reduce((a, b) => 
-            hourCounts[a] > hourCounts[b] ? a : b
-        );
-        
-        insights.push({
-            type: 'trend',
-            icon: '🕒',
-            text: `Horário de pico: ${peakHour}:00 (${hourCounts[peakHour]} check-ins)`
-        });
-
-        // Insight sobre dia da semana
-        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        const dayCounts = {};
-        data.forEach(record => {
-            const day = new Date(record.checkinTime).getDay();
-            dayCounts[day] = (dayCounts[day] || 0) + 1;
-        });
-        
-        const peakDay = Object.keys(dayCounts).reduce((a, b) => 
-            dayCounts[a] > dayCounts[b] ? a : b
-        );
-        
-        insights.push({
-            type: 'info',
-            icon: '📅',
-            text: `Dia mais ativo: ${dayNames[peakDay]} (${dayCounts[peakDay]} check-ins)`
-        });
-
-        // Insight sobre dispositivos
-        const deviceCounts = {};
-        data.forEach(record => {
-            const device = record.context?.device || 'desktop';
-            deviceCounts[device] = (deviceCounts[device] || 0) + 1;
-        });
-        
-        const topDevice = Object.keys(deviceCounts).reduce((a, b) => 
-            deviceCounts[a] > deviceCounts[b] ? a : b
-        );
-        
-        const deviceIcons = { mobile: '📱', desktop: '💻', kiosk: '🖥️' };
-        
-        insights.push({
-            type: 'success',
-            icon: deviceIcons[topDevice] || '💻',
-            text: `Dispositivo preferido: ${topDevice} (${Math.round(deviceCounts[topDevice] / data.length * 100)}%)`
-        });
-
-        return insights;
+      });
     }
+  }
 
-    /**
-     * Renderizar ranking do período
-     */
-    renderPeriodRanking(data) {
-        const container = document.getElementById('period-ranking');
-        if (!container) return;
+  /**
+   * Handlers
+   */
+  async handleRefresh() {
+    console.log('🔄 Refresh manual solicitado');
+    this.expandedRows.clear();
+    await this.loadLessonsHistory();
+  }
 
-        // Agrupar por aluno
-        const studentCounts = {};
-        data.forEach(record => {
-            const studentId = record.student?.id;
-            if (studentId) {
-                if (!studentCounts[studentId]) {
-                    studentCounts[studentId] = {
-                        student: record.student,
-                        count: 0
-                    };
-                }
-                studentCounts[studentId].count++;
-            }
-        });
+  handleApplyFilters() {
+    this.filters.turmaId = this.container.querySelector('#filterTurma').value || null;
+    this.filters.status = this.container.querySelector('#filterStatus').value || null;
+    this.filters.startDate = this.container.querySelector('#filterStartDate').value || null;
+    this.filters.endDate = this.container.querySelector('#filterEndDate').value || null;
 
-        // Ordenar por contagem
-        const sortedStudents = Object.values(studentCounts)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10); // Top 10
+    this.currentPage = 1;
+    this.expandedRows.clear();
+    this.loadLessonsHistory();
+  }
 
-        if (sortedStudents.length === 0) {
-            container.innerHTML = '<div class="no-data">Nenhum dado disponível</div>';
-            return;
-        }
+  handleClearFilters() {
+    this.filters = {
+      turmaId: null,
+      status: null,
+      startDate: null,
+      endDate: null
+    };
 
-        container.innerHTML = sortedStudents.map((item, index) => {
-            const position = index + 1;
-            const medal = this.getPositionMedal(position);
-            
-            return `
-                <div class="ranking-item">
-                    <div class="ranking-position">
-                        <span class="position-medal">${medal}</span>
-                        <span class="position-number">${position}</span>
-                    </div>
-                    <div class="ranking-student">
-                        <div class="student-name">${item.student.name}</div>
-                        <div class="student-belt">${item.student.belt || 'Sem graduação'}</div>
-                    </div>
-                    <div class="ranking-count">
-                        <div class="count-value">${item.count}</div>
-                        <div class="count-label">presenças</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+    this.container.querySelector('#filterTurma').value = '';
+    this.container.querySelector('#filterStatus').value = '';
+    this.container.querySelector('#filterStartDate').value = '';
+    this.container.querySelector('#filterEndDate').value = '';
+
+    this.currentPage = 1;
+    this.expandedRows.clear();
+    this.loadLessonsHistory();
+  }
+
+  handlePrevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.expandedRows.clear();
+      this.loadLessonsHistory();
     }
+  }
 
-    /**
-     * Renderizar padrões de frequência
-     */
-    renderAttendancePatterns(data) {
-        const container = document.getElementById('attendance-patterns');
-        if (!container) return;
+  handleNextPage() {
+    this.currentPage++;
+    this.expandedRows.clear();
+    this.loadLessonsHistory();
+  }
 
-        const patterns = this.analyzePatterns(data);
-        
-        container.innerHTML = `
-            <div class="pattern-item">
-                <div class="pattern-label">🔥 Sequência mais longa</div>
-                <div class="pattern-value">${patterns.longestStreak} dias</div>
-            </div>
-            
-            <div class="pattern-item">
-                <div class="pattern-label">📊 Taxa de regularidade</div>
-                <div class="pattern-value">${patterns.regularityRate}%</div>
-            </div>
-            
-            <div class="pattern-item">
-                <div class="pattern-label">🕒 Horário preferido</div>
-                <div class="pattern-value">${patterns.preferredTime}</div>
-            </div>
-            
-            <div class="pattern-item">
-                <div class="pattern-label">📅 Dia da semana</div>
-                <div class="pattern-value">${patterns.preferredDay}</div>
-            </div>
-        `;
+  handleGoToPage(page) {
+    this.currentPage = page;
+    this.expandedRows.clear();
+    this.loadLessonsHistory();
+  }
+
+  async handleExportCSV() {
+    console.log('📥 Exportando histórico para CSV...');
+    alert('🚧 Exportação CSV será implementada em breve');
+    // TODO: Implementar exportação CSV
+  }
+
+  /**
+   * Helpers de UI
+   */
+  getStatusClass(status) {
+    const map = {
+      'COMPLETED': 'status-completed',
+      'SCHEDULED': 'status-scheduled',
+      'CANCELLED': 'status-cancelled'
+    };
+    return map[status] || '';
+  }
+
+  getStatusLabel(status) {
+    const map = {
+      'COMPLETED': 'Completa',
+      'SCHEDULED': 'Agendada',
+      'CANCELLED': 'Cancelada'
+    };
+    return map[status] || status;
+  }
+
+  getAttendanceRateClass(rate) {
+    if (rate >= 80) return 'rate-excellent';
+    if (rate >= 60) return 'rate-good';
+    if (rate >= 40) return 'rate-fair';
+    return 'rate-poor';
+  }
+
+  /**
+   * Estados de UI
+   */
+  showLoading() {
+    const tbody = this.container.querySelector('#lessonsTableBody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr class="loading-row">
+          <td colspan="8" style="text-align: center; padding: 40px;">
+            <div class="loading-spinner"></div>
+            <p>Carregando histórico...</p>
+          </td>
+        </tr>
+      `;
     }
+  }
 
-    /**
-     * Analisar padrões nos dados
-     */
-    analyzePatterns(data) {
-        if (data.length === 0) {
-            return {
-                longestStreak: 0,
-                regularityRate: 0,
-                preferredTime: '--:--',
-                preferredDay: 'N/A'
-            };
-        }
+  showEmptyState() {
+    const emptyState = this.container.querySelector('#emptyState');
+    const tableContainer = this.container.querySelector('.history-table-container');
+    const paginationContainer = this.container.querySelector('.history-pagination');
 
-        // Calcular sequência mais longa (simplificado)
-        const longestStreak = Math.floor(Math.random() * 15) + 1;
-        
-        // Taxa de regularidade (simplificado)
-        const regularityRate = Math.floor(Math.random() * 40) + 60;
-        
-        // Horário preferido
-        const hours = data.map(r => new Date(r.checkinTime).getHours());
-        const hourCounts = {};
-        hours.forEach(h => hourCounts[h] = (hourCounts[h] || 0) + 1);
-        const preferredHour = Object.keys(hourCounts).reduce((a, b) => 
-            hourCounts[a] > hourCounts[b] ? a : b
-        );
-        const preferredTime = `${preferredHour}:00`;
-        
-        // Dia preferido
-        const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-        const days = data.map(r => new Date(r.checkinTime).getDay());
-        const dayCounts = {};
-        days.forEach(d => dayCounts[d] = (dayCounts[d] || 0) + 1);
-        const preferredDayIndex = Object.keys(dayCounts).reduce((a, b) => 
-            dayCounts[a] > dayCounts[b] ? a : b
-        );
-        const preferredDay = dayNames[preferredDayIndex];
+    if (emptyState) emptyState.style.display = 'block';
+    if (tableContainer) tableContainer.style.display = 'none';
+    if (paginationContainer) paginationContainer.style.display = 'none';
+  }
 
-        return {
-            longestStreak,
-            regularityRate,
-            preferredTime,
-            preferredDay
-        };
+  hideEmptyState() {
+    const emptyState = this.container.querySelector('#emptyState');
+    const tableContainer = this.container.querySelector('.history-table-container');
+    const paginationContainer = this.container.querySelector('.history-pagination');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (tableContainer) tableContainer.style.display = 'block';
+    if (paginationContainer) paginationContainer.style.display = 'flex';
+  }
+
+  showError(message) {
+    const tbody = this.container.querySelector('#lessonsTableBody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr class="error-row">
+          <td colspan="8" style="text-align: center; padding: 40px;">
+            <div class="error-icon">❌</div>
+            <h3>Erro ao carregar histórico</h3>
+            <p>${message}</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              🔄 Recarregar Página
+            </button>
+          </td>
+        </tr>
+      `;
     }
+  }
 
-    /**
-     * Renderizar timeline
-     */
-    renderTimeline(data) {
-        const container = document.getElementById('timeline-container');
-        if (!container) return;
-
-        // Agrupar por data
-        const dateGroups = {};
-        data.forEach(record => {
-            const date = new Date(record.checkinTime).toDateString();
-            if (!dateGroups[date]) {
-                dateGroups[date] = [];
-            }
-            dateGroups[date].push(record);
-        });
-
-        const timelineItems = Object.keys(dateGroups)
-            .sort((a, b) => new Date(b) - new Date(a))
-            .map(date => {
-                const records = dateGroups[date];
-                const dateObj = new Date(date);
-                const formattedDate = dateObj.toLocaleDateString('pt-BR');
-                const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-
-                return `
-                    <div class="timeline-item">
-                        <div class="timeline-date">
-                            <div class="date-primary">${formattedDate}</div>
-                            <div class="date-secondary">${dayName}</div>
-                            <div class="date-count">${records.length} check-ins</div>
-                        </div>
-                        <div class="timeline-content">
-                            ${records.map(record => `
-                                <div class="timeline-record">
-                                    <div class="record-time">
-                                        ${new Date(record.checkinTime).toLocaleTimeString('pt-BR', {
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </div>
-                                    <div class="record-student">${record.student?.name || 'N/A'}</div>
-                                    <div class="record-course">${record.session?.course?.name || 'N/A'}</div>
-                                    <div class="record-status">${this.getStatusIcon(record.status)}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-        container.innerHTML = timelineItems || '<div class="no-data">Nenhum dado para timeline</div>';
-    }
-
-    /**
-     * Renderizar calendário
-     */
-    renderCalendar(data) {
-        const container = document.getElementById('calendar-container');
-        if (!container) return;
-
-        // Implementação simplificada do calendário
-        const currentDate = new Date();
-        const month = currentDate.getMonth();
-        const year = currentDate.getFullYear();
-
-        // Agrupar dados por data
-        const dateData = {};
-        data.forEach(record => {
-            const date = new Date(record.checkinTime).toDateString();
-            dateData[date] = (dateData[date] || 0) + 1;
-        });
-
-        // Gerar calendário (implementação básica)
-        container.innerHTML = `
-            <div class="calendar-header">
-                <h4>${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h4>
-            </div>
-            <div class="calendar-grid">
-                <div class="calendar-weekdays">
-                    <div class="weekday">Dom</div>
-                    <div class="weekday">Seg</div>
-                    <div class="weekday">Ter</div>
-                    <div class="weekday">Qua</div>
-                    <div class="weekday">Qui</div>
-                    <div class="weekday">Sex</div>
-                    <div class="weekday">Sáb</div>
-                </div>
-                <div class="calendar-days">
-                    <!-- Implementar geração de dias do calendário -->
-                    <div class="calendar-day">Calendário em desenvolvimento</div>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Alternar visualização
-     */
-    switchView(viewType) {
-        // Esconder todas as views
-        document.getElementById('table-section')?.style.setProperty('display', 'none');
-        document.getElementById('timeline-view')?.style.setProperty('display', 'none');
-        document.getElementById('calendar-view')?.style.setProperty('display', 'none');
-
-        // Mostrar view selecionada
-        switch (viewType) {
-            case 'timeline':
-                document.getElementById('timeline-view')?.style.setProperty('display', 'block');
-                break;
-            case 'calendar':
-                document.getElementById('calendar-view')?.style.setProperty('display', 'block');
-                break;
-            default:
-                document.getElementById('table-section')?.style.setProperty('display', 'block');
-        }
-
-        // Atualizar botões
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        document.querySelector(`[data-view="${viewType}"]`)?.classList.add('active');
-    }
-
-    /**
-     * Atualizar estatísticas do período
-     */
-    updatePeriodStats(data) {
-        const totalEl = document.getElementById('total-records');
-        const uniqueEl = document.getElementById('unique-students');
-        const avgEl = document.getElementById('avg-daily');
-
-        if (totalEl) totalEl.textContent = data.length;
-        
-        if (uniqueEl) {
-            const uniqueStudents = new Set(data.map(r => r.student?.id)).size;
-            uniqueEl.textContent = uniqueStudents;
-        }
-        
-        if (avgEl) {
-            const days = Math.max(1, Math.ceil((Date.now() - Math.min(...data.map(r => new Date(r.checkinTime)))) / (1000 * 60 * 60 * 24)));
-            avgEl.textContent = Math.round(data.length / days);
-        }
-    }
-
-    /**
-     * Utilitários
-     */
-    getPositionMedal(position) {
-        const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
-        return medals[position] || '🏅';
-    }
-
-    getStatusIcon(status) {
-        const icons = {
-            'CONFIRMED': '✅',
-            'PENDING': '⏳',
-            'CANCELLED': '❌'
-        };
-        return icons[status] || '❓';
-    }
-
-    /**
-     * Popular filtros com dados únicos
-     */
-    populateFilterOptions(data) {
-        // Cursos únicos
-        const courses = [...new Set(data.map(r => r.session?.course).filter(Boolean))]
-            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-        const courseSelect = document.getElementById('filter-course');
-        if (courseSelect) {
-            // Limpar opções existentes (exceto primeira)
-            while (courseSelect.children.length > 1) {
-                courseSelect.removeChild(courseSelect.lastChild);
-            }
-
-            courses.forEach(course => {
-                const option = document.createElement('option');
-                option.value = course.id;
-                option.textContent = course.name;
-                courseSelect.appendChild(option);
-            });
-        }
-
-        // Instrutores únicos
-        const instructors = [...new Set(data.map(r => r.session?.instructor).filter(Boolean))]
-            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-        const instructorSelect = document.getElementById('filter-instructor');
-        if (instructorSelect) {
-            while (instructorSelect.children.length > 1) {
-                instructorSelect.removeChild(instructorSelect.lastChild);
-            }
-
-            instructors.forEach(instructor => {
-                const option = document.createElement('option');
-                option.value = instructor.id;
-                option.textContent = instructor.name;
-                instructorSelect.appendChild(option);
-            });
-        }
-    }
+  /**
+   * Cleanup
+   */
+  destroy() {
+    this.expandedRows.clear();
+    this.lessons = [];
+    console.log('🗑️ History View destruída');
+  }
 }

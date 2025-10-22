@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-10-10T22:08:05.793Z",
+  "summary": {
+    "totalStudents": 3,
+    "studentsWithActivePlans": 3,
+    "studentsWithCourses": 3,
+    "studentsWithAttendance": 3,
+    "totalCourses": 1,
+    "totalClasses": 1,
+    "totalAttendances": 9
+  },
+  "students": [
+    {
+      "id": "922ebf87-9ce1-4ea9-be9e-85cdc95d9296",
+      "name": "João Silva",
+      "email": "joao@academia.demo",
+      "registrationNumber": null,
+      "enrollmentDate": "2025-10-09",
+      "status": {
+        "hasActivePlan": true,
+        "planDetails": "Plano Básico (R$ 150)",
+        "hasEnrolledCourses": true,
+        "courseDetails": [
+          "Krav Maga - Faixa Branca"
+        ],
+        "hasAttendance": true,
+        "attendanceCount": 3
+      },
+      "issues": []
+    },
+    {
+      "id": "34ed9336-6714-496b-b547-bee869778d3d",
+      "name": "Ana Santos",
+      "email": "ana@academia.demo",
+      "registrationNumber": null,
+      "enrollmentDate": "2025-10-09",
+      "status": {
+        "hasActivePlan": true,
+        "planDetails": "Plano Básico (R$ 150)",
+        "hasEnrolledCourses": true,
+        "courseDetails": [
+          "Krav Maga - Faixa Branca"
+        ],
+        "hasAttendance": true,
+        "attendanceCount": 3
+      },
+      "issues": []
+    },
+    {
+      "id": "ca891a3f-7703-43a8-b4cb-adf0db324776",
+      "name": "Aluno Teste Progressão",
+      "email": "aluno.teste.progressao@teste.com",
+      "registrationNumber": "TEST-1760073304518",
+      "enrollmentDate": "2025-10-10",
+      "status": {
+        "hasActivePlan": true,
+        "planDetails": "Plano Básico (R$ 150)",
+        "hasEnrolledCourses": true,
+        "courseDetails": [
+          "Krav Maga - Faixa Branca"
+        ],
+        "hasAttendance": true,
+        "attendanceCount": 3
+      },
+      "issues": []
+    }
+  ],
+  "issues": [],
+  "recommendations": []
+}

@@ -1,4 +1,4 @@
-import { prisma } from '@/utils/database';
+﻿import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { QRCodeService } from '@/utils/qrcode';
 import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, AttendanceStatsQuery } from '@/schemas/attendance';
@@ -11,7 +11,7 @@ export class AttendanceService {
   private static async getEligibleCourseIds(studentId: string): Promise<string[]> {
     try {
       const [studentCourses, turmaLinks] = await Promise.all([
-        // ✅ FIX: Use StudentCourse (correct table) instead of CourseEnrollment (legacy)
+        // âœ… FIX: Use StudentCourse (correct table) instead of CourseEnrollment (legacy)
         prisma.studentCourse.findMany({
           where: { 
             studentId, 
@@ -53,14 +53,48 @@ export class AttendanceService {
   static async checkInToClass(studentId: string, data: CheckInInput) {
     const { classId, method, location, notes } = data;
 
-    // Verify class exists and is active
-    const classInfo = await prisma.class.findUnique({
+    // âœ… DETECTAR TIPO DE AULA: Class (legacy) ou TurmaLesson (novo)
+    let classInfo: any = null;
+    let isTurmaLesson = false;
+
+    // Tentar buscar como Class primeiro
+    classInfo = await prisma.class.findUnique({
       where: { id: classId },
       include: { schedule: true, course: true },
     });
 
+    // Se nÃ£o encontrou em Class, buscar em TurmaLesson
     if (!classInfo) {
-      throw new Error('Aula não encontrada');
+      const turmaLesson = await prisma.turmaLesson.findUnique({
+        where: { id: classId },
+        include: {
+          turma: {
+            include: {
+              course: true,
+              instructor: { select: { firstName: true, lastName: true } },
+            },
+          },
+          lessonPlan: true,
+        },
+      });
+
+      if (turmaLesson) {
+        isTurmaLesson = true;
+        // Mapear TurmaLesson para formato Class (compatibilidade)
+        classInfo = {
+          id: turmaLesson.id,
+          date: turmaLesson.scheduledDate,
+          startTime: turmaLesson.scheduledDate,
+          endTime: dayjs(turmaLesson.scheduledDate).add(turmaLesson.duration || 60, 'minute').toDate(),
+          course: turmaLesson.turma.course,
+          instructor: turmaLesson.turma.instructor,
+          status: turmaLesson.status,
+        };
+      }
+    }
+
+    if (!classInfo) {
+      throw new Error('Aula nÃ£o encontrada');
     }
 
     // Check if class is today and within check-in window
@@ -69,7 +103,7 @@ export class AttendanceService {
     const today = dayjs();
 
     if (!classDate.isSame(today, 'day')) {
-      throw new Error('Check-in só é permitido no dia da aula');
+      throw new Error('Check-in sÃ³ Ã© permitido no dia da aula');
     }
 
     // Check if within check-in window (30 minutes before to 15 minutes after start time)
@@ -79,7 +113,7 @@ export class AttendanceService {
     const currentTime = dayjs();
 
     if (currentTime.isBefore(checkInStart) || currentTime.isAfter(checkInEnd)) {
-      throw new Error('Check-in fora do horário permitido');
+      throw new Error('Check-in fora do horÃ¡rio permitido');
     }
 
     // Verify student exists and is active
@@ -88,33 +122,72 @@ export class AttendanceService {
     });
 
     if (!student || !student.isActive) {
-      throw new Error('Estudante não encontrado ou inativo');
+      throw new Error('Estudante nÃ£o encontrado ou inativo');
     }
 
-    // Check if already checked in
-    const existingAttendance = await prisma.attendance.findUnique({
+    // âš ï¸ CRITICAL: Check for conflicting check-ins (prevent overlapping class attendance)
+    const currentClassStart = startTime.toDate();
+    const currentClassEnd = startTime.add(classInfo.duration || 60, 'minute').toDate();
+
+    // Get all check-ins for this student today
+    const todayStart = dayjs().startOf('day').toDate();
+    const todayEnd = dayjs().endOf('day').toDate();
+
+    const existingCheckIns = await prisma.turmaAttendance.findMany({
       where: {
-        studentId_classId: {
-          studentId,
-          classId,
+        studentId: studentId,
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+      include: {
+        lesson: {
+          select: {
+            scheduledDate: true,
+            duration: true,
+            turma: {
+              select: {
+                name: true,
+              },
+            },
+          },
         },
       },
     });
 
-    if (existingAttendance) {
-      throw new Error('Check-in já realizado para esta aula');
+    // Check for time overlap: (currentStart < existingEnd) AND (currentEnd > existingStart)
+    for (const existingCheckIn of existingCheckIns) {
+      if (existingCheckIn.lesson) {
+        const existingStart = dayjs(existingCheckIn.lesson.scheduledDate);
+        const existingEnd = existingStart.add(existingCheckIn.lesson.duration || 60, 'minute');
+        
+        // Check overlap: (currentStart < existingEnd) AND (currentEnd > existingStart)
+        if (startTime.isBefore(existingEnd.toDate()) && dayjs(currentClassEnd).isAfter(existingStart.toDate())) {
+          return {
+            allowed: false,
+            reason: 'OVERLAP',
+            message: `Conflito: vocÃª jÃ¡ tem check-in na aula "${existingCheckIn.lesson.turma.name}" que termina Ã s ${existingEnd.format('HH:mm')}`,
+            existingCheckIn: {
+              classId: existingCheckIn.lessonId,
+              className: existingCheckIn.lesson.turma.name,
+              startTime: existingStart.toISOString(),
+              endTime: existingEnd.toISOString(),
+            },
+          };
+        }
+      }
     }
+    // âš ï¸ RATE LIMITING: Prevent spam/abuse (max 3 check-ins per minute)
+    const oneMinuteAgo = dayjs().subtract(1, 'minute').toDate();
+    const recentCheckIns = existingCheckIns.filter(checkIn => 
+      dayjs(checkIn.createdAt).isAfter(oneMinuteAgo)
+    );
 
-    // Handle QR Code validation if method is QR_CODE
-    if (method === CheckInMethod.QR_CODE && notes) {
-      const qrData = QRCodeService.parseQRCode(notes);
-      if (!qrData || qrData.classId !== classId) {
-        throw new Error('QR Code inválido');
-      }
-
-      if (!QRCodeService.isQRCodeValid(qrData.timestamp)) {
-        throw new Error('QR Code expirado');
-      }
+    if (recentCheckIns.length >= 3) {
+      throw new Error(
+        'Limite de check-ins atingido. Aguarde um minuto antes de tentar novamente.'
+      );
     }
 
     // Determine attendance status based on check-in time
@@ -123,37 +196,164 @@ export class AttendanceService {
       status = AttendanceStatus.LATE;
     }
 
-    // Create attendance record
-    const attendance = await prisma.attendance.create({
-      data: {
-        studentId,
-        classId,
-        status,
-        checkInTime: now,
-        checkInMethod: method,
-        location,
-        notes: method === CheckInMethod.QR_CODE ? 'Check-in via QR Code' : notes,
-      },
-      include: {
-        class: {
-          include: {
-            course: true,
-            instructor: true,
+    // âœ… CRIAR ATTENDANCE: TurmaAttendance (novo) ou Attendance (legacy)
+    let attendance: any;
+
+    if (isTurmaLesson) {
+      // âœ… CHECK-IN EM TURMALESSON (sistema novo) - criar TurmaAttendance
+      
+      // Buscar turmaId da TurmaLesson
+      const turmaLesson = await prisma.turmaLesson.findUnique({
+        where: { id: classId },
+        select: { turmaId: true },
+      });
+
+      if (!turmaLesson) {
+        throw new Error('TurmaLesson nÃ£o encontrada');
+      }
+
+      // Verificar se jÃ¡ fez check-in (antes de criar TurmaStudent)
+      const existingTurmaAttendance = await prisma.turmaAttendance.findUnique({
+        where: {
+          turmaLessonId_studentId: {
+            turmaLessonId: classId,
+            studentId: studentId,
           },
         },
-        student: true,
-      },
-    });
+      });
 
-    // Update class actual students count
-    await prisma.class.update({
-      where: { id: classId },
-      data: {
-        actualStudents: {
-          increment: 1,
+      if (existingTurmaAttendance) {
+        throw new Error('Check-in jÃ¡ realizado para esta aula');
+      }
+
+      // Verificar se aluno estÃ¡ matriculado na Turma (TurmaStudent)
+      let turmaStudent = await prisma.turmaStudent.findFirst({
+        where: {
+          turmaId: turmaLesson.turmaId,
+          studentId: studentId,
+          isActive: true,
         },
-      },
-    });
+      });
+
+      if (!turmaStudent) {
+        // Se nÃ£o tem TurmaStudent, criar automaticamente (kiosk permite check-in avulso)
+        turmaStudent = await prisma.turmaStudent.create({
+          data: {
+            turmaId: turmaLesson.turmaId,
+            studentId: studentId,
+            enrolledAt: now,
+            isActive: true,
+          },
+        });
+        logger.info(
+          { studentId, turmaId: turmaLesson.turmaId },
+          'TurmaStudent criado automaticamente para check-in via kiosk'
+        );
+      }
+
+      // Criar TurmaAttendance
+      attendance = await prisma.turmaAttendance.create({
+        data: {
+          turmaId: turmaLesson.turmaId,
+          turmaLessonId: classId,
+          turmaStudentId: turmaStudent.id,
+          studentId: studentId,
+          present: status === AttendanceStatus.PRESENT,
+          late: status === AttendanceStatus.LATE,
+          notes: method === CheckInMethod.QR_CODE ? 'Check-in via QR Code' : notes,
+          checkedAt: now,
+        },
+      });
+
+      // âœ… AUTO-COMPLETAR ATIVIDADES SE CONFIGURADO
+      try {
+        const { ActivityExecutionService } = await import('@/services/activityExecutionService');
+        const student_full = await prisma.student.findUnique({
+          where: { id: studentId },
+          select: { organizationId: true }
+        });
+        
+        if (student_full) {
+          const settings = await ActivityExecutionService.getSettings(student_full.organizationId);
+          if (settings?.autoCompleteOnCheckin) {
+            await ActivityExecutionService.autoCompleteOnCheckin(attendance.id);
+            logger.info(`Auto-completed activities for attendance ${attendance.id}`);
+          }
+        }
+      } catch (error) {
+        logger.error('Error auto-completing activities:', error);
+        // NÃ£o falhar o check-in se auto-complete falhar
+      }
+
+      // âœ… VERIFICAR E REGISTRAR CONQUISTAS DE GRAUS
+      try {
+        const { GraduationService } = await import('@/services/graduationService');
+        const turmaLesson = await prisma.turmaLesson.findUnique({
+          where: { id: classId },
+          include: {
+            turma: {
+              select: { courseId: true }
+            }
+          }
+        });
+        
+        if (turmaLesson?.turma.courseId) {
+          await GraduationService.checkAndRecordDegrees(studentId, turmaLesson.turma.courseId);
+          logger.info(`Checked and recorded degrees for student ${studentId} in course ${turmaLesson.turma.courseId}`);
+        }
+      } catch (error) {
+        logger.error('Error checking degrees:', error);
+        // NÃ£o falhar o check-in se verificaÃ§Ã£o de graus falhar
+      }
+    } else {
+      // âŒ CHECK-IN EM CLASS (sistema legacy) - manter cÃ³digo original
+      
+      // Check if already checked in (legacy)
+      const existingAttendance = await prisma.attendance.findUnique({
+        where: {
+          studentId_classId: {
+            studentId,
+            classId,
+          },
+        },
+      });
+
+      if (existingAttendance) {
+        throw new Error('Check-in jÃ¡ realizado para esta aula');
+      }
+
+      // Create attendance record (legacy)
+      attendance = await prisma.attendance.create({
+        data: {
+          studentId,
+          classId,
+          status,
+          checkInTime: now,
+          checkInMethod: method,
+          location,
+          notes: method === CheckInMethod.QR_CODE ? 'Check-in via QR Code' : notes,
+        },
+        include: {
+          class: {
+            include: {
+              course: true,
+              instructor: true,
+            },
+          },
+          student: true,
+        },
+      });
+
+      // Update class actual students count (legacy)
+      await prisma.class.update({
+        where: { id: classId },
+        data: {
+          actualStudents: {
+            increment: 1,
+          },
+        },
+      });
+    }
 
     // Update attendance pattern (async)
     this.updateAttendancePattern(studentId).catch((error) => {
@@ -192,7 +392,7 @@ export class AttendanceService {
       });
 
       if (!student) {
-        throw new Error('Estudante não encontrado');
+        throw new Error('Estudante nÃ£o encontrado');
       }
 
       whereClause.studentId = student.id;
@@ -203,7 +403,7 @@ export class AttendanceService {
       });
 
       if (!instructor) {
-        throw new Error('Instrutor não encontrado');
+        throw new Error('Instrutor nÃ£o encontrado');
       }
 
       whereClause.class = {
@@ -284,7 +484,7 @@ export class AttendanceService {
     userRole: UserRole
   ) {
     if (userRole !== UserRole.ADMIN && userRole !== UserRole.INSTRUCTOR) {
-      throw new Error('Permissões insuficientes');
+      throw new Error('PermissÃµes insuficientes');
     }
 
     const attendance = await prisma.attendance.findUnique({
@@ -293,7 +493,7 @@ export class AttendanceService {
     });
 
     if (!attendance) {
-      throw new Error('Registro de presença não encontrado');
+      throw new Error('Registro de presenÃ§a nÃ£o encontrado');
     }
 
     const updatedAttendance = await prisma.attendance.update({
@@ -499,7 +699,7 @@ export class AttendanceService {
         averageCheckInTime,
         preferredDays,
         recentTrend,
-        lastCalculated: new Date(),
+        lastAnalyzed: new Date(),
       },
       create: {
         studentId,
@@ -651,18 +851,19 @@ export class AttendanceService {
       eligibleCourseIds = await this.getEligibleCourseIds(studentId);
     }
 
-    // 🔍 DEBUG: Log date filters
-    logger.info('🔍 [DEBUG] getAvailableClasses filters', {
+    // ðŸ” DEBUG: Log date filters
+    logger.info('ðŸ” [DEBUG] getAvailableClasses filters', {
       now: now.toISOString(),
       today: today.format('YYYY-MM-DD HH:mm:ss'),
       startOfDay: startOfDay.toISOString(),
       endOfDay: endOfDay.toISOString(),
       studentId,
       eligibleCourseIds,
-      eligibleCoursesCount: eligibleCourseIds.length
+      eligibleCoursesCount: eligibleCourseIds.length,
+      willFilterByCourse: studentId && eligibleCourseIds.length > 0
     });
 
-    // ✅ BUSCAR EM TURMALESSON (aulas de Turmas) - onde as aulas realmente estão!
+    // âœ… BUSCAR EM TURMALESSON (aulas de Turmas) - onde as aulas realmente estÃ£o!
     const turmaLessons = await prisma.turmaLesson.findMany({
       where: {
         scheduledDate: {
@@ -670,7 +871,7 @@ export class AttendanceService {
           lte: endOfDay,
         },
         isActive: true,
-        status: 'SCHEDULED', // ✅ CORRIGIDO: Apenas SCHEDULED (TurmaStatus válido)
+        status: 'SCHEDULED', // âœ… CORRIGIDO: Apenas SCHEDULED (TurmaStatus vÃ¡lido)
         // Filtrar por curso se aluno fornecido
         ...(studentId && eligibleCourseIds.length > 0
           ? {
@@ -684,13 +885,9 @@ export class AttendanceService {
         turma: {
           include: {
             instructor: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  },
-                },
+              select: {
+                firstName: true,
+                lastName: true,
               },
             },
             course: {
@@ -712,8 +909,8 @@ export class AttendanceService {
       },
     });
 
-    // 🔍 DEBUG: Log TurmaLessons found
-    logger.info('🔍 [DEBUG] TurmaLessons found from database', {
+    // ðŸ” DEBUG: Log TurmaLessons found
+    logger.info('ðŸ” [DEBUG] TurmaLessons found from database', {
       turmaLessonsCount: turmaLessons.length,
       turmaLessons: turmaLessons.map((t) => ({
         id: t.id,
@@ -729,7 +926,7 @@ export class AttendanceService {
     return turmaLessons.map((turmaLesson) => {
       const hasCheckedIn = studentId && turmaLesson.attendances && turmaLesson.attendances.length > 0;
       const startTime = dayjs(turmaLesson.scheduledDate);
-      const checkInStart = startTime.subtract(60, 'minute'); // ✅ 1 hora antes da aula
+      const checkInStart = startTime.subtract(30, 'minute'); // âœ… ALINHADO: 30 minutos antes (igual ao checkInToClass)
       const checkInEnd = startTime.add(15, 'minute');
       const currentTime = dayjs();
 
@@ -745,11 +942,11 @@ export class AttendanceService {
         endTime: dayjs(turmaLesson.scheduledDate).add(turmaLesson.duration || 60, 'minute').toDate(),
         instructor: turmaLesson.turma.instructor
           ? {
-              name: `${turmaLesson.turma.instructor.user.firstName} ${turmaLesson.turma.instructor.user.lastName}`,
+              name: `${turmaLesson.turma.instructor.firstName} ${turmaLesson.turma.instructor.lastName}`,
             }
           : null,
         course: turmaLesson.turma.course,
-        capacity: null, // TurmaLesson não tem capacity
+        capacity: null, // TurmaLesson nÃ£o tem capacity
         enrolled: turmaLesson.attendances ? turmaLesson.attendances.length : 0,
         canCheckIn,
         hasCheckedIn,
@@ -770,7 +967,7 @@ export class AttendanceService {
       where: { id: studentId },
       include: {
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },
-        // 🔥 FIX: Use correct relation name 'studentCourses' instead of 'enrollments'
+        // ðŸ”¥ FIX: Use correct relation name 'studentCourses' instead of 'enrollments'
         studentCourses: { 
           include: { 
             course: { 
@@ -782,10 +979,10 @@ export class AttendanceService {
     });
 
     if (!student) {
-      throw new Error('Aluno não encontrado');
+      throw new Error('Aluno nÃ£o encontrado');
     }
 
-    // 🔥 DEBUG: Log ALL studentCourses found (without filter)
+    // ðŸ”¥ DEBUG: Log ALL studentCourses found (without filter)
     logger.info({ 
       studentId, 
       studentCoursesFound: student.studentCourses?.length || 0,
@@ -795,7 +992,7 @@ export class AttendanceService {
         status: (e as any).status,
         isActive: (e as any).isActive
       }))
-    }, '🔍 [DEBUG] StudentCourses loaded from database (correct relation)');
+    }, 'ðŸ” [DEBUG] StudentCourses loaded from database (correct relation)');
 
     // Parallel with resilience: allow partial failures without aborting the whole dashboard
     const currentMonth = dayjs().startOf('month');
@@ -895,7 +1092,7 @@ export class AttendanceService {
       eligibleCourseIds: eligibleCourseIds.length,
       studentTurmasCount: studentTurmas.length,
       hasTurmaEnrollment: !!turmaEnrollment
-    }, '📊 Dashboard data loaded');
+    }, 'ðŸ“Š Dashboard data loaded');
 
     // Unlimited plan support: if plan is unlimited and no explicit course enrollments, allow all courses
     const unlimitedPlan = !!(subscription && (
@@ -904,7 +1101,7 @@ export class AttendanceService {
       (subscription.plan?.name && String(subscription.plan.name).toLowerCase().includes('ilimit'))
     ));
 
-    logger.info({ unlimitedPlan, billingType: subscription?.billingType }, '🔓 Plan type detection');
+    logger.info({ unlimitedPlan, billingType: subscription?.billingType }, 'ðŸ”“ Plan type detection');
 
   // Determine eligibility upfront (already fetched in parallel)
 
@@ -916,7 +1113,7 @@ export class AttendanceService {
         status: { in: [ClassStatus.SCHEDULED, ClassStatus.IN_PROGRESS] },
       };
 
-      // Se não é plano ilimitado E tem courseIds elegíveis, filtrar por eles
+      // Se nÃ£o Ã© plano ilimitado E tem courseIds elegÃ­veis, filtrar por eles
       if (!unlimitedPlan && eligibleCourseIds.length > 0) {
         classWhere.courseId = { in: eligibleCourseIds };
       }
@@ -936,7 +1133,7 @@ export class AttendanceService {
         upcomingClassesCount: upcomingClasses.length,
         unlimitedPlan,
         eligibleCourseIds: eligibleCourseIds.length 
-      }, '📅 Upcoming classes loaded');
+      }, 'ðŸ“… Upcoming classes loaded');
     } catch (e) {
       logger.warn({ e, studentId }, 'Upcoming classes query failed; continuing empty');
     }
@@ -1094,7 +1291,7 @@ export class AttendanceService {
       },
       recentAttendances: recentAttendances.map(att => ({
         id: att.id,
-        className: att.class.title || 'Aula sem título',
+        className: att.class.title || 'Aula sem tÃ­tulo',
         date: att.class.date,
         checkInTime: att.checkInTime,
         status: att.status,
@@ -1103,12 +1300,12 @@ export class AttendanceService {
         // From Class model
         ...upcomingClasses.map(cls => ({
           id: cls.id,
-          name: cls.title || cls.course?.name || 'Aula sem título',
+          name: cls.title || cls.course?.name || 'Aula sem tÃ­tulo',
           date: cls.date,
           startTime: cls.startTime,
           instructor: cls.instructor ? 
             `${cls.instructor.user.firstName} ${cls.instructor.user.lastName}` : 
-            'Instrutor não definido',
+            'Instrutor nÃ£o definido',
         })),
         // From TurmaLesson model
         ...upcomingTurmaLessons.map(les => ({
@@ -1118,10 +1315,10 @@ export class AttendanceService {
           startTime: les.scheduledDate,
           instructor: les.turma?.instructor ? 
             `${les.turma.instructor.firstName} ${les.turma.instructor.lastName}` : 
-            'Instrutor não definido',
+            'Instrutor nÃ£o definido',
         }))
       ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 5),
-      // 🔥 FIX: Filter ACTIVE studentCourses manually and map with proper fields
+      // ðŸ”¥ FIX: Filter ACTIVE studentCourses manually and map with proper fields
       enrollments: student.studentCourses
         .filter(e => (e as any).status === 'ACTIVE' && (e as any).isActive === true)
         .map(enrollment => ({
@@ -1190,7 +1387,7 @@ export class AttendanceService {
               avatarUrl: true,
             },
           },
-          // 🔥 FIX: Use correct relation 'studentCourses' instead of 'enrollments'
+          // ðŸ”¥ FIX: Use correct relation 'studentCourses' instead of 'enrollments'
           studentCourses: {
             where: {
               status: 'ACTIVE',
@@ -1205,7 +1402,7 @@ export class AttendanceService {
               },
             },
           },
-          // 🔥 FIX: Include subscriptions to show plan info in kiosk
+          // ðŸ”¥ FIX: Include subscriptions to show plan info in kiosk
           subscriptions: {
             where: {
               status: 'ACTIVE',
@@ -1253,7 +1450,7 @@ export class AttendanceService {
         matchType: student.registrationNumber?.toLowerCase().includes(searchTerm) 
           ? 'registration' 
           : 'name',
-        // 🔥 FIX: Add enrollment and subscription info for kiosk
+        // ðŸ”¥ FIX: Add enrollment and subscription info for kiosk
         hasActiveEnrollment: student.studentCourses && student.studentCourses.length > 0,
         enrollments: student.studentCourses?.map(e => ({
           courseId: e.course.id,

@@ -14,17 +14,18 @@ const attendanceIdParamsSchema = z.object({
 });
 
 export default async function attendanceRoutes(fastify: FastifyInstance) {
-  // Check in to class
+  // Check in to class (PUBLIC - Check-in Kiosk não requer autenticação)
   fastify.post('/checkin', {
     schema: {
       tags: ['Attendance'],
-      summary: 'Check in to a class',
-      security: [{ Bearer: [] }],
+      summary: 'Check in to a class (public endpoint for kiosk)',
+      // security: [{ Bearer: [] }], // ✅ REMOVIDO: Kiosk é terminal público
       body: {
         type: 'object',
         required: ['classId'],
         properties: {
           classId: { type: 'string', format: 'uuid' },
+          studentId: { type: 'string', format: 'uuid' }, // ✅ KIOSK: studentId opcional
           method: { type: 'string', enum: ['QR_CODE', 'MANUAL', 'GEOLOCATION'] },
           location: { type: 'string' },
           notes: { type: 'string' },
@@ -42,7 +43,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    preHandler: [authenticateToken, allRoles, validateBody(checkInSchema)],
+    preHandler: [validateBody(checkInSchema)], // ✅ REMOVIDO: authenticateToken, allRoles (kiosk público)
     handler: AttendanceController.checkIn,
   });
 

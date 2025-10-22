@@ -12,26 +12,47 @@ export class AttendanceController {
     reply: FastifyReply
   ) {
     try {
-      if (!request.user) {
-        return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
-      }
+      // ✅ KIOSK MODE: Se não há usuário autenticado, esperar studentId no body
+      let studentId: string;
 
-      // Only students can check in
-      if (request.user.role !== UserRole.STUDENT) {
-        return ResponseHelper.error(reply, 'Apenas estudantes podem fazer check-in', 403);
-      }
+      if (request.user) {
+        // Modo autenticado: usuário logado faz check-in
+        if (request.user.role !== UserRole.STUDENT) {
+          return ResponseHelper.error(reply, 'Apenas estudantes podem fazer check-in', 403);
+        }
 
-      // Get student ID from user
-      const student = await prisma.student.findUnique({
-        where: { userId: request.user.id },
-      });
+        // Get student ID from authenticated user
+        const student = await prisma.student.findUnique({
+          where: { userId: request.user.id },
+        });
 
-      if (!student) {
-        return ResponseHelper.error(reply, 'Estudante não encontrado', 404);
+        if (!student) {
+          return ResponseHelper.error(reply, 'Estudante não encontrado', 404);
+        }
+
+        studentId = student.id;
+      } else {
+        // Modo Kiosk: studentId vem no body
+        const bodyWithStudentId = request.body as any;
+        
+        if (!bodyWithStudentId.studentId) {
+          return ResponseHelper.error(reply, 'studentId é obrigatório para check-in no kiosk', 400);
+        }
+
+        studentId = bodyWithStudentId.studentId;
+
+        // Verificar se estudante existe
+        const student = await prisma.student.findUnique({
+          where: { id: studentId },
+        });
+
+        if (!student) {
+          return ResponseHelper.error(reply, 'Estudante não encontrado', 404);
+        }
       }
 
       const attendance = await AttendanceService.checkInToClass(
-        student.id,
+        studentId,
         request.body
       );
 
