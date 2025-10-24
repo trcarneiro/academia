@@ -2,26 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewpo                              <li data-module="frequency">
-                    <i>📊</i> <span>Frequência</span>
-                </li>
-                <li data-module="ai">
-                    <i>🤖</i> <span>IA & Agentes</span>
-                </li>a-module="frequency">
-                    <i>📊</i> <span>Frequência</span>
-                </li>
-                <li data-module="ai">
-                    <i>🤖</i> <span>IA & Agentes</span>
-                </li>
-                <li data-module="import">
-                    <i>📥</i> <span>Importação</span>
-                </li>
-                <li data-module="reports">
-                    <i>📈</i> <span>Relatórios</span>
-                </li>
-                <li data-module="settings">
-                    <i>⚙️</i> <span>Configurações</span>
-                </li>=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academia Dashboard</title>
     <!-- FORÇA RESET - Para garantir design minimalista -->
     <link rel="stylesheet" href="css/force-reset.css">
@@ -56,6 +37,7 @@
     <link rel="stylesheet" href="css/modules/graduation.css">
     <link rel="stylesheet" href="css/modules/crm.css">
     <link rel="stylesheet" href="css/modules/checkin-kiosk.css">
+    <link rel="stylesheet" href="css/modules/ai.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -131,7 +113,7 @@
                     <i>🎯</i> <span>CRM</span>
                 </li>
                 <li data-module="ai">
-                    <i>�</i> <span>IA & Agentes</span>
+                    <i>🤖</i> <span>IA & Agentes</span>
                 </li>
                 <li data-module="import">
                     <i>📥</i> <span>Importação</span>
@@ -154,12 +136,10 @@
         </div>
 
         <div class="module-content" id="module-container">
-            <div id="contentContainer">
-                <!-- Conteúdo dos módulos será carregado aqui via SPA -->
-                <div class="welcome-message">
-                    <h2>Bem-vindo à Academia</h2>
-                    <p>Gerencie alunos, planos e atividades com facilidade. Selecione uma opção no menu lateral para começar.</p>
-                </div>
+            <!-- Conteúdo dos módulos será carregado aqui via SPA -->
+            <div class="welcome-message">
+                <h2>Dashboard Principal</h2>
+                <p>Selecione um módulo no menu lateral para começar.</p>
             </div>
         </div>
     </main>
@@ -178,51 +158,12 @@
     <!-- Design Tokens (theme/branding) runtime applier -->
     <script src="js/shared/design-tokens.js"></script>
 
-    <!-- Course RAG Integration -->
-    <script src="js/modules/course-rag-integration.js"></script>
-
-    <!-- ✅ SUPABASE AUTH - MUST LOAD BEFORE ROUTER -->
-    <!-- Supabase Auth JS Library v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Auth Module (Initialize login/session) -->
-    <script src="js/modules/auth/index.js"></script>
-    
-    <!-- Initialize Auth Module -->
-    <script>
-      document.addEventListener('DOMContentLoaded', async () => {
-        console.log('[Auth Init] Starting authentication module...');
-        
-        if (typeof AuthModule !== 'undefined') {
-          try {
-            // Initialize with auth container (not body)
-            const authContainer = document.getElementById('auth-container');
-            const authOverlay = document.getElementById('auth-overlay');
-            
-            await AuthModule.init(authContainer);
-            console.log('✅ [Auth Init] Auth module initialized successfully');
-            
-            // If no session, show overlay (login form)
-            // Auth module will hide overlay if session exists
-            if (!localStorage.getItem('sb-yawfuymgwukericlhgxh-auth-token')) {
-              console.log('[Auth Init] No session found - showing login');
-              authOverlay.style.display = 'block';
-            } else {
-              console.log('[Auth Init] Session found - showing dashboard');
-              authOverlay.style.display = 'none';
-            }
-          } catch (error) {
-            console.error('❌ [Auth Init] Auth initialization failed:', error);
-          }
-        } else {
-          console.error('❌ [Auth Init] AuthModule is not defined');
-        }
-      });
-    </script>
-
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
     <script src="js/dashboard/ui-controller.js"></script>
+
+    <!-- AI Module -->
+    <script type="module" src="js/modules/ai/index.js"></script>
 
     <!-- Students Module -->
     <script type="module" src="js/modules/students/index.js"></script>

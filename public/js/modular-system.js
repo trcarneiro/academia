@@ -257,8 +257,8 @@ class ModularSystem {
                     window.initializeStudentEditor();
                 } else {
                     console.error('❌ initializeStudentEditor function not found');
-                    console.warn('⚠️ Tentando recarregar módulo student-editor...');
-                    location.reload();
+                    console.warn('⚠️ Tentando exibir fallback do módulo student-editor...');
+                    this.showModuleLoadError(moduleName);
                 }
             }, 100);
             return;

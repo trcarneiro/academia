@@ -63,7 +63,7 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'rag', 'ai', 'ai-dashboard', 'ai-monitor', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk'
+      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'ai', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress'
     ];
 
     moduleList.forEach(moduleName => {

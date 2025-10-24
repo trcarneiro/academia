@@ -1,153 +1,614 @@
 /**
- * AI Dashboard Module - Student Data Agent Interface
- * Provides dashboard for accessing student data via MCP server
- * UPDATED: AGENTS.md v2.1 - AcademyApp integration
+ * AI MODULE - MODERN SINGLE-FILE VERSION
+ * Replaces legacy multi-file structure (controllers/services/views)
+ * COMPLIANCE: AGENTS.md v2.1 - Single-file pattern
+ * 
+ * Features:
+ * - Chat with AI assistants (Claude, GPT, Gemini)
+ * - Document Q&A with RAG
+ * - Course analysis and generation
+ * - Lesson plan generation
+ * - Technique suggestions
  */
 
-import { AIController } from './controllers/ai-controller.js';
-import { AIService } from './services/ai-service.js';
-import { AIView } from './views/ai-view.js';
+// Prevent re-declaration
+if (typeof window.AIModule !== 'undefined') {
+    console.log('✅ AI Module already loaded, skipping');
+} else {
 
-class AIDashboardModule {
-    constructor(app) {
-        this.app = app;
-        this.service = new AIService(app);
-        this.view = new AIView(app);
-        this.controller = new AIController(app, this.service, this.view);
+const AIModule = {
+    container: null,
+    moduleAPI: null,
+    currentChatThread: [],
+    availableModels: ['claude', 'gpt', 'gemini'],
+    currentModel: 'claude',
+    ragDocuments: [],
+    
+    // =========================================================================
+    // 1. INITIALIZATION
+    // =========================================================================
+    
+    async init(container) {
+        console.log('🤖 [AI Module] Initializing...');
         
-        this.init();
-    }
-
-    async init() {
-        console.log('AI Dashboard Module: Initializing...');
+        if (!container) {
+            console.error('❌ [AI Module] Container not provided');
+            return;
+        }
+        
+        this.container = container;
         
         try {
-            // Register module with SPA router
-            if (window.app && window.app.registerModule) {
-                window.app.registerModule('ai-dashboard', {
-                    name: 'AI Dashboard',
-                    icon: 'brain',
-                    permission: 'STUDENT_VIEW',
-                    component: 'ai-dashboard-container'
-                });
-            }
-
-            this.setupRoutes();
-            this.setupEventListeners();
+            await this.initializeAPI();
+            await this.loadInitialData();
+            this.render();
+            this.setupEvents();
             
-            // Dispatch module loaded event (AcademyApp integration)
+            // Register globally for onclick handlers
+            window.aiModule = this;
+            
+            // Dispatch module loaded event
             window.app?.dispatchEvent('module:loaded', { name: 'ai' });
             
-            console.log('AI Dashboard Module: Initialized successfully');
+            console.log('✅ [AI Module] Initialized successfully');
         } catch (error) {
-            console.error('AI Dashboard Module: Initialization failed', error);
-            window.app?.handleError?.(error, 'AI:init');
+            console.error('❌ [AI Module] Initialization failed:', error);
+            window.app?.handleError?.(error, { module: 'ai', context: 'init' });
         }
-    }
-
-    setupRoutes() {
-        // Add SPA routes for AI Dashboard module
-        if (window.app && window.app.router) {
-            window.app.router.addRoute('/ai-dashboard', {
-                component: 'ai-dashboard-container',
-                title: 'AI Dashboard',
-                requiresAuth: true,
-                permission: 'STUDENT_VIEW'
-            });
-
-            window.app.router.addRoute('/ai-dashboard/student/:id', {
-                component: 'ai-dashboard-student-detail',
-                title: 'Student Detail - AI Dashboard',
-                requiresAuth: true,
-                permission: 'STUDENT_VIEW'
-            });
-        }
-    }
-
-    setupEventListeners() {
-        // Listen for student ID input changes
-        document.addEventListener('ai-student-id-change', (event) => {
-            this.controller.handleStudentIdChange(event.detail.studentId);
-        });
-
-        // Listen for tool execution requests
-        document.addEventListener('ai-execute-tool', (event) => {
-            this.controller.handleToolExecution(event.detail.tool, event.detail.parameters);
-        });
-    }
-
-    // Public API for other modules
-    async getStudentData(studentId, options = {}) {
-        try {
-            return await this.service.getStudentData(studentId, options);
-        } catch (error) {
-            window.app?.handleError?.(error, 'AI:getStudentData');
-            throw error;
-        }
-    }
-
-    async getCourseData(courseId, options = {}) {
-        try {
-            return await this.service.getCourseData(courseId, options);
-        } catch (error) {
-            window.app?.handleError?.(error, 'AI:getCourseData');
-            throw error;
-        }
-    }
-
-    async executeQuery(query, options = {}) {
-        try {
-            return await this.service.executeQuery(query, options);
-        } catch (error) {
-            window.app?.handleError?.(error, 'AI:executeQuery');
-            throw error;
-        }
-    }
-
-    async getSystemAnalytics(options = {}) {
-        try {
-            return await this.service.getSystemAnalytics(options);
-        } catch (error) {
-            window.app?.handleError?.(error, 'AI:getSystemAnalytics');
-            throw error;
-        }
-    }
-}
-
-// Expose globally for AcademyApp compatibility
-window.ai = window.aiModule = AIDashboardModule;
-
-// Global initialization function for SPA router
-window.initializeAIModule = function() {
-    console.log('🤖 Initializing AI Module...');
+    },
     
-    const container = document.getElementById('ai-module-container') || document.getElementById('module-container');
+    // =========================================================================
+    // 2. API CLIENT SETUP
+    // =========================================================================
     
-    if (!container) {
-        console.error('❌ AI Module: Container not found');
-        return;
-    }
+    async initializeAPI() {
+        await waitForAPIClient();
+        this.moduleAPI = window.createModuleAPI('AI');
+        console.log('✅ [AI Module] API client initialized');
+    },
     
-    // Create instance
-    const aiModule = new AIDashboardModule(window.app || {});
+    // =========================================================================
+    // 3. DATA LOADING
+    // =========================================================================
     
-    // Render AI view into container
-    if (aiModule.view && typeof aiModule.view.render === 'function') {
-        aiModule.view.container = container;
-        aiModule.view.render();
+    async loadInitialData() {
+        // Load RAG documents
+        try {
+            const ragRes = await this.moduleAPI.request('/api/ai/rag/documents');
+            if (ragRes.success) {
+                this.ragDocuments = ragRes.data || [];
+                console.log(`📚 Loaded ${this.ragDocuments.length} RAG documents`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not load RAG documents:', error);
+            this.ragDocuments = [];
+        }
+    },
+    
+    // =========================================================================
+    // 4. MAIN RENDER
+    // =========================================================================
+    
+    render() {
+        this.container.innerHTML = `
+            <div class="module-isolated-ai-wrapper">
+                <!-- Header -->
+                <div class="module-header-premium">
+                    <div class="header-content">
+                        <div class="header-title-section">
+                            <h1><i class="fas fa-brain"></i> IA & Agentes Inteligentes</h1>
+                            <nav class="breadcrumb">
+                                <span>🏠 Home</span>
+                                <span>›</span>
+                                <span>🤖 Inteligência Artificial</span>
+                            </nav>
+                        </div>
+                        <div class="header-actions">
+                            <select id="ai-model-selector" class="form-control model-selector">
+                                <option value="claude" ${this.currentModel === 'claude' ? 'selected' : ''}>🧠 Claude (Anthropic)</option>
+                                <option value="gpt" ${this.currentModel === 'gpt' ? 'selected' : ''}>💬 GPT-4 (OpenAI)</option>
+                                <option value="gemini" ${this.currentModel === 'gemini' ? 'selected' : ''}>🔷 Gemini (Google)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="module-isolated-ai-stats data-card-premium">
+                    <div class="stat-card-enhanced stat-gradient-primary">
+                        <div class="stat-icon">🤖</div>
+                        <div class="stat-content">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Modelos AI</div>
+                        </div>
+                    </div>
+                    <div class="stat-card-enhanced stat-gradient-success">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${this.ragDocuments.length}</div>
+                            <div class="stat-label">Documentos RAG</div>
+                        </div>
+                    </div>
+                    <div class="stat-card-enhanced stat-gradient-info">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${this.currentChatThread.length}</div>
+                            <div class="stat-label">Mensagens</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="module-isolated-ai-grid">
+                    <!-- Left Panel: AI Features -->
+                    <div class="module-isolated-ai-features">
+                        ${this.renderFeaturesPanel()}
+                    </div>
+
+                    <!-- Right Panel: Chat -->
+                    <div class="module-isolated-ai-chat">
+                        ${this.renderChatPanel()}
+                    </div>
+                </div>
+
+                <!-- RAG Documents Section -->
+                <div class="module-isolated-ai-rag data-card-premium">
+                    ${this.renderRAGSection()}
+                </div>
+            </div>
+        `;
+    },
+    
+    // =========================================================================
+    // 5. FEATURES PANEL
+    // =========================================================================
+    
+    renderFeaturesPanel() {
+        return `
+            <div class="data-card-premium">
+                <h3 class="section-title">
+                    <i class="fas fa-magic"></i>
+                    Recursos Inteligentes
+                </h3>
+                
+                <div class="features-list">
+                    <!-- Course Analysis -->
+                    <div class="feature-card" data-feature="course-analysis">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-content">
+                            <h4>Análise de Cursos</h4>
+                            <p>Analise documentos de cursos e gere insights pedagógicos</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openCourseAnalysis()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Lesson Plan Generation -->
+                    <div class="feature-card" data-feature="lesson-generation">
+                        <div class="feature-icon">📝</div>
+                        <div class="feature-content">
+                            <h4>Gerar Planos de Aula</h4>
+                            <p>Crie planos de aula completos com IA</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openLessonGenerator()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Technique Suggestions -->
+                    <div class="feature-card" data-feature="technique-suggestions">
+                        <div class="feature-icon">🥋</div>
+                        <div class="feature-content">
+                            <h4>Sugestões de Técnicas</h4>
+                            <p>Gere técnicas de Krav Maga com descrições detalhadas</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openTechniqueGenerator()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- RAG Q&A -->
+                    <div class="feature-card" data-feature="rag-qa">
+                        <div class="feature-icon">❓</div>
+                        <div class="feature-content">
+                            <h4>Perguntas sobre Documentos</h4>
+                            <p>Faça perguntas sobre os documentos indexados</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openRAGChat()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Custom Chat -->
+                    <div class="feature-card" data-feature="custom-chat">
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-content">
+                            <h4>Chat Livre</h4>
+                            <p>Converse livremente com a IA</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openCustomChat()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+
+                    <!-- Analytics -->
+                    <div class="feature-card" data-feature="analytics">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h4>Análises e Insights</h4>
+                            <p>Veja análises de desempenho e tendências</p>
+                        </div>
+                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openAnalytics()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    // =========================================================================
+    // 6. CHAT PANEL
+    // =========================================================================
+    
+    renderChatPanel() {
+        return `
+            <div class="data-card-premium chat-card">
+                <div class="chat-header">
+                    <h3><i class="fas fa-comments"></i> Chat com IA</h3>
+                    <button class="btn-form btn-link btn-sm" onclick="window.aiModule.clearChat()">
+                        <i class="fas fa-trash"></i> Limpar
+                    </button>
+                </div>
+                
+                <div class="chat-messages" id="ai-chat-messages">
+                    ${this.currentChatThread.length === 0 ? `
+                        <div class="empty-chat">
+                            <i class="fas fa-comment-dots"></i>
+                            <p>Nenhuma mensagem ainda</p>
+                            <small>Escolha um recurso ou digite uma mensagem</small>
+                        </div>
+                    ` : this.currentChatThread.map(msg => this.renderChatMessage(msg)).join('')}
+                </div>
+                
+                <div class="chat-input-container">
+                    <textarea 
+                        id="ai-chat-input" 
+                        class="form-control chat-input" 
+                        placeholder="Digite sua mensagem... (Shift+Enter para nova linha)"
+                        rows="3"
+                    ></textarea>
+                    <button class="btn-form btn-primary-form" id="ai-send-button">
+                        <i class="fas fa-paper-plane"></i> Enviar
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+    
+    renderChatMessage(message) {
+        const isUser = message.role === 'user';
+        return `
+            <div class="chat-message ${isUser ? 'user-message' : 'ai-message'}">
+                <div class="message-avatar">
+                    ${isUser ? '👤' : '🤖'}
+                </div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <strong>${isUser ? 'Você' : this.getModelName(this.currentModel)}</strong>
+                        <span class="message-time">${new Date(message.timestamp).toLocaleTimeString('pt-BR')}</span>
+                    </div>
+                    <div class="message-text">${this.formatMessageText(message.content)}</div>
+                </div>
+            </div>
+        `;
+    },
+    
+    formatMessageText(text) {
+        // Convert markdown-like formatting
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>')
+            .replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+    },
+    
+    getModelName(model) {
+        const names = {
+            claude: 'Claude (Anthropic)',
+            gpt: 'GPT-4 (OpenAI)',
+            gemini: 'Gemini (Google)'
+        };
+        return names[model] || model;
+    },
+    
+    // =========================================================================
+    // 7. RAG SECTION
+    // =========================================================================
+    
+    renderRAGSection() {
+        return `
+            <details class="rag-section" open>
+                <summary class="section-header">
+                    <i class="fas fa-database"></i>
+                    Documentos Indexados (RAG)
+                    <span class="badge-count">${this.ragDocuments.length}</span>
+                </summary>
+                
+                <div class="section-actions">
+                    <button class="btn-form btn-primary-form" onclick="window.aiModule.openUploadDialog()">
+                        <i class="fas fa-upload"></i> Adicionar Documento
+                    </button>
+                    <button class="btn-form btn-secondary-form" onclick="window.aiModule.refreshRAGDocuments()">
+                        <i class="fas fa-sync"></i> Atualizar
+                    </button>
+                </div>
+                
+                ${this.ragDocuments.length === 0 ? `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>Nenhum documento indexado</p>
+                        <small>Adicione documentos para fazer perguntas sobre eles</small>
+                    </div>
+                ` : `
+                    <div class="documents-grid">
+                        ${this.ragDocuments.map(doc => `
+                            <div class="document-card">
+                                <div class="document-icon">📄</div>
+                                <div class="document-info">
+                                    <h4>${doc.name || 'Sem título'}</h4>
+                                    <small>${doc.type || 'Documento'} • ${this.formatFileSize(doc.size || 0)}</small>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn-icon" onclick="window.aiModule.queryDocument('${doc.id}')" title="Fazer pergunta">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
+                                    <button class="btn-icon btn-danger" onclick="window.aiModule.deleteDocument('${doc.id}')" title="Deletar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
+            </details>
+        `;
+    },
+    
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    },
+    
+    // =========================================================================
+    // 8. EVENT HANDLERS
+    // =========================================================================
+    
+    setupEvents() {
+        const sendButton = this.container.querySelector('#ai-send-button');
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        const modelSelector = this.container.querySelector('#ai-model-selector');
         
-        // Load initial data (empty state for agents)
-        if (aiModule.view.loadAgents) {
-            aiModule.view.loadAgents();
+        if (sendButton) {
+            sendButton.addEventListener('click', () => this.sendMessage());
+        }
+        
+        if (chatInput) {
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.sendMessage();
+                }
+            });
+        }
+        
+        if (modelSelector) {
+            modelSelector.addEventListener('change', (e) => {
+                this.currentModel = e.target.value;
+                window.app?.showToast?.(`✅ Modelo alterado para ${this.getModelName(this.currentModel)}`, 'info');
+            });
+        }
+    },
+    
+    // =========================================================================
+    // 9. CHAT FUNCTIONALITY
+    // =========================================================================
+    
+    async sendMessage() {
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        const messagesContainer = this.container.querySelector('#ai-chat-messages');
+        
+        if (!chatInput || !messagesContainer) return;
+        
+        const userMessage = chatInput.value.trim();
+        if (!userMessage) return;
+        
+        // Add user message to thread
+        this.currentChatThread.push({
+            role: 'user',
+            content: userMessage,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Clear input
+        chatInput.value = '';
+        
+        // Update UI
+        this.updateChatDisplay();
+        
+        // Show loading
+        const loadingMsg = {
+            role: 'assistant',
+            content: '💭 Pensando...',
+            timestamp: new Date().toISOString(),
+            isLoading: true
+        };
+        this.currentChatThread.push(loadingMsg);
+        this.updateChatDisplay();
+        
+        try {
+            // Send to API
+            const response = await this.moduleAPI.request('/api/rag/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    message: userMessage,
+                    model: this.currentModel,
+                    chatHistory: this.currentChatThread.filter(m => !m.isLoading)
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            // Remove loading message
+            this.currentChatThread = this.currentChatThread.filter(m => !m.isLoading);
+            
+            if (response.success && response.data) {
+                // Add AI response
+                this.currentChatThread.push({
+                    role: 'assistant',
+                    content: response.data.response || response.data.message || 'Sem resposta',
+                    timestamp: new Date().toISOString()
+                });
+                
+                this.updateChatDisplay();
+            } else {
+                throw new Error(response.message || 'Erro ao enviar mensagem');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error sending message:', error);
+            
+            // Remove loading and add error
+            this.currentChatThread = this.currentChatThread.filter(m => !m.isLoading);
+            this.currentChatThread.push({
+                role: 'assistant',
+                content: `❌ Erro: ${error.message}`,
+                timestamp: new Date().toISOString()
+            });
+            
+            this.updateChatDisplay();
+            window.app?.handleError?.(error, { module: 'ai', context: 'sendMessage' });
+        }
+    },
+    
+    updateChatDisplay() {
+        const messagesContainer = this.container.querySelector('#ai-chat-messages');
+        if (!messagesContainer) return;
+        
+        if (this.currentChatThread.length === 0) {
+            messagesContainer.innerHTML = `
+                <div class="empty-chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <p>Nenhuma mensagem ainda</p>
+                    <small>Escolha um recurso ou digite uma mensagem</small>
+                </div>
+            `;
+        } else {
+            messagesContainer.innerHTML = this.currentChatThread.map(msg => this.renderChatMessage(msg)).join('');
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Update stats
+        const statsValue = this.container.querySelector('.module-isolated-ai-stats .stat-gradient-info .stat-value');
+        if (statsValue) {
+            statsValue.textContent = this.currentChatThread.length;
+        }
+    },
+    
+    clearChat() {
+        this.currentChatThread = [];
+        this.updateChatDisplay();
+        window.app?.showToast?.('🗑️ Chat limpo', 'info');
+    },
+    
+    // =========================================================================
+    // 10. FEATURE ACTIONS
+    // =========================================================================
+    
+    async openCourseAnalysis() {
+        window.app?.showToast?.('📚 Recurso em desenvolvimento', 'info');
+        // TODO: Implement course analysis modal
+    },
+    
+    async openLessonGenerator() {
+        window.app?.showToast?.('📝 Recurso em desenvolvimento', 'info');
+        // TODO: Implement lesson generator modal
+    },
+    
+    async openTechniqueGenerator() {
+        window.app?.showToast?.('🥋 Recurso em desenvolvimento', 'info');
+        // TODO: Implement technique generator modal
+    },
+    
+    async openRAGChat() {
+        if (this.ragDocuments.length === 0) {
+            window.app?.showToast?.('⚠️ Adicione documentos primeiro', 'warning');
+            return;
+        }
+        window.app?.showToast?.('❓ Recurso em desenvolvimento', 'info');
+        // TODO: Implement RAG chat modal
+    },
+    
+    async openCustomChat() {
+        window.app?.showToast?.('💬 Use o chat ao lado', 'info');
+    },
+    
+    async openAnalytics() {
+        window.app?.showToast?.('📊 Recurso em desenvolvimento', 'info');
+        // TODO: Implement analytics dashboard
+    },
+    
+    async openUploadDialog() {
+        window.app?.showToast?.('📤 Recurso em desenvolvimento', 'info');
+        // TODO: Implement document upload modal
+    },
+    
+    async refreshRAGDocuments() {
+        await this.loadInitialData();
+        this.render();
+        this.setupEvents();
+        window.app?.showToast?.('✅ Documentos atualizados', 'success');
+    },
+    
+    async queryDocument(docId) {
+        window.app?.showToast?.(`📄 Fazer pergunta sobre documento ${docId}`, 'info');
+        // TODO: Implement document query
+    },
+    
+    async deleteDocument(docId) {
+        const confirmed = await window.app?.confirm?.('Tem certeza que deseja deletar este documento?');
+        if (!confirmed) return;
+        
+        try {
+            const response = await this.moduleAPI.request(`/api/ai/rag/documents/${docId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.success) {
+                window.app?.showToast?.('✅ Documento deletado', 'success');
+                await this.refreshRAGDocuments();
+            } else {
+                throw new Error(response.message || 'Erro ao deletar');
+            }
+        } catch (error) {
+            console.error('❌ Error deleting document:', error);
+            window.app?.handleError?.(error, { module: 'ai', context: 'deleteDocument' });
         }
     }
-    
-    // Store instance globally
-    window.aiModuleInstance = aiModule;
-    
-    console.log('✅ AI Module initialized successfully');
 };
 
-// Export for use in other files
-export { AIDashboardModule };
-export default AIDashboardModule;
+// Global export
+window.AIModule = AIModule;
+
+} // end if
+
+// Auto-initialize if container exists
+if (typeof window !== 'undefined' && document.getElementById('module-container')) {
+    window.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('module-container');
+        if (container && window.location.hash === '#ai') {
+            window.AIModule.init(container);
+        }
+    });
+}

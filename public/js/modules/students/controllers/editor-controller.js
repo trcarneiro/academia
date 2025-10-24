@@ -141,12 +141,8 @@ export class StudentEditorController {
                             <i class="fas fa-chart-line"></i>
                             Visão Geral
                         </button>
-                        <button class="tab-button" data-tab="responsible">
-                            <i class="fas fa-user-tie"></i>
-                            Responsável Financeiro
-                        </button>
                         <button class="tab-button" data-tab="financial">
-                            <i class="fas fa-credit-card"></i>
+                            <i class="fas fa-wallet"></i>
                             Financeiro
                         </button>
                         <button class="tab-button" data-tab="courses">
@@ -1272,10 +1268,6 @@ export class StudentEditorController {
             case 'overview':
                 await this.renderOverviewTab(studentId);
                 break;
-            case 'responsible':
-                console.log('🎯 [LoadTabContent] Routing to renderResponsibleTab...');
-                await this.renderResponsibleTab(studentId);
-                break;
             case 'courses':
                 await this.renderCoursesTab(studentId);
                 break;
@@ -1286,6 +1278,7 @@ export class StudentEditorController {
                 console.warn('⚠️ [LoadTabContent] Unknown tab:', tab);
         }
     }
+
 
     async renderOverviewTab(studentId) {
         const summaryDiv = this.container.querySelector('#overview-summary');
@@ -2158,347 +2151,565 @@ export class StudentEditorController {
         const panel = this.container.querySelector('#tab-financial');
         
         try {
-            // First, get student full record to check if they're a financial responsible
+            // Load student data with financial relationships
             const studentRes = await this.api.request(`/api/students/${studentId}`);
             const studentFull = studentRes.data || {};
             
-            // Check if viewing as a responsible (has dependents)
-            let consolidatedData = null;
-            let subscriptions = [];
-            let payments = [];
-            let packages = [];
-            let totalPaid = 0;
-            let activeSubscriptions = [];
-            let pendingPayments = 0;
-
-            // If this student has dependents (is a financial responsible), show consolidated view
-            if (studentFull.financialDependents && studentFull.financialDependents.length > 0) {
-                // Load consolidated charges instead
-                const consolidatedRes = await this.api.request(`/api/students/${studentId}/consolidated-charges`);
-                consolidatedData = consolidatedRes.data || { charges: [], totalAmount: 0 };
-            }
-
-            // Load individual subscriptions and packages
-            const [subscriptionsRes, paymentsRes, packagesRes] = await Promise.all([
+            // Load all financial data in parallel
+            const [
+                subscriptionsRes,
+                paymentsRes,
+                packagesRes,
+                allStudentsRes,
+                responsiblesRes,
+                dependentsRes
+            ] = await Promise.all([
                 this.api.request(`/api/students/${studentId}/subscriptions`),
                 this.api.request(`/api/students/${studentId}/payments`),
-                this.api.request('/api/billing-plans')
+                this.api.request('/api/billing-plans'),
+                this.api.request('/api/students'),
+                this.api.request('/api/students/financial-responsibles').catch(() => ({ data: [] })),
+                this.api.request(`/api/students/${studentId}/financial-dependents`).catch(() => ({ data: { dependents: [], totalDependents: 0, totalAmount: 0 } }))
             ]);
 
-            subscriptions = subscriptionsRes.data || [];
-            payments = paymentsRes.data || [];
-            packages = packagesRes.data || [];
-
-            // Load available responsibles
-            const responsiblesRes = await this.api.request('/api/students/financial-responsibles');
+            const subscriptions = subscriptionsRes.data || [];
+            const payments = paymentsRes.data || [];
+            const packages = packagesRes.data || [];
+            const allStudents = (allStudentsRes.data || []).filter(s => s.id !== studentId);
             const responsibles = responsiblesRes.data || [];
+            const dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
 
-            activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
-            totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-            pendingPayments = payments.filter(p => p.status === 'PENDING').length;
-
-            // Determine if this is a responsible-only profile (no personal subscriptions)
-            const isResponsibleOnly = consolidatedData && consolidatedData.charges.length > 0 && subscriptions.length === 0;
+            const activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
+            const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const pendingPayments = payments.filter(p => p.status === 'PENDING').length;
 
             panel.innerHTML = `
                 <div class="financial-container">
-                    ${isResponsibleOnly ? `
-                    <!-- Responsible Financial Badge -->
-                    <div class="responsible-financial-badge data-card-premium" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">👤💼</div>
-                        <h2 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.5rem;">Responsável Financeira</h2>
-                        <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 1.1rem;">
-                            Esta pessoa é responsável pelo pagamento de <strong>${consolidatedData.charges.length}</strong> ${consolidatedData.charges.length === 1 ? 'dependente' : 'dependentes'}
-                        </p>
-                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3);">
-                            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8); margin-bottom: 0.5rem;">Fatura Mensal Total</div>
-                            <div style="font-size: 2.5rem; font-weight: bold; color: white;">R$ ${consolidatedData.totalAmount?.toFixed(2) || '0.00'}</div>
+                    <!-- 📊 Overview Section -->
+                    <div class="financial-overview data-card-premium">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-line"></i>
+                            Visão Geral Financeira
+                        </h3>
+                        <div class="financial-stats">
+                            <div class="stat-card-enhanced stat-gradient-success">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">R$ ${totalPaid.toFixed(2)}</div>
+                                    <div class="stat-label">Total Pago</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-enhanced stat-gradient-primary">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">${activeSubscriptions.length}</div>
+                                    <div class="stat-label">Assinaturas Ativas</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-enhanced stat-gradient-warning">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">${pendingPayments}</div>
+                                    <div class="stat-label">Pendentes</div>
+                                </div>
+                            </div>
+                            ${dependentsData.totalDependents > 0 ? `
+                            <div class="stat-card-enhanced stat-gradient-info">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-content">
+                                    <div class="stat-value">${dependentsData.totalDependents}</div>
+                                    <div class="stat-label">Dependentes</div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
-                    ` : `
-                    <!-- Financial Overview -->
-                    <div class="financial-stats">
-                        <div class="stat-card-enhanced stat-gradient-success">
-                            <div class="stat-icon">💰</div>
-                            <div class="stat-content">
-                                <div class="stat-value">R$ ${totalPaid.toFixed(2)}</div>
-                                <div class="stat-label">Total Pago</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-enhanced stat-gradient-primary">
-                            <div class="stat-icon">📋</div>
-                            <div class="stat-content">
-                                <div class="stat-value">${activeSubscriptions.length}</div>
-                                <div class="stat-label">Assinaturas Ativas</div>
-                            </div>
-                        </div>
-                        <div class="stat-card-enhanced stat-gradient-warning">
-                            <div class="stat-icon">⏳</div>
-                            <div class="stat-content">
-                                <div class="stat-value">${pendingPayments}</div>
-                                <div class="stat-label">Pagamentos Pendentes</div>
-                            </div>
-                        </div>
-                    </div>
-                    `}
 
-                    <!-- Financial Responsible -->
-                    <div class="financial-responsible-section data-card-premium">
-                        <h4><i class="fas fa-user-tie"></i> Responsável Financeiro</h4>
-                        <div id="student-financial-responsible">
-                            <div class="current-responsible">
-                                ${studentFull.financialResponsible ? `
-                                    <div class="info-badge info-badge-success">
-                                        <i>✅</i> ${studentFull.financialResponsible.name}
+                    <!-- 👤 Responsável Financeiro Section -->
+                    <details class="financial-section-collapsible data-card-premium" open>
+                        <summary class="collapsible-header">
+                            <i class="fas fa-user-shield"></i>
+                            Responsável Financeiro
+                            ${studentFull.financialResponsible || studentFull.financialResponsibleStudent ? '<span class="badge-active">✅ Configurado</span>' : '<span class="badge-inactive">⚠️ Não configurado</span>'}
+                        </summary>
+                        <div class="collapsible-content">
+                            ${studentFull.financialResponsibleStudent ? `
+                                <div class="responsible-info info-badge-success">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <div class="responsible-details">
+                                        <strong>👤 Outro Aluno: ${studentFull.financialResponsibleStudent.user?.name || 'Sem nome'}</strong>
+                                        <div class="text-muted">${studentFull.financialResponsibleStudent.user?.email || 'Não informado'}</div>
                                     </div>
-                                    <div class="field-help">${studentFull.financialResponsible.email || ''} ${studentFull.financialResponsible.phone ? '• ' + studentFull.financialResponsible.phone : ''}</div>
-                                ` : `<div class="field-help">Nenhum responsável financeiro vinculado</div>`}
-                            </div>
+                                </div>
+                            ` : studentFull.financialResponsible ? `
+                                <div class="responsible-info info-badge-info">
+                                    <i class="fas fa-user-tie"></i>
+                                    <div class="responsible-details">
+                                        <strong>📋 Cadastro Separado: ${studentFull.financialResponsible.name}</strong>
+                                        <div class="text-muted">${studentFull.financialResponsible.email || 'Não informado'} ${studentFull.financialResponsible.phone ? '• ' + studentFull.financialResponsible.phone : ''}</div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="empty-state-inline">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>Nenhum responsável financeiro vinculado</p>
+                                    <small>Cobranças serão direcionadas ao próprio aluno</small>
+                                </div>
+                            `}
 
-                            <div class="form-group" style="margin-top:1rem;">
-                                <label for="financialResponsibleSelect">Selecionar Responsável Financeiro</label>
-                                <select id="financialResponsibleSelect" class="form-control">
-                                    <option value="">-- Selecionar --</option>
-                                    ${responsibles.map(r => `<option value="${r.id}" ${studentFull.financialResponsibleId === r.id ? 'selected' : ''}>${r.name} - ${r.email || ''}</option>`).join('')}
-                                </select>
-                                <div style="margin-top:.5rem;">
-                                    <button id="save-financial-responsible" class="btn-form btn-primary-form"><i class="fas fa-save"></i> Salvar</button>
-                                    <button id="remove-financial-responsible" class="btn-form btn-link" style="margin-left:.5rem;"><i class="fas fa-times"></i> Remover vínculo</button>
+                            <div class="form-section">
+                                <h5 class="form-section-title"><i class="fas fa-edit"></i> Alterar Responsável</h5>
+                                
+                                <div class="form-group">
+                                    <label for="responsibleStudentSelect">
+                                        <i class="fas fa-user-graduate"></i> Opção 1: Outro Aluno
+                                    </label>
+                                    <select id="responsibleStudentSelect" class="form-control">
+                                        <option value="">-- Selecionar Aluno --</option>
+                                        ${allStudents.map(s => `
+                                            <option value="${s.id}" ${studentFull.financialResponsibleStudentId === s.id ? 'selected' : ''}>
+                                                ${s.user?.name || 'Sem nome'} - ${s.user?.email || 'Sem email'}
+                                            </option>
+                                        `).join('')}
+                                    </select>
+                                    <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="responsibleSelect">
+                                        <i class="fas fa-user-tie"></i> Opção 2: Responsável Cadastrado
+                                    </label>
+                                    <div class="input-with-button">
+                                        <select id="responsibleSelect" class="form-control">
+                                            <option value="">-- Selecionar Responsável --</option>
+                                            ${responsibles.map(r => `
+                                                <option value="${r.id}" ${studentFull.financialResponsibleId === r.id ? 'selected' : ''}>
+                                                    ${r.name} - ${r.email || ''}
+                                                </option>
+                                            `).join('')}
+                                        </select>
+                                        <button id="showCreateResponsible" class="btn-icon btn-primary" title="Criar novo responsável">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <small class="field-help">💡 Para responsáveis que não são alunos</small>
+                                </div>
+
+                                <div id="createResponsibleForm" class="form-inline" style="display: none;">
+                                    <h5 class="form-section-title">📝 Criar Novo Responsável</h5>
+                                    <div class="form-group">
+                                        <label>Nome *</label>
+                                        <input id="newResponsibleName" type="text" class="form-control" placeholder="Nome completo" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input id="newResponsibleEmail" type="email" class="form-control" placeholder="email@exemplo.com" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Telefone</label>
+                                        <input id="newResponsiblePhone" type="tel" class="form-control" placeholder="(11) 99999-9999" />
+                                    </div>
+                                    <div class="button-group">
+                                        <button id="saveNewResponsible" class="btn-form btn-primary-form">
+                                            <i class="fas fa-check"></i> Salvar
+                                        </button>
+                                        <button id="cancelNewResponsible" class="btn-form btn-link">Cancelar</button>
+                                    </div>
+                                </div>
+
+                                <div class="button-group">
+                                    <button id="saveResponsible" class="btn-form btn-primary-form">
+                                        <i class="fas fa-save"></i> Salvar Responsável
+                                    </button>
+                                    <button id="removeResponsible" class="btn-form btn-warning-form">
+                                        <i class="fas fa-times"></i> Remover Vínculo
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </details>
 
-                    ${!isResponsibleOnly ? `
-                    <!-- Active Subscriptions (Only show if user has personal subscriptions) -->
-                    <div class="subscriptions-section data-card-premium">
-                        <div class="section-header">
-                            <h3>
-                                <i class="fas fa-file-invoice-dollar"></i>
-                                Pacotes Pessoais
-                            </h3>
-                            <button class="btn-form btn-primary-form" onclick="window.openPackageSelector('${studentId}')">
-                                <i class="fas fa-plus"></i>
-                                Adicionar Pacote
-                            </button>
-                        </div>
-                        ${activeSubscriptions.length === 0 ? `
-                            <div class="empty-state">
-                                <i class="fas fa-inbox" style="font-size: 3rem; color: var(--color-text-muted);"></i>
-                                <p>Nenhum pacote ativo</p>
+                    <!-- 📋 Assinaturas Ativas Section -->
+                    <details class="financial-section-collapsible data-card-premium" ${activeSubscriptions.length > 0 ? 'open' : ''}>
+                        <summary class="collapsible-header">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Assinaturas Ativas
+                            <span class="badge-count">${activeSubscriptions.length}</span>
+                        </summary>
+                        <div class="collapsible-content">
+                            <div class="section-actions">
+                                <button class="btn-form btn-primary-form" onclick="window.openPackageSelector('${studentId}')">
+                                    <i class="fas fa-plus"></i> Adicionar Pacote
+                                </button>
                             </div>
-                        ` : `
-                            <div class="subscriptions-list">
-                                ${activeSubscriptions.map(sub => `
-                                    <div class="subscription-card">
-                                        <div class="subscription-header">
-                                            <h4>${sub.plan?.name || 'Plano'}</h4>
-                                            <span class="subscription-badge status-active">
-                                                <i class="fas fa-check-circle"></i>
-                                                Ativo
-                                            </span>
-                                        </div>
-                                        <div class="subscription-details">
-                                            <div class="detail-row">
-                                                <span class="detail-label">Início:</span>
-                                                <span class="detail-value">${new Date(sub.startDate).toLocaleDateString('pt-BR')}</span>
+
+                            ${activeSubscriptions.length === 0 ? `
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>Nenhuma assinatura ativa</p>
+                                </div>
+                            ` : `
+                                <div class="subscriptions-list">
+                                    ${activeSubscriptions.map(sub => {
+                                        const subscriptionPayload = encodeURIComponent(JSON.stringify({
+                                            id: sub.id,
+                                            studentId,
+                                            planId: sub.planId || sub.plan?.id || '',
+                                            planName: sub.plan?.name || 'Plano',
+                                            originalPrice: parseFloat(sub.plan?.price ?? sub.price ?? 0) || 0,
+                                            currentPrice: parseFloat(sub.currentPrice ?? sub.plan?.price ?? sub.price ?? 0) || 0,
+                                            startDate: sub.startDate,
+                                            nextDueDate: sub.nextDueDate || sub.endDate || '',
+                                            status: sub.status || (sub.isActive ? 'ACTIVE' : 'PAUSED')
+                                        }));
+                                        return `
+                                            <div class="subscription-card">
+                                                <div class="subscription-header">
+                                                    <h4>${sub.plan?.name || 'Plano'}</h4>
+                                                    <span class="subscription-badge status-active">
+                                                        <i class="fas fa-check-circle"></i> Ativo
+                                                    </span>
+                                                </div>
+                                                <div class="subscription-details">
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Início:</span>
+                                                        <span class="detail-value">${new Date(sub.startDate).toLocaleDateString('pt-BR')}</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Renovação:</span>
+                                                        <span class="detail-value">${sub.endDate ? new Date(sub.endDate).toLocaleDateString('pt-BR') : 'Sem data'}</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Valor:</span>
+                                                        <span class="detail-value price">R$ ${(parseFloat(sub.plan?.price) || 0).toFixed(2)}/mês</span>
+                                                    </div>
+                                                </div>
+                                                <div class="subscription-actions">
+                                                    <button class="btn-form btn-sm btn-info-form" data-subscription="${subscriptionPayload}" onclick="window.viewSubscriptionDetails(this.dataset.subscription)">
+                                                        <i class="fas fa-eye"></i> Detalhes
+                                                    </button>
+                                                    <button class="btn-form btn-sm btn-warning-form" onclick="window.pauseSubscription('${sub.id}')">
+                                                        <i class="fas fa-pause"></i> Pausar
+                                                    </button>
+                                                    <button class="btn-form btn-sm btn-danger-form" onclick="window.cancelSubscription('${sub.id}')">
+                                                        <i class="fas fa-times"></i> Cancelar
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Renovação:</span>
-                                                <span class="detail-value">${sub.endDate ? new Date(sub.endDate).toLocaleDateString('pt-BR') : 'Sem data'}</span>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `}
+                        </div>
+                    </details>
+
+                    <!-- 👥 Dependentes Financeiros Section -->
+                    ${dependentsData.totalDependents > 0 ? `
+                    <details class="financial-section-collapsible data-card-premium" ${dependentsData.totalDependents > 0 ? 'open' : ''}>
+                        <summary class="collapsible-header">
+                            <i class="fas fa-users"></i>
+                            Dependentes Financeiros
+                            <span class="badge-count">${dependentsData.totalDependents}</span>
+                            <span class="badge-price">R$ ${dependentsData.totalAmount.toFixed(2)}</span>
+                        </summary>
+                        <div class="collapsible-content">
+                            <div class="info-callout info-callout-primary">
+                                <i class="fas fa-info-circle"></i>
+                                <div>
+                                    <strong>Cobrança Consolidada</strong>
+                                    <p>A fatura mensal será gerada com o valor total de <strong>R$ ${dependentsData.totalAmount.toFixed(2)}</strong> incluindo todos os dependentes abaixo.</p>
+                                </div>
+                            </div>
+
+                            <div class="dependents-list">
+                                ${(dependentsData.dependents || []).map(dep => {
+                                    const userName = dep?.user?.name || 'Nome não disponível';
+                                    const subsLength = (dep?.subscriptions || []).length;
+                                    const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
+                                        return sum + (sub?.plan?.price || 0);
+                                    }, 0);
+                                    
+                                    return `
+                                        <div class="dependent-card">
+                                            <div class="dependent-header">
+                                                <i class="fas fa-user"></i>
+                                                <div class="dependent-info">
+                                                    <strong>${userName}</strong>
+                                                    <small>${subsLength} plano(s) ativo(s)</small>
+                                                </div>
                                             </div>
-                                            <div class="detail-row">
-                                                <span class="detail-label">Valor:</span>
-                                                <span class="detail-value price">R$ ${sub.plan?.price?.toFixed(2) || '0.00'}/mês</span>
+                                            <div class="dependent-amount">
+                                                R$ ${totalPrice.toFixed(2)}
                                             </div>
                                         </div>
-                                        <div class="subscription-actions">
-                                            <button class="btn-form btn-sm btn-info-form" onclick="window.viewSubscriptionDetails('${sub.id}')">
-                                                <i class="fas fa-eye"></i>
-                                                Detalhes
-                                            </button>
-                                            <button class="btn-form btn-sm btn-warning-form" onclick="window.pauseSubscription('${sub.id}')">
-                                                <i class="fas fa-pause"></i>
-                                                Pausar
-                                            </button>
-                                            <button class="btn-form btn-sm btn-danger-form" onclick="window.cancelSubscription('${sub.id}')">
-                                                <i class="fas fa-times"></i>
-                                                Cancelar
-                                            </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </details>
+                    ` : ''}
+
+                    <!-- 📦 Pacotes Disponíveis Section -->
+                    <details class="financial-section-collapsible data-card-premium">
+                        <summary class="collapsible-header">
+                            <i class="fas fa-box-open"></i>
+                            Pacotes Disponíveis
+                            <span class="badge-count">${packages.length}</span>
+                        </summary>
+                        <div class="collapsible-content">
+                            <div class="packages-grid">
+                                ${packages.map(pkg => `
+                                    <div class="package-card">
+                                        <div class="package-header">
+                                            <h4>${pkg.name}</h4>
+                                            <span class="package-price">R$ ${(parseFloat(pkg.price) || 0).toFixed(2)}</span>
                                         </div>
+                                        <div class="package-description">
+                                            ${pkg.description || 'Sem descrição'}
+                                        </div>
+                                        <ul class="package-features">
+                                            ${(() => {
+                                                let features = pkg.features;
+                                                if (!features) {
+                                                    features = ['Acesso às aulas', 'Suporte técnico'];
+                                                } else if (typeof features === 'string') {
+                                                    try {
+                                                        features = JSON.parse(features);
+                                                    } catch (e) {
+                                                        features = ['Acesso às aulas', 'Suporte técnico'];
+                                                    }
+                                                }
+                                                if (!Array.isArray(features)) {
+                                                    features = ['Acesso às aulas', 'Suporte técnico'];
+                                                }
+                                                return features.map(feature => `
+                                                    <li><i class="fas fa-check"></i> ${feature}</li>
+                                                `).join('');
+                                            })()}
+                                        </ul>
+                                        <button class="btn-form btn-primary-form btn-block"
+                                            data-student-id="${studentId}"
+                                            data-plan-id="${pkg.id}"
+                                            data-plan-name="${encodeURIComponent(pkg.name || 'Plano')}"
+                                            data-plan-price="${(parseFloat(pkg.price) || 0).toFixed(2)}"
+                                            onclick="window.subscribeToPackageFromButton(this)">
+                                            <i class="fas fa-shopping-cart"></i> Assinar
+                                        </button>
                                     </div>
                                 `).join('')}
                             </div>
-                        `}
-                    </div>
-                    ` : ''}
+                        </div>
+                    </details>
 
-                    <!-- Consolidated Plans (for Financial Responsibles) -->
-                    ${consolidatedData && consolidatedData.charges.length > 0 ? `
-                    <div class="consolidated-section data-card-premium" style="${isResponsibleOnly ? 'border: 3px solid #667eea; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);' : ''}">
-                        <div class="section-header">
-                            <h3>
-                                <i class="fas fa-users"></i>
-                                ${isResponsibleOnly ? 'Dependentes Financeiros' : 'Planos dos Dependentes'}
-                            </h3>
-                            <span class="badge-consolidated">${consolidatedData.charges.length} ${consolidatedData.charges.length === 1 ? 'dependente' : 'dependentes'}</span>
-                        </div>
-                        
-                        ${isResponsibleOnly ? `
-                        <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 1rem; margin-bottom: 1.5rem; border-radius: 6px;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                                <i class="fas fa-info-circle" style="color: #667eea; font-size: 1.2rem;"></i>
-                                <strong style="color: #2c3e50; font-size: 1.05rem;">Como Funciona a Cobrança</strong>
+                    <!-- 📜 Histórico de Pagamentos Section -->
+                    <details class="financial-section-collapsible data-card-premium">
+                        <summary class="collapsible-header">
+                            <i class="fas fa-history"></i>
+                            Histórico de Pagamentos
+                            <span class="badge-count">${payments.length}</span>
+                        </summary>
+                        <div class="collapsible-content">
+                            <div class="section-actions">
+                                <button class="btn-form btn-secondary-form" onclick="window.exportPaymentHistory('${studentId}')">
+                                    <i class="fas fa-download"></i> Exportar
+                                </button>
                             </div>
-                            <p style="margin: 0; color: #555; line-height: 1.6;">
-                                A fatura mensal será gerada com o <strong>valor total consolidado</strong> de todos os planos abaixo. 
-                                Você receberá <strong>uma única cobrança</strong> no valor de <strong style="color: #667eea;">R$ ${consolidatedData.totalAmount?.toFixed(2)}</strong> 
-                                que inclui todos os dependentes.
-                            </p>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="consolidated-info">
-                            <div class="info-row">
-                                <span class="info-label"><i class="fas fa-calculator"></i> Total de Planos:</span>
-                                <span class="info-value">${consolidatedData.totalCharges}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label"><i class="fas fa-file-invoice-dollar"></i> Valor da Fatura Mensal:</span>
-                                <span class="info-value price" style="font-size: 1.3rem; font-weight: 600; color: #667eea;">R$ ${consolidatedData.totalAmount?.toFixed(2) || '0.00'}</span>
-                            </div>
-                        </div>
-                        <div class="consolidated-table-container">
-                            <table class="consolidated-table">
-                                <thead>
-                                    <tr>
-                                        <th>Dependente</th>
-                                        <th>Plano</th>
-                                        <th>Valor</th>
-                                        <th>Status</th>
-                                        <th>Início</th>
-                                        <th>Renovação</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${consolidatedData.charges.map(charge => `
-                                        <tr class="consolidated-row">
-                                            <td class="dependent-name">
-                                                <span class="dependent-icon"><i class="fas fa-user"></i></span>
-                                                <div>
-                                                    <div class="strong">${charge.dependentName}</div>
-                                                    <div class="text-muted small">${charge.dependentEmail}</div>
-                                                </div>
-                                            </td>
-                                            <td>${charge.planName || 'Plano'}</td>
-                                            <td class="plan-price">R$ ${charge.planPrice?.toFixed(2) || '0.00'}</td>
-                                            <td>
-                                                <span class="status-badge status-${(charge.subscriptionStatus || 'active').toLowerCase()}">
-                                                    <i class="fas fa-circle"></i>
-                                                    ${charge.subscriptionStatus === 'active' ? 'Ativo' : charge.subscriptionStatus || 'Ativo'}
-                                                </span>
-                                            </td>
-                                            <td class="text-muted">${new Date(charge.subscriptionStartDate).toLocaleDateString('pt-BR')}</td>
-                                            <td class="text-muted">${charge.subscriptionEndDate ? new Date(charge.subscriptionEndDate).toLocaleDateString('pt-BR') : 'Sem data'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    ` : ''}
 
-                    <!-- Payment History -->
-                    <div class="payments-section data-card-premium">
-                        <div class="section-header">
-                            <h3>
-                                <i class="fas fa-history"></i>
-                                Histórico de Pagamentos
-                            </h3>
-                            <button class="btn-form btn-secondary-form" onclick="window.exportPaymentHistory('${studentId}')">
-                                <i class="fas fa-download"></i>
-                                Exportar
-                            </button>
-                        </div>
-                        ${payments.length === 0 ? `
-                            <div class="empty-state">
-                                <i class="fas fa-receipt" style="font-size: 3rem; color: var(--color-text-muted);"></i>
-                                <p>Nenhum pagamento registrado</p>
-                            </div>
-                        ` : `
-                            <div class="payments-table-container">
-                                <table class="payments-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Descrição</th>
-                                            <th>Valor</th>
-                                            <th>Status</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${payments.slice(0, 20).map(payment => `
-                                            <tr>
-                                                <td>${new Date(payment.createdAt).toLocaleDateString('pt-BR')}</td>
-                                                <td>${payment.description || 'Pagamento'}</td>
-                                                <td class="payment-amount">R$ ${payment.amount?.toFixed(2) || '0.00'}</td>
-                                                <td>
-                                                    <span class="payment-status status-${(payment.status || 'pending').toLowerCase()}">
-                                                        ${payment.status || 'PENDING'}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn-action btn-view" onclick="window.viewPaymentReceipt('${payment.id}')" title="Ver comprovante">
-                                                        <i class="fas fa-file-invoice"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        `}
-                    </div>
-
-                    <!-- Available Packages -->
-                    <div class="packages-section data-card-premium">
-                        <div class="section-header">
-                            <h3>
-                                <i class="fas fa-box-open"></i>
-                                Pacotes Disponíveis
-                            </h3>
-                        </div>
-                        <div class="packages-grid">
-                            ${packages.map(pkg => `
-                                <div class="package-card">
-                                    <div class="package-header">
-                                        <h4>${pkg.name}</h4>
-                                        <span class="package-price">R$ ${pkg.price?.toFixed(2) || '0.00'}</span>
-                                    </div>
-                                    <div class="package-description">
-                                        ${pkg.description || 'Sem descrição'}
-                                    </div>
-                                    <ul class="package-features">
-                                        ${(pkg.features || ['Acesso às aulas', 'Suporte técnico']).map(feature => `
-                                            <li><i class="fas fa-check"></i> ${feature}</li>
-                                        `).join('')}
-                                    </ul>
-                                    <button class="btn-form btn-primary-form btn-block" onclick="window.subscribeToPackage('${studentId}', '${pkg.id}')">
-                                        <i class="fas fa-shopping-cart"></i>
-                                        Assinar
-                                    </button>
+                            ${payments.length === 0 ? `
+                                <div class="empty-state">
+                                    <i class="fas fa-receipt"></i>
+                                    <p>Nenhum pagamento registrado</p>
                                 </div>
-                            `).join('')}
+                            ` : `
+                                <div class="payments-table-container">
+                                    <table class="payments-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Descrição</th>
+                                                <th>Valor</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${payments.slice(0, 20).map(payment => `
+                                                <tr>
+                                                    <td>${new Date(payment.createdAt).toLocaleDateString('pt-BR')}</td>
+                                                    <td>${payment.description || 'Pagamento'}</td>
+                                                    <td class="payment-amount">R$ ${payment.amount?.toFixed(2) || '0.00'}</td>
+                                                    <td>
+                                                        <span class="payment-status status-${(payment.status || 'pending').toLowerCase()}">
+                                                            ${payment.status || 'PENDING'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn-action btn-view" onclick="window.viewPaymentReceipt('${payment.id}')" title="Ver comprovante">
+                                                            <i class="fas fa-file-invoice"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `}
                         </div>
-                    </div>
+                    </details>
                 </div>
             `;
+
+            // Setup event listeners for responsible management
+            this.setupFinancialResponsibleEvents(studentId, allStudents, responsibles);
+
         } catch (error) {
             console.error('Error loading financial data:', error);
             panel.innerHTML = '<p class="error-message">Erro ao carregar dados financeiros. Tente novamente.</p>';
         }
     }
+
+    // New method to handle financial responsible events
+    setupFinancialResponsibleEvents(studentId, allStudents, responsibles) {
+        const panel = this.container.querySelector('#tab-financial');
+        if (!panel) return;
+
+        const responsibleStudentSelect = panel.querySelector('#responsibleStudentSelect');
+        const responsibleSelect = panel.querySelector('#responsibleSelect');
+        const showCreateBtn = panel.querySelector('#showCreateResponsible');
+        const createForm = panel.querySelector('#createResponsibleForm');
+        const cancelCreateBtn = panel.querySelector('#cancelNewResponsible');
+        const saveNewResponsibleBtn = panel.querySelector('#saveNewResponsible');
+        const saveResponsibleBtn = panel.querySelector('#saveResponsible');
+        const removeResponsibleBtn = panel.querySelector('#removeResponsible');
+
+        if (!responsibleStudentSelect || !responsibleSelect) return;
+
+        // Sync selects: when one is selected, clear the other
+        responsibleStudentSelect.onchange = () => {
+            if (responsibleStudentSelect.value) {
+                responsibleSelect.value = '';
+            }
+        };
+
+        responsibleSelect.onchange = () => {
+            if (responsibleSelect.value) {
+                responsibleStudentSelect.value = '';
+            }
+        };
+
+        // Show/hide create form
+        if (showCreateBtn) {
+            showCreateBtn.onclick = () => {
+                createForm.style.display = 'block';
+                showCreateBtn.style.display = 'none';
+            };
+        }
+
+        if (cancelCreateBtn) {
+            cancelCreateBtn.onclick = () => {
+                createForm.style.display = 'none';
+                showCreateBtn.style.display = '';
+                panel.querySelector('#newResponsibleName').value = '';
+                panel.querySelector('#newResponsibleEmail').value = '';
+                panel.querySelector('#newResponsiblePhone').value = '';
+            };
+        }
+
+        // Save new responsible
+        if (saveNewResponsibleBtn) {
+            saveNewResponsibleBtn.onclick = async () => {
+                const name = panel.querySelector('#newResponsibleName').value.trim();
+                const email = panel.querySelector('#newResponsibleEmail').value.trim();
+                const phone = panel.querySelector('#newResponsiblePhone').value.trim();
+
+                if (!name) {
+                    window.app?.showToast?.('❌ Nome é obrigatório', 'error');
+                    return;
+                }
+
+                const res = await this.api.request('/api/students/financial-responsibles', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, phone }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (res.success) {
+                    window.app?.showToast?.('✅ Responsável criado com sucesso!', 'success');
+                    await this.renderFinancialTab(studentId);
+                } else {
+                    window.app?.showToast?.(`❌ ${res.message || 'Erro ao criar'}`, 'error');
+                }
+            };
+        }
+
+        // Save responsible selection
+        if (saveResponsibleBtn) {
+            saveResponsibleBtn.onclick = async () => {
+                const selectedStudentId = responsibleStudentSelect.value;
+                const selectedResponsibleId = responsibleSelect.value;
+
+                if (selectedStudentId) {
+                    const res = await this.api.request(`/api/students/${studentId}/financial-responsible-student`, {
+                        method: 'POST',
+                        body: JSON.stringify({ responsibleStudentId: selectedStudentId }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (res.success) {
+                        window.app?.showToast?.('✅ Aluno responsável vinculado!', 'success');
+                        await this.renderFinancialTab(studentId);
+                    } else {
+                        window.app?.showToast?.(`❌ ${res.message}`, 'error');
+                    }
+                } else if (selectedResponsibleId) {
+                    const res = await this.api.request(`/api/students/${studentId}/financial-responsible`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ financialResponsibleId: selectedResponsibleId }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (res.success) {
+                        window.app?.showToast?.('✅ Responsável vinculado!', 'success');
+                        await this.renderFinancialTab(studentId);
+                    } else {
+                        window.app?.showToast?.(`❌ ${res.message}`, 'error');
+                    }
+                } else {
+                    window.app?.showToast?.('⚠️ Selecione um responsável primeiro', 'warning');
+                }
+            };
+        }
+
+        // Remove responsible link
+        if (removeResponsibleBtn) {
+            removeResponsibleBtn.onclick = async () => {
+                const confirmed = await window.app?.confirm?.('Desvinculará o responsável financeiro. Cobranças irão para o aluno. Continuar?');
+                if (!confirmed) return;
+
+                const promises = [
+                    this.api.request(`/api/students/${studentId}/financial-responsible-student`, {
+                        method: 'POST',
+                        body: JSON.stringify({ responsibleStudentId: null }),
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    this.api.request(`/api/students/${studentId}/financial-responsible`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ financialResponsibleId: null }),
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                ];
+
+                try {
+                    await Promise.all(promises);
+                    window.app?.showToast?.('✅ Vínculo removido!', 'success');
+                    await this.renderFinancialTab(studentId);
+                } catch (error) {
+                    window.app?.showToast?.('❌ Erro ao remover vínculo', 'error');
+                }
+            };
+        }
+    }
+
 
     // =========================================================================
     // ENROLLMENT TAB - COURSES & PACKAGE SELECTION (NEW STUDENT)
@@ -3116,3 +3327,563 @@ window.openCoursesManager = function() {
     // Navigate to courses management
     window.router?.navigateTo('courses');
 };
+
+window.subscribeToPackageFromButton = function(buttonElement) {
+    if (!buttonElement) {
+        return;
+    }
+
+    const studentId = buttonElement.dataset.studentId;
+    const planId = buttonElement.dataset.planId;
+
+    if (!studentId || !planId) {
+        window.app?.showToast?.('Não foi possível identificar o aluno ou o plano selecionado.', 'error');
+        return;
+    }
+    const planName = buttonElement.dataset.planName ? decodeURIComponent(buttonElement.dataset.planName) : 'Plano';
+    const planPrice = buttonElement.dataset.planPrice || '0.00';
+
+    window.subscribeToPackage(studentId, planId, planName, planPrice);
+};
+
+window.subscribeToPackage = function(studentId, planId, planName = 'Plano', planPrice = '0.00') {
+    if (!studentId || !planId) {
+        window.app?.showToast?.('Não foi possível identificar o aluno ou o plano selecionado.', 'error');
+        return;
+    }
+
+    const numericPrice = Number(planPrice);
+    window.openSubscriptionModal({
+        mode: 'create',
+        studentId,
+        planId,
+        planName,
+        originalPrice: Number.isFinite(numericPrice) ? numericPrice : 0,
+        currentPrice: Number.isFinite(numericPrice) ? numericPrice : 0,
+        startDate: new Date().toISOString().split('T')[0]
+    });
+};
+
+window.openSubscriptionModal = function(options = {}) {
+    const {
+        mode = 'create',
+        studentId = '',
+        planId = '',
+        subscriptionId = '',
+        planName = 'Plano',
+        originalPrice = 0,
+        currentPrice = 0,
+        startDate = new Date().toISOString().split('T')[0],
+        nextDueDate = '',
+        status = 'ACTIVE'
+    } = options;
+
+    const isEditMode = mode === 'edit';
+
+    const formatToInputDate = (iso) => {
+        if (!iso) return '';
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    window.closeSubscriptionModal();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'subscription-pricing-modal';
+    overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; padding: 2rem; z-index: 11000;';
+    overlay.innerHTML = `
+        <div class="data-card-premium" style="width: min(560px, 100%); max-height: 88vh; overflow-y: auto; border-radius: 22px; padding: 0; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);">
+            <div class="module-header-premium" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: 1.8rem 1.8rem 1.6rem; border-top-left-radius: 22px; border-top-right-radius: 22px;">
+                <div>
+                    <p style="margin: 0; color: rgba(255,255,255,0.78); font-size: 0.95rem;">
+                        ${isEditMode ? 'Ajustar cobrança da assinatura' : 'Confirmar assinatura do plano'}
+                    </p>
+                    <h2 data-role="plan-title" style="margin: 0; color: #ffffff; font-size: 1.4rem;"></h2>
+                </div>
+                <button type="button" data-role="close-modal" style="background: transparent; border: none; color: rgba(255,255,255,0.85); font-size: 1.35rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="subscription-pricing-form" style="padding: 1.75rem 1.85rem 1.6rem; display: flex; flex-direction: column; gap: 1.25rem;">
+                <input type="hidden" data-role="final-price-value" value="0">
+                <input type="hidden" data-role="mode" value="${isEditMode ? 'edit' : 'create'}">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(102, 126, 234, 0.12);">
+                        <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor original</span>
+                        <strong data-role="original-price" style="display: block; margin-top: 0.45rem; font-size: 1.4rem; color: #1f2937;">R$ 0,00</strong>
+                    </div>
+                    <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(118, 75, 162, 0.12);">
+                        <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor final</span>
+                        <strong data-role="final-price" style="display: block; margin-top: 0.45rem; font-size: 1.55rem; color: #1f2937;">R$ 0,00</strong>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Personalização do valor</label>
+                    <select data-role="discount-type" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                        <option value="none">Manter valor padrão</option>
+                        <option value="percentage">Aplicar desconto percentual</option>
+                        <option value="fixed">Definir valor final (R$)</option>
+                    </select>
+                </div>
+                <div data-role="discount-group" style="display: none;">
+                    <label data-role="discount-label" style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;"></label>
+                    <input type="number" step="0.01" min="0" data-role="discount-value" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;" placeholder="0">
+                    <small data-role="discount-hint" style="display: block; margin-top: 0.4rem; color: #64748b;"></small>
+                </div>
+                <div data-role="price-preview" style="display: none; background: rgba(102, 126, 234, 0.08); border: 1px dashed rgba(102, 126, 234, 0.4); padding: 1rem; border-radius: 12px;">
+                    <span data-role="discount-info" style="color: #059669; font-weight: 600;"></span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Data de início</label>
+                        <input type="date" data-role="start-date" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                    </div>
+                    ${isEditMode ? `
+                        <div>
+                            <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Próximo vencimento</label>
+                            <input type="date" data-role="next-due-date" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                        </div>
+                    ` : ''}
+                </div>
+                ${isEditMode ? `
+                    <div>
+                        <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Status da assinatura</label>
+                        <select data-role="status" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                            <option value="ACTIVE" ${status === 'ACTIVE' ? 'selected' : ''}>🟢 Ativo</option>
+                            <option value="PAUSED" ${status === 'PAUSED' ? 'selected' : ''}>🟡 Pausado</option>
+                            <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>🔴 Cancelado</option>
+                        </select>
+                    </div>
+                ` : ''}
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                    <button type="button" data-role="close-modal" class="btn-form btn-secondary-form" style="flex: 1;">Cancelar</button>
+                    <button type="submit" data-role="submit" class="btn-form btn-primary-form" style="flex: 1;">
+                        <i class="fas fa-check"></i>
+                        ${isEditMode ? 'Salvar alterações' : 'Confirmar assinatura'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const form = overlay.querySelector('#subscription-pricing-form');
+    form.dataset.studentId = studentId;
+    form.dataset.planId = planId;
+    form.dataset.planName = planName;
+    form.dataset.originalPrice = String(Number(originalPrice) || 0);
+    form.dataset.initialCurrentPrice = String(Number(currentPrice) || 0);
+
+    if (isEditMode) {
+        form.dataset.subscriptionId = subscriptionId;
+        form.dataset.initialStatus = status;
+    }
+
+    overlay.querySelector('[data-role="plan-title"]').textContent = planName;
+
+    const startDateField = overlay.querySelector('[data-role="start-date"]');
+    const normalizedStartDate = startDate || new Date().toISOString().split('T')[0];
+    startDateField.value = normalizedStartDate;
+    form.dataset.startDate = normalizedStartDate;
+
+    if (isEditMode) {
+        const nextDueDateField = overlay.querySelector('[data-role="next-due-date"]');
+        const formattedNextDue = formatToInputDate(nextDueDate);
+        nextDueDateField.value = formattedNextDue;
+        form.dataset.nextDueDate = formattedNextDue || '';
+    }
+
+    const discountTypeField = overlay.querySelector('[data-role="discount-type"]');
+    const discountGroup = overlay.querySelector('[data-role="discount-group"]');
+    const discountLabel = overlay.querySelector('[data-role="discount-label"]');
+    const discountHint = overlay.querySelector('[data-role="discount-hint"]');
+    const discountValueField = overlay.querySelector('[data-role="discount-value"]');
+    const discountInfoEl = overlay.querySelector('[data-role="discount-info"]');
+    const pricePreviewEl = overlay.querySelector('[data-role="price-preview"]');
+    const originalPriceEl = overlay.querySelector('[data-role="original-price"]');
+    const finalPriceEl = overlay.querySelector('[data-role="final-price"]');
+    const finalPriceInput = overlay.querySelector('[data-role="final-price-value"]');
+    const submitButton = overlay.querySelector('[data-role="submit"]');
+
+    const basePrice = Number(originalPrice) || 0;
+    const initialCurrentPrice = Number(currentPrice) || basePrice;
+    originalPriceEl.textContent = `R$ ${basePrice.toFixed(2)}`;
+
+    const updatePreview = () => {
+        const type = discountTypeField.value;
+        const rawValue = Number(discountValueField.value);
+        let finalPrice = basePrice;
+        let message = 'Valor padrão será aplicado.';
+        let messageColor = '#475569';
+
+        if (type === 'percentage') {
+            if (Number.isFinite(rawValue) && rawValue > 0) {
+                const discountAmount = (basePrice * rawValue) / 100;
+                finalPrice = basePrice - discountAmount;
+                message = `Desconto de ${rawValue.toFixed(2).replace('.', ',')}% (R$ ${discountAmount.toFixed(2)})`;
+                messageColor = '#059669';
+            } else {
+                message = 'Informe o percentual de desconto (ex: 10 para 10%).';
+            }
+        } else if (type === 'fixed') {
+            if (Number.isFinite(rawValue) && rawValue >= 0) {
+                finalPrice = rawValue;
+                const difference = basePrice - finalPrice;
+                if (difference > 0) {
+                    message = `Valor final definido: R$ ${finalPrice.toFixed(2)} (desconto de R$ ${difference.toFixed(2)})`;
+                    messageColor = '#059669';
+                } else if (difference < 0) {
+                    message = `Valor final acima do original em R$ ${Math.abs(difference).toFixed(2)}.`;
+                    messageColor = '#b45309';
+                } else {
+                    message = 'Valor final igual ao original.';
+                }
+            } else {
+                message = 'Informe o valor final que o aluno irá pagar.';
+            }
+        }
+
+        if (type === 'none') {
+            discountGroup.style.display = 'none';
+            pricePreviewEl.style.display = 'none';
+            discountValueField.value = '';
+        } else {
+            discountGroup.style.display = 'block';
+            pricePreviewEl.style.display = 'block';
+        }
+
+        if (finalPrice < 0) {
+            message = 'Valor final não pode ser negativo.';
+            messageColor = '#dc2626';
+            submitButton.disabled = true;
+        } else {
+            submitButton.disabled = false;
+        }
+
+        finalPriceEl.textContent = `R$ ${finalPrice.toFixed(2)}`;
+        discountInfoEl.textContent = message;
+        discountInfoEl.style.color = messageColor;
+        finalPriceInput.value = finalPrice.toFixed(2);
+    };
+
+    const handleDiscountTypeChange = (prefillValue = '') => {
+        const type = discountTypeField.value;
+        if (type === 'percentage') {
+            discountLabel.textContent = 'Percentual de desconto (%)';
+            discountHint.textContent = 'Informe apenas o número. Ex: 10 para 10% de desconto.';
+            discountValueField.placeholder = '0';
+            discountValueField.max = '100';
+            discountValueField.step = '0.1';
+            if (prefillValue) {
+                discountValueField.value = prefillValue;
+            } else {
+                discountValueField.value = '';
+            }
+        } else if (type === 'fixed') {
+            discountLabel.textContent = 'Valor final em reais (R$)';
+            discountHint.textContent = 'Informe o valor final que será cobrado.';
+            discountValueField.placeholder = basePrice.toFixed(2);
+            discountValueField.removeAttribute('max');
+            discountValueField.step = '0.01';
+            if (prefillValue) {
+                discountValueField.value = prefillValue;
+            } else {
+                discountValueField.value = '';
+            }
+        }
+
+        updatePreview();
+    };
+
+    discountTypeField.addEventListener('change', () => handleDiscountTypeChange());
+    discountValueField.addEventListener('input', updatePreview);
+
+    overlay.querySelectorAll('[data-role="close-modal"]').forEach((button) => {
+        button.addEventListener('click', () => window.closeSubscriptionModal());
+    });
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            window.closeSubscriptionModal();
+        }
+    });
+
+    form.addEventListener('submit', window.submitSubscriptionForm);
+
+    if (isEditMode && Math.abs(initialCurrentPrice - basePrice) > 0.009) {
+        discountTypeField.value = 'fixed';
+        handleDiscountTypeChange(initialCurrentPrice.toFixed(2));
+    } else {
+        handleDiscountTypeChange();
+    }
+
+    updatePreview();
+};
+
+window.closeSubscriptionModal = function() {
+    const modal = document.getElementById('subscription-pricing-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+window.submitSubscriptionForm = async function(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const mode = form.querySelector('[data-role="mode"]').value;
+    const studentId = form.dataset.studentId;
+    const planId = form.dataset.planId;
+    const planName = form.dataset.planName || 'Plano';
+    const subscriptionId = form.dataset.subscriptionId || '';
+    const originalPrice = Number(form.dataset.originalPrice || 0);
+    const initialCurrentPrice = Number(form.dataset.initialCurrentPrice || originalPrice);
+
+    if (!studentId || !planId) {
+        window.app?.showToast?.('Erro: não foi possível identificar o aluno ou o plano.', 'error');
+        return;
+    }
+
+    if (mode === 'edit' && !subscriptionId) {
+        window.app?.showToast?.('Erro: assinatura não encontrada para edição.', 'error');
+        return;
+    }
+
+    const discountType = form.querySelector('[data-role="discount-type"]').value;
+    const finalPriceField = form.querySelector('[data-role="final-price-value"]');
+    const finalPrice = Number(finalPriceField?.value || originalPrice);
+    const startDateField = form.querySelector('[data-role="start-date"]');
+    const nextDueDateField = form.querySelector('[data-role="next-due-date"]');
+    const statusField = form.querySelector('[data-role="status"]');
+
+    if (finalPrice < 0) {
+        window.app?.showToast?.('O valor final não pode ser negativo.', 'error');
+        return;
+    }
+
+    const submitButton = form.querySelector('[data-role="submit"]');
+    const originalButtonHTML = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+    let shouldRestoreButton = true;
+
+    const buildISODate = (value) => {
+        if (!value) return undefined;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+    };
+
+    try {
+        const payload = { studentId, planId };
+        const currentStartDate = startDateField?.value || '';
+        const originalStartDate = form.dataset.startDate || '';
+        const currentNextDueDate = nextDueDateField?.value || '';
+        const originalNextDueDate = form.dataset.nextDueDate || '';
+        const initialStatus = form.dataset.initialStatus || '';
+        const baselinePrice = mode === 'edit' ? initialCurrentPrice : originalPrice;
+        let startDateISO;
+
+        if (mode === 'create') {
+            startDateISO = buildISODate(currentStartDate);
+            if (startDateISO) {
+                payload.startDate = startDateISO;
+            }
+        } else if (currentStartDate && currentStartDate !== originalStartDate) {
+            startDateISO = buildISODate(currentStartDate);
+            if (startDateISO) {
+                payload.startDate = startDateISO;
+            }
+        }
+
+        if (discountType !== 'none' && Number.isFinite(finalPrice) && Math.abs(finalPrice - baselinePrice) > 0.009) {
+            payload.currentPrice = Number(finalPrice.toFixed(2));
+        } else if (mode === 'edit' && discountType === 'none' && Math.abs(initialCurrentPrice - originalPrice) > 0.009) {
+            payload.currentPrice = Number(originalPrice.toFixed(2));
+        }
+
+        let url = '/api/financial/subscriptions';
+        let method = 'POST';
+
+        if (mode === 'edit') {
+            url = `/api/subscriptions/${subscriptionId}`;
+            method = 'PATCH';
+
+            if (statusField && statusField.value && statusField.value !== initialStatus) {
+                payload.status = statusField.value;
+            }
+
+            if (nextDueDateField && currentNextDueDate && currentNextDueDate !== originalNextDueDate) {
+                const nextDueDateISO = buildISODate(currentNextDueDate);
+                if (nextDueDateISO) {
+                    payload.nextDueDate = nextDueDateISO;
+                }
+            }
+
+            delete payload.studentId;
+            delete payload.planId;
+
+            if (Object.keys(payload).length === 0) {
+                window.app?.showToast?.('Nenhuma alteração detectada.', 'info');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonHTML;
+                return;
+            }
+        }
+
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const message = data?.message || data?.error || (mode === 'edit' ? 'Falha ao atualizar assinatura' : 'Falha ao assinar plano');
+            throw new Error(message);
+        }
+
+        window.app?.showToast?.(
+            mode === 'edit'
+                ? 'Assinatura atualizada com sucesso!'
+                : `Plano "${planName}" assinado com sucesso!`,
+            'success'
+        );
+
+        window.closeSubscriptionModal();
+        shouldRestoreButton = false;
+
+        if (window.studentEditor && typeof window.studentEditor.renderFinancialTab === 'function') {
+            const activeStudentId = window.studentEditor.current?.id || studentId;
+            try {
+                await window.studentEditor.renderFinancialTab(activeStudentId);
+            } catch (refreshError) {
+                console.warn('Não foi possível atualizar a aba financeira automaticamente:', refreshError);
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao processar assinatura:', error);
+        window.app?.showToast?.(error.message || 'Erro ao salvar mudanças', 'error');
+    } finally {
+        if (shouldRestoreButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonHTML;
+        }
+    }
+};
+
+window.viewSubscriptionDetails = function(subscriptionData) {
+    if (typeof subscriptionData === 'string') {
+        try {
+            subscriptionData = JSON.parse(decodeURIComponent(subscriptionData));
+        } catch (parseError) {
+            console.error('Failed to parse subscription data payload:', parseError);
+            window.app?.showToast?.('Erro ao preparar dados da assinatura', 'error');
+            return;
+        }
+    }
+
+    if (!subscriptionData || !subscriptionData.id) {
+        console.error('Missing subscription data');
+        window.app?.showToast?.('Erro ao carregar dados da assinatura', 'error');
+        return;
+    }
+
+    window.openSubscriptionModal({
+        mode: 'edit',
+        subscriptionId: subscriptionData.id,
+        studentId: subscriptionData.studentId,
+        planId: subscriptionData.planId,
+        planName: subscriptionData.planName,
+        originalPrice: Number(subscriptionData.originalPrice) || 0,
+        currentPrice: Number(
+            subscriptionData.currentPrice !== undefined && subscriptionData.currentPrice !== null
+                ? subscriptionData.currentPrice
+                : subscriptionData.originalPrice
+        ) || 0,
+        startDate: subscriptionData.startDate ? subscriptionData.startDate.split('T')[0] : new Date().toISOString().split('T')[0],
+        nextDueDate: subscriptionData.nextDueDate || '',
+        status: subscriptionData.status || 'ACTIVE'
+    });
+};
+
+window.pauseSubscription = async function(subscriptionId) {
+    if (!confirm('Deseja pausar esta assinatura?')) return;
+
+    try {
+        const response = await fetch(`/api/subscriptions/${subscriptionId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+            },
+            body: JSON.stringify({ status: 'PAUSED' })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Falha ao pausar assinatura');
+        }
+
+        window.app?.showToast?.('Assinatura pausada com sucesso!', 'success');
+
+        if (window.studentEditor && typeof window.studentEditor.renderFinancialTab === 'function') {
+            const activeStudentId = window.studentEditor.current?.id;
+            if (activeStudentId) {
+                try {
+                    await window.studentEditor.renderFinancialTab(activeStudentId);
+                } catch (refreshError) {
+                    console.warn('Não foi possível atualizar a aba financeira automaticamente após pausar:', refreshError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error pausing subscription:', error);
+        window.app?.showToast?.(error.message || 'Erro ao pausar assinatura', 'error');
+    }
+};
+
+window.cancelSubscription = async function(subscriptionId) {
+    if (!confirm('Deseja cancelar esta assinatura? Esta ação não pode ser desfeita.')) return;
+
+    try {
+        const response = await fetch(`/api/subscriptions/${subscriptionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Falha ao cancelar assinatura');
+        }
+
+        window.app?.showToast?.('Assinatura cancelada com sucesso!', 'success');
+
+        if (window.studentEditor && typeof window.studentEditor.renderFinancialTab === 'function') {
+            const activeStudentId = window.studentEditor.current?.id;
+            if (activeStudentId) {
+                try {
+                    await window.studentEditor.renderFinancialTab(activeStudentId);
+                } catch (refreshError) {
+                    console.warn('Não foi possível atualizar a aba financeira automaticamente após cancelar:', refreshError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error canceling subscription:', error);
+        window.app?.showToast?.(error.message || 'Erro ao cancelar assinatura', 'error');
+    }
+};
+
+

@@ -4,6 +4,8 @@ console.log('Auth Module v2.0 loaded');
 const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
 const BACKEND_URL = 'http://localhost:3000';
+const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
+const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
 
 let supabaseClient = null;
 
@@ -28,13 +30,13 @@ const AuthModule = {
   currentUser: null,
   currentOrganization: null,
   authAPI: null,
+  hasHandledPersistentSignIn: false,
 
   async init(container) {
     this.container = container || document.body;
     await this.waitForSupabase();
     await this.initializeAPI();
     this.renderLoginForm();
-    this.setupEvents();
     await this.checkSession();
     this.setupAuthStateListener();
     window.authModule = this;
@@ -93,8 +95,24 @@ const AuthModule = {
         document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
         // Após login, recarregar página para mostrar dashboard com menu lateral
         if (event === 'SIGNED_IN') {
-          console.log('✅ Login realizado - recarregando dashboard');
-          window.location.reload();
+          try {
+            if (sessionStorage.getItem(SIGNIN_RELOAD_FLAG)) {
+              sessionStorage.removeItem(SIGNIN_RELOAD_FLAG);
+              console.log('✅ Login detectado após reload anterior - mantendo sessão ativa sem novo refresh');
+              this.hasHandledPersistentSignIn = true;
+            } else {
+              if (this.hasHandledPersistentSignIn) {
+                console.log('ℹ️ Evento SIGNED_IN ignorado (sessão já estabilizada)');
+                return;
+              }
+              console.log('✅ Login realizado - recarregando dashboard');
+              sessionStorage.setItem(SIGNIN_RELOAD_FLAG, '1');
+              window.location.reload();
+            }
+          } catch (storageError) {
+            console.warn('⚠️ Falha ao gerenciar flag de reload pós-login:', storageError);
+            window.location.reload();
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         this.currentUser = null;
@@ -102,8 +120,20 @@ const AuthModule = {
         ['token', 'organizationId', 'userId', 'userRole'].forEach(k => localStorage.removeItem(k));
         document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
         // Após logout, recarregar página para mostrar login
-        console.log('✅ Logout realizado - recarregando para login');
-        window.location.reload();
+        try {
+          if (sessionStorage.getItem(SIGNOUT_RELOAD_FLAG)) {
+            sessionStorage.removeItem(SIGNOUT_RELOAD_FLAG);
+            console.log('✅ Logout processado após reload - aguardando nova autenticação');
+            this.hasHandledPersistentSignIn = false;
+          } else {
+            console.log('✅ Logout realizado - recarregando para login');
+            sessionStorage.setItem(SIGNOUT_RELOAD_FLAG, '1');
+            window.location.reload();
+          }
+        } catch (storageError) {
+          console.warn('⚠️ Falha ao gerenciar flag de reload pós-logout:', storageError);
+          window.location.reload();
+        }
       }
     });
   },
@@ -173,6 +203,7 @@ const AuthModule = {
         <div style="text-align:center;margin-top:2rem"><a href="/reset-password.html" style="color:#667eea">Esqueceu sua senha?</a></div>
       </div>
     `;
+    this.setupEvents();
   },
 
   setupEvents() {
