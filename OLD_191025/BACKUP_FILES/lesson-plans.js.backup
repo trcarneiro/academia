@@ -1,0 +1,2578 @@
+/**
+ * Lesson Plans Module - Guidelines2.md Premium Compliant
+ * 
+ * Main entry point for the lesson plans module with proper MVC architecture,
+ * API client integration, SPA compatibility, and AcademyApp integration.
+ */
+
+(function() {
+    'use strict';
+    
+    console.log('📚 Lesson Plans Module - Starting...');
+    
+    // Provide a safe banner shim using feedback utilities when available
+    if (typeof window.showBanner !== 'function') {
+        window.showBanner = function(message, type = 'info') {
+            const fb = window.feedback || {};
+            if (type === 'error') {
+                (fb.showError && fb.showError(message)) || alert(message);
+            } else if (type === 'success') {
+                (fb.showSuccess && fb.showSuccess(message)) || alert(message);
+            } else {
+                (fb.showInfo && fb.showInfo(message)) || alert(message);
+            }
+        };
+    }
+    
+    // ==============================================
+    // ACADEMY APP INTEGRATION (Guidelines2.md)
+    // ==============================================
+    
+    // Register with AcademyApp
+    if (window.app) {
+        window.app.dispatchEvent('module:loaded', { name: 'lesson-plans' });
+    }
+    
+    // Expose module globally for AcademyApp
+    window.lessonPlansModule = {
+        name: 'lesson-plans',
+        version: '2.0.0',
+        init: initLessonPlans,
+        destroy: destroyLessonPlans
+    };
+    
+    // ==============================================
+    // CSS LOADING
+    // ==============================================
+    
+    /**
+     * Load module CSS dynamically
+     */
+    function loadModuleCSS() {
+        const cssId = 'lesson-plans-module-css';
+        if (!document.getElementById(cssId)) {
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.href = '/css/modules/lesson-plans-editor.css';
+            document.head.appendChild(link);
+            console.log('🎨 Lesson Plans CSS carregado');
+        }
+    }
+
+    // ==============================================
+    // API CLIENT INTEGRATION (Guidelines2.md)
+    // ==============================================
+    
+    let lessonPlansAPI = null;
+    
+    // Wait for API client to be available
+    async function waitForAPIClient() {
+        return new Promise((resolve) => {
+            if (window.createModuleAPI) {
+                resolve();
+                return;
+            }
+            
+            const checkAPI = setInterval(() => {
+                if (window.createModuleAPI) {
+                    clearInterval(checkAPI);
+                    resolve();
+                }
+            }, 100);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                clearInterval(checkAPI);
+                resolve();
+            }, 5000);
+        });
+    }
+    
+    // Initialize API client
+    async function initializeAPI() {
+        await waitForAPIClient();
+        lessonPlansAPI = window.createModuleAPI ? window.createModuleAPI('LessonPlans') : null;
+        console.log('🌐 Lesson Plans API helper initialized');
+    }
+    
+    // ==============================================
+    // MODULE CONTROLLERS
+    // ==============================================
+    
+    let listController = null;
+    let editorController = null;
+    
+    // Initialize controllers
+    async function initializeControllers() {
+        try {
+            // Initialize API first
+            if (!lessonPlansAPI) {
+                await initializeAPI();
+            }
+            
+            // Create controller instances - use local classes, not window
+            listController = new LessonPlansListController(lessonPlansAPI);
+            editorController = new LessonPlanEditorController(lessonPlansAPI);
+            
+            console.log('✅ Lesson Plans controllers initialized');
+        } catch (error) {
+            console.error('❌ Error initializing controllers:', error);
+            throw error;
+        }
+    }
+    
+    // ==============================================
+    // PUBLIC INTERFACE
+    // ==============================================
+    
+    /**
+     * Open lesson plans list
+     */
+    async function openLessonPlansList(targetContainer) {
+        console.log('📚 Opening lesson plans list...');
+        
+        try {
+            // Ensure controllers are initialized
+            if (!listController) {
+                await initializeControllers();
+            }
+            
+            // Destroy existing editor if active
+            if (editorController) {
+                editorController.destroy();
+            }
+            
+            // Render list controller
+            if (listController) {
+                await listController.render(targetContainer);
+                
+                // Make controller globally available for actions
+                window.lessonPlansListController = listController;
+            } else {
+                console.error('❌ List controller not available');
+                targetContainer.innerHTML = `
+                    <div class="error-state">
+                        <h3>Erro</h3>
+                        <p>Não foi possível inicializar o módulo de planos de aula.</p>
+                    </div>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error opening lesson plans list:', error);
+            targetContainer.innerHTML = `
+                <div class="error-state">
+                    <h3>Erro</h3>
+                    <p>Erro ao carregar lista de planos de aula: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+    
+    /**
+     * Open lesson plan editor
+     */
+    async function openLessonPlanEditor(planId, targetContainer, readOnly = false) {
+        console.log('✏️ Opening lesson plan editor...', { planId, readOnly });
+        
+        try {
+            // Ensure controllers are initialized
+            if (!editorController) {
+                await initializeControllers();
+            }
+            
+            // Destroy existing list controller if active
+            if (listController) {
+                listController.destroy();
+            }
+            
+            // Render editor controller
+            if (editorController) {
+                await editorController.render(targetContainer, planId, readOnly);
+                
+                // Make controller globally available for actions
+                window.lessonPlanEditorController = editorController;
+            } else {
+                console.error('❌ Editor controller not available');
+                targetContainer.innerHTML = `
+                    <div class="error-state">
+                        <h3>Erro</h3>
+                        <p>Não foi possível inicializar o editor de planos de aula.</p>
+                    </div>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error opening lesson plan editor:', error);
+            targetContainer.innerHTML = `
+                <div class="error-state">
+                    <h3>Erro</h3>
+                    <p>Erro ao carregar editor de planos de aula: ${error.message}</p>
+                </div>
+            `;
+        }
+    }
+    
+    /**
+     * Initialize lesson plans module
+     */
+    async function initLessonPlans() {
+        console.log('🔧 Initializing Lesson Plans Module...');
+        
+        try {
+            // Load module CSS first
+            loadModuleCSS();
+            
+            // Check if we're on the lesson plans page
+            const lessonPlansContainer = document.getElementById('lessonPlansContainer') ||
+                                        document.querySelector('.lesson-plans-container') ||
+                                        document.querySelector('.lesson-plans-isolated') ||
+                                        document.querySelector('[data-module="lesson-plans"]');
+            
+            if (!lessonPlansContainer) {
+                console.log('ℹ️ Not on lesson plans page, skipping initialization');
+                return;
+            }
+            
+            // Mark container as lesson plans module
+            lessonPlansContainer.setAttribute('data-module', 'lesson-plans');
+            lessonPlansContainer.setAttribute('data-active', 'true');
+            lessonPlansContainer.classList.add('module-active');
+            
+            // Initialize controllers
+            await initializeControllers();
+            
+            // Open list by default
+            await openLessonPlansList(lessonPlansContainer);
+            
+            console.log('✅ Lesson Plans Module initialized successfully');
+            
+        } catch (error) {
+            console.error('❌ Error initializing lesson plans module:', error);
+            
+            // Use AcademyApp error handling if available
+            if (window.app && window.app.handleError) {
+                window.app.handleError(error, 'Lesson Plans Module Initialization');
+            }
+        }
+    }
+    
+    /**
+     * Destroy lesson plans module
+     */
+    function destroyLessonPlans() {
+        console.log('🧹 Destroying Lesson Plans Module...');
+        
+        // Cleanup controllers
+        if (listController) {
+            listController.destroy();
+            listController = null;
+        }
+        
+        if (editorController) {
+            editorController.destroy();
+            editorController = null;
+        }
+        
+        // Remove global references
+        window.lessonPlansModule = null;
+        
+        console.log('✅ Lesson Plans Module destroyed');
+    }
+    
+    // ==============================================
+    // SPA ROUTER INTEGRATION
+    // ==============================================
+    
+    // Export for SPA router
+    window.initLessonPlans = initLessonPlans;
+    window.openLessonPlansList = openLessonPlansList;
+    window.openLessonPlanEditor = openLessonPlanEditor;
+    
+    // Legacy compatibility
+    window.initializeLessonPlansModule = initLessonPlans;
+    
+    // ==============================================
+    // LESSON PLANS LIST CONTROLLER
+    // ==============================================
+    
+    class LessonPlansListController {
+        constructor(api) {
+            this.api = api;
+            this.currentPage = 1;
+            this.pageSize = 20;
+            this.filterCourse = '';
+            this.filterLevel = '';
+            this.searchQuery = '';
+            this.sortBy = 'title';
+            this.sortOrder = 'asc';
+            this.lessonPlans = [];
+            this.courses = [];
+            this.totalCount = 0;
+            this.container = null;
+            this.isLoading = false;
+            
+            // Note: Methods will be bound after class definition
+            // this.handleSearch = this.handleSearch.bind(this);
+            // this.handleFilter = this.handleFilter.bind(this);
+            // this.handlePageChange = this.handlePageChange.bind(this);
+        }
+
+        /**
+         * Render the lesson plans list in the target container
+         */
+        async render(targetContainer) {
+            this.container = targetContainer;
+            
+            // Mark container for Design System validator
+            targetContainer.setAttribute('data-module', 'lesson-plans');
+            targetContainer.setAttribute('data-active', 'true');
+            targetContainer.classList.add('module-active');
+            
+            // Render initial HTML structure
+            this.renderHTML();
+            
+            // Setup event listeners
+            this.bindEvents(targetContainer);
+            
+            // Load initial data
+            await this.loadData();
+            
+            console.log('✅ Lesson Plans list controller renderizado');
+        }
+
+        /**
+         * Render HTML structure (Following Activities module pattern)
+         */
+        renderHTML() {
+            this.container.innerHTML = `
+                <div class="module-isolated-container" data-module="lesson-plans">
+                    <!-- Header Premium com Guidelines.MD -->
+                    <div class="module-header-premium">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <h1 class="page-title">
+                                    <i class="icon">📚</i>
+                                    Planos de Aula
+                                </h1>
+                                <nav class="breadcrumb">Home / Planos de Aula</nav>
+                            </div>
+                            <div class="header-actions">
+                                <button id="create-lesson-plan-btn" class="btn-form btn-primary-form">
+                                    <i class="fas fa-plus"></i>
+                                    Novo Plano
+                                </button>
+                                <button id="refresh-lesson-plans-btn" class="btn-form btn-secondary-form">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Atualizar
+                                </button>
+                                <button id="debug-drafts-btn" class="btn-form btn-info-form">
+                                    <i class="fas fa-bug"></i>
+                                    Debug Rascunhos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards Premium -->
+                    <div class="module-stats">
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="total-lesson-plans">-</div>
+                                <div class="stat-label">Total de Planos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">🔍</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="filtered-lesson-plans">-</div>
+                                <div class="stat-label">Filtrados</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="drafts-count">-</div>
+                                <div class="stat-label">Rascunhos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">🎓</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="courses-count">-</div>
+                                <div class="stat-label">Cursos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters Premium -->
+                    <div class="module-filters-premium">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="search-lesson-plans" class="filter-label">
+                                    <i class="fas fa-search"></i>
+                                    Buscar
+                                </label>
+                                <input type="text" id="search-lesson-plans" placeholder="Digite título ou descrição..." 
+                                       class="filter-input" autocomplete="off">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-course" class="filter-label">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    Curso
+                                </label>
+                                <select id="filter-course" class="filter-select">
+                                    <option value="">Todos os cursos</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-level" class="filter-label">
+                                    <i class="fas fa-star"></i>
+                                    Nível
+                                </label>
+                                <select id="filter-level" class="filter-select">
+                                    <option value="">Todos os níveis</option>
+                                    <option value="1">⭐ Iniciante</option>
+                                    <option value="2">⭐⭐ Básico</option>
+                                    <option value="3">⭐⭐⭐ Intermediário</option>
+                                    <option value="4">⭐⭐⭐⭐ Avançado</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Expert</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="items-per-page" class="filter-label">
+                                    <i class="fas fa-list"></i>
+                                    Por Página
+                                </label>
+                                <select id="items-per-page" class="filter-select">
+                                    <option value="20">20 itens</option>
+                                    <option value="50">50 itens</option>
+                                    <option value="100">100 itens</option>
+                                    <option value="all">Todos</option>
+                                </select>
+                            </div>
+                            <div class="filter-actions">
+                                <button id="clear-filters-btn" class="btn-form btn-secondary-form">
+                                    <i class="fas fa-times"></i>
+                                    Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table Premium -->
+                    <div class="data-card-premium">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-lesson">
+                                            <i class="fas fa-book"></i>
+                                            Plano de Aula
+                                        </th>
+                                        <th class="col-course">
+                                            <i class="fas fa-graduation-cap"></i>
+                                            Curso
+                                        </th>
+                                        <th class="col-level">
+                                            <i class="fas fa-star"></i>
+                                            Nível
+                                        </th>
+                                        <th class="col-duration">
+                                            <i class="fas fa-clock"></i>
+                                            Duração
+                                        </th>
+                                        <th class="col-objectives">
+                                            <i class="fas fa-bullseye"></i>
+                                            Objetivos
+                                        </th>
+                                        <th class="col-actions">
+                                            <i class="fas fa-cog"></i>
+                                            Ações
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lesson-plans-table-body">
+                                    <!-- Lesson plans will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination Premium -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Mostrando <span id="items-start">0</span> a <span id="items-end">0</span> de <span id="items-total">0</span> planos
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="first-page-btn" class="btn-pagination" title="Primeira página">
+                                <i class="fas fa-angle-double-left"></i>
+                            </button>
+                            <button id="prev-page-btn" class="btn-pagination" title="Página anterior">
+                                <i class="fas fa-angle-left"></i>
+                            </button>
+                            <div class="page-numbers" id="page-numbers">
+                                <!-- Page numbers will be populated here -->
+                            </div>
+                            <button id="next-page-btn" class="btn-pagination" title="Próxima página">
+                                <i class="fas fa-angle-right"></i>
+                            </button>
+                            <button id="last-page-btn" class="btn-pagination" title="Última página">
+                                <i class="fas fa-angle-double-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading state -->
+                    <div id="loading-state" class="loading-state" style="display: none;">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Carregando planos de aula...</p>
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <div class="empty-content">
+                            <div class="empty-icon">📚</div>
+                            <h3>Nenhum plano de aula encontrado</h3>
+                            <p>Comece criando seu primeiro plano de aula ou ajuste os filtros acima.</p>
+                            <button id="create-first-lesson-plan-btn" class="btn-form btn-primary-form">
+                                <i class="fas fa-plus"></i>
+                                Criar Primeiro Plano
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Error state -->
+                    <div id="error-state" class="error-state" style="display: none;">
+                        <div class="error-content">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Erro ao carregar planos</h3>
+                            <p id="error-message">Ocorreu um erro inesperado. Tente novamente.</p>
+                            <button id="retry-load-btn" class="btn-form btn-primary-form">
+                                <i class="fas fa-sync-alt"></i>
+                                Tentar Novamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="courses-count">-</div>
+                                <div class="stat-label">Cursos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card-enhanced">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="total-duration">-</div>
+                                <div class="stat-label">Duração Total</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters Section Premium -->
+                    <div class="module-filters-premium">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="search-lesson-plans" class="filter-label">Buscar:</label>
+                                <input type="text" id="search-lesson-plans" placeholder="Digite título ou descrição..." 
+                                       class="filter-input" autocomplete="off">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="filter-course" class="filter-label">Curso:</label>
+                                <select id="filter-course" class="filter-select">
+                                    <option value="">Todos os cursos</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="filter-level" class="filter-label">Nível:</label>
+                                <select id="filter-level" class="filter-select">
+                                    <option value="">Todos os níveis</option>
+                                    <option value="1">Nível 1</option>
+                                    <option value="2">Nível 2</option>
+                                    <option value="3">Nível 3</option>
+                                    <option value="4">Nível 4</option>
+                                    <option value="5">Nível 5</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <button id="clear-filters-btn" class="btn-form btn-secondary-form">
+                                    <i class="fas fa-times"></i>
+                                    Limpar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Section Premium -->
+                    <div class="module-content">
+                        <div id="loading-state" class="loading-state" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Carregando planos de aula...</div>
+                        </div>
+
+                        <!-- Quick Actions Bar -->
+                        <div class="quick-actions-bar">
+                            <div class="view-controls">
+                                <button id="grid-view-btn" class="btn-view active" title="Visualização em grade">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button id="list-view-btn" class="btn-view" title="Visualização em lista">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                            <div class="sort-controls">
+                                <label for="sort-by" class="sort-label">Ordenar por:</label>
+                                <select id="sort-by" class="filter-select">
+                                    <option value="title">Título</option>
+                                    <option value="lessonNumber">Número da Aula</option>
+                                    <option value="weekNumber">Semana</option>
+                                    <option value="difficulty">Dificuldade</option>
+                                    <option value="duration">Duração</option>
+                                    <option value="updatedAt">Última Modificação</option>
+                                </select>
+                                <button id="sort-order-btn" class="btn-sort" data-order="asc" title="Ordem crescente">
+                                    <i class="fas fa-sort-alpha-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Items Grid Container -->
+                        <div id="lesson-plans-grid" class="items-grid">
+                            <!-- Content will be loaded here -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="empty-state" class="empty-state" style="display: none;">
+                            <div class="empty-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <h3>Nenhum plano de aula encontrado</h3>
+                            <p>Comece criando seu primeiro plano de aula ou ajuste os filtros da busca.</p>
+                            <button id="create-first-plan-btn" class="btn-form btn-primary-form">
+                                <i class="fas fa-plus"></i>
+                                Criar Primeiro Plano
+                            </button>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="module-pagination">
+                            <div class="pagination-info">
+                                <span id="pagination-info">-</span>
+                            </div>
+                            <div class="pagination-controls">
+                                <button id="prev-page-btn" class="btn-form btn-secondary-form" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                    Anterior
+                                </button>
+                                <span class="pagination-current">
+                                    Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+                                </span>
+                                <button id="next-page-btn" class="btn-form btn-secondary-form" disabled>
+                                    Próxima
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Bind event listeners
+         */
+        bindEvents(container) {
+            // Search input with debounce
+            const searchInput = container.querySelector('#search-lesson-plans');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.searchQuery = e.target.value.trim();
+                        this.currentPage = 1;
+                        this.loadData();
+                    }, 300);
+                });
+            }
+
+            // Course filter
+            const courseFilter = container.querySelector('#filter-course');
+            if (courseFilter) {
+                courseFilter.addEventListener('change', (e) => {
+                    this.filterCourse = e.target.value;
+                    this.currentPage = 1;
+                    this.loadData();
+                });
+            }
+
+            // Level filter
+            const levelFilter = container.querySelector('#filter-level');
+            if (levelFilter) {
+                levelFilter.addEventListener('change', (e) => {
+                    this.filterLevel = e.target.value;
+                    this.currentPage = 1;
+                    this.loadData();
+                });
+            }
+
+            // Clear filters
+            const clearFiltersBtn = container.querySelector('#clear-filters-btn');
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', () => {
+                    this.clearFilters();
+                });
+            }
+
+            // Create lesson plan button
+            const createBtn = container.querySelector('#create-lesson-plan-btn');
+            if (createBtn) {
+                createBtn.addEventListener('click', () => {
+                    // Navigate via SPA router to ensure rendering in main container
+                    if (window.router && typeof window.router.navigateTo === 'function') {
+                        location.hash = 'lesson-plan-editor';
+                        window.router.navigateTo('lesson-plan-editor');
+                    } else {
+                        location.hash = 'lesson-plan-editor';
+                    }
+                });
+            }
+
+            // Refresh button
+            const refreshBtn = container.querySelector('#refresh-lesson-plans-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    this.loadData();
+                });
+            }
+
+            // Debug drafts button
+            const debugBtn = container.querySelector('#debug-drafts-btn');
+            if (debugBtn) {
+                debugBtn.addEventListener('click', () => {
+                    this.debugDrafts();
+                });
+            }
+
+            // Pagination buttons
+            const prevBtn = container.querySelector('#prev-page-btn');
+            const nextBtn = container.querySelector('#next-page-btn');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                        this.loadData();
+                    }
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    const totalPages = Math.ceil(this.totalCount / this.pageSize);
+                    if (this.currentPage < totalPages) {
+                        this.currentPage++;
+                        this.loadData();
+                    }
+                });
+            }
+
+            // View controls
+            const gridViewBtn = container.querySelector('#grid-view-btn');
+            const listViewBtn = container.querySelector('#list-view-btn');
+            
+            if (gridViewBtn && listViewBtn) {
+                gridViewBtn.addEventListener('click', () => {
+                    gridViewBtn.classList.add('active');
+                    listViewBtn.classList.remove('active');
+                    // Grid view is default
+                });
+
+                listViewBtn.addEventListener('click', () => {
+                    listViewBtn.classList.add('active');
+                    gridViewBtn.classList.remove('active');
+                    // Future implementation for list view
+                });
+            }
+
+            // Sort controls
+            const sortBySelect = container.querySelector('#sort-by');
+            const sortOrderBtn = container.querySelector('#sort-order-btn');
+            
+            if (sortBySelect) {
+                sortBySelect.addEventListener('change', () => {
+                    this.sortBy = sortBySelect.value;
+                    this.loadData();
+                });
+            }
+
+            if (sortOrderBtn) {
+                sortOrderBtn.addEventListener('click', () => {
+                    const currentOrder = sortOrderBtn.dataset.order;
+                    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                    sortOrderBtn.dataset.order = newOrder;
+                    
+                    const icon = sortOrderBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = newOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up';
+                    }
+                    
+                    this.sortOrder = newOrder;
+                    this.loadData();
+                });
+            }
+
+            // Create first plan button in empty state
+            const createFirstPlanBtn = container.querySelector('#create-first-plan-btn');
+            if (createFirstPlanBtn) {
+                createFirstPlanBtn.addEventListener('click', () => {
+                    location.hash = 'lesson-plan-editor';
+                });
+            }
+        }
+
+        /**
+         * Load lesson plans data from API and drafts from localStorage
+         */
+        async loadData() {
+            if (this.isLoading) return;
+            
+            this.isLoading = true;
+            this.setLoading(true);
+            
+            try {
+                // Build query parameters
+                const params = {
+                    page: this.currentPage,
+                    limit: this.pageSize
+                };
+                
+                if (this.searchQuery) params.search = this.searchQuery;
+                if (this.filterCourse) params.courseId = this.filterCourse;
+                if (this.filterLevel) params.level = this.filterLevel;
+                
+                // Load saved lesson plans from API
+                const result = await this.api.fetchWithStates('/api/lesson-plans', {
+                    method: 'GET',
+                    params,
+                    onSuccess: (data) => {
+                        this.lessonPlans = data.data || [];
+                        this.totalCount = data.pagination?.total || data.count || 0;
+                        
+                        // Load drafts from localStorage and merge with saved plans
+                        this.loadAndMergeDrafts();
+                        
+                        this.updateTable();
+                        this.updateStats();
+                        this.updatePagination();
+                    },
+                    onEmpty: () => {
+                        this.lessonPlans = [];
+                        this.totalCount = 0;
+                        
+                        // Load drafts from localStorage even if no saved plans
+                        this.loadAndMergeDrafts();
+                        
+                        if (this.lessonPlans.length === 0) {
+                            this.showEmptyState();
+                        } else {
+                            this.updateTable();
+                        }
+                        this.updateStats();
+                        this.updatePagination();
+                    },
+                    onError: (error) => {
+                        console.error('Erro ao carregar planos de aula:', error);
+                        this.showErrorState('Erro ao carregar planos de aula');
+                    }
+                });
+
+                // Load courses for filters
+                await this.loadCourses();
+
+            } catch (error) {
+                console.error('Erro ao carregar planos de aula:', error);
+                this.showErrorState('Erro ao carregar planos de aula');
+            } finally {
+                this.isLoading = false;
+                this.setLoading(false);
+            }
+        }
+
+        /**
+         * Load drafts from localStorage and merge with saved lesson plans
+         */
+        loadAndMergeDrafts() {
+            try {
+                console.log('🔍 Checking for getAllAIDrafts function:', typeof window.getAllAIDrafts);
+                
+                // Try multiple ways to get drafts
+                let drafts = [];
+                
+                // Method 1: Use AI module function if available
+                if (window.getAllAIDrafts && typeof window.getAllAIDrafts === 'function') {
+                    drafts = window.getAllAIDrafts();
+                    console.log('📋 Loading drafts via AI module function:', drafts.length);
+                } 
+                // Method 2: Direct localStorage access as fallback
+                else {
+                    console.log('⚠️ AI module not available, trying direct localStorage access');
+                    try {
+                        const rawStorage = localStorage.getItem('aiLessonDrafts');
+                        if (rawStorage) {
+                            drafts = JSON.parse(rawStorage);
+                            console.log('📋 Loading drafts via direct localStorage:', drafts.length);
+                        }
+                    } catch (storageError) {
+                        console.error('❌ Error reading localStorage directly:', storageError);
+                        drafts = [];
+                    }
+                }
+                
+                if (drafts.length > 0) {
+                    console.log('📝 Found drafts:', drafts);
+                    
+                    // Add isDraft flag to distinguish from saved plans
+                    const draftPlans = drafts.map(draft => ({
+                        ...draft,
+                        isDraft: true,
+                        course: { 
+                            id: draft.courseId, 
+                            name: draft.course?.name || 'Curso Desconhecido' 
+                        }
+                    }));
+                    
+                    console.log('🔄 Draft plans prepared:', draftPlans);
+                    
+                    // Merge drafts with saved plans (drafts first)
+                    this.lessonPlans = [...draftPlans, ...this.lessonPlans];
+                    this.totalCount += drafts.length;
+                    
+                    console.log('✅ Merged drafts with saved plans:', this.lessonPlans.length, 'total');
+                } else {
+                    console.log('📭 No drafts found in localStorage');
+                }
+            } catch (error) {
+                console.error('❌ Error loading drafts:', error);
+            }
+        }
+
+        /**
+         * Load courses for filter dropdown
+         */
+        async loadCourses() {
+            try {
+                const result = await this.api.fetchWithStates('/api/courses', {
+                    method: 'GET',
+                    onSuccess: (data) => {
+                        this.courses = data.data || [];
+                        this.populateCourseFilter();
+                    },
+                    onError: (error) => {
+                        console.warn('Erro ao carregar cursos:', error);
+                    }
+                });
+            } catch (error) {
+                console.warn('Erro ao carregar cursos:', error);
+            }
+        }
+
+        /**
+         * Populate course filter dropdown
+         */
+        populateCourseFilter() {
+            const courseFilter = this.container.querySelector('#filter-course');
+            if (!courseFilter || !this.courses.length) return;
+
+            // Clear existing options except 'all'
+            const defaultOption = courseFilter.querySelector('option[value=""]');
+            courseFilter.innerHTML = '';
+            courseFilter.appendChild(defaultOption);
+
+            this.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                courseFilter.appendChild(option);
+            });
+        }
+
+        /**
+         * Update lesson plans display
+         */
+        updateTable() {
+            const gridContainer = this.container.querySelector('#lesson-plans-grid');
+            const emptyState = this.container.querySelector('#empty-state');
+            
+            if (!gridContainer) return;
+            
+            if (this.lessonPlans.length === 0) {
+                this.showEmptyState();
+                return;
+            }
+
+            // Hide empty state
+            if (emptyState) emptyState.style.display = 'none';
+
+            gridContainer.innerHTML = this.lessonPlans.map(plan => `
+                <div class="item-card lesson-plan-card ${plan.isDraft ? 'draft-card' : ''}" data-plan-id="${plan.id}">
+                    <div class="card-header">
+                        <div class="card-title-row">
+                            <h3 class="card-title">${plan.title || 'Sem título'}</h3>
+                            <div class="card-badges">
+                                ${plan.isDraft ? '<span class="badge draft-badge">📝 RASCUNHO</span>' : '<span class="badge saved-badge">✅ SALVO</span>'}
+                                <span class="badge level-badge level-${plan.level || 1}">Nível ${plan.level || 1}</span>
+                            </div>
+                        </div>
+                        <div class="card-course">${plan.course?.name || 'Curso não definido'}</div>
+                    </div>
+
+                    <div class="card-content">
+                        ${plan.description ? `<p class="card-description">${plan.description}</p>` : ''}
+                        
+                        <div class="card-meta">
+                            <div class="meta-row">
+                                <div class="meta-item">
+                                    <i class="fas fa-play-circle"></i>
+                                    <span>Aula ${plan.lessonNumber || 'N/A'}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-calendar-week"></i>
+                                    <span>Semana ${plan.weekNumber || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${plan.duration || 60} min</span>
+                                </div>
+                                <div class="meta-item difficulty-meta">
+                                    <i class="fas fa-star"></i>
+                                    <span>${this.renderDifficultyText(plan.difficulty || 1)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${plan.objectives && plan.objectives.length > 0 ? `
+                            <div class="card-objectives">
+                                <div class="objectives-header">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Objetivos:</span>
+                                </div>
+                                <ul class="objectives-list">
+                                    ${plan.objectives.slice(0, 2).map(obj => `<li>${obj}</li>`).join('')}
+                                    ${plan.objectives.length > 2 ? `<li class="more-objectives">+${plan.objectives.length - 2} mais...</li>` : ''}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="card-actions">
+                        ${plan.isDraft ? `
+                            <button class="btn-form btn-small btn-primary-form" 
+                                    onclick="window.lessonPlansListController?.saveDraftToDatabase('${plan.id}')" 
+                                    title="Salvar rascunho no banco de dados">
+                                <i class="fas fa-save"></i>
+                                Salvar
+                            </button>
+                            <button class="btn-form btn-small btn-danger-form" 
+                                    onclick="window.lessonPlansListController?.deleteDraft('${plan.id}')" 
+                                    title="Excluir rascunho">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : `
+                            <button class="btn-form btn-small btn-primary-form" 
+                                    onclick="location.hash='lesson-plan-editor/${plan.id}'" 
+                                    title="Editar plano">
+                                <i class="fas fa-edit"></i>
+                                Editar
+                            </button>
+                            <button class="btn-form btn-small btn-info-form" 
+                                    onclick="location.hash='lesson-plan-view/${plan.id}'" 
+                                    title="Visualizar plano">
+                                <i class="fas fa-eye"></i>
+                                Ver
+                            </button>
+                            <button class="btn-form btn-small btn-success-form" 
+                                    onclick="window.lessonPlansListController?.duplicateLessonPlan('${plan.id}')" 
+                                    title="Duplicar plano">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="btn-form btn-small btn-secondary-form dropdown-trigger" 
+                                        title="Mais opções">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="#lesson-plan-export/${plan.id}" class="dropdown-item">
+                                        <i class="fas fa-download"></i>
+                                        Exportar
+                                    </a>
+                                    <a href="#lesson-plan-history/${plan.id}" class="dropdown-item">
+                                        <i class="fas fa-history"></i>
+                                        Histórico
+                                    </a>
+                                    <button class="dropdown-item danger" 
+                                            onclick="window.lessonPlansListController?.deleteLessonPlan('${plan.id}')">
+                                        <i class="fas fa-trash"></i>
+                                        Excluir
+                                    </button>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+
+            // Setup double-click navigation
+            this.setupCardNavigation();
+        }
+
+        /**
+         * Setup card navigation events
+         */
+        setupCardNavigation() {
+            const cards = this.container.querySelectorAll('.lesson-plan-card');
+            cards.forEach(card => {
+                card.addEventListener('dblclick', () => {
+                    const planId = card.dataset.planId;
+                    if (planId) {
+                        location.hash = `lesson-plan-editor/${planId}`;
+                    }
+                });
+            });
+        }
+
+        /**
+         * Render difficulty text
+         */
+        renderDifficultyText(difficulty) {
+            const levels = {
+                1: 'Muito Fácil',
+                2: 'Fácil', 
+                3: 'Moderado',
+                4: 'Difícil',
+                5: 'Muito Difícil'
+            };
+            return levels[difficulty] || 'Moderado';
+        }
+
+        /**
+         * Show empty state
+         */
+        showEmptyState() {
+            const gridContainer = this.container.querySelector('#lesson-plans-grid');
+            const emptyState = this.container.querySelector('#empty-state');
+            
+            if (gridContainer) gridContainer.innerHTML = '';
+            
+            if (emptyState) {
+                const title = emptyState.querySelector('h3');
+                const subtitle = emptyState.querySelector('p');
+                
+                if (this.searchQuery || this.filterCourse || this.filterLevel) {
+                    if (title) title.textContent = 'Nenhum plano de aula encontrado';
+                    if (subtitle) subtitle.textContent = 'Tente ajustar os filtros de busca para encontrar o que procura.';
+                } else {
+                    if (title) title.textContent = 'Nenhum plano de aula encontrado';
+                    if (subtitle) subtitle.textContent = 'Comece criando seu primeiro plano de aula ou ajuste os filtros da busca.';
+                }
+                
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        /**
+         * Show error state
+         */
+        showErrorState(message) {
+            const tbody = this.container.querySelector('#lesson-plans-table-body');
+            if (!tbody) return;
+            
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <div class="error-title">Erro ao carregar dados</div>
+                        <div class="error-message">${message}</div>
+                        <button class="btn-form btn-primary-form" onclick="window.lessonPlansListController?.loadData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Tentar novamente
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        /**
+         * Update statistics
+         */
+        updateStats() {
+            const totalElement = this.container.querySelector('#total-lesson-plans');
+            const filteredElement = this.container.querySelector('#filtered-lesson-plans');
+            const coursesElement = this.container.querySelector('#courses-count');
+            const durationElement = this.container.querySelector('#total-duration');
+            
+            if (totalElement) totalElement.textContent = this.totalCount;
+            if (filteredElement) filteredElement.textContent = this.lessonPlans.length;
+            if (coursesElement) coursesElement.textContent = this.courses.length;
+            
+            // Calculate total duration of filtered lesson plans
+            if (durationElement) {
+                const totalMinutes = this.lessonPlans.reduce((sum, plan) => sum + (plan.duration || 60), 0);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                durationElement.textContent = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+            }
+        }
+
+        /**
+         * Update pagination controls
+         */
+        updatePagination() {
+            const totalPages = Math.ceil(this.totalCount / this.pageSize);
+            
+            // Update pagination info
+            const paginationInfo = this.container.querySelector('#pagination-info');
+            if (paginationInfo) {
+                const start = (this.currentPage - 1) * this.pageSize + 1;
+                const end = Math.min(start + this.lessonPlans.length - 1, this.totalCount);
+                paginationInfo.textContent = this.totalCount > 0 
+                    ? `Mostrando ${start}-${end} de ${this.totalCount} planos`
+                    : 'Nenhum plano encontrado';
+            }
+
+            // Update page numbers
+            const currentPageElement = this.container.querySelector('#current-page');
+            const totalPagesElement = this.container.querySelector('#total-pages');
+            
+            if (currentPageElement) currentPageElement.textContent = this.currentPage;
+            if (totalPagesElement) totalPagesElement.textContent = Math.max(1, totalPages);
+
+            // Update button states
+            const prevBtn = this.container.querySelector('#prev-page-btn');
+            const nextBtn = this.container.querySelector('#next-page-btn');
+            
+            if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = this.currentPage >= totalPages || totalPages === 0;
+        }
+
+        /**
+         * Clear all filters
+         */
+        clearFilters() {
+            this.searchQuery = '';
+            this.filterCourse = '';
+            this.filterLevel = '';
+            this.currentPage = 1;
+            
+            // Reset form elements
+            const searchInput = this.container.querySelector('#search-lesson-plans');
+            const courseFilter = this.container.querySelector('#filter-course');
+            const levelFilter = this.container.querySelector('#filter-level');
+            
+            if (searchInput) searchInput.value = '';
+            if (courseFilter) courseFilter.value = '';
+            if (levelFilter) levelFilter.value = '';
+            
+            // Reload data
+            this.loadData();
+        }
+
+        /**
+         * Set loading state
+         */
+        setLoading(isLoading) {
+            const loadingElement = this.container.querySelector('#loading-state');
+            const tableElement = this.container.querySelector('.module-isolated-table');
+            
+            if (loadingElement) {
+                loadingElement.style.display = isLoading ? 'flex' : 'none';
+            }
+            
+            if (tableElement) {
+                tableElement.style.opacity = isLoading ? '0.6' : '1';
+            }
+        }
+
+        /**
+         * View lesson plan details
+         */
+        viewLessonPlan(planId) {
+            // Route to editor in read-only (same screen, viewer handled inside editor if needed)
+            window.location.hash = `lesson-plan-editor/${planId}`;
+        }
+
+        /**
+         * Delete lesson plan
+         */
+        async deleteLessonPlan(planId) {
+            if (!confirm('Tem certeza que deseja excluir este plano de aula? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            try {
+                await this.api.saveWithFeedback(`/api/lesson-plans/${planId}`, null, {
+                    method: 'DELETE',
+                    onSuccess: () => {
+                        if (window.showBanner) {
+                            window.showBanner('Plano de aula excluído com sucesso', 'success');
+                        }
+                        this.loadData();
+                    },
+                    onError: (error) => {
+                        if (window.showBanner) {
+                            window.showBanner('Erro ao excluir plano de aula', 'error');
+                        }
+                        console.error('Erro ao excluir plano de aula:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao excluir plano de aula:', error);
+                if (window.showBanner) {
+                    window.showBanner('Erro ao excluir plano de aula', 'error');
+                }
+            }
+        }
+
+        /**
+         * Save draft to database
+         */
+        async saveDraftToDatabase(draftId) {
+            try {
+                console.log('💾 Attempting to save draft:', draftId);
+                
+                // Get draft from localStorage with fallback
+                let draftData = null;
+                
+                // Method 1: Try AI module function
+                if (window.getDraftById && typeof window.getDraftById === 'function') {
+                    draftData = window.getDraftById(draftId);
+                    console.log('🔧 Draft via AI function:', draftData ? 'found' : 'not found');
+                }
+                
+                // Method 2: Direct localStorage access as fallback
+                if (!draftData) {
+                    console.log('🔄 Trying direct localStorage access for draft:', draftId);
+                    try {
+                        const rawStorage = localStorage.getItem('aiLessonDrafts');
+                        if (rawStorage) {
+                            const allDrafts = JSON.parse(rawStorage);
+                            draftData = allDrafts.find(d => d.id === draftId);
+                            console.log('📋 All drafts in storage:', allDrafts.length);
+                            console.log('🔍 Looking for ID:', draftId);
+                            console.log('📝 Found draft:', draftData ? 'yes' : 'no');
+                        }
+                    } catch (error) {
+                        console.error('❌ Error reading localStorage:', error);
+                    }
+                }
+                
+                if (!draftData) {
+                    console.error('❌ Draft not found:', draftId);
+                    if (window.showBanner) {
+                        window.showBanner('Rascunho não encontrado', 'error');
+                    }
+                    return;
+                }
+
+                // Prepare data for API (remove draft-specific fields)
+                const lessonPlanData = {
+                    ...draftData,
+                    isDraft: undefined, // Remove draft flag
+                    id: undefined // Let API generate new ID
+                };
+
+                // Save to database using existing saveDraftToLessonPlans function if available
+                if (window.saveDraftToLessonPlans) {
+                    const result = await window.saveDraftToLessonPlans(draftId);
+                    if (result) {
+                        // Remove from localStorage
+                        if (window.removeDraftById) {
+                            window.removeDraftById(draftId);
+                        }
+                        
+                        if (window.showBanner) {
+                            window.showBanner('Rascunho salvo com sucesso no banco de dados!', 'success');
+                        }
+                        
+                        // Reload data to show updated list
+                        this.loadData();
+                    }
+                } else {
+                    console.error('❌ saveDraftToLessonPlans function not available');
+                    if (window.showBanner) {
+                        window.showBanner('Função de salvar rascunho não disponível', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error saving draft to database:', error);
+                if (window.showBanner) {
+                    window.showBanner('Erro ao salvar rascunho', 'error');
+                }
+            }
+        }
+
+        /**
+         * Delete draft from localStorage
+         */
+        async deleteDraft(draftId) {
+            if (!confirm('Tem certeza que deseja excluir este rascunho? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            try {
+                // Remove from localStorage
+                if (window.removeDraftById) {
+                    window.removeDraftById(draftId);
+                    
+                    if (window.showBanner) {
+                        window.showBanner('Rascunho excluído com sucesso', 'success');
+                    }
+                    
+                    // Reload data to update list
+                    this.loadData();
+                } else {
+                    console.error('❌ removeDraftById function not available');
+                    if (window.showBanner) {
+                        window.showBanner('Função de excluir rascunho não disponível', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error deleting draft:', error);
+                if (window.showBanner) {
+                    window.showBanner('Erro ao excluir rascunho', 'error');
+                }
+            }
+        }
+
+        /**
+         * Debug drafts - check localStorage and functions
+         */
+        debugDrafts() {
+            console.log('🐛 === DEBUG DRAFTS ===');
+            console.log('🔍 window.getAllAIDrafts:', typeof window.getAllAIDrafts);
+            console.log('🔍 window.getDraftById:', typeof window.getDraftById);
+            console.log('🔍 window.removeDraftById:', typeof window.removeDraftById);
+            
+            // Check localStorage directly
+            try {
+                const rawStorage = localStorage.getItem('aiLessonDrafts');
+                console.log('📦 Raw localStorage aiLessonDrafts:', rawStorage);
+                
+                if (rawStorage) {
+                    const parsed = JSON.parse(rawStorage);
+                    console.log('📋 Parsed drafts:', parsed);
+                    console.log('📊 Number of drafts:', parsed.length);
+                    
+                    // Show each draft with detailed info
+                    parsed.forEach((draft, index) => {
+                        console.log(`📝 Draft ${index + 1}:`, {
+                            id: draft.id,
+                            title: draft.title,
+                            courseId: draft.courseId,
+                            lessonNumber: draft.lessonNumber,
+                            fullObject: draft
+                        });
+                    });
+                    
+                    // Test the table rendering to see what IDs are being used
+                    console.log('🔍 Current lesson plans in controller:', this.lessonPlans.length);
+                    this.lessonPlans.forEach((plan, index) => {
+                        if (plan.isDraft) {
+                            console.log(`📋 Draft in table ${index + 1}:`, {
+                                id: plan.id,
+                                title: plan.title,
+                                isDraft: plan.isDraft
+                            });
+                        }
+                    });
+                } else {
+                    console.log('📭 No aiLessonDrafts found in localStorage');
+                }
+            } catch (error) {
+                console.error('❌ Error reading localStorage:', error);
+            }
+            
+            // Test getAllAIDrafts function
+            if (window.getAllAIDrafts) {
+                const drafts = window.getAllAIDrafts();
+                console.log('🔧 getAllAIDrafts() result:', drafts);
+            } else {
+                console.log('❌ getAllAIDrafts function not available - trying direct access');
+                
+                // Force reload with direct access
+                this.loadAndMergeDrafts();
+                this.updateTable();
+            }
+            
+            alert('Debug executado! Verifique o console (F12) e a lista foi recarregada com acesso direto ao localStorage.');
+        }
+
+        /**
+         * Render difficulty stars
+         */
+        renderDifficulty(difficulty) {
+            const stars = '★'.repeat(difficulty) + '☆'.repeat(5 - difficulty);
+            return `<span class="difficulty-stars" title="Dificuldade ${difficulty}/5">${stars}</span>`;
+        }
+
+        // Other helper methods (handleSearch, handleFilter, handlePageChange)
+        
+        /**
+         * Destroy controller and cleanup
+         */
+        destroy() {
+            // Clean up global references
+            if (window.lessonPlansListController === this) {
+                delete window.lessonPlansListController;
+            }
+            
+            console.log('✅ Lesson Plans list controller destruído');
+        }
+    }
+    
+    // ==============================================
+    // LESSON PLAN EDITOR CONTROLLER
+    // ==============================================
+    
+    class LessonPlanEditorController {
+        constructor(api) {
+            this.api = api;
+            this.container = null;
+            this.planId = null;
+            this.plan = null;
+            this.courses = [];
+            this.activities = [];
+            this.isLoading = false;
+            this.isDirty = false;
+            this.isReadOnly = false;
+            this.autoSaveTimeout = null;
+            
+            // Bind methods - will be set up when methods are defined
+        }
+
+        /**
+         * Render the lesson plan editor in the target container
+         */
+        async render(targetContainer, planId = null, readOnly = false) {
+            this.container = targetContainer;
+            this.planId = planId;
+            this.isReadOnly = readOnly;
+            
+            // Mark container for Design System validator
+            targetContainer.setAttribute('data-module', 'lesson-plans');
+            targetContainer.setAttribute('data-active', 'true');
+            targetContainer.classList.add('module-active');
+            
+            // Show simple editor for now
+            this.renderSimpleEditor();
+            
+            console.log('✅ Lesson Plan editor controller renderizado');
+        }
+        
+        /**
+         * Render complete lesson plan editor
+         */
+        renderSimpleEditor() {
+            const isEditing = !!this.planId;
+            const title = this.isReadOnly ? 'Visualizar Plano de Aula' : 
+                         isEditing ? 'Editar Plano de Aula' : 'Novo Plano de Aula';
+            
+            this.container.innerHTML = `
+                <div class="module-isolated-container" data-module="lesson-plans">
+                    <div class="module-header-premium">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <button id="back-to-list-btn" class="btn-form btn-secondary-form" onclick="window.openLessonPlansList(this.closest('.module-isolated-container').parentElement)">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Voltar
+                                </button>
+                                <div class="header-title">
+                                    <h1 class="module-title">
+                                        <span class="title-icon">📚</span>
+                                        ${title}
+                                    </h1>
+                                    <p class="module-subtitle">Complete todos os campos necessários</p>
+                                </div>
+                            </div>
+                            <div class="header-right">
+                                ${!this.isReadOnly ? `
+                                    <button id="save-plan-btn" class="btn-form btn-primary-form" ${isEditing ? '' : 'disabled'}>
+                                        <i class="fas fa-save"></i>
+                                        Salvar
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="module-content">
+                        <form id="lesson-plan-form" class="lesson-plan-editor">
+                            <!-- Informações Básicas -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="courseId" class="form-label">Curso *</label>
+                                        <select id="courseId" name="courseId" class="form-input" required ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="">Selecione um curso...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="title" class="form-label">Título da Aula *</label>
+                                        <input type="text" id="title" name="title" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Técnicas de Defesa Básica">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="lessonNumber" class="form-label">Número da Aula *</label>
+                                        <input type="number" id="lessonNumber" name="lessonNumber" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} min="1" placeholder="1">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="weekNumber" class="form-label">Semana *</label>
+                                        <input type="number" id="weekNumber" name="weekNumber" class="form-input" required ${this.isReadOnly ? 'readonly' : ''} min="1" placeholder="1">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="unit" class="form-label">Unidade</label>
+                                        <input type="text" id="unit" name="unit" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Fundamentos">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="description" class="form-label">Descrição</label>
+                                    <textarea id="description" name="description" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva os objetivos gerais da aula..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Configurações -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-cog"></i> Configurações</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="level" class="form-label">Nível (1-5)</label>
+                                        <select id="level" name="level" class="form-input" ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="1">1 - Iniciante</option>
+                                            <option value="2">2 - Básico</option>
+                                            <option value="3">3 - Intermediário</option>
+                                            <option value="4">4 - Avançado</option>
+                                            <option value="5">5 - Expert</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="difficulty" class="form-label">Dificuldade (1-5)</label>
+                                        <select id="difficulty" name="difficulty" class="form-input" ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="1">1 - Muito Fácil</option>
+                                            <option value="2">2 - Fácil</option>
+                                            <option value="3">3 - Moderado</option>
+                                            <option value="4">4 - Difícil</option>
+                                            <option value="5">5 - Muito Difícil</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="duration" class="form-label">Duração (minutos)</label>
+                                        <input type="number" id="duration" name="duration" class="form-input" ${this.isReadOnly ? 'readonly' : ''} min="15" max="180" value="60" placeholder="60">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos e Equipamentos -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-bullseye"></i> Objetivos e Recursos</h3>
+                                
+                                <div class="form-group">
+                                    <label for="objectives" class="form-label">Objetivos da Aula</label>
+                                    <textarea id="objectives" name="objectives" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Liste os objetivos separados por linha..."></textarea>
+                                    <small class="form-hint">Um objetivo por linha</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="equipment" class="form-label">Equipamentos Necessários</label>
+                                    <textarea id="equipment" name="equipment" class="form-input" rows="2" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Tatames, luvas, bastões..."></textarea>
+                                    <small class="form-hint">Um equipamento por linha</small>
+                                </div>
+                            </div>
+
+                            <!-- Estrutura da Aula -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-list-ol"></i> Estrutura da Aula</h3>
+                                
+                                <div class="lesson-structure">
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-fire"></i> Aquecimento</h4>
+                                        <textarea id="warmup" name="warmup" class="form-input" rows="4" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as atividades de aquecimento..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-fist-raised"></i> Técnicas Principais</h4>
+                                        <textarea id="techniques" name="techniques" class="form-input" rows="6" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as técnicas que serão ensinadas..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-users"></i> Simulações e Prática</h4>
+                                        <textarea id="simulations" name="simulations" class="form-input" rows="4" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as simulações e exercícios práticos..."></textarea>
+                                    </div>
+                                    
+                                    <div class="structure-section">
+                                        <h4><i class="fas fa-leaf"></i> Relaxamento</h4>
+                                        <textarea id="cooldown" name="cooldown" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Descreva as atividades de relaxamento..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Módulos Opcionais -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-puzzle-piece"></i> Módulos Opcionais</h3>
+                                
+                                <div class="form-group">
+                                    <label for="mentalModule" class="form-label">Módulo Mental/Psicológico</label>
+                                    <textarea id="mentalModule" name="mentalModule" class="form-input" rows="3" ${this.isReadOnly ? 'readonly' : ''} placeholder="Aspectos mentais, controle de estresse, concentração..."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="tacticalModule" class="form-label">Módulo Tático</label>
+                                    <input type="text" id="tacticalModule" name="tacticalModule" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="Ex: Análise de distância, timing, posicionamento">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="adaptations" class="form-label">Adaptações</label>
+                                    <textarea id="adaptations" name="adaptations" class="form-input" rows="2" ${this.isReadOnly ? 'readonly' : ''} placeholder="Adaptações para diferentes níveis ou necessidades especiais..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Atividades Associadas -->
+                            <div class="data-card-premium" id="activities-section">
+                                <div class="section-header">
+                                    <h3><i class="fas fa-running"></i> Atividades Associadas</h3>
+                                    ${!this.isReadOnly ? `
+                                        <button type="button" id="add-activity-btn" class="btn-secondary-form">
+                                            <i class="fas fa-plus"></i>
+                                            Adicionar Atividade
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                
+                                <div class="activities-manager">
+                                    <div class="activities-by-segment">
+                                        <div class="segment-group" data-segment="WARMUP">
+                                            <h4><i class="fas fa-fire"></i> Aquecimento</h4>
+                                            <div class="activities-list" id="activities-warmup">
+                                                <div class="empty-state">
+                                                    <p>Nenhuma atividade de aquecimento adicionada</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="segment-group" data-segment="TECHNIQUE">
+                                            <h4><i class="fas fa-fist-raised"></i> Técnicas</h4>
+                                            <div class="activities-list" id="activities-technique">
+                                                <div class="empty-state">
+                                                    <p>Nenhuma atividade técnica adicionada</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="segment-group" data-segment="DRILL">
+                                            <h4><i class="fas fa-dumbbell"></i> Treinos</h4>
+                                            <div class="activities-list" id="activities-drill">
+                                                <div class="empty-state">
+                                                    <p>Nenhuma atividade de treino adicionada</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="segment-group" data-segment="SIMULATION">
+                                            <h4><i class="fas fa-users"></i> Simulações</h4>
+                                            <div class="activities-list" id="activities-simulation">
+                                                <div class="empty-state">
+                                                    <p>Nenhuma simulação adicionada</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="segment-group" data-segment="COOLDOWN">
+                                            <h4><i class="fas fa-leaf"></i> Relaxamento</h4>
+                                            <div class="activities-list" id="activities-cooldown">
+                                                <div class="empty-state">
+                                                    <p>Nenhuma atividade de relaxamento adicionada</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mídia -->
+                            <div class="data-card-premium">
+                                <h3><i class="fas fa-video"></i> Recursos de Mídia</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="videoUrl" class="form-label">URL do Vídeo</label>
+                                        <input type="url" id="videoUrl" name="videoUrl" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="https://youtube.com/watch?v=...">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="thumbnailUrl" class="form-label">URL da Thumbnail</label>
+                                        <input type="url" id="thumbnailUrl" name="thumbnailUrl" class="form-input" ${this.isReadOnly ? 'readonly' : ''} placeholder="https://...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Controle de Versão -->
+                            <div class="data-card-premium" id="version-control">
+                                <h3><i class="fas fa-code-branch"></i> Controle de Versão</h3>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="version" class="form-label">Versão</label>
+                                        <input type="text" id="version" name="version" class="form-input" ${this.isReadOnly ? 'readonly' : ''} value="1.0" placeholder="1.0">
+                                        <small class="form-hint">Versão atual do plano de aula</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="isActive" class="form-label">Status</label>
+                                        <select id="isActive" name="isActive" class="form-input" ${this.isReadOnly ? 'disabled' : ''}>
+                                            <option value="true">Ativo</option>
+                                            <option value="false">Inativo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                ${this.planId ? `
+                                    <div class="form-group">
+                                        <label class="form-label">Histórico de Versões</label>
+                                        <div id="version-history" class="version-history">
+                                            <p class="loading-text">Carregando histórico...</p>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            ${!this.isReadOnly ? `
+                                <div class="form-actions">
+                                    <button type="button" class="btn-form btn-secondary-form" onclick="window.openLessonPlansList(this.closest('.module-isolated-container').parentElement)">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="btn-form btn-primary-form">
+                                        <i class="fas fa-save"></i>
+                                        ${isEditing ? 'Atualizar' : 'Criar'} Plano de Aula
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // Initialize editor functionality
+            this.initializeEditor();
+        }
+
+        /**
+         * Initialize editor functionality
+         */
+        async initializeEditor() {
+            // Load courses for dropdown
+            await this.loadCourses();
+            
+            // Load existing data if editing
+            if (this.planId) {
+                await this.loadLessonPlan();
+            }
+            
+            // Setup form handlers
+            this.setupFormHandlers();
+            
+            // Setup auto-save if not read-only
+            if (!this.isReadOnly) {
+                this.setupAutoSave();
+            }
+        }
+
+        /**
+         * Load courses for dropdown
+         */
+        async loadCourses() {
+            try {
+                await this.api.fetchWithStates('/api/courses', {
+                    onSuccess: (list) => {
+                        const courses = Array.isArray(list) ? list : (list?.data || []);
+                        const courseSelect = document.getElementById('courseId');
+                        if (courseSelect) {
+                            courseSelect.innerHTML = '<option value="">Selecione um curso...</option>';
+                            courses.forEach(course => {
+                                courseSelect.innerHTML += `
+                                    <option value="${course.id}">${course.name}${course.level ? ` (Nível ${course.level})` : ''}</option>
+                                `;
+                            });
+                        }
+                    },
+                    onError: (error) => { console.warn('Erro ao carregar cursos:', error); }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        }
+
+        /**
+         * Load existing lesson plan data
+         */
+        async loadLessonPlan() {
+            try {
+                await this.api.fetchWithStates(`/api/lesson-plans/${this.planId}`, {
+                    onSuccess: (data) => {
+                        this.plan = data;
+                        this.populateForm(this.plan);
+                    },
+                    onError: (error) => {
+                        console.error('Erro ao carregar plano de aula:', error);
+                        if (window.showBanner) {
+                            window.showBanner('Erro ao carregar dados do plano de aula', 'error');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar plano de aula:', error);
+                if (window.showBanner) {
+                    window.showBanner('Erro ao carregar dados do plano de aula', 'error');
+                }
+            }
+        }
+
+        /**
+         * Populate form with lesson plan data
+         */
+        populateForm(plan) {
+            const fields = [
+                'courseId', 'title', 'description', 'lessonNumber', 'weekNumber', 
+                'unit', 'level', 'difficulty', 'duration', 'tacticalModule',
+                'videoUrl', 'thumbnailUrl'
+            ];
+
+            fields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && plan[field] !== undefined) {
+                    element.value = plan[field];
+                }
+            });
+
+            // Handle array fields
+            if (plan.objectives && Array.isArray(plan.objectives)) {
+                const objectivesEl = document.getElementById('objectives');
+                if (objectivesEl) {
+                    objectivesEl.value = plan.objectives.join('\n');
+                }
+            }
+
+            if (plan.equipment && Array.isArray(plan.equipment)) {
+                const equipmentEl = document.getElementById('equipment');
+                if (equipmentEl) {
+                    equipmentEl.value = plan.equipment.join('\n');
+                }
+            }
+
+            // Handle JSON fields
+            const jsonFields = ['warmup', 'techniques', 'simulations', 'cooldown', 'mentalModule', 'adaptations'];
+            jsonFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element && plan[field]) {
+                    if (typeof plan[field] === 'string') {
+                        element.value = plan[field];
+                    } else if (typeof plan[field] === 'object') {
+                        element.value = JSON.stringify(plan[field], null, 2);
+                    }
+                }
+            });
+
+            // Handle version control fields
+            if (plan.version) {
+                const versionEl = document.getElementById('version');
+                if (versionEl) versionEl.value = plan.version;
+            }
+
+            if (plan.isActive !== undefined) {
+                const isActiveEl = document.getElementById('isActive');
+                if (isActiveEl) isActiveEl.value = plan.isActive.toString();
+            }
+
+            // Load lesson plan activities
+            this.loadLessonPlanActivities();
+        }
+
+        /**
+         * Load activities associated with this lesson plan
+         */
+        async loadLessonPlanActivities() {
+            if (!this.planId) return;
+
+            try {
+                await this.api.fetchWithStates(`/api/lesson-plans/${this.planId}/activities`, {
+                    onSuccess: (activities) => {
+                        this.populateActivities(Array.isArray(activities) ? activities : (activities?.data || []));
+                    },
+                    onError: (error) => {
+                        console.warn('Erro ao carregar atividades do plano:', error);
+                    }
+                });
+            } catch (error) {
+                console.warn('Erro ao carregar atividades do plano:', error);
+            }
+        }
+
+        /**
+         * Populate activities in the form
+         */
+        populateActivities(activities) {
+            if (!activities || activities.length === 0) return;
+
+            // Group activities by segment
+            const activitiesBySegment = activities.reduce((acc, activity) => {
+                if (!acc[activity.segment]) {
+                    acc[activity.segment] = [];
+                }
+                acc[activity.segment].push(activity);
+                return acc;
+            }, {});
+
+            // Populate each segment
+            Object.keys(activitiesBySegment).forEach(segment => {
+                const segmentActivities = activitiesBySegment[segment].sort((a, b) => a.ord - b.ord);
+                
+                segmentActivities.forEach(activity => {
+                    if (activity.Activity) {
+                        this.addActivityToSegment(activity.Activity, segment, {
+                            objectives: activity.objectives,
+                            safetyNotes: activity.safetyNotes
+                        });
+                    }
+                });
+            });
+        }
+
+        /**
+         * Setup form event handlers
+         */
+        setupFormHandlers() {
+            const form = document.getElementById('lesson-plan-form');
+            if (form) {
+                form.addEventListener('submit', this.handleSubmit.bind(this));
+                
+                // Mark form as dirty on changes
+                form.addEventListener('input', () => {
+                    this.isDirty = true;
+                    const saveBtn = document.getElementById('save-plan-btn');
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                    }
+                });
+            }
+            
+            // Setup activity management handlers
+            this.setupActivityHandlers();
+        }
+
+        /**
+         * Setup activity management event handlers
+         */
+        setupActivityHandlers() {
+            const addActivityBtn = document.getElementById('add-activity-btn');
+            if (addActivityBtn && !this.isReadOnly) {
+                addActivityBtn.addEventListener('click', () => this.showActivitySelector());
+            }
+            
+            // Load available activities for selection
+            this.loadAvailableActivities();
+        }
+
+        /**
+         * Load available activities from the database
+         */
+        async loadAvailableActivities() {
+            try {
+                await this.api.fetchWithStates('/api/activities', {
+                    onSuccess: (response) => {
+                        this.availableActivities = Array.isArray(response) ? response : (response?.data || []);
+                    },
+                    onError: (error) => {
+                        console.warn('Erro ao carregar atividades:', error);
+                        this.availableActivities = [];
+                    }
+                });
+            } catch (error) {
+                console.warn('Erro ao carregar atividades:', error);
+                this.availableActivities = [];
+            }
+        }
+
+        /**
+         * Show activity selector modal
+         */
+        showActivitySelector() {
+            if (!this.availableActivities || this.availableActivities.length === 0) {
+                window.app?.handleError(new Error('Nenhuma atividade disponível'), 'lesson-plan-editor');
+                return;
+            }
+
+            // Create activity selector interface
+            const selector = document.createElement('div');
+            selector.className = 'activity-selector-overlay';
+            selector.innerHTML = `
+                <div class="activity-selector-modal">
+                    <div class="modal-header">
+                        <h3>Selecionar Atividade</h3>
+                        <button type="button" class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-content">
+                        <div class="segment-selector">
+                            <label for="segment-select">Segmento da Aula:</label>
+                            <select id="segment-select" class="form-input">
+                                <option value="WARMUP">Aquecimento</option>
+                                <option value="TECHNIQUE">Técnicas</option>
+                                <option value="DRILL">Treinos</option>
+                                <option value="SIMULATION">Simulações</option>
+                                <option value="COOLDOWN">Relaxamento</option>
+                            </select>
+                        </div>
+                        <div class="activities-grid">
+                            ${this.availableActivities.map(activity => `
+                                <div class="activity-card" data-activity-id="${activity.id}">
+                                    <h4>${activity.name}</h4>
+                                    <p>${activity.description || 'Sem descrição'}</p>
+                                    <div class="activity-meta">
+                                        <span>Duração: ${activity.duration || 'N/A'} min</span>
+                                        <span>Nível: ${activity.level || 'N/A'}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary-form cancel-btn">Cancelar</button>
+                        <button type="button" class="btn-primary-form add-selected-btn">Adicionar Selecionada</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(selector);
+
+            // Setup selector handlers
+            let selectedActivity = null;
+            selector.querySelectorAll('.activity-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    selector.querySelectorAll('.activity-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedActivity = this.availableActivities.find(a => a.id == card.dataset.activityId);
+                });
+            });
+
+            selector.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(selector);
+            });
+
+            selector.querySelector('.cancel-btn').addEventListener('click', () => {
+                document.body.removeChild(selector);
+            });
+
+            selector.querySelector('.add-selected-btn').addEventListener('click', () => {
+                if (selectedActivity) {
+                    const segment = selector.querySelector('#segment-select').value;
+                    this.addActivityToSegment(selectedActivity, segment);
+                    document.body.removeChild(selector);
+                }
+            });
+        }
+
+        /**
+         * Add activity to a specific segment
+         */
+        addActivityToSegment(activity, segment, existingData = {}) {
+            const segmentContainer = document.getElementById(`activities-${segment.toLowerCase()}`);
+            if (!segmentContainer) return;
+
+            // Remove empty state if exists
+            const emptyState = segmentContainer.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Create activity item
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.dataset.activityId = activity.id;
+            activityItem.dataset.segment = segment;
+            activityItem.innerHTML = `
+                <div class="activity-content">
+                    <div class="activity-header">
+                        <h5>${activity.name}</h5>
+                        ${!this.isReadOnly ? `
+                            <button type="button" class="remove-activity-btn" title="Remover atividade">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <p>${activity.description || ''}</p>
+                    <div class="activity-config">
+                        <div class="form-group">
+                            <label>Objetivos específicos:</label>
+                            <textarea class="form-input activity-objectives" rows="2" placeholder="Objetivos desta atividade nesta aula..." ${this.isReadOnly ? 'readonly' : ''}>${existingData.objectives || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações de segurança:</label>
+                            <textarea class="form-input activity-safety" rows="2" placeholder="Cuidados especiais para esta atividade..." ${this.isReadOnly ? 'readonly' : ''}>${existingData.safetyNotes || ''}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            segmentContainer.appendChild(activityItem);
+
+            // Setup remove handler
+            if (!this.isReadOnly) {
+                const removeBtn = activityItem.querySelector('.remove-activity-btn');
+                removeBtn.addEventListener('click', () => {
+                    activityItem.remove();
+                    // Add empty state back if no activities left
+                    if (segmentContainer.children.length === 0) {
+                        segmentContainer.innerHTML = `
+                            <div class="empty-state">
+                                <p>Nenhuma atividade de ${this.getSegmentName(segment).toLowerCase()} adicionada</p>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            this.isDirty = true;
+        }
+
+        /**
+         * Get segment display name
+         */
+        getSegmentName(segment) {
+            const names = {
+                'WARMUP': 'aquecimento',
+                'TECHNIQUE': 'técnica', 
+                'DRILL': 'treino',
+                'SIMULATION': 'simulação',
+                'COOLDOWN': 'relaxamento'
+            };
+            return names[segment] || segment;
+        }
+
+        /**
+         * Setup auto-save functionality (disabled)
+         */
+        setupAutoSave() {
+            // Auto-save desativado por solicitação
+            this.autoSaveTimeout = null;
+            return;
+        }
+
+        /**
+         * Save draft (disabled)
+         */
+        async saveDraft() {
+            // Auto-save/rascunho desativado
+            return;
+        }
+
+        /**
+         * Handle form submission
+         */
+        async handleSubmit(event) {
+            event.preventDefault();
+            
+            if (this.isReadOnly) return;
+            
+            try {
+                const formData = this.collectFormData();
+                const validation = this.validateFormData(formData);
+                
+                if (!validation.isValid) {
+                    window.showBanner(validation.message, 'error');
+                    return;
+                }
+
+                const saveBtn = document.querySelector('#lesson-plan-form button[type="submit"]');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+                }
+
+                const endpoint = this.planId ? `/api/lesson-plans/${this.planId}` : '/api/lesson-plans';
+                const method = this.planId ? 'PUT' : 'POST';
+
+                await this.api.saveWithFeedback(endpoint, formData, {
+                    method,
+                    onSuccess: () => {
+                        this.isDirty = false;
+                        window.showBanner(
+                            `Plano de aula ${this.planId ? 'atualizado' : 'criado'} com sucesso!`,
+                            'success'
+                        );
+                        setTimeout(() => {
+                            window.openLessonPlansList(this.container);
+                        }, 1200);
+                    },
+                    onError: (error) => {
+                        console.error('Erro ao salvar plano de aula:', error);
+                        window.showBanner(`Erro ao salvar: ${error?.message || 'Falha no salvamento'}`, 'error');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Erro ao salvar plano de aula:', error);
+                window.showBanner(`Erro ao salvar: ${error.message}`, 'error');
+            } finally {
+                const saveBtn = document.querySelector('#lesson-plan-form button[type="submit"]');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = `<i class="fas fa-save"></i> ${this.planId ? 'Atualizar' : 'Criar'} Plano de Aula`;
+                }
+            }
+        }
+
+        /**
+         * Collect form data
+         */
+        collectFormData() {
+            const form = document.getElementById('lesson-plan-form');
+            const formData = new FormData(form);
+            
+            const data = {};
+            
+            // Basic fields
+            const basicFields = [
+                'courseId', 'title', 'description', 'unit', 'tacticalModule',
+                'videoUrl', 'thumbnailUrl'
+            ];
+            
+            basicFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            // Numeric fields
+            const numericFields = ['lessonNumber', 'weekNumber', 'level', 'difficulty', 'duration'];
+            numericFields.forEach(field => {
+                const value = formData.get(field);
+                if (value) {
+                    data[field] = parseInt(value);
+                }
+            });
+
+            // Array fields (split by lines)
+            const objectives = formData.get('objectives');
+            if (objectives) {
+                data.objectives = objectives.split('\n').filter(line => line.trim()).map(line => line.trim());
+            }
+
+            const equipment = formData.get('equipment');
+            if (equipment) {
+                data.equipment = equipment.split('\n').filter(line => line.trim()).map(line => line.trim());
+            }
+
+            // JSON/Text fields for lesson structure
+            const structureFields = ['warmup', 'techniques', 'simulations', 'cooldown'];
+            structureFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            // Optional fields
+            const optionalFields = ['mentalModule', 'adaptations'];
+            optionalFields.forEach(field => {
+                const value = formData.get(field);
+                if (value && value.trim()) {
+                    data[field] = value.trim();
+                }
+            });
+
+            // Version control fields
+            const version = formData.get('version');
+            if (version && version.trim()) {
+                data.version = version.trim();
+            }
+
+            const isActive = formData.get('isActive');
+            if (isActive !== null) {
+                data.isActive = isActive === 'true';
+            }
+
+            // Collect activities data
+            data.activities = this.collectActivitiesData();
+
+            return data;
+        }
+
+        /**
+         * Collect activities data from the form
+         */
+        collectActivitiesData() {
+            const activities = [];
+            const segments = ['WARMUP', 'TECHNIQUE', 'DRILL', 'SIMULATION', 'COOLDOWN'];
+            
+            segments.forEach(segment => {
+                const container = document.getElementById(`activities-${segment.toLowerCase()}`);
+                if (container) {
+                    const activityItems = container.querySelectorAll('.activity-item');
+                    activityItems.forEach((item, index) => {
+                        const activityId = item.dataset.activityId;
+                        const objectives = item.querySelector('.activity-objectives')?.value || '';
+                        const safetyNotes = item.querySelector('.activity-safety')?.value || '';
+                        
+                        if (activityId) {
+                            activities.push({
+                                activityId: parseInt(activityId),
+                                segment: segment,
+                                ord: index + 1,
+                                objectives: objectives.trim() || null,
+                                safetyNotes: safetyNotes.trim() || null,
+                                params: null, // Can be extended for activity-specific parameters
+                                adaptations: null // Can be extended for activity-specific adaptations
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return activities;
+        }
+
+        /**
+         * Validate form data
+         */
+        validateFormData(data) {
+            if (!data.courseId) {
+                return { isValid: false, message: 'Selecione um curso' };
+            }
+            
+            if (!data.title || data.title.length < 3) {
+                return { isValid: false, message: 'Título deve ter pelo menos 3 caracteres' };
+            }
+            
+            if (!data.lessonNumber || data.lessonNumber < 1) {
+                return { isValid: false, message: 'Número da aula deve ser maior que zero' };
+            }
+            
+            if (!data.weekNumber || data.weekNumber < 1) {
+                return { isValid: false, message: 'Número da semana deve ser maior que zero' };
+            }
+
+            return { isValid: true };
+        }
+
+        /**
+         * Save draft (auto-save)
+         */
+        async saveDraft() {
+            if (!this.planId || this.isReadOnly) return;
+            
+            try {
+                const formData = this.collectFormData();
+                await this.api.saveWithFeedback(`/api/lesson-plans/${this.planId}`, formData, {
+                    method: 'PUT',
+                    onSuccess: () => console.log('💾 Rascunho salvo automaticamente'),
+                    onError: (e) => console.warn('Erro no auto-save:', e)
+                });
+            } catch (error) {
+                console.warn('Erro no auto-save:', error);
+            }
+        }
+
+        /**
+         * Handle search input
+         */
+        handleSearch = (event) => {
+            this.searchQuery = event.target.value.trim();
+            this.currentPage = 1;
+            this.loadData();
+        }
+
+        /**
+         * Handle filter changes
+         */
+        handleFilter = (event) => {
+            const { name, value } = event.target;
+            
+            if (name === 'course') {
+                this.filterCourse = value;
+            } else if (name === 'level') {
+                this.filterLevel = value;
+            }
+            
+            this.currentPage = 1;
+            this.loadData();
+        }
+
+        /**
+         * Handle page changes
+         */
+        handlePageChange = (newPage) => {
+            this.currentPage = newPage;
+            this.loadData();
+        }
+
+        /**
+         * Refresh data
+         */
+        async refresh() {
+            await this.loadData();
+        }
+
+        /**
+         * Destroy controller and cleanup
+         */
+        destroy() {
+            // Clear auto-save timeout
+            if (this.autoSaveTimeout) {
+                clearTimeout(this.autoSaveTimeout);
+            }
+            
+            console.log('✅ Lesson Plan editor controller destruído');
+        }
+    }
+    
+    // Make controllers available globally
+    window.LessonPlansListController = LessonPlansListController;
+    window.LessonPlanEditorController = LessonPlanEditorController;
+    
+    // ==============================================
+    // AUTO-INITIALIZATION DISABLED
+    // ==============================================
+    
+    // Auto-initialization has been DISABLED to prevent unwanted loading.
+    // The module will ONLY initialize when explicitly called via:
+    // window.initializeLessonPlansModule() by the SPA router
+    
+    // Make controllers available globally for debugging and legacy compatibility
+    window.LessonPlansListController = LessonPlansListController;
+    window.LessonPlanEditorController = LessonPlanEditorController;
+    
+})();

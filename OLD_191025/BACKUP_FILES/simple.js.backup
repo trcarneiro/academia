@@ -1,0 +1,2944 @@
+/**
+ * Hybrid Agenda Module - Simplified Version
+ * Unified calendar interface for personal training and collective classes
+ */
+
+// Module state
+let moduleAPI = null;
+let currentView = 'calendar';
+let currentDate = new Date();
+let agendaData = [];
+let stats = {};
+
+// Initialize API client
+async function initializeAPI() {
+    console.log('🔧 Checking for API client...');
+    console.log('🔧 window.createModuleAPI:', typeof window.createModuleAPI);
+    
+    if (!window.createModuleAPI) {
+        console.log('❌ API client not found, waiting...');
+        // Wait for API client to be available
+        let attempts = 0;
+        while (!window.createModuleAPI && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.createModuleAPI) {
+            throw new Error('API client not loaded after waiting');
+        }
+    }
+    
+    console.log('✅ Creating module API...');
+    moduleAPI = window.createModuleAPI('HybridAgenda');
+    console.log('✅ Module API created:', moduleAPI);
+}
+
+// Main initialization function for SPA integration
+async function initHybridAgendaModule(container, route) {
+    try {
+        console.log('🏛️ Initializing Hybrid Agenda Module (Simplified)...', route);
+        console.log('🔧 Container received:', container);
+        console.log('🔧 Route received:', route);
+        
+        if (!container) {
+            throw new Error('Container element is required');
+        }
+        
+        // Initialize API
+        console.log('🔧 Initializing API...');
+        await initializeAPI();
+        console.log('✅ API initialized successfully');
+        
+        // Handle different routes
+        const routeParts = route ? route.split('/') : [];
+        
+        if (routeParts.length > 2) {
+            const action = routeParts[2]; // edit, details
+            const itemId = routeParts[3];
+            
+            switch (action) {
+                case 'edit':
+                    return await renderEditPage(container, itemId);
+                case 'details':
+                    return await renderDetailsPage(container, itemId);
+                default:
+                    break;
+            }
+        }
+        
+        // Render main interface
+        renderHybridAgenda(container);
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Load initial data
+        await loadInitialData();
+        
+        console.log('✅ Hybrid Agenda Module initialized successfully');
+        
+        // Dispatch module loaded event
+        if (window.app) {
+            window.app.dispatchEvent('module:loaded', { name: 'hybrid-agenda' });
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Failed to initialize Hybrid Agenda module:', error);
+        if (window.app) {
+            window.app.handleError(error, 'hybrid-agenda:init');
+        }
+        
+        container.innerHTML = `
+            <div class="error-state">
+                <h3>❌ Erro ao carregar Agenda Híbrida</h3>
+                <p>Não foi possível inicializar o módulo: ${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary">🔄 Recarregar</button>
+            </div>
+        `;
+        throw error;
+    }
+}
+
+// Render main interface
+function renderHybridAgenda(container) {
+    const html = `
+        <div class="module-isolated-hybrid-agenda">
+            <div class="module-header-premium">
+                <div class="module-header-content">
+                    <div class="module-title-section">
+                        <h1>📅 Agenda Híbrida</h1>
+                        <p class="module-subtitle">Gestão unificada de turmas e personal training</p>
+                    </div>
+                    
+                    <div class="module-actions">
+                        <div class="view-switcher">
+                            <button class="view-switcher-btn active" data-view="calendar">
+                                📅 Calendário
+                            </button>
+                            <button class="view-switcher-btn" data-view="list">
+                                📋 Lista
+                            </button>
+                            <button class="debug-list-btn" style="background: orange; color: white; padding: 5px 10px; margin-left: 10px;">
+                                🐛 Debug Lista
+                            </button>
+                        </div>
+                        
+                        <button class="btn-primary create-agenda-btn">
+                            ➕ Criar Agendamento
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module-filters-premium">
+                <div class="filter-group">
+                    <label>Tipo:</label>
+                    <select class="filter-select" data-filter="type">
+                        <option value="">Todos</option>
+                        <option value="TURMA">Turmas</option>
+                        <option value="PERSONAL_SESSION">Personal Training</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Data:</label>
+                    <input type="date" id="agenda-date-picker" class="filter-input" 
+                           value="${currentDate.toISOString().split('T')[0]}">
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card-enhanced turmas-stat">
+                    <div class="stat-icon">🏫</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="turmas-count">0</div>
+                        <div class="stat-label">Turmas</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-enhanced personal-stat">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="personal-count">0</div>
+                        <div class="stat-label">Personal Training</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card-enhanced instructors-stat">
+                    <div class="stat-icon">👨‍🏫</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="instructors-count">0</div>
+                        <div class="stat-label">Instrutores Ativos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="agenda-content">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Carregando agenda...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    document.addEventListener('click', (e) => {
+        // View switcher
+        if (e.target.matches('.view-switcher-btn')) {
+            handleViewSwitch(e.target.dataset.view);
+        }
+        
+        // DEBUG: Add temporary list view button
+        if (e.target.matches('.debug-list-btn')) {
+            console.log('🔧 Switching to list view for debugging');
+            handleViewSwitch('list');
+        }
+        
+        // Create agenda button
+        if (e.target.matches('.create-agenda-btn')) {
+            handleCreateAgenda();
+        }
+        
+        // Agenda items
+        if (e.target.matches('.agenda-item') || e.target.closest('.agenda-item')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const item = e.target.closest('.agenda-item');
+            if (item) {
+                console.log('🎯 Agenda item clicked:', item.dataset.id, item.dataset.type);
+                handleAgendaItemClick(item.dataset.id, item.dataset.type);
+            } else {
+                console.log('⚠️ No agenda item found in target:', e.target);
+            }
+        }
+        
+        // Debug: Log all clicks to see what's being clicked
+        console.log('🖱️ Click event:', e.target, e.target.className);
+    });
+
+    // Date picker change
+    document.addEventListener('change', (e) => {
+        if (e.target.matches('#agenda-date-picker')) {
+            handleDateChange(e.target.value);
+        }
+        
+        if (e.target.matches('.filter-select')) {
+            handleFilterChange(e.target);
+        }
+    });
+}
+
+// Load initial data
+async function loadInitialData() {
+    try {
+        await Promise.all([
+            loadAgendaData(),
+            loadStats()
+        ]);
+        renderCurrentView();
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showErrorState(error);
+    }
+}
+
+// Load agenda data
+async function loadAgendaData() {
+    try {
+        const response = await moduleAPI.fetchWithStates('/api/hybrid-agenda', {
+            loadingElement: document.getElementById('agenda-content'),
+            onSuccess: (response) => {
+                console.log('🔧 API Response received:', response);
+                // The response structure is: {success: true, data: {items: [...], summary: {...}}}
+                if (response && response.items && Array.isArray(response.items)) {
+                    agendaData = response.items;
+                    console.log('✅ Agenda data loaded from API:', agendaData.length, 'items');
+                } else {
+                    console.warn('⚠️ Unexpected API response format:', response);
+                    agendaData = [];
+                }
+                // Update view after loading data
+                console.log('🔧 About to call renderCurrentView()');
+                renderCurrentView();
+                console.log('🔧 renderCurrentView() call completed');
+                // Debug: Check if agenda items exist
+                setTimeout(() => {
+                    const items = document.querySelectorAll('.agenda-item');
+                    console.log('🔍 Debug: Found', items.length, 'agenda items in DOM');
+                    items.forEach((item, index) => {
+                        console.log(`🔍 Item ${index}:`, item.dataset.id, item.className);
+                    });
+                }, 100);
+            },
+            onEmpty: () => {
+                agendaData = [];
+                console.log('✅ No agenda items found');
+                // Update view even when empty
+                renderCurrentView();
+            },
+            onError: (error) => {
+                console.error('❌ Failed to load agenda data:', error);
+                // Fallback to empty array
+                agendaData = [];
+                throw error;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading agenda data:', error);
+        // Show error but don't break the interface
+        agendaData = [];
+        showErrorState(error);
+    }
+}
+
+// Load stats
+async function loadStats() {
+    try {
+        const response = await moduleAPI.fetchWithStates('/api/hybrid-agenda', {
+            onSuccess: (response) => {
+                console.log('🔧 Stats API Response received:', response);
+                // The response structure is: {items: [...], summary: {...}}
+                if (response && response.summary) {
+                    const summary = response.summary;
+                    stats = {
+                        turmas: { total: summary.totalTurmas || 0 },
+                        personalSessions: { total: summary.totalPersonalSessions || 0 },
+                        instructors: { active: summary.totalInstructors || 0 }
+                    };
+                    console.log('✅ Stats loaded from API:', stats);
+                } else {
+                    console.warn('⚠️ No summary in API response, using defaults');
+                    // Default stats if no summary
+                    stats = {
+                        turmas: { total: 0 },
+                        personalSessions: { total: 0 },
+                        instructors: { active: 0 }
+                    };
+                }
+            },
+            onError: (error) => {
+                console.error('❌ Failed to load stats:', error);
+                stats = {
+                    turmas: { total: 0 },
+                    personalSessions: { total: 0 },
+                    instructors: { active: 0 }
+                };
+            }
+        });
+        
+        // Update stats in UI
+        updateStatsDisplay();
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        // Don't throw error for stats, just set defaults
+        stats = {
+            turmas: { total: 0 },
+            personalSessions: { total: 0 },
+            instructors: { active: 0 }
+        };
+        updateStatsDisplay();
+    }
+}
+
+// Update stats display
+function updateStatsDisplay() {
+    const turmasCount = document.getElementById('turmas-count');
+    const personalCount = document.getElementById('personal-count');
+    const instructorsCount = document.getElementById('instructors-count');
+    
+    // Use stats from API response or calculate from current data
+    const turmasTotal = stats.totalTurmas || agendaData.filter(item => item.type === 'TURMA').length;
+    const personalTotal = stats.totalPersonalSessions || agendaData.filter(item => item.type === 'PERSONAL_SESSION').length;
+    const instructorsTotal = stats.activeInstructors || [...new Set(agendaData.map(item => item.instructor?.name).filter(Boolean))].length;
+    
+    if (turmasCount) turmasCount.textContent = turmasTotal;
+    if (personalCount) personalCount.textContent = personalTotal;
+    if (instructorsCount) instructorsCount.textContent = instructorsTotal;
+}
+
+// Render current view
+function renderCurrentView() {
+    console.log('🔧 renderCurrentView called - currentView:', currentView);
+    const contentContainer = document.getElementById('agenda-content');
+    console.log('🔧 renderCurrentView - contentContainer:', contentContainer);
+    if (!contentContainer) return;
+    
+    if (currentView === 'calendar') {
+        console.log('🔧 renderCurrentView - Calling renderCalendarView');
+        renderCalendarView(contentContainer);
+    } else if (currentView === 'list') {
+        renderListView(contentContainer);
+    }
+}
+
+// Render calendar view
+function renderCalendarView(container) {
+    console.log('🔧 renderCalendarView called with container:', container);
+    console.log('🔧 renderCalendarView - agendaData:', agendaData.length, 'items');
+    
+    const calendarHtml = `
+        <div class="calendar-view">
+            <div class="calendar-header">
+                <h3>Calendário Semanal</h3>
+                <p>Visualização de turmas e sessões de personal training</p>
+            </div>
+            
+            <div class="calendar-grid">
+                ${renderWeekDays()}
+            </div>
+        </div>
+    `;
+    
+    console.log('🔧 renderCalendarView - Setting innerHTML');
+    container.innerHTML = calendarHtml;
+    console.log('🔧 renderCalendarView - innerHTML set, adding click listeners');
+    
+    // Add click listeners to agenda items in calendar after DOM update
+    setTimeout(() => addItemClickListeners(), 100);
+}
+
+// Render list view
+function renderListView(container) {
+    const listHtml = `
+        <div class="list-view">
+            <div class="list-header">
+                <h3>Lista de Agendamentos</h3>
+                <p>Todos os agendamentos do período (${agendaData.length} ${agendaData.length === 1 ? 'item' : 'itens'})</p>
+            </div>
+            
+            <div class="agenda-list">
+                ${agendaData.length > 0 ? agendaData.map(item => renderAgendaItem(item)).join('') : '<div class="empty-state"><p>Nenhum agendamento encontrado</p></div>'}
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = listHtml;
+    
+    // Add click listeners to agenda items after DOM update
+    setTimeout(() => addItemClickListeners(), 100);
+}
+
+// Render week days for calendar
+function renderWeekDays() {
+    const weekStart = getWeekStart(currentDate);
+    const days = [];
+    let totalItemsRendered = 0;
+    
+    console.log('🔧 renderWeekDays - agendaData:', agendaData);
+    console.log('🔧 renderWeekDays - currentDate:', currentDate);
+    console.log('🔧 renderWeekDays - weekStart:', weekStart);
+    
+    for (let i = 0; i < 7; i++) {
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + i);
+        
+        // Filter items for this specific day
+        const dayItems = agendaData.filter(item => {
+            const itemDate = new Date(item.startTime);
+            const dayMatch = itemDate.toDateString() === day.toDateString();
+            console.log(`🔧 Item ${item.id} (${item.title}): itemDate=${itemDate.toDateString()}, day=${day.toDateString()}, match=${dayMatch}`);
+            return dayMatch;
+        });
+        
+        console.log(`🔧 Day ${day.toDateString()}: ${dayItems.length} items`);
+        totalItemsRendered += dayItems.length;
+        
+        const isToday = day.toDateString() === new Date().toDateString();
+        
+        days.push(`
+            <div class="calendar-day ${isToday ? 'today' : ''}">
+                <div class="day-header">
+                    <div class="day-name">${getDayName(day)}</div>
+                    <div class="day-number">${day.getDate()}</div>
+                </div>
+                
+                <div class="day-items">
+                    ${dayItems.length > 0 ? dayItems.map(item => renderDayItem(item)).join('') : '<div class="no-items">Sem agendamentos</div>'}
+                    <div class="day-add-btn" onclick="showCreateMenu('${day.toISOString().split('T')[0]}', '09:00')">
+                        ➕ Agendar
+                    </div>
+                </div>
+            </div>
+        `);
+    }
+    
+    console.log('🔧 renderWeekDays - Total items rendered:', totalItemsRendered);
+    return days.join('');
+}
+
+// Render day item
+function renderDayItem(item) {
+    const startTime = new Date(item.startTime);
+    const endTime = new Date(item.endTime);
+    const typeClass = item.type === 'TURMA' ? 'turma-item' : 'personal-item';
+    const typeIcon = item.type === 'TURMA' ? '🥋' : '👤';
+    const recurrenceIcon = item.isRecurring ? '🔄' : '';
+    
+    return `
+        <div class="day-item ${typeClass} agenda-item" 
+             data-id="${item.id}" 
+             data-type="${item.type}"
+             title="Clique para ver detalhes">
+            <div class="item-header">
+                <div class="item-icon">${typeIcon}</div>
+                <div class="item-time">${startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                ${recurrenceIcon ? `<div class="recurrence-icon" title="Recorrente">${recurrenceIcon}</div>` : ''}
+            </div>
+            <div class="item-content">
+                <div class="item-title">${item.title}</div>
+                <div class="item-instructor">${item.instructor?.name || 'N/A'}</div>
+                <div class="item-status status-${item.status.toLowerCase()}">${getStatusText(item.status)}</div>
+            </div>
+        </div>
+    `;
+}
+
+// Render agenda item for list view
+function renderAgendaItem(item) {
+    const startTime = new Date(item.startTime);
+    const endTime = new Date(item.endTime);
+    const typeClass = item.type === 'TURMA' ? 'turma-item' : 'personal-item';
+    const typeIcon = item.type === 'TURMA' ? '🥋' : '👤';
+    const recurrenceIcon = item.isRecurring ? '🔄' : '';
+    
+    return `
+        <div class="data-card-premium agenda-item ${typeClass}" 
+             data-id="${item.id}" 
+             data-type="${item.type}"
+             style="cursor: pointer; transition: all 0.2s ease;"
+             title="Clique para ver detalhes">
+            <div class="agenda-item-header">
+                <div class="agenda-item-type">
+                    <span class="type-icon">${typeIcon}</span>
+                    <span class="type-label">${item.type === 'TURMA' ? 'Aula Coletiva' : 'Personal Training'}</span>
+                    ${recurrenceIcon ? `<span class="recurrence-badge" title="Recorrente">${recurrenceIcon}</span>` : ''}
+                </div>
+                <div class="agenda-item-status status-${item.status.toLowerCase()}">
+                    ${getStatusLabel(item.status)}
+                </div>
+            </div>
+            
+            <div class="agenda-item-content">
+                <h3 class="agenda-item-title">${item.title}</h3>
+                <p class="agenda-item-description">${item.description || ''}</p>
+                
+                <div class="agenda-item-details">
+                    <div class="detail-group">
+                        <span class="detail-icon">📅</span>
+                        <span class="detail-text">
+                            ${startTime.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-icon">⏰</span>
+                        <span class="detail-text">
+                            ${startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-icon">👨‍🏫</span>
+                        <span class="detail-text">${item.instructor?.name || 'Instrutor não definido'}</span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-icon">📍</span>
+                        <span class="detail-text">${item.trainingArea?.name || 'Local não definido'}</span>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <span class="detail-icon">👥</span>
+                        <span class="detail-text">${item.actualStudents || 0}/${item.maxStudents || 0} ${item.type === 'PERSONAL_SESSION' ? 'pessoa' : 'alunos'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Event handlers
+function handleViewSwitch(view) {
+    currentView = view;
+    
+    // Update active button
+    document.querySelectorAll('.view-switcher-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+    });
+    
+    renderCurrentView();
+}
+
+function showAgendaItemDetails(item) {
+    // Navigate to dedicated full-screen details page instead of modal
+    // Store item data for the details page
+    sessionStorage.setItem('agenda-item-details', JSON.stringify(item));
+    
+    // Navigate to details page using the router
+    window.location.hash = `#/hybrid-agenda/details/${item.id}`;
+}
+
+// Render full-screen details page
+async function renderDetailsPage(container, itemId) {
+    // Get item data from session storage or API
+    const itemData = sessionStorage.getItem('agenda-item-details');
+    let item = null;
+    
+    if (itemData) {
+        item = JSON.parse(itemData);
+    } else {
+        // Fallback: find item in current data
+        item = agendaData.find(data => data.id === itemId);
+        
+        // If not found and agendaData is empty, try to load data first
+        if (!item && agendaData.length === 0) {
+            container.innerHTML = `
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Carregando detalhes do agendamento...</p>
+                </div>
+            `;
+            
+            try {
+                await loadAgendaData();
+                item = agendaData.find(data => data.id === itemId);
+            } catch (error) {
+                console.error('Error loading agenda data for details:', error);
+            }
+        }
+    }
+    
+    if (!item) {
+        container.innerHTML = `
+            <div class="error-state">
+                <h2>Item não encontrado</h2>
+                <p>O agendamento solicitado não foi encontrado.</p>
+                <button class="btn-primary" onclick="window.location.hash = '#/hybrid-agenda'">← Voltar para Agenda</button>
+            </div>
+        `;
+        return;
+    }
+    
+    const typeInfo = item.type === 'PERSONAL_SESSION' 
+        ? { icon: '👤', title: 'Personal Training', color: '#764ba2' }
+        : { icon: '🥋', title: 'Aula Coletiva', color: '#667eea' };
+    
+    const startDate = new Date(item.startTime);
+    const endDate = new Date(item.endTime);
+    
+    const detailsHtml = `
+        <div class="module-isolated-hybrid-agenda">
+            <div class="module-header-premium">
+                <div class="module-header-content">
+                    <div class="module-title-section">
+                        <div class="breadcrumb">
+                            <a href="#/hybrid-agenda" class="breadcrumb-link">📅 Agenda Híbrida</a>
+                            <span class="breadcrumb-separator">›</span>
+                            <span class="breadcrumb-current">${typeInfo.icon} Detalhes do Agendamento</span>
+                        </div>
+                        <h1>${item.title}</h1>
+                        <p class="module-subtitle">${typeInfo.title}</p>
+                    </div>
+                    
+                    <div class="module-actions">
+                        <button class="btn-secondary" onclick="window.location.hash = '#/hybrid-agenda'">
+                            ← Voltar
+                        </button>
+                        <button class="btn-primary" onclick="editAgendaItem('${item.id}')">
+                            ✏️ Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-full-screen">
+                <div class="details-main-content">
+                    <div class="details-card-premium">
+                        <div class="details-header" style="background: linear-gradient(135deg, ${typeInfo.color}, ${typeInfo.color}dd)">
+                            <div class="details-title">
+                                <span class="details-icon">${typeInfo.icon}</span>
+                                <div>
+                                    <h2>${item.title}</h2>
+                                    <p>${typeInfo.title}</p>
+                                    ${item.isRecurring ? '<span class="recurrence-badge">🔄 Recorrente</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="details-status">
+                                <span class="status-badge status-${item.status.toLowerCase()}">${getStatusText(item.status)}</span>
+                            </div>
+                        </div>
+                
+                <div class="details-content">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">📅 Data</span>
+                            <span class="detail-value">${startDate.toLocaleDateString('pt-BR', { 
+                                weekday: 'long', 
+                                day: '2-digit', 
+                                month: '2-digit', 
+                                year: 'numeric' 
+                            })}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">🕐 Horário</span>
+                            <span class="detail-value">${startDate.toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            })} - ${endDate.toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            })}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">👨‍🏫 Instrutor</span>
+                            <span class="detail-value">${item.instructor?.name || 'Não definido'}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">📍 Local</span>
+                            <span class="detail-value">${item.trainingArea?.name || item.unit?.name || 'Não definido'}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">👥 Alunos</span>
+                            <span class="detail-value">${item.actualStudents || 0}/${item.maxStudents || 1}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <span class="detail-label">📊 Status</span>
+                            <span class="detail-value status-${item.status.toLowerCase()}">${getStatusLabel(item.status)}</span>
+                        </div>
+                        
+                        ${item.isRecurring ? `
+                            <div class="detail-item">
+                                <span class="detail-label">🔄 Recorrência</span>
+                                <span class="detail-value recurring">${getRecurrenceLabel(item.recurrencePattern || 'weekly')}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${item.description ? `
+                        <div class="detail-description">
+                            <span class="detail-label">📝 Descrição</span>
+                            <p>${item.description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="details-actions">
+                        <button class="btn-primary" onclick="editAgendaItem('${item.id}')">
+                            ✏️ Editar Agendamento
+                        </button>
+                        
+                        <button class="btn-warning" onclick="cancelAgendaItem('${item.id}')">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    container.innerHTML = detailsHtml;
+}
+
+function editAgendaItem(itemId) {
+    const item = agendaData.find(item => item.id === itemId);
+    if (!item) {
+        window.app.handleError(new Error('Item não encontrado'), 'Edit Agenda Item');
+        return;
+    }
+    
+    // Store item data for edit form
+    sessionStorage.setItem('agenda-item-edit', JSON.stringify(item));
+    
+    // Navigate to edit page based on type
+    if (item.type === 'PERSONAL_SESSION') {
+        window.location.hash = `#/hybrid-agenda/edit-personal/${item.id}`;
+    } else {
+        window.location.hash = `#/hybrid-agenda/edit-class/${item.id}`;
+    }
+}
+
+async function cancelAgendaItem(itemId) {
+    const item = agendaData.find(item => item.id === itemId);
+    if (!item) {
+        showErrorMessage('Item não encontrado');
+        return;
+    }
+    
+    const confirmed = confirm(`Tem certeza que deseja cancelar "${item.title}"?`);
+    if (!confirmed) return;
+    
+    try {
+        const response = await moduleAPI.fetchWithStates(`/api/hybrid-agenda/${itemId}/cancel`, {
+            method: 'PUT',
+            onSuccess: (result) => {
+                console.log('✅ Item cancelled:', result);
+                showSuccessMessage('Agendamento cancelado com sucesso!');
+                // Navigate back to main agenda
+                window.location.hash = '#/hybrid-agenda';
+            },
+            onError: (error) => {
+                console.error('❌ Failed to cancel item:', error);
+                showErrorMessage('Erro ao cancelar agendamento: ' + error.message);
+            }
+        });
+    } catch (error) {
+        console.error('Error cancelling agenda item:', error);
+        showErrorMessage('Erro ao cancelar: ' + error.message);
+    }
+}
+
+function handleDateChange(dateValue) {
+    currentDate = new Date(dateValue);
+    loadAgendaData();
+}
+
+function handleFilterChange(filterElement) {
+    console.log('Filter changed:', filterElement.dataset.filter, filterElement.value);
+    // TODO: Apply filters
+    renderCurrentView();
+}
+
+// Show create menu
+function showCreateMenu(date, time) {
+    const menu = `
+        <div class="scheduling-menu-overlay" onclick="closeCreateMenu(event)">
+            <div class="scheduling-menu">
+                <div class="scheduling-menu-header">
+                    <h4>🗓️ Agendar para ${formatDateForDisplay(date)} às ${time}</h4>
+                </div>
+                <div class="scheduling-options">
+                    <button class="scheduling-option personal-training" 
+                            onclick="createPersonalSession('${date}', '${time}')">
+                        <div class="option-icon">👤</div>
+                        <div class="option-content">
+                            <div class="option-title">Personal Training</div>
+                            <div class="option-description">Sessão individual com aluno específico</div>
+                        </div>
+                    </button>
+                    
+                    <button class="scheduling-option collective-class" 
+                            onclick="createCollectiveClass('${date}', '${time}')">
+                        <div class="option-icon">🥋</div>
+                        <div class="option-content">
+                            <div class="option-title">Aula Coletiva</div>
+                            <div class="option-description">Turma com múltiplos alunos</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="scheduling-menu-footer">
+                    <button class="btn-secondary close-menu-btn" onclick="closeCreateMenu()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', menu);
+}
+
+function closeCreateMenu(event) {
+    if (event && event.target !== event.currentTarget) return;
+    
+    const overlay = document.querySelector('.scheduling-menu-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function createPersonalSession(date, time) {
+    closeCreateMenu();
+    showPersonalSessionForm(date, time);
+}
+
+async function showPersonalSessionForm(date, time) {
+    const formHtml = `
+        <div class="scheduling-form-overlay" onclick="closeSchedulingForm(event)">
+            <div class="scheduling-form">
+                <div class="form-header">
+                    <h3>👤 Novo Personal Training</h3>
+                    <p>📅 ${formatDateForDisplay(date)} às ${time}</p>
+                    <button class="close-form-btn" onclick="closeSchedulingForm()">✕</button>
+                </div>
+                
+                <form id="personal-session-form" onsubmit="submitPersonalSession(event)">
+                    <div class="form-group">
+                        <label for="session-title">Título da Sessão *</label>
+                        <input type="text" id="session-title" name="title" required 
+                               placeholder="Ex: Personal Training - Lorraine">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="session-description">Descrição</label>
+                        <textarea id="session-description" name="description" rows="3"
+                                  placeholder="Objetivos da sessão, foco específico..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="session-date">Data *</label>
+                            <input type="date" id="session-date" name="date" value="${date}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="session-start-time">Início *</label>
+                            <input type="time" id="session-start-time" name="startTime" value="${time}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="session-duration">Duração (min) *</label>
+                            <select id="session-duration" name="duration" required>
+                                <option value="60">60 min</option>
+                                <option value="90">90 min</option>
+                                <option value="120">120 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="session-instructor">Instrutor *</label>
+                            <select id="session-instructor" name="instructorId" required>
+                                <option value="">Carregando instrutores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="session-area">Local</label>
+                            <select id="session-area" name="trainingAreaId">
+                                <option value="">Carregando locais...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="session-recurring">Sessão Recorrente</label>
+                            <select id="session-recurring" name="recurring">
+                                <option value="false">Não</option>
+                                <option value="weekly">Semanal (mesma hora)</option>
+                                <option value="biweekly">Quinzenal (mesma hora)</option>
+                                <option value="monthly">Mensal (mesma hora)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="session-recurrence-end">Recorrência até (opcional)</label>
+                            <input type="date" id="session-recurrence-end" name="recurrenceEnd" 
+                                   placeholder="Deixe vazio para ilimitado">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeSchedulingForm()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            💾 Agendar Personal Training
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', formHtml);
+    
+    // Load real data for select options
+    await loadFormData();
+}
+
+function createCollectiveClass(date, time) {
+    closeCreateMenu();
+    showCollectiveClassForm(date, time);
+}
+
+async function showCollectiveClassForm(date, time) {
+    const formHtml = `
+        <div class="scheduling-form-overlay" onclick="closeSchedulingForm(event)">
+            <div class="scheduling-form">
+                <div class="form-header">
+                    <h3>🥋 Nova Aula Coletiva</h3>
+                    <p>📅 ${formatDateForDisplay(date)} às ${time}</p>
+                    <button class="close-form-btn" onclick="closeSchedulingForm()">✕</button>
+                </div>
+                
+                <form id="collective-class-form" onsubmit="submitCollectiveClass(event)">
+                    <div class="form-group">
+                        <label for="class-title">Título da Aula *</label>
+                        <input type="text" id="class-title" name="title" required 
+                               placeholder="Ex: Krav Maga Iniciante - Manhã">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="class-description">Descrição</label>
+                        <textarea id="class-description" name="description" rows="3"
+                                  placeholder="Técnicas a serem praticadas, nível da turma..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="class-date">Data *</label>
+                            <input type="date" id="class-date" name="date" value="${date}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-start-time">Início *</label>
+                            <input type="time" id="class-start-time" name="startTime" value="${time}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-duration">Duração (min) *</label>
+                            <select id="class-duration" name="duration" required>
+                                <option value="60">60 min</option>
+                                <option value="90">90 min</option>
+                                <option value="120">120 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="class-instructor">Instrutor *</label>
+                            <select id="class-instructor" name="instructorId" required>
+                                <option value="">Carregando instrutores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-area">Local</label>
+                            <select id="class-area" name="trainingAreaId">
+                                <option value="">Carregando locais...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="class-max-students">Máximo de Alunos *</label>
+                            <input type="number" id="class-max-students" name="maxStudents" 
+                                   min="1" max="50" value="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="class-recurring">Aula Recorrente</label>
+                            <select id="class-recurring" name="recurring">
+                                <option value="false">Não</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="monthly">Mensal</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeSchedulingForm()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            💾 Agendar Aula Coletiva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', formHtml);
+    
+    // Load real data for select options
+    await loadFormData();
+}
+
+// Load real data for form selects
+async function loadFormData() {
+    try {
+        // Load instructors
+        await loadInstructors();
+        
+        // Load training areas  
+        await loadTrainingAreas();
+        
+    } catch (error) {
+        console.error('Error loading form data:', error);
+        showErrorMessage('Erro ao carregar dados do formulário');
+    }
+}
+
+async function loadInstructors() {
+    try {
+        const response = await moduleAPI.fetchWithStates('/api/users?role=INSTRUCTOR', {
+            method: 'GET',
+            onSuccess: (data) => {
+                console.log('✅ Instructors loaded:', data);
+                populateInstructorSelects(data.items || data || []);
+            },
+            onError: (error) => {
+                console.error('❌ Failed to load instructors:', error);
+                // Use fallback data
+                populateInstructorSelects([]);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading instructors:', error);
+        populateInstructorSelects([]);
+    }
+}
+
+async function loadTrainingAreas() {
+    try {
+        const response = await moduleAPI.fetchWithStates('/api/training-areas', {
+            method: 'GET',
+            onSuccess: (data) => {
+                console.log('✅ Training areas loaded:', data);
+                populateTrainingAreaSelects(data.items || data || []);
+            },
+            onError: (error) => {
+                console.error('❌ Failed to load training areas:', error);
+                // Use fallback data
+                populateTrainingAreaSelects([]);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading training areas:', error);
+        populateTrainingAreaSelects([]);
+    }
+}
+
+function populateInstructorSelects(instructors) {
+    const selects = [
+        document.getElementById('session-instructor'),
+        document.getElementById('class-instructor')
+    ].filter(Boolean);
+    
+    selects.forEach(select => {
+        select.innerHTML = '<option value="">Selecione um instrutor...</option>';
+        
+        if (instructors.length === 0) {
+            select.innerHTML += '<option disabled>Nenhum instrutor encontrado</option>';
+            return;
+        }
+        
+        instructors.forEach(instructor => {
+            const name = instructor.firstName && instructor.lastName 
+                ? `${instructor.firstName} ${instructor.lastName}`
+                : instructor.name || 'Instrutor sem nome';
+            select.innerHTML += `<option value="${instructor.id}">${name}</option>`;
+        });
+    });
+}
+
+function populateTrainingAreaSelects(areas) {
+    const selects = [
+        document.getElementById('session-area'),
+        document.getElementById('class-area')
+    ].filter(Boolean);
+    
+    selects.forEach(select => {
+        select.innerHTML = '<option value="">Nenhum local específico</option>';
+        
+        if (areas.length === 0) {
+            return; // Permite criar sem área específica
+        }
+        
+        areas.forEach(area => {
+            select.innerHTML += `<option value="${area.id}">${area.name}</option>`;
+        });
+    });
+}
+
+function showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        z-index: 3000;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function showErrorState(error) {
+    const container = document.getElementById('agenda-content');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro ao carregar agenda</h3>
+                <p>Ocorreu um erro ao carregar os dados: ${error.message}</p>
+                <button class="btn-primary" onclick="location.reload()">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Utility functions
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+}
+
+function getDayName(date) {
+    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    return days[date.getDay()];
+}
+
+// Get status text in Portuguese (alias for existing function)
+function getStatusText(status) {
+    return getStatusLabel(status);
+}
+
+// Get recurrence label in Portuguese
+function getRecurrenceLabel(pattern) {
+    const labels = {
+        'daily': 'Diário',
+        'weekly': 'Semanal',
+        'biweekly': 'Quinzenal', 
+        'monthly': 'Mensal'
+    };
+    return labels[pattern] || pattern;
+}
+
+// Add click listeners to agenda items
+function addItemClickListeners() {
+    const items = document.querySelectorAll('.agenda-item');
+    
+    items.forEach(item => {
+        // Remove existing listeners to avoid duplicates
+        item.removeEventListener('click', handleItemClick);
+        item.addEventListener('click', handleItemClick);
+    });
+}
+
+// Handle item click
+function handleItemClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const item = event.currentTarget;
+    const itemId = item.dataset.id;
+    const itemType = item.dataset.type;
+    
+    console.log('🎯 Agenda item clicked via addItemClickListeners:', itemId, itemType);
+    
+    if (itemId) {
+        handleAgendaItemClick(itemId, itemType);
+    } else {
+        console.error('❌ Agenda item ID not found:', itemId);
+    }
+}
+
+function getStatusLabel(status) {
+    const statusLabels = {
+        'SCHEDULED': 'Agendado',
+        'CONFIRMED': 'Confirmado',
+        'IN_PROGRESS': 'Em Andamento',
+        'COMPLETED': 'Concluído',
+        'CANCELLED': 'Cancelado'
+    };
+    return statusLabels[status] || status;
+}
+
+function formatDateForDisplay(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+// Export for SPA integration
+window.initHybridAgendaModule = initHybridAgendaModule;
+
+function closeSchedulingForm(event) {
+    if (event && event.target !== event.currentTarget) return;
+    
+    const overlay = document.querySelector('.scheduling-form-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+async function submitPersonalSession(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Calculate end time based on duration - CREATE DATE IN LOCAL TIMEZONE
+    const startDate = new Date(`${data.date}T${data.startTime}:00`);
+    const endDate = new Date(startDate.getTime() + parseInt(data.duration) * 60000);
+    const startDateTime = startDate.toISOString();
+    const endDateTime = endDate.toISOString();
+    
+    const sessionData = {
+        type: 'PERSONAL_SESSION',
+        title: data.title,
+        description: data.description || '',
+        startTime: startDateTime,
+        endTime: endDateTime,
+        instructorId: data.instructorId,
+        trainingAreaId: data.trainingAreaId || null,
+        maxStudents: 1,
+        isRecurring: data.recurring !== 'false',
+        recurrenceRule: data.recurring !== 'false' ? data.recurring.toUpperCase() : null,
+        color: '#764ba2'
+    };
+    
+    try {
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Agendando...';
+        submitBtn.disabled = true;
+        
+        const response = await moduleAPI.fetchWithStates('/api/hybrid-agenda', {
+            method: 'POST',
+            body: sessionData,
+            onSuccess: (result) => {
+                console.log('✅ Personal session created:', result);
+                closeSchedulingForm();
+                const isRecurring = data.recurring !== 'false';
+                const successMsg = isRecurring 
+                    ? `Personal Training recorrente agendado com sucesso! (${getRecurrenceLabel(data.recurring)})`
+                    : 'Personal Training agendado com sucesso!';
+                showSuccessMessage(successMsg);
+                loadAgendaData(); // Reload data
+            },
+            onError: (error) => {
+                console.error('❌ Failed to create personal session:', error);
+                let errorMessage = 'Erro ao agendar Personal Training';
+                
+                if (error.message?.includes('instructorId')) {
+                    errorMessage += ': Instrutor é obrigatório';
+                } else if (error.message?.includes('validation')) {
+                    errorMessage += ': Dados inválidos';
+                } else if (error.message) {
+                    errorMessage += ': ' + error.message;
+                }
+                
+                showErrorMessage(errorMessage);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error submitting personal session:', error);
+        showErrorMessage('Erro ao enviar dados: ' + error.message);
+    }
+}
+
+async function submitCollectiveClass(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Calculate end time based on duration
+    const startDateTime = `${data.date}T${data.startTime}:00.000Z`;
+    const endDateTime = new Date(new Date(startDateTime).getTime() + parseInt(data.duration) * 60000).toISOString();
+    
+    const classData = {
+        type: 'TURMA',
+        title: data.title,
+        description: data.description || '',
+        startTime: startDateTime,
+        endTime: endDateTime,
+        instructorId: data.instructorId,
+        trainingAreaId: data.trainingAreaId || null,
+        maxStudents: parseInt(data.maxStudents),
+        isRecurring: data.recurring !== 'false',
+        recurrenceRule: data.recurring !== 'false' ? data.recurring.toUpperCase() : null,
+        color: '#667eea'
+    };
+    
+    try {
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Agendando...';
+        submitBtn.disabled = true;
+        
+        const response = await moduleAPI.fetchWithStates('/api/hybrid-agenda', {
+            method: 'POST',
+            body: classData,
+            onSuccess: (result) => {
+                console.log('✅ Collective class created:', result);
+                closeSchedulingForm();
+                showSuccessMessage('Aula coletiva agendada com sucesso!');
+                loadAgendaData(); // Reload data
+            },
+            onError: (error) => {
+                console.error('❌ Failed to create collective class:', error);
+                let errorMessage = 'Erro ao agendar Aula Coletiva';
+                
+                if (error.message?.includes('trainingAreaId')) {
+                    errorMessage += ': Área de treino é obrigatória';
+                } else if (error.message?.includes('maxParticipants')) {
+                    errorMessage += ': Número máximo de participantes inválido';
+                } else if (error.message?.includes('validation')) {
+                    errorMessage += ': Dados inválidos';
+                } else if (error.message) {
+                    errorMessage += ': ' + error.message;
+                }
+                
+                showErrorMessage(errorMessage);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error submitting collective class:', error);
+        showErrorMessage('Erro ao enviar dados: ' + error.message);
+    }
+}
+
+function showErrorMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'error-toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f44336;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        z-index: 3000;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Render Edit Page
+async function renderEditPage(container, itemId) {
+    console.log(`🔧 Rendering edit page for item: ${itemId}`);
+    
+    // Buscar dados do item
+    let itemData = agendaData?.find(item => item.id === itemId);
+    
+    if (!itemData) {
+        try {
+            const response = await moduleAPI.request(`/api/hybrid-agenda/${itemId}`);
+            itemData = response.data;
+        } catch (error) {
+            console.error('Error loading item for edit:', error);
+            container.innerHTML = `
+                <div class="module-header-premium">
+                    <div class="breadcrumb">
+                        <a href="#/hybrid-agenda" class="breadcrumb-link">📅 Agenda Híbrida</a>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current">❌ Erro ao Carregar</span>
+                    </div>
+                </div>
+                <div class="error-container">
+                    <h3>Erro ao carregar item para edição</h3>
+                    <p>${error.message}</p>
+                    <button onclick="window.location.hash = '#/hybrid-agenda'" class="btn-secondary">
+                        ← Voltar para Agenda
+                    </button>
+                </div>
+            `;
+            return;
+        }
+    }
+    
+    const isPersonalTraining = itemData.type === 'PERSONAL_SESSION';
+    const pageTitle = isPersonalTraining ? 'Editar Personal Training' : 'Editar Aula Coletiva';
+    const pageIcon = isPersonalTraining ? '👤' : '🥋';
+    
+    container.innerHTML = `
+        <div class="module-header-premium">
+            <div class="breadcrumb">
+                <a href="#/hybrid-agenda" class="breadcrumb-link">📅 Agenda Híbrida</a>
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-current">${pageIcon} ${pageTitle}</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="window.location.hash = '#/hybrid-agenda'">
+                    ← Voltar
+                </button>
+                <button class="btn-danger" onclick="deleteAgendaItem('${itemId}')">
+                    🗑️ Excluir
+                </button>
+            </div>
+        </div>
+        
+        <div class="edit-form-container">
+            <div class="form-card-premium">
+                <h2>${pageIcon} ${pageTitle}</h2>
+                
+                <form id="edit-agenda-form" class="agenda-form-premium">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-title">Título *</label>
+                            <input type="text" id="edit-title" class="form-input" 
+                                   value="${itemData.title}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-description">Descrição</label>
+                            <textarea id="edit-description" class="form-textarea" rows="3">${itemData.description || ''}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-date">Data *</label>
+                            <input type="date" id="edit-date" class="form-input" 
+                                   value="${new Date(itemData.startTime).toISOString().split('T')[0]}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-start-time">Horário Início *</label>
+                            <input type="time" id="edit-start-time" class="form-input" 
+                                   value="${new Date(itemData.startTime).toTimeString().slice(0,5)}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-end-time">Horário Fim *</label>
+                            <input type="time" id="edit-end-time" class="form-input" 
+                                   value="${new Date(itemData.endTime).toTimeString().slice(0,5)}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-instructor">Instrutor *</label>
+                            <select id="edit-instructor" class="form-select" required>
+                                <option value="">Carregando instrutores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-training-area">Local de Treino</label>
+                            <select id="edit-training-area" class="form-select">
+                                <option value="">Carregando locais...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    ${!isPersonalTraining ? `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-max-students">Máximo de Alunos *</label>
+                            <input type="number" id="edit-max-students" class="form-input" 
+                                   value="${itemData.maxStudents}" min="1" max="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-actual-students">Alunos Confirmados</label>
+                            <input type="number" id="edit-actual-students" class="form-input" 
+                                   value="${itemData.actualStudents || 0}" min="0" readonly>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="edit-is-recurring" 
+                                       ${itemData.isRecurring ? 'checked' : ''}>
+                                <span class="checkbox-custom"></span>
+                                Agendamento Recorrente
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="edit-recurrence-options" class="recurrence-options" 
+                         style="display: ${itemData.isRecurring ? 'block' : 'none'}">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-recurrence-pattern">Frequência</label>
+                                <select id="edit-recurrence-pattern" class="form-select">
+                                    <option value="weekly" ${itemData.recurrenceRule === 'WEEKLY' ? 'selected' : ''}>Semanal</option>
+                                    <option value="biweekly" ${itemData.recurrenceRule === 'BIWEEKLY' ? 'selected' : ''}>Quinzenal</option>
+                                    <option value="monthly" ${itemData.recurrenceRule === 'MONTHLY' ? 'selected' : ''}>Mensal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="window.location.hash = '#/hybrid-agenda'">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            💾 Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // Carregar dados dos formulários
+    await loadFormData();
+    
+    // Configurar event listeners
+    setupEditFormListeners(itemId, itemData);
+}
+
+// Setup Edit Form Listeners
+function setupEditFormListeners(itemId, itemData) {
+    // Checkbox de recorrência
+    const recurringCheckbox = document.getElementById('edit-is-recurring');
+    const recurrenceOptions = document.getElementById('edit-recurrence-options');
+    
+    if (recurringCheckbox && recurrenceOptions) {
+        recurringCheckbox.addEventListener('change', function() {
+            recurrenceOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Submit do formulário
+    const form = document.getElementById('edit-agenda-form');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await updateAgendaItem(itemId, itemData);
+        });
+    }
+}
+
+// Update Agenda Item
+async function updateAgendaItem(itemId, originalData) {
+    try {
+        const formData = {
+            type: originalData.type,
+            title: document.getElementById('edit-title').value,
+            description: document.getElementById('edit-description').value,
+            startTime: new Date(`${document.getElementById('edit-date').value}T${document.getElementById('edit-start-time').value}`).toISOString(),
+            endTime: new Date(`${document.getElementById('edit-date').value}T${document.getElementById('edit-end-time').value}`).toISOString(),
+            instructorId: document.getElementById('edit-instructor').value,
+            trainingAreaId: document.getElementById('edit-training-area').value || null,
+            isRecurring: document.getElementById('edit-is-recurring').checked
+        };
+        
+        // Adicionar campos específicos
+        if (originalData.type !== 'PERSONAL_SESSION') {
+            formData.maxStudents = parseInt(document.getElementById('edit-max-students').value);
+        }
+        
+        if (formData.isRecurring) {
+            formData.recurrenceRule = document.getElementById('edit-recurrence-pattern').value.toUpperCase();
+        }
+        
+        showLoadingMessage('Salvando alterações...');
+        
+        const response = await moduleAPI.request(`/api/hybrid-agenda/${itemId}`, {
+            method: 'PUT',
+            body: formData
+        });
+        
+        showSuccessMessage('✅ Agendamento atualizado com sucesso!');
+        
+        // Recarregar dados e voltar para a agenda principal
+        setTimeout(() => {
+            window.location.hash = '#/hybrid-agenda';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error updating agenda item:', error);
+        showErrorMessage('❌ Erro ao atualizar agendamento: ' + (error.message || 'Erro desconhecido'));
+    }
+}
+
+// Create New Agenda Item
+async function createNewAgendaItem(type) {
+    try {
+        const formData = {
+            type: document.getElementById('create-type').value,
+            title: document.getElementById('create-title').value,
+            description: document.getElementById('create-description').value,
+            startTime: new Date(`${document.getElementById('create-date').value}T${document.getElementById('create-start-time').value}`).toISOString(),
+            endTime: new Date(`${document.getElementById('create-date').value}T${document.getElementById('create-end-time').value}`).toISOString(),
+            instructorId: document.getElementById('create-instructor').value,
+            trainingAreaId: document.getElementById('create-training-area').value || null,
+            isRecurring: document.getElementById('create-is-recurring').checked
+        };
+        
+        // Adicionar campos específicos
+        if (type !== 'personal') {
+            formData.maxStudents = parseInt(document.getElementById('create-max-students').value);
+        } else {
+            formData.maxStudents = 1;
+        }
+        
+        if (formData.isRecurring) {
+            formData.recurrenceRule = document.getElementById('create-recurrence-pattern').value.toUpperCase();
+        }
+        
+        showLoadingMessage('Criando agendamento...');
+        
+        const response = await moduleAPI.request('/api/hybrid-agenda', {
+            method: 'POST',
+            body: formData
+        });
+        
+        showSuccessMessage('✅ Agendamento criado com sucesso!');
+        
+        // Voltar para a agenda principal
+        setTimeout(() => {
+            window.location.hash = '#/hybrid-agenda';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error creating agenda item:', error);
+        showErrorMessage('❌ Erro ao criar agendamento: ' + (error.message || 'Erro desconhecido'));
+    }
+}
+
+// Delete Agenda Item
+async function deleteAgendaItem(itemId) {
+    if (!confirm('⚠️ Tem certeza que deseja excluir este agendamento?\n\nEsta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    try {
+        const response = await moduleAPI.fetchWithStates(`/api/hybrid-agenda/${itemId}`, {
+            method: 'DELETE',
+            onSuccess: (result) => {
+                console.log('✅ Agendamento deleted:', result);
+                closeEditModal(); // Close modal if open
+                showSuccessMessage('Agendamento excluído com sucesso!');
+                loadAgendaData(); // Reload data
+            },
+            onError: (error) => {
+                console.error('❌ Failed to delete agendamento:', error);
+                showErrorMessage('Erro ao excluir agendamento: ' + (error.message || 'Erro desconhecido'));
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error deleting agenda item:', error);
+        showErrorMessage('Erro ao excluir agendamento: ' + (error.message || 'Erro desconhecido'));
+    }
+}
+
+function showLoadingMessage(message) {
+    const toast = document.createElement('div');
+    toast.className = 'loading-toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #2196F3;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        z-index: 3000;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    toast.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;"><div class="spinner" style="width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>${message}</div>`;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 10000);
+}
+
+// Update Create Agenda button handler
+function handleCreateAgenda() {
+    showCreateModal();
+}
+
+// Show create modal using the same structure as edit modal
+async function showCreateModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Criar Novo Agendamento</h3>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-agenda-form">
+                    <!-- Type Selection -->
+                    <div class="form-group">
+                        <label>Tipo de Agendamento *</label>
+                        <div class="type-selector">
+                            <label class="type-option">
+                                <input type="radio" name="type" value="PERSONAL_SESSION" checked onchange="toggleCreateFormFields()">
+                                <span class="type-card">
+                                    <strong>👤 Personal Training</strong>
+                                    <small>Sessão individual com instrutor</small>
+                                </span>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="type" value="TURMA" onchange="toggleCreateFormFields()">
+                                <span class="type-card">
+                                    <strong>🥋 Aula Coletiva</strong>
+                                    <small>Turma com múltiplos alunos</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Common Fields -->
+                    <div class="form-group">
+                        <label for="create-title">Título *</label>
+                        <input type="text" id="create-title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-description">Descrição</label>
+                        <textarea id="create-description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-date">Data *</label>
+                            <input type="date" id="create-date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-startTime">Horário *</label>
+                            <input type="time" id="create-startTime" name="startTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-duration">Duração (min) *</label>
+                            <select id="create-duration" name="duration" required>
+                                <option value="30">30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60" selected>60 min</option>
+                                <option value="90">90 min</option>
+                                <option value="120">120 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-instructorId">Instrutor *</label>
+                        <select id="create-instructorId" name="instructorId" required>
+                            <option value="">Selecione um instrutor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-unitId">Unidade</label>
+                        <select id="create-unitId" name="unitId" onchange="loadTrainingAreasByUnit(this.value, 'create-trainingAreaId')">
+                            <option value="">Selecione uma unidade</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-trainingAreaId">Área de Treino</label>
+                        <select id="create-trainingAreaId" name="trainingAreaId">
+                            <option value="">Selecione uma área</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label for="create-status">Status</label>
+                        <select id="create-status" name="status">
+                            <option value="SCHEDULED" selected>Agendado</option>
+                            <option value="CONFIRMED">Confirmado</option>
+                            <option value="CANCELLED">Cancelado</option>
+                            <option value="COMPLETED">Concluído</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Fields specific to TURMA -->
+                    <div id="create-turma-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="create-maxStudents">Máximo de Alunos *</label>
+                            <input type="number" id="create-maxStudents" name="maxStudents" min="1" max="50" value="10">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-recurring">Recorrência</label>
+                        <select id="create-recurring" name="recurring">
+                            <option value="false">Agendamento único</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="closeCreateModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Criar Agendamento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    const dateField = document.getElementById('create-date');
+    if (dateField) {
+        dateField.value = today;
+    }
+    
+    // Load form data
+    setTimeout(() => {
+        loadCreateFormData();
+    }, 100);
+    
+    // Add form submit handler
+    document.getElementById('create-agenda-form').addEventListener('submit', handleCreateFormSubmit);
+}
+
+// Close create modal
+function closeCreateModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Toggle form fields based on type selection
+function toggleCreateFormFields() {
+    const personalRadio = document.querySelector('input[name="type"][value="PERSONAL_SESSION"]');
+    const turmaFields = document.getElementById('create-turma-fields');
+    
+    if (turmaFields) {
+        turmaFields.style.display = personalRadio.checked ? 'none' : 'block';
+    }
+}
+
+// Load create form data
+async function loadCreateFormData() {
+    try {
+        console.log('🔄 Loading create form data...');
+        
+        // Load instructors
+        const instructorsResponse = await moduleAPI.fetchWithStates('/api/instructors', {
+            onSuccess: (response) => {
+                console.log('✅ Create Instructors API response:', response);
+                const instructorSelect = document.getElementById('create-instructorId');
+                const instructors = Array.isArray(response) ? response : (response.data || []);
+                if (instructorSelect && instructors.length > 0) {
+                    instructorSelect.innerHTML = '<option value="">Selecione um instrutor</option>';
+                    instructors.forEach(instructor => {
+                        const option = document.createElement('option');
+                        option.value = instructor.userId;
+                        option.textContent = instructor.name;
+                        instructorSelect.appendChild(option);
+                    });
+                    console.log('✅ Added', instructors.length, 'instructors to create select');
+                }
+            }
+        });
+        
+        // Load units
+        const unitsResponse = await moduleAPI.fetchWithStates('/api/units', {
+            onSuccess: (response) => {
+                console.log('✅ Create Units API response:', response);
+                const unitSelect = document.getElementById('create-unitId');
+                const units = Array.isArray(response) ? response : [];
+                if (unitSelect) {
+                    unitSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+                    if (units.length > 0) {
+                        units.forEach(unit => {
+                            const option = document.createElement('option');
+                            option.value = unit.id;
+                            option.textContent = unit.name;
+                            unitSelect.appendChild(option);
+                        });
+                        console.log('✅ Added', units.length, 'units to create select');
+                    }
+                } else {
+                    console.error('❌ Unit select element not found: create-unitId');
+                }
+            }
+        });
+        
+        // Initially disable training area select
+        const areaSelect = document.getElementById('create-trainingAreaId');
+        if (areaSelect) {
+            areaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+            areaSelect.disabled = true;
+        }
+        
+        console.log('✅ Create form data loading completed');
+    } catch (error) {
+        console.error('❌ Error loading create form data:', error);
+    }
+}
+
+// Handle create form submit
+async function handleCreateFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    console.log('🔧 Create form data captured:', data);
+    
+    // Calculate end time based on duration
+    const startDateTime = `${data.date}T${data.startTime}:00.000Z`;
+    const endDateTime = new Date(new Date(startDateTime).getTime() + parseInt(data.duration) * 60000).toISOString();
+    
+    const createData = {
+        type: data.type,
+        title: data.title,
+        description: data.description || '',
+        startTime: startDateTime,
+        endTime: endDateTime,
+        instructorId: data.instructorId,
+        trainingAreaId: data.trainingAreaId || null,
+        unitId: data.unitId || null,
+        status: data.status,
+        recurring: data.recurring !== 'false' ? data.recurring : null
+    };
+    
+    // Add type-specific fields
+    if (data.type === 'TURMA') {
+        createData.maxStudents = parseInt(data.maxStudents) || 10;
+    }
+    
+    try {
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Criando...';
+        submitBtn.disabled = true;
+        
+        console.log('🔧 Sending create data:', createData);
+        
+        const response = await fetch('/api/hybrid-agenda', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(createData)
+        });
+        
+        const result = await response.json();
+        console.log('✅ Agendamento created:', result);
+        
+        if (result.success) {
+            closeCreateModal();
+            showSuccessMessage('Agendamento criado com sucesso!');
+            loadAgendaData(); // Reload data
+        } else {
+            throw new Error(result.message || 'Erro no servidor');
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to create agendamento:', error);
+        let errorMessage = 'Erro ao criar agendamento';
+        
+        if (error.message?.includes('instructorId')) {
+            errorMessage += ': Instrutor é obrigatório';
+        } else if (error.message?.includes('validation')) {
+            errorMessage += ': Dados inválidos';
+        } else if (error.message) {
+            errorMessage += ': ' + error.message;
+        }
+        
+        showErrorMessage(errorMessage);
+        
+        // Reset button
+        const submitBtn = document.querySelector('#create-agenda-form button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = 'Criar Agendamento';
+            submitBtn.disabled = false;
+        }
+    }
+}
+
+// Show unified create modal
+async function showUnifiedCreateModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Criar Novo Agendamento</h3>
+                <button class="modal-close" onclick="closeUnifiedModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="unified-agenda-form">
+                    <!-- Type Selection -->
+                    <div class="form-group">
+                        <label>Tipo de Agendamento</label>
+                        <div class="type-selector">
+                            <label class="type-option">
+                                <input type="radio" name="type" value="PERSONAL_SESSION" checked onchange="toggleFormFields()">
+                                <span class="type-card">
+                                    <strong>Personal Training</strong>
+                                    <small>Sessão individual com instrutor</small>
+                                </span>
+                            </label>
+                            <label class="type-option">
+                                <input type="radio" name="type" value="TURMA" onchange="toggleFormFields()">
+                                <span class="type-card">
+                                    <strong>Aula Coletiva</strong>
+                                    <small>Turma com múltiplos alunos</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Common Fields -->
+                    <div class="form-group">
+                        <label for="title">Título *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <textarea id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Data *</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="startTime">Horário *</label>
+                            <input type="time" id="startTime" name="startTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Duração (min) *</label>
+                            <select id="duration" name="duration" required>
+                                <option value="30">30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60" selected>60 min</option>
+                                <option value="90">90 min</option>
+                                <option value="120">120 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instructorId">Instrutor *</label>
+                        <select id="instructorId" name="instructorId" required>
+                            <option value="">Selecione um instrutor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="unitId">Unidade</label>
+                        <select id="unitId" name="unitId">
+                            <option value="">Selecione uma unidade</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="trainingAreaId">Área de Treino</label>
+                        <select id="trainingAreaId" name="trainingAreaId">
+                            <option value="">Selecione uma área</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="SCHEDULED" selected>Agendado</option>
+                            <option value="CONFIRMED">Confirmado</option>
+                            <option value="CANCELLED">Cancelado</option>
+                            <option value="COMPLETED">Concluído</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Fields specific to TURMA -->
+                    <div id="turma-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="maxStudents">Máximo de Alunos *</label>
+                            <input type="number" id="maxStudents" name="maxStudents" min="1" max="50" value="10">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Recorrência</label>
+                        <select name="recurring">
+                            <option value="false">Agendamento único</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="closeUnifiedModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Criar Agendamento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Load form data after ensuring DOM is ready
+    console.log('🔧 Loading unified form data...');
+    
+    // Wait for DOM to be fully rendered
+    requestAnimationFrame(async () => {
+        await loadUnifiedFormData();
+        console.log('🔧 Form data loading completed');
+    });
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    const dateField = document.getElementById('date');
+    if (dateField) {
+        dateField.value = today;
+        console.log('✅ Date field set to:', today);
+    } else {
+        console.error('❌ Date field not found');
+    }
+    
+    // Add form submit handler
+    document.getElementById('unified-agenda-form').addEventListener('submit', handleUnifiedFormSubmit);
+}
+
+// Load unified form data
+async function loadUnifiedFormData() {
+    console.log('🔧 Starting loadUnifiedFormData...');
+    
+    // Wait a bit to ensure DOM is ready
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Check if elements exist first
+    const instructorSelect = document.getElementById('instructorId');
+    const trainingAreaSelect = document.getElementById('trainingAreaId');
+    const unitSelect = document.getElementById('unitId');
+    
+    console.log('🔧 Form elements check:');
+    console.log('  - instructorId element:', !!instructorSelect);
+    console.log('  - trainingAreaId element:', !!trainingAreaSelect);
+    console.log('  - unitId element:', !!unitSelect);
+    
+    if (!instructorSelect) {
+        console.error('❌ CRITICAL: instructorId select not found!');
+        // List all select elements to debug
+        const allSelects = document.querySelectorAll('select');
+        console.log('🔧 All select elements in modal:', Array.from(allSelects).map(s => ({ id: s.id, classes: s.className })));
+        return;
+    }
+    
+    // Load instructors from API
+    try {
+        console.log('🔧 Fetching instructors from /api/instructors...');
+        
+        const response = await fetch('/api/instructors');
+        const result = await response.json();
+        
+        console.log('✅ Instructors API response:', result);
+        
+        if (result.success && result.data && result.data.length > 0) {
+            // Clear and populate instructor select
+            instructorSelect.innerHTML = '<option value="">Selecione um instrutor</option>';
+            
+            result.data.forEach(instructor => {
+                const option = document.createElement('option');
+                option.value = instructor.userId; 
+                option.textContent = instructor.name;
+                instructorSelect.appendChild(option);
+            });
+            
+            console.log('✅ Successfully populated instructor select with', result.data.length, 'instructors');
+            console.log('🔧 Final instructor options count:', instructorSelect.options.length);
+        } else {
+            console.error('❌ No instructors data received or empty array');
+        }
+    } catch (error) {
+        console.error('❌ Failed to load instructors:', error);
+    }
+    
+    // Load units if element exists
+    if (unitSelect) {
+        try {
+            const unitsResponse = await fetch('/api/units');
+            const unitsResult = await unitsResponse.json();
+            
+            if (unitsResult.success && unitsResult.data) {
+                unitSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+                unitsResult.data.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.name;
+                    unitSelect.appendChild(option);
+                });
+                console.log('✅ Populated units:', unitsResult.data.length);
+                
+                // Add event listener for unit change to filter training areas in create modal
+                unitSelect.addEventListener('change', async function() {
+                    const selectedUnitId = this.value;
+                    console.log('🔧 Create modal - Unit changed to:', selectedUnitId);
+                    await loadCreateTrainingAreasByUnit(selectedUnitId);
+                });
+                
+                // Initially disable training areas until unit is selected
+                if (trainingAreaSelect) {
+                    trainingAreaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+                    trainingAreaSelect.disabled = true;
+                }
+            }
+        } catch (error) {
+            console.log('⚠️ Units not available:', error.message);
+        }
+    }
+    
+    // Load training areas if element exists (but only show message to select unit first)
+    if (trainingAreaSelect && !unitSelect) {
+        // If no unit select exists, load all areas (backward compatibility)
+        try {
+            const areasResponse = await fetch('/api/training-areas');
+            const areasResult = await areasResponse.json();
+            
+            if (areasResult.success && areasResult.data) {
+                trainingAreaSelect.innerHTML = '<option value="">Selecione uma área</option>';
+                areasResult.data.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.id;
+                    option.textContent = area.name;
+                    trainingAreaSelect.appendChild(option);
+                });
+                console.log('✅ Populated training areas (all):', areasResult.data.length);
+            }
+        } catch (error) {
+            console.log('⚠️ Training areas not available:', error.message);
+        }
+    }
+    
+    console.log('🔧 loadUnifiedFormData completed');
+}
+
+// Function to load training areas filtered by unit for create modal
+async function loadCreateTrainingAreasByUnit(unitId) {
+    const areaSelect = document.getElementById('trainingAreaId');
+    if (!areaSelect) return;
+    
+    if (!unitId) {
+        areaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+        areaSelect.disabled = true;
+        return;
+    }
+    
+    console.log('🔧 Create modal - Loading training areas for unit:', unitId);
+    
+    try {
+        const areasResponse = await fetch(`/api/training-areas?unitId=${unitId}`);
+        const areasResult = await areasResponse.json();
+        
+        console.log('✅ Create modal - Filtered Training Areas API response:', areasResult);
+        
+        if (areasResult.success && areasResult.data) {
+            const areas = areasResult.data;
+            
+            // Clear and populate area select
+            areaSelect.innerHTML = '<option value="">Selecione uma área</option>';
+            areaSelect.disabled = false;
+            
+            if (areas.length > 0) {
+                areas.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area.id;
+                    option.textContent = area.name;
+                    areaSelect.appendChild(option);
+                    console.log(`🔧 Create modal - Added area: ${area.name}`);
+                });
+                console.log('✅ Create modal - Added', areas.length, 'filtered training areas');
+            } else {
+                areaSelect.innerHTML = '<option value="">Nenhuma área encontrada para esta unidade</option>';
+            }
+        } else {
+            areaSelect.innerHTML = '<option value="">Erro ao carregar áreas</option>';
+            areaSelect.disabled = true;
+        }
+    } catch (error) {
+        console.error('❌ Create modal - Error loading training areas for unit:', error);
+        areaSelect.innerHTML = '<option value="">Erro ao carregar áreas</option>';
+        areaSelect.disabled = true;
+    }
+}
+
+// Toggle form fields based on type
+function toggleFormFields() {
+    const type = document.querySelector('input[name="type"]:checked').value;
+    const turmaFields = document.getElementById('turma-fields');
+    const maxStudentsField = document.getElementById('maxStudents');
+    
+    if (type === 'TURMA') {
+        turmaFields.style.display = 'block';
+        if (maxStudentsField) maxStudentsField.required = true;
+    } else {
+        turmaFields.style.display = 'none';
+        if (maxStudentsField) maxStudentsField.required = false;
+    }
+}
+
+// Close unified modal
+function closeUnifiedModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Handle unified form submit
+async function handleUnifiedFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const type = data.type;
+    
+    console.log('🔧 Form submission - Raw form data:', data);
+    console.log('🔧 unitId value:', data.unitId);
+    console.log('🔧 unitId type:', typeof data.unitId);
+    
+    // Calculate end time based on duration
+    const startDateTime = `${data.date}T${data.startTime}:00.000Z`;
+    const endDateTime = new Date(new Date(startDateTime).getTime() + parseInt(data.duration) * 60000).toISOString();
+    
+    const baseData = {
+        type: type,
+        title: data.title,
+        description: data.description || '',
+        startTime: startDateTime,
+        endTime: endDateTime,
+        instructorId: data.instructorId,
+        unitId: data.unitId || null,
+        trainingAreaId: data.trainingAreaId || null,
+        status: data.status || 'SCHEDULED',
+        isRecurring: data.recurring !== 'false',
+        recurrenceRule: data.recurring !== 'false' ? data.recurring.toUpperCase() : null,
+    };
+    
+    console.log('🔧 Final baseData being sent:', baseData);
+    console.log('🔧 baseData.unitId:', baseData.unitId);
+    
+    // Add type-specific fields
+    if (type === 'PERSONAL_SESSION') {
+        baseData.maxStudents = 1;
+        baseData.color = '#764ba2';
+    } else {
+        baseData.maxStudents = parseInt(data.maxStudents) || 10;
+        baseData.color = '#667eea';
+    }
+    
+    try {
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Criando...';
+        submitBtn.disabled = true;
+        
+        const response = await moduleAPI.fetchWithStates('/api/hybrid-agenda', {
+            method: 'POST',
+            body: baseData,
+            onSuccess: (result) => {
+                console.log('✅ Agendamento created:', result);
+                closeUnifiedModal();
+                const isRecurring = data.recurring !== 'false';
+                const typeLabel = type === 'PERSONAL_SESSION' ? 'Personal Training' : 'Aula Coletiva';
+                const successMsg = isRecurring 
+                    ? `${typeLabel} recorrente criado com sucesso! (${getRecurrenceLabel(data.recurring)})`
+                    : `${typeLabel} criado com sucesso!`;
+                showSuccessMessage(successMsg);
+                loadAgendaData(); // Reload data
+            },
+            onError: (error) => {
+                console.error('❌ Failed to create agendamento:', error);
+                let errorMessage = 'Erro ao criar agendamento';
+                
+                if (error.message?.includes('instructorId')) {
+                    errorMessage += ': Instrutor é obrigatório';
+                } else if (error.message?.includes('validation')) {
+                    errorMessage += ': Dados inválidos';
+                } else if (error.message) {
+                    errorMessage += ': ' + error.message;
+                }
+                
+                showErrorMessage(errorMessage);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error submitting agendamento:', error);
+        showErrorMessage('Erro ao enviar dados: ' + error.message);
+    }
+}
+
+// Update Agenda Item Click handler to show edit modal
+function handleAgendaItemClick(itemId, itemType) {
+    if (!itemId) {
+        console.error('Item ID not found');
+        return;
+    }
+    
+    console.log(`Opening edit modal for item: ${itemId} (${itemType})`);
+    showEditModal(itemId);
+}
+
+// Show edit modal
+async function showEditModal(itemId) {
+    try {
+        // Load item data
+        const response = await moduleAPI.fetchWithStates(`/api/hybrid-agenda/${itemId}`, {
+            onSuccess: (response) => {
+                console.log('✅ Raw response:', response);
+                // Extract item from response.data or use response directly if it's already the item
+                const item = response.data || response;
+                console.log('✅ Item loaded for edit:', item);
+                createEditModal(item);
+            },
+            onError: (error) => {
+                console.error('❌ Failed to load item:', error);
+                showErrorMessage('Erro ao carregar agendamento para edição');
+            }
+        });
+    } catch (error) {
+        console.error('Error loading item for edit:', error);
+        showErrorMessage('Erro ao carregar dados: ' + error.message);
+    }
+}
+
+// Create edit modal
+function createEditModal(item) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    // Format dates for form inputs
+    const startDate = new Date(item.startTime);
+    const dateStr = startDate.toISOString().split('T')[0];
+    const timeStr = startDate.toTimeString().slice(0, 5);
+    const duration = Math.round((new Date(item.endTime) - startDate) / (1000 * 60));
+    
+    modal.innerHTML = `
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Editar Agendamento</h3>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-agenda-form">
+                    <input type="hidden" name="id" value="${item.id}">
+                    
+                    <!-- Type Display (read-only) -->
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <div class="type-display">
+                            ${item.type === 'PERSONAL_SESSION' ? 'Personal Training' : 'Aula Coletiva'}
+                        </div>
+                        <input type="hidden" name="type" value="${item.type}">
+                    </div>
+                    
+                    <!-- Common Fields -->
+                    <div class="form-group">
+                        <label for="edit-title">Título *</label>
+                        <input type="text" id="edit-title" name="title" value="${item.title}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-description">Descrição</label>
+                        <textarea id="edit-description" name="description" rows="3">${item.description || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-date">Data *</label>
+                            <input type="date" id="edit-date" name="date" value="${dateStr}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-startTime">Horário *</label>
+                            <input type="time" id="edit-startTime" name="startTime" value="${timeStr}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-duration">Duração (min) *</label>
+                            <select id="edit-duration" name="duration" required>
+                                <option value="30" ${duration === 30 ? 'selected' : ''}>30 min</option>
+                                <option value="45" ${duration === 45 ? 'selected' : ''}>45 min</option>
+                                <option value="60" ${duration === 60 ? 'selected' : ''}>60 min</option>
+                                <option value="90" ${duration === 90 ? 'selected' : ''}>90 min</option>
+                                <option value="120" ${duration === 120 ? 'selected' : ''}>120 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-instructorId">Instrutor *</label>
+                        <select id="edit-instructorId" name="instructorId" required>
+                            <option value="">Selecione um instrutor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-unitId">Unidade</label>
+                        <select id="edit-unitId" name="unitId">
+                            <option value="">Selecione uma unidade</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-trainingAreaId">Área de Treino</label>
+                        <select id="edit-trainingAreaId" name="trainingAreaId">
+                            <option value="">Selecione uma área</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label for="edit-status">Status</label>
+                        <select id="edit-status" name="status">
+                            <option value="SCHEDULED" ${item.status === 'SCHEDULED' ? 'selected' : ''}>Agendado</option>
+                            <option value="CONFIRMED" ${item.status === 'CONFIRMED' ? 'selected' : ''}>Confirmado</option>
+                            <option value="CANCELLED" ${item.status === 'CANCELLED' ? 'selected' : ''}>Cancelado</option>
+                            <option value="COMPLETED" ${item.status === 'COMPLETED' ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </div>
+                    
+                    ${item.type === 'TURMA' ? `
+                    <div class="form-group">
+                        <label for="edit-maxStudents">Máximo de Alunos *</label>
+                        <input type="number" id="edit-maxStudents" name="maxStudents" min="1" max="50" value="${item.maxStudents || 10}" required>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="deleteAgendaItem('${item.id}')" class="btn-danger">Excluir</button>
+                        <button type="button" onclick="closeEditModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Load form data and set selected values - wait for DOM to be ready
+    setTimeout(() => {
+        loadEditFormData(item);
+    }, 100);
+    
+    // Add form submit handler
+    document.getElementById('edit-agenda-form').addEventListener('submit', handleEditFormSubmit);
+}
+
+// Close edit modal
+function closeEditModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Load edit form data
+async function loadEditFormData(item) {
+    try {
+        console.log('🔄 Loading edit form data for item:', item);
+        console.log('🔧 Item IDs for comparison - instructorId:', item.instructorId, 'unitId:', item.unitId, 'trainingAreaId:', item.trainingAreaId);
+        
+        // Load instructors
+        const instructorsResponse = await moduleAPI.fetchWithStates('/api/instructors', {
+            onSuccess: (response) => {
+                console.log('✅ Edit Instructors API response:', response);
+                const instructorSelect = document.getElementById('edit-instructorId');
+                // The API returns data as an array directly, not data.instructors
+                const instructors = Array.isArray(response) ? response : (response.data || []);
+                console.log('🔧 Item instructorId for comparison:', item.instructorId);
+                if (instructorSelect && instructors.length > 0) {
+                    // Clear existing options (except default)
+                    instructorSelect.innerHTML = '<option value="">Selecione um instrutor</option>';
+                    instructors.forEach(instructor => {
+                        const option = document.createElement('option');
+                        option.value = instructor.userId; // Use userId for AgendaItem relation
+                        option.textContent = instructor.name;
+                        const isSelected = instructor.userId === item.instructorId;
+                        option.selected = isSelected;
+                        console.log(`🔧 Instructor ${instructor.name}: userId=${instructor.userId}, selected=${isSelected}`);
+                        instructorSelect.appendChild(option);
+                    });
+                    console.log('✅ Added', instructors.length, 'instructors to edit select');
+                } else {
+                    console.warn('⚠️ No instructors found for edit or select element missing');
+                }
+            }
+        });
+        
+        // Load units for both TURMA and PERSONAL_SESSION
+        const unitsResponse = await moduleAPI.fetchWithStates('/api/units', {
+            onSuccess: (response) => {
+                console.log('✅ Edit Units API response:', response);
+                const unitSelect = document.getElementById('edit-unitId');
+                console.log('🔧 Unit select element:', unitSelect);
+                console.log('🔧 Unit select innerHTML before:', unitSelect ? unitSelect.innerHTML : 'ELEMENT NOT FOUND');
+                // fetchWithStates already extracts data, so response is the data array directly
+                const units = Array.isArray(response) ? response : [];
+                console.log('🔧 Units data:', units);
+                console.log('🔧 Item unitId for comparison:', item.unitId);
+                if (unitSelect) {
+                    // Clear existing options (except default)
+                    unitSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+                    if (units.length > 0) {
+                        units.forEach(unit => {
+                            const option = document.createElement('option');
+                            option.value = unit.id;
+                            option.textContent = unit.name;
+                            const isSelected = unit.id === item.unitId;
+                            option.selected = isSelected;
+                            console.log(`🔧 Unit ${unit.name}: id=${unit.id}, selected=${isSelected}`);
+                            unitSelect.appendChild(option);
+                        });
+                        console.log('✅ Added', units.length, 'units to edit select');
+                        
+                        // Add event listener for unit change to filter training areas
+                        unitSelect.addEventListener('change', async function() {
+                            const selectedUnitId = this.value;
+                            console.log('🔧 Unit changed to:', selectedUnitId);
+                            loadTrainingAreasByUnit(selectedUnitId, null);
+                        });
+                        
+                        // Load training areas for the initially selected unit
+                        if (item.unitId) {
+                            loadTrainingAreasByUnit(item.unitId, item.trainingAreaId);
+                        } else {
+                            // If no unit selected, clear training areas
+                            const areaSelect = document.getElementById('edit-trainingAreaId');
+                            if (areaSelect) {
+                                areaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+                                areaSelect.disabled = true;
+                            }
+                        }
+                    } else {
+                        console.warn('⚠️ No units found in API response');
+                    }
+                } else {
+                    console.error('❌ Unit select element not found: edit-unitId');
+                }
+            }
+        });
+        
+        // Load training areas for the initially selected unit
+        if (item.unitId) {
+            await loadTrainingAreasByUnit(item.unitId, item.trainingAreaId);
+        } else {
+            // If no unit selected, clear training areas
+            const areaSelect = document.getElementById('edit-trainingAreaId');
+            if (areaSelect) {
+                areaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+                areaSelect.disabled = true;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading edit form data:', error);
+    }
+}
+
+// Function to load training areas filtered by unit (moved outside to avoid syntax errors)
+async function loadTrainingAreasByUnit(unitId, targetSelectId = 'edit-trainingAreaId') {
+    const areaSelect = document.getElementById(targetSelectId);
+    if (!areaSelect) {
+        console.error(`❌ Area select element not found: ${targetSelectId}`);
+        return;
+    }
+    
+    if (!unitId) {
+        areaSelect.innerHTML = '<option value="">Primeiro selecione uma unidade</option>';
+        areaSelect.disabled = true;
+        return;
+    }
+    
+    console.log('🔧 Loading training areas for unit:', unitId, 'targetSelect:', targetSelectId);
+    
+    try {
+        const areasResponse = await moduleAPI.fetchWithStates(`/api/training-areas?unitId=${unitId}`, {
+            onSuccess: (response) => {
+                console.log('✅ Filtered Training Areas API response:', response);
+                const areas = Array.isArray(response) ? response : [];
+                console.log('🔧 Filtered areas data:', areas);
+                
+                // Clear and populate area select
+                areaSelect.innerHTML = '<option value="">Selecione uma área</option>';
+                areaSelect.disabled = false;
+                
+                if (areas.length > 0) {
+                    areas.forEach(area => {
+                        const option = document.createElement('option');
+                        option.value = area.id;
+                        option.textContent = area.name;
+                        // For create modal, no pre-selection needed
+                        if (targetSelectId.includes('edit')) {
+                            const isSelected = area.id === arguments[1];
+                            option.selected = isSelected;
+                            console.log(`🔧 Filtered Area ${area.name}: id=${area.id}, selected=${isSelected}`);
+                        }
+                        areaSelect.appendChild(option);
+                    });
+                    console.log('✅ Added', areas.length, 'filtered training areas to select');
+                } else {
+                    areaSelect.innerHTML = '<option value="">Nenhuma área encontrada para esta unidade</option>';
+                }
+            },
+            onError: (error) => {
+                console.error('❌ Error loading training areas for unit:', error);
+                areaSelect.innerHTML = '<option value="">Erro ao carregar áreas</option>';
+                areaSelect.disabled = true;
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error in loadTrainingAreasByUnit:', error);
+        areaSelect.innerHTML = '<option value="">Erro ao carregar áreas</option>';
+        areaSelect.disabled = true;
+    }
+}
+
+// Handle edit form submit
+async function handleEditFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    const itemId = data.id;
+    
+    // Debug: Log form data to see what unitId value is being captured
+    console.log('🔧 Form data captured:', data);
+    console.log('🔧 Specific unitId value:', data.unitId);
+    
+    // Calculate end time based on duration
+    const startDateTime = `${data.date}T${data.startTime}:00.000Z`;
+    const endDateTime = new Date(new Date(startDateTime).getTime() + parseInt(data.duration) * 60000).toISOString();
+    
+    const updateData = {
+        title: data.title,
+        description: data.description || '',
+        startTime: startDateTime,
+        endTime: endDateTime,
+        instructorId: data.instructorId,
+        trainingAreaId: data.trainingAreaId || null,
+        unitId: data.unitId || null, // Always include unitId for all types
+        status: data.status
+    };
+    
+    // Add type-specific fields
+    if (data.type === 'TURMA') {
+        updateData.maxStudents = parseInt(data.maxStudents) || 10;
+    }
+    
+    try {
+        // Show loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Salvando...';
+        submitBtn.disabled = true;
+        
+        console.log('🔧 Sending update data:', updateData);
+        console.log('🔧 Update URL:', `/api/hybrid-agenda/${itemId}`);
+        
+        const response = await fetch(`/api/hybrid-agenda/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const result = await response.json();
+        console.log('✅ Agendamento updated:', result);
+        
+        if (result.success) {
+            closeEditModal();
+            showSuccessMessage('Agendamento atualizado com sucesso!');
+            loadAgendaData(); // Reload data
+        } else {
+            throw new Error(result.message || 'Erro no servidor');
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to update agendamento:', error);
+        let errorMessage = 'Erro ao atualizar agendamento';
+        
+        if (error.message?.includes('instructorId')) {
+            errorMessage += ': Instrutor é obrigatório';
+        } else if (error.message?.includes('validation')) {
+            errorMessage += ': Dados inválidos';
+        } else if (error.message) {
+            errorMessage += ': ' + error.message;
+        }
+        
+        showErrorMessage(errorMessage);
+        
+        // Reset button
+        const submitBtn = document.querySelector('#edit-agenda-form button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = 'Salvar Alterações';
+            submitBtn.disabled = false;
+        }
+    }
+}
+
+// Make functions available globally for onclick handlers
+window.showCreateMenu = showCreateMenu;
+window.closeCreateMenu = closeCreateMenu;
+window.createPersonalSession = createPersonalSession;
+window.createCollectiveClass = createCollectiveClass;
+window.closeSchedulingForm = closeSchedulingForm;
+window.submitPersonalSession = submitPersonalSession;
+window.submitCollectiveClass = submitCollectiveClass;
+window.showAgendaItemDetails = showAgendaItemDetails;
+window.editAgendaItem = editAgendaItem;
+window.cancelAgendaItem = cancelAgendaItem;
+window.deleteAgendaItem = deleteAgendaItem;
+window.showUnifiedCreateModal = showUnifiedCreateModal;
+window.closeUnifiedModal = closeUnifiedModal;
+window.toggleFormFields = toggleFormFields;
+window.showEditModal = showEditModal;
+window.closeEditModal = closeEditModal;
+window.showCreateModal = showCreateModal;
+window.closeCreateModal = closeCreateModal;
+window.toggleCreateFormFields = toggleCreateFormFields;
+
+// Export main initialization function
+window.initHybridAgendaModule = initHybridAgendaModule;
+
+console.log('✅ Hybrid Agenda module (simplified) loaded');
+console.log('🔧 initHybridAgendaModule exported:', typeof window.initHybridAgendaModule);
