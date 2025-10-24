@@ -68,3 +68,6 @@ prisma/migrations/
 # Docker
 .dockerignore
 OLD_191025
+BACKUP_SEGURANCA_20251019_1502
+backups
+BACKUP_SEGURANCA_20252410_0127

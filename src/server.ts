@@ -144,7 +144,7 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(gamificationRoutes, 'gamificationRoutes'), { prefix: '/api/gamification' } as any);
     await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
     // await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
-    // await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
+    await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
     await server.register(normalizePlugin(agentsRoutes, 'agentsRoutes'), { prefix: '/api/agents' } as any);
     await server.register(normalizePlugin(curriculumAgentRoutes, 'curriculumAgentRoutes'), { prefix: '/api/agents/curriculum' } as any);
   await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);

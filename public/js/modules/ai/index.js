@@ -20,8 +20,8 @@ const AIModule = {
     container: null,
     moduleAPI: null,
     currentChatThread: [],
-    availableModels: ['claude', 'gpt', 'gemini'],
-    currentModel: 'claude',
+    availableModels: ['gemini', 'claude', 'gpt'],
+    currentModel: 'gemini',
     ragDocuments: [],
     
     // =========================================================================
@@ -74,7 +74,7 @@ const AIModule = {
     async loadInitialData() {
         // Load RAG documents
         try {
-            const ragRes = await this.moduleAPI.request('/api/ai/rag/documents');
+            const ragRes = await this.moduleAPI.request('/api/rag/documents');
             if (ragRes.success) {
                 this.ragDocuments = ragRes.data || [];
                 console.log(`📚 Loaded ${this.ragDocuments.length} RAG documents`);
@@ -105,9 +105,9 @@ const AIModule = {
                         </div>
                         <div class="header-actions">
                             <select id="ai-model-selector" class="form-control model-selector">
+                                <option value="gemini" ${this.currentModel === 'gemini' ? 'selected' : ''}>🔷 Gemini (Google)</option>
                                 <option value="claude" ${this.currentModel === 'claude' ? 'selected' : ''}>🧠 Claude (Anthropic)</option>
                                 <option value="gpt" ${this.currentModel === 'gpt' ? 'selected' : ''}>💬 GPT-4 (OpenAI)</option>
-                                <option value="gemini" ${this.currentModel === 'gemini' ? 'selected' : ''}>🔷 Gemini (Google)</option>
                             </select>
                         </div>
                     </div>
@@ -315,9 +315,9 @@ const AIModule = {
     
     getModelName(model) {
         const names = {
+            gemini: 'Gemini (Google)',
             claude: 'Claude (Anthropic)',
-            gpt: 'GPT-4 (OpenAI)',
-            gemini: 'Gemini (Google)'
+            gpt: 'GPT-4 (OpenAI)'
         };
         return names[model] || model;
     },
@@ -555,13 +555,21 @@ const AIModule = {
     },
     
     async openAnalytics() {
-        window.app?.showToast?.('📊 Recurso em desenvolvimento', 'info');
-        // TODO: Implement analytics dashboard
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = 'Analise o desempenho dos alunos e mostre insights sobre frequência, progresso nas graduações e áreas que precisam de atenção.';
+            chatInput.focus();
+        }
     },
     
     async openUploadDialog() {
-        window.app?.showToast?.('📤 Recurso em desenvolvimento', 'info');
-        // TODO: Implement document upload modal
+        window.app?.showToast?.('📤 Upload de documentos: Use o endpoint POST /api/rag/documents com multipart/form-data', 'info');
+        // TODO: Create a proper upload modal with file picker
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = 'Como posso fazer upload de novos documentos para a base de conhecimento RAG?';
+            chatInput.focus();
+        }
     },
     
     async refreshRAGDocuments() {
