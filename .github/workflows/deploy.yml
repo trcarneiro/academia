@@ -47,22 +47,19 @@ jobs:
             # Pull latest code
             git pull origin main || git pull origin master
             
-            # Install dependencies
+            # Install dependencies (production mode)
             npm ci --production=false
             
-            # Generate Prisma Client
+            # Generate Prisma Client (connects to Supabase)
             npx prisma generate
-            
-            # Run database migrations (optional)
-            npx prisma db push --skip-generate
             
             # Build project
             npm run build || echo "Build with warnings"
             
-            # Restart PM2 process (or systemd service)
-            pm2 restart academia || systemctl restart academia
+            # Restart PM2 process
+            pm2 restart academia || pm2 start ecosystem.config.js --env production
             
-            echo "Deployment completed successfully!"
+            echo "✅ Deployment completed successfully!"
 
       - name: Health Check
         run: |
