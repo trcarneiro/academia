@@ -3,7 +3,7 @@
  * API para criar, gerenciar e executar agentes autônomos
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';\nimport { requireOrganizationId } from '@/utils/tenantHelpers';
 import { z } from 'zod';
 import { AgentOrchestratorService, AgentType, AgentConfig } from '@/services/agentOrchestratorService';
 
@@ -35,8 +35,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/orchestrator/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = (request.headers['x-organization-id'] as string) || 
-                                   (request.body as any)?.organizationId;
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -74,8 +73,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/orchestrator/create', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = (request.headers['x-organization-id'] as string) || 
-                                   (request.body as any)?.organizationId;
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -121,7 +119,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/orchestrator/list', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = request.headers['x-organization-id'] as string;
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -197,7 +195,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/orchestrator/monitor', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = request.headers['x-organization-id'] as string;
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -332,4 +330,110 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             });
         }
     });
+    
+    /**
+     * GET /api/agents/orchestrator/interactions
+     * Obter interações e permissões pendentes dos agentes
+     */
+    fastify.get('/orchestrator/interactions', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            
+            if (!organizationId) {
+                return reply.status(400).send({
+                    success: false,
+                    error: 'organizationId is required'
+                });
+            }
+            
+            // TODO: Implementar query no banco de dados
+            // Por enquanto, retornar dados mockados
+            const mockData = {
+                interactions: [
+                    {
+                        id: '1',
+                        agentId: 'agent-admin-1',
+                        agentName: 'Assistente Administrativo',
+                        agentType: 'ADMINISTRATIVE',
+                        type: 'REPORT',
+                        message: '📊 Detectados 3 alunos com pagamentos atrasados há mais de 7 dias',
+                        createdAt: new Date(Date.now() - 3600000).toISOString(),
+                        action: {
+                            label: 'Ver alunos',
+                            url: '#students?filter=payment-overdue'
+                        }
+                    },
+                    {
+                        id: '2',
+                        agentId: 'agent-admin-1',
+                        agentName: 'Assistente Administrativo',
+                        agentType: 'ADMINISTRATIVE',
+                        type: 'SUGGESTION',
+                        message: '💡 Sugestão: Criar promoção de Black Friday com 20% de desconto nos planos anuais',
+                        createdAt: new Date(Date.now() - 7200000).toISOString()
+                    }
+                ],
+                pendingPermissions: [
+                    {
+                        id: 'perm-1',
+                        agentId: 'agent-admin-1',
+                        agentName: 'Assistente Administrativo',
+                        agentType: 'ADMINISTRATIVE',
+                        action: 'Enviar SMS de cobrança para 3 alunos inadimplentes',
+                        createdAt: new Date(Date.now() - 1800000).toISOString(),
+                        details: {
+                            action: 'send_payment_reminder_sms',
+                            students: ['João Silva', 'Maria Santos', 'Pedro Oliveira'],
+                            cost: 'R$ 0,30 (3 SMS x R$ 0,10)'
+                        }
+                    }
+                ]
+            };
+            
+            reply.send({
+                success: true,
+                data: mockData
+            });
+            
+        } catch (error) {
+            fastify.log.error('Error getting interactions:', error);
+            reply.status(500).send({
+                success: false,
+                error: 'Failed to get interactions'
+            });
+        }
+    });
+    
+    /**
+     * PATCH /api/agents/orchestrator/permissions/:permissionId
+     * Aprovar ou recusar uma permissão solicitada por um agente
+     */
+    fastify.patch('/orchestrator/permissions/:permissionId', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const { permissionId } = request.params as { permissionId: string };
+            const body = request.body as { approved: boolean };
+            
+            // TODO: Implementar lógica no banco de dados
+            // Por enquanto, apenas simular aprovação
+            
+            reply.send({
+                success: true,
+                data: {
+                    permissionId,
+                    approved: body.approved,
+                    message: body.approved 
+                        ? 'Permissão aprovada. Agente executará a ação em breve.' 
+                        : 'Permissão recusada. Nenhuma ação será tomada.'
+                }
+            });
+            
+        } catch (error) {
+            fastify.log.error('Error handling permission:', error);
+            reply.status(500).send({
+                success: false,
+                error: 'Failed to handle permission'
+            });
+        }
+    });
 }
+

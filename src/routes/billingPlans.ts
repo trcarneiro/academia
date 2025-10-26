@@ -1,5 +1,5 @@
-﻿import { FastifyInstance } from 'fastify';
-import { prisma } from '@/utils/database';
+import { FastifyInstance } from 'fastify';
+import { prisma } from '@/utils/database';\nimport { requireOrganizationId } from '@/utils/tenantHelpers';
 import { getDefaultOrganizationId } from '@/config/dev';
 
 // Backward compatibility route for frontend expecting /api/billing-plans
@@ -12,11 +12,8 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
       console.log(' Headers:', JSON.stringify(request.headers, null, 2));
       console.log(' Query:', JSON.stringify(request.query, null, 2));
 
-      // Verificar se há organização no request
-      const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            (request.user as any)?.organizationId ||
-                            getDefaultOrganizationId(); // Organização padrão para desenvolvimento
+      // Verificar se h� organiza��o no request
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; } // Organiza��o padr�o para desenvolvimento
 
       console.log(' Using organizationId:', organizationId);
 
@@ -49,26 +46,23 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
   // POST /api/billing-plans - Create billing plan
   fastify.post('/api/billing-plans', async (request, reply) => {
     try {
-      console.log('📦 Creating billing plan, body:', JSON.stringify(request.body, null, 2));
-      console.log('📋 Headers:', JSON.stringify(request.headers, null, 2));
-      console.log('📋 Query:', JSON.stringify(request.query, null, 2));
-      console.log('👤 User:', request.user);
+      console.log('?? Creating billing plan, body:', JSON.stringify(request.body, null, 2));
+      console.log('?? Headers:', JSON.stringify(request.headers, null, 2));
+      console.log('?? Query:', JSON.stringify(request.query, null, 2));
+      console.log('?? User:', request.user);
 
       // Try to get organizationId from multiple sources
-      const headerOrgId = (request.headers as any)['x-organization-id'];
-      const queryOrgId = (request.query as any).organizationId;
-      const userOrgId = (request.user as any)?.organizationId;
-      const defaultOrgId = getDefaultOrganizationId();
+      const headerOrgId = requireOrganizationId(request as any, reply as any) as string; if (!headerOrgId) { return; }
 
-      console.log('🔍 Checking organizationId sources:');
+      console.log('?? Checking organizationId sources:');
       console.log('  - Header (x-organization-id):', headerOrgId);
       console.log('  - Query (organizationId):', queryOrgId);
       console.log('  - User (request.user.organizationId):', userOrgId);
       console.log('  - Default (getDefaultOrganizationId()):', defaultOrgId);
 
-      const organizationId = headerOrgId || queryOrgId || userOrgId || defaultOrgId;
+      const organizationId = headerOrgId;
 
-      console.log('🏢 Final organizationId to use:', organizationId);
+      console.log('?? Final organizationId to use:', organizationId);
 
       // Validate that organization exists
       const orgExists = await prisma.organization.findUnique({
@@ -76,7 +70,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
       });
 
       if (!orgExists) {
-        console.error('❌ Organization not found:', organizationId);
+        console.error('? Organization not found:', organizationId);
         return reply.code(400).send({
           success: false,
           error: 'Organization not found',
@@ -84,7 +78,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
         });
       }
 
-      console.log('✅ Organization found:', orgExists.name);
+      console.log('? Organization found:', orgExists.name);
 
       const planData = request.body as any;
 
@@ -118,7 +112,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
         preparedData.installmentInterestRate = parseFloat(cleanPlanData.installmentInterestRate);
       }
 
-      console.log('✅ Prepared data for Prisma:', JSON.stringify(preparedData, null, 2));
+      console.log('? Prepared data for Prisma:', JSON.stringify(preparedData, null, 2));
 
       const plan = await prisma.billingPlan.create({
         data: preparedData,
@@ -133,15 +127,15 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
         subscriberCount: plan._count?.subscriptions ?? 0
       };
 
-      console.log('✅ Billing plan created successfully:', plan.id);
+      console.log('? Billing plan created successfully:', plan.id);
 
       reply.code(201).send({
         success: true,
         data: responseData
       });
     } catch (error: any) {
-      console.error('❌ Error creating billing plan:', error);
-      console.error('❌ Error details:', {
+      console.error('? Error creating billing plan:', error);
+      console.error('? Error details:', {
         message: error.message,
         code: error.code,
         meta: error.meta
@@ -164,7 +158,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as any;
 
-      const plan = await prisma.billingPlan.findUnique({
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }\n\n      const plan = await prisma.billingPlan.findFirst({
         where: { id: id },
         include: {
           _count: { select: { subscriptions: true } },
@@ -203,10 +197,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as any;
 
-      const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            (request.user as any)?.organizationId ||
-                            getDefaultOrganizationId();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
       const planData = request.body as any;
 
@@ -248,9 +239,7 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as any;
 
-      await prisma.billingPlan.delete({
-        where: { id: id }
-      });
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }\n\n      const existing = await prisma.billingPlan.findFirst({ where: { id } });\n      if (!existing) {\n        return reply.code(404).send({ success: false, error: 'Billing plan not found' });\n      }\n      if (existing.organizationId !== organizationId) {\n        return reply.code(403).send({ success: false, error: 'Access denied to this organization' });\n      }\n\n      await prisma.billingPlan.delete({ where: { id } });
 
       reply.send({
         success: true,
@@ -265,3 +254,4 @@ export default async function billingPlanRoutes(fastify: FastifyInstance) {
     }
   });
 }
+

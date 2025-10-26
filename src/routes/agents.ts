@@ -3,6 +3,7 @@ import { agentService } from '@/services/AgentService';
 import { agentExecutorService } from '@/services/AgentExecutorService';
 import { logger } from '@/utils/logger';
 import { z } from 'zod';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 // Validation schemas
 const createAgentSchema = z.object({
@@ -67,14 +68,8 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = request.headers['x-organization-id'] as string;
-
-            if (!organizationId) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'Organization ID is required'
-                });
-            }
+            const organizationId = requireOrganizationId(request, reply);
+            if (!organizationId) return;
 
             // Parse query filters
             const { specialization, isActive } = request.query as any;
@@ -110,14 +105,8 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/stats', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = request.headers['x-organization-id'] as string;
-
-            if (!organizationId) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'Organization ID is required'
-                });
-            }
+            const organizationId = requireOrganizationId(request, reply);
+            if (!organizationId) return;
 
             const stats = await agentService.getAgentStats(organizationId);
 
@@ -142,6 +131,8 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
     fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
         try {
             const { id } = request.params;
+            const organizationId = requireOrganizationId(request, reply);
+            if (!organizationId) return;
 
             const agent = await agentService.getAgentById(id);
 
@@ -150,6 +141,10 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
                     success: false,
                     message: 'Agent not found'
                 });
+            }
+
+            if ((agent as any).organizationId && (agent as any).organizationId !== organizationId) {
+                return reply.code(403).send({ success: false, message: 'Access denied to this organization' });
             }
 
             return reply.send({
@@ -172,14 +167,8 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = request.headers['x-organization-id'] as string;
-
-            if (!organizationId) {
-                return reply.code(400).send({
-                    success: false,
-                    message: 'Organization ID is required'
-                });
-            }
+            const organizationId = requireOrganizationId(request, reply);
+            if (!organizationId) return;
 
             // Validate request body
             const validatedData = createAgentSchema.parse(request.body);

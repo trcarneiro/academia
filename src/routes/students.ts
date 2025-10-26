@@ -9,10 +9,14 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     logger.info(`Students route - ${request.method} ${request.url}`);
   });
   
-  // Get all students
-  fastify.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
+  // Get all students (scoped by organization)
+  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return; // reply already sent
       const students = await prisma.student.findMany({
+        where: { organizationId },
         include: {
           user: true, // Essential for displaying name/email
           _count: {
@@ -62,9 +66,12 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
       const { id } = request.params;
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return; // reply already sent
 
-      const student = await prisma.student.findUnique({
-        where: { id },
+      const student = await prisma.student.findFirst({
+        where: { id, organizationId },
         include: {
           user: true,
           financialResponsible: true,

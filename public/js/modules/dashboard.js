@@ -116,12 +116,28 @@
             // Update last updated time
             updateLastUpdatedTime();
             
+            // Initialize Agent Dashboard Widget
+            initializeAgentWidget();
+            
             hideLoadingState();
             
         } catch (error) {
             console.error('❌ Error rendering dashboard:', error);
             showErrorState();
         }
+    }
+    
+    function initializeAgentWidget() {
+        // Wait for widget to be available
+        const checkWidget = () => {
+            if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
+                console.log('🤖 Initializing Agent Dashboard Widget...');
+                window.agentDashboardWidget.init('agent-dashboard-widget');
+            } else {
+                setTimeout(checkWidget, 100);
+            }
+        };
+        checkWidget();
     }
     
     function updateMetrics(data) {

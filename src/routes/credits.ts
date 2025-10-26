@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import * as creditService from '@/services/creditService';
 import { logger } from '@/utils/logger';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 export default async function creditsRoutes(fastify: FastifyInstance) {
   /**
@@ -10,7 +11,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
   fastify.get('/student/:studentId', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { studentId } = request.params as { studentId: string };
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!studentId || !organizationId) {
         return reply.code(400).send({
@@ -42,7 +44,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
   fastify.get('/summary/:studentId', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { studentId } = request.params as { studentId: string };
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!studentId || !organizationId) {
         return reply.code(400).send({
@@ -72,7 +75,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/use', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!organizationId) {
         return reply.code(400).send({
@@ -115,7 +119,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/refund', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!organizationId) {
         return reply.code(400).send({
@@ -156,7 +161,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/expiring-soon', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
       const { days } = request.query as { days?: string };
 
       if (!organizationId) {
@@ -192,7 +198,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/renew-manual', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!organizationId) {
         return reply.code(400).send({

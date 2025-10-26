@@ -15,6 +15,8 @@ import { errorHandler } from '@/middlewares/error';
 import logger, { fastifyLoggerOptions } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 import { initializeGemini } from '@/services/geminiService';
+import { extractTenantContext } from '@/middlewares/tenant';
+import { ResponseHelper } from '@/utils/response';
 
 function normalizePlugin(mod: any, name: string): any {
   if (typeof mod === 'function') return mod as any;
@@ -128,6 +130,30 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
 
     await server.register(normalizePlugin(staticFiles, 'static'), { root: path.join(__dirname, '..', 'public'), prefix: '/' } as any);
+
+    // Tenant extraction for API routes (skip auth and health)
+    server.addHook('onRequest', async (request, reply) => {
+      const url = request.url || '';
+      if (url.startsWith('/api/') && !url.startsWith('/api/auth') && !url.startsWith('/health')) {
+        try {
+          await extractTenantContext(request as any, reply as any);
+        } catch (_) {
+          // extractTenantContext already replied on failure
+        }
+      }
+    });
+
+    // Enforce org consistency when user is authenticated
+    server.addHook('preHandler', async (request, reply) => {
+      const url = request.url || '';
+      if (url.startsWith('/api/') && !url.startsWith('/api/auth')) {
+        const user: any = (request as any).user;
+        const tenant: any = (request as any).tenant;
+        if (user?.organizationId && tenant?.organizationId && user.organizationId !== tenant.organizationId) {
+          return ResponseHelper.error(reply as any, 'Access denied to this organization', 403);
+        }
+      }
+    });
 
     // Debug hook to track response serialization
     server.addHook('onSend', async (request, reply, payload) => {
