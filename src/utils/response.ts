@@ -7,22 +7,22 @@ export class ResponseHelper {
     message?: string,
     statusCode: number = 200
   ): FastifyReply {
-    console.log('🔧 ResponseHelper.success - Input data:', data);
-    console.log('🔧 ResponseHelper.success - Input data type:', typeof data);
-    console.log('🔧 ResponseHelper.success - Input data keys:', data ? Object.keys(data) : 'no data');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('? ResponseHelper.success - Input data:', data);
+    }
     
-    const response = {
+        const response = {
       success: true,
       data,
       message,
       timestamp: new Date().toISOString(),
     } as any;
 
-    console.log('📤 ResponseHelper.success - Response object:', response);
-    console.log('📤 ResponseHelper.success - Response.data:', response.data);
-    console.log('📤 ResponseHelper.success - Response JSON:', JSON.stringify(response, null, 2));
-
-    return reply.status(statusCode).send(response);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('? ResponseHelper.success - Input data:', data);
+    }
+    
+        return reply.status(statusCode).send(response);
   }
 
   static error(
@@ -104,3 +104,5 @@ export class ResponseHelper {
     return reply.status(400).send(response);
   }
 }
+
+

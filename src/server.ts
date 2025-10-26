@@ -14,6 +14,7 @@ import { appConfig } from '@/config';
 import { errorHandler } from '@/middlewares/error';
 import logger, { fastifyLoggerOptions } from '@/utils/logger';
 import { prisma } from '@/utils/database';
+import { initializeGemini } from '@/services/geminiService';
 
 function normalizePlugin(mod: any, name: string): any {
   if (typeof mod === 'function') return mod as any;
@@ -67,6 +68,7 @@ import feedbackRoutes from '@/routes/feedback';
 import gamificationRoutes from '@/routes/gamification';
 import { aiRoutes } from '@/routes/ai';
 import { ragRoutes } from '@/routes/rag';
+import { agentOrchestratorRoutes } from '@/routes/agentOrchestrator';
 import agentsRoutes from '@/routes/agents';
 import curriculumAgentRoutes from '@/routes/curriculum-agent';
 import turmasRoutes from '@/routes/turmas';
@@ -91,13 +93,36 @@ const frequencyRoutes = require('./routes/frequency');
 // import packagesRoutes from '@/routes/packages';
 
 const server = Fastify({ 
-  logger: fastifyLoggerOptions,
+  
+  trustProxy: true,
   ...httpsOptions  // ✅ Apply HTTPS options if available
 });
 
 const start = async (): Promise<void> => {
   try {
-    await server.register(normalizePlugin(helmet, 'helmet'), { contentSecurityPolicy: false } as any);
+    // Inicializar Gemini AI
+    const geminiInitialized = initializeGemini();
+    if (geminiInitialized) {
+      logger.info('✅ Gemini AI Service initialized successfully');
+    } else {
+      logger.warn('⚠️ Gemini AI Service running in mock mode (no API key)');
+    }
+    
+    const isProd = appConfig.server.nodeEnv === 'production';
+    await server.register(normalizePlugin(helmet, 'helmet'), {
+      contentSecurityPolicy: isProd ? {
+        directives: {
+          defaultSrc: ['self'],
+          scriptSrc: ['self', 'unsafe-inline'],
+          styleSrc: ['self', 'unsafe-inline'],
+          imgSrc: ['self', 'data:'],
+          connectSrc: ['self'],
+          objectSrc: ['none'],
+          baseUri: ['self']
+        }
+      } : false,
+      hsts: isProd
+    } as any);
     await server.register(normalizePlugin(cors, 'cors'), { origin: appConfig.cors.origin, credentials: true } as any);
     await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
     await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
@@ -145,6 +170,7 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(techniqueRoutes, 'techniqueRoutes'));
     // await server.register(normalizePlugin(aiRoutes, 'aiRoutes'), { prefix: '/api/ai' } as any);
     await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
+    await server.register(normalizePlugin(agentOrchestratorRoutes, 'agentOrchestratorRoutes'), { prefix: '/api/agents' } as any);
     await server.register(normalizePlugin(agentsRoutes, 'agentsRoutes'), { prefix: '/api/agents' } as any);
     await server.register(normalizePlugin(curriculumAgentRoutes, 'curriculumAgentRoutes'), { prefix: '/api/agents/curriculum' } as any);
   await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);
@@ -207,3 +233,6 @@ signals.forEach((signal) => {
 });
 
 start();
+
+
+

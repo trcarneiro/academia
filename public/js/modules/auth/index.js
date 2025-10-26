@@ -1,29 +1,32 @@
 ﻿// AUTH MODULE v2.0 - Supabase Integration
-console.log('Auth Module v2.0 loaded');
+if (typeof window.AuthModule !== 'undefined') {
+    console.log('Auth Module v2.0 already loaded');
+} else {
+    console.log('Auth Module v2.0 loaded');
 
-const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
-const BACKEND_URL = 'http://localhost:3000';
-const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
-const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
+    const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
+    const BACKEND_URL = 'http://localhost:3000';
+    const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
+    const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
 
-let supabaseClient = null;
+    let supabaseClient = null;
 
-function initializeSupabase() {
-  if (window.supabase && !supabaseClient) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true, flowType: 'pkce' }
-    });
-    return true;
-  }
-  return false;
-}
+    function initializeSupabase() {
+        if (window.supabase && !supabaseClient) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true, flowType: 'pkce' }
+            });
+            return true;
+        }
+        return false;
+    }
 
-if (typeof window !== 'undefined') {
-  const checkInterval = setInterval(() => {
-    if (initializeSupabase()) clearInterval(checkInterval);
-  }, 100);
-}
+    if (typeof window !== 'undefined') {
+        const checkInterval = setInterval(() => {
+            if (initializeSupabase()) clearInterval(checkInterval);
+        }, 100);
+    }
 
 const AuthModule = {
   container: null,
@@ -264,3 +267,4 @@ window.AuthModule = AuthModule;
 window.authModule = AuthModule;
 window.initAuthModule = async (c) => { AuthModule.container = c || document.body; return await AuthModule.init(c); };
 window.logout = async () => { if (window.authModule) await window.authModule.handleLogout(); };
+}

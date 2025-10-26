@@ -1347,7 +1347,9 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   // GET /api/students/financial-responsibles - List all financial responsibles
   fastify.get('/financial-responsibles', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = (request.headers['x-organization-id'] as string) || '452c0b35-1822-4890-851e-922356c812fb';
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return; // reply already sent
 
       const responsibles = await prisma.financialResponsible.findMany({
         where: { organizationId },
@@ -1370,7 +1372,9 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   // POST /api/students/financial-responsibles - Create new financial responsible
   fastify.post('/financial-responsibles', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const organizationId = (request.headers['x-organization-id'] as string) || '452c0b35-1822-4890-851e-922356c812fb';
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return; // reply already sent
       
       const body = request.body as { name?: string; cpfCnpj?: string; email?: string; phone?: string };
       const { name, cpfCnpj, email, phone } = body;

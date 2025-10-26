@@ -56,6 +56,62 @@ export class GeminiService {
     }
     
     /**
+     * Gera resposta SIMPLES (sem RAG)
+     * Uso: Respostas diretas, geração de JSON, etc.
+     */
+    static async generateSimple(
+        prompt: string,
+        options: {
+            temperature?: number;
+            maxTokens?: number;
+        } = {}
+    ): Promise<string> {
+        if (!this.isAvailable()) {
+            throw new Error('Gemini não está disponível');
+        }
+        
+        try {
+            console.log('🤖 [Gemini] Sending SIMPLE request to model:', MODEL_NAME);
+            console.log('📝 [Gemini] Prompt preview:', prompt.substring(0, 150) + '...');
+            
+            const generationConfig = {
+                temperature: options.temperature || 0.7,
+                maxOutputTokens: options.maxTokens || 2048,
+            };
+            
+            console.log('⚙️ [Gemini] Config:', generationConfig);
+            
+            const result = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig
+            });
+            
+            const response = await result.response;
+            const text = response.text();
+            
+            console.log('✅ [Gemini] Simple response received successfully');
+            console.log('📝 [Gemini] Response length:', text.length);
+            console.log('📝 [Gemini] Response preview:', text.substring(0, 200));
+            
+            // Verificar se bloqueado por safety
+            if (!text || text.length === 0) {
+                console.warn('⚠️ [Gemini] Empty response - checking candidates...');
+                console.log('🔍 [Gemini] Full result:', JSON.stringify(result, null, 2));
+                throw new Error('Gemini retornou resposta vazia. Verifique safety settings ou prompt.');
+            }
+            
+            return text;
+        } catch (error) {
+            console.error('❌ [Gemini] Error details:', error);
+            if (error instanceof Error) {
+                console.error('❌ [Gemini] Error message:', error.message);
+                console.error('❌ [Gemini] Error stack:', error.stack);
+            }
+            throw new Error(`Erro ao gerar resposta com Gemini: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+    
+    /**
      * Gera resposta com contexto RAG
      */
     static async generateRAGResponse(
@@ -92,12 +148,18 @@ INSTRUÇÕES:
 RESPOSTA:`;
 
         try {
+            console.log('🤖 [Gemini] Sending request to model:', MODEL_NAME);
             const result = await model.generateContent(prompt);
             const response = await result.response;
+            console.log('✅ [Gemini] Response received successfully');
             return response.text();
         } catch (error) {
-            console.error('Erro na geração Gemini:', error);
-            throw new Error('Erro ao gerar resposta com Gemini');
+            console.error('❌ [Gemini] Error details:', error);
+            if (error instanceof Error) {
+                console.error('❌ [Gemini] Error message:', error.message);
+                console.error('❌ [Gemini] Error stack:', error.stack);
+            }
+            throw new Error(`Erro ao gerar resposta com Gemini: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
     

@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 /**
  * 📅 Subscriptions Routes - API de Assinaturas dos Alunos
@@ -11,7 +12,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   fastify.get('/', async (request, reply) => {
     try {
       // 🔧 TEMPORARY: Use hardcoded organizationId when no auth
-      const organizationId = request.user?.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
       
       const subscriptions = await prisma.studentSubscription.findMany({
         where: {
@@ -55,7 +56,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = request.user?.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
       
       const subscription = await prisma.studentSubscription.findFirst({
         where: {
@@ -104,7 +105,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
       const { currentPrice, startDate, status } = request.body as { currentPrice?: number; startDate?: string; status?: string };
-      const organizationId = request.user?.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
       
       // Buscar assinatura
       const subscription = await prisma.studentSubscription.findFirst({ where: { id, organizationId } });
@@ -158,9 +159,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = request.headers['x-organization-id'] as string || 
-                            request.user?.organizationId || 
-                            '452c0b35-1822-4890-851e-922356c812fb';
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       
       console.log(`🗑️ DELETE /api/subscriptions/${id} - organizationId: ${organizationId}`);
       

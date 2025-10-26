@@ -13,7 +13,9 @@
 
 // Prevent re-declaration
 if (typeof window.AIModule !== 'undefined') {
-    console.log('✅ AI Module already loaded, skipping');
+    console.log('✅ AI Module already loaded, skipping re-declaration');
+} else {
+    console.log('🔧 [AI Module] First load - defining module...');
 } else {
 
 const AIModule = {
@@ -44,8 +46,14 @@ const AIModule = {
             this.render();
             this.setupEvents();
             
-            // Register globally for onclick handlers
+            // Register globally for onclick handlers (lowercase for consistency)
             window.aiModule = this;
+            window.AIModule = this; // Also export uppercase for compatibility
+            
+            console.log('🌐 [AI Module] Registered globally:', {
+                aiModule: typeof window.aiModule,
+                AIModule: typeof window.AIModule
+            });
             
             // Dispatch module loaded event
             window.app?.dispatchEvent('module:loaded', { name: 'ai' });
@@ -179,7 +187,7 @@ const AIModule = {
                             <h4>Análise de Cursos</h4>
                             <p>Analise documentos de cursos e gere insights pedagógicos</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openCourseAnalysis()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -191,7 +199,7 @@ const AIModule = {
                             <h4>Gerar Planos de Aula</h4>
                             <p>Crie planos de aula completos com IA</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openLessonGenerator()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -203,7 +211,7 @@ const AIModule = {
                             <h4>Sugestões de Técnicas</h4>
                             <p>Gere técnicas de Krav Maga com descrições detalhadas</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openTechniqueGenerator()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -215,7 +223,7 @@ const AIModule = {
                             <h4>Perguntas sobre Documentos</h4>
                             <p>Faça perguntas sobre os documentos indexados</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openRAGChat()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -227,7 +235,7 @@ const AIModule = {
                             <h4>Chat Livre</h4>
                             <p>Converse livremente com a IA</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openCustomChat()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -239,7 +247,7 @@ const AIModule = {
                             <h4>Análises e Insights</h4>
                             <p>Veja análises de desempenho e tendências</p>
                         </div>
-                        <button class="btn-form btn-primary-form btn-sm" onclick="window.aiModule.openAnalytics()">
+                        <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
@@ -409,6 +417,47 @@ const AIModule = {
                 window.app?.showToast?.(`✅ Modelo alterado para ${this.getModelName(this.currentModel)}`, 'info');
             });
         }
+        
+        // ✨ FEATURE BUTTONS - addEventListener pattern (robust for ES6 modules)
+        const featureButtons = this.container.querySelectorAll('.feature-card button');
+        featureButtons.forEach(btn => {
+            const featureCard = btn.closest('.feature-card');
+            if (!featureCard) return;
+            
+            const feature = featureCard.dataset.feature;
+            
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log(`🎯 [AI Module] Feature button clicked: ${feature}`);
+                
+                switch(feature) {
+                    case 'course-analysis':
+                        this.openCourseAnalysis();
+                        break;
+                    case 'lesson-generation':
+                        this.openLessonGenerator();
+                        break;
+                    case 'technique-suggestions':
+                        this.openTechniqueGenerator();
+                        break;
+                    case 'rag-qa':
+                        this.openRAGChat();
+                        break;
+                    case 'custom-chat':
+                        this.openCustomChat();
+                        break;
+                    case 'analytics':
+                        this.openAnalytics();
+                        break;
+                    default:
+                        console.warn(`⚠️ Unknown feature: ${feature}`);
+                }
+            });
+        });
+        
+        console.log(`✅ [AI Module] Event listeners attached (${featureButtons.length} feature buttons)`);
     },
     
     // =========================================================================
@@ -527,31 +576,130 @@ const AIModule = {
     // =========================================================================
     
     async openCourseAnalysis() {
-        window.app?.showToast?.('📚 Recurso em desenvolvimento', 'info');
-        // TODO: Implement course analysis modal
+        const prompt = `📚 **ANÁLISE DE CURSOS**
+
+Analise os cursos disponíveis de Krav Maga e forneça:
+
+1. **Estrutura Curricular**: Resumo da progressão técnica
+2. **Carga Horária**: Distribuição de aulas por nível
+3. **Técnicas Fundamentais**: Principais técnicas de cada nível
+4. **Lacunas ou Melhorias**: Sugestões de conteúdo adicional
+5. **Comparação com Padrões**: Como se compara ao currículo IKMF
+
+Use os documentos RAG disponíveis para embasar a análise.`;
+        
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = prompt;
+            chatInput.focus();
+            window.app?.showToast?.('📚 Prompt carregado - Clique em ENVIAR', 'info');
+        }
     },
     
     async openLessonGenerator() {
-        window.app?.showToast?.('📝 Recurso em desenvolvimento', 'info');
-        // TODO: Implement lesson generator modal
+        const prompt = `📝 **GERADOR DE PLANOS DE AULA**
+
+Crie um plano de aula completo para Krav Maga com:
+
+**Dados Básicos:**
+- Nome: [exemplo: "Defesa contra Socos Altos"]
+- Nível: [Iniciante/Intermediário/Avançado]
+- Duração: 60 minutos
+- Foco Principal: [técnica específica]
+
+**Estrutura Obrigatória:**
+1. **Aquecimento (10 min)**: Exercícios dinâmicos
+2. **Técnica Principal (25 min)**: Passo a passo detalhado
+3. **Treinamento de Aplicação (20 min)**: Drills e sparring
+4. **Volta à Calma (5 min)**: Alongamento e feedback
+
+**Requisitos:**
+- Número de repetições por exercício
+- Materiais necessários
+- Variações para diferentes níveis
+- Pontos de atenção de segurança
+
+Gere o plano completo agora.`;
+        
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = prompt;
+            chatInput.focus();
+            window.app?.showToast?.('📝 Prompt carregado - Clique em ENVIAR', 'info');
+        }
     },
     
     async openTechniqueGenerator() {
-        window.app?.showToast?.('🥋 Recurso em desenvolvimento', 'info');
-        // TODO: Implement technique generator modal
+        const prompt = `🥋 **GERADOR DE TÉCNICAS DE KRAV MAGA**
+
+Gere uma técnica detalhada de Krav Maga com:
+
+**Informações Básicas:**
+- Nome da Técnica: [exemplo: "360° Defense"]
+- Categoria: [Defesa/Ataque/Contra-ataque]
+- Nível: [Iniciante/Intermediário/Avançado]
+- Tipo de Ameaça: [soco/chute/agarramento/arma]
+
+**Descrição Completa:**
+1. **Contexto**: Quando usar esta técnica
+2. **Posição Inicial**: Guarda e postura
+3. **Execução Passo a Passo**: 
+   - Passo 1: [descrição]
+   - Passo 2: [descrição]
+   - Passo 3: [descrição]
+4. **Pontos Críticos**: O que observar
+5. **Erros Comuns**: O que evitar
+6. **Variações**: Adaptações para diferentes situações
+7. **Contramedidas**: O que fazer se falhar
+
+Gere a técnica completa com base no currículo IKMF.`;
+        
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = prompt;
+            chatInput.focus();
+            window.app?.showToast?.('🥋 Prompt carregado - Clique em ENVIAR', 'info');
+        }
     },
     
     async openRAGChat() {
         if (this.ragDocuments.length === 0) {
-            window.app?.showToast?.('⚠️ Adicione documentos primeiro', 'warning');
+            window.app?.showToast?.('⚠️ Adicione documentos RAG primeiro', 'warning');
             return;
         }
-        window.app?.showToast?.('❓ Recurso em desenvolvimento', 'info');
-        // TODO: Implement RAG chat modal
+        
+        const prompt = `❓ **PERGUNTAS SOBRE DOCUMENTOS**
+
+Você tem acesso a ${this.ragDocuments.length} documentos indexados:
+
+${this.ragDocuments.slice(0, 5).map(doc => `- ${doc.name} (${doc.category || 'Geral'})`).join('\n')}
+
+**Exemplos de perguntas:**
+- "Quais são os objetivos da aula 1 de Krav Maga?"
+- "Liste todas as técnicas de defesa contra socos"
+- "Qual é a progressão de graduação na faixa branca?"
+- "Quais materiais são necessários para a aula X?"
+- "Compare as técnicas do nível iniciante e intermediário"
+
+Faça sua pergunta abaixo:`;
+        
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = prompt;
+            chatInput.focus();
+            chatInput.setSelectionRange(prompt.length, prompt.length); // Cursor no final
+            window.app?.showToast?.('❓ Digite sua pergunta no final do prompt', 'info');
+        }
     },
     
     async openCustomChat() {
-        window.app?.showToast?.('💬 Use o chat ao lado', 'info');
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = '';
+            chatInput.placeholder = 'Digite sua mensagem livremente... (ex: "Me ajude a criar um programa de 3 meses para iniciantes")';
+            chatInput.focus();
+            window.app?.showToast?.('💬 Chat livre ativado', 'info');
+        }
     },
     
     async openAnalytics() {
@@ -606,8 +754,15 @@ const AIModule = {
     }
 };
 
-// Global export
+// Global export IMMEDIATELY (before any async operations)
 window.AIModule = AIModule;
+window.aiModule = AIModule; // Lowercase alias for onclick compatibility
+
+console.log('🌐 [AI Module] Exported to global scope:', {
+    AIModule: typeof window.AIModule,
+    aiModule: typeof window.aiModule,
+    methods: Object.keys(AIModule)
+});
 
 } // end if
 

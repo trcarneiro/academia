@@ -45,6 +45,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   // Register
   fastify.post('/register', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Register a new user',
@@ -87,6 +88,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   // Login
   fastify.post('/login', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Login user',
@@ -173,6 +175,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   // Refresh token
   fastify.post('/refresh', {
+    config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Refresh JWT token',

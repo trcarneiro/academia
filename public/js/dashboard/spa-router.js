@@ -1163,6 +1163,58 @@ router.registerRoute('ai', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
+// Agents Module Route
+router.registerRoute('agents', () => {
+    console.log('🤖 Carregando módulo de Agentes...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Agentes Inteligentes';
+    document.querySelector('.breadcrumb').textContent = 'Home / Agentes';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    // Create clean container for Agents Module
+    container.innerHTML = '<div id="agents-module-container" class="agents-isolated"></div>';
+    
+    // Initialize Agents Module
+    const tryInit = (attempts = 0) => {
+        if (typeof window.AgentsModule?.init === 'function') {
+            try {
+                const targetContainer = document.getElementById('agents-module-container') || container;
+                window.AgentsModule.init(targetContainer);
+                console.log('✅ Agents Module initialized');
+            } catch (e) {
+                console.error('❌ Agents module init error:', e);
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro ao inicializar Agentes</h3>
+                        <p>${e.message}</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        } else if (attempts < 30) {
+            setTimeout(() => tryInit(attempts + 1), 150);
+        } else {
+            console.error('❌ Agents Module não carregou após 30 tentativas');
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não carregado</h3>
+                    <p>O módulo de agentes não foi encontrado.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                </div>
+            `;
+        }
+    };
+    tryInit();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
 // AI Monitor Module Route
 router.registerRoute('ai-monitor', () => {
     console.log('🤖 Carregando módulo AI Monitor...');
