@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { prisma } from '@/utils/database';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 export default async function instructorsRoutes(
   fastify: FastifyInstance,
@@ -8,7 +9,9 @@ export default async function instructorsRoutes(
   // GET /api/instructors - list instructors (lightweight)
   fastify.get('/', async (request, reply) => {
     try {
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       const instructors = await prisma.instructor.findMany({
+        where: { organizationId },
         select: {
           id: true,
           userId: true,
@@ -38,8 +41,9 @@ export default async function instructorsRoutes(
   fastify.get('/:id', async (request, reply) => {
     try {
       const { id } = request.params as any;
-      const instructor = await prisma.instructor.findUnique({
-        where: { id },
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const instructor = await prisma.instructor.findFirst({
+        where: { id, organizationId },
         include: { user: true }
       });
       if (!instructor) { reply.code(404); return { success: false, error: 'Instructor not found' }; }
@@ -67,22 +71,10 @@ export default async function instructorsRoutes(
       }
 
       // Get or create organization
-      let organizationId = payload.organizationId;
-      if (!organizationId) {
-        let organization = await prisma.organization.findFirst();
-        if (!organization) {
-          organization = await prisma.organization.create({
-            data: {
-              name: 'Academia Krav Maga',
-              slug: 'academia-krav-maga',
-              country: 'Brazil',
-              maxStudents: 100,
-              maxStaff: 10,
-              isActive: true
-            }
-          });
-        }
-        organizationId = organization.id;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      if (payload.organizationId && payload.organizationId !== organizationId) {
+        reply.code(403);
+        return { success: false, error: 'Access denied to this organization' };
       }
 
       console.log('Using organizationId:', organizationId);
@@ -226,14 +218,15 @@ export default async function instructorsRoutes(
     try {
       const { id } = request.params as any;
       const payload = request.body as any;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
       console.log('=== PUT INSTRUCTOR DEBUG ===');
       console.log('ID:', id);
       console.log('Payload:', JSON.stringify(payload, null, 2));
 
       // Find existing instructor
-      const existingInstructor = await prisma.instructor.findUnique({
-        where: { id },
+      const existingInstructor = await prisma.instructor.findFirst({
+        where: { id, organizationId },
         include: { 
           user: {
             select: {

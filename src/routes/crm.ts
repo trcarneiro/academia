@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { getDefaultOrganizationId } from '@/config/dev';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 import { LeadStage, LeadStatus, LeadTemperature, Prisma } from '@prisma/client';
 
 /**
@@ -19,9 +20,7 @@ export default async function crmRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/leads', async (request, reply: FastifyReply) => {
     try {
-      const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            getDefaultOrganizationId();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
       const { 
         stage, 
@@ -122,9 +121,10 @@ export default async function crmRoutes(fastify: FastifyInstance) {
   fastify.get('/leads/:id', async (request, reply: FastifyReply) => {
     try {
       const { id } = request.params as any;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
-      const lead = await prisma.lead.findUnique({
-        where: { id },
+      const lead = await prisma.lead.findFirst({
+        where: { id, organizationId },
         include: {
           assignedTo: {
             select: {
@@ -196,9 +196,7 @@ export default async function crmRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/leads', async (request, reply: FastifyReply) => {
     try {
-      const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.body as any).organizationId ||
-                            getDefaultOrganizationId();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
       const leadData = request.body as any;
 

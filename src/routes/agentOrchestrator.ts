@@ -3,7 +3,7 @@
  * API para criar, gerenciar e executar agentes autônomos
  */
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';\nimport { requireOrganizationId } from '@/utils/tenantHelpers';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { AgentOrchestratorService, AgentType, AgentConfig } from '@/services/agentOrchestratorService';
 
@@ -35,7 +35,8 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/orchestrator/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            const organizationId = (request.headers['x-organization-id'] as string) || 
+                                   (request.body as any)?.organizationId;
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -73,7 +74,8 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/orchestrator/create', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            const organizationId = (request.headers['x-organization-id'] as string) || 
+                                   (request.body as any)?.organizationId;
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -119,7 +121,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/orchestrator/list', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            const organizationId = request.headers['x-organization-id'] as string;
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -195,7 +197,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/orchestrator/monitor', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            const organizationId = request.headers['x-organization-id'] as string;
             
             if (!organizationId) {
                 return reply.status(400).send({
@@ -337,7 +339,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/orchestrator/interactions', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+            const organizationId = request.headers['x-organization-id'] as string;
             
             if (!organizationId) {
                 return reply.status(400).send({

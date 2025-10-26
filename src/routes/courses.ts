@@ -184,7 +184,9 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.post('/import', async (request, reply) => {
     try {
       const body = (request.body as any) || {};
-      const orgId = await getOrganizationId(request);
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const orgId = requireOrganizationId(request as any, reply as any) as string;
+      if (!orgId) return;
 
       // Basic mapping and defaults
       const name: string = body.name?.toString().trim();

@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { prisma } from '@/utils/database';
 import { z } from 'zod';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 // Validation schemas
 const createUnitSchema = z.object({
@@ -39,13 +40,12 @@ export default async function unitsRoutes(
   // Get all units with organization hierarchy
   fastify.get('/', async (request, reply) => {
     try {
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       const query = querySchema.parse(request.query);
       
-      const where: any = {};
+      const where: any = { organizationId };
       
-      if (query.organizationId) {
-        where.organizationId = query.organizationId;
-      }
+      // Ignore query.organizationId to enforce header/tenant scoping
       
       if (query.isActive !== undefined) {
         where.isActive = query.isActive;
@@ -157,9 +157,10 @@ export default async function unitsRoutes(
   fastify.get('/:id', async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       
-      const unit = await prisma.unit.findUnique({
-        where: { id },
+      const unit = await prisma.unit.findFirst({
+        where: { id, organizationId },
         include: {
           organization: {
             select: {
@@ -221,11 +222,14 @@ export default async function unitsRoutes(
   fastify.post('/', async (request, reply) => {
     try {
       const data = createUnitSchema.parse(request.body);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      if (data.organizationId !== organizationId) {
+        reply.code(403);
+        return { success: false, error: 'Access denied to this organization' };
+      }
       
       // Verify organization exists
-      const organization = await prisma.organization.findUnique({
-        where: { id: data.organizationId }
-      });
+      const organization = await prisma.organization.findUnique({ where: { id: data.organizationId } });
       
       if (!organization) {
         reply.code(404);

@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { AgendaController } from '@/controllers/agendaController';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 interface AgendaQuerystring {
   date?: string;
@@ -25,10 +26,12 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
     Querystring: AgendaQuerystring;
   }>('/classes', async (request, reply) => {
     try {
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       const { date, startDate, endDate, instructor, course, status, type, limit = '50', offset = '0' } = request.query;
       const normalizedType = (type === 'CLASS' || type === 'PERSONAL_SESSION' || type === 'TURMA') ? type : undefined;
       
       const filters: any = {
+        organizationId,
         limit: parseInt(limit, 10),
         offset: parseInt(offset, 10)
       };
@@ -53,9 +56,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/stats - Estatísticas do dia
-  fastify.get('/stats', async (_request, reply) => {
+  fastify.get('/stats', async (request, reply) => {
     try {
-      const stats = await agendaController.getDayStats();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const stats = await agendaController.getDayStats({ organizationId } as any);
       return reply.code(200).send(stats);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching agenda stats:');
@@ -67,9 +71,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/today - Aulas de hoje
-  fastify.get('/today', async (_request, reply) => {
+  fastify.get('/today', async (request, reply) => {
     try {
-      const todayClasses = await agendaController.getTodayClasses();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const todayClasses = await agendaController.getTodayClasses({ organizationId } as any);
       return reply.code(200).send(todayClasses);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching today classes:');
@@ -81,9 +86,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/week - Aulas da semana
-  fastify.get('/week', async (_request, reply) => {
+  fastify.get('/week', async (request, reply) => {
     try {
-      const weekClasses = await agendaController.getWeekClasses();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const weekClasses = await agendaController.getWeekClasses({ organizationId } as any);
       return reply.code(200).send(weekClasses);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching week classes:');
@@ -95,9 +101,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/instructors - Lista de instrutores
-  fastify.get('/instructors', async (_request, reply) => {
+  fastify.get('/instructors', async (request, reply) => {
     try {
-      const instructors = await agendaController.getInstructors();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const instructors = await agendaController.getInstructors({ organizationId } as any);
       return reply.code(200).send(instructors);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching instructors:');
@@ -109,9 +116,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/courses - Lista de cursos
-  fastify.get('/courses', async (_request, reply) => {
+  fastify.get('/courses', async (request, reply) => {
     try {
-      const courses = await agendaController.getCourses();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const courses = await agendaController.getCourses({ organizationId } as any);
       return reply.code(200).send(courses);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching courses:');
@@ -130,6 +138,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const { id } = request.params;
       const { status } = request.body;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
       if (!status || !['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].includes(status)) {
         return reply.code(400).send({
@@ -138,7 +147,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      const updatedClass = await agendaController.updateClassStatus(id, status);
+      const updatedClass = await agendaController.updateClassStatus(id, status, { organizationId } as any);
       return reply.code(200).send(updatedClass);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error updating class status:');
@@ -155,7 +164,8 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   }>('/class/:id', async (request, reply) => {
     try {
       const { id } = request.params;
-      const classDetails = await agendaController.getClassDetails(id);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const classDetails = await agendaController.getClassDetails(id, { organizationId } as any);
       
       if (!classDetails.success) {
         return reply.code(404).send(classDetails);
@@ -177,6 +187,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   }>('/schedule/:date', async (request, reply) => {
     try {
       const { date } = request.params;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       
       // Validate date format
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -186,7 +197,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      const schedule = await agendaController.getScheduleByDate(date);
+      const schedule = await agendaController.getScheduleByDate(date, { organizationId } as any);
       return reply.code(200).send(schedule);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching schedule:');
@@ -198,9 +209,10 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /api/agenda/turmas/schedules - Turmas com horários
-  fastify.get('/turmas/schedules', async (_request, reply) => {
+  fastify.get('/turmas/schedules', async (request, reply) => {
     try {
-      const turmasWithSchedules = await agendaController.getTurmasWithSchedules();
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const turmasWithSchedules = await agendaController.getTurmasWithSchedules({ organizationId } as any);
       return reply.code(200).send(turmasWithSchedules);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching turmas schedules:');
@@ -217,6 +229,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
   }>('/checkins', async (request, reply) => {
     try {
       const { date } = request.query;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       
       if (!date) {
         return reply.code(400).send({
@@ -233,7 +246,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      const checkins = await agendaController.getCheckinsByDate(date);
+      const checkins = await agendaController.getCheckinsByDate(date, { organizationId } as any);
       return reply.code(200).send(checkins);
     } catch (error) {
   fastify.log.error({ err: error }, 'Error fetching checkins:');
