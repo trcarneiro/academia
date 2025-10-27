@@ -45,9 +45,9 @@ export class AgendaController {
   /**
    * Buscar aulas com filtros
    */
-  async getClasses(filters: ClassFilters) {
+  async getClasses(filters: ClassFilters & { organizationId?: string }) {
     try {
-      const whereClause: any = {};
+      const whereClause: any = {};\n      if (filters.organizationId) {\n        whereClause.organizationId = filters.organizationId;\n      }
 
       // Filtro por data (suporte para data única ou intervalo)
       if (filters.startDate && filters.endDate) {
@@ -440,7 +440,7 @@ export class AgendaController {
   /**
    * Estatísticas do dia
    */
-  async getDayStats() {
+  async getDayStats(ctx?: { organizationId?: string }) {
     try {
       const today = new Date();
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -454,16 +454,14 @@ export class AgendaController {
         activeInstructorsCount
       ] = await Promise.all([
         this.prisma.class.count({
-          where: {
-            startTime: {
+          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
               gte: startOfDay,
               lt: endOfDay
             }
           }
         }),
         this.prisma.class.count({
-          where: {
-            startTime: {
+          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
               gte: startOfDay,
               lt: endOfDay
             },
@@ -471,8 +469,7 @@ export class AgendaController {
           }
         }),
         this.prisma.class.count({
-          where: {
-            startTime: {
+          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
               gte: startOfDay,
               lt: endOfDay
             },
@@ -481,8 +478,7 @@ export class AgendaController {
         }),
         this.prisma.attendance.count({
           where: {
-            class: {
-              startTime: {
+            class: {\n              ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n              startTime: {
                 gte: startOfDay,
                 lt: endOfDay
               }
@@ -491,8 +487,7 @@ export class AgendaController {
           }
         }),
         this.prisma.class.findMany({
-          where: {
-            startTime: {
+          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
               gte: startOfDay,
               lt: endOfDay
             }
@@ -542,15 +537,14 @@ export class AgendaController {
   /**
    * Aulas de hoje
    */
-  async getTodayClasses() {
+  async getTodayClasses(ctx?: { organizationId?: string }) {
     try {
       const today = new Date();
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
       const classes = await this.prisma.class.findMany({
-        where: {
-          // Use calendar day (class.date) as the single source of truth to avoid timezone drift
+        where: {\n          ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n          // Use calendar day (class.date) as the single source of truth to avoid timezone drift
           date: {
             gte: startOfDay,
             lt: endOfDay
@@ -632,7 +626,7 @@ export class AgendaController {
   /**
    * Aulas da semana
    */
-  async getWeekClasses() {
+  async getWeekClasses(ctx?: { organizationId?: string }) {
     try {
       const today = new Date();
       const startOfWeek = new Date(today);
@@ -643,8 +637,7 @@ export class AgendaController {
       endOfWeek.setDate(startOfWeek.getDate() + 7);
 
       const classes = await this.prisma.class.findMany({
-        where: {
-          startTime: {
+        where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
             gte: startOfWeek,
             lt: endOfWeek
           }
@@ -718,10 +711,9 @@ export class AgendaController {
   /**
    * Lista de instrutores
    */
-  async getInstructors() {
+  async getInstructors(ctx?: { organizationId?: string }) {
     try {
-      const instructors = await this.prisma.instructor.findMany({
-        select: {
+      const instructors = await this.prisma.instructor.findMany({\n        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},\n        select: {
           id: true,
           user: { select: { firstName: true, lastName: true, email: true } },
           specializations: true
@@ -749,10 +741,9 @@ export class AgendaController {
   /**
    * Lista de cursos
    */
-  async getCourses() {
+  async getCourses(ctx?: { organizationId?: string }) {
     try {
-      const courses = await this.prisma.course.findMany({
-        select: {
+      const courses = await this.prisma.course.findMany({\n        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},\n        select: {
           id: true,
           name: true,
           category: true,
@@ -776,7 +767,7 @@ export class AgendaController {
   /**
    * Atualizar status da aula
    */
-  async updateClassStatus(classId: string, status: string) {
+  async updateClassStatus(classId: string, status: string, ctx?: { organizationId?: string }) {
     try {
   const updatedClass = await this.prisma.class.update({
         where: { id: classId },
@@ -821,7 +812,7 @@ export class AgendaController {
   /**
    * Detalhes da aula
    */
-  async getClassDetails(classId: string) {
+  async getClassDetails(classId: string, ctx?: { organizationId?: string }) {
     try {
       // Verificar se é uma classe virtual (formato: turma-{id}-{date})
       if (classId.startsWith('turma-')) {
@@ -834,8 +825,7 @@ export class AgendaController {
       }
 
       // Buscar classe real no banco
-  const classDetails = await this.prisma.class.findUnique({
-        where: { id: classId },
+  const classDetails = await this.prisma.class.findFirst({\n        where: { id: classId, ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}) },
         include: {
           course: {
             select: {
@@ -1152,15 +1142,14 @@ export class AgendaController {
   /**
    * Agenda de uma data específica
    */
-  async getScheduleByDate(date: string) {
+  async getScheduleByDate(date: string, ctx?: { organizationId?: string }) {
     try {
       const targetDate = new Date(date);
       const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
       const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
 
   const classes = await this.prisma.class.findMany({
-        where: {
-          startTime: {
+        where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
             gte: startOfDay,
             lt: endOfDay
           }
@@ -1224,7 +1213,7 @@ export class AgendaController {
   /**
    * Get turmas with their schedules
    */
-  async getTurmasWithSchedules() {
+  async getTurmasWithSchedules(ctx?: { organizationId?: string }) {
     try {
       const turmas = await this.prisma.turma.findMany({
         include: {
@@ -1281,7 +1270,7 @@ export class AgendaController {
   /**
    * Get check-ins by date
    */
-  async getCheckinsByDate(date: string) {
+  async getCheckinsByDate(date: string, ctx?: { organizationId?: string }) {
     try {
       const targetDate = new Date(date);
       const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
@@ -1341,3 +1330,4 @@ export class AgendaController {
     return `Aula ${normalizedNumber} - ${baseTitle}`;
   }
 }
+

@@ -242,7 +242,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
   fastify.patch('/:creditId/cancel-renewal', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { creditId } = request.params as { creditId: string };
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!creditId || !organizationId) {
         return reply.code(400).send({
@@ -302,7 +303,8 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
   fastify.get('/renewal-history/:studentId', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { studentId } = request.params as { studentId: string };
-      const organizationId = request.headers['x-organization-id'] as string;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       if (!studentId || !organizationId) {
         return reply.code(400).send({

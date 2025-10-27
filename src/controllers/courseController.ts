@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { courseService, CourseData, UpdateCourseData } from '../services/courseService';
 import { prisma } from '@/utils/database';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 // Esquema de validação para criação de curso  
 const createCourseSchema = z.object({
@@ -95,7 +96,8 @@ async function resolveMartialArtId(organizationId: string, desiredName?: string)
 export const courseController = {
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       
       // Get query parameters
       const query = request.query as { active?: string };
@@ -111,7 +113,8 @@ export const courseController = {
 
   async show(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       const { id } = request.params;
       const course = await courseService.getCourseById(id, organizationId);
       if (!course) {
@@ -126,7 +129,8 @@ export const courseController = {
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       const input = createCourseSchema.parse(request.body);
 
       const existingCourse = await courseService.findCourseByName(input.name, organizationId);
@@ -157,7 +161,10 @@ export const courseController = {
 
   async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       const { id } = request.params;
       const input = updateCourseSchema.parse(request.body);
 
@@ -190,8 +197,8 @@ export const courseController = {
       console.log('🗑️ Attempting to delete course:', id);
       
       // Verificar se o curso existe primeiro
-      const existingCourse = await prisma.course.findUnique({
-        where: { id },
+      const existingCourse = await prisma.course.findFirst({
+        where: { id, organizationId },
         select: { id: true, name: true }
       });
 

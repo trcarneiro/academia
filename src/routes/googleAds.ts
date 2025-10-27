@@ -11,6 +11,7 @@ import { CsvImportService } from '@/services/csvImportService';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { getDefaultOrganizationId } from '@/config/dev';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
 // ============================================================================
 // ROUTES
@@ -36,7 +37,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/auth/url', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             // Get stored OAuth2 config from CrmSettings (same pattern as callback)
             const settings = await prisma.crmSettings.findUnique({
@@ -95,7 +96,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             // Get stored OAuth2 config from CrmSettings
             const settings = await prisma.crmSettings.findUnique({
@@ -345,7 +346,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             await prisma.crmSettings.upsert({
                 where: { organizationId },
@@ -385,7 +386,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/auth/credentials', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             const settings = await prisma.crmSettings.findUnique({
                 where: { organizationId },
@@ -430,7 +431,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/auth/status', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             const settings = await prisma.crmSettings.findUnique({
                 where: { organizationId },
@@ -472,7 +473,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/auth/test', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             const service = new GoogleAdsService(organizationId);
             
             const result = await service.testConnection();
@@ -499,7 +500,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/auth/disconnect', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             const service = new GoogleAdsService(organizationId);
             
             await service.disconnect();
@@ -529,7 +530,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/sync/campaigns', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             const service = new GoogleAdsService(organizationId);
             
             const count = await service.syncCampaigns();
@@ -565,7 +566,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
     }>, reply: FastifyReply) => {
         try {
             const { campaignId } = request.params;
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             const service = new GoogleAdsService(organizationId);
             
             const count = await service.syncAdGroups(campaignId);
@@ -592,7 +593,7 @@ export default async function googleAdsRoutes(fastify: FastifyInstance) {
      */
     fastify.get('/campaigns', async (request, reply: FastifyReply) => {
         try {
-            const organizationId = getDefaultOrganizationId();
+            const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
             
             const campaigns = await prisma.googleAdsCampaign.findMany({
                 where: { organizationId },

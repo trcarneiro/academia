@@ -38,6 +38,8 @@ model Organization {
   activityTrackingSettings ActivityTrackingSettings?
   agendaItems              AgendaItem[]
   aiAgents                 AIAgent[]
+  agentInteractions        AgentInteraction[]        @relation("AgentInteractions")
+  agentPermissions         AgentPermission[]         @relation("AgentPermissions")
   asaasCustomers           AsaasCustomer[]
   attendances              Attendance[]
   badges                   Badge[]
@@ -354,6 +356,7 @@ model User {
   updatedAt          DateTime            @default(now())
   agendaItems        AgendaItem[]
   agentConversations AgentConversation[]
+  approvedPermissions AgentPermission[]  @relation("ApprovedPermissions")
   instructor         Instructor?
   leadActivities     LeadActivity[]      @relation("LeadActivities")
   leadNotes          LeadNote[]          @relation("LeadNotes")
@@ -2181,6 +2184,8 @@ model AIAgent {
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   conversations  AgentConversation[]
+  interactions   AgentInteraction[]  @relation("AgentInteractions")
+  permissions    AgentPermission[]   @relation("AgentPermissions")
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, isActive])
@@ -2208,6 +2213,51 @@ model AgentConversation {
   @@index([studentId])
   @@index([createdAt])
   @@map("agent_conversations")
+}
+
+model AgentInteraction {
+  id             String       @id @default(uuid())
+  agentId        String
+  organizationId String
+  type           String // REPORT, SUGGESTION, REQUEST, ERROR
+  message        String
+  action         Json? // { label: string, url: string }
+  metadata       Json? // Additional context
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  agent          AIAgent      @relation("AgentInteractions", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentInteractions", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([agentId])
+  @@index([type])
+  @@index([isRead])
+  @@map("agent_interactions")
+}
+
+model AgentPermission {
+  id             String       @id @default(uuid())
+  agentId        String
+  organizationId String
+  action         String // Description of action
+  details        Json // { action: string, students?: string[], cost?: string, etc }
+  status         String       @default("PENDING") // PENDING, APPROVED, DENIED
+  approvedBy     String?
+  approvedAt     DateTime?
+  deniedReason   String?
+  executedAt     DateTime?
+  executionResult Json? // Result after execution
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
+  approver       User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
+
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_permissions")
 }
 
 model StudentProgress {

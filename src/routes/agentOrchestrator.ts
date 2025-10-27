@@ -6,6 +6,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { AgentOrchestratorService, AgentType, AgentConfig } from '@/services/agentOrchestratorService';
+import { AgentInteractionService } from '@/services/agentInteractionService';
+import { AgentPermissionService } from '@/services/agentPermissionService';
+import { AgentAutomationService } from '@/services/agentAutomationService';
 
 // Schemas de validação
 const CreateAgentSchema = z.object({
@@ -348,53 +351,52 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // TODO: Implementar query no banco de dados
-            // Por enquanto, retornar dados mockados
-            const mockData = {
-                interactions: [
-                    {
-                        id: '1',
-                        agentId: 'agent-admin-1',
-                        agentName: 'Assistente Administrativo',
-                        agentType: 'ADMINISTRATIVE',
-                        type: 'REPORT',
-                        message: '📊 Detectados 3 alunos com pagamentos atrasados há mais de 7 dias',
-                        createdAt: new Date(Date.now() - 3600000).toISOString(),
-                        action: {
-                            label: 'Ver alunos',
-                            url: '#students?filter=payment-overdue'
-                        }
-                    },
-                    {
-                        id: '2',
-                        agentId: 'agent-admin-1',
-                        agentName: 'Assistente Administrativo',
-                        agentType: 'ADMINISTRATIVE',
-                        type: 'SUGGESTION',
-                        message: '💡 Sugestão: Criar promoção de Black Friday com 20% de desconto nos planos anuais',
-                        createdAt: new Date(Date.now() - 7200000).toISOString()
-                    }
-                ],
-                pendingPermissions: [
-                    {
-                        id: 'perm-1',
-                        agentId: 'agent-admin-1',
-                        agentName: 'Assistente Administrativo',
-                        agentType: 'ADMINISTRATIVE',
-                        action: 'Enviar SMS de cobrança para 3 alunos inadimplentes',
-                        createdAt: new Date(Date.now() - 1800000).toISOString(),
-                        details: {
-                            action: 'send_payment_reminder_sms',
-                            students: ['João Silva', 'Maria Santos', 'Pedro Oliveira'],
-                            cost: 'R$ 0,30 (3 SMS x R$ 0,10)'
-                        }
-                    }
-                ]
-            };
+            // Buscar interações recentes (últimas 10, incluindo já lidas)
+            const interactionsResult = await AgentInteractionService.listByOrganization(
+                organizationId, 
+                { limit: 10, includeRead: true }
+            );
+            
+            // Buscar permissões pendentes
+            const permissionsResult = await AgentPermissionService.listPending(organizationId);
+            
+            if (!interactionsResult.success || !permissionsResult.success) {
+                return reply.status(500).send({
+                    success: false,
+                    error: 'Failed to fetch data from database'
+                });
+            }
+            
+            // Formatar interações para o frontend
+            const formattedInteractions = (interactionsResult.data || []).map((interaction: any) => ({
+                id: interaction.id,
+                agentId: interaction.agentId,
+                agentName: interaction.agent?.name || 'Unknown Agent',
+                agentType: interaction.agent?.type || 'ADMINISTRATIVE',
+                type: interaction.type,
+                message: interaction.message,
+                createdAt: interaction.createdAt,
+                isRead: interaction.isRead,
+                action: interaction.action // JSON com { label, url }
+            }));
+            
+            // Formatar permissões pendentes para o frontend
+            const formattedPermissions = (permissionsResult.data || []).map((permission: any) => ({
+                id: permission.id,
+                agentId: permission.agentId,
+                agentName: permission.agent?.name || 'Unknown Agent',
+                agentType: permission.agent?.type || 'ADMINISTRATIVE',
+                action: permission.action,
+                createdAt: permission.createdAt,
+                details: permission.details // JSON com detalhes da ação
+            }));
             
             reply.send({
                 success: true,
-                data: mockData
+                data: {
+                    interactions: formattedInteractions,
+                    pendingPermissions: formattedPermissions
+                }
             });
             
         } catch (error) {
@@ -414,15 +416,46 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
         try {
             const { permissionId } = request.params as { permissionId: string };
             const body = request.body as { approved: boolean };
+            const userId = request.headers['x-user-id'] as string; // Assumir que vem do middleware de auth
             
-            // TODO: Implementar lógica no banco de dados
-            // Por enquanto, apenas simular aprovação
+            if (!userId) {
+                return reply.status(401).send({
+                    success: false,
+                    error: 'User ID is required (authentication needed)'
+                });
+            }
+            
+            // Atualizar status da permissão
+            const result = await AgentPermissionService.updateStatus({
+                permissionId,
+                status: body.approved ? 'APPROVED' : 'DENIED',
+                approvedBy: userId,
+                deniedReason: body.approved ? undefined : 'Recusado pelo usuário'
+            });
+            
+            if (!result.success) {
+                return reply.status(500).send({
+                    success: false,
+                    error: result.error || 'Failed to update permission'
+                });
+            }
+            
+            // Se aprovado, executar a ação (isso pode ser feito em background também)
+            if (body.approved && result.data) {
+                // TODO: Implementar execução da ação aprovada
+                // Por exemplo: NotificationTool.executeApprovedAction(permissionId, details)
+                fastify.log.info('Permission approved, action will be executed:', {
+                    permissionId,
+                    action: result.data.action
+                });
+            }
             
             reply.send({
                 success: true,
                 data: {
                     permissionId,
                     approved: body.approved,
+                    status: result.data?.status,
                     message: body.approved 
                         ? 'Permissão aprovada. Agente executará a ação em breve.' 
                         : 'Permissão recusada. Nenhuma ação será tomada.'
@@ -434,6 +467,70 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             reply.status(500).send({
                 success: false,
                 error: 'Failed to handle permission'
+            });
+        }
+    });
+    
+    /**
+     * POST /api/agents/orchestrator/triggers/payment-overdue
+     * Disparar verificação de pagamentos atrasados (trigger manual)
+     */
+    fastify.post('/orchestrator/triggers/payment-overdue', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const organizationId = request.headers['x-organization-id'] as string;
+            const body = request.body as { daysOverdue?: number };
+            
+            if (!organizationId) {
+                return reply.status(400).send({
+                    success: false,
+                    error: 'organizationId is required'
+                });
+            }
+            
+            const result = await AgentAutomationService.checkPaymentOverdue(
+                organizationId,
+                body.daysOverdue || 7
+            );
+            
+            reply.send(result);
+            
+        } catch (error) {
+            fastify.log.error('Error triggering payment overdue check:', error);
+            reply.status(500).send({
+                success: false,
+                error: 'Failed to trigger payment overdue check'
+            });
+        }
+    });
+    
+    /**
+     * POST /api/agents/orchestrator/triggers/student-inactive
+     * Disparar verificação de alunos inativos (trigger manual)
+     */
+    fastify.post('/orchestrator/triggers/student-inactive', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const organizationId = request.headers['x-organization-id'] as string;
+            const body = request.body as { daysInactive?: number };
+            
+            if (!organizationId) {
+                return reply.status(400).send({
+                    success: false,
+                    error: 'organizationId is required'
+                });
+            }
+            
+            const result = await AgentAutomationService.checkStudentInactive(
+                organizationId,
+                body.daysInactive || 30
+            );
+            
+            reply.send(result);
+            
+        } catch (error) {
+            fastify.log.error('Error triggering student inactive check:', error);
+            reply.status(500).send({
+                success: false,
+                error: 'Failed to trigger student inactive check'
             });
         }
     });
