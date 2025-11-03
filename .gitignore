@@ -78,3 +78,4 @@ BACKUP_SEGURANCA_20252410_0127
 .db_password
 .litespeed_password
 *.backup
+docs
