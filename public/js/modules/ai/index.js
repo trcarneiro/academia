@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI MODULE - MODERN SINGLE-FILE VERSION
  * Replaces legacy multi-file structure (controllers/services/views)
  * COMPLIANCE: AGENTS.md v2.1 - Single-file pattern
@@ -13,16 +13,15 @@
 
 // Prevent re-declaration
 if (typeof window.AIModule !== 'undefined') {
-    console.log('✅ AI Module already loaded, skipping re-declaration');
+    console.log('âœ… AI Module already loaded, skipping re-declaration');
 } else {
-    console.log('🔧 [AI Module] First load - defining module...');
-} else {
+    console.log('ðŸ”§ [AI Module] First load - defining module...');
 
 const AIModule = {
     container: null,
     moduleAPI: null,
     currentChatThread: [],
-    availableModels: ['gemini', 'claude', 'gpt'],
+    availableModels: ['gemini-2.5', 'gemini-2.0', 'gemini-1.5', 'claude', 'gpt'],
     currentModel: 'gemini',
     ragDocuments: [],
     
@@ -31,10 +30,15 @@ const AIModule = {
     // =========================================================================
     
     async init(container) {
-        console.log('🤖 [AI Module] Initializing...');
+        console.log('ðŸ¤– [AI Module] Initializing...');
         
+        // Container é opcional quando chamado via app.js (sem render)
         if (!container) {
-            console.error('❌ [AI Module] Container not provided');
+            console.log('ℹ️ [AI Module] Initialized without container (app.js mode)');
+            await this.initializeAPI();
+            window.aiModule = this;
+            window.AIModule = this;
+            window.ai = this;
             return;
         }
         
@@ -50,7 +54,7 @@ const AIModule = {
             window.aiModule = this;
             window.AIModule = this; // Also export uppercase for compatibility
             
-            console.log('🌐 [AI Module] Registered globally:', {
+            console.log('ðŸŒ [AI Module] Registered globally:', {
                 aiModule: typeof window.aiModule,
                 AIModule: typeof window.AIModule
             });
@@ -58,9 +62,9 @@ const AIModule = {
             // Dispatch module loaded event
             window.app?.dispatchEvent('module:loaded', { name: 'ai' });
             
-            console.log('✅ [AI Module] Initialized successfully');
+            console.log('âœ… [AI Module] Initialized successfully');
         } catch (error) {
-            console.error('❌ [AI Module] Initialization failed:', error);
+            console.error('âŒ [AI Module] Initialization failed:', error);
             window.app?.handleError?.(error, { module: 'ai', context: 'init' });
         }
     },
@@ -72,7 +76,7 @@ const AIModule = {
     async initializeAPI() {
         await waitForAPIClient();
         this.moduleAPI = window.createModuleAPI('AI');
-        console.log('✅ [AI Module] API client initialized');
+        console.log('âœ… [AI Module] API client initialized');
     },
     
     // =========================================================================
@@ -85,10 +89,10 @@ const AIModule = {
             const ragRes = await this.moduleAPI.request('/api/rag/documents');
             if (ragRes.success) {
                 this.ragDocuments = ragRes.data || [];
-                console.log(`📚 Loaded ${this.ragDocuments.length} RAG documents`);
+                console.log(`ðŸ“š Loaded ${this.ragDocuments.length} RAG documents`);
             }
         } catch (error) {
-            console.warn('⚠️ Could not load RAG documents:', error);
+            console.warn('âš ï¸ Could not load RAG documents:', error);
             this.ragDocuments = [];
         }
     },
@@ -106,16 +110,16 @@ const AIModule = {
                         <div class="header-title-section">
                             <h1><i class="fas fa-brain"></i> IA & Agentes Inteligentes</h1>
                             <nav class="breadcrumb">
-                                <span>🏠 Home</span>
-                                <span>›</span>
-                                <span>🤖 Inteligência Artificial</span>
+                                <span>ðŸ  Home</span>
+                                <span>â€º</span>
+                                <span>ðŸ¤– InteligÃªncia Artificial</span>
                             </nav>
                         </div>
                         <div class="header-actions">
                             <select id="ai-model-selector" class="form-control model-selector">
-                                <option value="gemini" ${this.currentModel === 'gemini' ? 'selected' : ''}>🔷 Gemini (Google)</option>
-                                <option value="claude" ${this.currentModel === 'claude' ? 'selected' : ''}>🧠 Claude (Anthropic)</option>
-                                <option value="gpt" ${this.currentModel === 'gpt' ? 'selected' : ''}>💬 GPT-4 (OpenAI)</option>
+                                <option value="gemini" ${this.currentModel === 'gemini' ? 'selected' : ''}>ðŸ”· Gemini (Google)</option>
+                                <option value="claude" ${this.currentModel === 'claude' ? 'selected' : ''}>ðŸ§  Claude (Anthropic)</option>
+                                <option value="gpt" ${this.currentModel === 'gpt' ? 'selected' : ''}>ðŸ’¬ GPT-4 (OpenAI)</option>
                             </select>
                         </div>
                     </div>
@@ -124,21 +128,21 @@ const AIModule = {
                 <!-- Stats Overview -->
                 <div class="module-isolated-ai-stats data-card-premium">
                     <div class="stat-card-enhanced stat-gradient-primary">
-                        <div class="stat-icon">🤖</div>
+                        <div class="stat-icon">ðŸ¤–</div>
                         <div class="stat-content">
                             <div class="stat-value">3</div>
                             <div class="stat-label">Modelos AI</div>
                         </div>
                     </div>
                     <div class="stat-card-enhanced stat-gradient-success">
-                        <div class="stat-icon">📚</div>
+                        <div class="stat-icon">ðŸ“š</div>
                         <div class="stat-content">
                             <div class="stat-value">${this.ragDocuments.length}</div>
                             <div class="stat-label">Documentos RAG</div>
                         </div>
                     </div>
                     <div class="stat-card-enhanced stat-gradient-info">
-                        <div class="stat-icon">💬</div>
+                        <div class="stat-icon">ðŸ’¬</div>
                         <div class="stat-content">
                             <div class="stat-value">${this.currentChatThread.length}</div>
                             <div class="stat-label">Mensagens</div>
@@ -182,10 +186,10 @@ const AIModule = {
                 <div class="features-list">
                     <!-- Course Analysis -->
                     <div class="feature-card" data-feature="course-analysis">
-                        <div class="feature-icon">📚</div>
+                        <div class="feature-icon">ðŸ“š</div>
                         <div class="feature-content">
-                            <h4>Análise de Cursos</h4>
-                            <p>Analise documentos de cursos e gere insights pedagógicos</p>
+                            <h4>AnÃ¡lise de Cursos</h4>
+                            <p>Analise documentos de cursos e gere insights pedagÃ³gicos</p>
                         </div>
                         <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
@@ -194,7 +198,7 @@ const AIModule = {
 
                     <!-- Lesson Plan Generation -->
                     <div class="feature-card" data-feature="lesson-generation">
-                        <div class="feature-icon">📝</div>
+                        <div class="feature-icon">ðŸ“</div>
                         <div class="feature-content">
                             <h4>Gerar Planos de Aula</h4>
                             <p>Crie planos de aula completos com IA</p>
@@ -206,10 +210,10 @@ const AIModule = {
 
                     <!-- Technique Suggestions -->
                     <div class="feature-card" data-feature="technique-suggestions">
-                        <div class="feature-icon">🥋</div>
+                        <div class="feature-icon">ðŸ¥‹</div>
                         <div class="feature-content">
-                            <h4>Sugestões de Técnicas</h4>
-                            <p>Gere técnicas de Krav Maga com descrições detalhadas</p>
+                            <h4>SugestÃµes de TÃ©cnicas</h4>
+                            <p>Gere tÃ©cnicas de Krav Maga com descriÃ§Ãµes detalhadas</p>
                         </div>
                         <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
@@ -218,10 +222,10 @@ const AIModule = {
 
                     <!-- RAG Q&A -->
                     <div class="feature-card" data-feature="rag-qa">
-                        <div class="feature-icon">❓</div>
+                        <div class="feature-icon">â“</div>
                         <div class="feature-content">
                             <h4>Perguntas sobre Documentos</h4>
-                            <p>Faça perguntas sobre os documentos indexados</p>
+                            <p>FaÃ§a perguntas sobre os documentos indexados</p>
                         </div>
                         <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
@@ -230,7 +234,7 @@ const AIModule = {
 
                     <!-- Custom Chat -->
                     <div class="feature-card" data-feature="custom-chat">
-                        <div class="feature-icon">💬</div>
+                        <div class="feature-icon">ðŸ’¬</div>
                         <div class="feature-content">
                             <h4>Chat Livre</h4>
                             <p>Converse livremente com a IA</p>
@@ -242,10 +246,10 @@ const AIModule = {
 
                     <!-- Analytics -->
                     <div class="feature-card" data-feature="analytics">
-                        <div class="feature-icon">📊</div>
+                        <div class="feature-icon">ðŸ“Š</div>
                         <div class="feature-content">
-                            <h4>Análises e Insights</h4>
-                            <p>Veja análises de desempenho e tendências</p>
+                            <h4>AnÃ¡lises e Insights</h4>
+                            <p>Veja anÃ¡lises de desempenho e tendÃªncias</p>
                         </div>
                         <button class="btn-form btn-primary-form btn-sm">
                             <i class="fas fa-play"></i>
@@ -300,11 +304,11 @@ const AIModule = {
         return `
             <div class="chat-message ${isUser ? 'user-message' : 'ai-message'}">
                 <div class="message-avatar">
-                    ${isUser ? '👤' : '🤖'}
+                    ${isUser ? 'ðŸ‘¤' : 'ðŸ¤–'}
                 </div>
                 <div class="message-content">
                     <div class="message-header">
-                        <strong>${isUser ? 'Você' : this.getModelName(this.currentModel)}</strong>
+                        <strong>${isUser ? 'VocÃª' : this.getModelName(this.currentModel)}</strong>
                         <span class="message-time">${new Date(message.timestamp).toLocaleTimeString('pt-BR')}</span>
                     </div>
                     <div class="message-text">${this.formatMessageText(message.content)}</div>
@@ -362,10 +366,10 @@ const AIModule = {
                     <div class="documents-grid">
                         ${this.ragDocuments.map(doc => `
                             <div class="document-card">
-                                <div class="document-icon">📄</div>
+                                <div class="document-icon">ðŸ“„</div>
                                 <div class="document-info">
-                                    <h4>${doc.name || 'Sem título'}</h4>
-                                    <small>${doc.type || 'Documento'} • ${this.formatFileSize(doc.size || 0)}</small>
+                                    <h4>${doc.name || 'Sem tÃ­tulo'}</h4>
+                                    <small>${doc.type || 'Documento'} â€¢ ${this.formatFileSize(doc.size || 0)}</small>
                                 </div>
                                 <div class="document-actions">
                                     <button class="btn-icon" onclick="window.aiModule.queryDocument('${doc.id}')" title="Fazer pergunta">
@@ -414,11 +418,11 @@ const AIModule = {
         if (modelSelector) {
             modelSelector.addEventListener('change', (e) => {
                 this.currentModel = e.target.value;
-                window.app?.showToast?.(`✅ Modelo alterado para ${this.getModelName(this.currentModel)}`, 'info');
+                window.app?.showToast?.(`âœ… Modelo alterado para ${this.getModelName(this.currentModel)}`, 'info');
             });
         }
         
-        // ✨ FEATURE BUTTONS - addEventListener pattern (robust for ES6 modules)
+        // âœ¨ FEATURE BUTTONS - addEventListener pattern (robust for ES6 modules)
         const featureButtons = this.container.querySelectorAll('.feature-card button');
         featureButtons.forEach(btn => {
             const featureCard = btn.closest('.feature-card');
@@ -430,7 +434,7 @@ const AIModule = {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                console.log(`🎯 [AI Module] Feature button clicked: ${feature}`);
+                console.log(`ðŸŽ¯ [AI Module] Feature button clicked: ${feature}`);
                 
                 switch(feature) {
                     case 'course-analysis':
@@ -452,12 +456,12 @@ const AIModule = {
                         this.openAnalytics();
                         break;
                     default:
-                        console.warn(`⚠️ Unknown feature: ${feature}`);
+                        console.warn(`âš ï¸ Unknown feature: ${feature}`);
                 }
             });
         });
         
-        console.log(`✅ [AI Module] Event listeners attached (${featureButtons.length} feature buttons)`);
+        console.log(`âœ… [AI Module] Event listeners attached (${featureButtons.length} feature buttons)`);
     },
     
     // =========================================================================
@@ -489,7 +493,7 @@ const AIModule = {
         // Show loading
         const loadingMsg = {
             role: 'assistant',
-            content: '💭 Pensando...',
+            content: 'ðŸ’­ Pensando...',
             timestamp: new Date().toISOString(),
             isLoading: true
         };
@@ -525,13 +529,13 @@ const AIModule = {
             }
             
         } catch (error) {
-            console.error('❌ Error sending message:', error);
+            console.error('âŒ Error sending message:', error);
             
             // Remove loading and add error
             this.currentChatThread = this.currentChatThread.filter(m => !m.isLoading);
             this.currentChatThread.push({
                 role: 'assistant',
-                content: `❌ Erro: ${error.message}`,
+                content: `âŒ Erro: ${error.message}`,
                 timestamp: new Date().toISOString()
             });
             
@@ -568,7 +572,7 @@ const AIModule = {
     clearChat() {
         this.currentChatThread = [];
         this.updateChatDisplay();
-        window.app?.showToast?.('🗑️ Chat limpo', 'info');
+        window.app?.showToast?.('ðŸ—‘ï¸ Chat limpo', 'info');
     },
     
     // =========================================================================
@@ -576,48 +580,48 @@ const AIModule = {
     // =========================================================================
     
     async openCourseAnalysis() {
-        const prompt = `📚 **ANÁLISE DE CURSOS**
+        const prompt = `ðŸ“š **ANÃLISE DE CURSOS**
 
-Analise os cursos disponíveis de Krav Maga e forneça:
+Analise os cursos disponÃ­veis de Krav Maga e forneÃ§a:
 
-1. **Estrutura Curricular**: Resumo da progressão técnica
-2. **Carga Horária**: Distribuição de aulas por nível
-3. **Técnicas Fundamentais**: Principais técnicas de cada nível
-4. **Lacunas ou Melhorias**: Sugestões de conteúdo adicional
-5. **Comparação com Padrões**: Como se compara ao currículo IKMF
+1. **Estrutura Curricular**: Resumo da progressÃ£o tÃ©cnica
+2. **Carga HorÃ¡ria**: DistribuiÃ§Ã£o de aulas por nÃ­vel
+3. **TÃ©cnicas Fundamentais**: Principais tÃ©cnicas de cada nÃ­vel
+4. **Lacunas ou Melhorias**: SugestÃµes de conteÃºdo adicional
+5. **ComparaÃ§Ã£o com PadrÃµes**: Como se compara ao currÃ­culo IKMF
 
-Use os documentos RAG disponíveis para embasar a análise.`;
+Use os documentos RAG disponÃ­veis para embasar a anÃ¡lise.`;
         
         const chatInput = this.container.querySelector('#ai-chat-input');
         if (chatInput) {
             chatInput.value = prompt;
             chatInput.focus();
-            window.app?.showToast?.('📚 Prompt carregado - Clique em ENVIAR', 'info');
+            window.app?.showToast?.('ðŸ“š Prompt carregado - Clique em ENVIAR', 'info');
         }
     },
     
     async openLessonGenerator() {
-        const prompt = `📝 **GERADOR DE PLANOS DE AULA**
+        const prompt = `ðŸ“ **GERADOR DE PLANOS DE AULA**
 
 Crie um plano de aula completo para Krav Maga com:
 
-**Dados Básicos:**
+**Dados BÃ¡sicos:**
 - Nome: [exemplo: "Defesa contra Socos Altos"]
-- Nível: [Iniciante/Intermediário/Avançado]
-- Duração: 60 minutos
-- Foco Principal: [técnica específica]
+- NÃ­vel: [Iniciante/IntermediÃ¡rio/AvanÃ§ado]
+- DuraÃ§Ã£o: 60 minutos
+- Foco Principal: [tÃ©cnica especÃ­fica]
 
-**Estrutura Obrigatória:**
-1. **Aquecimento (10 min)**: Exercícios dinâmicos
-2. **Técnica Principal (25 min)**: Passo a passo detalhado
-3. **Treinamento de Aplicação (20 min)**: Drills e sparring
-4. **Volta à Calma (5 min)**: Alongamento e feedback
+**Estrutura ObrigatÃ³ria:**
+1. **Aquecimento (10 min)**: ExercÃ­cios dinÃ¢micos
+2. **TÃ©cnica Principal (25 min)**: Passo a passo detalhado
+3. **Treinamento de AplicaÃ§Ã£o (20 min)**: Drills e sparring
+4. **Volta Ã  Calma (5 min)**: Alongamento e feedback
 
 **Requisitos:**
-- Número de repetições por exercício
-- Materiais necessários
-- Variações para diferentes níveis
-- Pontos de atenção de segurança
+- NÃºmero de repetiÃ§Ãµes por exercÃ­cio
+- Materiais necessÃ¡rios
+- VariaÃ§Ãµes para diferentes nÃ­veis
+- Pontos de atenÃ§Ã£o de seguranÃ§a
 
 Gere o plano completo agora.`;
         
@@ -625,70 +629,70 @@ Gere o plano completo agora.`;
         if (chatInput) {
             chatInput.value = prompt;
             chatInput.focus();
-            window.app?.showToast?.('📝 Prompt carregado - Clique em ENVIAR', 'info');
+            window.app?.showToast?.('ðŸ“ Prompt carregado - Clique em ENVIAR', 'info');
         }
     },
     
     async openTechniqueGenerator() {
-        const prompt = `🥋 **GERADOR DE TÉCNICAS DE KRAV MAGA**
+        const prompt = `ðŸ¥‹ **GERADOR DE TÃ‰CNICAS DE KRAV MAGA**
 
-Gere uma técnica detalhada de Krav Maga com:
+Gere uma tÃ©cnica detalhada de Krav Maga com:
 
-**Informações Básicas:**
-- Nome da Técnica: [exemplo: "360° Defense"]
+**InformaÃ§Ãµes BÃ¡sicas:**
+- Nome da TÃ©cnica: [exemplo: "360Â° Defense"]
 - Categoria: [Defesa/Ataque/Contra-ataque]
-- Nível: [Iniciante/Intermediário/Avançado]
-- Tipo de Ameaça: [soco/chute/agarramento/arma]
+- NÃ­vel: [Iniciante/IntermediÃ¡rio/AvanÃ§ado]
+- Tipo de AmeaÃ§a: [soco/chute/agarramento/arma]
 
-**Descrição Completa:**
-1. **Contexto**: Quando usar esta técnica
-2. **Posição Inicial**: Guarda e postura
-3. **Execução Passo a Passo**: 
-   - Passo 1: [descrição]
-   - Passo 2: [descrição]
-   - Passo 3: [descrição]
-4. **Pontos Críticos**: O que observar
+**DescriÃ§Ã£o Completa:**
+1. **Contexto**: Quando usar esta tÃ©cnica
+2. **PosiÃ§Ã£o Inicial**: Guarda e postura
+3. **ExecuÃ§Ã£o Passo a Passo**: 
+   - Passo 1: [descriÃ§Ã£o]
+   - Passo 2: [descriÃ§Ã£o]
+   - Passo 3: [descriÃ§Ã£o]
+4. **Pontos CrÃ­ticos**: O que observar
 5. **Erros Comuns**: O que evitar
-6. **Variações**: Adaptações para diferentes situações
+6. **VariaÃ§Ãµes**: AdaptaÃ§Ãµes para diferentes situaÃ§Ãµes
 7. **Contramedidas**: O que fazer se falhar
 
-Gere a técnica completa com base no currículo IKMF.`;
+Gere a tÃ©cnica completa com base no currÃ­culo IKMF.`;
         
         const chatInput = this.container.querySelector('#ai-chat-input');
         if (chatInput) {
             chatInput.value = prompt;
             chatInput.focus();
-            window.app?.showToast?.('🥋 Prompt carregado - Clique em ENVIAR', 'info');
+            window.app?.showToast?.('ðŸ¥‹ Prompt carregado - Clique em ENVIAR', 'info');
         }
     },
     
     async openRAGChat() {
         if (this.ragDocuments.length === 0) {
-            window.app?.showToast?.('⚠️ Adicione documentos RAG primeiro', 'warning');
+            window.app?.showToast?.('âš ï¸ Adicione documentos RAG primeiro', 'warning');
             return;
         }
         
-        const prompt = `❓ **PERGUNTAS SOBRE DOCUMENTOS**
+        const prompt = `â“ **PERGUNTAS SOBRE DOCUMENTOS**
 
-Você tem acesso a ${this.ragDocuments.length} documentos indexados:
+VocÃª tem acesso a ${this.ragDocuments.length} documentos indexados:
 
 ${this.ragDocuments.slice(0, 5).map(doc => `- ${doc.name} (${doc.category || 'Geral'})`).join('\n')}
 
 **Exemplos de perguntas:**
-- "Quais são os objetivos da aula 1 de Krav Maga?"
-- "Liste todas as técnicas de defesa contra socos"
-- "Qual é a progressão de graduação na faixa branca?"
-- "Quais materiais são necessários para a aula X?"
-- "Compare as técnicas do nível iniciante e intermediário"
+- "Quais sÃ£o os objetivos da aula 1 de Krav Maga?"
+- "Liste todas as tÃ©cnicas de defesa contra socos"
+- "Qual Ã© a progressÃ£o de graduaÃ§Ã£o na faixa branca?"
+- "Quais materiais sÃ£o necessÃ¡rios para a aula X?"
+- "Compare as tÃ©cnicas do nÃ­vel iniciante e intermediÃ¡rio"
 
-Faça sua pergunta abaixo:`;
+FaÃ§a sua pergunta abaixo:`;
         
         const chatInput = this.container.querySelector('#ai-chat-input');
         if (chatInput) {
             chatInput.value = prompt;
             chatInput.focus();
             chatInput.setSelectionRange(prompt.length, prompt.length); // Cursor no final
-            window.app?.showToast?.('❓ Digite sua pergunta no final do prompt', 'info');
+            window.app?.showToast?.('â“ Digite sua pergunta no final do prompt', 'info');
         }
     },
     
@@ -698,20 +702,20 @@ Faça sua pergunta abaixo:`;
             chatInput.value = '';
             chatInput.placeholder = 'Digite sua mensagem livremente... (ex: "Me ajude a criar um programa de 3 meses para iniciantes")';
             chatInput.focus();
-            window.app?.showToast?.('💬 Chat livre ativado', 'info');
+            window.app?.showToast?.('ðŸ’¬ Chat livre ativado', 'info');
         }
     },
     
     async openAnalytics() {
         const chatInput = this.container.querySelector('#ai-chat-input');
         if (chatInput) {
-            chatInput.value = 'Analise o desempenho dos alunos e mostre insights sobre frequência, progresso nas graduações e áreas que precisam de atenção.';
+            chatInput.value = 'Analise o desempenho dos alunos e mostre insights sobre frequÃªncia, progresso nas graduaÃ§Ãµes e Ã¡reas que precisam de atenÃ§Ã£o.';
             chatInput.focus();
         }
     },
     
     async openUploadDialog() {
-        window.app?.showToast?.('📤 Upload de documentos: Use o endpoint POST /api/rag/documents com multipart/form-data', 'info');
+        window.app?.showToast?.('ðŸ“¤ Upload de documentos: Use o endpoint POST /api/rag/documents com multipart/form-data', 'info');
         // TODO: Create a proper upload modal with file picker
         const chatInput = this.container.querySelector('#ai-chat-input');
         if (chatInput) {
@@ -724,11 +728,11 @@ Faça sua pergunta abaixo:`;
         await this.loadInitialData();
         this.render();
         this.setupEvents();
-        window.app?.showToast?.('✅ Documentos atualizados', 'success');
+        window.app?.showToast?.('âœ… Documentos atualizados', 'success');
     },
     
     async queryDocument(docId) {
-        window.app?.showToast?.(`📄 Fazer pergunta sobre documento ${docId}`, 'info');
+        window.app?.showToast?.(`ðŸ“„ Fazer pergunta sobre documento ${docId}`, 'info');
         // TODO: Implement document query
     },
     
@@ -742,13 +746,13 @@ Faça sua pergunta abaixo:`;
             });
             
             if (response.success) {
-                window.app?.showToast?.('✅ Documento deletado', 'success');
+                window.app?.showToast?.('âœ… Documento deletado', 'success');
                 await this.refreshRAGDocuments();
             } else {
                 throw new Error(response.message || 'Erro ao deletar');
             }
         } catch (error) {
-            console.error('❌ Error deleting document:', error);
+            console.error('âŒ Error deleting document:', error);
             window.app?.handleError?.(error, { module: 'ai', context: 'deleteDocument' });
         }
     }
@@ -757,10 +761,12 @@ Faça sua pergunta abaixo:`;
 // Global export IMMEDIATELY (before any async operations)
 window.AIModule = AIModule;
 window.aiModule = AIModule; // Lowercase alias for onclick compatibility
+window.ai = AIModule; // For app.js compatibility
 
-console.log('🌐 [AI Module] Exported to global scope:', {
+console.log('ðŸŒ [AI Module] Exported to global scope:', {
     AIModule: typeof window.AIModule,
     aiModule: typeof window.aiModule,
+    ai: typeof window.ai,
     methods: Object.keys(AIModule)
 });
 
@@ -775,3 +781,4 @@ if (typeof window !== 'undefined' && document.getElementById('module-container')
         }
     });
 }
+

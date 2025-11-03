@@ -19,23 +19,22 @@ class ImportModule {
 
     /**
      * Inicializa o módulo de importação
-     * @param {HTMLElement} container - Container onde o módulo será renderizado
+     * @param {HTMLElement} container - Container onde o módulo será renderizado (opcional para app.js)
      */
     async init(container) {
         try {
             console.log('🚀 Inicializando ImportModule (Enhanced Version)...');
             
-            if (!container) {
-                throw new Error('Container não fornecido para o módulo de importação');
+            // Container é opcional quando chamado via app.js (sem render)
+            if (container) {
+                this.container = container;
+                
+                // Instanciar o controller principal
+                this.controller = new ImportController(container);
+                
+                // Inicializar o controller
+                await this.controller.init();
             }
-
-            this.container = container;
-            
-            // Instanciar o controller principal
-            this.controller = new ImportController(container);
-            
-            // Inicializar o controller
-            await this.controller.init();
             
             // Integração com AcademyApp
             this.integrateWithApp();
@@ -52,7 +51,7 @@ class ImportModule {
         } catch (error) {
             console.error('❌ Erro ao inicializar ImportModule:', error);
             
-            // Mostrar erro no container
+            // Mostrar erro no container se disponível
             if (container) {
                 container.innerHTML = `
                     <div class="module-isolated-import">
@@ -219,6 +218,11 @@ if (document.readyState === 'loading') {
 } else {
     console.log('📦 ImportModule carregado e pronto');
 }
+
+// Export para window (compatibilidade com app.js)
+const importModuleInstance = new ImportModule();
+window.import = importModuleInstance;
+window.importModule = importModuleInstance;
 
 // Export para compatibilidade com módulos ES6
 export default ImportModule;

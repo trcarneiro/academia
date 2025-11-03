@@ -7,6 +7,43 @@
 class BiometricService {
     constructor(moduleAPI) {
         this.moduleAPI = moduleAPI;
+        this.studentsCache = []; // Cache completo para autocomplete
+        this.cacheLoaded = false;
+    }
+
+    /**
+     * Load ALL students for autocomplete (called on init)
+     * @returns {Promise<void>}
+     */
+    async loadStudentsCache() {
+        try {
+            console.log('📥 Loading students cache for autocomplete...');
+            
+            const response = await this.moduleAPI.request('/api/students', {
+                method: 'GET',
+            });
+
+            if (response.success && response.data) {
+                // Store basic info for fast search
+                this.studentsCache = response.data.map(student => ({
+                    id: student.id,
+                    name: student.user ? `${student.user.firstName} ${student.user.lastName}` : 'Sem nome',
+                    firstName: student.user?.firstName || '',
+                    lastName: student.user?.lastName || '',
+                    matricula: student.registrationNumber || '',
+                    cpf: student.cpf || student.user?.cpf || '',
+                    email: student.user?.email || '',
+                    avatarUrl: student.user?.avatarUrl || '',
+                }));
+                
+                this.cacheLoaded = true;
+                console.log(`✅ Loaded ${this.studentsCache.length} students for autocomplete`);
+            } else {
+                console.warn('⚠️ Failed to load students cache');
+            }
+        } catch (error) {
+            console.error('❌ Error loading students cache:', error);
+        }
     }
 
     /**
@@ -38,7 +75,7 @@ class BiometricService {
     }
 
     /**
-     * Manual search fallback
+     * Manual search fallback - LOCAL AUTOCOMPLETE (instant!)
      * @param {string} query - Search term (name, matrícula, CPF)
      * @returns {Promise<Array>} Matching students
      */
@@ -49,40 +86,56 @@ class BiometricService {
                 return [];
             }
 
-            console.log(`🔍 Searching for: "${query}"`);
-
-            // Busca pelo endpoint correto com query parameter na URL
-            const response = await this.moduleAPI.request(`/api/students?search=${encodeURIComponent(query)}`, {
-                method: 'GET',
-            });
-
-            console.log('📊 Search response:', response);
-
-            if (response.success && response.data) {
-                const results = Array.isArray(response.data) ? response.data : [response.data];
-                
-                // Map student data to expected format with user info
-                const formattedResults = results.map(student => ({
-                    id: student.id,
-                    name: student.user ? `${student.user.firstName} ${student.user.lastName}` : 'Sem nome',
-                    firstName: student.user?.firstName || '',
-                    lastName: student.user?.lastName || '',
-                    cpf: student.user?.cpf || '',
-                    matricula: student.registrationNumber || student.user?.cpf || '',
-                    email: student.user?.email || '',
-                    phone: student.user?.phone || '',
-                    ...student
-                }));
-                
-                console.log(`✅ Found ${formattedResults.length} results:`, formattedResults.map(r => r.name));
-                return formattedResults;
+            // Se cache não carregou, carregar agora
+            if (!this.cacheLoaded) {
+                await this.loadStudentsCache();
             }
 
-            console.warn('⚠️ No results found or invalid response format');
-            return [];
+            const queryLower = query.toLowerCase().trim();
+            console.log(`� Searching locally for: "${query}"`);
+
+            // Busca LOCAL - instantânea!
+            const results = this.studentsCache.filter(student => {
+                const nameMatch = student.name.toLowerCase().includes(queryLower);
+                const firstNameMatch = student.firstName.toLowerCase().includes(queryLower);
+                const lastNameMatch = student.lastName.toLowerCase().includes(queryLower);
+                const matriculaMatch = student.matricula && student.matricula.toLowerCase().includes(queryLower);
+                const cpfMatch = student.cpf && student.cpf.replace(/\D/g, '').includes(queryLower.replace(/\D/g, ''));
+                
+                return nameMatch || firstNameMatch || lastNameMatch || matriculaMatch || cpfMatch;
+            });
+            
+            console.log(`✅ Found ${results.length} results locally:`, results.slice(0, 5).map(r => r.name));
+            return results;
         } catch (error) {
             console.error('❌ Error searching students:', error);
             return [];
+        }
+    }
+
+    /**
+     * Get FULL student details (called when student is selected)
+     * @param {string} studentId - Student UUID
+     * @returns {Promise<Object>} Full student data
+     */
+    async getStudentDetails(studentId) {
+        try {
+            console.log(`📋 Fetching full details for student: ${studentId}`);
+            
+            const response = await this.moduleAPI.request(`/api/students/${studentId}`, {
+                method: 'GET',
+            });
+
+            if (response.success && response.data) {
+                console.log('✅ Full student data loaded');
+                return response.data;
+            }
+
+            console.warn('⚠️ Failed to load student details');
+            return null;
+        } catch (error) {
+            console.error('❌ Error fetching student details:', error);
+            return null;
         }
     }
 

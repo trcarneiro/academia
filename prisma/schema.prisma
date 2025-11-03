@@ -4,10 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  directUrl         = env("DIRECT_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Organization {
@@ -40,6 +39,8 @@ model Organization {
   aiAgents                 AIAgent[]
   agentInteractions        AgentInteraction[]        @relation("AgentInteractions")
   agentPermissions         AgentPermission[]         @relation("AgentPermissions")
+  agentTasks               AgentTask[]               @relation("AgentTasks")
+  agentInsights            AgentInsight[]            @relation("AgentInsights")
   asaasCustomers           AsaasCustomer[]
   attendances              Attendance[]
   badges                   Badge[]
@@ -354,9 +355,24 @@ model User {
   lastLoginAt        DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @default(now())
+  
+  // ✅ Permissões de Agentes
+  permissions              Json             @default("[]")  // Array de permissões específicas
+  canApproveAgentTasks     Boolean          @default(false)
+  canExecuteAgentTasks     Boolean          @default(false)
+  canCreateAgents          Boolean          @default(false)
+  canDeleteAgents          Boolean          @default(false)
+  maxTaskPriority          String           @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  canApproveCategories     Json             @default("[]")  // Array de categorias ['EMAIL', 'WHATSAPP']
+  
   agendaItems        AgendaItem[]
   agentConversations AgentConversation[]
   approvedPermissions AgentPermission[]  @relation("ApprovedPermissions")
+  createdTasks       AgentTask[]         @relation("CreatedTasks")
+  assignedTasks      AgentTask[]         @relation("AssignedTasks")
+  approvedTasks      AgentTask[]         @relation("ApprovedTasks")
+  executorTasks      AgentTask[]         @relation("ExecutorTasks")
+  taskExecutions     TaskExecution[]     @relation("TaskExecutions")
   instructor         Instructor?
   leadActivities     LeadActivity[]      @relation("LeadActivities")
   leadNotes          LeadNote[]          @relation("LeadNotes")
@@ -2178,6 +2194,7 @@ model AIAgent {
   temperature    Float               @default(0.7)
   maxTokens      Int                 @default(2048)
   noCodeMode     Boolean             @default(true)
+  autoSaveInsights Boolean           @default(false)
   isActive       Boolean             @default(true)
   isPublic       Boolean             @default(false)
   averageRating  Float?
@@ -2186,6 +2203,8 @@ model AIAgent {
   conversations  AgentConversation[]
   interactions   AgentInteraction[]  @relation("AgentInteractions")
   permissions    AgentPermission[]   @relation("AgentPermissions")
+  tasks          AgentTask[]         @relation("AgentTasks")
+  insights       AgentInsight[]      @relation("AgentInsights")
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, isActive])
@@ -2258,6 +2277,137 @@ model AgentPermission {
   @@index([status])
   @@index([createdAt])
   @@map("agent_permissions")
+}
+
+model AgentTask {
+  id                String    @id @default(uuid())
+  organizationId    String
+  agentId           String?
+  createdByUserId   String?
+  assignedToUserId  String?
+  
+  // Task Definition
+  title             String
+  description       String
+  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
+  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
+  targetEntity      String? // Student, Course, Payment, etc
+  actionPayload     Json // Data needed to execute the action
+  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
+  
+  // Approval Workflow
+  requiresApproval  Boolean   @default(true)
+  autoExecute       Boolean   @default(false)
+  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
+  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
+  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+  
+  // 🆕 EXECUTION & ORCHESTRATION
+  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
+  executorId        String? // ID do agente IA ou usuário que vai executar
+  scheduledFor      DateTime? // Data/hora agendada para execução futura
+  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda às 9h)
+  maxRetries        Int       @default(3) // Máximo de tentativas em caso de falha
+  retryCount        Int       @default(0) // Tentativas já realizadas
+  lastRetryAt       DateTime? // Data da última tentativa
+  nextRetryAt       DateTime? // Próxima tentativa agendada
+  
+  // Execution Results
+  executedAt        DateTime?
+  executionResult   Json? // Result after execution
+  errorMessage      String?
+  executionLog      Json? // Array de logs de execução: [{ timestamp, action, result, error }]
+  
+  // Metadata
+  dueDate           DateTime?
+  metadata          Json? // Additional context
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  agent             AIAgent?  @relation("AgentTasks", fields: [agentId], references: [id], onDelete: SetNull)
+  organization      Organization @relation("AgentTasks", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
+  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
+  executions        TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("agent_tasks")
+}
+
+/// 🆕 Log de execuções de tarefas (tentativas, resultados, erros)
+model TaskExecution {
+  id              String    @id @default(uuid())
+  taskId          String
+  attemptNumber   Int       @default(1)
+  executorType    String // AGENT, USER, SYSTEM
+  executorId      String?
+  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  duration        Int? // Duração em milissegundos
+  result          Json? // Resultado da execução
+  errorMessage    String?
+  errorStack      String?
+  metadata        Json? // Logs adicionais
+  
+  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
+  
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("task_executions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String? // ID da execução que gerou o insight
+  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
+  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
+  title          String
+  content        String
+  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       Json? // Additional context, metrics, etc
+  relatedEntity  String? // Student, Course, Payment, etc
+  relatedId      String? // ID of related entity
+  actionTaken    String? // What action was taken (if any)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentInsights", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentInsights", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
 }
 
 model StudentProgress {

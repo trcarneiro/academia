@@ -1,61 +1,61 @@
-import { prisma } from '@/utils/database';
+﻿import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { aiService } from './aiService';
 
 /**
  * Curriculum Agent Service
  * 
- * Agente especialista em educação física e artes marciais (Krav Maga e Jiu Jitsu)
- * Responsável por criar e avaliar planos de curso e planos de aula baseados em dados reais
+ * Agente especialista em educaÃ§Ã£o fÃ­sica e artes marciais (Krav Maga e Jiu Jitsu)
+ * ResponsÃ¡vel por criar e avaliar planos de curso e planos de aula baseados em dados reais
  */
 export class CurriculumAgentService {
-  private readonly SYSTEM_PROMPT = `Você é um educador físico especialista em preparação física e artes marciais, com profundo conhecimento em:
+  private readonly SYSTEM_PROMPT = `VocÃª Ã© um educador fÃ­sico especialista em preparaÃ§Ã£o fÃ­sica e artes marciais, com profundo conhecimento em:
 
-🥋 **Especialidades**:
+ðŸ¥‹ **Especialidades**:
 - Krav Maga (defesa pessoal israelense)
 - Jiu Jitsu Brasileiro (arte suave)
-- Preparação física para atletas de combate
-- Pedagogia esportiva e progressão técnica
-- Fisiologia do exercício aplicada a artes marciais
+- PreparaÃ§Ã£o fÃ­sica para atletas de combate
+- Pedagogia esportiva e progressÃ£o tÃ©cnica
+- Fisiologia do exercÃ­cio aplicada a artes marciais
 
-👨‍🏫 **Sua Função**:
-Você analisa e cria planos de curso e planos de aula otimizados, garantindo:
-1. **Progressão Segura**: Evolução gradual respeitando capacidades físicas
-2. **Equilíbrio Técnico**: Balanceamento entre posturas, golpes, defesas e condicionamento
-3. **Periodização**: Distribuição adequada de intensidade e volume ao longo do tempo
-4. **Especificidade**: Adaptação ao nível (faixa) e objetivos dos alunos
-5. **Recuperação**: Intervalos adequados entre sessões intensas
+ðŸ‘¨â€ðŸ« **Sua FunÃ§Ã£o**:
+VocÃª analisa e cria planos de curso e planos de aula otimizados, garantindo:
+1. **ProgressÃ£o Segura**: EvoluÃ§Ã£o gradual respeitando capacidades fÃ­sicas
+2. **EquilÃ­brio TÃ©cnico**: Balanceamento entre posturas, golpes, defesas e condicionamento
+3. **PeriodizaÃ§Ã£o**: DistribuiÃ§Ã£o adequada de intensidade e volume ao longo do tempo
+4. **Especificidade**: AdaptaÃ§Ã£o ao nÃ­vel (faixa) e objetivos dos alunos
+5. **RecuperaÃ§Ã£o**: Intervalos adequados entre sessÃµes intensas
 
-📊 **Critérios de Avaliação**:
+ðŸ“Š **CritÃ©rios de AvaliaÃ§Ã£o**:
 - Variedade de categorias de atividades (evitar monotonia)
-- Repetições adequadas por técnica (mínimo para consolidação neuromuscular)
+- RepetiÃ§Ãµes adequadas por tÃ©cnica (mÃ­nimo para consolidaÃ§Ã£o neuromuscular)
 - Intensidade progressiva sem sobrecarga
-- Checkpoints de avaliação bem distribuídos
-- Alinhamento com sistema de graduação (graus e faixas)
+- Checkpoints de avaliaÃ§Ã£o bem distribuÃ­dos
+- Alinhamento com sistema de graduaÃ§Ã£o (graus e faixas)
 
-🔍 **Análise Baseada em Dados**:
-Você tem acesso aos dados reais da academia via ferramentas MCP:
+ðŸ” **AnÃ¡lise Baseada em Dados**:
+VocÃª tem acesso aos dados reais da academia via ferramentas MCP:
 - Cursos existentes e suas estruturas
 - Planos de aula com atividades detalhadas
-- Técnicas catalogadas por categoria
-- Sistema de graduação e requisitos mínimos
-- Histórico de execução de atividades por alunos
+- TÃ©cnicas catalogadas por categoria
+- Sistema de graduaÃ§Ã£o e requisitos mÃ­nimos
+- HistÃ³rico de execuÃ§Ã£o de atividades por alunos
 
-💡 **Estilo de Resposta**:
-- Técnico porém didático
-- Use emojis para facilitar visualização
-- Forneça justificativas baseadas em princípios de treinamento esportivo
-- Seja específico com números (repetições, séries, duração)
-- Sugira ajustes incrementais ao invés de mudanças radicais
+ðŸ’¡ **Estilo de Resposta**:
+- TÃ©cnico porÃ©m didÃ¡tico
+- Use emojis para facilitar visualizaÃ§Ã£o
+- ForneÃ§a justificativas baseadas em princÃ­pios de treinamento esportivo
+- Seja especÃ­fico com nÃºmeros (repetiÃ§Ãµes, sÃ©ries, duraÃ§Ã£o)
+- Sugira ajustes incrementais ao invÃ©s de mudanÃ§as radicais
 
-⚠️ **Restrições**:
-- NUNCA sugira exercícios perigosos sem supervisão
-- Sempre considere aquecimento e volta à calma
-- Respeite limitações físicas e progressão gradual
+âš ï¸ **RestriÃ§Ãµes**:
+- NUNCA sugira exercÃ­cios perigosos sem supervisÃ£o
+- Sempre considere aquecimento e volta Ã  calma
+- Respeite limitaÃ§Ãµes fÃ­sicas e progressÃ£o gradual
 - Mantenha foco nas modalidades Krav Maga e Jiu Jitsu`;
 
   /**
-   * Analisa um curso completo e fornece recomendações
+   * Analisa um curso completo e fornece recomendaÃ§Ãµes
    */
   async analyzeCourse(courseId: string, organizationId: string) {
     try {
@@ -94,13 +94,13 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
         throw new Error(`Course ${courseId} not found`);
       }
 
-      // Calcular métricas
+      // Calcular mÃ©tricas
       const metrics = this.calculateCourseMetrics(course);
 
       // Preparar contexto para o agente
       const context = this.buildCourseContext(course, metrics);
 
-      // Consultar agente de currículo
+      // Consultar agente de currÃ­culo
       const analysis = await aiService.chat(
         [
           {
@@ -109,11 +109,11 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
           },
           {
             role: 'user',
-            content: `Analise este curso de ${course.name} e forneça recomendações pedagógicas:\n\n${context}`
+            content: `Analise este curso de ${course.name} e forneÃ§a recomendaÃ§Ãµes pedagÃ³gicas:\n\n${context}`
           }
         ],
         {
-          model: 'gemini-1.5-pro', // Modelo mais avançado para análise complexa
+          model: (process.env.GEMINI_MODEL || process.env.RAG_MODEL || 'gemini-2.5-pro'), // Modelo mais avanÃ§ado para anÃ¡lise complexa
           temperature: 0.7,
           maxTokens: 4096
         }
@@ -140,7 +140,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
   }
 
   /**
-   * Cria um novo plano de aula com assistência da IA
+   * Cria um novo plano de aula com assistÃªncia da IA
    */
   async createLessonPlan(
     courseId: string,
@@ -171,13 +171,13 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
         throw new Error(`Course ${courseId} not found`);
       }
 
-      // Verificar se já existe aula com este número
+      // Verificar se jÃ¡ existe aula com este nÃºmero
       const existingLesson = course.lessonPlans.find(l => l.lessonNumber === lessonNumber);
       if (existingLesson) {
         throw new Error(`Lesson ${lessonNumber} already exists for this course`);
       }
 
-      // Buscar técnicas disponíveis
+      // Buscar tÃ©cnicas disponÃ­veis
       const techniques = await prisma.technique.findMany({
         where: { organizationId },
         orderBy: { category: 'asc' }
@@ -197,18 +197,18 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
             role: 'user',
             content: `Crie um plano de aula detalhado para:\n\n${context}\n\nFormate sua resposta em JSON com esta estrutura:
 {
-  "title": "Título da aula",
+  "title": "TÃ­tulo da aula",
   "objectives": ["objetivo 1", "objetivo 2"],
   "activities": [
     {
-      "techniqueId": "UUID da técnica",
-      "techniqueName": "Nome da técnica",
+      "techniqueId": "UUID da tÃ©cnica",
+      "techniqueName": "Nome da tÃ©cnica",
       "category": "CATEGORIA",
       "repetitions": 20,
       "sets": 3,
       "duration": 10,
       "intensity": "MEDIUM",
-      "notes": "Observações pedagógicas"
+      "notes": "ObservaÃ§Ãµes pedagÃ³gicas"
     }
   ],
   "pedagogicalNotes": "Notas gerais sobre a aula",
@@ -217,7 +217,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
           }
         ],
         {
-          model: 'gemini-1.5-pro',
+          model: (process.env.GEMINI_MODEL || process.env.RAG_MODEL || 'gemini-2.5-pro'),
           temperature: 0.8,
           maxTokens: 4096
         }
@@ -266,7 +266,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
         throw new Error(`Lesson plan ${lessonPlanId} not found`);
       }
 
-      // Calcular métricas da aula
+      // Calcular mÃ©tricas da aula
       const metrics = this.calculateLessonMetrics(lessonPlan);
 
       // Preparar contexto
@@ -281,11 +281,11 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
           },
           {
             role: 'user',
-            content: `Avalie este plano de aula e forneça feedback detalhado:\n\n${context}`
+            content: `Avalie este plano de aula e forneÃ§a feedback detalhado:\n\n${context}`
           }
         ],
         {
-          model: 'gemini-1.5-pro',
+          model: (process.env.GEMINI_MODEL || process.env.RAG_MODEL || 'gemini-2.5-pro'),
           temperature: 0.7,
           maxTokens: 3072
         }
@@ -310,7 +310,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
   }
 
   /**
-   * Calcula métricas do curso
+   * Calcula mÃ©tricas do curso
    */
   private calculateCourseMetrics(course: any) {
     const totalLessons = course.lessonPlans.length;
@@ -319,7 +319,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
       0
     );
     
-    // Distribuição por categoria
+    // DistribuiÃ§Ã£o por categoria
     const categoriesDistribution: Record<string, number> = {};
     course.lessonPlans.forEach((lesson: any) => {
       lesson.activities.forEach((activity: any) => {
@@ -328,7 +328,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
       });
     });
 
-    // Repetições totais planejadas
+    // RepetiÃ§Ãµes totais planejadas
     const totalRepetitions = course.lessonPlans.reduce(
       (sum: number, lesson: any) => sum + lesson.activities.reduce(
         (actSum: number, act: any) => actSum + (act.repetitions * act.sets),
@@ -337,7 +337,7 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
       0
     );
 
-    // Distribuição de intensidade
+    // DistribuiÃ§Ã£o de intensidade
     const intensityDistribution: Record<string, number> = {};
     course.lessonPlans.forEach((lesson: any) => {
       lesson.activities.forEach((activity: any) => {
@@ -359,44 +359,44 @@ Você tem acesso aos dados reais da academia via ferramentas MCP:
   }
 
   /**
-   * Constrói contexto do curso para análise
+   * ConstrÃ³i contexto do curso para anÃ¡lise
    */
   private buildCourseContext(course: any, metrics: any) {
-    return `📚 **Curso**: ${course.name}
-🎯 **Nível**: ${course.level}
-📝 **Descrição**: ${course.description || 'Não fornecida'}
+    return `ðŸ“š **Curso**: ${course.name}
+ðŸŽ¯ **NÃ­vel**: ${course.level}
+ðŸ“ **DescriÃ§Ã£o**: ${course.description || 'NÃ£o fornecida'}
 
-📊 **Métricas Gerais**:
+ðŸ“Š **MÃ©tricas Gerais**:
 - Total de aulas: ${metrics.totalLessons}
 - Total de atividades: ${metrics.totalActivities}
-- Média de atividades por aula: ${metrics.averageActivitiesPerLesson.toFixed(1)}
-- Repetições totais planejadas: ${metrics.totalRepetitions}
+- MÃ©dia de atividades por aula: ${metrics.averageActivitiesPerLesson.toFixed(1)}
+- RepetiÃ§Ãµes totais planejadas: ${metrics.totalRepetitions}
 - Alunos matriculados: ${metrics.studentCount}
 
-🏋️ **Distribuição por Categoria**:
+ðŸ‹ï¸ **DistribuiÃ§Ã£o por Categoria**:
 ${Object.entries(metrics.categoriesDistribution)
   .map(([cat, count]) => `- ${cat}: ${count} atividades`)
   .join('\n')}
 
-⚡ **Distribuição de Intensidade**:
+âš¡ **DistribuiÃ§Ã£o de Intensidade**:
 ${Object.entries(metrics.intensityDistribution)
   .map(([int, count]) => `- ${int}: ${count} atividades`)
   .join('\n')}
 
-🎓 **Sistema de Graduação**: ${metrics.hasGraduationSystem ? 'Sim' : 'Não'}
+ðŸŽ“ **Sistema de GraduaÃ§Ã£o**: ${metrics.hasGraduationSystem ? 'Sim' : 'NÃ£o'}
 ${course.graduationLevels.length > 0 ? `
-Níveis configurados:
+NÃ­veis configurados:
 ${course.graduationLevels.map((g: any) => `- ${g.name}: ${g.requiredProgressPercentage}% de progresso`).join('\n')}
 ` : ''}
 
 ${course.activityCategories.length > 0 ? `
-📋 **Categorias de Atividades Definidas**:
-${course.activityCategories.map((c: any) => `- ${c.name}: Mínimo ${c.minimumForGraduation} para graduação`).join('\n')}
+ðŸ“‹ **Categorias de Atividades Definidas**:
+${course.activityCategories.map((c: any) => `- ${c.name}: MÃ­nimo ${c.minimumForGraduation} para graduaÃ§Ã£o`).join('\n')}
 ` : ''}`;
   }
 
   /**
-   * Constrói contexto para criação de plano de aula
+   * ConstrÃ³i contexto para criaÃ§Ã£o de plano de aula
    */
   private buildLessonContext(
     course: any,
@@ -404,27 +404,27 @@ ${course.activityCategories.map((c: any) => `- ${c.name}: Mínimo ${c.minimumFor
     techniques: any[],
     userRequirements?: string
   ) {
-    return `📚 **Curso**: ${course.name} (${course.level})
-📖 **Aula**: #${lessonNumber} de ${course.totalLessons || '?'}
+    return `ðŸ“š **Curso**: ${course.name} (${course.level})
+ðŸ“– **Aula**: #${lessonNumber} de ${course.totalLessons || '?'}
 
 ${course.lessonPlans.length > 0 ? `
-📝 **Aulas Anteriores** (últimas 3):
+ðŸ“ **Aulas Anteriores** (Ãºltimas 3):
 ${course.lessonPlans.slice(-3).map((l: any) => 
   `- Aula ${l.lessonNumber}: ${l.title} (${l.activities.length} atividades)`
 ).join('\n')}
-` : 'Esta é a primeira aula do curso.'}
+` : 'Esta Ã© a primeira aula do curso.'}
 
-🥋 **Técnicas Disponíveis**:
+ðŸ¥‹ **TÃ©cnicas DisponÃ­veis**:
 ${techniques.slice(0, 20).map(t => `- ${t.name} (${t.category})`).join('\n')}
-${techniques.length > 20 ? `\n... e mais ${techniques.length - 20} técnicas` : ''}
+${techniques.length > 20 ? `\n... e mais ${techniques.length - 20} tÃ©cnicas` : ''}
 
 ${course.activityCategories.length > 0 ? `
-📋 **Categorias Obrigatórias**:
+ðŸ“‹ **Categorias ObrigatÃ³rias**:
 ${course.activityCategories.map((c: any) => `- ${c.name}`).join(', ')}
 ` : ''}
 
 ${userRequirements ? `
-💡 **Requisitos do Instrutor**:
+ðŸ’¡ **Requisitos do Instrutor**:
 ${userRequirements}
 ` : ''}
 
@@ -432,38 +432,38 @@ Crie um plano de aula equilibrado, progressivo e pedagogicamente adequado.`;
   }
 
   /**
-   * Constrói contexto para avaliação de plano de aula
+   * ConstrÃ³i contexto para avaliaÃ§Ã£o de plano de aula
    */
   private buildLessonEvaluationContext(lessonPlan: any, metrics: any) {
-    return `📖 **Aula**: ${lessonPlan.title} (#${lessonPlan.lessonNumber})
-📚 **Curso**: ${lessonPlan.course.name}
-⏱️ **Duração Estimada**: ${lessonPlan.estimatedDuration || '?'} minutos
+    return `ðŸ“– **Aula**: ${lessonPlan.title} (#${lessonPlan.lessonNumber})
+ðŸ“š **Curso**: ${lessonPlan.course.name}
+â±ï¸ **DuraÃ§Ã£o Estimada**: ${lessonPlan.estimatedDuration || '?'} minutos
 
-📊 **Métricas**:
+ðŸ“Š **MÃ©tricas**:
 - Total de atividades: ${metrics.totalActivities}
-- Repetições totais: ${metrics.totalRepetitions}
-- Duração total estimada: ${metrics.totalDuration} minutos
+- RepetiÃ§Ãµes totais: ${metrics.totalRepetitions}
+- DuraÃ§Ã£o total estimada: ${metrics.totalDuration} minutos
 
-🏋️ **Atividades Planejadas**:
+ðŸ‹ï¸ **Atividades Planejadas**:
 ${lessonPlan.activities.map((a: any) => 
-  `- ${a.technique?.name || 'Técnica não identificada'} (${a.technique?.category}): ${a.repetitions}x${a.sets} séries, ${a.duration}min, ${a.intensity}`
+  `- ${a.technique?.name || 'TÃ©cnica nÃ£o identificada'} (${a.technique?.category}): ${a.repetitions}x${a.sets} sÃ©ries, ${a.duration}min, ${a.intensity}`
 ).join('\n')}
 
-⚡ **Distribuição de Intensidade**:
+âš¡ **DistribuiÃ§Ã£o de Intensidade**:
 ${Object.entries(metrics.intensityDistribution)
   .map(([int, count]) => `- ${int}: ${count}`)
   .join('\n')}
 
-🎯 **Categorias Cobertas**:
+ðŸŽ¯ **Categorias Cobertas**:
 ${Object.keys(metrics.categoriesDistribution).join(', ')}
 
 ${lessonPlan.pedagogicalNotes ? `
-📝 **Notas Pedagógicas**: ${lessonPlan.pedagogicalNotes}
+ðŸ“ **Notas PedagÃ³gicas**: ${lessonPlan.pedagogicalNotes}
 ` : ''}`;
   }
 
   /**
-   * Calcula métricas de um plano de aula
+   * Calcula mÃ©tricas de um plano de aula
    */
   private calculateLessonMetrics(lessonPlan: any) {
     const totalActivities = lessonPlan.activities.length;
@@ -499,7 +499,7 @@ ${lessonPlan.pedagogicalNotes ? `
   }
 
   /**
-   * Calcula equilíbrio de distribuição
+   * Calcula equilÃ­brio de distribuiÃ§Ã£o
    */
   private calculateBalance(distribution: Record<string, number>): number {
     const values = Object.values(distribution);
@@ -508,7 +508,7 @@ ${lessonPlan.pedagogicalNotes ? `
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
     const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
     
-    // Normalizar para 0-100 (quanto menor a variância, melhor o equilíbrio)
+    // Normalizar para 0-100 (quanto menor a variÃ¢ncia, melhor o equilÃ­brio)
     return Math.max(0, 100 - Math.sqrt(variance) * 10);
   }
 
@@ -521,14 +521,14 @@ ${lessonPlan.pedagogicalNotes ? `
     // Variedade de categorias (0-30 pontos)
     score += Math.min(30, metrics.categoryVariety * 5);
 
-    // Equilíbrio de intensidade (0-30 pontos)
+    // EquilÃ­brio de intensidade (0-30 pontos)
     score += Math.min(30, metrics.intensityBalance * 0.3);
 
     // Quantidade adequada de atividades (0-20 pontos)
     const activitiesScore = metrics.totalActivities >= 4 && metrics.totalActivities <= 8 ? 20 : 10;
     score += activitiesScore;
 
-    // Duração adequada (0-20 pontos)
+    // DuraÃ§Ã£o adequada (0-20 pontos)
     const durationScore = metrics.totalDuration >= 45 && metrics.totalDuration <= 75 ? 20 : 10;
     score += durationScore;
 
@@ -536,7 +536,7 @@ ${lessonPlan.pedagogicalNotes ? `
   }
 
   /**
-   * Parse da sugestão de plano de aula
+   * Parse da sugestÃ£o de plano de aula
    */
   private parseLessonSuggestion(response: string) {
     try {
@@ -555,12 +555,12 @@ ${lessonPlan.pedagogicalNotes ? `
   }
 
   /**
-   * Extrai recomendações da análise
+   * Extrai recomendaÃ§Ãµes da anÃ¡lise
    */
   private extractRecommendations(analysis: string): string[] {
     const recommendations: string[] = [];
     
-    // Buscar por listas de recomendações
+    // Buscar por listas de recomendaÃ§Ãµes
     const lines = analysis.split('\n');
     lines.forEach(line => {
       if (line.match(/^[-*]\s+/)) {
@@ -573,3 +573,4 @@ ${lessonPlan.pedagogicalNotes ? `
 }
 
 export const curriculumAgentService = new CurriculumAgentService();
+

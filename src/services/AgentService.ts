@@ -1,4 +1,4 @@
-import { prisma } from '@/utils/database';
+﻿import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { AIAgent, AgentConversation, AgentSpecialization, Prisma } from '@prisma/client';
 
@@ -221,26 +221,56 @@ export class AgentService {
     messages: any[];
     metadata?: any;
   }): Promise<AgentConversation> {
-    try {
-      const conversation = await prisma.agentConversation.create({
-        data: {
-          agentId: data.agentId,
-          userId: data.userId,
-          studentId: data.studentId,
-          messages: data.messages,
-          metadata: data.metadata || {}
-        },
-        include: {
-          agent: true
-        }
-      });
+    const maxRetries = 3;
+    let lastError: any;
 
-      logger.info(`Created conversation ${conversation.id} for agent ${data.agentId}`);
-      return conversation;
-    } catch (error) {
-      logger.error('Error creating conversation:', error);
-      throw error;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Add timeout to the query
+        const createPromise = prisma.agentConversation.create({
+          data: {
+            agentId: data.agentId,
+            userId: data.userId,
+            studentId: data.studentId,
+            messages: data.messages,
+            metadata: data.metadata || {}
+          },
+          include: {
+            agent: true
+          }
+        });
+
+        // Timeout after 15 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Create conversation timeout')), 15000);
+        });
+
+        const conversation = await Promise.race([
+          createPromise,
+          timeoutPromise
+        ]) as AgentConversation;
+
+        logger.info(`✅ Created conversation ${conversation.id} for agent ${data.agentId} (attempt ${attempt})`);
+        return conversation;
+      } catch (error: any) {
+        lastError = error;
+        logger.warn(`⚠️ Attempt ${attempt}/${maxRetries} failed to create conversation:`, error.message);
+
+        // Don't retry on non-connection errors
+        if (error.code !== 'P2024' && error.code !== 'P1017' && !error.message?.includes('timeout')) {
+          throw error;
+        }
+
+        // Wait before retry (exponential backoff)
+        if (attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
     }
+
+    logger.error(`❌ Failed to create conversation after ${maxRetries} attempts`);
+    throw lastError;
   }
 
   /**
@@ -254,23 +284,54 @@ export class AgentService {
       feedback?: string;
     }
   ): Promise<AgentConversation> {
-    try {
-      const conversation = await prisma.agentConversation.update({
-        where: { id },
-        data,
-        include: { agent: true }
-      });
+    const maxRetries = 3;
+    let lastError: any;
 
-      // Update agent average rating
-      if (data.rating) {
-        await this.updateAgentRating(conversation.agentId);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Add timeout to the query
+        const updatePromise = prisma.agentConversation.update({
+          where: { id },
+          data,
+          include: { agent: true }
+        });
+
+        // Timeout after 15 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Update conversation timeout')), 15000);
+        });
+
+        const conversation = await Promise.race([
+          updatePromise,
+          timeoutPromise
+        ]) as AgentConversation;
+
+        // Update agent average rating
+        if (data.rating) {
+          await this.updateAgentRating(conversation.agentId);
+        }
+
+        logger.info(`✅ Updated conversation ${id} (attempt ${attempt})`);
+        return conversation;
+      } catch (error: any) {
+        lastError = error;
+        logger.warn(`⚠️ Attempt ${attempt}/${maxRetries} failed for conversation ${id}:`, error.message);
+
+        // Don't retry on non-connection errors
+        if (error.code !== 'P2024' && error.code !== 'P1017' && !error.message?.includes('timeout')) {
+          throw error;
+        }
+
+        // Wait before retry (exponential backoff)
+        if (attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
-
-      return conversation;
-    } catch (error) {
-      logger.error(`Error updating conversation ${id}:`, error);
-      throw error;
     }
+
+    logger.error(`❌ Failed to update conversation ${id} after ${maxRetries} attempts`);
+    throw lastError;
   }
 
   /**
@@ -429,7 +490,7 @@ export class AgentService {
     }
 
     // Model validation
-    const validModels = ['gemini-1.5-flash', 'gemini-1.5-pro'];
+    const validModels = ['gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-exp','gemini-2.5-pro-exp','gemini-2.0-flash-exp','gemini-1.5-pro','gemini-1.5-flash','gemini-1.5-flash-8b'];
     if (!validModels.includes(data.model)) {
       throw new Error(`Invalid model. Must be one of: ${validModels.join(', ')}`);
     }
@@ -460,3 +521,4 @@ export class AgentService {
 }
 
 export const agentService = new AgentService();
+

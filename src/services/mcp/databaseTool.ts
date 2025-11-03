@@ -117,19 +117,24 @@ export class DatabaseTool {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
-        const [totalClasses, totalAttendances] = await Promise.all([
-          prisma.turma.count({
+        // Contar aulas agendadas (TurmaLesson) e presenças registradas (TurmaAttendance)
+        const [totalScheduledLessons, totalAttendances] = await Promise.all([
+          prisma.turmaLesson.count({
             where: {
-              organizationId,
-              startTime: {
+              turma: {
+                organizationId,
+              },
+              scheduledDate: {
                 gte: startDate,
               },
             },
           }),
-          prisma.attendance.count({
+          prisma.turmaAttendance.count({
             where: {
-              organizationId,
-              checkinAt: {
+              student: {
+                organizationId,
+              },
+              checkedAt: {
                 gte: startDate,
               },
             },
@@ -137,9 +142,9 @@ export class DatabaseTool {
         ]);
 
         return {
-          totalClasses,
+          totalScheduledLessons,
           totalAttendances,
-          rate: totalClasses > 0 ? (totalAttendances / totalClasses) * 100 : 0,
+          rate: totalScheduledLessons > 0 ? (totalAttendances / (totalScheduledLessons * 10)) * 100 : 0, // Assuming ~10 students per class
           period: `${days} days`,
         };
       },

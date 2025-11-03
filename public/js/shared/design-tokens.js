@@ -1,10 +1,10 @@
-// Design Tokens Applier - applies runtime theme/branding from /api/settings
+﻿// Design Tokens Applier - applies runtime theme/branding from /api/settings
 (function(){
   const STATE = { loaded: false, applying: false, settings: null };
 
   async function fetchSettings() {
     try {
-      const res = await fetch('/api/settings');
+if (window.createModuleAPI) { const api = window.createModuleAPI('DesignTokens'); const r = await api.request('/api/settings'); if (r && r.success) return r.data; } const orgId = (localStorage.getItem('organizationId')||'').replace('"',''); const res = await fetch('/api/settings', { headers: orgId ? { 'x-organization-id': orgId } : {} });
       const json = await res.json();
       if (json && json.success) return json.data;
     } catch (e) {

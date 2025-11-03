@@ -72,6 +72,8 @@ import { aiRoutes } from '@/routes/ai';
 import { ragRoutes } from '@/routes/rag';
 import { agentOrchestratorRoutes } from '@/routes/agentOrchestrator';
 import agentsRoutes from '@/routes/agents';
+import agentTasksRoutes from '@/routes/agentTasks';
+import agentInsightsRoutes from '@/routes/agentInsights';
 import curriculumAgentRoutes from '@/routes/curriculum-agent';
 import turmasRoutes from '@/routes/turmas';
 import testRoutes from '@/routes/test';
@@ -108,6 +110,15 @@ const start = async (): Promise<void> => {
       logger.info('✅ Gemini AI Service initialized successfully');
     } else {
       logger.warn('⚠️ Gemini AI Service running in mock mode (no API key)');
+    }
+
+    // Inicializar TaskScheduler (restaura jobs recorrentes do banco)
+    try {
+      const { taskSchedulerService } = await import('@/services/taskSchedulerService');
+      await taskSchedulerService.initialize();
+      logger.info('✅ TaskScheduler initialized with recurring tasks restored');
+    } catch (error) {
+      logger.error('❌ Failed to initialize TaskScheduler:', error);
     }
     
     const isProd = appConfig.server.nodeEnv === 'production';
@@ -174,6 +185,8 @@ const start = async (): Promise<void> => {
 
     await server.register(normalizePlugin(authRoutes, 'authRoutes'), { prefix: '/api/auth' } as any);
     await server.register(normalizePlugin(attendanceRoutes, 'attendanceRoutes'), { prefix: '/api/attendance' } as any);
+    // 🆕 Alias: /api/checkin → /api/attendance (para compatibilidade com Kiosk)
+    await server.register(normalizePlugin(attendanceRoutes, 'attendanceRoutesAlias'), { prefix: '/api/checkin' } as any);
     await server.register(normalizePlugin(classRoutes, 'classRoutes'), { prefix: '/api/classes' } as any);
     await server.register(normalizePlugin(analyticsRoutes, 'analyticsRoutes'), { prefix: '/api/analytics' } as any);
     await server.register(normalizePlugin(pedagogicalRoutes, 'pedagogicalRoutes'));
@@ -198,6 +211,8 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(ragRoutes, 'ragRoutes'), { prefix: '/api/rag' } as any);
     await server.register(normalizePlugin(agentOrchestratorRoutes, 'agentOrchestratorRoutes'), { prefix: '/api/agents' } as any);
     await server.register(normalizePlugin(agentsRoutes, 'agentsRoutes'), { prefix: '/api/agents' } as any);
+    await server.register(normalizePlugin(agentTasksRoutes, 'agentTasksRoutes'), { prefix: '/api/agent-tasks' } as any);
+    await server.register(normalizePlugin(agentInsightsRoutes, 'agentInsightsRoutes'), { prefix: '/api/agent-insights' } as any);
     await server.register(normalizePlugin(curriculumAgentRoutes, 'curriculumAgentRoutes'), { prefix: '/api/agents/curriculum' } as any);
   await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);
   await server.register(normalizePlugin(testRoutes, 'testRoutes'), { prefix: '/api' } as any);
@@ -243,6 +258,22 @@ const start = async (): Promise<void> => {
 
     await server.listen({ port: appConfig.server.port, host: appConfig.server.host });
     logger.info(`Server running at http://${appConfig.server.host}:${appConfig.server.port}`);
+    
+    // Inicializar WebSocket Service (real-time notifications)
+    try {
+      const { websocketService } = await import('@/services/websocketService');
+      websocketService.initialize(server.server);
+      logger.info('✅ WebSocket Service initialized on ws://localhost:' + appConfig.server.port + '/ws/agents');
+    } catch (error) {
+      logger.error('❌ Failed to initialize WebSocket Service:', error);
+    }
+    
+    // 🆕 TEMPORARIAMENTE DESABILITADO - TaskOrchestrator causando travamento
+    // const { taskOrchestratorService } = await import('@/services/taskOrchestratorService');
+    // await taskOrchestratorService.start();
+    // logger.info('🎭 Task Orchestrator started');
+    logger.info('⏸️ Task Orchestrator disabled temporarily (focus on check-in)');
+    
   } catch (error) {
     logger.error({ error }, 'Failed to start server');
     process.exit(1);
@@ -253,12 +284,30 @@ const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
 signals.forEach((signal) => {
   process.on(signal, async () => {
     logger.info(`Received ${signal}, shutting down gracefully`);
-    try { await prisma.$disconnect(); await server.close(); logger.info('Server closed successfully'); process.exit(0); }
+    try {
+      // 🆕 Parar Task Orchestrator antes de desligar
+      const { taskOrchestratorService } = await import('@/services/taskOrchestratorService');
+      taskOrchestratorService.stop();
+      
+      // 🆕 Shutdown WebSocket Service
+      const { websocketService } = await import('@/services/websocketService');
+      websocketService.shutdown();
+      
+      // 🆕 Shutdown TaskScheduler
+      const { taskSchedulerService } = await import('@/services/taskSchedulerService');
+      taskSchedulerService.shutdown();
+      
+      await prisma.$disconnect();
+      await server.close();
+      logger.info('Server closed successfully');
+      process.exit(0);
+    }
     catch (error) { logger.error({ error }, 'Error during shutdown'); process.exit(1); }
   });
 });
 
 start();
+
 
 
 

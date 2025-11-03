@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade de Agentes - Academia Krav Maga</title>
+</head>
+<body>
+    <div id="agent-activity-container" class="main-content"></div>
+
+    <script>
+        // Inicializar módulo quando carregado
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🤖 [AgentActivity] View loaded, initializing module...');
+            
+            // Aguardar API client e módulo estarem disponíveis
+            const maxAttempts = 50;
+            let attempts = 0;
+            
+            const waitForModule = setInterval(async () => {
+                attempts++;
+                
+                if (typeof window.agentActivityModule !== 'undefined' && 
+                    typeof window.createModuleAPI !== 'undefined') {
+                    
+                    clearInterval(waitForModule);
+                    
+                    // Configurar container
+                    const container = document.getElementById('agent-activity-container');
+                    window.agentActivityModule.container = container;
+                    
+                    // Inicializar
+                    await window.agentActivityModule.init();
+                    
+                    console.log('✅ [AgentActivity] Module initialized successfully');
+                    
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(waitForModule);
+                    console.error('❌ [AgentActivity] Failed to load module after', maxAttempts, 'attempts');
+                    
+                    document.getElementById('agent-activity-container').innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; color: #dc2626;">
+                            <div style="font-size: 64px; margin-bottom: 16px;">❌</div>
+                            <h2>Erro ao Carregar Módulo</h2>
+                            <p>Não foi possível carregar o módulo de Atividade de Agentes.</p>
+                            <p style="font-size: 14px; color: #6b7280; margin-top: 12px;">
+                                Verifique se o arquivo <code>agent-activity/index.js</code> está carregado corretamente.
+                            </p>
+                            <button 
+                                onclick="window.location.reload()" 
+                                style="margin-top: 20px; padding: 10px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
+                            >
+                                🔄 Recarregar Página
+                            </button>
+                        </div>
+                    `;
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

@@ -461,4 +461,220 @@ export class AttendanceController {
       return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
     }
   }
+
+  /**
+   * 🆕 GET /api/attendance/today
+   * Get today's check-in history for Kiosk display
+   */
+  static async getTodayHistory(
+    request: FastifyRequest<{ Querystring: { page?: number; limit?: number } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const page = request.query.page || 1;
+      const limit = request.query.limit || 10;
+
+      // Get organization from header
+      const organizationId = request.headers['x-organization-id'] as string;
+      if (!organizationId) {
+        return ResponseHelper.error(reply, 'x-organization-id header is required', 400);
+      }
+
+      // Get today's date range
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Query attendance records
+      const [attendances, total] = await Promise.all([
+        prisma.turmaAttendance.findMany({
+          where: {
+            checkedAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            student: {
+              organizationId,
+            },
+          },
+          include: {
+            student: {
+              select: {
+                id: true,
+                registrationNumber: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+            turma: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            checkedAt: 'desc',
+          },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.turmaAttendance.count({
+          where: {
+            checkedAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            student: {
+              organizationId,
+            },
+          },
+        }),
+      ]);
+
+      const response = {
+        success: true,
+        data: attendances.map(att => ({
+          id: att.id,
+          checkInTime: att.checkedAt, // Prisma field is 'checkedAt', but frontend expects 'checkInTime'
+          student: {
+            id: att.student.id,
+            name: `${att.student.user.firstName} ${att.student.user.lastName}`,
+            avatar: att.student.user.avatarUrl,
+            registrationNumber: att.student.registrationNumber,
+          },
+          turma: att.turma
+            ? {
+                id: att.turma.id,
+                name: att.turma.name,
+                color: att.turma.color,
+              }
+            : null,
+        })),
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        message: 'Check-ins de hoje recuperados com sucesso',
+        timestamp: new Date().toISOString(),
+      };
+
+      reply.header('Content-Type', 'application/json; charset=utf-8');
+      return reply.send(response);
+    } catch (error) {
+      logger.error({ error }, 'Get today history failed');
+
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async getTodayCheckins(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) {
+    try {
+      const organizationId = request.headers['x-organization-id'] as string;
+
+      if (!organizationId) {
+        return ResponseHelper.error(reply, 'Missing organization ID', 400);
+      }
+
+      // Get today's date range (00:00:00 to 23:59:59)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Query all check-ins from today
+      const checkins = await prisma.attendance.findMany({
+        where: {
+          organizationId,
+          checkInTime: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+        include: {
+          student: {
+            include: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+          turma: {
+            include: {
+              course: {
+                select: {
+                  name: true,
+                },
+              },
+              instructor: {
+                include: {
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          checkInTime: 'desc',
+        },
+      });
+
+      // Format response
+      const formattedCheckins = checkins.map(checkin => ({
+        id: checkin.id,
+        studentId: checkin.studentId,
+        studentName: `${checkin.student.user.firstName} ${checkin.student.user.lastName}`,
+        registrationNumber: checkin.student.registrationNumber,
+        avatar: checkin.student.user.avatarUrl,
+        checkInTime: checkin.checkInTime.toISOString(),
+        turmaId: checkin.turmaId,
+        turmaName: checkin.turma?.course?.name || 'N/A',
+        courseName: checkin.turma?.course?.name || 'N/A',
+        instructorName: checkin.turma?.instructor?.user 
+          ? `${checkin.turma.instructor.user.firstName} ${checkin.turma.instructor.user.lastName}`
+          : 'N/A',
+        present: checkin.present,
+      }));
+
+      return ResponseHelper.success(
+        reply,
+        formattedCheckins,
+        `${formattedCheckins.length} check-ins realizados hoje`,
+        200
+      );
+    } catch (error) {
+      logger.error({ error }, 'Get today checkins failed');
+
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
 }

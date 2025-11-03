@@ -6,6 +6,7 @@
 
 import { prisma } from '@/utils/database';
 import { GeminiService } from './geminiService';
+import { DatabaseTool } from './mcp/databaseTool';
 
 // Tipos de agentes disponíveis
 export enum AgentType {
@@ -45,6 +46,34 @@ export const AGENT_PERMISSIONS = {
     }
 };
 
+// Mapeamento de specialization → permissões de database
+const SPECIALIZATION_TO_PERMISSIONS: Record<string, { tables: string[], operations: string[] }> = {
+    'pedagogical': {
+        tables: ['Student', 'Course', 'LessonPlan', 'Activity', 'TurmaAttendance', 'StudentCourse', 'Subscription', 'BillingPlan'],
+        operations: ['READ', 'WRITE', 'CREATE']
+    },
+    'commercial': {
+        tables: ['Student', 'Lead', 'Subscription', 'BillingPlan', 'FinancialResponsible', 'Campaign'],
+        operations: ['READ', 'WRITE', 'CREATE']
+    },
+    'analytical': {
+        tables: ['*'],  // Acesso de leitura a tudo para análises
+        operations: ['READ']
+    },
+    'support': {
+        tables: ['Student', 'Lead', 'Course', 'LessonPlan'],
+        operations: ['READ']
+    },
+    'progression': {
+        tables: ['Student', 'Course', 'LessonPlan', 'Activity', 'TurmaAttendance', 'StudentCourse', 'Graduation'],
+        operations: ['READ', 'WRITE']
+    },
+    'curriculum': {
+        tables: ['Course', 'LessonPlan', 'Activity', 'Technique', 'ActivityCategory', 'Graduation'],
+        operations: ['READ', 'WRITE', 'CREATE']
+    }
+};
+
 // Interface de configuração de agente
 export interface AgentConfig {
     id?: string;
@@ -53,6 +82,7 @@ export interface AgentConfig {
     description: string;
     systemPrompt: string;
     tools: string[];              // Ferramentas MCP disponíveis
+    autoSaveInsights?: boolean;   // Auto-salvar insights no banco
     automationRules?: {
         trigger: string;          // Evento que dispara o agente
         action: string;           // Ação a executar
@@ -81,6 +111,21 @@ export interface AgentResult {
     }[];
 }
 
+// Mapeamento de tipos de agentes para especializações (schema Prisma)
+const AGENT_TYPE_TO_SPECIALIZATION: Record<string, string> = {
+    'marketing': 'commercial',
+    'comercial': 'commercial',
+    'pedagogico': 'pedagogical',
+    'financeiro': 'commercial',
+    'atendimento': 'support',
+    'ADMINISTRATIVE': 'support',
+    'MARKETING': 'commercial',
+    'PEDAGOGICAL': 'pedagogical',
+    'FINANCIAL': 'commercial',
+    'SUPPORT': 'support',
+    'orchestrator': 'analytical'
+};
+
 export class AgentOrchestratorService {
     
     /**
@@ -94,24 +139,33 @@ export class AgentOrchestratorService {
             // Validar permissões
             const permissions = config.permissions || AGENT_PERMISSIONS[config.type];
             
-            // Salvar configuração do agente no banco
-            const agent = await (prisma as any).aIAgent.create({
+            // Determinar specialization baseado no tipo (com cast para tipo correto)
+            const specialization = (AGENT_TYPE_TO_SPECIALIZATION[config.type] || 'support') as 'pedagogical' | 'administrative' | 'marketing' | 'financial' | 'support';
+            
+            console.log('🔧 [AgentOrchestrator] Creating agent:', {
+                name: config.name,
+                type: config.type,
+                specialization,
+                organizationId: config.organizationId,
+                tools: config.tools
+            });
+            
+            // ✅ CORREÇÃO: AIAgent (não aIAgent)
+            const agent = await prisma.aIAgent.create({
                 data: {
                     name: config.name,
-                    type: config.type,
                     description: config.description,
                     systemPrompt: config.systemPrompt,
-                    tools: config.tools,
-                    automationRules: config.automationRules as any,
-                    permissions: permissions as any,
+                    specialization: specialization,
+                    ragSources: [],
+                    mcpTools: config.tools || [],
+                    autoSaveInsights: config.autoSaveInsights || false,
                     isActive: config.isActive,
-                    organizationId: config.organizationId,
-                    metadata: {
-                        createdBy: 'orchestrator',
-                        createdAt: new Date().toISOString()
-                    }
+                    organizationId: config.organizationId
                 }
             });
+            
+            console.log('✅ [AgentOrchestrator] Agent created successfully:', agent.id);
             
             return {
                 success: true,
@@ -127,6 +181,15 @@ export class AgentOrchestratorService {
             };
             
         } catch (error) {
+            console.error('❌ [AgentOrchestrator] Error creating agent:', error);
+            console.error('❌ [AgentOrchestrator] Config sent:', JSON.stringify(config, null, 2));
+            
+            // ✅ Log detalhado do erro
+            if (error instanceof Error) {
+                console.error('❌ [AgentOrchestrator] Error message:', error.message);
+                console.error('❌ [AgentOrchestrator] Error stack:', error.stack);
+            }
+            
             return {
                 success: false,
                 agentName: config.name,
@@ -157,48 +220,25 @@ export class AgentOrchestratorService {
             
             console.log('📊 [AgentOrchestrator] Organization stats:', { students, courses, leads, subscriptions });
             
-            // Prompt para IA sugerir agentes (SIMPLIFICADO e ESTRUTURADO)
-            const analysisPrompt = `Você é um consultor de software para academias. Analise estes dados e sugira 2 agentes de automação.
+            // Prompt ULTRA-CONCISO para IA sugerir agentes (forçar brevidade)
+            const analysisPrompt = `${students} alunos, ${courses} cursos, ${leads} leads, ${subscriptions} assinaturas.
 
-ACADEMIA:
-- Alunos: ${students}
-- Cursos: ${courses}
-- Leads: ${leads}
-- Assinaturas: ${subscriptions}
-
-IMPORTANTE: Responda APENAS com um array JSON válido, sem texto adicional.
-
-Formato esperado:
-[
-  {
-    "name": "Agente de Marketing",
-    "type": "marketing",
-    "description": "Envia campanhas personalizadas",
-    "justification": "Academia tem ${leads} leads para converter"
-  },
-  {
-    "name": "Agente de Retenção",
-    "type": "retention",
-    "description": "Monitora e previne evasão de alunos",
-    "justification": "Gerenciar ${students} alunos ativos"
-  }
-]
-
-Responda SOMENTE com o JSON, sem explicações.`;
+JSON array (máx 2 agentes, descrições de 10 palavras):
+[{"name":"","type":"marketing|financeiro|pedagogico","description":"","justification":""}]`;
             
             console.log('🧠 [AgentOrchestrator] Calling Gemini AI with timeout...');
             
-            // Timeout de 8 segundos para não travar o frontend
+            // Timeout de 15 segundos (frontend tem 20s, então dá 5s de margem)
             const timeoutPromise = new Promise<string>((_, reject) => {
-                setTimeout(() => reject(new Error('Gemini API timeout (8s)')), 8000);
+                setTimeout(() => reject(new Error('Gemini API timeout (15s)')), 15000);
             });
             
-            // Chamar Gemini SEM RAG (método simples, sem contexto)
+            // Chamar Gemini com maxTokens MAIOR
             const geminiPromise = GeminiService.generateSimple(
                 analysisPrompt, 
                 {
-                    temperature: 0.3, // Mais determinístico para JSON
-                    maxTokens: 500
+                    temperature: 0.1, // ✅ MAIS determinístico (era 0.3)
+                    maxTokens: 2048 // ✅ DOBRADO de 1000 para 2048
                 }
             );
             
@@ -246,35 +286,189 @@ Responda SOMENTE com o JSON, sem explicações.`;
         const startTime = Date.now();
         
         try {
+            console.log('[AgentOrchestrator] 🔄 Starting agent execution:', agentId);
+            
             // Buscar configuração do agente
             const agent = await (prisma as any).aIAgent.findUnique({
                 where: { id: agentId }
             });
             
+            console.log('[AgentOrchestrator] ✅ Agent found:', agent?.name, 'specialization:', agent?.specialization);
+            
             if (!agent || !agent.isActive) {
                 throw new Error('Agent not found or inactive');
             }
             
-            // Montar prompt com contexto do agente
+            // Buscar permissões baseadas na especialização do agente
+            const permissions = SPECIALIZATION_TO_PERMISSIONS[agent.specialization] || {
+                tables: [],
+                operations: []
+            };
+            
+            console.log('[AgentOrchestrator] 🔐 Permissions assigned:', {
+                tables: permissions.tables.length,
+                operations: permissions.operations.join(',')
+            });
+            
+            // 🆕 EXECUTAR FERRAMENTAS MCP (Database Tool)
+            let mcpContextData = '';
+            const mcpToolsUsed: string[] = [];
+            
+            if (agent.mcpTools && agent.mcpTools.includes('database') && context?.organizationId) {
+                console.log('[AgentOrchestrator] 🔧 Executing MCP Database Tool...');
+                
+                try {
+                    // Executar queries relevantes baseadas na especialização
+                    const queryResults: Record<string, any> = {};
+                    
+                    if (agent.specialization === 'pedagogical') {
+                        // Agente pedagógico: alunos novos, inativos, taxa de frequência, planos populares
+                        const [newStudents, inactiveStudents, attendanceRate, popularPlans] = await Promise.all([
+                            DatabaseTool.executeQuery('new_students', context.organizationId, { days: 30 }),
+                            DatabaseTool.executeQuery('inactive_students', context.organizationId, { days: 30 }),
+                            DatabaseTool.executeQuery('attendance_rate', context.organizationId, { days: 30 }),
+                            DatabaseTool.executeQuery('popular_plans', context.organizationId)
+                        ]);
+                        
+                        queryResults['new_students'] = newStudents;
+                        queryResults['inactive_students'] = inactiveStudents;
+                        queryResults['attendance_rate'] = attendanceRate;
+                        queryResults['popular_plans'] = popularPlans;
+                    } else if (agent.specialization === 'commercial') {
+                        // Agente comercial: leads não convertidos, planos populares
+                        const [unconvertedLeads, popularPlans] = await Promise.all([
+                            DatabaseTool.executeQuery('unconverted_leads', context.organizationId, { days: 14 }),
+                            DatabaseTool.executeQuery('popular_plans', context.organizationId)
+                        ]);
+                        
+                        queryResults['unconverted_leads'] = unconvertedLeads;
+                        queryResults['popular_plans'] = popularPlans;
+                    } else {
+                        // Outras especializações: novos alunos
+                        const newStudents = await DatabaseTool.executeQuery('new_students', context.organizationId, { days: 30 });
+                        queryResults['new_students'] = newStudents;
+                    }
+                    
+                    mcpContextData = `
+=== DADOS DO BANCO DE DADOS (MCP DATABASE TOOL) ===
+
+${Object.entries(queryResults).map(([queryName, result]) => {
+    if (result.success) {
+        const data = result.data;
+        const dataCount = Array.isArray(data) ? data.length : (data ? 1 : 0);
+        
+        // Resumir dados ao invés de JSON completo (evitar prompt gigante)
+        let summary = '';
+        if (Array.isArray(data) && data.length > 0) {
+            // Mostrar apenas primeiros 3 registros + contagem total
+            const sample = data.slice(0, 3).map((item: any) => {
+                if (item.user) {
+                    return `${item.user.firstName} ${item.user.lastName} (ID: ${item.id.substring(0,8)}...)`;
+                } else if (item.name) {
+                    return `${item.name} (ID: ${item.id.substring(0,8)}...)`;
+                } else if (item.firstName) {
+                    return `${item.firstName} ${item.lastName} (ID: ${item.id.substring(0,8)}...)`;
+                }
+                return `ID: ${item.id.substring(0,8)}...`;
+            });
+            summary = `\nExemplos: ${sample.join(', ')}`;
+            if (data.length > 3) {
+                summary += `\n... e mais ${data.length - 3} registros`;
+            }
+        } else if (data && typeof data === 'object' && !Array.isArray(data)) {
+            // Dados agregados (ex: attendance_rate)
+            summary = `\n${JSON.stringify(data, null, 2)}`;
+        }
+        
+        return `
+**${queryName}** (${result.description}):
+Total de registros: ${dataCount}${summary}
+`;
+    } else {
+        return `
+**${queryName}**: ❌ Erro - ${result.error}
+`;
+    }
+}).join('\n')}
+
+📊 INSTRUÇÕES:
+- Use os dados acima para análise
+- Foque em INSIGHTS e AÇÕES, não repita os dados brutos
+- Priorize alunos em situação crítica (inativos, sem matrícula, plano vencendo)
+`;
+                    
+                    mcpToolsUsed.push('database');
+                    console.log('[AgentOrchestrator] ✅ MCP Tool executed:', Object.keys(queryResults).length, 'queries');
+                    
+                } catch (mcpError: any) {
+                    console.error('[AgentOrchestrator] ❌ MCP Tool failed:', mcpError.message);
+                    mcpContextData = `\n=== ERRO AO BUSCAR DADOS ===\n${mcpError.message}\n`;
+                }
+            }
+            
+            // Montar prompt com contexto do agente + dados MCP
             const agentPrompt = `
-${agent.systemPrompt}
+Você é um agente especializado em gestão pedagógica de academias.
 
 TAREFA: ${task}
 
-CONTEXTO ADICIONAL:
-${JSON.stringify(context || {}, null, 2)}
+${mcpContextData}
 
-PERMISSÕES DE DATABASE:
-Tabelas: ${(agent.permissions as any)?.tables?.join(', ') || 'Nenhuma'}
-Operações: ${(agent.permissions as any)?.operations?.join(', ') || 'Nenhuma'}
+INSTRUÇÕES CRÍTICAS:
+1. Analise os dados acima
+2. Identifique TOP 3 insights mais importantes
+3. Sugira TOP 3 ações prioritárias com MÉTODO DE EXECUÇÃO
+4. Seja EXTREMAMENTE CONCISO (máximo 500 palavras)
+5. Use emojis e bullet points
 
-Execute a tarefa e retorne o resultado em JSON com:
-- action: ação realizada
-- data: dados processados
-- databaseOperations: operações de banco executadas (se houver)
+⚠️ IMPORTANTE - MÉTODO DE EXECUÇÃO:
+Para CADA ação, você DEVE especificar:
+- **executionMethod**: "TASK_SCHEDULED" (agendada diária/semanal) | "MCP_IMMEDIATE" (via MCP agora) | "USER_INTERVENTION" (precisa humano)
+- **executionDetails**: Explicação clara de como será executado
+- **requiresApproval**: true se precisa aprovação humana antes
+
+EXEMPLOS:
+✅ "Enviar WhatsApp para 5 alunos inativos" → executionMethod: "MCP_IMMEDIATE", executionDetails: "Executarei via MCP Tools (database + whatsapp) agora mesmo"
+✅ "Monitorar frequência diária" → executionMethod: "TASK_SCHEDULED", executionDetails: "Criarei task agendada para rodar todo dia às 08h"
+✅ "Revisar currículo do curso" → executionMethod: "USER_INTERVENTION", executionDetails: "Requer análise pedagógica humana"
+
+FORMATO DA RESPOSTA (JSON):
+{
+  "summary": "Resumo em 1 frase",
+  "insights": ["insight 1", "insight 2", "insight 3"],
+  "actions": [
+    {
+      "description": "ação 1",
+      "executionMethod": "MCP_IMMEDIATE | TASK_SCHEDULED | USER_INTERVENTION",
+      "executionDetails": "explicação de como será feito",
+      "requiresApproval": true/false,
+      "schedule": "daily 08:00" (se TASK_SCHEDULED)
+    }
+  ],
+  "priority": "HIGH/MEDIUM/LOW"
+}
+
+RESPONDA APENAS COM O JSON, SEM TEXTO ADICIONAL.
 `;
             
-            const response = await GeminiService.generateRAGResponse(agentPrompt, []);
+            console.log('[AgentOrchestrator] 🤖 Calling Gemini with prompt length:', agentPrompt.length);
+            console.log('[AgentOrchestrator] 📊 Permissions in prompt:', {
+                tables: permissions.tables.join(', '),
+                operations: permissions.operations.join(', ')
+            });
+            console.log('[AgentOrchestrator] 🎛️ Gemini config:', {
+                temperature: agent.temperature || 0.7,
+                maxTokens: 8192 // Gemini 2.5 Flash suporta até 8192
+            });
+            
+            // Usar generateSimple com maxTokens MÁXIMO (8192 para Gemini 2.5 Flash)
+            const response = await GeminiService.generateSimple(agentPrompt, {
+                temperature: agent.temperature || 0.7,
+                maxTokens: 8192 // Máximo do Gemini 2.5 Flash
+            });
+            
+            console.log('[AgentOrchestrator] ✅ Gemini response received, length:', response.length);
+            
             const result = this.parseAgentResponse(response);
             
             // Log da execução
@@ -311,13 +505,36 @@ Execute a tarefa e retorne o resultado em JSON com:
                 console.error('Agent execution logging skipped:', logError);
             }
             
+            // 🆕 AUTO-SAVE INSIGHTS SE CONFIGURADO
+            if (agent.autoSaveInsights && context?.organizationId) {
+                try {
+                    const { agentInsightService } = await import('@/services/agentInsightService');
+                    
+                    await agentInsightService.createInsightsFromExecution(
+                        agent.id,
+                        context.organizationId,
+                        result
+                    );
+                    
+                    console.log('[AgentOrchestrator] ✅ Auto-saved insights to database');
+                } catch (saveError: any) {
+                    console.error('[AgentOrchestrator] ⚠️ Failed to auto-save insights:', saveError.message);
+                    // Não falhar a execução se o salvamento falhar
+                }
+            }
+            
             return {
                 success: true,
                 agentName: agent.name,
-                action: result.action,
-                data: result.data,
-                executionTime: Date.now() - startTime,
-                databaseOperations: result.databaseOperations
+                action: 'execute_agent',
+                data: {
+                    summary: result.summary || '',
+                    insights: result.insights || [],
+                    actions: result.actions || [],
+                    priority: result.priority || 'MEDIUM',
+                    rawResponse: result
+                },
+                executionTime: Date.now() - startTime
             };
             
         } catch (error) {
@@ -441,15 +658,78 @@ Execute a tarefa e retorne o resultado em JSON com:
     private static parseAISuggestions(aiResponse: string): any[] {
         try {
             console.log('🔧 [parseAISuggestions] Input:', aiResponse?.substring(0, 200));
-            // Remove markdown code blocks se houver
-            const cleaned = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-            const parsed = JSON.parse(cleaned);
-            console.log('✅ [parseAISuggestions] Parsed successfully:', parsed);
-            return parsed;
+            if (!aiResponse || typeof aiResponse !== 'string') return [];
+
+            // Check for Gemini fallback message (when API fails)
+            if (aiResponse.includes('[Fallback AI]')) {
+                console.log('⚠️ [parseAISuggestions] Gemini fallback detected, returning empty array');
+                return [];
+            }
+
+            // Remove markdown code fences
+            let cleaned = aiResponse.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+
+            // If response contains extra commentary, try to extract the first JSON array block
+            // Matches the outermost [ ... ] including newlines and nested braces
+            const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
+            if (arrayMatch) {
+                cleaned = arrayMatch[0];
+            }
+
+            // Try to parse, if fails due to truncation, attempt to fix
+            try {
+                const parsed = JSON.parse(cleaned);
+                if (Array.isArray(parsed)) {
+                    console.log('✅ [parseAISuggestions] Parsed successfully:', parsed);
+                    return parsed;
+                }
+            } catch (parseError: any) {
+                // If JSON is truncated (unterminated string), try to fix it
+                if (parseError.message?.includes('Unterminated string')) {
+                    console.log('⚠️ [parseAISuggestions] Detected truncated JSON, attempting to fix...');
+                    
+                    // Close unterminated strings and array
+                    let fixed = cleaned;
+                    
+                    // Count open braces vs close braces
+                    const openBraces = (fixed.match(/\{/g) || []).length;
+                    const closeBraces = (fixed.match(/\}/g) || []).length;
+                    
+                    // If string is open, close it
+                    if (!fixed.endsWith('"')) {
+                        fixed += '"';
+                    }
+                    
+                    // Close any open braces
+                    for (let i = 0; i < (openBraces - closeBraces); i++) {
+                        fixed += '}';
+                    }
+                    
+                    // Close array if needed
+                    if (!fixed.endsWith(']')) {
+                        fixed += ']';
+                    }
+                    
+                    console.log('🔧 [parseAISuggestions] Fixed JSON:', fixed);
+                    
+                    try {
+                        const parsedFixed = JSON.parse(fixed);
+                        if (Array.isArray(parsedFixed) && parsedFixed.length > 0) {
+                            console.log('✅ [parseAISuggestions] Fixed and parsed successfully:', parsedFixed);
+                            return parsedFixed;
+                        }
+                    } catch (fixError) {
+                        console.error('❌ [parseAISuggestions] Fix attempt failed:', fixError);
+                    }
+                }
+                throw parseError;
+            }
+            
+            return [];
         } catch (error) {
             console.error('❌ [parseAISuggestions] Parse failed:', error);
             console.error('❌ [parseAISuggestions] Input was:', aiResponse);
-            // Fallback: retornar array vazio se parse falhar
+            // Return empty; route will provide fallback suggestions
             return [];
         }
     }

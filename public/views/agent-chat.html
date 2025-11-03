@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com Agentes - Academia</title>
+</head>
+<body>
+    <div id="agent-chat-page" class="page-container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="#dashboard">Home</a>
+            <span>›</span>
+            <span>Chat com Agentes</span>
+        </nav>
+
+        <!-- Container principal do chat -->
+        <div id="agent-chat-main-container"></div>
+    </div>
+
+    <script>
+        // Inicializar módulo de chat
+        (async function() {
+            console.log('💬 [Agent Chat Page] Initializing...');
+            
+            const container = document.getElementById('agent-chat-main-container');
+            
+            if (!container) {
+                console.error('❌ [Agent Chat Page] Container not found');
+                return;
+            }
+
+            // Aguardar AgentChatModule estar disponível
+            const maxRetries = 50;
+            let retries = 0;
+            
+            const waitForModule = setInterval(async () => {
+                retries++;
+                
+                if (typeof window.AgentChatModule !== 'undefined') {
+                    clearInterval(waitForModule);
+                    
+                    // Criar instância do módulo
+                    const chatModule = new window.AgentChatModule(container);
+                    
+                    try {
+                        await chatModule.init();
+                        console.log('✅ [Agent Chat Page] Module initialized');
+                    } catch (error) {
+                        console.error('❌ [Agent Chat Page] Error:', error);
+                        container.innerHTML = `
+                            <div class="error-state">
+                                <h2>❌ Erro ao carregar chat</h2>
+                                <p>${error.message}</p>
+                                <button onclick="location.reload()">Recarregar página</button>
+                            </div>
+                        `;
+                    }
+                } else if (retries >= maxRetries) {
+                    clearInterval(waitForModule);
+                    console.error('❌ [Agent Chat Page] Module not loaded after 50 retries');
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <h2>⚠️ Módulo não carregado</h2>
+                            <p>O módulo de chat não foi carregado corretamente.</p>
+                            <button onclick="location.reload()">Recarregar página</button>
+                        </div>
+                    `;
+                }
+            }, 100);
+        })();
+    </script>
+
+    <style>
+        #agent-chat-page {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            margin-bottom: 1.5rem;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        #agent-chat-main-container {
+            min-height: 700px;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #718096;
+        }
+
+        .error-state h2 {
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .error-state button {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .error-state button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            #agent-chat-page {
+                padding: 1rem;
+            }
+
+            #agent-chat-main-container {
+                min-height: 500px;
+            }
+        }
+    </style>
+</body>
+</html>

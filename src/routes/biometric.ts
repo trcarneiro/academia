@@ -77,5 +77,14 @@ export default async function biometricRoutes(fastify: FastifyInstance) {
     biometricController.checkRateLimit.bind(biometricController)
   );
 
-  logger.info('Biometric routes registered successfully (7 endpoints)');
+  /**
+   * 🆕 GET /api/biometric/students/embeddings
+   * Get all student face embeddings for matching (Kiosk endpoint)
+   */
+  fastify.get(
+    '/students/embeddings',
+    biometricController.getAllEmbeddings.bind(biometricController)
+  );
+
+  logger.info('Biometric routes registered successfully (8 endpoints)');
 }

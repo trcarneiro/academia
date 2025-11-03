@@ -11,6 +11,12 @@ export class TurmasListView {
     }
 
     async render(container, initialFilters = {}) {
+        // VALIDAÇÃO: Verificar se container existe
+        if (!container) {
+            console.warn('⚠️ [TurmasListView] Container não fornecido - ignorando renderização');
+            return;
+        }
+        
         this.container = container;
         this.currentFilters = { ...initialFilters };
         
@@ -20,6 +26,12 @@ export class TurmasListView {
     }
 
     async renderHTML() {
+        // VALIDAÇÃO: Verificar se container ainda existe
+        if (!this.container) {
+            console.warn('⚠️ [TurmasListView] Container não definido - abortando renderHTML');
+            return;
+        }
+        
         this.container.innerHTML = `
             <div class="module-isolated-turmas">
                 <!-- Header Premium com Breadcrumb -->
@@ -237,6 +249,12 @@ export class TurmasListView {
     }
 
     async loadData() {
+        // VALIDAÇÃO: Verificar se container existe antes de carregar dados
+        if (!this.container) {
+            console.warn('⚠️ [TurmasListView] Container não definido - abortando loadData');
+            return;
+        }
+        
         if (this.isLoading) return;
         
         this.isLoading = true;
@@ -256,7 +274,6 @@ export class TurmasListView {
             } else {
                 throw new Error(result.error || 'Erro ao carregar turmas');
             }
-            
         } catch (error) {
             console.error('❌ Erro ao carregar turmas:', error);
             this.showErrorState(error.message);
@@ -283,73 +300,106 @@ export class TurmasListView {
             return;
         }
 
-        grid.innerHTML = turmas.map(turma => {
-            const formattedTurma = this.service.formatTurmaData(turma);
-            
-            return `
-                <div class="turma-card data-card-premium" data-turma-id="${turma.id}">
-                    <div class="turma-card-header">
-                        <div class="turma-info">
-                            <h4 class="turma-name">${turma.name}</h4>
-                            <p class="turma-course">📚 ${turma.course?.name || 'Curso não encontrado'}</p>
-                        </div>
-                        <div class="turma-status">
-                            <span class="status-badge status-${turma.status?.toLowerCase()}">${formattedTurma.statusText}</span>
-                            <span class="type-badge type-${turma.type?.toLowerCase()}">${formattedTurma.typeText}</span>
+        // Renderizar diretamente sem wrapper extra
+        grid.innerHTML = turmas.map(turma => this.renderTurmaRow(turma)).join('');
+    }
+    
+    /**
+     * Render single turma row (clean UX pattern)
+     */
+    renderTurmaRow(turma) {
+        // Parse schedule data (JSON field)
+        const schedule = turma.schedule || {};
+        
+        // Handle daysOfWeek (array) - convert to readable format
+        const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const dayNames = schedule.daysOfWeek && Array.isArray(schedule.daysOfWeek)
+            ? schedule.daysOfWeek.map(d => daysOfWeek[d]).join(', ')
+            : 'Não definido';
+        
+        // Handle time + duration
+        const startTime = schedule.time || '--:--';
+        const endTime = schedule.time && schedule.duration
+            ? this.calculateEndTime(schedule.time, schedule.duration)
+            : '--:--';
+        const timeRange = `${startTime} - ${endTime}`;
+        
+        // Status class
+        const statusClass = turma.status === 'ATIVADO' ? 'status-active' : 
+                           turma.status === 'AGENDADO' ? 'status-scheduled' : 'status-inactive';
+        
+        // Instructor name
+        const instructorName = turma.instructor 
+            ? (turma.instructor.name || `${turma.instructor.user?.firstName || ''} ${turma.instructor.user?.lastName || ''}`.trim())
+            : 'Não definido';
+        
+        return `
+            <div class="turma-row" data-turma-id="${turma.id}" ondblclick="window.turmasController.showEdit('${turma.id}')">
+                <div class="turma-col-main">
+                    <div class="turma-name-section">
+                        <h3 class="turma-name">${turma.name || 'Sem nome'}</h3>
+                        <span class="turma-status-badge ${statusClass}">${turma.status || 'N/A'}</span>
+                    </div>
+                    <p class="turma-course">${turma.course?.name || 'Curso não definido'}</p>
+                </div>
+                
+                <div class="turma-col-schedule">
+                    <div class="schedule-item">
+                        <span class="schedule-icon">📅</span>
+                        <div class="schedule-text">
+                            <div class="schedule-label">Dias</div>
+                            <div class="schedule-value">${dayNames}</div>
                         </div>
                     </div>
-                    
-                    <div class="turma-card-body">
-                        <div class="turma-details">
-                            <div class="detail-item">
-                                <span class="detail-label">👨‍🏫 Instrutor:</span>
-                                <span class="detail-value">${turma.instructor?.name || 'Não definido'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">📅 Início:</span>
-                                <span class="detail-value">${formattedTurma.startDateFormatted}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">👥 Alunos:</span>
-                                <span class="detail-value">${turma.students?.length || 0}</span>
-                            </div>
+                    <div class="schedule-item">
+                        <span class="schedule-icon">🕐</span>
+                        <div class="schedule-text">
+                            <div class="schedule-label">Horário</div>
+                            <div class="schedule-value">${timeRange}</div>
                         </div>
-                        
-                        <div class="turma-progress">
-                            <div class="progress-header">
-                                <span>📊 Progresso</span>
-                                <span>${formattedTurma.progressPercentage}%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${formattedTurma.progressPercentage}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="turma-card-actions">
-                        <button class="btn-card-action" data-action="view" data-turma-id="${turma.id}">
-                            <i class="icon">👁️</i>
-                            <span>Visualizar</span>
-                        </button>
-                        <button class="btn-card-action" data-action="schedule" data-turma-id="${turma.id}">
-                            <i class="icon">📅</i>
-                            <span>Cronograma</span>
-                        </button>
-                        <button class="btn-card-action" data-action="students" data-turma-id="${turma.id}">
-                            <i class="icon">👥</i>
-                            <span>Alunos</span>
-                        </button>
-                        <button class="btn-card-action" data-action="attendance" data-turma-id="${turma.id}">
-                            <i class="icon">📋</i>
-                            <span>Frequência</span>
-                        </button>
                     </div>
                 </div>
-            `;
-        }).join('');
-
-        // Attach card event listeners
-        this.attachCardEventListeners();
+                
+                <div class="turma-col-info">
+                    <div class="info-row">
+                        <span class="info-icon">👨‍🏫</span>
+                        <span class="info-text">${instructorName}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">�</span>
+                        <span class="info-text">${turma.students?.length || 0} / ${turma.maxStudents || 20} alunos</span>
+                    </div>
+                </div>
+                
+                <div class="turma-col-actions">
+                    <button class="btn-icon-action" onclick="event.stopPropagation(); window.turmasController.showEdit('${turma.id}')" title="Visualizar">
+                        ✏️
+                    </button>
+                    <button class="btn-icon-action" onclick="event.stopPropagation(); window.turmasController.showStudents('${turma.id}')" title="Alunos">
+                        👥
+                    </button>
+                    <button class="btn-icon-action" onclick="event.stopPropagation(); window.turmasController.showSchedule('${turma.id}')" title="Cronograma">
+                        📅
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Calculate end time from start time + duration
+     */
+    calculateEndTime(startTime, durationMinutes) {
+        try {
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes + durationMinutes;
+            const endHours = Math.floor(totalMinutes / 60) % 24;
+            const endMinutes = totalMinutes % 60;
+            return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+        } catch (error) {
+            console.error('Erro ao calcular horário de término:', error);
+            return '--:--';
+        }
     }
 
     renderTable(turmas) {

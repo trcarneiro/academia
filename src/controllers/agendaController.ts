@@ -47,7 +47,10 @@ export class AgendaController {
    */
   async getClasses(filters: ClassFilters & { organizationId?: string }) {
     try {
-      const whereClause: any = {};\n      if (filters.organizationId) {\n        whereClause.organizationId = filters.organizationId;\n      }
+      const whereClause: any = {};
+      if (filters.organizationId) {
+        whereClause.organizationId = filters.organizationId;
+      }
 
       // Filtro por data (suporte para data única ou intervalo)
       if (filters.startDate && filters.endDate) {
@@ -454,14 +457,18 @@ export class AgendaController {
         activeInstructorsCount
       ] = await Promise.all([
         this.prisma.class.count({
-          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+          where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
               gte: startOfDay,
               lt: endOfDay
             }
           }
         }),
         this.prisma.class.count({
-          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+          where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
               gte: startOfDay,
               lt: endOfDay
             },
@@ -469,7 +476,9 @@ export class AgendaController {
           }
         }),
         this.prisma.class.count({
-          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+          where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
               gte: startOfDay,
               lt: endOfDay
             },
@@ -478,7 +487,9 @@ export class AgendaController {
         }),
         this.prisma.attendance.count({
           where: {
-            class: {\n              ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n              startTime: {
+            class: {
+              ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+              startTime: {
                 gte: startOfDay,
                 lt: endOfDay
               }
@@ -487,7 +498,9 @@ export class AgendaController {
           }
         }),
         this.prisma.class.findMany({
-          where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+          where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
               gte: startOfDay,
               lt: endOfDay
             }
@@ -544,7 +557,9 @@ export class AgendaController {
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
       const classes = await this.prisma.class.findMany({
-        where: {\n          ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n          // Use calendar day (class.date) as the single source of truth to avoid timezone drift
+        where: {
+          ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+          // Use calendar day (class.date) as the single source of truth to avoid timezone drift
           date: {
             gte: startOfDay,
             lt: endOfDay
@@ -637,7 +652,9 @@ export class AgendaController {
       endOfWeek.setDate(startOfWeek.getDate() + 7);
 
       const classes = await this.prisma.class.findMany({
-        where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+        where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
             gte: startOfWeek,
             lt: endOfWeek
           }
@@ -713,7 +730,9 @@ export class AgendaController {
    */
   async getInstructors(ctx?: { organizationId?: string }) {
     try {
-      const instructors = await this.prisma.instructor.findMany({\n        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},\n        select: {
+      const instructors = await this.prisma.instructor.findMany({
+        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},
+        select: {
           id: true,
           user: { select: { firstName: true, lastName: true, email: true } },
           specializations: true
@@ -743,7 +762,9 @@ export class AgendaController {
    */
   async getCourses(ctx?: { organizationId?: string }) {
     try {
-      const courses = await this.prisma.course.findMany({\n        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},\n        select: {
+      const courses = await this.prisma.course.findMany({
+        where: ctx?.organizationId ? { organizationId: ctx.organizationId } : {},
+        select: {
           id: true,
           name: true,
           category: true,
@@ -825,7 +846,8 @@ export class AgendaController {
       }
 
       // Buscar classe real no banco
-  const classDetails = await this.prisma.class.findFirst({\n        where: { id: classId, ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}) },
+  const classDetails = await this.prisma.class.findFirst({
+        where: { id: classId, ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}) },
         include: {
           course: {
             select: {
@@ -1149,7 +1171,9 @@ export class AgendaController {
       const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
 
   const classes = await this.prisma.class.findMany({
-        where: {\n            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),\n            startTime: {
+        where: {
+            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+            startTime: {
             gte: startOfDay,
             lt: endOfDay
           }

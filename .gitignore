@@ -14,6 +14,8 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup
+.env.*.backup
 
 # Google OAuth Credentials (SENSITIVE)
 **/client_secret_*.json
@@ -71,3 +73,8 @@ OLD_191025
 BACKUP_SEGURANCA_20251019_1502
 backups
 BACKUP_SEGURANCA_20252410_0127
+
+# Deploy artifacts (servidor)
+.db_password
+.litespeed_password
+*.backup

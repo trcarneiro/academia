@@ -1,13 +1,22 @@
-# 🚀 Server Deployment Guide - Academia Krav Maga
+# 🚀 Server Deployment Guide - Academia Krav Maga v2.0
 
-## 📋 Prerequisites Checklist
+## 📋 Informações do Servidor
 
-- [x] Ubuntu 18.04 server (psicologobelohorizontecombr20210803-s-1vcpu-1gb-nyc1-01)
-- [ ] Node.js 18+ installed
-- [ ] PostgreSQL database
-- [ ] Nginx reverse proxy
+**Servidor**: DigitalOcean Droplet  
+**IP**: 64.227.28.147  
+**Stack**: OpenLiteSpeed + WordPress + MySQL + phpMyAdmin  
+**Nova Stack**: Node.js 20 + PostgreSQL (Supabase) + Fastify + Prisma  
+
+## ✅ Prerequisites Checklist
+
+- [x] Ubuntu 20.04 server
+- [x] OpenLiteSpeed web server
+- [x] MySQL 8.0
+- [x] UFW firewall (portas 22, 80, 443 abertas)
+- [ ] Node.js 20+ installed
 - [ ] PM2 process manager
 - [ ] Git installed
+- [ ] Deploy script configurado
 
 ---
 
@@ -15,39 +24,56 @@
 
 ### 1.1 SSH into your server
 ```bash
-ssh root@psicologobelohorizontecombr20210803-s-1vcpu-1gb-nyc1-01
+ssh root@64.227.28.147
 ```
 
-### 1.2 Install Node.js 18 (if not installed)
+### 1.2 Install Node.js 20 LTS (OBRIGATÓRIO)
 ```bash
-# Add NodeSource repository
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Add NodeSource repository (Node.js 20)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
 # Install Node.js
 sudo apt-get install -y nodejs
 
 # Verify installation
-node --version  # Should show v18.x.x
-npm --version   # Should show 9.x.x or higher
+node --version  # Deve mostrar v20.x.x
+npm --version   # Deve mostrar v10.x.x
 ```
 
-### 1.3 Install PostgreSQL (if not installed)
+### 1.3 Install PM2 (Process Manager)
+```bash
+# Instalar PM2 globalmente
+sudo npm install -g pm2
+
+# Opcional: pnpm (mais rápido que npm)
+sudo npm install -g pnpm
+
+# Configurar PM2 para iniciar no boot
+pm2 startup systemd
+# ⚠️ IMPORTANTE: Copie e execute o comando retornado
+
+# Verificar instalação
+pm2 --version
+```
+
+### 1.4 Install Git
 ```bash
 sudo apt-get update
-sudo apt-get install -y postgresql postgresql-contrib
+sudo apt-get install -y git
 
-# Start PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+# Configurar Git (opcional)
+git config --global user.name "Thiago Carneiro"
+git config --global user.email "trcampos@gmail.com"
 
-# Create database and user
-sudo -u postgres psql
+# Verificar instalação
+git --version
 ```
 
-```sql
--- Inside PostgreSQL console
-CREATE DATABASE academia_prod;
-CREATE USER academia_user WITH PASSWORD 'your_secure_password_here';
+### 1.5 Banco de Dados (Supabase - Já Configurado)
+**Não é necessário instalar PostgreSQL local!**  
+O projeto usa Supabase (PostgreSQL na nuvem):
+```
+DATABASE_URL="postgresql://postgres.yawfuymgwukericlhgxh:Ojqemgeowt%2Aa1@aws-0-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=30&pool_timeout=20"
 GRANT ALL PRIVILEGES ON DATABASE academia_prod TO academia_user;
 \q
 ```

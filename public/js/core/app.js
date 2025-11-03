@@ -63,13 +63,21 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'ai', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress'
+      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress'
     ];
 
     moduleList.forEach(moduleName => {
       if (typeof window[moduleName] !== 'undefined') {
-        window[moduleName].init();
-        console.log(`✅ Module loaded: ${moduleName}`);
+        if (typeof window[moduleName].init === 'function') {
+          try {
+            window[moduleName].init();
+            console.log(`✅ Module loaded: ${moduleName}`);
+          } catch (error) {
+            console.error(`❌ Error initializing ${moduleName}:`, error);
+          }
+        } else {
+          console.warn(`⚠️ Module ${moduleName} exists but has no init() method`);
+        }
       } else {
         console.log(`ℹ️ Module not available: ${moduleName}`);
       }

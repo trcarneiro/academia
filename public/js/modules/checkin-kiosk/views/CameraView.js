@@ -9,6 +9,7 @@ class CameraView {
         this.onManualSearch = callbacks.onManualSearch || (() => {});
         this.onFaceDetected = callbacks.onFaceDetected || (() => {});
         this.onAutocomplete = callbacks.onAutocomplete || null;
+        this.onStudentSelect = callbacks.onStudentSelect || null; // NOVO: callback para seleção direta
     }
 
     /**
@@ -120,7 +121,7 @@ class CameraView {
     }
 
     /**
-     * Setup event listeners
+     * Setup event listeners - COM AUTOCOMPLETE DIRETO PARA DASHBOARD
      */
     setupEvents() {
         const searchInput = this.container.querySelector('#manual-search');
@@ -128,7 +129,7 @@ class CameraView {
 
         let autocompleteTimeout = null;
 
-        // Button click
+        // Button click - busca manual se necessário
         searchBtn?.addEventListener('click', () => {
             const query = searchInput.value.trim();
             if (query.length >= 2) {
@@ -170,15 +171,14 @@ class CameraView {
             }, 300);
         });
 
-        // Clear on focus
+        // Focus: select all text
         searchInput?.addEventListener('focus', () => {
-            // Don't clear, just select all
             searchInput.select();
         });
 
         // Hide autocomplete on click outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-box')) {
+            if (!e.target.closest('.search-box-tablet') && !e.target.closest('.search-box')) {
                 this.hideAutocomplete();
             }
         });
@@ -202,20 +202,34 @@ class CameraView {
                 return;
             }
 
+            // Find or create wrapper with position:relative
+            let searchBox = this.container.querySelector('.search-box-tablet');
+            if (!searchBox) {
+                searchBox = this.container.querySelector('.manual-search-card');
+            }
+            
+            if (!searchBox) {
+                console.error('❌ Search box container not found');
+                console.log('🔍 Available containers:', {
+                    searchBoxTablet: !!this.container.querySelector('.search-box-tablet'),
+                    manualSearchCard: !!this.container.querySelector('.manual-search-card'),
+                    container: this.container
+                });
+                return;
+            }
+
+            // Ensure search box has position:relative
+            if (getComputedStyle(searchBox).position === 'static') {
+                searchBox.style.position = 'relative';
+            }
+
             // Create/update autocomplete dropdown
             let dropdown = this.container.querySelector('.autocomplete-dropdown');
             if (!dropdown) {
                 dropdown = document.createElement('div');
                 dropdown.className = 'autocomplete-dropdown';
-                const searchBox = this.container.querySelector('.search-box') || 
-                                 this.container.querySelector('.manual-search-container');
-                
-                if (!searchBox) {
-                    console.error('❌ Search box container not found');
-                    return;
-                }
-                
                 searchBox.appendChild(dropdown);
+                console.log('✅ Autocomplete dropdown created and attached');
             }
 
             dropdown.innerHTML = results.slice(0, 5).map(student => `
@@ -226,18 +240,22 @@ class CameraView {
             `).join('');
 
             dropdown.style.display = 'block';
+            console.log('✅ Autocomplete dropdown visible with', results.length, 'results');
 
-            // Add click listeners to items
+            // Add click listeners to items - IR DIRETO PARA DASHBOARD
             dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
                 item.addEventListener('click', () => {
+                    const studentId = item.dataset.studentId;
                     const studentName = item.dataset.studentName;
-                    const searchInput = this.container.querySelector('#manual-search');
-                    searchInput.value = studentName;
+                    
+                    console.log('🎯 Autocomplete item clicked:', studentName, studentId);
+                    
                     this.hideAutocomplete();
                     
-                    // Trigger search
-                    const searchBtn = this.container.querySelector('.btn-search-tablet') || this.container.querySelector('.search-btn');
-                    searchBtn?.click();
+                    // IR DIRETO PARA DASHBOARD (sem passar pela lista)
+                    if (this.onStudentSelect) {
+                        this.onStudentSelect({ studentId, name: studentName });
+                    }
                 });
             });
 
@@ -262,6 +280,12 @@ class CameraView {
     updateDetectionStatus(face) {
         const statusEl = this.container.querySelector('#face-status');
         const qualityEl = this.container.querySelector('#quality-indicator');
+
+        // Safety check: elements may not exist if view changed
+        if (!statusEl || !qualityEl) {
+            // Silently return - view probably changed to confirmation/success
+            return;
+        }
 
         if (face) {
             const quality = Math.round(face.confidence * 100);

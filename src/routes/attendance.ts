@@ -47,6 +47,44 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
     handler: AttendanceController.checkIn,
   });
 
+  // Get today's check-ins (PUBLIC - for kiosk display)
+  fastify.get('/checkin/today', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get all check-ins from today (public endpoint for kiosk)',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  studentId: { type: 'string' },
+                  studentName: { type: 'string' },
+                  registrationNumber: { type: 'string', nullable: true },
+                  avatar: { type: 'string', nullable: true },
+                  checkInTime: { type: 'string' },
+                  turmaId: { type: 'string', nullable: true },
+                  turmaName: { type: 'string' },
+                  courseName: { type: 'string' },
+                  instructorName: { type: 'string' },
+                  present: { type: 'boolean' },
+                },
+              },
+            },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getTodayCheckins,
+  });
+
   // Get attendance history
   fastify.get('/history', {
     schema: {
@@ -352,5 +390,41 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
       validateParams(studentIdParamsSchema),
     ],
     handler: AttendanceController.getStudentPattern,
+  });
+
+  // 🆕 Get today's check-in history (Kiosk endpoint)
+  fastify.get('/today', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get today\'s check-in history for Kiosk display',
+      querystring: {
+        type: 'object',
+        properties: {
+          page: { type: 'number', minimum: 1, default: 1 },
+          limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array' },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number' },
+                limit: { type: 'number' },
+                total: { type: 'number' },
+                totalPages: { type: 'number' },
+              },
+            },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    handler: AttendanceController.getTodayHistory,
   });
 }

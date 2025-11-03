@@ -1,4 +1,4 @@
-import { prisma } from '@/utils/database';
+﻿import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { agentService } from './AgentService';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -23,11 +23,11 @@ interface AIResponse {
 /**
  * AgentExecutorService
  * 
- * Orquestra a execução de agentes IA:
+ * Orquestra a execuÃ§Ã£o de agentes IA:
  * 1. Prepara contexto (RAG + MCP Tools)
  * 2. Chama Gemini AI com system prompt
  * 3. Processa resposta
- * 4. Salva histórico de conversa
+ * 4. Salva histÃ³rico de conversa
  */
 class AgentExecutorService {
   private genAI: GoogleGenerativeAI | null = null;
@@ -43,7 +43,7 @@ class AgentExecutorService {
   }
 
   /**
-   * Executa um agente com uma mensagem do usuário
+   * Executa um agente com uma mensagem do usuÃ¡rio
    */
   async executeAgent(
     agentId: string,
@@ -150,7 +150,7 @@ class AgentExecutorService {
       const toolsUsed: string[] = [];
       const contextParts: string[] = [];
 
-      // Exemplo de execução de ferramentas (implementar quando MCP estiver pronto)
+      // Exemplo de execuÃ§Ã£o de ferramentas (implementar quando MCP estiver pronto)
       for (const toolName of mcpTools) {
         // const result = await mcpServer.executeTool(toolName, context);
         // contextParts.push(`Tool ${toolName} result: ${JSON.stringify(result)}`);
@@ -172,11 +172,11 @@ class AgentExecutorService {
   }
 
   /**
-   * Constrói o prompt completo combinando:
+   * ConstrÃ³i o prompt completo combinando:
    * - System prompt do agente
    * - Contexto RAG
    * - Contexto MCP
-   * - Mensagem do usuário
+   * - Mensagem do usuÃ¡rio
    */
   private buildPrompt(
     agent: AIAgent,
@@ -188,7 +188,7 @@ class AgentExecutorService {
     const parts: string[] = [];
 
     // 1. System Prompt
-    parts.push('=== INSTRUÇÕES DO AGENTE ===');
+    parts.push('=== INSTRUÃ‡Ã•ES DO AGENTE ===');
     parts.push(agent.systemPrompt);
     parts.push('');
 
@@ -208,7 +208,7 @@ class AgentExecutorService {
 
     // 4. Contexto adicional (aluno, curso, etc.)
     if (executionContext.studentId || executionContext.courseId) {
-      parts.push('=== CONTEXTO DA SOLICITAÇÃO ===');
+      parts.push('=== CONTEXTO DA SOLICITAÃ‡ÃƒO ===');
       if (executionContext.studentId) {
         parts.push(`ID do Aluno: ${executionContext.studentId}`);
       }
@@ -221,27 +221,35 @@ class AgentExecutorService {
       parts.push('');
     }
 
-    // 5. Mensagem do usuário
-    parts.push('=== PERGUNTA DO USUÁRIO ===');
+    // 5. Mensagem do usuÃ¡rio
+    parts.push('=== PERGUNTA DO USUÃRIO ===');
     parts.push(userMessage);
     parts.push('');
     parts.push('=== SUA RESPOSTA ===');
-    parts.push('(Responda de forma clara, objetiva e em português brasileiro)');
+    parts.push('(Responda de forma clara, objetiva e em portuguÃªs brasileiro)');
 
     return parts.join('\n');
   }
 
   /**
-   * Chama Gemini AI com o prompt construído
+   * Chama Gemini AI com o prompt construÃ­do
    */
   private async callGemini(
     agent: AIAgent,
     prompt: string
   ): Promise<{ content: string; mcpToolsUsed: string[]; tokensUsed: number }> {
     
+    logger.info('🚀 ===== STARTING GEMINI API CALL =====');
+    logger.info('Agent ID:', agent.id);
+    logger.info('Agent Name:', agent.name);
+    logger.info('Agent Model:', agent.model);
+    logger.info('Prompt Length:', prompt.length);
+    logger.info('Prompt Preview:', prompt.substring(0, 200) + '...');
+    logger.info('==========================================');
+    
     // Modo mock (sem API key)
     if (!this.genAI) {
-      logger.warn('Gemini API not configured - returning mock response');
+      logger.warn('⚠️ Gemini API not configured - returning mock response');
       return {
         content: this.generateMockResponse(agent, prompt),
         mcpToolsUsed: [],
@@ -251,11 +259,14 @@ class AgentExecutorService {
 
     try {
       // Selecionar modelo baseado na configuração do agente
+      const modelName = agent.model || process.env.GEMINI_MODEL || process.env.RAG_MODEL || 'gemini-2.5-flash';
+      logger.info('📊 Using Gemini model:', modelName);
+      
       const model = this.genAI.getGenerativeModel({ 
-        model: agent.model || 'gemini-1.5-flash' 
+        model: modelName
       });
 
-      // Configurar parâmetros de geração
+      // Configurar parÃ¢metros de geraÃ§Ã£o
       const generationConfig = {
         temperature: agent.temperature || 0.7,
         maxOutputTokens: agent.maxTokens || 2048,
@@ -264,10 +275,16 @@ class AgentExecutorService {
       };
 
       // Chamar API
+      logger.info('📤 Sending request to Gemini API...');
+      const startTime = Date.now();
+      
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig
       });
+
+      const elapsedTime = Date.now() - startTime;
+      logger.info(`📥 Received response from Gemini API in ${elapsedTime}ms`);
 
       const response = result.response;
       const text = response.text();
@@ -275,7 +292,16 @@ class AgentExecutorService {
       // Calcular tokens (aproximação)
       const tokensUsed = Math.ceil((prompt.length + text.length) / 4);
 
-      logger.info(`Gemini response generated - Model: ${agent.model}, Tokens: ${tokensUsed}`);
+      logger.info('✅ ===== GEMINI API SUCCESS =====');
+      logger.info('Model:', modelName);
+      logger.info('Tokens Used:', tokensUsed);
+      logger.info('Response Length:', text.length);
+      logger.info('Response Preview:', text.substring(0, 200) + '...');
+      logger.info('Finish Reason:', response.candidates?.[0]?.finishReason);
+      logger.info('Safety Ratings:', JSON.stringify(response.candidates?.[0]?.safetyRatings || []));
+      logger.info('Time Elapsed:', `${elapsedTime}ms`);
+      logger.info('=================================');
+
 
       return {
         content: text,
@@ -284,7 +310,27 @@ class AgentExecutorService {
       };
 
     } catch (error: any) {
-      logger.error('Error calling Gemini API:', error);
+      // Log completo do erro para debug
+      logger.error('❌ ===== GEMINI API ERROR =====');
+      logger.error('Error Type:', error?.constructor?.name);
+      logger.error('Error Message:', error?.message);
+      logger.error('Error Code:', error?.code);
+      logger.error('Error Status:', error?.status || error?.statusCode);
+      logger.error('Error Status Text:', error?.statusText);
+      logger.error('Model:', agent.model || 'gemini-2.0-flash-exp');
+      logger.error('Agent ID:', agent.id);
+      logger.error('Agent Name:', agent.name);
+      logger.error('Prompt Length:', prompt.length);
+      
+      // Log do stack trace completo
+      if (error?.stack) {
+        logger.error('Stack Trace:', error.stack);
+      }
+      
+      // Log de propriedades adicionais do erro
+      logger.error('Error Object Keys:', Object.keys(error || {}));
+      logger.error('Full Error Object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      logger.error('===============================');
       
       // Fallback para mock em caso de erro
       return {
@@ -296,27 +342,29 @@ class AgentExecutorService {
   }
 
   /**
-   * Gera resposta mockada baseada na especialização do agente
+   * Gera resposta mockada baseada na especializaÃ§Ã£o do agente
    */
   private generateMockResponse(agent: AIAgent, prompt: string): string {
     const responses: Record<string, string> = {
       pedagogical: `Como agente pedagógico ${agent.name}, sugiro os seguintes exercícios:\n\n1. **Aquecimento Dinâmico**: 10 minutos de movimentação corporal progressiva\n2. **Técnicas Básicas**: Revisão de golpes fundamentais com foco em postura\n3. **Aplicação Prática**: Simulações de defesa em duplas\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para respostas reais)`,
-      
+
       analytical: `Baseado na análise de dados (${agent.name}):\n\n📊 **Métricas Identificadas**:\n- Taxa de presença média: 78%\n- Alunos em risco de evasão: 5 (abaixo de 50% presença)\n- Performance geral: Crescente (+12% vs mês anterior)\n\n🎯 **Recomendações**:\n1. Contatar alunos com presença < 50%\n2. Intensificar aulas de técnicas avançadas (alta demanda)\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para análises reais)`,
-      
+
       support: `Olá! Como assistente de suporte ${agent.name}, estou aqui para ajudar! 💪\n\n**Para melhorar sua técnica:**\n- Pratique movimentos lentos inicialmente\n- Foque na postura e equilíbrio\n- Aumente velocidade gradualmente\n- Peça feedback ao instrutor\n\n**Dica motivacional**: Todo mestre foi iniciante um dia. Continue praticando!\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para suporte personalizado)`,
-      
-      progression: `Análise de progressão (${agent.name}):\n\n🥋 **Status Atual**: Faixa intermediária\n📈 **Próximos Passos**:\n1. Dominar 3 técnicas avançadas pendentes\n2. Completar 8 aulas antes da próxima avaliação\n3. Melhorar tempo de reação em 15%\n\n✅ **Pontos Fortes**: Defesa, condicionamento\n⚠️ **Áreas de Melhoria**: Velocidade de contra-ataque\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para análises detalhadas)`,
-      
-      commercial: `Análise comercial (${agent.name}):\n\n💰 **Indicadores Chave**:\n- CAC (Custo Aquisição Cliente): R$ 120\n- LTV (Lifetime Value): R$ 1.800\n- Churn Rate: 8% ao mês\n- ROI Campanhas: 340%\n\n📊 **Ações Recomendadas**:\n1. Investir em remarketing (conversão 2.5x maior)\n2. Programa de indicação (custo 60% menor)\n3. Reduzir churn nos primeiros 3 meses\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para análises financeiras reais)`
+
+      progression: `Análise de progressão (${agent.name}):\n\n📈 **Status Atual**: Faixa intermediária\n🔜 **Próximos Passos**:\n1. Dominar 3 técnicas avançadas pendentes\n2. Completar 8 aulas antes da próxima avaliação\n3. Melhorar tempo de reação em 15%\n\n✅ **Pontos Fortes**: Defesa, condicionamento\n⚠️ **Áreas de Melhoria**: Velocidade de contra-ataque\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para análises detalhadas)`,
+
+      commercial: `Análise comercial (${agent.name}):\n\n💰 **Indicadores Chave**:\n- CAC (Custo Aquisição Cliente): R$ 120\n- LTV (Lifetime Value): R$ 1.800\n- Churn Rate: 8% ao mês\n- ROI Campanhas: 340%\n\n📋 **Ações Recomendadas**:\n1. Investir em remarketing (conversão 2.5x maior)\n2. Programa de indicação (custo 60% menor)\n3. Reduzir churn nos primeiros 3 meses\n\n(Resposta gerada em modo mock - configure GEMINI_API_KEY para análises financeiras reais)`
     };
 
-    return responses[agent.specialization] || 
-      `Resposta do agente ${agent.name} (${agent.specialization}).\n\n(Configure GEMINI_API_KEY no arquivo .env para obter respostas reais da IA)`;
+    return (
+      responses[agent.specialization] ||
+      `Resposta do agente ${agent.name} (${agent.specialization}).\n\n(Configure GEMINI_API_KEY no arquivo .env para obter respostas reais da IA)`
+    );
   }
 
   /**
-   * Cria uma nova conversa e executa o agente em um único fluxo
+   * Cria uma nova conversa e executa o agente em um Ãºnico fluxo
    */
   async createConversationAndExecute(
     agentId: string,
@@ -415,16 +463,34 @@ class AgentExecutorService {
       }
     ];
 
-    const updatedConversation = await agentService.updateConversation(conversationId, {
-      messages: updatedMessages
-    });
+    try {
+      const updatedConversation = await agentService.updateConversation(conversationId, {
+        messages: updatedMessages
+      });
 
-    logger.info(`Conversation continued - ConversationId: ${conversationId}, Messages: ${updatedMessages.length}`);
+      logger.info(`✅ Conversation continued - ConversationId: ${conversationId}, Messages: ${updatedMessages.length}`);
+      return updatedConversation;
+    } catch (error: any) {
+      logger.error(`❌ Failed to persist conversation update:`, {
+        conversationId,
+        error: error.message,
+        code: error.code
+      });
 
-    return updatedConversation;
+      // Return a temporary conversation object even if DB update fails
+      // This allows the user to see the AI response even during DB issues
+      logger.warn(`⚠️ Returning temporary conversation due to DB error`);
+      return {
+        ...existingConversation,
+        messages: updatedMessages,
+        updatedAt: new Date()
+      } as any;
+    }
   }
 }
 
 // Export singleton instance
 export const agentExecutorService = new AgentExecutorService();
 export default agentExecutorService;
+
+

@@ -118,6 +118,9 @@
             
             // Initialize Agent Dashboard Widget
             initializeAgentWidget();
+
+            // Initialize Task Approval Widget
+            initializeTaskApprovalWidget();
             
             hideLoadingState();
             
@@ -133,6 +136,24 @@
             if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
                 console.log('🤖 Initializing Agent Dashboard Widget...');
                 window.agentDashboardWidget.init('agent-dashboard-widget');
+            } else {
+                setTimeout(checkWidget, 100);
+            }
+        };
+        checkWidget();
+    }
+
+    function initializeTaskApprovalWidget() {
+        // Wait for widget to be available
+        const checkWidget = () => {
+            if (window.TaskApprovalWidget && window.TaskApprovalWidget.init) {
+                console.log('📋 Initializing Task Approval Widget...');
+                const container = document.getElementById('task-approval-widget');
+                if (container) {
+                    window.TaskApprovalWidget.init(container);
+                } else {
+                    console.warn('⚠️ Task approval widget container not found');
+                }
             } else {
                 setTimeout(checkWidget, 100);
             }

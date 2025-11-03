@@ -10,13 +10,28 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   });
   
   // Get all students (scoped by organization)
-  fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/', async (request: FastifyRequest<{ Querystring: { search?: string } }>, reply: FastifyReply) => {
     try {
       const { requireOrganizationId } = await import('@/utils/tenantHelpers');
       const organizationId = requireOrganizationId(request, reply);
       if (!organizationId) return; // reply already sent
+      
+      const { search } = request.query;
+      
+      // Build where clause with search filter
+      const where: any = { organizationId };
+      
+      if (search && search.length >= 2) {
+        where.OR = [
+          { registrationNumber: { contains: search, mode: 'insensitive' } },
+          { cpf: { contains: search.replace(/\D/g, ''), mode: 'insensitive' } },
+          { user: { firstName: { contains: search, mode: 'insensitive' } } },
+          { user: { lastName: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
+      
       const students = await prisma.student.findMany({
-        where: { organizationId },
+        where,
         include: {
           user: true, // Essential for displaying name/email
           _count: {

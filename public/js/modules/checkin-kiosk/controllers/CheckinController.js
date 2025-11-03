@@ -37,21 +37,26 @@ class CheckinController {
             // 1. Load face-api models
             await this.faceService.init();
 
-            // 2. Setup camera view
+            // 2. Load students cache for autocomplete (PRIORITY!)
+            console.log('📥 Pre-loading students for instant search...');
+            await this.biometricService.loadStudentsCache();
+
+            // 3. Setup camera view
             this.cameraView = new CameraView(this.container, {
                 onManualSearch: (query) => this.handleManualSearch(query),
                 onAutocomplete: (query) => this.handleAutocomplete(query),
+                onStudentSelect: (student) => this.showConfirmation(student), // NOVO: vai direto para dashboard
             });
 
-            // 3. Render camera view
+            // 4. Render camera view
             this.renderCameraView();
 
-            // 4. Get video element and start camera
+            // 5. Get video element and start camera
             const videoElement = this.container.querySelector('#checkin-video');
             try {
                 await this.cameraService.startCamera(videoElement);
                 
-                // 5. Start face detection loop (only if camera is available)
+                // 6. Start face detection loop (only if camera is available)
                 this.startDetection();
                 console.log('✅ Camera started, face detection active');
             } catch (cameraError) {
@@ -71,7 +76,7 @@ class CheckinController {
                 }
             }
 
-            // 6. Load and display today's history (always do this)
+            // 7. Load and display today's history (always do this)
             await this.loadAndDisplayHistory();
 
             console.log('✅ CheckinController initialized');
@@ -179,7 +184,7 @@ class CheckinController {
     }
 
     /**
-     * Show confirmation screen after face match
+     * Show confirmation screen after face match or manual selection
      */
     async showConfirmation(match) {
         try {
@@ -188,33 +193,39 @@ class CheckinController {
 
             console.log('📋 Showing confirmation screen...');
 
-            // 1. Fetch student details
-            const student = await this.biometricService.getStudentDetails(match.studentId);
+            // 1. Fetch student details with subscriptions
+            const studentResponse = await this.moduleAPI.request(
+                `/api/students/${match.studentId}`,
+                { method: 'GET' }
+            );
+
+            if (!studentResponse.success) {
+                throw new Error('Failed to fetch student details');
+            }
+
+            const student = studentResponse.data;
 
             // 2. Fetch available courses
-            const courses = await this.biometricService.getStudentCourses(match.studentId);
+            const coursesResponse = await this.moduleAPI.request(
+                `/api/students/${match.studentId}/available-courses`,
+                { method: 'GET' }
+            );
 
-            // 3. Render confirmation view
+            const courses = coursesResponse.success ? coursesResponse.data : [];
+
+            // 3. Render confirmation view with REAL data
             this.confirmationView = new ConfirmationView(this.container, {
                 onConfirm: (courseId) => this.completeCheckin(match.studentId, courseId),
                 onReject: () => this.rejectMatch(),
             });
 
             this.confirmationView.render(
-                {
-                    name: student.name,
-                    studentId: match.studentId,
-                    photoUrl: match.photoUrl,
-                    similarity: match.similarity,
-                    isActive: true,
-                    daysRemaining: 15,
-                    plans: ['Personal 1x/sem', 'Aulas Grupo 2x/sem'],
-                },
+                student, // Pass full student object
                 courses.map((c) => ({
                     id: c.id,
                     name: c.name,
-                    time: c.startTime,
-                    instructor: c.instructorName,
+                    time: c.startTime || 'Horário flexível',
+                    instructor: c.instructorName || 'A definir',
                 }))
             );
         } catch (error) {

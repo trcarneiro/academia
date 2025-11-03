@@ -51,10 +51,15 @@ class ApiClient {
     }
 
     /**
-     * DELETE request
+     * DELETE request (with extended timeout for heavy operations)
      */
     async delete(url, options = {}) {
-        return this.request('DELETE', url, null, options);
+        // DELETE operations may involve cascade deletes - use 30s timeout
+        const deleteOptions = {
+            timeout: 30000, // 30 seconds for delete operations
+            ...options
+        };
+        return this.request('DELETE', url, null, deleteOptions);
     }
 
     /**

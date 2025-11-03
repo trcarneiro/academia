@@ -1,10 +1,10 @@
-// ==========================================
+﻿// ==========================================
 // SETTINGS SYSTEM - EXTRACTED FROM INDEX.HTML
 // ==========================================
 
 // Settings functions
 function loadSettings() {
-    console.log('⚙️ Loading settings data...');
+    console.log('âš™ï¸ Loading settings data...');
     fetchSettingsData();
 }
 
@@ -23,7 +23,7 @@ function renderSettings(settings) {
             </div>
             
             <div class="form-group">
-                <label for="academy-address">Endereço</label>
+                <label for="academy-address">EndereÃ§o</label>
                 <input type="text" id="academy-address" value="${settings.academyAddress || ''}" class="form-control">
             </div>
             
@@ -40,14 +40,14 @@ function renderSettings(settings) {
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="notifications" ${settings.notifications ? 'checked' : ''}>
-                    Habilitar Notificações
+                    Habilitar NotificaÃ§Ãµes
                 </label>
             </div>
             
             <div class="form-group">
                 <label class="checkbox-label">
                     <input type="checkbox" id="autoBackup" ${settings.autoBackup ? 'checked' : ''}>
-                    Backup Automático
+                    Backup AutomÃ¡tico
                 </label>
             </div>
             
@@ -56,20 +56,20 @@ function renderSettings(settings) {
                 <select id="theme" class="form-control">
                     <option value="dark" ${settings.theme === 'dark' ? 'selected' : ''}>Escuro</option>
                     <option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Claro</option>
-                    <option value="auto" ${settings.theme === 'auto' ? 'selected' : ''}>Automático</option>
+                    <option value="auto" ${settings.theme === 'auto' ? 'selected' : ''}>AutomÃ¡tico</option>
                 </select>
             </div>
             
             <div class="form-actions">
-                <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 Salvar Configurações</button>
-                <button type="button" class="btn btn-secondary" onclick="resetSettings()">🔄 Restaurar Padrões</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">ðŸ’¾ Salvar ConfiguraÃ§Ãµes</button>
+                <button type="button" class="btn btn-secondary" onclick="resetSettings()">ðŸ”„ Restaurar PadrÃµes</button>
             </div>
         </div>
     `;
 }
 
 function saveSettings() {
-    console.log('💾 Saving settings...');
+    console.log('ðŸ’¾ Saving settings...');
     
     const settings = {
         academyName: document.getElementById('academy-name')?.value || '',
@@ -85,7 +85,7 @@ function saveSettings() {
 }
 
 function resetSettings() {
-    console.log('🔄 Resetting settings to defaults...');
+    console.log('ðŸ”„ Resetting settings to defaults...');
     
     const defaultSettings = {
         academyName: 'Krav Maga Academy',
@@ -100,13 +100,13 @@ function resetSettings() {
     renderSettings(defaultSettings);
     
     if (typeof showToast === 'function') {
-        showToast('Configurações restauradas para os padrões', 'info');
+        showToast('ConfiguraÃ§Ãµes restauradas para os padrÃµes', 'info');
     }
 }
 
 async function fetchSettingsData() {
     try {
-        const response = await fetch('/api/settings');
+        const response = (window.createModuleAPI ? (await window.createModuleAPI('Settings').request('/api/settings')) : (window.createModuleAPI ? (await window.createModuleAPI('Settings').request('/api/settings',  headers: (localStorage.getItem('organizationId') ? { 'x-organization-id': localStorage.getItem('organizationId') } : {}) }))
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
@@ -137,21 +137,19 @@ async function fetchSettingsData() {
 
 async function submitSettings(settings) {
     try {
-        const response = await fetch('/api/settings', {
+        const response = (window.createModuleAPI ? (await window.createModuleAPI('Settings').request('/api/settings', 
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: Object.assign({ 'Content-Type': 'application/json' }, (localStorage.getItem('organizationId') ? { 'x-organization-id': localStorage.getItem('organizationId') } : {}))
             body: JSON.stringify(settings)
         });
         
         if (response.ok) {
             const result = await response.json();
             if (result.success) {
-                console.log('✅ Settings saved successfully');
+                console.log('âœ… Settings saved successfully');
                 
                 if (typeof showToast === 'function') {
-                    showToast('Configurações salvas com sucesso!', 'success');
+                    showToast('ConfiguraÃ§Ãµes salvas com sucesso!', 'success');
                 }
                 
                 // Apply theme immediately if changed
@@ -167,7 +165,7 @@ async function submitSettings(settings) {
         console.error('Error submitting settings:', error);
         
         if (typeof showToast === 'function') {
-            showToast('Erro ao salvar configurações', 'error');
+            showToast('Erro ao salvar configuraÃ§Ãµes', 'error');
         }
     }
 }
@@ -187,7 +185,7 @@ function applyTheme(theme) {
         body.classList.add(`theme-${theme}`);
     }
     
-    console.log(`🎨 Applied theme: ${theme}`);
+    console.log(`ðŸŽ¨ Applied theme: ${theme}`);
 }
 
 // Global exports
@@ -201,11 +199,11 @@ window.applyTheme = applyTheme;
 
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('⚙️ Settings system loaded');
+    console.log('âš™ï¸ Settings system loaded');
     
     if (document.getElementById('settings-container')) {
         loadSettings();
     }
 });
 
-console.log('⚙️ Settings inline system initialized');
+console.log('âš™ï¸ Settings inline system initialized');

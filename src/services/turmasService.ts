@@ -382,13 +382,50 @@ export class TurmasService {
       }
       throw error;
     }
-  }  async delete(id: string) {
+  }  
+  
+  async delete(id: string) {
     try {
-      await prisma.turma.delete({
-        where: { id }
+      console.log(`[TurmasService] Deleting turma ${id}...`);
+      
+      // 🔥 DELETE OPTIMIZATION: Delete in transaction with explicit cascade
+      await prisma.$transaction(async (tx) => {
+        // 1. Delete attendances first (most records)
+        const attendanceCount = await tx.turmaAttendance.deleteMany({
+          where: { turmaId: id }
+        });
+        console.log(`[TurmasService] Deleted ${attendanceCount.count} attendances`);
+        
+        // 2. Delete lessons (potentially many records)
+        const lessonCount = await tx.turmaLesson.deleteMany({
+          where: { turmaId: id }
+        });
+        console.log(`[TurmasService] Deleted ${lessonCount.count} lessons`);
+        
+        // 3. Delete student enrollments
+        const studentCount = await tx.turmaStudent.deleteMany({
+          where: { turmaId: id }
+        });
+        console.log(`[TurmasService] Deleted ${studentCount.count} student enrollments`);
+        
+        // 4. Delete course associations
+        const courseCount = await tx.turmaCourse.deleteMany({
+          where: { turmaId: id }
+        });
+        console.log(`[TurmasService] Deleted ${courseCount.count} course associations`);
+        
+        // 5. Finally delete the turma itself
+        await tx.turma.delete({
+          where: { id }
+        });
+        console.log(`[TurmasService] Turma ${id} deleted successfully`);
+      }, {
+        timeout: 30000 // 30 seconds timeout for large deletes
       });
+      
       return true;
     } catch (error) {
+      console.error(`[TurmasService] Error deleting turma ${id}:`, error);
       return false;
     }
   }

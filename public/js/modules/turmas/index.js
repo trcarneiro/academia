@@ -42,6 +42,10 @@ class TurmasModule {
             
             this.service = new TurmasService(turmasAPI);
             this.controller = new TurmasController(this.service);
+            
+            // Expor controller globalmente para onclick handlers
+            window.turmasController = this.controller;
+            
             // Garantir CSS de edição inline carregado
             this.loadModuleCSS();
             
@@ -56,8 +60,9 @@ class TurmasModule {
                 });
             }
             
-            // Mostrar lista por padrão
-            await this.controller.showList();
+            // NÃO mostrar lista automaticamente - apenas inicializar
+            // A lista será mostrada quando o router navegar para #turmas
+            console.log('👥 [Turmas] Módulo pronto - aguardando navegação do router');
             
         } catch (error) {
             console.error('❌ [Turmas] Erro ao inicializar módulo:', error);
@@ -200,5 +205,7 @@ const turmasModule = new TurmasModule();
 
 // Exposição global para integração
 window.turmasModule = turmasModule;
+window.turmas = turmasModule;
+// window.turmasController é definido no init() após criar o controller interno
 
 export default turmasModule;

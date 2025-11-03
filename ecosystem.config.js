@@ -1,55 +1,80 @@
 /**
- * PM2 Process Manager Configuration
+ * PM2 Ecosystem Configuration
+ * Academia Krav Maga v2.0
  * 
- * This file configures PM2 to run:
- * 1. Main application server (Fastify API)
- * 2. Google Ads sync cron job (every 6 hours)
- * 
- * Usage:
- *   pm2 start ecosystem.config.js
+ * Uso:
+ *   pm2 start ecosystem.config.js --env production
+ *   pm2 reload ecosystem.config.js --env production
  *   pm2 save
- *   pm2 startup  # Configure to start on boot
  * 
  * Management:
  *   pm2 list                    # View all processes
- *   pm2 logs                    # View logs
- *   pm2 restart all             # Restart all processes
- *   pm2 stop all                # Stop all processes
- *   pm2 delete all              # Remove all processes
+ *   pm2 logs academia           # View logs
+ *   pm2 restart academia        # Restart app
+ *   pm2 stop academia           # Stop app
+ *   pm2 monit                   # Visual monitoring
  * 
- * @version 1.0.0
+ * @version 2.0.0
+ */
  */
 
 module.exports = {
   apps: [
     // Main Application Server
     {
-      name: 'academia-api',
-      script: 'src/server.ts',
-      interpreter: 'tsx',
-      instances: 1,
-      exec_mode: 'fork',
-      watch: false,
+      name: 'academia',
+      script: './dist/server.js',
+      instances: 1, // Usar '1' para servidor small, 'max' para usar todos os cores
+      exec_mode: 'fork', // 'cluster' para múltiplas instâncias
+      
+      // Restart behavior
       autorestart: true,
-      max_restarts: 10,
-      min_uptime: '10s',
-      max_memory_restart: '1G',
-      env: {
+      watch: false, // NUNCA usar watch em produção
+      max_memory_restart: '1G', // Reiniciar se ultrapassar 1GB de RAM
+      
+      // Environment variables
+      env_production: {
         NODE_ENV: 'production',
-        PORT: 3000
+        PORT: 3001,
+        HOST: '0.0.0.0'
       },
+      
       env_development: {
         NODE_ENV: 'development',
-        PORT: 3000
+        PORT: 3000,
+        HOST: '0.0.0.0'
       },
-      error_file: './logs/api-error.log',
-      out_file: './logs/api-out.log',
+      
+      // Logging
+      error_file: './logs/err.log',
+      out_file: './logs/out.log',
+      log_file: './logs/combined.log',
+      time: true, // Prefixar logs com timestamp
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      time: true
+      
+      // Advanced features
+      merge_logs: true, // Combinar logs de múltiplas instâncias
+      min_uptime: '10s', // Considerar "online" após 10s
+      max_restarts: 10, // Máximo de restarts em 1 minuto
+      kill_timeout: 5000, // Aguardar 5s antes de forçar kill
+      
+      // Restart strategy
+      restart_delay: 4000, // Aguardar 4s antes de reiniciar
+      
+      // Node.js specific
+      node_args: [
+        '--max-old-space-size=1024' // Limitar heap size do V8 a 1GB
+      ],
+      
+      // Cron restart (opcional - reiniciar diariamente às 3am)
+      // cron_restart: '0 3 * * *',
+      
+      // Exponential backoff restart delay
+      exp_backoff_restart_delay: 100,
     },
 
-    // Google Ads Sync Cron Job
+    // Google Ads Sync Cron Job (OPCIONAL)
+    /*
     {
       name: 'google-ads-sync',
       script: 'scripts/sync-google-ads.ts',
@@ -69,5 +94,19 @@ module.exports = {
       merge_logs: true,
       time: true
     }
-  ]
+    */
+  ],
+  
+  // Deploy configuration (opcional - para PM2 deploy)
+  deploy: {
+    production: {
+      user: 'root',
+      host: '64.227.28.147',
+      ref: 'origin/main',
+      repo: 'git@github.com:trcarneiro/academia.git',
+      path: '/var/www/academia',
+      'post-deploy': 'npm install && npx prisma generate && npm run build && pm2 reload ecosystem.config.js --env production'
+    }
+  }
 };
+

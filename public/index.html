@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/modules/courses-premium.css">
     <link rel="stylesheet" href="css/modules/course-editor-premium.css">
     <link rel="stylesheet" href="css/modules/turmas.css">
+    <link rel="stylesheet" href="css/modules/turmas-clean.css">
     <link rel="stylesheet" href="css/modules/turmas-courses.css">
     <link rel="stylesheet" href="css/modules/turmas-tabs.css">
     <link rel="stylesheet" href="css/modules/frequency-basic.css">
@@ -40,6 +41,11 @@
     <link rel="stylesheet" href="css/modules/ai.css">
     <link rel="stylesheet" href="css/modules/agents.css">
     <link rel="stylesheet" href="css/modules/agent-dashboard-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-chat.css">
+    <link rel="stylesheet" href="css/modules/agent-chat-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-chat-fullscreen.css">
+    <link rel="stylesheet" href="css/modules/task-approval-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-activity.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -120,6 +126,12 @@
                 <li data-module="agents">
                     <i>🎯</i> <span>Agentes</span>
                 </li>
+                <li data-module="agent-chat-fullscreen">
+                    <i>💬</i> <span>Chat com Agentes</span>
+                </li>
+                <li data-module="agent-activity">
+                    <i>🤖</i> <span>Atividade de Agentes</span>
+                </li>
                 <li data-module="import">
                     <i>📥</i> <span>Importação</span>
                 </li>
@@ -157,15 +169,26 @@
     <!-- Chart.js for Dashboard Visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- Load core app utilities FIRST (organization context) -->
+    <script src="js/core/app.js"></script>
+    
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="js/shared/utils/feedback.js"></script>
     <script src="js/shared/api-client.js"></script>
+    <script src="js/shared/websocket-client.js"></script>
     <!-- Design Tokens (theme/branding) runtime applier -->
     <script src="js/shared/design-tokens.js"></script>
 
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
     <script src="js/dashboard/ui-controller.js"></script>
+    
+    <!-- Agent Chat Module -->
+    <script src="js/modules/agent-chat/index.js"></script>
+    <script src="js/modules/dashboard/agent-chat-widget.js"></script>
+
+    <!-- Agent Chat Fullscreen Module -->
+    <script type="module" src="js/modules/agent-chat-fullscreen/index.js"></script>
 
     <!-- AI Module -->
     <script type="module" src="js/modules/ai/index.js"></script>
@@ -173,6 +196,9 @@
     <!-- Agents Module -->
     <script type="module" src="js/modules/agents/index.js"></script>
     <script type="module" src="js/modules/agents/dashboard-widget.js"></script>
+
+    <!-- Agent Activity Module -->
+    <script type="module" src="js/modules/agent-activity/index.js"></script>
 
     <!-- Students Module -->
     <script type="module" src="js/modules/students/index.js"></script>
@@ -195,6 +221,9 @@
 
     <!-- Packages Module (Comercial) -->
     <script type="module" src="js/modules/packages/index.js"></script>
+
+    <!-- Dashboard Widgets -->
+    <script src="js/modules/dashboard/widgets/task-approval-widget.js"></script>
 
     <!-- Test Guide for Anti-Duplication System - REMOVED: file does not exist -->
     <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->

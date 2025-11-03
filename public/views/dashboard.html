@@ -1,3 +1,18 @@
+<style>
+    /* Dashboard Sections - Espaçamento para widgets */
+    .dashboard-section {
+        margin: 24px 0;
+        min-height: 60px;
+    }
+    
+    /* Garantir que widgets sejam visíveis */
+    #agent-dashboard-widget,
+    #task-approval-widget {
+        display: block !important;
+        width: 100%;
+    }
+</style>
+
 <div class="dashboard-container">
     <!-- Dashboard Header -->
     <div class="dashboard-header">
@@ -80,6 +95,11 @@
 
     <!-- Agent Dashboard Widget -->
     <div id="agent-dashboard-widget" class="dashboard-section">
+        <!-- Widget will be loaded by JavaScript -->
+    </div>
+
+    <!-- Task Approval Widget -->
+    <div id="task-approval-widget" class="dashboard-section">
         <!-- Widget will be loaded by JavaScript -->
     </div>
 

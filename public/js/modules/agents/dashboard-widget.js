@@ -242,9 +242,16 @@ const AgentDashboardWidget = {
             'MARKETING': '📧',
             'PEDAGOGICAL': '📚',
             'FINANCIAL': '💳',
-            'SUPPORT': '🎧'
+            'SUPPORT': '🎧',
+            // backend enum values (lowercase)
+            'marketing': '📧',
+            'comercial': '📈',
+            'pedagogico': '📚',
+            'financeiro': '💳',
+            'atendimento': '🎧',
+            'orchestrator': '🧠'
         };
-        return icons[type] || '🤖';
+        return icons[type] || icons[String(type || '').toUpperCase()] || '🤖';
     },
     
     formatTimeAgo(date) {

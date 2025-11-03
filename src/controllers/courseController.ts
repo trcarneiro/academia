@@ -163,8 +163,7 @@ export const courseController = {
     try {
       const organizationId = requireOrganizationId(request as any, reply as any) as string;
       if (!organizationId) return;
-      const organizationId = requireOrganizationId(request as any, reply as any) as string;
-      if (!organizationId) return;
+      
       const { id } = request.params;
       const input = updateCourseSchema.parse(request.body);
 

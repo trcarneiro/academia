@@ -396,6 +396,75 @@ export class BiometricController {
       });
     }
   }
+
+  /**
+   * 🆕 GET /api/biometric/students/embeddings
+   * Get all student face embeddings for matching (Kiosk endpoint)
+   */
+  async getAllEmbeddings(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const organizationId = (request.headers['x-organization-id'] ||
+        request.headers['x-organization-slug']) as string;
+
+      if (!organizationId) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Missing organization ID'
+        });
+      }
+
+      // Query all students with biometric data
+      const students = await prisma.student.findMany({
+        where: {
+          organizationId,
+          biometricData: {
+            faceEmbedding: {
+              not: null,
+            },
+          },
+        },
+        select: {
+          id: true,
+          registrationNumber: true,
+          biometricData: {
+            select: {
+              faceEmbedding: true,
+            },
+          },
+          user: {
+            select: {
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+
+      // Format response
+      const embeddings = students
+        .filter(student => student.biometricData?.faceEmbedding)
+        .map(student => ({
+          studentId: student.id,
+          name: student.user.name,
+        registrationNumber: student.registrationNumber,
+        avatar: student.user.avatar,
+        embedding: student.biometricData!.faceEmbedding as number[], // Cast to number[]
+      }));
+
+      return reply.code(200).send({
+        success: true,
+        data: embeddings,
+        total: embeddings.length,
+        message: `${embeddings.length} face embeddings loaded`,
+      });
+    } catch (error) {
+      logger.error('Error in getAllEmbeddings:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to load face embeddings',
+      });
+    }
+  }
 }
 
 // Export singleton instance

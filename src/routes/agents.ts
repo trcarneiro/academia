@@ -1,7 +1,9 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+﻿import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { agentService } from '@/services/AgentService';
 import { agentExecutorService } from '@/services/AgentExecutorService';
+import { authorizationService } from '@/services/authorizationService';
 import { logger } from '@/utils/logger';
+import { prisma } from '@/utils/database';
 import { z } from 'zod';
 import { requireOrganizationId } from '@/utils/tenantHelpers';
 
@@ -11,7 +13,7 @@ const createAgentSchema = z.object({
   description: z.string().optional(),
   specialization: z.enum(['pedagogical', 'analytical', 'support', 'progression', 'commercial', 'curriculum']),
   model: z.enum([
-    'gemini-2.0-flash-exp',
+    'gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-exp','gemini-2.5-pro-exp','gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-exp','gemini-2.5-pro-exp','gemini-2.0-flash-exp',
     'gemini-1.5-pro',
     'gemini-1.5-pro-exp-0827',
     'gemini-1.5-flash',
@@ -32,7 +34,7 @@ const updateAgentSchema = z.object({
   description: z.string().optional(),
   specialization: z.enum(['pedagogical', 'analytical', 'support', 'progression', 'commercial', 'curriculum']).optional(),
   model: z.enum([
-    'gemini-2.0-flash-exp',
+    'gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-exp','gemini-2.5-pro-exp','gemini-2.5-flash','gemini-2.5-pro','gemini-2.5-flash-exp','gemini-2.5-pro-exp','gemini-2.0-flash-exp',
     'gemini-1.5-pro',
     'gemini-1.5-pro-exp-0827',
     'gemini-1.5-flash',
@@ -52,7 +54,7 @@ const createConversationSchema = z.object({
   agentId: z.string().uuid(),
   studentId: z.string().uuid().optional(),
   message: z.string().min(1),
-  conversationId: z.string().uuid().optional() // Para continuar conversa existente
+  conversationId: z.string().optional() // Para continuar conversa existente (aceita qualquer string)
 });
 
 const updateConversationSchema = z.object({
@@ -169,6 +171,28 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
         try {
             const organizationId = requireOrganizationId(request, reply);
             if (!organizationId) return;
+
+            // 🔒 AUTHORIZATION CHECK
+            const userId = (request.headers['x-user-id'] as string) || (request as any).user?.id;
+            
+            if (!userId) {
+                return reply.code(401).send({
+                    success: false,
+                    message: 'User authentication required'
+                });
+            }
+            
+            // Verificar permissão de criação
+            const authCheck = await authorizationService.canCreateAgent(userId);
+            
+            if (!authCheck.allowed) {
+                return reply.code(403).send({
+                    success: false,
+                    message: authCheck.reason,
+                    requiredRole: authCheck.requiredRole,
+                    requiredPermission: authCheck.requiredPermission
+                });
+            }
 
             // Validate request body
             const validatedData = createAgentSchema.parse(request.body);
@@ -287,6 +311,28 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
         try {
             const { id } = request.params;
 
+            // 🔒 AUTHORIZATION CHECK
+            const userId = (request.headers['x-user-id'] as string) || (request as any).user?.id;
+            
+            if (!userId) {
+                return reply.code(401).send({
+                    success: false,
+                    message: 'User authentication required'
+                });
+            }
+            
+            // Verificar permissão de deleção
+            const authCheck = await authorizationService.canDeleteAgent(userId);
+            
+            if (!authCheck.allowed) {
+                return reply.code(403).send({
+                    success: false,
+                    message: authCheck.reason,
+                    requiredRole: authCheck.requiredRole,
+                    requiredPermission: authCheck.requiredPermission
+                });
+            }
+
             await agentService.deleteAgent(id);
 
             return reply.send({
@@ -340,13 +386,92 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
     });
 
     /**
+     * GET /api/agents/conversations
+     * Get all conversations for the current user (across all agents)
+     */
+    fastify.get('/conversations', async (request: FastifyRequest<{
+        Querystring: { limit?: string };
+    }>, reply: FastifyReply) => {
+        try {
+            const userId = request.headers['x-user-id'] as string;
+            const organizationId = requireOrganizationId(request, reply);
+            if (!organizationId) return;
+
+            const limit = request.query.limit ? parseInt(request.query.limit) : 20;
+
+            // Buscar conversas do usuário com informações do agente
+            const conversations = await prisma.agentConversation.findMany({
+                where: {
+                    userId: userId || undefined,
+                    agent: {
+                        organizationId
+                    }
+                },
+                include: {
+                    agent: {
+                        select: {
+                            id: true,
+                            name: true,
+                            specialization: true,
+                            model: true
+                        }
+                    }
+                },
+                orderBy: {
+                    updatedAt: 'desc'
+                },
+                take: limit
+            });
+
+            return reply.send({
+                success: true,
+                data: conversations,
+                total: conversations.length,
+                pagination: {
+                    page: 1,
+                    limit,
+                    total: conversations.length,
+                    totalPages: Math.ceil(conversations.length / limit)
+                }
+            });
+        } catch (error: any) {
+            logger.error('Error fetching user conversations:', error);
+            return reply.code(500).send({
+                success: false,
+                message: 'Failed to fetch conversations',
+                error: error.message
+            });
+        }
+    });
+
+    /**
      * POST /api/agents/chat
      * Send a message to an agent (creates or continues conversation)
+     * 
+     * ⚠️ NOTA: Requests de IA podem demorar 30-60 segundos
+     * Frontend tem timeout de 60s, backend deixa o servidor gerenciar
      */
     fastify.post('/chat', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
+            // Log inicial da requisição
+            logger.info('� ===== NEW CHAT REQUEST =====');
+            logger.info('Body:', request.body);
+            logger.info('Headers:', {
+                'content-type': request.headers['content-type'],
+                'x-user-id': request.headers['x-user-id'],
+                'x-organization-id': request.headers['x-organization-id']
+            });
+            logger.info('==============================');
+
             const { agentId, studentId, message, conversationId } = createConversationSchema.parse(request.body);
             const userId = request.headers['x-user-id'] as string;
+
+            logger.info('🔍 Parsed request data:');
+            logger.info('Agent ID:', agentId);
+            logger.info('Message length:', message?.length);
+            logger.info('Conversation ID:', conversationId || 'NEW');
+            logger.info('User ID:', userId || 'N/A');
+            logger.info('Student ID:', studentId || 'N/A');
 
             // Get agent to validate it exists and is active
             const agent = await agentService.getAgentById(agentId);
@@ -375,14 +500,30 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
                 }
             };
 
-            // If conversationId provided, continue existing conversation
+            // If conversationId provided, try to continue existing conversation
             let conversation;
             if (conversationId) {
-                conversation = await agentExecutorService.continueConversation(
-                    conversationId,
-                    message,
-                    context
-                );
+                // Verify if conversation exists first
+                const existingConversation = await prisma.agentConversation.findUnique({
+                    where: { id: conversationId }
+                });
+                
+                if (existingConversation) {
+                    // Continue existing conversation
+                    conversation = await agentExecutorService.continueConversation(
+                        conversationId,
+                        message,
+                        context
+                    );
+                } else {
+                    // Conversation doesn't exist, create new one
+                    console.log(`⚠️ [Agent Chat] Conversation ${conversationId} not found, creating new one`);
+                    conversation = await agentExecutorService.createConversationAndExecute(
+                        agentId,
+                        message,
+                        context
+                    );
+                }
             } else {
                 // Create new conversation and execute agent
                 conversation = await agentExecutorService.createConversationAndExecute(
@@ -392,22 +533,47 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
                 );
             }
 
-            return reply.send({
-                success: true,
-                data: {
-                    conversationId: conversation.id,
-                    messages: conversation.messages,
-                    agent: {
-                        id: agent.id,
-                        name: agent.name,
-                        specialization: agent.specialization
+            // Garantir encoding UTF-8 correto na resposta
+            logger.info('✅ ===== CHAT RESPONSE READY =====');
+            logger.info('Conversation ID:', conversation.id);
+            logger.info('Messages count:', (conversation.messages as any[])?.length || 0);
+            logger.info('Last message preview:', JSON.stringify(conversation.messages).substring(0, 200) + '...');
+            logger.info('==================================');
+            
+            return reply
+                .header('Content-Type', 'application/json; charset=utf-8')
+                .send({
+                    success: true,
+                    data: {
+                        conversationId: conversation.id,
+                        messages: conversation.messages,
+                        agent: {
+                            id: agent.id,
+                            name: agent.name,
+                            specialization: agent.specialization
+                        },
+                        metadata: conversation.metadata
                     },
-                    metadata: conversation.metadata
-                },
-                message: 'Message sent successfully'
-            });
+                    message: 'Message sent successfully'
+                });
         } catch (error: any) {
-            logger.error('Error sending message to agent:', error);
+            // Log explícito e detalhado do erro
+            logger.error('❌ ===== ERROR SENDING MESSAGE TO AGENT =====');
+            logger.error('Error Message:', error?.message || 'No message');
+            logger.error('Error Name:', error?.name || 'No name');
+            logger.error('Error Code:', error?.code || 'No code');
+            logger.error('Error Stack:', error?.stack || 'No stack');
+            logger.error('Request Body:', JSON.stringify(request.body, null, 2));
+            logger.error('Full Error Object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+            logger.error('===============================================');
+            
+            logger.error('Error sending message to agent:', {
+                error: error.message,
+                stack: error.stack,
+                name: error.name,
+                body: request.body,
+                headers: request.headers
+            });
 
             // Handle validation errors
             if (error.name === 'ZodError') {
@@ -460,3 +626,4 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
         }
     });
 }
+

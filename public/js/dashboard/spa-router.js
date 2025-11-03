@@ -483,15 +483,70 @@ if (window.router) {
 const router = window.router;
 
 // Registro das rotas
-router.registerRoute('dashboard', () => {
-    document.getElementById('module-container').innerHTML = `
-        <div class="welcome-message">
-            <h2>Dashboard Principal</h2>
-            <p>Selecione um módulo no menu lateral para começar</p>
-        </div>
-    `;
-    document.querySelector('.module-header h1').textContent = 'Dashboard';
-    document.querySelector('.breadcrumb').textContent = 'Home / Dashboard';
+router.registerRoute('dashboard', async () => {
+    console.log('📊 [Router] Loading dashboard...');
+    
+    try {
+        // Load dashboard HTML
+        const response = await fetch('/views/dashboard.html');
+        const html = await response.text();
+        
+        document.getElementById('module-container').innerHTML = html;
+        console.log('✅ [Router] Dashboard HTML loaded');
+        
+        // Initialize dashboard module if available
+        if (window.DashboardModule && window.DashboardModule.init) {
+            await window.DashboardModule.init();
+            console.log('✅ [Router] Dashboard module initialized');
+        }
+        
+        // Initialize Agent Widget (aumentado timeout: 500ms → 1000ms para garantir DOM ready)
+        setTimeout(() => {
+            if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
+                console.log('🤖 [Router] Initializing Agent Widget...');
+                const container = document.getElementById('agent-dashboard-widget');
+                if (container) {
+                    window.agentDashboardWidget.init('agent-dashboard-widget');
+                    console.log('✅ [Router] Agent widget initialized');
+                } else {
+                    console.warn('⚠️ [Router] Agent widget container not found in DOM');
+                }
+            } else {
+                console.warn('⚠️ [Router] agentDashboardWidget not available');
+            }
+        }, 1000); // Aumentado de 500ms para 1000ms
+        
+        // Initialize Task Approval Widget (aumentado timeout: 500ms → 1000ms)
+        setTimeout(() => {
+            if (window.TaskApprovalWidget && window.TaskApprovalWidget.init) {
+                console.log('📋 [Router] Initializing Task Approval Widget...');
+                const container = document.getElementById('task-approval-widget');
+                if (container) {
+                    window.TaskApprovalWidget.init(container);
+                    console.log('✅ [Router] Task widget initialized');
+                } else {
+                    console.warn('⚠️ [Router] Task widget container not found');
+                }
+            } else {
+                console.warn('⚠️ [Router] TaskApprovalWidget not available');
+            }
+        }, 1000); // Aumentado de 500ms para 1000ms
+        
+        // Update breadcrumb
+        const breadcrumb = document.querySelector('.breadcrumb');
+        if (breadcrumb) {
+            breadcrumb.textContent = 'Home / Dashboard';
+        }
+        
+    } catch (error) {
+        console.error('❌ [Router] Error loading dashboard:', error);
+        document.getElementById('module-container').innerHTML = `
+            <div class="welcome-message">
+                <h2>Dashboard Principal</h2>
+                <p>Selecione um módulo no menu lateral para começar</p>
+            </div>
+        `;
+    }
 });
 
 router.registerRoute('students', async () => {
@@ -1210,6 +1265,109 @@ router.registerRoute('agents', () => {
         }
     };
     tryInit();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Agent Activity Module Route
+router.registerRoute('agent-activity', () => {
+    console.log('🤖 Carregando módulo de Atividade de Agentes...');
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Atividade de Agentes';
+    document.querySelector('.breadcrumb').textContent = 'Home / Atividade de Agentes';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    // Create clean container for Agent Activity Module
+    container.innerHTML = '<div id="agent-activity-container"></div>';
+    
+    // Initialize Agent Activity Module
+    const tryInit = (attempts = 0) => {
+        if (typeof window.agentActivityModule?.init === 'function' && typeof window.createModuleAPI === 'function') {
+            try {
+                const targetContainer = document.getElementById('agent-activity-container') || container;
+                window.agentActivityModule.container = targetContainer;
+                window.agentActivityModule.init();
+                console.log('✅ Agent Activity Module initialized');
+            } catch (e) {
+                console.error('❌ Agent Activity module init error:', e);
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Erro ao inicializar Atividade de Agentes</h3>
+                        <p>${e.message}</p>
+                        <button onclick="location.reload()" class="btn btn-primary">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        } else if (attempts < 50) {
+            setTimeout(() => tryInit(attempts + 1), 100);
+        } else {
+            console.error('❌ Agent Activity Module não carregou após 50 tentativas');
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Módulo não carregado</h3>
+                    <p>O módulo de atividade de agentes não foi encontrado. Verifique se o arquivo foi carregado corretamente.</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Recarregar Página</button>
+                </div>
+            `;
+        }
+    };
+    tryInit();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Agent Chat Fullscreen Module Route
+router.registerRoute('agent-chat-fullscreen', () => {
+    console.log('💬 Carregando Chat com Agentes (Fullscreen)...');
+    
+    // Hide default header (fullscreen mode)
+    const header = document.querySelector('.module-header');
+    if (header) header.style.display = 'none';
+    
+    // Get target container
+    const container = document.getElementById('module-container');
+    
+    // Load fullscreen HTML via fetch and inject
+    container.innerHTML = '<div id="loading-chat-fullscreen" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 20px;">⏳ Carregando Chat...</div>';
+    
+    // Fetch and inject HTML
+    fetch('views/agent-chat-fullscreen.html')
+        .then(response => response.text())
+        .then(html => {
+            // Parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const content = doc.querySelector('.agent-chat-fullscreen-container');
+            
+            if (content) {
+                container.innerHTML = '';
+                container.appendChild(content);
+                
+                // Force reinitialize module after DOM is ready
+                setTimeout(() => {
+                    if (window.AgentChatFullscreen?.init) {
+                        window.AgentChatFullscreen.init();
+                    }
+                }, 100);
+                
+                console.log('✅ Agent Chat Fullscreen HTML injected');
+            } else {
+                container.innerHTML = '<div style="padding: 40px; text-align: center;"><h2>❌ Erro ao carregar chat</h2><p>Conteúdo não encontrado</p></div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading chat fullscreen:', error);
+            container.innerHTML = '<div style="padding: 40px; text-align: center;"><h2>❌ Erro ao carregar chat</h2><p>' + error.message + '</p></div>';
+        });
+    
+    console.log('✅ Agent Chat Fullscreen loading...');
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2441,9 +2599,10 @@ if (!window._routerInitialized) {
         console.log('🚀 Inicializando SPA Router...');
         router.initEventListeners();
 
-        // Carregar rota inicial baseada no hash ou dashboard
-        const initialModule = router.getModuleFromHash() || 'dashboard';
-        router.navigateTo(initialModule);
+        // 🔥 ALWAYS START AT DASHBOARD (ignore hash from previous session)
+        console.log('🏠 [Router] Forcing initial navigation to dashboard');
+        window.location.hash = '#dashboard';
+        router.navigateTo('dashboard');
         
         // Mark as initialized
         window._routerInitialized = true;

@@ -72,7 +72,9 @@ window.initStudentsModule = async function initStudentsModule(container) {
 		editorController = new StudentEditorController(moduleAPI);
 		personalController = new PersonalTrainingController(moduleAPI);
 		// Render list by default
-		await listController.render(container);
+		if (container) {
+			await listController.render(container);
+		}
 		window.app.dispatchEvent?.('module:loaded', { name: 'students' });
 		// Expose controllers globally
 		window.studentEditor = editorController;
@@ -82,8 +84,30 @@ window.initStudentsModule = async function initStudentsModule(container) {
 	} catch (err) {
 		window.app.handleError(err, 'students:init');
 		// Minimal error state
-		container.innerHTML = '<div class="error-state">Erro ao inicializar Estudantes</div>';
+		if (container) {
+			container.innerHTML = '<div class="error-state">Erro ao inicializar Estudantes</div>';
+		}
 		throw err;
+	}
+};
+
+// Export as standard module format for app.js
+window.students = {
+	init: async function() {
+		console.log('🎓 [APP.JS] Inicializando módulo Students via app.js...');
+		loadModuleCSS();
+		await initializeAPI();
+		
+		// Initialize controllers but don't render yet (SPA Router will handle rendering)
+		listController = new StudentsListController(moduleAPI);
+		editorController = new StudentEditorController(moduleAPI);
+		personalController = new PersonalTrainingController(moduleAPI);
+		
+		// Expose controllers globally
+		window.studentEditor = editorController;
+		window.personalController = personalController;
+		
+		window.app.dispatchEvent?.('module:loaded', { name: 'students' });
 	}
 };
 

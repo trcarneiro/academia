@@ -3006,3 +3006,97 @@
     max-height: 300px;
   }
 }
+
+/* =================================
+   DESTAQUE DE HORÁRIOS E DIAS
+   Seção premium para exibir horário e dias da semana
+   ================================= */
+
+.module-isolated-turmas .turma-schedule-highlight {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border: 2px solid var(--primary-color);
+  border-radius: var(--border-radius-lg);
+  margin: 0 1.5rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.module-isolated-turmas .turma-schedule-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+.module-isolated-turmas .schedule-item-large {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1.25rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.module-isolated-turmas .schedule-item-large:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.module-isolated-turmas .schedule-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.module-isolated-turmas .schedule-content {
+  flex: 1;
+}
+
+.module-isolated-turmas .schedule-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.module-isolated-turmas .schedule-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+/* Responsividade para schedule highlight */
+@media (max-width: 768px) {
+  .module-isolated-turmas .turma-schedule-highlight {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    margin: 0 1rem 1rem;
+  }
+  
+  .module-isolated-turmas .schedule-item-large {
+    padding: 1rem;
+  }
+  
+  .module-isolated-turmas .schedule-icon {
+    font-size: 2rem;
+  }
+  
+  .module-isolated-turmas .schedule-value {
+    font-size: 1.1rem;
+  }
+}
