@@ -1,0 +1,24 @@
+/* Students Editor Isolation Shim (AGENTS.md compliance) */
+/* Applies design tokens and basic scope under module-isolated-* prefix */
+
+.module-isolated-students-editor,
+.module-isolated-container[data-module="students-editor"] {
+  /* Design tokens */
+  --primary-color: #667eea;
+  --secondary-color: #764ba2;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Ensure tab-pane visibility rules apply within isolated scope as well */
+.module-isolated-container[data-module="students-editor"] .tab-pane { display: none; }
+.module-isolated-container[data-module="students-editor"] .tab-pane.active { display: block; }
+
+/* Premium header compatibility in isolation scope */
+.module-isolated-container[data-module="students-editor"] .module-header-premium {
+  background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, var(--color-background, #f8fafc) 100%);
+}
+
+/* Data card premium compatibility in isolation scope */
+.module-isolated-container[data-module="students-editor"] .data-card-premium {
+  background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, var(--color-background, #f8fafc) 100%);
+}

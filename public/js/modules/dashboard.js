@@ -31,7 +31,7 @@
             setupEventListeners();
             
             // Auto-load dashboard if container exists (support both old and new structure)
-            if (document.getElementById('dashboard') || document.querySelector('.dashboard-isolated')) {
+            if (document.getElementById('dashboard') || document.querySelector('.dashboard-isolated') || document.getElementById('dashboardContainer')) {
                 loadDashboard();
             }
             
@@ -74,9 +74,30 @@
     // ==========================================
     
     function loadDashboard() {
-        console.log('📊 Loading dashboard data...');
-        showLoadingState();
-        fetchDashboardData();
+        console.log('📊 Loading dashboard...');
+
+        // First load HTML content if not already loaded
+        const container = document.getElementById('dashboardContainer');
+        if (container && !container.querySelector('.dashboard-header')) {
+            console.log('📄 Loading dashboard HTML content...');
+            fetch('/views/dashboard.html')
+                .then(response => response.text())
+                .then(html => {
+                    container.innerHTML = html;
+                    console.log('✅ Dashboard HTML loaded');
+                    // Now load data
+                    showLoadingState();
+                    fetchDashboardData();
+                })
+                .catch(error => {
+                    console.error('❌ Error loading dashboard HTML:', error);
+                    showErrorState();
+                });
+        } else {
+            console.log('📊 Dashboard HTML already loaded, loading data...');
+            showLoadingState();
+            fetchDashboardData();
+        }
     }
     
     function renderDashboard(data) {
@@ -95,12 +116,49 @@
             // Update last updated time
             updateLastUpdatedTime();
             
+            // Initialize Agent Dashboard Widget
+            initializeAgentWidget();
+
+            // Initialize Task Approval Widget
+            initializeTaskApprovalWidget();
+            
             hideLoadingState();
             
         } catch (error) {
             console.error('❌ Error rendering dashboard:', error);
             showErrorState();
         }
+    }
+    
+    function initializeAgentWidget() {
+        // Wait for widget to be available
+        const checkWidget = () => {
+            if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
+                console.log('🤖 Initializing Agent Dashboard Widget...');
+                window.agentDashboardWidget.init('agent-dashboard-widget');
+            } else {
+                setTimeout(checkWidget, 100);
+            }
+        };
+        checkWidget();
+    }
+
+    function initializeTaskApprovalWidget() {
+        // Wait for widget to be available
+        const checkWidget = () => {
+            if (window.TaskApprovalWidget && window.TaskApprovalWidget.init) {
+                console.log('📋 Initializing Task Approval Widget...');
+                const container = document.getElementById('task-approval-widget');
+                if (container) {
+                    window.TaskApprovalWidget.init(container);
+                } else {
+                    console.warn('⚠️ Task approval widget container not found');
+                }
+            } else {
+                setTimeout(checkWidget, 100);
+            }
+        };
+        checkWidget();
     }
     
     function updateMetrics(data) {
@@ -385,7 +443,7 @@
         try {
             const [studentsResponse, attendanceResponse, classesResponse] = await Promise.all([
                 fetch('/api/students').catch(() => ({ ok: false })),
-                fetch('/api/attendance').catch(() => ({ ok: false })),
+                fetch('/api/attendance/stats').catch(() => ({ ok: false })),
                 fetch('/api/classes').catch(() => ({ ok: false }))
             ]);
             

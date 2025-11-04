@@ -1,0 +1,323 @@
+<!-- 
+  GRADUATION MODULE - POC v1.0
+  Módulo de Graduação com gestão de progresso de alunos
+  Padrão: AGENTS.md v2.0 - Full-screen UI, Premium Design
+-->
+
+<div id="graduationContainer" class="graduation-container module-container">
+    
+    <!-- ============================================
+         HEADER WITH BREADCRUMB
+         ============================================ -->
+    <div class="module-header-premium">
+        <div class="header-content">
+            <div class="breadcrumb">
+                <span class="breadcrumb-item">🏠 Home</span>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-item active">🎓 Graduação</span>
+            </div>
+            <h1 class="module-title">
+                <i class="icon">🎓</i>
+                Gestão de Graduação
+            </h1>
+            <p class="module-subtitle">Acompanhamento e registro de progresso de alunos</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.graduationModule?.exportProgress()">
+                📊 Exportar Relatório
+            </button>
+            <button class="btn btn-primary" onclick="window.graduationModule?.openBulkRegistration()">
+                ➕ Registro em Lote
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TABS NAVIGATION
+         ============================================ -->
+    <div class="tabs-navigation-premium">
+        <button class="tab-btn active" data-tab="students" onclick="window.graduationModule?.switchTab('students')">
+            👥 Alunos
+        </button>
+        <button class="tab-btn" data-tab="requirements" onclick="window.graduationModule?.switchTab('requirements')">
+            📋 Requisitos do Curso
+        </button>
+    </div>
+
+    <!-- ============================================
+         TAB 1: STUDENTS (ALUNOS)
+         ============================================ -->
+    <div id="studentsTab" class="tab-content active">
+        
+        <!-- Filters Section -->
+        <div class="module-filters-premium">
+            <div class="filter-group">
+                <label for="filter-course">📚 Curso</label>
+                <select id="filter-course" class="filter-select">
+                    <option value="">Todos os cursos</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="filter-belt">🥋 Grau Atual</label>
+                <select id="filter-belt" class="filter-select">
+                    <option value="">Todos os graus</option>
+                    <option value="white">Branca</option>
+                    <option value="yellow">Amarela</option>
+                    <option value="orange">Laranja</option>
+                    <option value="green">Verde</option>
+                    <option value="blue">Azul</option>
+                    <option value="brown">Marrom</option>
+                    <option value="black">Preta</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="filter-status">📊 Status</label>
+                <select id="filter-status" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="ready">✅ Pronto para Graduação</option>
+                    <option value="in-progress">🔄 Em Progresso</option>
+                    <option value="needs-attention">⚠️ Requer Atenção</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search-student">🔍 Buscar Aluno</label>
+                <input 
+                    type="text" 
+                    id="search-student" 
+                    class="filter-input" 
+                    placeholder="Nome ou matrícula..."
+                >
+            </div>
+        </div>
+
+        <!-- Students List -->
+        <div id="studentsList" class="students-grid">
+            <!-- Populated by JS -->
+            <!-- Loading State -->
+            <div id="studentsLoading" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Carregando alunos...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="studentsEmpty" class="empty-state" style="display: none;">
+                <i class="icon-large">🎓</i>
+                <h3>Nenhum aluno encontrado</h3>
+                <p>Ajuste os filtros ou matricule novos alunos</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================
+         TAB 2: COURSE REQUIREMENTS (REQUISITOS)
+         ============================================ -->
+    <div id="requirementsTab" class="tab-content" style="display: none;">
+        
+        <!-- Course Selector -->
+        <div class="module-filters-premium">
+            <div class="filter-group">
+                <label for="requirements-course">📚 Curso</label>
+                <select id="requirements-course" class="filter-select">
+                    <option value="">Selecione um curso</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Requirements Display -->
+        <div id="requirementsList" class="requirements-container">
+            <!-- Populated by JS -->
+            
+            <!-- Empty State -->
+            <div id="requirementsEmpty" class="empty-state">
+                <i class="icon-large">📋</i>
+                <h3>Selecione um curso</h3>
+                <p>Escolha um curso acima para ver os requisitos de graduação</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================
+     STUDENT DETAIL MODAL (Full-screen)
+     ============================================ -->
+<div id="studentDetailModal" class="modal-fullscreen" style="display: none;">
+    <div class="modal-content-fullscreen">
+        
+        <!-- Modal Header -->
+        <div class="modal-header-premium">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <span class="breadcrumb-item" onclick="window.graduationModule?.closeStudentDetail()">🎓 Graduação</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-item active" id="studentDetailName">Aluno</span>
+                </div>
+                <h2 class="modal-title">
+                    <span id="studentDetailAvatar" class="student-avatar">👤</span>
+                    <span id="studentDetailFullName">Carregando...</span>
+                </h2>
+                <div class="student-meta">
+                    <span class="meta-badge" id="studentDetailBelt">🥋 Faixa Branca</span>
+                    <span class="meta-badge" id="studentDetailProgress">📊 0% Completo</span>
+                    <span class="meta-badge" id="studentDetailCourse">📚 Curso</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.graduationModule?.closeStudentDetail()">
+                    ✖️ Fechar
+                </button>
+                <button class="btn btn-primary" onclick="window.graduationModule?.saveStudentProgress()">
+                    💾 Salvar Progresso
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body-fullscreen">
+            
+            <!-- Progress Summary Cards -->
+            <div class="summary-cards-grid">
+                <!-- Quantitative Progress -->
+                <div class="stat-card-enhanced">
+                    <div class="stat-icon">🔢</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Progresso Quantitativo</div>
+                        <div class="stat-value" id="quantitativeProgress">0/0</div>
+                        <div class="stat-sublabel">Atividades registradas</div>
+                    </div>
+                </div>
+                
+                <!-- Qualitative Progress -->
+                <div class="stat-card-enhanced">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Progresso Qualitativo</div>
+                        <div class="stat-value" id="qualitativeProgress">0%</div>
+                        <div class="stat-sublabel">Avaliação média</div>
+                    </div>
+                </div>
+                
+                <!-- Check-ins -->
+                <div class="stat-card-enhanced">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Check-ins</div>
+                        <div class="stat-value" id="checkinsCount">0</div>
+                        <div class="stat-sublabel">Aulas frequentadas</div>
+                    </div>
+                </div>
+                
+                <!-- Manual Registrations -->
+                <div class="stat-card-enhanced">
+                    <div class="stat-icon">✏️</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Registros Manuais</div>
+                        <div class="stat-value" id="manualRegistrations">0</div>
+                        <div class="stat-sublabel">Sem check-in</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activities Table -->
+            <div class="data-card-premium" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h3>📋 Atividades do Curso</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="window.graduationModule?.toggleViewMode()">
+                            <span id="viewModeIcon">📋</span> <span id="viewModeText">Modo Tabela</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Activities Grid/Table -->
+                    <div id="activitiesContainer">
+                        <table class="activities-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Atividade</th>
+                                    <th style="width: 120px;">Categoria</th>
+                                    <th style="width: 150px;">Progresso Quantitativo</th>
+                                    <th style="width: 150px;">Avaliação Qualitativa</th>
+                                    <th style="width: 120px;">Origem</th>
+                                    <th style="width: 100px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activitiesTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Registration Form -->
+            <div id="manualRegistrationForm" class="data-card-premium" style="margin-top: 2rem; display: none;">
+                <div class="card-header">
+                    <h3>✏️ Registro Manual de Atividade</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="window.graduationModule?.closeManualForm()">
+                        ✖️ Cancelar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form id="manualActivityForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>📋 Atividade</label>
+                                <select id="manual-activity" class="form-input" required>
+                                    <option value="">Selecione...</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>📅 Data de Execução</label>
+                                <input type="date" id="manual-date" class="form-input" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>🔢 Repetições/Tempo</label>
+                                <input type="number" id="manual-quantity" class="form-input" placeholder="Ex: 50" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>⭐ Avaliação Qualitativa (1-5)</label>
+                                <div class="rating-selector">
+                                    <button type="button" class="rating-btn" data-rating="1">1⭐</button>
+                                    <button type="button" class="rating-btn" data-rating="2">2⭐</button>
+                                    <button type="button" class="rating-btn" data-rating="3">3⭐</button>
+                                    <button type="button" class="rating-btn" data-rating="4">4⭐</button>
+                                    <button type="button" class="rating-btn" data-rating="5">5⭐</button>
+                                </div>
+                                <input type="hidden" id="manual-rating" required>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>📝 Observações (opcional)</label>
+                                <textarea id="manual-notes" class="form-input" rows="3" placeholder="Comentários sobre a execução..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                💾 Salvar Registro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

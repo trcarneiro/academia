@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Delete Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        #log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow: auto; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+<h1>🔧 Simple Delete Test</h1>
+
+<button onclick="testAPI()">Test API Directly</button>
+<button onclick="testMethod()">Test Method Call</button>
+<button onclick="showStatus()">Show Status</button>
+<button onclick="clearLog()">Clear Log</button>
+
+<pre id="log"></pre>
+
+<script>
+    function log(msg) {
+        const el = document.getElementById('log');
+        el.textContent += msg + '\n';
+        el.scrollTop = el.scrollHeight;
+        console.log(msg);
+    }
+
+    function clearLog() {
+        document.getElementById('log').textContent = '';
+    }
+
+    function showStatus() {
+        log('\n=== STATUS CHECK ===');
+        log('window.studentEditor exists? ' + !!window.studentEditor);
+        log('window.studentEditor.api? ' + !!window.studentEditor?.api);
+        log('window.studentEditor.api.api? ' + !!window.studentEditor?.api?.api);
+        log('window.studentEditor.api.api.delete? ' + typeof window.studentEditor?.api?.api?.delete);
+        log('Current student? ' + !!window.studentEditor?.current);
+        log('Current student subscriptions? ' + window.studentEditor?.current?.subscriptions?.length);
+        if (window.studentEditor?.current?.subscriptions?.length > 0) {
+            log('First sub ID: ' + window.studentEditor.current.subscriptions[0].id);
+        }
+        log('====================\n');
+    }
+
+    async function testAPI() {
+        log('\n=== TESTING API DIRECTLY ===');
+        
+        if (!window.studentEditor?.api?.api?.delete) {
+            log('❌ API.delete not available!');
+            return;
+        }
+
+        try {
+            log('Calling api.delete with test URL...');
+            const result = await window.studentEditor.api.api.delete('/api/subscriptions/test-id');
+            log('Result: ' + JSON.stringify(result));
+        } catch (err) {
+            log('Error: ' + err.message);
+            log('(This is expected if ID doesnt exist)');
+        }
+        log('====================\n');
+    }
+
+    async function testMethod() {
+        log('\n=== TESTING checkAndDeleteSubscription ===');
+        
+        if (!window.studentEditor?.checkAndDeleteSubscription) {
+            log('❌ Method not found!');
+            showStatus();
+            return;
+        }
+
+        const subId = window.studentEditor?.current?.subscriptions?.[0]?.id;
+        if (!subId) {
+            log('❌ No subscription to test!');
+            return;
+        }
+
+        log('Calling checkAndDeleteSubscription(' + subId + ')');
+        try {
+            window.studentEditor.checkAndDeleteSubscription(subId);
+        } catch (err) {
+            log('Error in method call: ' + err.message);
+        }
+        log('====================\n');
+    }
+
+    // Monitor console messages
+    const originalLog = console.log;
+    console.log = function(...args) {
+        const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ');
+        if (msg.includes('🗑') || msg.includes('❌') || msg.includes('✅')) {
+            log(msg);
+        }
+        originalLog.apply(console, args);
+    };
+</script>
+
+</body>
+</html>

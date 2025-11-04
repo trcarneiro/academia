@@ -1,0 +1,56 @@
+﻿RELATORIO DE MOVIMENTO - FASE 3B
+Data: 19/10/2025 16:15:42
+Status: CONCLUIDO COM SUCESSO
+
+=== RESUMO GERAL ===
+Total de arquivos movidos: 283
+Total de arquivos que falharam: 0
+Tamanho total de OLD_191025: 0.01 GB
+Arquivos em OLD_191025: 283
+
+=== MOVIMENTO POR CATEGORIA ===
+[16:14:03] DUPLICATES : Movidos 27, Falhados 0
+[16:14:11] OLD_MODULES : Movidos 51, Falhados 0
+[16:14:40] GENERATED_DOCS : Movidos 149, Falhados 0
+[16:15:01] BACKUP_FILES : Movidos 42, Falhados 0
+[16:15:14] ARCHIVES : Movidos 5, Falhados 0
+[16:15:28] TEMP_LOGS : Movidos 9, Falhados 0
+
+=== ESTRUTURA CRIADA ===
+OLD_191025\
+  â”œâ”€â”€ BACKUP_FILES\       (Arquivos .bak, -backup.js, etc)
+  â”œâ”€â”€ TEMP_LOGS\          (*.log, *.tmp, *.temp, *.swp)
+  â”œâ”€â”€ DUPLICATES\         (CÃ³pias e versÃµes antigas)
+  â”œâ”€â”€ GENERATED_DOCS\     (DocumentaÃ§Ã£o gerada automaticamente)
+  â”œâ”€â”€ OLD_MODULES\        (MÃ³dulos deprecated/legacy)
+  â”œâ”€â”€ ARCHIVES\           (*.zip, *.rar, *.7z, etc)
+  â”œâ”€â”€ DEPENDENCIES\       (node_modules, dist, build, etc)
+  â””â”€â”€ IDE_BUILD\          (.vscode, .idea, .DS_Store, etc)
+
+=== ARQUIVOS CRITICOS MANTIDOS (NAO MOVIDOS) ===
+âœ“ src/
+âœ“ public/
+âœ“ prisma/
+âœ“ scripts/
+âœ“ tests/
+âœ“ package.json
+âœ“ package-lock.json
+âœ“ tsconfig.json
+âœ“ .env
+âœ“ .git/
+âœ“ AGENTS.md
+âœ“ AUDIT_REPORT.md
+
+=== PROXIMO PASSO ===
+Execute FASE 4: cleanup-final.bat
+Isso vai remover pastas vazias e gerar relatorio final
+
+=== COMO DESFAZER (SE NECESSARIO) ===
+Se algo der errado:
+1. Restaure do backup: BACKUP_SEGURANCA_20251019_1502
+2. Execute:
+   robocopy "h:\projetos\academia\BACKUP_SEGURANCA_20251019_1502" "h:\projetos\academia" /E
+3. Execute: npm install
+4. Reinicie o servidor
+
+MOVIMENTO CONCLUIDO: 10/19/2025 16:15:42

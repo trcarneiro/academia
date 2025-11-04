@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Híbrida - Academia Krav Maga</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/design-system/tokens.css">
+    <link rel="stylesheet" href="/css/design-system/components.css">
+    
+    <!-- Module CSS -->
+    <link rel="stylesheet" href="/css/modules/hybrid-agenda.css">
+    
+    <style>
+        body {
+            background: var(--color-background);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .page-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .page-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🏛️ Sistema Híbrido de Agenda</h1>
+            <p>Demonstração da integração entre turmas coletivas e sessões de personal training</p>
+        </div>
+        
+        <!-- Container onde o módulo será renderizado -->
+        <div id="agenda-container">
+            <div class="loading-spinner">Carregando sistema híbrido...</div>
+        </div>
+    </div>
+
+    <!-- Core Dependencies -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/shared/state-manager.js"></script>
+    <script src="/js/core/app.js"></script>
+    
+    <!-- Hybrid Agenda Module -->
+    <script src="/js/modules/hybrid-agenda/index.js"></script>
+    
+    <script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎯 Initializing Hybrid Agenda Demo...');
+            
+            // Initialize core app
+            if (window.AcademyApp) {
+                window.app = new AcademyApp();
+                await window.app.init();
+            }
+            
+            // Initialize hybrid agenda module if not auto-initialized
+            if (!window.hybridAgendaModule && window.hybridAgenda) {
+                window.hybridAgendaModule = new window.hybridAgenda();
+                await window.hybridAgendaModule.initialize();
+            }
+            
+            console.log('✅ Hybrid Agenda Demo initialized successfully');
+        });
+        
+        // Global error handler for demo
+        window.addEventListener('error', (event) => {
+            console.error('🚨 Global Error:', event.error);
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🚨 Unhandled Promise Rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

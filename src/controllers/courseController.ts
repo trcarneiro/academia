@@ -2,14 +2,30 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { courseService, CourseData, UpdateCourseData } from '../services/courseService';
 import { prisma } from '@/utils/database';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 
-// Esquema de validação para criação de curso
+// Esquema de validação para criação de curso  
 const createCourseSchema = z.object({
   name: z.string().min(3, 'O nome do curso é obrigatório'),
   description: z.string().optional(),
   level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'MASTER']),
   duration: z.number().int().positive('A duração deve ser um número positivo'),
   isActive: z.boolean().default(true),
+  // Extended fields for complex course structure
+  objectives: z.array(z.string()).optional(),
+  generalObjectives: z.array(z.string()).optional(),
+  specificObjectives: z.array(z.string()).optional(),
+  requirements: z.array(z.string()).optional(),
+  resources: z.array(z.string()).optional(),
+  targetAudience: z.string().optional(),
+  methodology: z.string().optional(),
+  teachingStyle: z.string().optional(),
+  evaluation: z.object({
+    criteria: z.array(z.string()).optional(),
+    methods: z.array(z.string()).optional(),
+    requirements: z.string().optional()
+  }).optional(),
+  evaluationCriteria: z.array(z.string()).optional()
 });
 
 // Esquema de validação para atualização
@@ -80,8 +96,14 @@ async function resolveMartialArtId(organizationId: string, desiredName?: string)
 export const courseController = {
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
-      const courses = await courseService.getAllCourses(organizationId);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
+      
+      // Get query parameters
+      const query = request.query as { active?: string };
+      const activeFilter = query.active === 'true' ? true : query.active === 'false' ? false : undefined;
+      
+      const courses = await courseService.getAllCourses(organizationId, activeFilter);
       reply.send({ success: true, data: courses });
     } catch (error) {
       console.error('❌ list courses error', error);
@@ -91,7 +113,8 @@ export const courseController = {
 
   async show(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       const { id } = request.params;
       const course = await courseService.getCourseById(id, organizationId);
       if (!course) {
@@ -106,7 +129,8 @@ export const courseController = {
 
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
       const input = createCourseSchema.parse(request.body);
 
       const existingCourse = await courseService.findCourseByName(input.name, organizationId);
@@ -137,7 +161,9 @@ export const courseController = {
 
   async update(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const organizationId = await getOrganizationId(request);
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
+      
       const { id } = request.params;
       const input = updateCourseSchema.parse(request.body);
 
@@ -170,8 +196,8 @@ export const courseController = {
       console.log('🗑️ Attempting to delete course:', id);
       
       // Verificar se o curso existe primeiro
-      const existingCourse = await prisma.course.findUnique({
-        where: { id },
+      const existingCourse = await prisma.course.findFirst({
+        where: { id, organizationId },
         select: { id: true, name: true }
       });
 

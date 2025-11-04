@@ -5,6 +5,40 @@ import { logger } from '@/utils/logger';
 import { RegisterInput, LoginInput } from '@/schemas/auth';
 
 export class AuthController {
+  static async getUserByEmail(
+    request: FastifyRequest<{ Querystring: { email: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { email } = request.query;
+      
+      const user = await AuthService.findUserByEmail(email);
+      
+      if (!user) {
+        return ResponseHelper.error(reply, 'Usuário não encontrado', 404);
+      }
+
+      return ResponseHelper.success(
+        reply,
+        {
+          id: user.id,
+          email: user.email,
+          organizationId: user.organizationId,
+          role: user.role,
+        },
+        'Usuário encontrado'
+      );
+    } catch (error) {
+      logger.error({ error, email: request.query.email }, 'Get user by email failed');
+      
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
   static async register(
     request: FastifyRequest<{ Body: RegisterInput }>,
     reply: FastifyReply
@@ -12,16 +46,12 @@ export class AuthController {
     try {
       const userData = await AuthService.register(request.body);
       
-      // Generate JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // Return Supabase session token instead of local JWT
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          token: userData.token, // Supabase session.access_token from AuthService
         },
         'Usuário registrado com sucesso',
         201
@@ -44,16 +74,12 @@ export class AuthController {
     try {
       const userData = await AuthService.login(request.body);
       
-      // Generate JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // Return Supabase session token
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          token: userData.token, // Supabase session.access_token
         },
         'Login realizado com sucesso'
       );
@@ -141,18 +167,15 @@ export class AuthController {
 
       const userData = await AuthService.findUserById(request.user.id);
       
-      // Generate new JWT token
-      const token = await reply.jwtSign(
-        AuthService.createJWTPayload(userData)
-      );
-
+      // For Supabase, refresh is handled client-side; here return user data for session update
+      // Frontend calls Supabase refreshSession
       return ResponseHelper.success(
         reply,
         {
           user: userData,
-          token,
+          // No new token, frontend handles refresh
         },
-        'Token renovado com sucesso'
+        'Sessão renovada com sucesso'
       );
     } catch (error) {
       logger.error({ error, userId: request.user?.id }, 'Token refresh failed');

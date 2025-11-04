@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Instrutor - Academia</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modules/instructors.css">
+    <link rel="stylesheet" href="/css/modules/instructor-editor.css">
+</head>
+<body class="module-isolated-instructors">
+    <!-- Header Premium -->
+    <div class="module-header-premium">
+        <div class="header-content">
+            <nav class="breadcrumb-premium">
+                <span class="breadcrumb-item" onclick="window.router.navigateTo('dashboard')">🏠 Dashboard</span>
+                <span>></span>
+                <span class="breadcrumb-item" onclick="window.router.navigateTo('instructors')">👨‍🏫 Instrutores</span>
+                <span>></span>
+                <span class="breadcrumb-item active" id="breadcrumb-action">Novo Instrutor</span>
+            </nav>
+            <div class="title-section">
+                <h1 id="page-title">Novo Instrutor</h1>
+                <p class="subtitle">Cadastre e gerencie informações do instrutor</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="window.router.navigateTo('instructors')">
+                    ← Voltar
+                </button>
+                <button class="btn-primary-premium" id="save-btn">
+                    💾 Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-premium" style="display: none;">
+        <div class="spinner-premium"></div>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="error-state-premium" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <h3>Erro ao carregar</h3>
+        <p id="error-message">Ocorreu um erro inesperado.</p>
+        <button class="btn-primary-premium" onclick="window.location.reload()">
+            🔄 Tentar Novamente
+        </button>
+    </div>
+
+    <!-- Success State -->
+    <div id="success-state" class="success-state-premium" style="display: none;">
+        <div class="success-icon">✅</div>
+        <h3>Instrutor salvo com sucesso!</h3>
+        <p>As informações foram atualizadas.</p>
+        <div class="success-actions">
+            <button class="btn-primary-premium" onclick="window.router.navigateTo('instructors')">
+                📋 Ver Lista
+            </button>
+            <button class="btn-secondary" onclick="resetForm()">
+                ➕ Novo Instrutor
+            </button>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div id="form-container" class="form-container-premium">
+        <form id="instructor-form" class="instructor-form-premium">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>👤 Informações Básicas</h3>
+                    <p>Dados pessoais do instrutor</p>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Nome Completo *</label>
+                        <input type="text" id="name" name="name" required
+                               placeholder="Ex: João Silva Santos">
+                        <div class="field-error" id="name-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail *</label>
+                        <input type="email" id="email" name="email" required
+                               placeholder="Ex: joao@academia.com">
+                        <div class="field-error" id="email-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefone</label>
+                        <input type="tel" id="phone" name="phone"
+                               placeholder="Ex: (11) 99999-9999">
+                        <div class="field-error" id="phone-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="document">CPF</label>
+                        <input type="text" id="document" name="document"
+                               placeholder="Ex: 123.456.789-00">
+                        <div class="field-error" id="document-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthDate">Data de Nascimento</label>
+                        <input type="date" id="birthDate" name="birthDate">
+                        <div class="field-error" id="birthDate-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gênero</label>
+                        <select id="gender" name="gender">
+                            <option value="">Selecione...</option>
+                            <option value="MALE">Masculino</option>
+                            <option value="FEMALE">Feminino</option>
+                            <option value="OTHER">Outro</option>
+                        </select>
+                        <div class="field-error" id="gender-error"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>🥋 Informações Profissionais</h3>
+                    <p>Dados sobre a experiência e qualificações</p>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="belt">Graduação/Faixa *</label>
+                        <select id="belt" name="belt" required>
+                            <option value="">Selecione a graduação...</option>
+                            <option value="WHITE">Branca</option>
+                            <option value="YELLOW">Amarela</option>
+                            <option value="ORANGE">Laranja</option>
+                            <option value="GREEN">Verde</option>
+                            <option value="BLUE">Azul</option>
+                            <option value="BROWN">Marrom</option>
+                            <option value="BLACK_1">Preta 1º Grau</option>
+                            <option value="BLACK_2">Preta 2º Grau</option>
+                            <option value="BLACK_3">Preta 3º Grau</option>
+                            <option value="BLACK_4">Preta 4º Grau</option>
+                            <option value="BLACK_5">Preta 5º Grau</option>
+                            <option value="MASTER">Mestre</option>
+                        </select>
+                        <div class="field-error" id="belt-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialties">Especialidades</label>
+                        <textarea id="specialties" name="specialties" rows="3"
+                                  placeholder="Ex: Defesa Pessoal, Krav Maga Infantil, Combate"></textarea>
+                        <div class="field-error" id="specialties-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Anos de Experiência</label>
+                        <input type="number" id="experience" name="experience" min="0" max="50"
+                               placeholder="Ex: 10">
+                        <div class="field-error" id="experience-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="certifications">Certificações</label>
+                        <textarea id="certifications" name="certifications" rows="3"
+                                  placeholder="Ex: Instrutor Certificado IKMF, Primeiros Socorros"></textarea>
+                        <div class="field-error" id="certifications-error"></div>
+                    </div>
+                    <div class="form-group span-full">
+                        <label for="bio">Biografia</label>
+                        <textarea id="bio" name="bio" rows="4"
+                                  placeholder="Breve descrição sobre o instrutor, sua trajetória e metodologia..."></textarea>
+                        <div class="field-error" id="bio-error"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>💼 Informações de Trabalho</h3>
+                    <p>Dados contratuais e horários</p>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" name="status" required>
+                            <option value="ACTIVE">Ativo</option>
+                            <option value="INACTIVE">Inativo</option>
+                            <option value="ON_LEAVE">Licença</option>
+                        </select>
+                        <div class="field-error" id="status-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hireDate">Data de Contratação</label>
+                        <input type="date" id="hireDate" name="hireDate">
+                        <div class="field-error" id="hireDate-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="salary">Salário Base</label>
+                        <input type="number" id="salary" name="salary" min="0" step="0.01"
+                               placeholder="Ex: 3500.00">
+                        <div class="field-error" id="salary-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="workload">Carga Horária Semanal</label>
+                        <input type="number" id="workload" name="workload" min="1" max="60"
+                               placeholder="Ex: 40">
+                        <div class="field-error" id="workload-error"></div>
+                    </div>
+                    <div class="form-group span-full">
+                        <label>
+                            <input type="checkbox" id="canManageStudents" name="canManageStudents">
+                            Pode gerenciar alunos
+                        </label>
+                    </div>
+                    <div class="form-group span-full">
+                        <label>
+                            <input type="checkbox" id="canManageClasses" name="canManageClasses">
+                            Pode gerenciar aulas
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>📍 Endereço</h3>
+                    <p>Informações de endereço residencial</p>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="zipCode">CEP</label>
+                        <input type="text" id="zipCode" name="zipCode"
+                               placeholder="Ex: 01234-567">
+                        <div class="field-error" id="zipCode-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="street">Rua</label>
+                        <input type="text" id="street" name="street"
+                               placeholder="Ex: Rua das Flores">
+                        <div class="field-error" id="street-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="number">Número</label>
+                        <input type="text" id="number" name="number"
+                               placeholder="Ex: 123">
+                        <div class="field-error" id="number-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="complement">Complemento</label>
+                        <input type="text" id="complement" name="complement"
+                               placeholder="Ex: Apto 45">
+                        <div class="field-error" id="complement-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="neighborhood">Bairro</label>
+                        <input type="text" id="neighborhood" name="neighborhood"
+                               placeholder="Ex: Centro">
+                        <div class="field-error" id="neighborhood-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Cidade</label>
+                        <input type="text" id="city" name="city"
+                               placeholder="Ex: São Paulo">
+                        <div class="field-error" id="city-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">Estado</label>
+                        <select id="state" name="state">
+                            <option value="">Selecione...</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                        <div class="field-error" id="state-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">País</label>
+                        <input type="text" id="country" name="country" value="Brasil" readonly>
+                        <div class="field-error" id="country-error"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="window.router.navigateTo('instructors')">
+                    Cancelar
+                </button>
+                <button type="button" id="delete-btn" class="btn-danger" style="display: none;">
+                    🗑️ Excluir Instrutor
+                </button>
+                <button type="submit" class="btn-primary-premium">
+                    💾 Salvar Instrutor
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    <script src="/js/shared/utils.js"></script>
+    <script src="/js/modules/instructors/instructor-editor.js"></script>
+</body>
+</html>

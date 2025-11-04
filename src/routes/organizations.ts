@@ -110,7 +110,8 @@ export default async function organizationsRoutes(
           updatedAt: true,
           _count: {
             select: {
-              users: true
+              users: true,
+              units: true
             }
           }
         }
@@ -134,6 +135,77 @@ export default async function organizationsRoutes(
       return {
         success: false,
         error: 'Failed to fetch organization',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  });
+
+  // GET /api/organizations/:id/units - Get organization units
+  fastify.get('/:id/units', {
+    schema: {
+      description: 'Get organization units',
+      tags: ['Organizations'],
+      params: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' }
+        },
+        required: ['id']
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      const organization = await prisma.organization.findUnique({
+        where: { id },
+        include: {
+          units: {
+            select: {
+              id: true,
+              name: true,
+              address: true,
+              city: true,
+              state: true,
+              isActive: true,
+              capacity: true,
+              totalMats: true,
+              responsibleName: true,
+              phone: true,
+              email: true,
+              _count: {
+                select: {
+                  classes: true,
+                  turmas: true
+                }
+              }
+            },
+            orderBy: [
+              { isActive: 'desc' },
+              { name: 'asc' }
+            ]
+          }
+        }
+      });
+
+      if (!organization) {
+        reply.code(404);
+        return {
+          success: false,
+          error: 'Organization not found'
+        };
+      }
+
+      return {
+        success: true,
+        data: organization.units
+      };
+    } catch (error) {
+      console.error('❌ Erro ao buscar unidades da organização:', error);
+      reply.code(500);
+      return {
+        success: false,
+        error: 'Failed to fetch organization units',
         message: error instanceof Error ? error.message : 'Unknown error'
       };
     }
@@ -346,7 +418,8 @@ export default async function organizationsRoutes(
         include: {
           _count: {
             select: {
-              users: true
+              users: true,
+              units: true
             }
           }
         }
@@ -360,13 +433,22 @@ export default async function organizationsRoutes(
         };
       }
 
-      // Verificar se há usuários associados
+      // Verificar se há usuários ou unidades associados
       if (existingOrg._count.users > 0) {
         reply.code(400);
         return {
           success: false,
           error: 'Cannot delete organization with associated users',
           message: `This organization has ${existingOrg._count.users} associated users. Please remove them first.`
+        };
+      }
+
+      if (existingOrg._count.units > 0) {
+        reply.code(400);
+        return {
+          success: false,
+          error: 'Cannot delete organization with associated units',
+          message: `This organization has ${existingOrg._count.units} associated units. Please remove them first.`
         };
       }
 

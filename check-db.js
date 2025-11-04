@@ -1,58 +1,36 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 async function checkDatabase() {
   try {
-    // Count techniques and activities
-    const techniqueCount = await prisma.technique.count();
-    const activityCount = await prisma.activity.count();
-    const activitiesWithTechnique = await prisma.activity.count({
-      where: { refTechniqueId: { not: null } }
+    console.log('🔍 Verificando organizações...');
+    const orgs = await prisma.organization.findMany();
+    console.log(`📊 Organizações encontradas: ${orgs.length}`);
+    orgs.forEach(org => {
+      console.log(`  - ID: ${org.id}`);
+      console.log(`    Nome: ${org.name}`);
+      console.log(`    Slug: ${org.slug}`);
+      console.log(`    Ativo: ${org.isActive}`);
     });
-    
-    console.log('📊 Database Statistics:');
-    console.log('• Total Techniques:', techniqueCount);
-    console.log('• Total Activities:', activityCount);
-    console.log('• Activities linked to Techniques:', activitiesWithTechnique);
-    console.log('• Activities without Technique link:', activityCount - activitiesWithTechnique);
-    
-    // Sample activities
-    const activities = await prisma.activity.findMany({
-      take: 5,
-      select: {
-        id: true,
-        title: true,
-        refTechniqueId: true,
-        type: true
-      }
+
+    console.log('\n👥 Verificando usuários...');
+    const users = await prisma.user.findMany({
+      include: { organization: true }
     });
-    
-    console.log('\n🔍 Sample Activities:');
-    activities.forEach(act => {
-      console.log(`• ${act.title} (Type: ${act.type}, RefTechnique: ${act.refTechniqueId || 'none'})`);
+    console.log(`📊 Usuários encontrados: ${users.length}`);
+    users.forEach(user => {
+      console.log(`  - Email: ${user.email}`);
+      console.log(`    Nome: ${user.firstName} ${user.lastName}`);
+      console.log(`    Role: ${user.role}`);
+      console.log(`    Org: ${user.organization?.name || 'Nenhuma'}`);
+      console.log(`    Org ID: ${user.organizationId}`);
     });
-    
-    // Try to find any techniques
-    if (techniqueCount > 0) {
-      const techniques = await prisma.technique.findMany({
-        take: 5,
-        select: {
-          id: true,
-          name: true,
-          category: true
-        }
-      });
-      
-      console.log('\n🔍 Sample Techniques:');
-      techniques.forEach(tech => {
-        console.log(`• ${tech.name} (ID: ${tech.id}, Category: ${tech.category})`);
-      });
-    }
-    
-    await prisma.$disconnect();
+
   } catch (error) {
-    console.error('Error:', error);
-    process.exit(1);
+    console.error('❌ Erro:', error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

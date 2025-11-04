@@ -14,10 +14,24 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.backup
+.env.*.backup
+
+# Google OAuth Credentials (SENSITIVE)
+**/client_secret_*.json
+client_secret_*.json
 
 # Database
 *.db
 *.sqlite
+
+# SSL Certificates (SENSITIVE - Never commit!)
+certs/
+*.pem
+*.key
+*.pfx
+*.crt
+*.p12
 
 # Logs
 logs/
@@ -55,3 +69,13 @@ prisma/migrations/
 
 # Docker
 .dockerignore
+OLD_191025
+BACKUP_SEGURANCA_20251019_1502
+backups
+BACKUP_SEGURANCA_20252410_0127
+
+# Deploy artifacts (servidor)
+.db_password
+.litespeed_password
+*.backup
+docs

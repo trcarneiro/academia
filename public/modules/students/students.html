@@ -1,24 +1,35 @@
 <!-- Students Management Module - Guidelines.MD Compliant -->
 <div class="module-isolated-container students-module" id="studentsContainer" data-module="students">
-    <!-- Header Section -->
-    <header class="module-header">
-        <div class="header-left">
-            <h1 class="page-title">
-                <span class="title-icon">👥</span>
-                Gestão de Alunos
-            </h1>
-            <p class="page-subtitle">Gerencie todos os estudantes da academia</p>
-        </div>
-        <div class="header-actions">
-            <button id="add-student-btn" class="btn-form btn-primary-form" onclick="window.addNewStudent()">
-                <span class="btn-icon">➕</span>
-                Novo Aluno
-            </button>
+    <!-- Header Section (Premium) -->
+    <header class="module-header-premium">
+        <nav class="breadcrumb">
+            <span class="crumb">Dashboard</span>
+            <span class="crumb-sep">›</span>
+            <span class="crumb active">Alunos</span>
+        </nav>
+        <div class="header-main">
+            <div class="header-left">
+                <h1 class="page-title">
+                    <span class="title-icon">👥</span>
+                    Gestão de Alunos
+                </h1>
+                
+            </div>
+            <div class="header-actions">
+                <button id="add-student-btn" class="btn-form btn-primary-form" onclick="window.addNewStudent()">
+                    <span class="btn-icon">➕</span>
+                    Novo Aluno
+                </button>
+                <button id="import-students-btn" class="btn-form btn-secondary-form" onclick="window.openImportModule()">
+                    <span class="btn-icon">📥</span>
+                    Importar Alunos
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Search and Filters Section -->
-    <section class="search-filters-section">
+    <section class="search-filters-section module-filters-premium">
         <div class="search-container">
             <div class="search-main">
                 <div class="form-group search-input-group">
@@ -83,15 +94,11 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="content-area">
+    <div class="content-area data-card-premium">
         <!-- Students Table Container -->
         <div class="table-container" id="students-table-container">
-            <div class="table-header">
-                <div class="table-title-section">
-                    <h3 class="table-title">📊 Lista de Estudantes</h3>
-                    <span class="table-subtitle">Visualização completa dos alunos</span>
-                </div>
-                <div class="table-actions">
+            <div class="table-header" aria-label="Ações da lista de estudantes">
+                <div class="table-actions" style="margin-left:auto">
                     <button class="btn-form btn-secondary-form" onclick="window.exportStudents()">
                         <span class="btn-icon">📊</span>
                         Exportar
@@ -190,7 +197,7 @@
             <div class="error-icon">⚠️</div>
             <h3>Erro ao carregar estudantes</h3>
             <p id="error-message">Não foi possível carregar a lista de estudantes.</p>
-            <button class="btn-form btn-primary-form" onclick="window.loadStudents()">
+            <button class="btn-form btn-primary-form" onclick="window.reloadStudents && window.reloadStudents()">
                 <span class="btn-icon">🔄</span>
                 Tentar Novamente
             </button>

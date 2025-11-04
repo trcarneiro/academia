@@ -11,6 +11,7 @@ export const registerSchema = z.object({
   emergencyContact: z.string().optional(),
   birthDate: z.string().datetime().optional(),
   medicalConditions: z.string().optional(),
+  organizationId: z.string().optional(), // Add for Supabase integration
 });
 
 export const loginSchema = z.object({

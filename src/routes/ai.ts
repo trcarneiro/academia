@@ -62,7 +62,8 @@ export async function aiRoutes(app: FastifyInstance) {
   // Configure multipart support for file uploads
   app.register(require('@fastify/multipart'), {
     limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
+      fileSize: 50 * 1024 * 1024, // 50MB limit for Google Ads CSV files
+      files: 20 // Max 20 files for batch imports
     },
   });
 
@@ -305,6 +306,316 @@ export async function aiRoutes(app: FastifyInstance) {
     }
   });
 
+  // Generate single lesson plan endpoint
+  app.post('/generate-single-lesson', async (request, reply) => {
+    try {
+      const { courseId, lessonNumber, weekNumber } = request.body as {
+        courseId: string;
+        lessonNumber: number;
+        weekNumber?: number;
+      };
+
+      logger.info({ courseId, lessonNumber }, '🎯 Starting single lesson plan generation...');
+
+      if (!courseId || !lessonNumber) {
+        return reply.code(400).send({
+          success: false,
+          error: 'courseId and lessonNumber are required',
+        });
+      }
+
+      // Get course details with techniques
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        include: {
+          techniques: {
+            include: {
+              technique: true,
+            },
+          },
+        },
+      });
+
+      if (!course) {
+        return reply.code(404).send({
+          success: false,
+          error: 'Course not found',
+        });
+      }
+
+      // Generate a single detailed lesson plan
+      const weekNum = weekNumber || Math.ceil(lessonNumber / 2);
+      const lessonPlans = await AIService.generateLessonPlans({
+        courseId,
+        courseName: course.name,
+        courseLevel: course.level.toString(),
+        documentAnalysis: `Course: ${course.name}\nLevel: ${course.level}\nDescription: ${course.description || 'No description'}\nLesson Number: ${lessonNumber}\nWeek: ${weekNum}`,
+        techniques: course.techniques.map(ct => ct.technique),
+        generateCount: 1,
+        aiProvider: 'gemini',
+      });
+
+      if (lessonPlans.length === 0) {
+        return reply.code(500).send({
+          success: false,
+          error: 'Failed to generate lesson plan',
+        });
+      }
+
+      const plan = lessonPlans[0];
+      
+      // Update plan with correct numbers
+      plan.lessonNumber = lessonNumber;
+      plan.weekNumber = weekNum;
+
+      try {
+        // Save to database with correct structure
+        const activities = plan.activities || [];
+        const warmupActivities = activities.filter((a: any) => a.type === 'warmup');
+        const techniqueActivities = activities.filter((a: any) => a.type === 'technique');
+        const drillActivities = activities.filter((a: any) => a.type === 'drill');
+        const cooldownActivities = activities.filter((a: any) => a.type === 'cooldown');
+
+        const saved = await prisma.lessonPlan.upsert({
+          where: {
+            courseId_lessonNumber: {
+              courseId,
+              lessonNumber: lessonNumber,
+            },
+          },
+          update: {
+            title: `${plan.title} - Aula ${lessonNumber}`,
+            description: plan.description,
+            weekNumber: weekNum,
+            duration: plan.duration || 60,
+            objectives: plan.objectives || [],
+            equipment: plan.materials || [],
+            activities: activities.map((a: any) => a.name),
+            warmup: warmupActivities,
+            techniques: techniqueActivities,
+            simulations: drillActivities,
+            cooldown: cooldownActivities,
+            mentalModule: {},
+            tacticalModule: plan.notes || null,
+            adaptations: {},
+          },
+          create: {
+            courseId,
+            title: `${plan.title} - Aula ${lessonNumber}`,
+            description: plan.description,
+            lessonNumber: lessonNumber,
+            weekNumber: weekNum,
+            duration: plan.duration || 60,
+            objectives: plan.objectives || [],
+            equipment: plan.materials || [],
+            activities: activities.map((a: any) => a.name),
+            warmup: warmupActivities,
+            techniques: techniqueActivities,
+            simulations: drillActivities,
+            cooldown: cooldownActivities,
+            mentalModule: {},
+            tacticalModule: plan.notes || null,
+            adaptations: {},
+          },
+        });
+
+        // Create new activities automatically if they don't exist in database
+        const organizationId = await getOrganizationId();
+        const newActivitiesCreated = [];
+        
+        for (const activity of activities) {
+          if (activity.name && activity.description) {
+            try {
+              // Check if activity already exists
+              const existingActivity = await prisma.activity.findFirst({
+                where: {
+                  title: activity.name,
+                },
+              });
+
+              if (!existingActivity) {
+                // Create new activity with comprehensive documentation
+                const newActivity = await prisma.activity.create({
+                  data: {
+                    organizationId,
+                    title: activity.name,
+                    description: activity.description || `Atividade criada automaticamente: ${activity.name}`,
+                    type: activity.type?.toUpperCase() || 'ACTIVITY',
+                    difficulty: activity.difficulty || 1,
+                    equipment: activity.materials || ['Tatame', 'Espaço amplo'],
+                    safety: `Instruções de segurança para ${activity.name}. Sempre supervisionar execução.`,
+                    adaptations: [
+                      'Adaptar intensidade conforme nível do aluno',
+                      'Modificar duração se necessário',
+                      'Considerar limitações físicas individuais'
+                    ],
+                  },
+                });
+
+                newActivitiesCreated.push(newActivity);
+                logger.info({ activityId: newActivity.id, activityName: activity.name }, '🎯 New activity created automatically');
+              }
+            } catch (activityError: any) {
+              logger.warn({ activityError, activityName: activity.name }, 'Failed to create activity, continuing...');
+            }
+          }
+        }
+
+        logger.info({ courseId, lessonNumber, planId: saved.id, newActivities: newActivitiesCreated.length }, '✅ Single lesson plan generated and saved with activities');
+
+        return reply.send({
+          success: true,
+          data: {
+            lessonPlan: saved,
+            course: {
+              id: course.id,
+              name: course.name,
+            },
+            generatedWith: 'gemini',
+          },
+        });
+      } catch (dbError: any) {
+        logger.warn({ dbError, planTitle: plan.title }, 'Failed to save lesson plan');
+        return reply.send({
+          success: true,
+          data: {
+            lessonPlan: plan,
+            course: {
+              id: course.id,
+              name: course.name,
+            },
+            generatedWith: 'gemini',
+            note: 'Plan generated but not saved due to database constraints',
+          },
+        });
+      }
+    } catch (error: any) {
+      logger.error({ error }, '❌ Error generating single lesson plan');
+      return reply.code(500).send({
+        success: false,
+        error: error.message || 'Failed to generate single lesson plan',
+      });
+    }
+  });
+
+  // Generate draft lesson plan endpoint (no database save)
+  app.post('/generate-draft-lesson', async (request, reply) => {
+    try {
+      const { courseId, lessonNumber, weekNumber } = request.body as {
+        courseId: string;
+        lessonNumber: number;
+        weekNumber?: number;
+      };
+
+      logger.info({ courseId, lessonNumber }, '📝 Starting draft lesson plan generation...');
+
+      if (!courseId || !lessonNumber) {
+        return reply.code(400).send({
+          success: false,
+          error: 'courseId and lessonNumber are required',
+        });
+      }
+
+      // Get course details with techniques
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        include: {
+          techniques: {
+            include: {
+              technique: true,
+            },
+          },
+        },
+      });
+
+      if (!course) {
+        return reply.code(404).send({
+          success: false,
+          error: 'Course not found',
+        });
+      }
+
+      // Generate a single detailed lesson plan
+      const weekNum = weekNumber || Math.ceil(lessonNumber / 2);
+      const lessonPlans = await AIService.generateLessonPlans({
+        courseId,
+        courseName: course.name,
+        courseLevel: course.level.toString(),
+        documentAnalysis: `Course: ${course.name}\nLevel: ${course.level}\nDescription: ${course.description || 'No description'}\nLesson Number: ${lessonNumber}\nWeek: ${weekNum}`,
+        techniques: course.techniques.map(ct => ct.technique),
+        generateCount: 1,
+        aiProvider: 'gemini',
+      });
+
+      if (lessonPlans.length === 0) {
+        return reply.code(500).send({
+          success: false,
+          error: 'Failed to generate lesson plan',
+        });
+      }
+
+      const plan = lessonPlans[0];
+      
+      // Update plan with correct numbers
+      plan.lessonNumber = lessonNumber;
+      plan.weekNumber = weekNum;
+
+      // Format activities for frontend
+      const activities = plan.activities || [];
+      const warmupActivities = activities.filter((a: any) => a.type === 'warmup');
+      const techniqueActivities = activities.filter((a: any) => a.type === 'technique');
+      const drillActivities = activities.filter((a: any) => a.type === 'drill');
+      const cooldownActivities = activities.filter((a: any) => a.type === 'cooldown');
+
+      // Create formatted plan without saving to database
+      const draftPlan = {
+        id: `draft_${Date.now()}_${lessonNumber}`, // Temporary ID for draft
+        courseId,
+        title: `${plan.title} - Aula ${lessonNumber}`,
+        description: plan.description,
+        lessonNumber: lessonNumber,
+        weekNumber: weekNum,
+        level: 1,
+        duration: plan.duration || 60,
+        difficulty: 1,
+        objectives: plan.objectives || [],
+        equipment: plan.materials || [],
+        activities: activities.map((a: any) => a.name),
+        warmup: warmupActivities,
+        techniques: techniqueActivities,
+        simulations: drillActivities,
+        cooldown: cooldownActivities,
+        mentalModule: {},
+        tacticalModule: plan.notes || null,
+        adaptations: {},
+        isDraft: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      logger.info({ courseId, lessonNumber }, '✅ Draft lesson plan generated');
+
+      return reply.send({
+        success: true,
+        data: {
+          lessonPlan: draftPlan,
+          course: {
+            id: course.id,
+            name: course.name,
+          },
+          generatedWith: 'gemini',
+          isDraft: true,
+        },
+      });
+    } catch (error: any) {
+      logger.error({ error }, '❌ Error generating draft lesson plan');
+      return reply.code(500).send({
+        success: false,
+        error: error.message || 'Failed to generate draft lesson plan',
+      });
+    }
+  });
+
   // Generate lesson plans endpoint
   app.post<GenerateLessonPlansRequest>('/generate-lesson-plans', async (request, reply) => {
     try {
@@ -346,16 +657,21 @@ export async function aiRoutes(app: FastifyInstance) {
       const courseAnalysis = `Course: ${course.name}\nLevel: ${course.level}\nDescription: ${course.description || 'No description'}\nObjectives: ${course.objectives ? course.objectives.join(', ') : 'No objectives'}\nRequirements: ${course.requirements ? course.requirements.join(', ') : 'No requirements'}`;
 
       // Generate lesson plans with AI using course data
-      const lessonPlans = await AIService.generateLessonPlans({
+      const generateOptions: any = {
         courseId,
         courseName: course.name,
         courseLevel: course.level.toString(),
         documentAnalysis: documentAnalysis || courseAnalysis,
         techniques: existingTechniques,
         generateCount,
-        weekRange,
         aiProvider,
-      });
+      };
+      
+      if (weekRange) {
+        generateOptions.weekRange = weekRange;
+      }
+      
+      const lessonPlans = await AIService.generateLessonPlans(generateOptions);
 
       // Save lesson plans to database
       const savedLessonPlans = [];
@@ -363,6 +679,13 @@ export async function aiRoutes(app: FastifyInstance) {
       for (let i = 0; i < lessonPlans.length; i++) {
         const plan = lessonPlans[i];
         try {
+          // Separate activities by type for the schema structure
+          const activities = plan.activities || [];
+          const warmupActivities = activities.filter((a: any) => a.type === 'warmup');
+          const techniqueActivities = activities.filter((a: any) => a.type === 'technique');
+          const drillActivities = activities.filter((a: any) => a.type === 'drill');
+          const cooldownActivities = activities.filter((a: any) => a.type === 'cooldown');
+
           const saved = await prisma.lessonPlan.create({
             data: {
               courseId,
@@ -372,10 +695,17 @@ export async function aiRoutes(app: FastifyInstance) {
               weekNumber: plan.weekNumber || Math.ceil((i + 1) / 2),
               duration: plan.duration || 60,
               objectives: plan.objectives || [],
-              activities: plan.activities || [],
-              materials: plan.materials || [],
-              notes: plan.notes,
-              isActive: true,
+              equipment: plan.materials || [],
+              activities: activities.map((a: any) => a.name),
+              // Required JSON fields from schema
+              warmup: warmupActivities,
+              techniques: techniqueActivities,
+              simulations: drillActivities,
+              cooldown: cooldownActivities,
+              // Optional fields  
+              mentalModule: {},
+              tacticalModule: plan.notes || null,
+              adaptations: {},
             },
           });
 
@@ -407,6 +737,246 @@ export async function aiRoutes(app: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         error: error.message || 'Failed to generate lesson plans',
+      });
+    }
+  });
+
+  // Generic AI content generation endpoint (Enhanced AI Module)
+  app.post('/generate', async (request: any, reply) => {
+    try {
+      const { 
+        courseId, 
+        type, 
+        provider = 'gemini', 
+        useRag = false,
+        lessonNumber,
+        weekNumber,
+        regenerate = false,
+        originalLessonId
+      } = request.body;
+
+      if (!courseId || !type) {
+        return reply.code(400).send({
+          success: false,
+          error: 'courseId and type are required',
+        });
+      }
+
+      logger.info({ courseId, type, provider, useRag, lessonNumber, regenerate }, '🤖 AI content generation request');
+
+      // Get course details
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        include: {
+          techniques: {
+            include: {
+              technique: true
+            }
+          }
+        }
+      });
+
+      if (!course) {
+        return reply.code(404).send({
+          success: false,
+          error: 'Course not found',
+        });
+      }
+
+      let result;
+      const courseAnalysis = `Course: ${course.name}\nLevel: ${course.level}\nDescription: ${course.description || 'No description'}\nObjectives: ${course.objectives ? course.objectives.join(', ') : 'No objectives'}\nRequirements: ${course.requirements ? course.requirements.join(', ') : 'No requirements'}`;
+      
+      switch (type) {
+        case 'techniques':
+          result = await AIService.generateTechniques({
+            courseId,
+            courseName: course.name,
+            courseLevel: course.level.toString(),
+            documentAnalysis: courseAnalysis,
+            generateCount: 5,
+            difficulty: course.level.toLowerCase(),
+            focusAreas: ['basic-strikes', 'defensive-moves'],
+            aiProvider: provider,
+          });
+          break;
+
+        case 'lesson':
+          // Handle lesson plan generation with versioning support
+          let lessonPlanData;
+          
+          if (lessonNumber) {
+            // Generate specific lesson number
+            const specificAnalysis = courseAnalysis + 
+              `\nGenerate lesson plan for Lesson ${lessonNumber}` +
+              (weekNumber ? `, Week ${weekNumber}` : `, Week ${Math.ceil(lessonNumber / 2)}`);
+              
+            const lessonPlans = await AIService.generateLessonPlans({
+              courseId,
+              courseName: course.name,
+              courseLevel: course.level.toString(),
+              documentAnalysis: specificAnalysis,
+              techniques: course.techniques.map(ct => ct.technique),
+              generateCount: 1,
+              aiProvider: provider,
+            });
+            
+            lessonPlanData = lessonPlans.length > 0 ? lessonPlans[0] : null;
+            if (lessonPlanData) {
+              lessonPlanData.lessonNumber = lessonNumber;
+              lessonPlanData.weekNumber = weekNumber || Math.ceil(lessonNumber / 2);
+            }
+          } else {
+            // Generate generic lesson plan
+            const lessonPlans = await AIService.generateLessonPlans({
+              courseId,
+              courseName: course.name,
+              courseLevel: course.level.toString(),
+              documentAnalysis: courseAnalysis + '\nGenerate a single lesson plan',
+              techniques: course.techniques.map(ct => ct.technique),
+              generateCount: 1,
+              aiProvider: provider,
+            });
+            lessonPlanData = lessonPlans.length > 0 ? lessonPlans[0] : null;
+          }
+          
+          // Handle regeneration (versioning)
+          if (regenerate && originalLessonId && lessonNumber) {
+            // Archive the previous version
+            await prisma.lessonPlan.update({
+              where: { id: originalLessonId },
+              data: { 
+                isActive: false,
+                archivedAt: new Date(),
+              },
+            });
+            
+            // Get the current version number
+            const existingVersions = await prisma.lessonPlan.findMany({
+              where: {
+                courseId,
+                lessonNumber,
+              },
+              orderBy: { version: 'desc' },
+              take: 1,
+            });
+            
+            const nextVersion = existingVersions.length > 0 ? existingVersions[0].version + 1 : 1;
+            
+            // Save new version to database if lessonPlanData exists
+            if (lessonPlanData) {
+              const savedLessonPlan = await prisma.lessonPlan.create({
+                data: {
+                  courseId,
+                  title: lessonPlanData.title,
+                  description: lessonPlanData.description || '',
+                  lessonNumber: lessonNumber,
+                  weekNumber: lessonPlanData.weekNumber,
+                  level: lessonPlanData.level || 1,
+                  duration: lessonPlanData.duration || 60,
+                  difficulty: lessonPlanData.difficulty || 1,
+                  warmup: lessonPlanData.warmup || [],
+                  techniques: lessonPlanData.techniques || [],
+                  simulations: lessonPlanData.simulations || [],
+                  cooldown: lessonPlanData.cooldown || [],
+                  objectives: lessonPlanData.objectives || [],
+                  equipment: lessonPlanData.equipment || [],
+                  activities: Array.isArray(lessonPlanData.activities) ? 
+                    lessonPlanData.activities.map(act => typeof act === 'string' ? act : act.name || act.description || '') :
+                    [],
+                  version: nextVersion,
+                  isActive: true,
+                  previousVersionId: originalLessonId,
+                  mentalModule: lessonPlanData.mentalModule,
+                  tacticalModule: lessonPlanData.tacticalModule,
+                  adaptations: lessonPlanData.adaptations,
+                },
+              });
+              
+              result = savedLessonPlan;
+              logger.info({ lessonNumber, version: nextVersion }, '✅ New lesson plan version created');
+            } else {
+              result = lessonPlanData;
+            }
+          } else if (lessonNumber) {
+            // Save new lesson plan to database
+            if (lessonPlanData) {
+              const savedLessonPlan = await prisma.lessonPlan.create({
+                data: {
+                  courseId,
+                  title: lessonPlanData.title,
+                  description: lessonPlanData.description || '',
+                  lessonNumber: lessonNumber,
+                  weekNumber: lessonPlanData.weekNumber,
+                  level: lessonPlanData.level || 1,
+                  duration: lessonPlanData.duration || 60,
+                  difficulty: lessonPlanData.difficulty || 1,
+                  warmup: lessonPlanData.warmup || [],
+                  techniques: lessonPlanData.techniques || [],
+                  simulations: lessonPlanData.simulations || [],
+                  cooldown: lessonPlanData.cooldown || [],
+                  objectives: lessonPlanData.objectives || [],
+                  equipment: lessonPlanData.equipment || [],
+                  activities: Array.isArray(lessonPlanData.activities) ? 
+                    lessonPlanData.activities.map(act => typeof act === 'string' ? act : act.name || act.description || '') :
+                    [],
+                  version: 1,
+                  isActive: true,
+                  mentalModule: lessonPlanData.mentalModule,
+                  tacticalModule: lessonPlanData.tacticalModule,
+                  adaptations: lessonPlanData.adaptations,
+                },
+              });
+              
+              result = savedLessonPlan;
+              logger.info({ lessonNumber, version: 1 }, '✅ New lesson plan created');
+            } else {
+              result = lessonPlanData;
+            }
+          } else {
+            result = lessonPlanData;
+          }
+          
+          break;
+
+        case 'complete':
+          result = await AIService.generateLessonPlans({
+            courseId,
+            courseName: course.name,
+            courseLevel: course.level.toString(),
+            documentAnalysis: courseAnalysis,
+            techniques: course.techniques.map(ct => ct.technique),
+            generateCount: 8,
+            weekRange: { start: 1, end: 4 },
+            aiProvider: provider,
+          });
+          break;
+
+        default:
+          return reply.code(400).send({
+            success: false,
+            error: `Unsupported generation type: ${type}. Supported types: techniques, lesson, complete`,
+          });
+      }
+
+      logger.info({ type, resultCount: Array.isArray(result) ? result.length : 1 }, '✅ AI content generated successfully');
+
+      return reply.send({
+        success: true,
+        data: result,
+        metadata: {
+          courseId,
+          type,
+          provider,
+          useRag,
+          generatedAt: new Date().toISOString(),
+        },
+      });
+
+    } catch (error: any) {
+      logger.error({ error }, '❌ Error in AI content generation');
+      return reply.code(500).send({
+        success: false,
+        error: error.message || 'Failed to generate AI content',
       });
     }
   });

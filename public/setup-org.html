@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>🔧 Configurar Organization ID</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 { 
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        .status {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-2px); transition: all 0.3s; }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔧 Configurar Organization ID</h1>
+        <p>Esta página configura o ID da organização no browser para que a API funcione corretamente.</p>
+        
+        <div class="status" id="currentStatus">
+            <p class="info">⏳ Carregando status atual...</p>
+        </div>
+
+        <button onclick="setOrganization()">✅ Configurar Academia Demo</button>
+        <button onclick="checkStatus()">🔍 Verificar Status</button>
+        <button onclick="clearOrganization()">🗑️ Limpar Organização</button>
+        <button onclick="goToCourses()">📚 Ir para Cursos</button>
+
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const ACADEMIA_DEMO_ORG_ID = 'a55ad715-2eb0-493c-996c-bb0f60bacec9';
+
+        function setOrganization() {
+            try {
+                // Configurar no localStorage (persiste entre sessões)
+                localStorage.setItem('activeOrganizationId', ACADEMIA_DEMO_ORG_ID);
+                
+                // Configurar no sessionStorage (backup)
+                sessionStorage.setItem('activeOrganizationId', ACADEMIA_DEMO_ORG_ID);
+                
+                // Configurar também como variável global
+                window.currentOrganizationId = ACADEMIA_DEMO_ORG_ID;
+
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <p class="success">✅ Organization ID configurado com sucesso!</p>
+                        <p><strong>Org ID:</strong> ${ACADEMIA_DEMO_ORG_ID}</p>
+                        <p class="info">🔄 A página será recarregada em 2 segundos...</p>
+                    </div>
+                `;
+
+                console.log('✅ Organization ID configurado!');
+                console.log('📍 Org ID:', ACADEMIA_DEMO_ORG_ID);
+                
+                // Recarregar página após 2 segundos
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                        <p class="error">❌ Erro ao configurar: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function checkStatus() {
+            const localOrgId = localStorage.getItem('activeOrganizationId');
+            const sessionOrgId = sessionStorage.getItem('activeOrganizationId');
+            const windowOrgId = window.currentOrganizationId;
+
+            const isConfigured = localOrgId === ACADEMIA_DEMO_ORG_ID;
+            
+            document.getElementById('result').innerHTML = `
+                <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h3>📊 Status Atual</h3>
+                    <pre>${JSON.stringify({
+                        'localStorage.activeOrganizationId': localOrgId,
+                        'sessionStorage.activeOrganizationId': sessionOrgId,
+                        'window.currentOrganizationId': windowOrgId,
+                        'isConfigured': isConfigured
+                    }, null, 2)}</pre>
+                    ${isConfigured ? 
+                        '<p class="success">✅ Configurado corretamente!</p>' : 
+                        '<p class="error">❌ Não configurado ou incorreto!</p>'
+                    }
+                </div>
+            `;
+        }
+
+        function clearOrganization() {
+            localStorage.removeItem('activeOrganizationId');
+            localStorage.removeItem('activeOrganizationSlug');
+            sessionStorage.removeItem('activeOrganizationId');
+            sessionStorage.removeItem('activeOrganizationSlug');
+            delete window.currentOrganizationId;
+            delete window.currentOrganizationSlug;
+
+            document.getElementById('result').innerHTML = `
+                <div style="background: #fef3c7; color: #92400e; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <p>🗑️ Organização removida!</p>
+                    <p>Configure novamente clicando em "Configurar Academia Demo"</p>
+                </div>
+            `;
+        }
+
+        function goToCourses() {
+            window.location.href = '/';
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>

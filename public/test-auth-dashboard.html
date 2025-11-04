@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Teste Auth Dashboard - Academia Krav Maga</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+    .test-section {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #667eea;
+    }
+    .test-section h2 {
+      color: #333;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    button.secondary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    button.danger {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+    .status-box {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      border: 2px solid #e0e0e0;
+    }
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .status-item:last-child { border-bottom: none; }
+    .status-label {
+      font-weight: 600;
+      color: #666;
+    }
+    .status-value {
+      font-family: 'Courier New', monospace;
+      color: #333;
+      font-size: 0.9rem;
+    }
+    .status-active { color: #28a745; }
+    .status-inactive { color: #dc3545; }
+    #logs {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .log-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-left: 3px solid #667eea;
+      padding-left: 1rem;
+    }
+    .log-success { border-left-color: #28a745; color: #7dff7d; }
+    .log-error { border-left-color: #dc3545; color: #ff7d7d; }
+    .log-warning { border-left-color: #ffc107; color: #ffe07d; }
+    .checklist {
+      list-style: none;
+      margin-top: 1rem;
+    }
+    .checklist li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .checklist li::before {
+      content: '✅';
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Teste de Autenticação - Dashboard SPA</h1>
+    <p class="subtitle">Validação do fluxo login/logout com dashboard correto (menu lateral)</p>
+
+    <!-- Teste 1: Status Atual -->
+    <div class="test-section">
+      <h2>📊 Status Atual da Autenticação</h2>
+      <div class="status-box">
+        <div class="status-item">
+          <span class="status-label">Token Supabase:</span>
+          <span class="status-value" id="token-status">Verificando...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">OrganizationId:</span>
+          <span class="status-value" id="org-status">Verificando...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">User Email:</span>
+          <span class="status-value" id="email-status">Verificando...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Auth Overlay Visível:</span>
+          <span class="status-value" id="overlay-status">Verificando...</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Menu Lateral Visível:</span>
+          <span class="status-value" id="sidebar-status">Verificando...</span>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button onclick="checkStatus()">🔄 Atualizar Status</button>
+      </div>
+    </div>
+
+    <!-- Teste 2: Simular Cenários -->
+    <div class="test-section">
+      <h2>🎭 Simular Cenários</h2>
+      <div class="btn-group">
+        <button onclick="simulateNoSession()">❌ Simular SEM Session (limpar localStorage)</button>
+        <button onclick="simulateWithSession()" class="secondary">✅ Simular COM Session (criar token fake)</button>
+        <button onclick="testLogout()" class="danger">🚪 Testar Logout</button>
+      </div>
+    </div>
+
+    <!-- Teste 3: Navegar para Dashboard -->
+    <div class="test-section">
+      <h2>🚀 Navegação</h2>
+      <div class="btn-group">
+        <button onclick="goToIndex()">🏠 Ir para /index.html</button>
+        <button onclick="reloadPage()" class="secondary">🔄 Recarregar Página</button>
+        <button onclick="openInNewTab()" class="secondary">🪟 Abrir Dashboard em Nova Aba</button>
+      </div>
+    </div>
+
+    <!-- Teste 4: Checklist de Validação -->
+    <div class="test-section">
+      <h2>✅ Checklist de Validação</h2>
+      <ul class="checklist">
+        <li><strong>Sem Session:</strong> Auth overlay aparece com login form</li>
+        <li><strong>Sem Session:</strong> Dashboard e menu lateral escondidos</li>
+        <li><strong>Com Session:</strong> Auth overlay escondido (display: none)</li>
+        <li><strong>Com Session:</strong> Dashboard e menu lateral visíveis</li>
+        <li><strong>Login Google:</strong> Popup/redirect funciona e volta para /index.html</li>
+        <li><strong>Após Login:</strong> Overlay desaparece, dashboard aparece</li>
+        <li><strong>Logout:</strong> Página recarrega e mostra login</li>
+        <li><strong>F5 com Session:</strong> Dashboard permanece (não mostra login)</li>
+      </ul>
+    </div>
+
+    <!-- Logs -->
+    <div class="test-section">
+      <h2>📝 Logs em Tempo Real</h2>
+      <div id="logs"></div>
+      <div class="btn-group">
+        <button onclick="clearLogs()">🗑️ Limpar Logs</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function log(message, type = 'info') {
+      const logsDiv = document.getElementById('logs');
+      const timestamp = new Date().toLocaleTimeString('pt-BR');
+      const classes = {
+        success: 'log-success',
+        error: 'log-error',
+        warning: 'log-warning',
+        info: ''
+      };
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      };
+      logsDiv.innerHTML += `<div class="log-entry ${classes[type]}">[${timestamp}] ${icons[type]} ${message}</div>`;
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('logs').innerHTML = '';
+      log('Logs limpos', 'info');
+    }
+
+    function checkStatus() {
+      log('🔍 Verificando status...', 'info');
+      
+      // Token
+      const token = localStorage.getItem('sb-yawfuymgwukericlhgxh-auth-token');
+      const tokenStatus = document.getElementById('token-status');
+      if (token) {
+        tokenStatus.textContent = '✅ PRESENTE';
+        tokenStatus.className = 'status-value status-active';
+        log('Token Supabase encontrado', 'success');
+      } else {
+        tokenStatus.textContent = '❌ AUSENTE';
+        tokenStatus.className = 'status-value status-inactive';
+        log('Token Supabase não encontrado', 'warning');
+      }
+
+      // OrganizationId
+      const orgId = localStorage.getItem('organizationId');
+      const orgStatus = document.getElementById('org-status');
+      if (orgId) {
+        orgStatus.textContent = orgId.substring(0, 20) + '...';
+        orgStatus.className = 'status-value status-active';
+        log(`OrganizationId: ${orgId}`, 'success');
+      } else {
+        orgStatus.textContent = '❌ AUSENTE';
+        orgStatus.className = 'status-value status-inactive';
+        log('OrganizationId não encontrado', 'warning');
+      }
+
+      // Email
+      const email = localStorage.getItem('userEmail');
+      const emailStatus = document.getElementById('email-status');
+      if (email) {
+        emailStatus.textContent = email;
+        emailStatus.className = 'status-value status-active';
+        log(`User Email: ${email}`, 'success');
+      } else {
+        emailStatus.textContent = '❌ AUSENTE';
+        emailStatus.className = 'status-value status-inactive';
+        log('User Email não encontrado', 'warning');
+      }
+
+      // Auth Overlay (precisa abrir /index.html para verificar)
+      const overlayStatus = document.getElementById('overlay-status');
+      overlayStatus.textContent = '⏸️ Verificar em /index.html';
+      overlayStatus.className = 'status-value';
+      
+      // Sidebar (precisa abrir /index.html para verificar)
+      const sidebarStatus = document.getElementById('sidebar-status');
+      sidebarStatus.textContent = '⏸️ Verificar em /index.html';
+      sidebarStatus.className = 'status-value';
+
+      log('✅ Status atualizado', 'success');
+    }
+
+    function simulateNoSession() {
+      log('🗑️ Limpando localStorage...', 'warning');
+      localStorage.clear();
+      log('✅ localStorage limpo', 'success');
+      log('🔄 Recarregue /index.html para ver login', 'info');
+      checkStatus();
+    }
+
+    function simulateWithSession() {
+      log('⚙️ Criando session fake...', 'info');
+      const fakeToken = JSON.stringify({
+        access_token: 'fake-token-' + Date.now(),
+        refresh_token: 'fake-refresh-' + Date.now(),
+        expires_at: Date.now() + 3600000,
+        user: {
+          id: 'fake-user-id',
+          email: 'teste@academia.com'
+        }
+      });
+      localStorage.setItem('sb-yawfuymgwukericlhgxh-auth-token', fakeToken);
+      localStorage.setItem('organizationId', '452c0b35-1822-4890-851e-922356c812fb');
+      localStorage.setItem('userEmail', 'teste@academia.com');
+      log('✅ Session fake criada', 'success');
+      log('🔄 Recarregue /index.html para ver dashboard', 'info');
+      checkStatus();
+    }
+
+    async function testLogout() {
+      log('🚪 Iniciando logout...', 'warning');
+      if (typeof window.authModule !== 'undefined' && window.authModule.handleLogout) {
+        await window.authModule.handleLogout();
+        log('✅ Logout executado via authModule', 'success');
+      } else {
+        log('⚠️ authModule não disponível - limpando manualmente', 'warning');
+        localStorage.clear();
+        log('✅ localStorage limpo', 'success');
+      }
+      checkStatus();
+      log('🔄 Vá para /index.html para verificar login', 'info');
+    }
+
+    function goToIndex() {
+      log('🏠 Redirecionando para /index.html...', 'info');
+      window.location.href = '/index.html';
+    }
+
+    function reloadPage() {
+      log('🔄 Recarregando página...', 'info');
+      window.location.reload();
+    }
+
+    function openInNewTab() {
+      log('🪟 Abrindo /index.html em nova aba...', 'info');
+      window.open('/index.html', '_blank');
+    }
+
+    // Auto-check on load
+    window.addEventListener('DOMContentLoaded', () => {
+      log('🚀 Página de teste carregada', 'success');
+      checkStatus();
+    });
+  </script>
+</body>
+</html>

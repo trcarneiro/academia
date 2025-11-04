@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Teste Completo de Autenticação</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .status-running { background: #ffc107; color: #000; }
+    .status-passed { background: #28a745; color: white; }
+    .status-failed { background: #dc3545; color: white; }
+    
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .test-card {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+    .test-card.passed { border-left-color: #28a745; }
+    .test-card.failed { border-left-color: #dc3545; }
+    .test-card.running { border-left-color: #ffc107; }
+    
+    .test-card h3 {
+      color: #333;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .test-result {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+    .test-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    button.small {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+    .success { color: #28a745; font-weight: 600; }
+    .error { color: #dc3545; font-weight: 600; }
+    .warning { color: #ffc107; font-weight: 600; }
+    .info { color: #17a2b8; font-weight: 600; }
+    
+    #globalLogs {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 2rem;
+    }
+    .log-entry {
+      margin-bottom: 0.3rem;
+      padding: 0.3rem;
+      border-left: 3px solid #667eea;
+      padding-left: 0.5rem;
+    }
+    .log-success { border-left-color: #28a745; color: #7dff7d; }
+    .log-error { border-left-color: #dc3545; color: #ff7d7d; }
+    .log-warning { border-left-color: #ffc107; color: #ffe07d; }
+    
+    .progress-bar {
+      width: 100%;
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      🧪 Bateria Completa de Testes - Autenticação
+      <span class="status-badge status-running" id="globalStatus">Em Execução...</span>
+    </h1>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+    </div>
+
+    <div class="test-grid">
+      <!-- Teste 1: localStorage -->
+      <div class="test-card" id="test1">
+        <h3>✅ Teste 1: Verificar localStorage</h3>
+        <div class="test-result" id="result1">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest1()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 2: Token Supabase -->
+      <div class="test-card" id="test2">
+        <h3>🔑 Teste 2: Validar Token Supabase</h3>
+        <div class="test-result" id="result2">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest2()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 3: OrganizationId -->
+      <div class="test-card" id="test3">
+        <h3>🏢 Teste 3: Verificar OrganizationId</h3>
+        <div class="test-result" id="result3">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest3()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 4: Auth Module Carregado -->
+      <div class="test-card" id="test4">
+        <h3>📦 Teste 4: Auth Module Carregado</h3>
+        <div class="test-result" id="result4">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest4()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 5: Backend Endpoint -->
+      <div class="test-card" id="test5">
+        <h3>🌐 Teste 5: Endpoint /api/users/by-email</h3>
+        <div class="test-result" id="result5">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest5()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 6: Supabase Client -->
+      <div class="test-card" id="test6">
+        <h3>☁️ Teste 6: Supabase Client Ativo</h3>
+        <div class="test-result" id="result6">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest6()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 7: Session Recovery -->
+      <div class="test-card" id="test7">
+        <h3>🔄 Teste 7: Session Recovery (F5)</h3>
+        <div class="test-result" id="result7">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest7()">▶️ Testar Reload</button>
+        </div>
+      </div>
+
+      <!-- Teste 8: Logout -->
+      <div class="test-card" id="test8">
+        <h3>🚪 Teste 8: Função de Logout</h3>
+        <div class="test-result" id="result8">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest8()">▶️ Executar (SEM logout real)</button>
+        </div>
+      </div>
+
+      <!-- Teste 9: Auth Overlay -->
+      <div class="test-card" id="test9">
+        <h3>🎭 Teste 9: Auth Overlay Escondido</h3>
+        <div class="test-result" id="result9">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest9()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 10: Hardcoded Org ID -->
+      <div class="test-card" id="test10">
+        <h3>🔒 Teste 10: Org ID Hardcoded (trcampos@gmail.com)</h3>
+        <div class="test-result" id="result10">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest10()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 11: API Client -->
+      <div class="test-card" id="test11">
+        <h3>🔌 Teste 11: API Client com Org Header</h3>
+        <div class="test-result" id="result11">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest11()">▶️ Executar</button>
+        </div>
+      </div>
+
+      <!-- Teste 12: Dashboard SPA -->
+      <div class="test-card" id="test12">
+        <h3>📊 Teste 12: Dashboard SPA Visível</h3>
+        <div class="test-result" id="result12">Aguardando execução...</div>
+        <div class="test-actions">
+          <button class="small" onclick="runTest12()">▶️ Executar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações Globais -->
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <button onclick="runAllTests()">🚀 EXECUTAR TODOS OS TESTES</button>
+      <button onclick="clearResults()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🗑️ Limpar Resultados</button>
+      <button onclick="exportReport()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📄 Exportar Relatório</button>
+    </div>
+
+    <!-- Logs Globais -->
+    <div style="margin-top: 2rem;">
+      <h2 style="color: #667eea; margin-bottom: 1rem;">📝 Logs de Execução</h2>
+      <div id="globalLogs"></div>
+      <button onclick="clearLogs()" style="margin-top: 1rem;" class="small">🗑️ Limpar Logs</button>
+    </div>
+  </div>
+
+  <script>
+    let testResults = {};
+    let totalTests = 12;
+    let completedTests = 0;
+
+    function log(message, type = 'info') {
+      const logsDiv = document.getElementById('globalLogs');
+      const timestamp = new Date().toLocaleTimeString('pt-BR');
+      const classes = {
+        success: 'log-success',
+        error: 'log-error',
+        warning: 'log-warning',
+        info: ''
+      };
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      };
+      logsDiv.innerHTML += `<div class="log-entry ${classes[type]}">[${timestamp}] ${icons[type]} ${message}</div>`;
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    function updateProgress() {
+      const percentage = Math.round((completedTests / totalTests) * 100);
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = percentage + '%';
+      progressBar.textContent = percentage + '%';
+      
+      if (completedTests === totalTests) {
+        const allPassed = Object.values(testResults).every(r => r === true);
+        const globalStatus = document.getElementById('globalStatus');
+        if (allPassed) {
+          globalStatus.textContent = '✅ Todos Testes Passaram!';
+          globalStatus.className = 'status-badge status-passed';
+        } else {
+          globalStatus.textContent = '❌ Alguns Testes Falharam';
+          globalStatus.className = 'status-badge status-failed';
+        }
+      }
+    }
+
+    function setTestResult(testNum, passed, message) {
+      const card = document.getElementById(`test${testNum}`);
+      const result = document.getElementById(`result${testNum}`);
+      
+      testResults[testNum] = passed;
+      completedTests++;
+      
+      if (passed) {
+        card.classList.add('passed');
+        result.innerHTML = `<span class="success">✅ PASSOU</span><br>${message}`;
+        log(`Teste ${testNum} PASSOU: ${message}`, 'success');
+      } else {
+        card.classList.add('failed');
+        result.innerHTML = `<span class="error">❌ FALHOU</span><br>${message}`;
+        log(`Teste ${testNum} FALHOU: ${message}`, 'error');
+      }
+      
+      updateProgress();
+    }
+
+    // TESTE 1: localStorage
+    function runTest1() {
+      log('Executando Teste 1: Verificar localStorage');
+      const token = localStorage.getItem('sb-yawfuymgwukericlhgxh-auth-token');
+      const orgId = localStorage.getItem('organizationId');
+      const userId = localStorage.getItem('userId');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      let message = `Token: ${token ? '✅ Presente' : '❌ Ausente'}<br>`;
+      message += `OrgId: ${orgId ? '✅ ' + orgId.substring(0, 20) + '...' : '❌ Ausente'}<br>`;
+      message += `UserId: ${userId ? '✅ ' + userId.substring(0, 20) + '...' : '❌ Ausente'}<br>`;
+      message += `Email: ${userEmail || '❌ Ausente'}`;
+      
+      setTestResult(1, !!token && !!orgId, message);
+    }
+
+    // TESTE 2: Token Supabase
+    function runTest2() {
+      log('Executando Teste 2: Validar Token Supabase');
+      const tokenStr = localStorage.getItem('sb-yawfuymgwukericlhgxh-auth-token');
+      
+      if (!tokenStr) {
+        setTestResult(2, false, 'Token não encontrado no localStorage');
+        return;
+      }
+      
+      try {
+        const tokenObj = JSON.parse(tokenStr);
+        const hasAccessToken = !!tokenObj.access_token;
+        const hasRefreshToken = !!tokenObj.refresh_token;
+        const expiresAt = tokenObj.expires_at;
+        const isExpired = expiresAt && (expiresAt * 1000 < Date.now());
+        
+        let message = `access_token: ${hasAccessToken ? '✅' : '❌'}<br>`;
+        message += `refresh_token: ${hasRefreshToken ? '✅' : '❌'}<br>`;
+        message += `expires_at: ${expiresAt ? new Date(expiresAt * 1000).toLocaleString('pt-BR') : '❌'}<br>`;
+        message += `Status: ${isExpired ? '<span class="error">EXPIRADO ❌</span>' : '<span class="success">VÁLIDO ✅</span>'}`;
+        
+        setTestResult(2, hasAccessToken && hasRefreshToken && !isExpired, message);
+      } catch (e) {
+        setTestResult(2, false, `Erro ao parsear token: ${e.message}`);
+      }
+    }
+
+    // TESTE 3: OrganizationId
+    function runTest3() {
+      log('Executando Teste 3: Verificar OrganizationId');
+      const orgId = localStorage.getItem('organizationId');
+      const expectedOrgId = '452c0b35-1822-4890-851e-922356c812fb';
+      
+      if (!orgId) {
+        setTestResult(3, false, 'OrganizationId não encontrado no localStorage');
+        return;
+      }
+      
+      const isCorrect = orgId === expectedOrgId;
+      let message = `Org ID armazenado: ${orgId}<br>`;
+      message += `Org ID esperado: ${expectedOrgId}<br>`;
+      message += `Match: ${isCorrect ? '<span class="success">✅ CORRETO</span>' : '<span class="error">❌ INCORRETO</span>'}`;
+      
+      setTestResult(3, isCorrect, message);
+    }
+
+    // TESTE 4: Auth Module Carregado
+    function runTest4() {
+      log('Executando Teste 4: Verificar Auth Module');
+      const hasAuthModule = typeof window.AuthModule !== 'undefined';
+      const hasAuthModuleLower = typeof window.authModule !== 'undefined';
+      const hasInitFunction = typeof window.initAuthModule !== 'undefined';
+      
+      let message = `window.AuthModule: ${hasAuthModule ? '✅' : '❌'}<br>`;
+      message += `window.authModule: ${hasAuthModuleLower ? '✅' : '❌'}<br>`;
+      message += `window.initAuthModule: ${hasInitFunction ? '✅' : '❌'}`;
+      
+      setTestResult(4, hasAuthModule || hasAuthModuleLower, message);
+    }
+
+    // TESTE 5: Backend Endpoint
+    async function runTest5() {
+      log('Executando Teste 5: Testar endpoint /api/users/by-email');
+      const email = localStorage.getItem('userEmail') || 'trcampos@gmail.com';
+      
+      try {
+        const response = await fetch(`http://localhost:3000/api/users/by-email?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        
+        let message = `Status: ${response.status}<br>`;
+        message += `Success: ${data.success ? '✅' : '❌'}<br>`;
+        if (data.data) {
+          message += `Email: ${data.data.email || '❌'}<br>`;
+          message += `OrgId: ${data.data.organizationId ? data.data.organizationId.substring(0, 20) + '...' : '❌'}<br>`;
+          message += `Role: ${data.data.role || '❌'}`;
+        }
+        
+        setTestResult(5, response.ok && data.success, message);
+      } catch (error) {
+        setTestResult(5, false, `Erro: ${error.message}`);
+      }
+    }
+
+    // TESTE 6: Supabase Client
+    function runTest6() {
+      log('Executando Teste 6: Verificar Supabase Client');
+      const hasSupabase = typeof window.supabase !== 'undefined';
+      const hasCreateClient = hasSupabase && typeof window.supabase.createClient === 'function';
+      
+      let message = `window.supabase: ${hasSupabase ? '✅' : '❌'}<br>`;
+      message += `createClient function: ${hasCreateClient ? '✅' : '❌'}`;
+      
+      setTestResult(6, hasSupabase && hasCreateClient, message);
+    }
+
+    // TESTE 7: Session Recovery
+    function runTest7() {
+      log('Executando Teste 7: Session Recovery (vai recarregar em 3s)');
+      let message = 'Recarregando página em 3 segundos...<br>';
+      message += 'Verifique se o dashboard volta (não mostra login)<br>';
+      message += 'Pressione VOLTAR no navegador para ver resultado';
+      
+      document.getElementById('result7').innerHTML = message;
+      document.getElementById('test7').classList.add('running');
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    }
+
+    // TESTE 8: Logout Function
+    function runTest8() {
+      log('Executando Teste 8: Verificar função de logout (SEM executar)');
+      const hasLogout = typeof window.logout === 'function';
+      const hasAuthModuleLogout = window.authModule && typeof window.authModule.handleLogout === 'function';
+      
+      let message = `window.logout: ${hasLogout ? '✅' : '❌'}<br>`;
+      message += `authModule.handleLogout: ${hasAuthModuleLogout ? '✅' : '❌'}<br>`;
+      message += '<span class="warning">⚠️ Não executado para não fazer logout real</span>';
+      
+      setTestResult(8, hasLogout || hasAuthModuleLogout, message);
+    }
+
+    // TESTE 9: Auth Overlay
+    function runTest9() {
+      log('Executando Teste 9: Verificar Auth Overlay');
+      const overlay = document.getElementById('auth-overlay');
+      
+      if (!overlay) {
+        setTestResult(9, false, 'Auth overlay não encontrado no DOM');
+        return;
+      }
+      
+      const isHidden = overlay.style.display === 'none';
+      let message = `Overlay existe: ✅<br>`;
+      message += `display: ${overlay.style.display || 'default'}<br>`;
+      message += `Status: ${isHidden ? '<span class="success">✅ ESCONDIDO (correto)</span>' : '<span class="error">❌ VISÍVEL (errado)</span>'}`;
+      
+      setTestResult(9, isHidden, message);
+    }
+
+    // TESTE 10: Hardcoded Org ID
+    function runTest10() {
+      log('Executando Teste 10: Verificar Org ID hardcoded');
+      const email = localStorage.getItem('userEmail');
+      const orgId = localStorage.getItem('organizationId');
+      const expectedOrgId = '452c0b35-1822-4890-851e-922356c812fb';
+      
+      const isTrcampos = email === 'trcampos@gmail.com';
+      const isCorrectOrgId = orgId === expectedOrgId;
+      
+      let message = `Email: ${email || '❌'}<br>`;
+      message += `É trcampos@gmail.com: ${isTrcampos ? '✅' : '❌'}<br>`;
+      message += `OrgId: ${orgId ? orgId.substring(0, 20) + '...' : '❌'}<br>`;
+      message += `Match esperado: ${isCorrectOrgId ? '<span class="success">✅</span>' : '<span class="error">❌</span>'}`;
+      
+      setTestResult(10, isCorrectOrgId, message);
+    }
+
+    // TESTE 11: API Client
+    function runTest11() {
+      log('Executando Teste 11: Verificar API Client');
+      const hasCreateAPI = typeof window.createModuleAPI === 'function';
+      const hasWaitForAPI = typeof window.waitForAPIClient === 'function';
+      
+      let message = `window.createModuleAPI: ${hasCreateAPI ? '✅' : '❌'}<br>`;
+      message += `window.waitForAPIClient: ${hasWaitForAPI ? '✅' : '❌'}`;
+      
+      if (hasCreateAPI) {
+        try {
+          const testAPI = window.createModuleAPI('Test');
+          const hasRequest = testAPI && typeof testAPI.request === 'function';
+          const hasFetchWithStates = testAPI && typeof testAPI.fetchWithStates === 'function';
+          message += `<br>API.request: ${hasRequest ? '✅' : '❌'}`;
+          message += `<br>API.fetchWithStates: ${hasFetchWithStates ? '✅' : '❌'}`;
+        } catch (e) {
+          message += `<br><span class="error">Erro ao criar API: ${e.message}</span>`;
+        }
+      }
+      
+      setTestResult(11, hasCreateAPI && hasWaitForAPI, message);
+    }
+
+    // TESTE 12: Dashboard SPA
+    function runTest12() {
+      log('Executando Teste 12: Verificar Dashboard SPA');
+      const sidebar = document.querySelector('.sidebar');
+      const main = document.querySelector('main');
+      const dashboardTitle = document.querySelector('h1, h2');
+      
+      let message = `Sidebar: ${sidebar ? '✅ Presente' : '❌ Ausente'}<br>`;
+      message += `Main content: ${main ? '✅ Presente' : '❌ Ausente'}<br>`;
+      message += `Dashboard title: ${dashboardTitle ? '✅ "' + dashboardTitle.textContent.substring(0, 30) + '..."' : '❌ Ausente'}`;
+      
+      setTestResult(12, !!sidebar && !!main, message);
+    }
+
+    // Executar todos os testes
+    async function runAllTests() {
+      clearResults();
+      log('========================================', 'info');
+      log('🚀 INICIANDO BATERIA COMPLETA DE TESTES', 'info');
+      log('========================================', 'info');
+      
+      runTest1();
+      await sleep(500);
+      runTest2();
+      await sleep(500);
+      runTest3();
+      await sleep(500);
+      runTest4();
+      await sleep(500);
+      await runTest5();
+      await sleep(500);
+      runTest6();
+      await sleep(500);
+      runTest8();
+      await sleep(500);
+      runTest9();
+      await sleep(500);
+      runTest10();
+      await sleep(500);
+      runTest11();
+      await sleep(500);
+      runTest12();
+      
+      log('========================================', 'info');
+      log('✅ BATERIA DE TESTES CONCLUÍDA', 'success');
+      log('========================================', 'info');
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function clearResults() {
+      completedTests = 0;
+      testResults = {};
+      document.getElementById('progressBar').style.width = '0%';
+      document.getElementById('progressBar').textContent = '0%';
+      document.getElementById('globalStatus').textContent = 'Em Execução...';
+      document.getElementById('globalStatus').className = 'status-badge status-running';
+      
+      for (let i = 1; i <= totalTests; i++) {
+        const card = document.getElementById(`test${i}`);
+        const result = document.getElementById(`result${i}`);
+        card.className = 'test-card';
+        result.textContent = 'Aguardando execução...';
+      }
+      
+      log('Resultados limpos', 'info');
+    }
+
+    function clearLogs() {
+      document.getElementById('globalLogs').innerHTML = '';
+    }
+
+    function exportReport() {
+      const passed = Object.values(testResults).filter(r => r === true).length;
+      const failed = Object.values(testResults).filter(r => r === false).length;
+      const total = Object.values(testResults).length;
+      
+      let report = '🧪 RELATÓRIO DE TESTES - AUTENTICAÇÃO\n';
+      report += '=====================================\n\n';
+      report += `Data: ${new Date().toLocaleString('pt-BR')}\n`;
+      report += `Total de testes: ${total}\n`;
+      report += `Passaram: ${passed} ✅\n`;
+      report += `Falharam: ${failed} ❌\n`;
+      report += `Taxa de sucesso: ${Math.round((passed/total)*100)}%\n\n`;
+      
+      report += 'DETALHES:\n';
+      report += '=========\n\n';
+      
+      for (let i = 1; i <= totalTests; i++) {
+        const result = testResults[i];
+        const card = document.getElementById(`test${i}`);
+        const title = card.querySelector('h3').textContent;
+        report += `${i}. ${title}\n`;
+        report += `   Status: ${result === true ? 'PASSOU ✅' : result === false ? 'FALHOU ❌' : 'NÃO EXECUTADO ⏸️'}\n\n`;
+      }
+      
+      const blob = new Blob([report], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio-auth-${Date.now()}.txt`;
+      a.click();
+      
+      log('Relatório exportado com sucesso', 'success');
+    }
+
+    // Auto-run on load
+    window.addEventListener('DOMContentLoaded', () => {
+      log('🚀 Página de teste carregada', 'success');
+      log('Pronto para executar testes!', 'info');
+    });
+  </script>
+</body>
+</html>

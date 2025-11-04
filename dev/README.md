@@ -1,3 +1,32 @@
+﻿# Development Guides — dev/
+
+This folder contains the modernized project guidelines and supporting documents. The primary guide is `GUIDELINES2.md` which replaces older, monolithic docs.
+
+Start here
+- `GUIDELINES2.md` — primary, opinionated guidelines for modules, UI, API patterns, and AcademyApp integration.
+- `../AGENTS.md` — guia operacional (SOPs, Quality Gates, DoR/DoD, contratos de ferramentas).
+- `.github/copilot-instructions.md` — normas-mestras de integração e UI premium.
+
+Quick checklist for adding a module
+1. Create files under `public/js/modules/<module>/` using the ModuleLoader pattern.
+2. Register your module in `AcademyApp.loadModules()` (in `public/js/core/app.js`).
+3. Use the centralized API client (`public/js/shared/api-client.js`) and `fetchWithStates` for network calls.
+4. Isolate CSS under `public/css/modules/` using `.module-isolated-<module>-*` prefixes.
+5. Expose the module globally: `window.<moduleName> = myModule;` and dispatch `window.app.dispatchEvent('module:loaded', { name: '<moduleName>' })`.
+6. Add loading/empty/error states and follow premium UI classes if applicable.
+
+Where to find more
+- Design tokens: `dev/DESIGN_SYSTEM.md`
+- AI/Workflow: `dev/WORKFLOW.md`
+- Module examples: `public/js/modules/students/`
+
+Table of contents
+- Guidelines (this doc): `GUIDELINES2.md`
+- CSS: `DESIGN_SYSTEM.md`, `CSS_NAMING.md`
+- AI: `WORKFLOW.md`, `FALLBACK_RULES.md`
+- Docs: `DOCUMENTATION.md`, `EXAMPLES.md`
+
+If you find an area that should be added to the guide, open a PR and reference this README.
 # Estrutura Modular Implementada ✅
 
 ## 📁 Nova Organização da Documentação

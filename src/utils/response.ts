@@ -7,14 +7,22 @@ export class ResponseHelper {
     message?: string,
     statusCode: number = 200
   ): FastifyReply {
-    const response = {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('? ResponseHelper.success - Input data:', data);
+    }
+    
+        const response = {
       success: true,
       data,
       message,
       timestamp: new Date().toISOString(),
     } as any;
 
-    return reply.status(statusCode).send(response);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('? ResponseHelper.success - Input data:', data);
+    }
+    
+        return reply.status(statusCode).send(response);
   }
 
   static error(
@@ -76,4 +84,25 @@ export class ResponseHelper {
 
     return reply.status(404).send(response);
   }
+
+  static created<T>(reply: FastifyReply, data?: T, message?: string): FastifyReply {
+    return this.success(reply, data, message, 201);
+  }
+
+  static notFound(reply: FastifyReply, message: string = 'Recurso não encontrado'): FastifyReply {
+    return this.error(reply, message, 404);
+  }
+
+  static badRequest(reply: FastifyReply, message: string, details?: any): FastifyReply {
+    const response = {
+      success: false,
+      error: message,
+      details,
+      timestamp: new Date().toISOString(),
+    } as any;
+
+    return reply.status(400).send(response);
+  }
 }
+
+

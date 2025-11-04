@@ -122,4 +122,27 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteCourseModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-danger">
+            <div class="modal-header">
+                <h3>🗑️ Confirmar Exclusão</h3>
+                <button class="modal-close" onclick="window.coursesController?.cancelDelete()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este curso?</p>
+                <p><strong id="deleteCourseNameDisplay"></strong></p>
+                <p class="warning-text">⚠️ Esta ação não pode ser desfeita. Todas as aulas relacionadas também serão excluídas.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="window.coursesController?.cancelDelete()">
+                    ❌ Cancelar
+                </button>
+                <button class="btn-danger" onclick="window.coursesController?.confirmDelete()" id="confirmDeleteBtn">
+                    🗑️ Confirmar Exclusão
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

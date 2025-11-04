@@ -1,0 +1,332 @@
+/**
+ * Agent Dashboard Widget Styles
+ * Premium UI for agent interactions in main dashboard
+ */
+
+/* Widget Container */
+.widget-agent-interactions {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+}
+
+.widget-agent-interactions:hover {
+    box-shadow: 0 12px 48px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Widget Header */
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.widget-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.badge-alert {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(238, 90, 111, 0.3);
+}
+
+.badge-alert.pulse {
+    animation: pulse-alert 2s ease-in-out infinite;
+}
+
+@keyframes pulse-alert {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+/* Pending Permissions Section */
+.permissions-section {
+    margin-bottom: 24px;
+}
+
+.permissions-section h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ff6b6b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.permission-card {
+    background: white;
+    border: 2px solid #ff6b6b;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 16px rgba(238, 90, 111, 0.1);
+    transition: all 0.3s ease;
+}
+
+.permission-card:hover {
+    box-shadow: 0 8px 24px rgba(238, 90, 111, 0.2);
+    transform: translateX(4px);
+}
+
+.permission-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.agent-icon {
+    font-size: 1.5rem;
+}
+
+.permission-header strong {
+    flex: 1;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.time-ago {
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.permission-action {
+    margin: 12px 0;
+    padding: 12px;
+    background: #fff5f5;
+    border-left: 4px solid #ff6b6b;
+    border-radius: 4px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.permission-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.btn-approve,
+.btn-deny {
+    flex: 1;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
+}
+
+.btn-deny {
+    background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+}
+
+.btn-deny:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 101, 101, 0.4);
+}
+
+/* Recent Interactions Section */
+.interactions-section {
+    margin-bottom: 16px;
+}
+
+.interactions-section h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.interactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.interaction-item {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+    transition: all 0.3s ease;
+}
+
+.interaction-item:hover {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    transform: translateX(4px);
+}
+
+.interaction-item.info {
+    border-left-color: #4299e1;
+}
+
+.interaction-item.warning {
+    border-left-color: #ed8936;
+}
+
+.interaction-item.danger {
+    border-left-color: #f56565;
+}
+
+.interaction-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.interaction-content {
+    flex: 1;
+}
+
+.interaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.interaction-header strong {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.interaction-message {
+    color: #4a5568;
+    line-height: 1.5;
+    margin: 0 0 8px 0;
+}
+
+.btn-action-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: all 0.3s ease;
+}
+
+.btn-action-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state p {
+    color: #718096;
+    margin-bottom: 16px;
+    font-size: 1rem;
+}
+
+.btn-secondary {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Widget Footer */
+.widget-footer {
+    padding-top: 16px;
+    border-top: 1px solid rgba(102, 126, 234, 0.1);
+    text-align: center;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .widget-agent-interactions {
+        padding: 16px;
+    }
+    
+    .widget-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .permission-actions {
+        flex-direction: column;
+    }
+    
+    .btn-approve,
+    .btn-deny {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .permission-header {
+        flex-wrap: wrap;
+    }
+    
+    .time-ago {
+        width: 100%;
+        margin-top: 4px;
+    }
+}

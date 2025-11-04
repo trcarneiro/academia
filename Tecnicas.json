@@ -2,12 +2,12 @@
 {
 "id": "cotovelada-tras-costelas-cabeca",
 "type": "TECHNIQUE",
-"title": "Cotovelada para Trás nas Costelas e Cabeça",
+"name": "Cotovelada para Trás nas Costelas e Cabeça",
 "description": "Cotovelada para trás mirando costelas do agressor, seguida de cotovelada visando a cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Manter equilíbrio ao girar. Instrutor verifica impacto controlado.",
+"safety": ["Manter equilíbrio ao girar. Instrutor verifica impacto controlado."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -21,12 +21,12 @@
 {
 "id": "cotovelada-tras-horizontal-tempora-lateral",
 "type": "TECHNIQUE",
-"title": "Cotovelada para Trás Horizontal na Têmpora e Lateral",
+"name": "Cotovelada para Trás Horizontal na Têmpora e Lateral",
 "description": "Cotovelada horizontal para trás na têmpora, seguida de cotovelada lateral.",
 "equipment": ["Tatame macio"],
-"safety": "Proteger pescoço ao girar. Evitar força excessiva.",
+"safety": ["Proteger pescoço ao girar. Evitar força excessiva."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["cotovelada-tras-costelas-cabeca"],
 "defaultParams": {
 "repetitions": {
@@ -40,12 +40,12 @@
 {
 "id": "cotovelada-horizontal-frente-rosto",
 "type": "TECHNIQUE",
-"title": "Cotovelada Horizontal para Frente no Rosto",
+"name": "Cotovelada Horizontal para Frente no Rosto",
 "description": "Cotovelada horizontal para frente, mirando o rosto ou nariz do agressor.",
 "equipment": ["Tatame macio"],
-"safety": "Manter guarda alta. Instrutor corrige rotação.",
+"safety": ["Manter guarda alta. Instrutor corrige rotação."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -59,12 +59,12 @@
 {
 "id": "cotovelada-uppercut-martelo-descendente",
 "type": "TECHNIQUE",
-"title": "Cotovelada Uppercut e Martelo Descendente",
+"name": "Cotovelada Uppercut e Martelo Descendente",
 "description": "Cotovelada ascendente mirando queixo, seguida de cotovelada descendente como martelo na cabeça ou clavícula.",
 "equipment": ["Tatame macio"],
-"safety": "Flexionar joelhos para impulso. Evitar lesões no ombro.",
+"safety": ["Flexionar joelhos para impulso. Evitar lesões no ombro."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -78,12 +78,12 @@
 {
 "id": "defesa-estrangulamento-frente-dedos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento pela Frente - Ataque com Dedos",
+"name": "Defesa contra Estrangulamento pela Frente - Ataque com Dedos",
 "description": "Quando mãos do agressor se aproximam do pescoço, execute golpe com dedos na garganta enquanto recua para base de combate.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar força nos dedos para evitar lesões. Instrutor supervisiona.",
+"safety": ["Controlar força nos dedos para evitar lesões. Instrutor supervisiona."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -97,12 +97,12 @@
 {
 "id": "defesa-estrangulamento-frente-joelhada",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento pela Frente - Joelhada",
+"name": "Defesa contra Estrangulamento pela Frente - Joelhada",
 "description": "Pegue polegares do agressor, solte pegada, incline-se para trás e acerte joelhada na virilha.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Manter equilíbrio ao inclinar. Evitar joelhadas reais em treino.",
+"safety": ["Manter equilíbrio ao inclinar. Evitar joelhadas reais em treino."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["defesa-estrangulamento-frente-dedos"],
 "defaultParams": {
 "repetitions": {
@@ -116,12 +116,12 @@
 {
 "id": "defesa-estrangulamento-frente-kaf-hayad",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento pela Frente - Kaf Hayad",
+"name": "Defesa contra Estrangulamento pela Frente - Kaf Hayad",
 "description": "Segure polegar esquerdo do agressor com mão direita, fixe no peito, dê passo atrás e golpe com palma esquerda no queixo.",
 "equipment": ["Tatame macio"],
-"safety": "Proteger queixo ao bater. Instrutor corrige alinhamento.",
+"safety": ["Proteger queixo ao bater. Instrutor corrige alinhamento."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["defesa-estrangulamento-frente-joelhada"],
 "defaultParams": {
 "repetitions": {
@@ -135,12 +135,12 @@
 {
 "id": "defesa-estrangulamento-frente-empurrando",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento pela Frente - Empurrando",
+"name": "Defesa contra Estrangulamento pela Frente - Empurrando",
 "description": "Dê passo atrás com perna direita, levante braço esquerdo verticalmente, gire corpo para direita para soltar pegada, afaste mãos com cotovelo e execute cotovelada no nariz.",
 "equipment": ["Tatame macio"],
-"safety": "Girar com controle para evitar torções. Evitar contato real no nariz.",
+"safety": ["Girar com controle para evitar torções. Evitar contato real no nariz."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["defesa-estrangulamento-frente-kaf-hayad"],
 "defaultParams": {
 "repetitions": {
@@ -154,12 +154,12 @@
 {
 "id": "defesa-estrangulamento-tras",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento por Trás",
+"name": "Defesa contra Estrangulamento por Trás",
 "description": "Pegue polegares, solte pegada, dê passo atrás diagonal com perna direita, acerte virilha com mão direita aberta, suba com cotovelada no queixo, gire anti-horário, chave de punho e chute na virilha.",
 "equipment": ["Tatame macio"],
-"safety": "Manter fluxo de ar ao soltar. Instrutor verifica giro.",
+"safety": ["Manter fluxo de ar ao soltar. Instrutor verifica giro."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -173,12 +173,12 @@
 {
 "id": "defesa-estrangulamento-tras-empurrando",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento por Trás - Empurrando",
+"name": "Defesa contra Estrangulamento por Trás - Empurrando",
 "description": "Dê passo frente com perna esquerda, levante braço direito em ângulo reto acima da cabeça, gire para direita para soltar pegada, afaste mãos com braço esquerdo e execute patish no nariz.",
 "equipment": ["Tatame macio"],
-"safety": "Manter equilíbrio ao avançar. Evitar força excessiva no patish.",
+"safety": ["Manter equilíbrio ao avançar. Evitar força excessiva no patish."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["defesa-estrangulamento-tras"],
 "defaultParams": {
 "repetitions": {
@@ -192,12 +192,12 @@
 {
 "id": "defesa-estrangulamento-tras-puxando",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento por Trás - Puxando",
+"name": "Defesa contra Estrangulamento por Trás - Puxando",
 "description": "Segure dedão esquerdo com mão esquerda para soltar pegada, gire anti-horário apoiando na perna esquerda e execute chute na virilha com perna esquerda.",
 "equipment": ["Tatame macio"],
-"safety": "Apoiar bem ao girar. Instrutor supervisiona chute.",
+"safety": ["Apoiar bem ao girar. Instrutor supervisiona chute."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": ["defesa-estrangulamento-tras-empurrando"],
 "defaultParams": {
 "repetitions": {
@@ -211,12 +211,12 @@
 {
 "id": "defesa-estrangulamento-lado-esquerdo",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento pelo Lado Esquerdo",
+"name": "Defesa contra Estrangulamento pelo Lado Esquerdo",
 "description": "Segure dedão esquerdo com mão direita para soltar pegada, dê passo para direita, golpe com mão esquerda aberta na virilha e suba com cotovelada no queixo.",
 "equipment": ["Tatame macio"],
-"safety": "Manter distância lateral. Evitar lesões no queixo.",
+"safety": ["Manter distância lateral. Evitar lesões no queixo."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Iniciante",
+"difficulty": 1,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -230,12 +230,12 @@
 {
 "id": "defesa-abraco-urso-frente-preventiva",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente - Preventiva",
+"name": "Defesa contra Abraço de Urso pela Frente - Preventiva",
 "description": "Dê passo atrás com perna direita, lance braços para frente entre braços dele e bata com polegares nos olhos. Controle cabeça e dê chute/joelhada na virilha.",
 "equipment": ["Tatame macio", "Protetor de olhos (simulado)"],
-"safety": "Simular pressão nos olhos sem contato real. Instrutor controla.",
+"safety": ["Simular pressão nos olhos sem contato real. Instrutor controla."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -249,12 +249,12 @@
 {
 "id": "defesa-abraco-urso-frente-bracos-livres",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente - Braços Livres",
+"name": "Defesa contra Abraço de Urso pela Frente - Braços Livres",
 "description": "Solte peso, segure escápulas, dê joelhada na virilha, chute na canela, pisão no pé. Puxe cabeça para lado e morda pescoço.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Simular mordida sem contato. Manter controle de peso.",
+"safety": ["Simular mordida sem contato. Manter controle de peso."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-frente-preventiva"],
 "defaultParams": {
 "repetitions": {
@@ -268,12 +268,12 @@
 {
 "id": "defesa-abraco-urso-frente-bracos-presos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente - Braços Presos",
+"name": "Defesa contra Abraço de Urso pela Frente - Braços Presos",
 "description": "Solte peso, feche e junte mãos, bata na virilha, segure escápulas, joelhada na virilha, chute na canela, pisão no pé. Puxe cabeça e morda pescoço.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Evitar pressão real nos braços. Instrutor verifica soltura.",
+"safety": ["Evitar pressão real nos braços. Instrutor verifica soltura."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-frente-bracos-livres"],
 "defaultParams": {
 "repetitions": {
@@ -287,12 +287,12 @@
 {
 "id": "defesa-abraco-urso-frente-cabeca-peito",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente - Cabeça no Peito",
+"name": "Defesa contra Abraço de Urso pela Frente - Cabeça no Peito",
 "description": "Use polegares para pressionar base do nariz, empurrando cabeça em movimento circular. Chute virilha após afastar.",
 "equipment": ["Tatame macio"],
-"safety": "Pressão simulada no nariz. Evitar lesões faciais.",
+"safety": ["Pressão simulada no nariz. Evitar lesões faciais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -306,12 +306,12 @@
 {
 "id": "defesa-abraco-urso-frente-baixo-preventiva",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente Baixo - Preventiva",
+"name": "Defesa contra Abraço de Urso pela Frente Baixo - Preventiva",
 "description": "Dê passo atrás com perna do lado da cabeça do agressor, golpe com palma para cima no rosto e cotovelada descendente na medula.",
 "equipment": ["Tatame macio"],
-"safety": "Evitar impacto real na medula. Instrutor supervisiona.",
+"safety": ["Evitar impacto real na medula. Instrutor supervisiona."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -325,12 +325,12 @@
 {
 "id": "defesa-abraco-urso-tras-bracos-livres",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso por Trás - Braços Livres",
+"name": "Defesa contra Abraço de Urso por Trás - Braços Livres",
 "description": "Solte peso, incline-se para frente, execute cotoveladas rápidas direita/esquerda na cabeça. Vire e afaste-se.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar inclinação para evitar quedas. Simular cotoveladas.",
+"safety": ["Controlar inclinação para evitar quedas. Simular cotoveladas."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -344,12 +344,12 @@
 {
 "id": "defesa-abraco-urso-tras-bracos-presos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso por Trás - Braços Presos",
+"name": "Defesa contra Abraço de Urso por Trás - Braços Presos",
 "description": "Solte peso, dê passo esquerda para expor virilha, golpes com palma na virilha, chute canela, pisão pé. Solte braços e cotoveladas na cabeça.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Evitar pressão real nos braços. Instrutor verifica soltura.",
+"safety": ["Evitar pressão real nos braços. Instrutor verifica soltura."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-tras-bracos-livres"],
 "defaultParams": {
 "repetitions": {
@@ -363,12 +363,12 @@
 {
 "id": "defesa-soco-interna-cabeca",
 "type": "TECHNIQUE",
-"title": "Defesa Interna contra Soco na Cabeça",
+"name": "Defesa Interna contra Soco na Cabeça",
 "description": "Passo esquerda, defesa com palma esquerda, soco direita na mandíbula.",
 "equipment": ["Luvas de boxe", "Tatame macio"],
-"safety": "Manter guarda. Evitar socos reais em treino.",
+"safety": ["Manter guarda. Evitar socos reais em treino."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -382,12 +382,12 @@
 {
 "id": "defesa-soco-interna-corpo-cabeca",
 "type": "TECHNIQUE",
-"title": "Defesa Interna contra Soco no Corpo e Cabeça",
+"name": "Defesa Interna contra Soco no Corpo e Cabeça",
 "description": "Passo esquerda, defesa palma esquerda, segure pulso, soco direita no corpo, abaixe braço e soco mandíbula.",
 "equipment": ["Luvas de boxe", "Tatame macio"],
-"safety": "Controlar pegada no pulso. Instrutor corrige sequência.",
+"safety": ["Controlar pegada no pulso. Instrutor corrige sequência."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-soco-interna-cabeca"],
 "defaultParams": {
 "repetitions": {
@@ -401,12 +401,12 @@
 {
 "id": "defesa-soco-interna-tapa-virilha",
 "type": "TECHNIQUE",
-"title": "Defesa Interna contra Soco - Tapa na Virilha",
+"name": "Defesa Interna contra Soco - Tapa na Virilha",
 "description": "Passo esquerda diagonal, defesa palma esquerda, tapa direita na virilha.",
 "equipment": ["Luvas de boxe", "Protetor de virilha"],
-"safety": "Simular tapa sem contato. Manter distância.",
+"safety": ["Simular tapa sem contato. Manter distância."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-soco-interna-corpo-cabeca"],
 "defaultParams": {
 "repetitions": {
@@ -420,12 +420,12 @@
 {
 "id": "defesa-abraco-urso-tras-bracos-livres-avancada",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso por Trás - Braços Livres Avançada",
+"name": "Defesa contra Abraço de Urso por Trás - Braços Livres Avançada",
 "description": "Segure braços acima cotovelo, levante e arremesse no chão. Bata virilha e cotovelada cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar arremesso para evitar lesões. Instrutor supervisiona quedas.",
+"safety": ["Controlar arremesso para evitar lesões. Instrutor supervisiona quedas."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-abraco-urso-tras-bracos-livres"],
 "defaultParams": {
 "repetitions": {
@@ -439,12 +439,12 @@
 {
 "id": "defesa-abraco-urso-tras-bracos-presos-avancada",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso por Trás - Braços Presos Avançada",
+"name": "Defesa contra Abraço de Urso por Trás - Braços Presos Avançada",
 "description": "Envolva braços do agressor, levante e arremesse no chão. Bata virilha e cotovelada cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Evitar pressão excessiva nos braços. Simular arremesso.",
+"safety": ["Evitar pressão excessiva nos braços. Simular arremesso."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-abraco-urso-tras-bracos-presos"],
 "defaultParams": {
 "repetitions": {
@@ -458,12 +458,12 @@
 {
 "id": "defesa-chave-pescoco-lado-arremesso",
 "type": "TECHNIQUE",
-"title": "Defesa contra Chave de Pescoço de Lado - Com Arremesso",
+"name": "Defesa contra Chave de Pescoço de Lado - Com Arremesso",
 "description": "Posicione perna frente entre pernas dele, segure virilha com braço mesmo lado. Role agressor por cima, ataque e levante.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar role para evitar impactos. Instrutor verifica posicionamento.",
+"safety": ["Controlar role para evitar impactos. Instrutor verifica posicionamento."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -477,12 +477,12 @@
 {
 "id": "defesa-chave-pescoco-lado-puxando-tras",
 "type": "TECHNIQUE",
-"title": "Defesa contra Chave de Pescoço de Lado - Puxando para Trás",
+"name": "Defesa contra Chave de Pescoço de Lado - Puxando para Trás",
 "description": "Puxe ponto na cabeça, posicione perna trás atrás das pernas dele. Caia, ataque e levante. Alternativa: levante e arremesse.",
 "equipment": ["Tatame macio"],
-"safety": "Amortecer queda. Evitar torções no pescoço.",
+"safety": ["Amortecer queda. Evitar torções no pescoço."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-chave-pescoco-lado-arremesso"],
 "defaultParams": {
 "repetitions": {
@@ -496,12 +496,12 @@
 {
 "id": "defesa-chave-pescoco-lado-costas-joelho",
 "type": "TECHNIQUE",
-"title": "Defesa contra Chave de Pescoço de Lado - Costas no Joelho",
+"name": "Defesa contra Chave de Pescoço de Lado - Costas no Joelho",
 "description": "Agarre cabeça, dê passo trás, ajoelhe trazendo costas dele para joelho. Force para baixo.",
 "equipment": ["Tatame macio"],
-"safety": "Forçar com controle. Instrutor supervisiona joelho.",
+"safety": ["Forçar com controle. Instrutor supervisiona joelho."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-chave-pescoco-lado-puxando-tras"],
 "defaultParams": {
 "repetitions": {
@@ -515,12 +515,12 @@
 {
 "id": "defesa-mata-leao-tras-arremesso",
 "type": "TECHNIQUE",
-"title": "Defesa contra Mata-Leão por Trás com Pulo - Arremesso",
+"name": "Defesa contra Mata-Leão por Trás com Pulo - Arremesso",
 "description": "Segure antebraço com duas mãos, incline frente rapidamente, mova ombros para baixo, jogue no chão e golpes na cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Amortecer arremesso. Evitar lesões cervicais.",
+"safety": ["Amortecer arremesso. Evitar lesões cervicais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -534,12 +534,12 @@
 {
 "id": "defesa-agarramento-bracos-tras-escape",
 "type": "TECHNIQUE",
-"title": "Defesa contra Agarramento nos Braços por Trás - Escape",
+"name": "Defesa contra Agarramento nos Braços por Trás - Escape",
 "description": "Passo trás diagonal, gire pulsos, traga braços frente para soltar. Gire direção agressor e afaste.",
 "equipment": ["Tatame macio"],
-"safety": "Girar sem forçar juntas. Instrutor verifica soltura.",
+"safety": ["Girar sem forçar juntas. Instrutor verifica soltura."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -553,12 +553,12 @@
 {
 "id": "defesa-agarramento-bracos-tras-chave-punho",
 "type": "TECHNIQUE",
-"title": "Defesa contra Agarramento nos Braços por Trás - Chave de Punho",
+"name": "Defesa contra Agarramento nos Braços por Trás - Chave de Punho",
 "description": "Gire corpo e braço direito para direita, incline, passo esquerda por baixo braço direito dele, segure mão direita dele com esquerda, pressão e chave de punho.",
 "equipment": ["Tatame macio"],
-"safety": "Evitar torções excessivas no punho. Simular em treino.",
+"safety": ["Evitar torções excessivas no punho. Simular em treino."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-agarramento-bracos-tras-escape"],
 "defaultParams": {
 "repetitions": {
@@ -572,12 +572,12 @@
 {
 "id": "defesa-agarramento-bracos-tras-chave-cotovelo",
 "type": "TECHNIQUE",
-"title": "Defesa contra Agarramento nos Braços por Trás - Chave de Cotovelo",
+"name": "Defesa contra Agarramento nos Braços por Trás - Chave de Cotovelo",
 "description": "Gire corpo e braço direito para direita, incline, passo esquerda por baixo braço direito, segure mão direita dele com esquerda, agarre cotovelo criando chave e traga para chão.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar chave para evitar luxações. Instrutor supervisiona.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Controlar chave para evitar luxações. Instrutor supervisiona."],
+"adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+"difficulty": 5,
 "refTechniqueId": ["defesa-agarramento-bracos-tras-chave-punho"],
 "defaultParams": {
 "repetitions": {
@@ -591,12 +591,12 @@
 {
 "id": "defesa-interna-chute-reto-levantando",
 "type": "TECHNIQUE",
-"title": "Defesa Interna contra Chute Reto - Levantando",
+"name": "Defesa Interna contra Chute Reto - Levantando",
 "description": "Faça defesa interna com o braço, levantando perna do agressor.",
 "equipment": ["Tatame macio", "Protetor de canela"],
-"safety": "Evitar chutes reais. Manter equilíbrio ao levantar.",
+"safety": ["Evitar chutes reais. Manter equilíbrio ao levantar."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -610,12 +610,12 @@
 {
 "id": "defesa-abraco-urso-frente-baixo-torsao",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso pela Frente Baixo - Torsão",
+"name": "Defesa contra Abraço de Urso pela Frente Baixo - Torsão",
 "description": "Passo atrás com perna direita, mão esquerda no cabelo, direita na mandíbula. Passo atrás esquerda, puxe/empurre girando cabeça jogando no chão.",
 "equipment": ["Tatame macio"],
-"safety": "Simular puxada no cabelo. Amortecer queda.",
+"safety": ["Simular puxada no cabelo. Amortecer queda."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-frente-baixo-preventiva"],
 "defaultParams": {
 "repetitions": {
@@ -629,12 +629,12 @@
 {
 "id": "defesa-abraco-urso-tras-chave-dedo",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso por Trás - Chave de Dedo",
+"name": "Defesa contra Abraço de Urso por Trás - Chave de Dedo",
 "description": "Solte peso, bata nas mãos com junta dedo médio (perek), deslize mãos por antebraços, pegue dedo e puxe trás. Segure pulso, passo longe girando 180 graus, puxe dedo direção ombro.",
 "equipment": ["Tatame macio"],
-"safety": "Evitar chave real no dedo. Instrutor controla pressão.",
+"safety": ["Evitar chave real no dedo. Instrutor controla pressão."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -648,12 +648,12 @@
 {
 "id": "defesa-abraco-urso-elevacao-frente-bracos-livres",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso com Elevação pela Frente - Braços Livres",
+"name": "Defesa contra Abraço de Urso com Elevação pela Frente - Braços Livres",
 "description": "Envolva perna dele com sua, joelhada na virilha com outra perna. Puxe cabeça trás, bata cotoveladas/patishs na cara.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Simular elevação baixa. Evitar quedas reais.",
+"safety": ["Simular elevação baixa. Evitar quedas reais."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -667,12 +667,12 @@
 {
 "id": "defesa-abraco-urso-elevacao-frente-bracos-presos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso com Elevação pela Frente - Braços Presos",
+"name": "Defesa contra Abraço de Urso com Elevação pela Frente - Braços Presos",
 "description": "Envolva perna dele com sua, chute virilha com calcanhar. Cabeçada na cara e morda pescoço até soltar.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Simular mordida/cabeçada. Controlar elevação.",
+"safety": ["Simular mordida/cabeçada. Controlar elevação."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-elevacao-frente-bracos-livres"],
 "defaultParams": {
 "repetitions": {
@@ -686,12 +686,12 @@
 {
 "id": "defesa-abraco-urso-elevacao-tras-bracos-livres",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso com Elevação por Trás - Braços Livres",
+"name": "Defesa contra Abraço de Urso com Elevação por Trás - Braços Livres",
 "description": "Envolva perna dele com sua, chute virilha com calcanhar. Ao cair, dê cotoveladas.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Amortecer queda. Evitar elevações altas.",
+"safety": ["Amortecer queda. Evitar elevações altas."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -705,12 +705,12 @@
 {
 "id": "defesa-abraco-urso-elevacao-tras-bracos-presos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Abraço de Urso com Elevação por Trás - Braços Presos",
+"name": "Defesa contra Abraço de Urso com Elevação por Trás - Braços Presos",
 "description": "Envolva perna dele com sua, chute virilha com calcanhar. Ao cair, solte braços e dê cotoveladas.",
 "equipment": ["Tatame macio", "Protetor de virilha"],
-"safety": "Controlar soltura de braços. Instrutor supervisiona.",
+"safety": ["Controlar soltura de braços. Instrutor supervisiona."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": ["defesa-abraco-urso-elevacao-tras-bracos-livres"],
 "defaultParams": {
 "repetitions": {
@@ -724,12 +724,12 @@
 {
 "id": "defesa-mata-leao-escape-chave-ombro",
 "type": "TECHNIQUE",
-"title": "Defesa contra Mata-Leão - Escape com Chave de Ombro",
+"name": "Defesa contra Mata-Leão - Escape com Chave de Ombro",
 "description": "Vire cabeça esquerda, segure braço com duas mãos, solte peso. Empurre quadril trás, passo trás esquerda por baixo braço dele, segure braço no peito, finalize chave de ombro.",
 "equipment": ["Tatame macio"],
-"safety": "Manter fluxo de ar. Evitar chaves reais em treino.",
+"safety": ["Manter fluxo de ar. Evitar chaves reais em treino."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Intermediário",
+"difficulty": 3,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -743,12 +743,12 @@
 {
 "id": "defesa-estrangulamento-chao-bracos-estendidos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento no Chão - Braços Estendidos",
+"name": "Defesa contra Estrangulamento no Chão - Braços Estendidos",
 "description": "Posicione quadril embaixo do agressor, empurre para cima/lado, bata cotovelos, proteja e bata virilha.",
 "equipment": ["Tatame macio"],
-"safety": "Amortecer posição no chão. Evitar estrangulamentos reais.",
+"safety": ["Amortecer posição no chão. Evitar estrangulamentos reais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -762,12 +762,12 @@
 {
 "id": "defesa-estrangulamento-chao-bracos-flexionados",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento no Chão - Braços Flexionados",
+"name": "Defesa contra Estrangulamento no Chão - Braços Flexionados",
 "description": "Posicione quadril embaixo, segure mandíbula com uma mão, cabelo com outra, empurre para cima/lado torcendo cabeça. Bata virilha e saia.",
 "equipment": ["Tatame macio"],
-"safety": "Simular torção sem força. Instrutor verifica saída.",
+"safety": ["Simular torção sem força. Instrutor verifica saída."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-estrangulamento-chao-bracos-estendidos"],
 "defaultParams": {
 "repetitions": {
@@ -781,12 +781,12 @@
 {
 "id": "defesa-estrangulamento-chao-lado",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento no Chão - Pelo Lado",
+"name": "Defesa contra Estrangulamento no Chão - Pelo Lado",
 "description": "Mão próxima na garganta, outra segura mão dele. Posicione joelho, retire mão garganta, passe outra perna por cima cabeça envolvendo pescoço, force perna baixo para arm-lock e chute cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar arm-lock. Evitar chutes reais.",
+"safety": ["Controlar arm-lock. Evitar chutes reais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -800,12 +800,12 @@
 {
 "id": "defesa-estrangulamento-chao-lado-resistencia",
 "type": "TECHNIQUE",
-"title": "Defesa contra Estrangulamento no Chão - Pelo Lado com Resistência",
+"name": "Defesa contra Estrangulamento no Chão - Pelo Lado com Resistência",
 "description": "Similar à anterior; ao resistir, vire lado segurando braço com força e execute arm-lock de lado.",
 "equipment": ["Tatame macio"],
-"safety": "Manter pegada firme sem lesões. Instrutor supervisiona resistência.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Manter pegada firme sem lesões. Instrutor supervisiona resistência."],
+"adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
+"difficulty": 5,
 "refTechniqueId": ["defesa-estrangulamento-chao-lado"],
 "defaultParams": {
 "repetitions": {
@@ -819,12 +819,12 @@
 {
 "id": "defesa-pegada-pulsos-chao-maos-lados",
 "type": "TECHNIQUE",
-"title": "Defesa contra Pegada nos Pulsos no Chão - Mãos para os Lados",
+"name": "Defesa contra Pegada nos Pulsos no Chão - Mãos para os Lados",
 "description": "Posicione quadril embaixo, empurre para cima/lado puxando braços para baixo. Role por cima e finalize golpes.",
 "equipment": ["Tatame macio"],
-"safety": "Amortecer role. Evitar pegadas fortes.",
+"safety": ["Amortecer role. Evitar pegadas fortes."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -838,12 +838,12 @@
 {
 "id": "defesa-pegada-pulsos-chao-maos-acima-cabeca",
 "type": "TECHNIQUE",
-"title": "Defesa contra Pegada nos Pulsos no Chão - Mãos acima da Cabeça",
+"name": "Defesa contra Pegada nos Pulsos no Chão - Mãos acima da Cabeça",
 "description": "Posicione quadril embaixo, empurre quadril trazendo mão agressor para mão oposta. Chave de punho rolando por cima, force cotovelo no chão torcendo punho.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar chave. Instrutor verifica torção.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Controlar chave. Instrutor verifica torção."],
+"adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+"difficulty": 5,
 "refTechniqueId": ["defesa-pegada-pulsos-chao-maos-lados"],
 "defaultParams": {
 "repetitions": {
@@ -857,12 +857,12 @@
 {
 "id": "defesa-nelson-frente",
 "type": "TECHNIQUE",
-"title": "Defesa contra Nelson - Para Frente",
+"name": "Defesa contra Nelson - Para Frente",
 "description": "Force cotovelos contra corpo, abaixe quadril, empurre trás com quadril levantando e role no chão. Golpe virilha e cotovelada cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Amortecer role. Evitar lesões cervicais.",
+"safety": ["Amortecer role. Evitar lesões cervicais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -876,12 +876,12 @@
 {
 "id": "defesa-nelson-tras",
 "type": "TECHNIQUE",
-"title": "Defesa contra Nelson - Para Trás",
+"name": "Defesa contra Nelson - Para Trás",
 "description": "Force cotovelos contra corpo, envolva pernas agressor com uma perna, torsão empurrando trás fazendo cair. Golpe virilha e cotovelada cabeça.",
 "equipment": ["Tatame macio"],
-"safety": "Controlar torsão. Instrutor supervisiona queda.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Controlar torsão. Instrutor supervisiona queda."],
+"adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+"difficulty": 5,
 "refTechniqueId": ["defesa-nelson-frente"],
 "defaultParams": {
 "repetitions": {
@@ -895,12 +895,12 @@
 {
 "id": "defesa-externa-soco-direita-lado",
 "type": "TECHNIQUE",
-"title": "Defesa Externa contra Soco de Direita - Para o Lado",
+"name": "Defesa Externa contra Soco de Direita - Para o Lado",
 "description": "Defenda fora com antebraço esquerdo, passo diagonal direita, execute Zirtit no pescoço.",
 "equipment": ["Luvas de boxe", "Tatame macio"],
-"safety": "Manter posição externa. Simular Zirtit.",
+"safety": ["Manter posição externa. Simular Zirtit."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -914,12 +914,12 @@
 {
 "id": "defesa-externa-soco-direita-cima",
 "type": "TECHNIQUE",
-"title": "Defesa Externa contra Soco de Direita - Para Cima",
+"name": "Defesa Externa contra Soco de Direita - Para Cima",
 "description": "Defenda cima com antebraço esquerdo, deslize soco esquerda no rosto.",
 "equipment": ["Luvas de boxe", "Tatame macio"],
-"safety": "Deslizar sem impacto real. Instrutor corrige defesa.",
+"safety": ["Deslizar sem impacto real. Instrutor corrige defesa."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-externa-soco-direita-lado"],
 "defaultParams": {
 "repetitions": {
@@ -933,12 +933,12 @@
 {
 "id": "defesa-externa-soco-esquerda",
 "type": "TECHNIQUE",
-"title": "Defesa Externa contra Soco de Esquerda",
+"name": "Defesa Externa contra Soco de Esquerda",
 "description": "Defenda com antebraço esquerdo, passo direita por fora agressor, execute Zirtit nas costelas/rins.",
 "equipment": ["Luvas de boxe", "Tatame macio"],
-"safety": "Evitar Zirtit real nas costelas. Manter equilíbrio.",
+"safety": ["Evitar Zirtit real nas costelas. Manter equilíbrio."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-externa-soco-direita-cima"],
 "defaultParams": {
 "repetitions": {
@@ -952,12 +952,12 @@
 {
 "id": "defesa-agarramento-camisa-duas-maos-agressiva",
 "type": "TECHNIQUE",
-"title": "Defesa contra Agarramento na Camisa com Duas Mãos - Agressiva",
+"name": "Defesa contra Agarramento na Camisa com Duas Mãos - Agressiva",
 "description": "Descrição truncada no doc; inferida: Contra-ataque rápido com socos/chutes ao detectar agressão.",
 "equipment": ["Tatame macio"],
-"safety": "Simular agarramento sem rasgar roupa. Evitar agressão real.",
+"safety": ["Simular agarramento sem rasgar roupa. Evitar agressão real."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -971,12 +971,12 @@
 {
 "id": "defesa-faca-por-cima",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Por Cima",
+"name": "Defesa contra Faca - Por Cima",
 "description": "Defesa para cima escondendo cabeça debaixo do braço, soco direita. Empurre braço agressor trás, segure mão com faca esquerda, série socos/joelhadas. Desarme.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Usar faca falsa. Evitar cortes simulados reais.",
+"safety": ["Usar faca falsa. Evitar cortes simulados reais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -990,12 +990,12 @@
 {
 "id": "defesa-faca-por-baixo-instintiva",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Por Baixo Instintiva",
+"name": "Defesa contra Faca - Por Baixo Instintiva",
 "description": "Bloqueie facada com braço esquerdo movendo corpo trás, soco direita. Mova faca longe com braço esquerdo, chute virilha e afaste.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Bloqueio controlado. Instrutor verifica movimento.",
+"safety": ["Bloqueio controlado. Instrutor verifica movimento."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-faca-por-cima"],
 "defaultParams": {
 "repetitions": {
@@ -1009,12 +1009,12 @@
 {
 "id": "defesa-faca-por-baixo",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Por Baixo",
+"name": "Defesa contra Faca - Por Baixo",
 "description": "Bloqueie antebraço saindo linha ataque lado morto, segure pulso. Soco direita, chave punho levando ao chão. Desarme.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Chave punho simulada. Evitar quedas duras.",
+"safety": ["Chave punho simulada. Evitar quedas duras."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-faca-por-baixo-instintiva"],
 "defaultParams": {
 "repetitions": {
@@ -1028,12 +1028,12 @@
 {
 "id": "defesa-faca-estocada-reta",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Estocada Reta",
+"name": "Defesa contra Faca - Estocada Reta",
 "description": "Bloqueie antebraço esquerdo saindo linha ataque, segure braço mão esquerda. Socos direita cabeça, desarme e afaste com chute.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Sair linha rapidamente. Simular desarme.",
+"safety": ["Sair linha rapidamente. Simular desarme."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -1047,12 +1047,12 @@
 {
 "id": "defesa-faca-estocada-reta-base-invertida",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Estocada Reta Base Invertida",
+"name": "Defesa contra Faca - Estocada Reta Base Invertida",
 "description": "Bloqueie antebraço direito saindo linha, segure braço mão esquerda, golpe dorso mão direita. Joelhada virilha, desarme chave punho.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Inverter base com cuidado. Evitar joelhadas reais.",
+"safety": ["Inverter base com cuidado. Evitar joelhadas reais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-faca-estocada-reta"],
 "defaultParams": {
 "repetitions": {
@@ -1066,12 +1066,12 @@
 {
 "id": "defesa-faca-corte-um",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Corte (Um)",
+"name": "Defesa contra Faca - Corte (Um)",
 "description": "Passo direção agressor, defenda dois antebraços. Segure braço mão esquerda, golpe dorso mão direita. Joelhada virilha, desarme chave punho.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Defender antebraços sem corte simulado. Instrutor controla.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Defender antebraços sem corte simulado. Instrutor controla."],
+"adaptations": ["TEA: Marcações no tatame.", "TDAH: Pausas curtas."],
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -1085,12 +1085,12 @@
 {
 "id": "defesa-faca-corte-dois",
 "type": "TECHNIQUE",
-"title": "Defesa contra Faca - Corte (Dois)",
+"name": "Defesa contra Faca - Corte (Dois)",
 "description": "Defenda pescoço/cabeça esquivando primeiro corte. Ao passar faca, passo e defenda dois antebraços. Segure braço esquerda, incline contra ele socos direita cabeça. Desarme chave punho, afaste chute.",
 "equipment": ["Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Esquivar sem risco. Simular cortes sequenciais.",
+"safety": ["Esquivar sem risco. Simular cortes sequenciais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": ["defesa-faca-corte-um"],
 "defaultParams": {
 "repetitions": {
@@ -1104,12 +1104,12 @@
 {
 "id": "defesa-dois-agressores-agarramento-pulsos",
 "type": "TECHNIQUE",
-"title": "Defesa contra Dois Agressores - Agarramento nos Pulsos",
+"name": "Defesa contra Dois Agressores - Agarramento nos Pulsos",
 "description": "Chute um agressor, depois outro. Solte mão, posicione mantendo um entre você e o outro.",
 "equipment": ["Tatame macio"],
-"safety": "Chutes controlados. Instrutor coordena múltiplos parceiros.",
+"safety": ["Chutes controlados. Instrutor coordena múltiplos parceiros."],
 "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -1123,12 +1123,12 @@
 {
 "id": "defesa-dois-agressores-bastao-faca",
 "type": "TECHNIQUE",
-"title": "Defesa contra Dois Agressores - Bastão e Faca",
+"name": "Defesa contra Dois Agressores - Bastão e Faca",
 "description": "Movimento primeiro, corra direção bastão, defesa usando como escudo contra faca. Desarme bastão, use para atacar faca mantendo distância. Variar lados e ataques.",
 "equipment": ["Bastão simulado", "Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Armas falsas. Evitar impactos reais.",
+"safety": ["Armas falsas. Evitar impactos reais."],
 "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
-"difficulty": "Avançado",
+"difficulty": 5,
 "refTechniqueId": [],
 "defaultParams": {
 "repetitions": {
@@ -1142,12 +1142,12 @@
 {
 "id": "defesa-dois-agressores-bastao-faca-proxima",
 "type": "TECHNIQUE",
-"title": "Defesa contra Dois Agressores - Bastão e Faca Próxima",
+"name": "Defesa contra Dois Agressores - Bastão e Faca Próxima",
 "description": "Defesa de acordo com facada movendo longe bastão. Use agressor faca como escudo, avance quando pronto.",
 "equipment": ["Bastão simulado", "Faca simulada", "Tatame macio", "Protetores"],
-"safety": "Manter distância inicial. Instrutor coordena.",
-"adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
-"difficulty": "Avançado",
+"safety": ["Manter distância inicial. Instrutor coordena."],
+"adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+"difficulty": 5,
 "refTechniqueId": ["defesa-dois-agressores-bastao-faca"],
 "defaultParams": {
 "repetitions": {

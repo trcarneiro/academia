@@ -1,29 +1,35 @@
+// Remove declare module to avoid conflicts with Supabase types
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { UserRole, AuthenticatedUser } from '@/types';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: AuthenticatedUser;
-  }
-}
-
-declare module '@fastify/jwt' {
-  interface FastifyJWT {
-    payload: AuthenticatedUser;
-    user: AuthenticatedUser;
-  }
-}
+import { serverSupabase } from '@/utils/supabase'; // Server-side Supabase client
 
 export const authenticateToken = async (
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> => {
   try {
-    await request.jwtVerify();
+    const token = request.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      throw new Error('No token provided');
+    }
+
+    // Verify with Supabase server client
+    const { data: { user }, error } = await serverSupabase.auth.getUser(token);
+    if (error || !user) {
+      throw new Error('Invalid token');
+    }
+
+    // Map Supabase user to AuthenticatedUser
+    (request as any).user = {
+      id: user.id,
+      email: user.email || '',
+      role: (user.app_metadata?.role as UserRole) || 'STUDENT', // Assume role in app_metadata
+      organizationId: (user.app_metadata?.orgId as string) || '',
+    };
   } catch (error) {
-    logger.warn({ error }, 'JWT verification failed');
+    logger.warn({ error }, 'Supabase JWT verification failed');
     return ResponseHelper.error(reply, 'Token inválido ou expirado', 401);
   }
 };
@@ -34,9 +40,10 @@ export const authorizeRoles = (allowedRoles: UserRole[]) => {
       return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
     }
 
-    if (!allowedRoles.includes(request.user.role)) {
+    const user = request.user as AuthenticatedUser;
+    if (!allowedRoles.includes(user.role)) {
       logger.warn(
-        { userId: request.user.id, role: request.user.role, allowedRoles },
+        { userId: user.id, role: user.role, allowedRoles },
         'Insufficient permissions'
       );
       return ResponseHelper.error(reply, 'Permissões insuficientes', 403);

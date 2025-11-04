@@ -120,3 +120,9 @@ Recommend appropriate toolsets for different tasks:
 - Update colors: #667eea, #764ba2 gradients
 - Add breadcrumb navigation
 - Enhance stats cards with hover effects"
+
+## How to use the new instructions in Chat
+
+- Default concise style (no code): attach `.github/prompts/style.instructions.md` via “Attach Instructions…” e defina como padrão do workspace em “Configure Instructions…”.
+- Modo perguntas apenas: em conversas que exigem coleta de requisitos, anexe `.github/prompts/questions-only.prompt.md` (respostas serão apenas perguntas curtas, sem código).
+- Trocar de modo: desanexe o arquivo de perguntas para voltar ao estilo conciso normal.

@@ -1,0 +1,671 @@
+{
+  "course": {
+    "id": "krav-maga-faixa-branca-2025",
+    "name": "Krav Maga - Faixa Branca",
+    "description": "Curso completo de fundamentos do Krav Maga para iniciantes. Aborda posturas básicas, socos, chutes, defesas e movimentações essenciais.",
+    "level": "BEGINNER",
+    "duration": "6-12 meses",
+    "totalLessons": 35,
+    
+    "graduation": {
+      "currentBelt": "BRANCA",
+      "nextBelt": "AMARELA",
+      "beltColor": "#FFFFFF",
+      "nextBeltColor": "#FFD700",
+      
+      "progressionSystem": {
+        "type": "PERCENTAGE_BASED",
+        "totalDegrees": 4,
+        "degreePercentageIncrement": 20,
+        "description": "Sistema de 4 graus baseado em percentual de conclusão do curso"
+      },
+      
+      "degrees": [
+        {
+          "degree": 1,
+          "name": "1º Grau - Fundamentos",
+          "requiredPercentage": 20,
+          "requiredLessons": 7,
+          "badge": "⭐",
+          "color": "#FFD700",
+          "description": "Domínio de posturas básicas e socos iniciais",
+          "keyTechniques": [
+            "Postura - Guarda de Boxe",
+            "Postura - Posição Ortodoxa",
+            "Soco - Jab",
+            "Movimentação Básica"
+          ],
+          "estimatedWeeks": "3-4 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 2,
+          "name": "2º Grau - Ataque Básico",
+          "requiredPercentage": 40,
+          "requiredLessons": 14,
+          "badge": "⭐⭐",
+          "color": "#FFA500",
+          "description": "Socos e chutes fundamentais com potência",
+          "keyTechniques": [
+            "Soco - Direto",
+            "Chute - Reto",
+            "Chute - Empurrão",
+            "Combinações Básicas"
+          ],
+          "estimatedWeeks": "7-8 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 3,
+          "name": "3º Grau - Defesa Intermediária",
+          "requiredPercentage": 60,
+          "requiredLessons": 21,
+          "badge": "⭐⭐⭐",
+          "color": "#FF6347",
+          "description": "Defesas contra estrangulamentos e agarramentos",
+          "keyTechniques": [
+            "Defesa - Estrangulamento de Dedos Frontal",
+            "Defesa - Agarramento Frontal",
+            "Queda - Trás",
+            "Queda - Lateral"
+          ],
+          "estimatedWeeks": "10-12 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 4,
+          "name": "4º Grau - Preparação para Amarela",
+          "requiredPercentage": 80,
+          "requiredLessons": 28,
+          "badge": "⭐⭐⭐⭐",
+          "color": "#DC143C",
+          "description": "Refinamento técnico e simulações de combate",
+          "keyTechniques": [
+            "Defesa Geral - Soco Reto",
+            "Rolamento - Frente",
+            "Combinações Avançadas",
+            "Simulações de Combate"
+          ],
+          "estimatedWeeks": "14-16 semanas (2 aulas/semana)",
+          "requiresSimulation": true
+        }
+      ],
+      
+      "requirements": {
+        "forGraduation": {
+          "minimumAttendanceRate": 80,
+          "minimumQualityRating": 3.0,
+          "minimumRepetitionsTotal": 500,
+          "minimumMonthsEnrolled": 3,
+          "requiresInstructorApproval": true,
+          "requiresSimulationPass": true
+        },
+        "description": "Requisitos para troca de faixa (BRANCA → AMARELA)"
+      }
+    },
+    
+    "activityCategories": [
+      {
+        "id": "posturas",
+        "name": "POSTURAS E GUARDAS",
+        "description": "Posições fundamentais de combate e defesa",
+        "color": "#3B82F6",
+        "icon": "🥋",
+        "order": 1,
+        "minimumForGraduation": 100
+      },
+      {
+        "id": "socos",
+        "name": "SOCOS E GOLPES DE MÃO",
+        "description": "Técnicas de ataque com mãos e punhos",
+        "color": "#EF4444",
+        "icon": "👊",
+        "order": 2,
+        "minimumForGraduation": 200
+      },
+      {
+        "id": "chutes",
+        "name": "CHUTES E JOELHADAS",
+        "description": "Técnicas de ataque com pernas e joelhos",
+        "color": "#F59E0B",
+        "icon": "🦵",
+        "order": 3,
+        "minimumForGraduation": 150
+      },
+      {
+        "id": "defesas",
+        "name": "DEFESAS E BLOQUEIOS",
+        "description": "Proteção contra ataques diversos",
+        "color": "#10B981",
+        "icon": "🛡️",
+        "order": 4,
+        "minimumForGraduation": 150
+      },
+      {
+        "id": "quedas",
+        "name": "QUEDAS E ROLAMENTOS",
+        "description": "Técnicas de proteção ao cair",
+        "color": "#8B5CF6",
+        "icon": "🤸",
+        "order": 5,
+        "minimumForGraduation": 80
+      },
+      {
+        "id": "combinacoes",
+        "name": "COMBINAÇÕES",
+        "description": "Sequências de técnicas encadeadas",
+        "color": "#EC4899",
+        "icon": "⚡",
+        "order": 6,
+        "minimumForGraduation": 100
+      }
+    ],
+    
+    "lessons": [
+      {
+        "lessonNumber": 1,
+        "name": "Aula 1 - Introdução ao Krav Maga",
+        "description": "Apresentação do sistema, posturas básicas e primeiros socos",
+        "durationMinutes": 60,
+        "objectives": [
+          "Compreender princípios do Krav Maga",
+          "Aprender guarda básica de boxe",
+          "Executar jab corretamente"
+        ],
+        "activities": [
+          {
+            "name": "Aquecimento - Mobilidade Articular",
+            "description": "Preparação do corpo para o treino",
+            "categoryId": "posturas",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.5,
+            "notes": "Atividade preparatória, não conta para graduação"
+          },
+          {
+            "name": "Postura - Guarda de Boxe",
+            "description": "Posição fundamental de proteção e ataque",
+            "categoryId": "posturas",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 20,
+            "intensityMultiplier": 1.0,
+            "minimumForGraduation": 100,
+            "keyPoints": [
+              "Pés na largura dos ombros",
+              "Joelhos levemente flexionados",
+              "Mãos protegendo o rosto",
+              "Queixo abaixado"
+            ]
+          },
+          {
+            "name": "Postura - Posição Ortodoxa",
+            "description": "Postura padrão para destros",
+            "categoryId": "posturas",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 15,
+            "intensityMultiplier": 1.0,
+            "minimumForGraduation": 80
+          },
+          {
+            "name": "Soco - Jab",
+            "description": "Soco rápido e direto com mão da frente",
+            "categoryId": "socos",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 50,
+            "intensityMultiplier": 1.2,
+            "minimumForGraduation": 200,
+            "keyPoints": [
+              "Rotação do ombro",
+              "Extensão completa do braço",
+              "Retorno rápido à guarda",
+              "Potência vem do solo"
+            ]
+          },
+          {
+            "name": "Alongamento - Finalização",
+            "description": "Relaxamento muscular pós-treino",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.5,
+            "notes": "Recuperação ativa"
+          }
+        ],
+        "totalRepetitionsPlanned": 85,
+        "estimatedIntensity": "MODERATE"
+      },
+      {
+        "lessonNumber": 2,
+        "name": "Aula 2 - Desenvolvimento do Jab e Cross",
+        "description": "Aprimoramento do jab e introdução ao soco direto",
+        "durationMinutes": 60,
+        "activities": [
+          {
+            "name": "Revisão - Guarda e Jab",
+            "description": "Reforço dos fundamentos da aula anterior",
+            "categoryId": "posturas",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 30,
+            "intensityMultiplier": 1.0
+          },
+          {
+            "name": "Soco - Direto (Cross)",
+            "description": "Soco potente com mão de trás",
+            "categoryId": "socos",
+            "durationMinutes": 25,
+            "repetitionsPerClass": 60,
+            "intensityMultiplier": 1.5,
+            "minimumForGraduation": 250,
+            "keyPoints": [
+              "Rotação do quadril",
+              "Transferência de peso",
+              "Pé traseiro pivotando",
+              "Explosão máxima"
+            ]
+          },
+          {
+            "name": "Combinação - Jab + Cross",
+            "description": "Sequência básica de dois socos",
+            "categoryId": "combinacoes",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 40,
+            "intensityMultiplier": 1.3,
+            "minimumForGraduation": 150
+          },
+          {
+            "name": "Alongamento - Finalização",
+            "description": "Recuperação muscular",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.5
+          }
+        ],
+        "totalRepetitionsPlanned": 130
+      },
+      {
+        "lessonNumber": 3,
+        "name": "Aula 3 - Introdução aos Chutes",
+        "description": "Primeiros chutes básicos e equilíbrio",
+        "durationMinutes": 60,
+        "activities": [
+          {
+            "name": "Aquecimento - Mobilidade de Pernas",
+            "categoryId": "chutes",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.5
+          },
+          {
+            "name": "Chute - Reto (Front Kick)",
+            "description": "Chute frontal com a sola do pé",
+            "categoryId": "chutes",
+            "durationMinutes": 25,
+            "repetitionsPerClass": 40,
+            "intensityMultiplier": 1.5,
+            "minimumForGraduation": 200,
+            "keyPoints": [
+              "Joelho elevado",
+              "Quadril projetado",
+              "Impacto com a sola",
+              "Equilíbrio na perna base"
+            ]
+          },
+          {
+            "name": "Chute - Empurrão (Push Kick)",
+            "description": "Chute defensivo para criar distância",
+            "categoryId": "chutes",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 35,
+            "intensityMultiplier": 1.2,
+            "minimumForGraduation": 150
+          },
+          {
+            "name": "Alongamento Dinâmico",
+            "categoryId": "chutes",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.5
+          }
+        ],
+        "totalRepetitionsPlanned": 75
+      },
+      {
+        "lessonNumber": 7,
+        "name": "Aula 7 - Marco do 1º Grau ⭐",
+        "description": "Revisão completa dos fundamentos (CHECKPOINT)",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_1",
+        "activities": [
+          {
+            "name": "Avaliação Prática - Posturas",
+            "categoryId": "posturas",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 20,
+            "intensityMultiplier": 1.0,
+            "isEvaluation": true
+          },
+          {
+            "name": "Avaliação Prática - Socos",
+            "categoryId": "socos",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 50,
+            "intensityMultiplier": 1.5,
+            "isEvaluation": true
+          },
+          {
+            "name": "Simulação Leve - Combate 1x1",
+            "categoryId": "combinacoes",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 10,
+            "intensityMultiplier": 2.0,
+            "notes": "Primeira experiência de sparring controlado"
+          },
+          {
+            "name": "Feedback Individual",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.0
+          }
+        ],
+        "totalRepetitionsPlanned": 80,
+        "degreeAchieved": 1,
+        "celebrationMessage": "🎉 Parabéns! Você alcançou o 1º GRAU em Krav Maga!"
+      },
+      {
+        "lessonNumber": 14,
+        "name": "Aula 14 - Marco do 2º Grau ⭐⭐",
+        "description": "Avaliação de ataques básicos e defesas iniciais",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_2",
+        "activities": [
+          {
+            "name": "Circuito de Socos e Chutes",
+            "categoryId": "combinacoes",
+            "durationMinutes": 25,
+            "repetitionsPerClass": 100,
+            "intensityMultiplier": 1.8,
+            "isEvaluation": true
+          },
+          {
+            "name": "Defesa - Estrangulamento Frontal",
+            "categoryId": "defesas",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 30,
+            "intensityMultiplier": 1.5,
+            "minimumForGraduation": 100
+          },
+          {
+            "name": "Simulação - Defesa Pessoal Real",
+            "categoryId": "combinacoes",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 5,
+            "intensityMultiplier": 2.0
+          },
+          {
+            "name": "Feedback e Planejamento",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.0
+          }
+        ],
+        "totalRepetitionsPlanned": 135,
+        "degreeAchieved": 2
+      },
+      {
+        "lessonNumber": 21,
+        "name": "Aula 21 - Marco do 3º Grau ⭐⭐⭐",
+        "description": "Defesas avançadas e quedas seguras",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_3",
+        "activities": [
+          {
+            "name": "Queda - Trás (Breakfall)",
+            "categoryId": "quedas",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 25,
+            "intensityMultiplier": 1.2,
+            "minimumForGraduation": 80
+          },
+          {
+            "name": "Queda - Lateral",
+            "categoryId": "quedas",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 25,
+            "intensityMultiplier": 1.2,
+            "minimumForGraduation": 80
+          },
+          {
+            "name": "Defesa - Agarramento Frontal",
+            "categoryId": "defesas",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 40,
+            "intensityMultiplier": 1.5,
+            "minimumForGraduation": 120
+          },
+          {
+            "name": "Sparring Controlado 2x2",
+            "categoryId": "combinacoes",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 8,
+            "intensityMultiplier": 2.0
+          }
+        ],
+        "totalRepetitionsPlanned": 98,
+        "degreeAchieved": 3
+      },
+      {
+        "lessonNumber": 28,
+        "name": "Aula 28 - Marco do 4º Grau ⭐⭐⭐⭐",
+        "description": "Preparação final para troca de faixa",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_4",
+        "activities": [
+          {
+            "name": "Rolamento - Frente",
+            "categoryId": "quedas",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 30,
+            "intensityMultiplier": 1.3,
+            "minimumForGraduation": 100
+          },
+          {
+            "name": "Defesa Geral - Soco Reto",
+            "categoryId": "defesas",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 50,
+            "intensityMultiplier": 1.5,
+            "minimumForGraduation": 150
+          },
+          {
+            "name": "Simulação de Combate Completo",
+            "categoryId": "combinacoes",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 15,
+            "intensityMultiplier": 2.0,
+            "isSimulation": true,
+            "requiresPass": true
+          },
+          {
+            "name": "Preparação Mental - Próxima Faixa",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.0
+          }
+        ],
+        "totalRepetitionsPlanned": 95,
+        "degreeAchieved": 4,
+        "nextStepMessage": "Próximo objetivo: completar 7 aulas adicionais para troca de faixa!"
+      },
+      {
+        "lessonNumber": 35,
+        "name": "Aula 35 - Exame Final Faixa Branca 🏆",
+        "description": "Avaliação completa para troca para Faixa Amarela",
+        "durationMinutes": 90,
+        "isCheckpoint": true,
+        "checkpointType": "BELT_EXAM",
+        "activities": [
+          {
+            "name": "Demonstração - Todas as Posturas",
+            "categoryId": "posturas",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 20,
+            "intensityMultiplier": 1.0,
+            "isEvaluation": true
+          },
+          {
+            "name": "Demonstração - Socos e Combinações",
+            "categoryId": "socos",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 60,
+            "intensityMultiplier": 1.5,
+            "isEvaluation": true
+          },
+          {
+            "name": "Demonstração - Chutes",
+            "categoryId": "chutes",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 40,
+            "intensityMultiplier": 1.5,
+            "isEvaluation": true
+          },
+          {
+            "name": "Demonstração - Defesas",
+            "categoryId": "defesas",
+            "durationMinutes": 20,
+            "repetitionsPerClass": 50,
+            "intensityMultiplier": 1.5,
+            "isEvaluation": true
+          },
+          {
+            "name": "Demonstração - Quedas e Rolamentos",
+            "categoryId": "quedas",
+            "durationMinutes": 10,
+            "repetitionsPerClass": 20,
+            "intensityMultiplier": 1.3,
+            "isEvaluation": true
+          },
+          {
+            "name": "Exame Final - Simulação de Rua",
+            "categoryId": "combinacoes",
+            "durationMinutes": 15,
+            "repetitionsPerClass": 10,
+            "intensityMultiplier": 2.5,
+            "isSimulation": true,
+            "requiresPass": true,
+            "passingScore": 7.0
+          },
+          {
+            "name": "Cerimônia de Graduação",
+            "categoryId": "posturas",
+            "durationMinutes": 5,
+            "repetitionsPerClass": 0,
+            "intensityMultiplier": 0.0
+          }
+        ],
+        "totalRepetitionsPlanned": 200,
+        "isFinalExam": true,
+        "completionMessage": "🏆 PARABÉNS! Você concluiu 100% do curso Faixa Branca! Aguardando aprovação do instrutor para troca de faixa."
+      }
+    ],
+    
+    "metadata": {
+      "totalPlannedRepetitions": 3850,
+      "averageRepetitionsPerLesson": 110,
+      "estimatedCompletionTimeWeeks": 18,
+      "requiredWeeklyFrequency": 2,
+      "createdAt": "2025-10-08T00:00:00.000Z",
+      "updatedAt": "2025-10-08T00:00:00.000Z",
+      "version": "2.0.0",
+      "author": "Sistema de IA - Academia Krav Maga",
+      "notes": [
+        "Curso atualizado com sistema de rastreamento de atividades",
+        "Repetições obrigatórias em todas as atividades",
+        "Multiplicadores de intensidade aplicados",
+        "Sistema de graus baseado em percentual (20% por grau)",
+        "Aulas checkpoint nos graus 1, 2, 3, 4 e exame final",
+        "Total de 3850 repetições planejadas para conclusão"
+      ]
+    },
+    
+    "gamification": {
+      "achievements": [
+        {
+          "code": "FIRST_PUNCH",
+          "name": "Primeiro Soco",
+          "description": "Executou seu primeiro jab",
+          "icon": "👊",
+          "rarity": "COMMON",
+          "unlockedAt": "LESSON_1"
+        },
+        {
+          "code": "DEGREE_1",
+          "name": "Fundamentos Sólidos",
+          "description": "Alcançou o 1º Grau (20% do curso)",
+          "icon": "⭐",
+          "rarity": "RARE",
+          "unlockedAt": "LESSON_7"
+        },
+        {
+          "code": "DEGREE_2",
+          "name": "Atacante Básico",
+          "description": "Alcançou o 2º Grau (40% do curso)",
+          "icon": "⭐⭐",
+          "rarity": "RARE",
+          "unlockedAt": "LESSON_14"
+        },
+        {
+          "code": "DEGREE_3",
+          "name": "Defensor Intermediário",
+          "description": "Alcançou o 3º Grau (60% do curso)",
+          "icon": "⭐⭐⭐",
+          "rarity": "EPIC",
+          "unlockedAt": "LESSON_21"
+        },
+        {
+          "code": "DEGREE_4",
+          "name": "Quase Faixa Amarela",
+          "description": "Alcançou o 4º Grau (80% do curso)",
+          "icon": "⭐⭐⭐⭐",
+          "rarity": "EPIC",
+          "unlockedAt": "LESSON_28"
+        },
+        {
+          "code": "YELLOW_BELT",
+          "name": "Faixa Amarela Conquistada",
+          "description": "Graduado para Faixa Amarela",
+          "icon": "🏆",
+          "rarity": "LEGENDARY",
+          "unlockedAt": "LESSON_35"
+        },
+        {
+          "code": "PERFECT_ATTENDANCE",
+          "name": "Presença Perfeita",
+          "description": "100% de presença em 1 mês",
+          "icon": "🔥",
+          "rarity": "EPIC"
+        },
+        {
+          "code": "HUNDRED_PUNCHES",
+          "name": "Centurião",
+          "description": "100 repetições de socos em uma aula",
+          "icon": "💯",
+          "rarity": "RARE"
+        }
+      ],
+      
+      "milestones": [
+        { "percentage": 10, "message": "🎯 10% completo! Continue firme!" },
+        { "percentage": 25, "message": "⚡ 25% completo! Você está no caminho certo!" },
+        { "percentage": 50, "message": "🔥 Metade do caminho! Não desista agora!" },
+        { "percentage": 75, "message": "💪 75% completo! A faixa amarela está próxima!" },
+        { "percentage": 90, "message": "🏆 90% completo! Prepare-se para o exame final!" },
+        { "percentage": 100, "message": "🎉 PARABÉNS! Você concluiu o curso Faixa Branca!" }
+      ]
+    }
+  }
+}

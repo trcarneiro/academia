@@ -1,7 +1,138 @@
-<div class="module-view">
-    <h2>Gestão de Cursos</h2>
-    <div class="alert alert-info">
-        <strong>Módulo em construção</strong>
-        <p>Esta funcionalidade está sendo desenvolvida.</p>
+<div class="module-container courses-module">
+    <!-- Header Premium -->
+    <div class="module-header-premium">
+        <div class="header-content">
+            <h1>📚 Gestão de Cursos</h1>
+            <nav class="breadcrumb">
+                <a href="#/">Início</a> > <span>Cursos</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="window.coursesController?.navigateToCourseForm()">
+                ➕ Novo Curso
+            </button>
+            <button class="btn-secondary" onclick="window.coursesController?.generateCourseWithAI()">
+                🤖 Gerar com IA
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards Premium -->
+    <div class="stats-grid">
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+                <span class="stat-number" id="totalCourses">0</span>
+                <span class="stat-label">Total de Cursos</span>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <span class="stat-number" id="activeCourses">0</span>
+                <span class="stat-label">Cursos Ativos</span>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">⏸️</div>
+            <div class="stat-info">
+                <span class="stat-number" id="inactiveCourses">0</span>
+                <span class="stat-label">Cursos Inativos</span>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+                <span class="stat-number" id="categoriesCount">0</span>
+                <span class="stat-label">Categorias</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Premium -->
+    <div class="module-filters-premium">
+        <div class="filter-group">
+            <label>🔍 Buscar:</label>
+            <input type="text" id="searchCourses" class="form-control" placeholder="Nome do curso...">
+        </div>
+        <div class="filter-group">
+            <label>📊 Status:</label>
+            <select id="filterStatus" class="form-control">
+                <option value="all">Todos</option>
+                <option value="active">Ativos</option>
+                <option value="inactive">Inativos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>🎯 Nível:</label>
+            <select id="filterLevel" class="form-control">
+                <option value="all">Todos</option>
+                <option value="BEGINNER">Iniciante</option>
+                <option value="INTERMEDIATE">Intermediário</option>
+                <option value="ADVANCED">Avançado</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button class="btn-secondary" onclick="window.coursesController?.applyFilters()">
+                🔍 Filtrar
+            </button>
+            <button class="btn-outline" onclick="window.coursesController?.clearFilters()">
+                🔄 Limpar
+            </button>
+        </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button class="view-btn active" data-view="grid" onclick="window.coursesController?.switchView('grid')">
+            🔲 Grade
+        </button>
+        <button class="view-btn" data-view="table" onclick="window.coursesController?.switchView('table')">
+            📋 Lista
+        </button>
+    </div>
+
+    <!-- Courses Content -->
+    <div id="coursesTable">
+        <!-- Grid View (default) -->
+        <div id="coursesGrid" class="courses-grid">
+            <!-- Populated by controller -->
+        </div>
+
+        <!-- Table View (hidden by default) -->
+        <div id="coursesTableView" class="courses-table" style="display: none;">
+            <div class="table-header">
+                <div class="table-cell">Nome</div>
+                <div class="table-cell">Nível</div>
+                <div class="table-cell">Status</div>
+                <div class="table-cell">Ações</div>
+            </div>
+            <div id="coursesTableBody">
+                <!-- Populated by controller -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteCourseModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-danger">
+            <div class="modal-header">
+                <h3>🗑️ Confirmar Exclusão</h3>
+                <button class="modal-close" onclick="window.coursesController?.cancelDelete()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este curso?</p>
+                <p><strong id="deleteCourseNameDisplay"></strong></p>
+                <p class="warning-text">⚠️ Esta ação não pode ser desfeita. Todas as aulas relacionadas também serão excluídas.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="window.coursesController?.cancelDelete()">
+                    ❌ Cancelar
+                </button>
+                <button class="btn-danger" onclick="window.coursesController?.confirmDelete()" id="confirmDeleteBtn">
+                    🗑️ Confirmar Exclusão
+                </button>
+            </div>
+        </div>
     </div>
 </div>

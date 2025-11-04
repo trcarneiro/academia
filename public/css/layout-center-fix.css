@@ -1,0 +1,115 @@
+/**
+ * 🎯 CORREÇÃO DEFINITIVA - Layout Centralizado
+ * Fix para conteúdo descentralizado
+ * Data: 09/10/2025
+ */
+
+/* Reset absoluto do body */
+body {
+    display: block !important; /* Remove flex que causa descentralização */
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh;
+    background: var(--color-background, #f8f9fa);
+    overflow-x: hidden; /* Previne scroll horizontal */
+}
+
+/* Top bar fixa no topo */
+.top-bar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: var(--topbar-height, 65px);
+    z-index: 1001;
+}
+
+/* Sidebar fixa à esquerda */
+.sidebar {
+    position: fixed !important;
+    top: var(--topbar-height, 65px);
+    left: 0;
+    width: var(--sidebar-width, 260px) !important;
+    height: calc(100vh - var(--topbar-height, 65px)) !important;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+/* Content-area centralizada */
+.content-area {
+    display: block !important;
+    margin-left: var(--sidebar-width, 260px) !important;
+    margin-top: var(--topbar-height, 65px) !important;
+    margin-right: 0 !important;
+    width: calc(100% - var(--sidebar-width, 260px)) !important;
+    min-height: calc(100vh - var(--topbar-height, 65px));
+    padding: 24px !important;
+    box-sizing: border-box !important;
+}
+
+/* Main element (se existir) */
+main.content-area {
+    display: block !important;
+}
+
+/* Remove qualquer transform que cause descentralização */
+.sidebar,
+.content-area,
+.top-bar {
+    transform: none !important;
+}
+
+/* Garantir que nenhum padding extra apareça */
+#module-container,
+#contentContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+    
+    .content-area {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .content-area {
+        padding: 12px !important;
+    }
+}
+
+/* Debug helper (remover após confirmar fix) */
+/* Descomente para visualizar áreas */
+/*
+.sidebar {
+    outline: 2px solid red;
+}
+
+.content-area {
+    outline: 2px solid blue;
+}
+
+.top-bar {
+    outline: 2px solid green;
+}
+*/

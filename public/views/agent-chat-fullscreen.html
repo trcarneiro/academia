@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com Agentes IA</title>
+    <link rel="stylesheet" href="../css/modules/agent-chat-fullscreen.css">
+</head>
+<body>
+    <div class="agent-chat-fullscreen-container">
+        <!-- Sidebar com histórico -->
+        <aside class="chat-sidebar" id="chatSidebar">
+            <div class="sidebar-header">
+                <button class="btn-new-chat" id="btnNewChat">
+                    <span class="icon">➕</span>
+                    <span class="text">Nova Conversa</span>
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Agentes Disponíveis</div>
+                <div class="agents-list" id="agentsList">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Conversas Recentes</div>
+                <div class="conversations-list" id="conversationsList">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <span class="icon">◀</span>
+            </button>
+        </aside>
+
+        <!-- Área principal de chat -->
+        <main class="chat-main">
+            <!-- Header -->
+            <header class="chat-header">
+                <div class="agent-info" id="agentInfo">
+                    <div class="agent-avatar">🤖</div>
+                    <div class="agent-details">
+                        <div class="agent-name">Selecione um agente</div>
+                        <div class="agent-specialization"></div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" id="btnClearChat" title="Limpar conversa">
+                        <span>🗑️</span>
+                    </button>
+                    <button class="btn-icon" id="btnSettings" title="Configurações">
+                        <span>⚙️</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Área de mensagens -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Mensagens aparecem aqui (tela de boas-vindas removida) -->
+            </div>
+
+            <!-- Input de mensagem -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="Digite sua mensagem..."
+                    ></textarea>
+                    <button class="btn-send" id="btnSend" disabled>
+                        <span class="icon">📤</span>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="char-count" id="charCount">0 / 4000</span>
+                    <span class="hint">Shift + Enter para nova linha</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/modules/agent-chat-fullscreen/index.js" type="module"></script>
+</body>
+</html>

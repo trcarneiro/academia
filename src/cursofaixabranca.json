@@ -1,0 +1,264 @@
+{
+  "courseId": "krav-maga-faixa-branca-2025",
+  "name": "Krav Maga Faixa Branca",
+  "description": "Curso introdutório de Krav Maga para iniciantes, focado em autodefesa básica, técnicas de ataque e defesa, quedas, rolamentos e fundamentos de mentalidade e tática.",
+  "durationTotalWeeks": 18,
+  "totalLessons": 35,
+  "lessonDurationMinutes": 60,
+  "objectives": [
+    "Desenvolver habilidades básicas de autodefesa",
+    "Aprender técnicas de ataque (socos, chutes, cotoveladas)",
+    "Dominar defesas contra estrangulamentos e agarramentos frontais",
+    "Praticar quedas e rolamentos com segurança",
+    "Introduzir conceitos de vigilância e regulação emocional"
+  ],
+  "equipment": ["Luvas de boxe (opcional)", "Bandagens (opcional)", "Tatame macio", "Protetor de canela (opcional)", "Protetor de joelho (opcional)"],
+  "difficulty": "Iniciante",
+  "warmup": {
+    "description": "Corrida suave, alongamentos dinâmicos, saltos.",
+    "duration": 5,
+    "type": "STRETCH"
+  },
+  "techniques": [
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789001", "name": "postura-guarda-de-boxe"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789002", "name": "postura-posicao-ortodoxa"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789003", "name": "postura-posicao-canhota"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789004", "name": "soco-jab"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789005", "name": "soco-direto"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789006", "name": "chute-reto"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789007", "name": "chute-empurrao"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789008", "name": "chute-joelhada-frontal"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789009", "name": "cotovelada-frontal"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789010", "name": "cotovelada-traseira"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789011", "name": "defesa-estrangulamento-dedos-frontal"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789012", "name": "defesa-estrangulamento-joelho-frontal"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789013", "name": "defesa-estrangulamento-empurrao-frontal"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789014", "name": "defesa-agarramento-frontal-nao-agressivo"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789015", "name": "defesa-agarramento-frontal-agressivo"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789016", "name": "defesa-geral-soco-reto"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789017", "name": "queda-tras"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789018", "name": "queda-frente-suave"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789019", "name": "queda-lateral"},
+    {"id": "a1b2c3d4-e5f6-7890-abcd-123456789020", "name": "rolamento-frente"}
+  ],
+  "simulations": [
+    {
+      "description": "Simulação de defesa pessoal em cenários controlados",
+      "type": "CHALLENGE"
+    },
+    {
+      "description": "Cenários realistas com ataques frontais simulados",
+      "type": "CHALLENGE"
+    }
+  ],
+  "cooldown": {
+    "description": "Alongamentos estáticos, respiração controlada.",
+    "duration": 5,
+    "type": "STRETCH"
+  },
+  "activities": ["TECHNIQUE", "STRETCH", "DRILL", "CHALLENGE", "ASSESSMENT"],
+  "physicalPreparation": {
+    "description": "Exercícios para condicionamento físico, incluindo corrida, flexões, abdominais e saltos para melhorar resistência e força.",
+    "exercises": [
+      {"name": "Corrida suave", "duration": "5 minutos", "type": "EXERCISE"},
+      {"name": "Flexões", "repetitions": 15, "type": "EXERCISE"},
+      {"name": "Abdominais", "repetitions": 20, "type": "EXERCISE"},
+      {"name": "Saltos laterais", "duration": "2 minutos", "type": "EXERCISE"}
+    ]
+  },
+  "supportResources": [
+    {"type": "Vídeo", "description": "Vídeos tutoriais de técnicas básicas de Krav Maga", "url": "https://example.com/krav-maga-videos"},
+    {"type": "Manual", "description": "Manual digital com descrição das técnicas e posturas", "url": "https://example.com/krav-maga-manual"},
+    {"type": "Guia", "description": "Guia de segurança para treinos", "url": "https://example.com/krav-maga-safety"}
+  ],
+  "generalNotes": [
+    "Manter hidratação durante as aulas.",
+    "Usar equipamentos de proteção em práticas de contato.",
+    "Respeitar os limites físicos e comunicar lesões ao instrutor.",
+    "Foco na técnica antes da força para evitar lesões."
+  ],
+  "gamification": {
+    "description": "Sistema de recompensas para motivar os alunos, com pontos por participação, domínio de técnicas e desafios completados.",
+    "rewards": [
+      {"name": "Ponto de Participação", "criteria": "Comparecer a uma aula", "points": 10},
+      {"name": "Ponto de Técnica", "criteria": "Dominar uma técnica com 80% de precisão", "points": 20},
+      {"name": "Ponto de Desafio", "criteria": "Completar uma simulação", "points": 30},
+      {"name": "Badge de Progresso", "criteria": "Completar 50% do curso", "points": 50}
+    ]
+  },
+  "finalEvent": {
+    "description": "Demonstração prática e avaliação final, incluindo execução de técnicas, simulações de defesa pessoal e teste de conhecimentos táticos.",
+    "duration": "120 minutos",
+    "type": "ASSESSMENT",
+    "date": "Final da semana 18"
+  },
+  "schedule": {
+    "weeks": 18,
+    "lessonsPerWeek": [
+      {
+        "week": 1,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789001", "name": "postura-guarda-de-boxe"},
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789002", "name": "postura-posicao-ortodoxa"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 2,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789003", "name": "postura-posicao-canhota"},
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789004", "name": "soco-jab"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 3,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789005", "name": "soco-direto"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 4,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789006", "name": "chute-reto"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 5,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789007", "name": "chute-empurrao"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 6,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789008", "name": "chute-joelhada-frontal"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 7,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789009", "name": "cotovelada-frontal"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 8,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789010", "name": "cotovelada-traseira"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 9,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789011", "name": "defesa-estrangulamento-dedos-frontal"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 10,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789012", "name": "defesa-estrangulamento-joelho-frontal"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 11,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789013", "name": "defesa-estrangulamento-empurrao-frontal"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 12,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789014", "name": "defesa-agarramento-frontal-nao-agressivo"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 13,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789015", "name": "defesa-agarramento-frontal-agressivo"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 14,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789016", "name": "defesa-geral-soco-reto"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 15,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789017", "name": "queda-tras"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 16,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789018", "name": "queda-frente-suave"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 17,
+        "lessons": 2,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789019", "name": "queda-lateral"},
+          "STRETCH",
+          "DRILL"
+        ]
+      },
+      {
+        "week": 18,
+        "lessons": 1,
+        "focus": [
+          {"id": "a1b2c3d4-e5f6-7890-abcd-123456789020", "name": "rolamento-frente"},
+          "CHALLENGE",
+          "ASSESSMENT"
+        ]
+      }
+    ]
+  }
+}

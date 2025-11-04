@@ -4,85 +4,101 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  prov  provider  = "mysql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Organization {
-  id                    String                 @id @default(uuid())
-  name                  String
-  slug                  String                 @unique
-  description           String?
-  logoUrl               String?
-  website               String?
-  phone                 String?
-  email                 String?
-  address               String?
-  city                  String?
-  state                 String?
-  country               String                 @default("Brazil")
-  zipCode               String?
-  subscriptionPlan      SubscriptionPlan       @default(BASIC)
-  maxStudents           Int                    @default(100)
-  maxStaff              Int                    @default(10)
-  isActive              Boolean                @default(true)
-  primaryColor          String                 @default("#1f2937")
-  secondaryColor        String                 @default("#3b82f6")
-  customDomain          String?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  achievements          Achievement[]
-  asaasCustomers        AsaasCustomer[]
-  attendances           Attendance[]
-  billingPlans          BillingPlan[]
-  challenges            Challenge[]
-  classes               Class[]
-  courses               Course[]
-  financialResponsibles FinancialResponsible[]
-  financialSettings     FinancialSettings?
-  instructors           Instructor[]
-  martialArts           MartialArt[]
-  mats                  Mat[]
-  organizationSettings  OrganizationSettings?
-  payments              Payment[]
-  subscriptions         StudentSubscription[]
-  students              Student[]
-  units                 Unit[]
-  users                 User[]
-  courseTemplates       CourseTemplate[]
-  techniqueLibraries    TechniqueLibrary[]
-  // Back-relations for new models
-  activities            Activity[]
-  badges                Badge[]
+  id                       String                    @id @default(uuid())
+  name                     String
+  slug                     String                    @unique
+  description              String?
+  logoUrl                  String?
+  website                  String?
+  phone                    String?
+  email                    String?
+  address                  String?
+  city                     String?
+  state                    String?
+  country                  String                    @default("Brazil")
+  zipCode                  String?
+  subscriptionPlan         SubscriptionPlan          @default(BASIC)
+  maxStudents              Int                       @default(100)
+  maxStaff                 Int                       @default(10)
+  isActive                 Boolean                   @default(true)
+  primaryColor             String                    @default("#1f2937")
+  secondaryColor           String                    @default("#3b82f6")
+  customDomain             String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  achievements             Achievement[]
+  activities               Activity[]
+  activityTrackingSettings ActivityTrackingSettings?
+  agendaItems              AgendaItem[]
+  aiAgents                 AIAgent[]
+  agentInteractions        AgentInteraction[]        @relation("AgentInteractions")
+  agentPermissions         AgentPermission[]         @relation("AgentPermissions")
+  agentTasks               AgentTask[]               @relation("AgentTasks")
+  agentInsights            AgentInsight[]            @relation("AgentInsights")
+  asaasCustomers           AsaasCustomer[]
+  attendances              Attendance[]
+  badges                   Badge[]
+  billingPlans             BillingPlan[]
+  challenges               Challenge[]
+  classes                  Class[]
+  courseTemplates          CourseTemplate[]
+  courses                  Course[]
+  creditRenewals           CreditRenewal[]           @relation("CreditRenewalOrganization")
+  creditUsages             CreditUsage[]             @relation("CreditUsageOrganization")
+  crmSettings              CrmSettings?
+  financialResponsibles    FinancialResponsible[]
+  financialSettings        FinancialSettings?
+  googleAdsCampaigns       GoogleAdsCampaign[]
+  instructors              Instructor[]
+  leads                    Lead[]
+  martialArts              MartialArt[]
+  mats                     Mat[]
+  organizationSettings     OrganizationSettings?
+  payments                 Payment[]
+  personalClasses          PersonalTrainingClass[]
+  studentCredits           StudentCredit[]           @relation("StudentCreditsOrganization")
+  subscriptions            StudentSubscription[]
+  students                 Student[]
+  techniqueLibraries       TechniqueLibrary[]
+  turmas                   Turma[]
+  units                    Unit[]
+  users                    User[]
 
   @@map("organizations")
 }
 
 model OrganizationSettings {
-  id                      String       @id @default(uuid())
-  organizationId          String       @unique
-  enableGamification      Boolean      @default(true)
-  enableVideoAnalysis     Boolean      @default(false)
-  enableAIRecommendations Boolean      @default(true)
-  enableMultipleArts      Boolean      @default(true)
-  aiProvider              AIProvider   @default(CLAUDE)
-  openaiApiKey            String?
-  anthropicApiKey         String?
-  geminiApiKey            String?
-  openRouterApiKey        String?
-  timezone                String       @default("America/Sao_Paulo")
-  currency                String       @default("BRL")
-  language                String       @default("pt-BR")
-  allowQRCheckin          Boolean      @default(true)
-  allowManualCheckin      Boolean      @default(true)
-  allowFacialCheckin      Boolean      @default(false)
-  checkinWindowStart      Int          @default(30)
-  checkinWindowEnd        Int          @default(15)
-  createdAt               DateTime     @default(now())
-  updatedAt               DateTime     @default(now())
-  organization            Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                         String       @id @default(uuid())
+  organizationId             String       @unique
+  enableGamification         Boolean      @default(true)
+  enableVideoAnalysis        Boolean      @default(false)
+  enableAIRecommendations    Boolean      @default(true)
+  enableMultipleArts         Boolean      @default(true)
+  aiProvider                 AIProvider   @default(CLAUDE)
+  openaiApiKey               String?
+  anthropicApiKey            String?
+  geminiApiKey               String?
+  openRouterApiKey           String?
+  timezone                   String       @default("America/Sao_Paulo")
+  currency                   String       @default("BRL")
+  language                   String       @default("pt-BR")
+  allowQRCheckin             Boolean      @default(true)
+  allowManualCheckin         Boolean      @default(true)
+  allowFacialCheckin         Boolean      @default(false)
+  checkinWindowStart         Int          @default(30)
+  checkinWindowEnd           Int          @default(15)
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @default(now())
+  allowInstructorOverride    Boolean      @default(true)
+  autoMarkActivitiesComplete Boolean      @default(false)
+  requireActivityNotes       Boolean      @default(false)
+  organization               Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("organization_settings")
 }
@@ -110,50 +126,58 @@ model MartialArt {
 }
 
 model Course {
-  id                String             @id @default(uuid())
-  organizationId    String
-  martialArtId      String?
-  courseTemplateId  String?
-  name              String
-  description       String?
-  level             CourseLevel
-  duration          Int
-  classesPerWeek    Int                @default(2)
-  totalClasses      Int
-  minAge            Int                @default(16)
-  maxAge            Int?
-  category          StudentCategory    @default(ADULT)
-  orderIndex        Int                @default(1)
-  nextCourseId      String?            @unique
-  prerequisites     String[]
-  objectives        String[]
-  requirements      String[]
-  imageUrl          String?
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @default(now())
-  attendanceRecords AttendanceRecord[]
-  classes           Class[]
-  challenges        CourseChallenge[]
-  enrollments       CourseEnrollment[]
-  techniques        CourseTechnique[]
-  martialArt        MartialArt?        @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
-  planCourses       PlanCourse[]
-  nextCourse        Course?            @relation("CourseProgression", fields: [nextCourseId], references: [id])
-  previousCourse    Course?            @relation("CourseProgression")
-  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  evaluationRecords EvaluationRecord[]
-  lessonPlans       LessonPlan[]
-  progressRecords   Progress[]
-  studentCourses    StudentCourse[]
-  techniqueDetails  TechniqueDetail[]
-  weeklyChallenges  WeeklyChallenge[]
-  template          CourseTemplate?    @relation(fields: [courseTemplateId], references: [id])
-  // Opposite for BillingPlanPrimaryCourse
-  primaryBillingPlans BillingPlan[]    @relation("BillingPlanPrimaryCourse")
-  // Back-relations for assessments and evaluations
+  id                    String                    @id @default(uuid())
+  organizationId        String
+  martialArtId          String?
+  courseTemplateId      String?
+  name                  String
+  description           String?
+  level                 CourseLevel
+  duration              Int
+  classesPerWeek        Int                       @default(2)
+  totalClasses          Int
+  minAge                Int                       @default(16)
+  maxAge                Int?
+  category              StudentCategory           @default(ADULT)
+  orderIndex            Int                       @default(1)
+  nextCourseId          String?                   @unique
+  prerequisites         String[]
+  objectives            String[]
+  requirements          String[]
+  imageUrl              String?
+  isActive              Boolean                   @default(true)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @default(now())
+  isBaseCourse          Boolean                   @default(false)
+  sequence              Int                       @default(1)
   assessmentDefinitions AssessmentDefinition[]
+  attendanceRecords     AttendanceRecord[]
+  primaryBillingPlans   BillingPlan[]             @relation("BillingPlanPrimaryCourse")
+  classes               Class[]
+  challenges            CourseChallenge[]
+  enrollments           CourseEnrollment[]
+  graduationLevels      CourseGraduationLevel[]
+  courseRequirements    CourseRequirement[]
+  techniques            CourseTechnique[]
+  template              CourseTemplate?           @relation(fields: [courseTemplateId], references: [id])
+  martialArt            MartialArt?               @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
+  nextCourse            Course?                   @relation("CourseProgression", fields: [nextCourseId], references: [id])
+  previousCourse        Course?                   @relation("CourseProgression")
+  organization          Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  evaluationRecords     EvaluationRecord[]
+  lessonPlans           LessonPlan[]
+  personalSessions      PersonalTrainingSession[]
+  planCourses           PlanCourse[]
+  progressRecords       Progress[]
+  studentCourses        StudentCourse[]
+  degreeHistory         StudentDegreeHistory[]
+  graduations           StudentGraduation[]
+  progressTracking      StudentProgress[]
   teacherEvaluations    TeacherEvaluation[]
+  techniqueDetails      TechniqueDetail[]
+  turmasCourses         TurmaCourse[]
+  turmas                Turma[]
+  weeklyChallenges      WeeklyChallenge[]
 
   @@unique([organizationId, name])
   @@map("courses")
@@ -172,14 +196,14 @@ model CourseTemplate {
   maxAge           Int?
   objectives       String[]
   requirements     String[]
-  structure        Json // Estrutura modular do curso
-  ragSettings      Json? // Configurações específicas do RAG
+  structure        Json
+  ragSettings      Json?
   isSystemTemplate Boolean        @default(false)
   isActive         Boolean        @default(true)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @default(now())
-  courses          Course[]
   organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  courses          Course[]
 
   @@unique([organizationId, name])
   @@map("course_templates")
@@ -191,8 +215,8 @@ model TechniqueLibrary {
   name              String
   description       String?
   category          TechniqueCategory
-  content           Json // Conteúdo estruturado (vídeos, instruções)
-  ragEmbeddings     Json? // Embeddings do RAG para busca semântica
+  content           Json
+  ragEmbeddings     Json?
   prerequisites     String[]
   relatedTechniques String[]
   difficulty        Int               @default(1)
@@ -205,108 +229,95 @@ model TechniqueLibrary {
   @@map("technique_libraries")
 }
 
-enum CourseCategory {
-  MARTIAL_ARTS
-  DANCE
-  FITNESS
-  LANGUAGE
-  MUSIC
-  OTHER
-}
-
 model LessonPlan {
-  id               String                 @id @default(uuid())
-  courseId         String
-  title            String
-  description      String?
-  lessonNumber     Int
-  weekNumber       Int
-  unit             String?
-  level            Int                    @default(1)
-  warmup           Json
-  techniques       Json
-  simulations      Json
-  cooldown         Json
-  mentalModule     Json?
-  tacticalModule   String?
-  adaptations      Json?
-  duration         Int                    @default(60)
-  difficulty       Int                    @default(1)
-  objectives       String[]
-  equipment        String[]
-  activities       String[]
-  videoUrl         String?
-  thumbnailUrl     String?
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @default(now())
-  classes          Class[]
-  course           Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  techniqueRecords TechniqueRecord[]
-  // opposite side for LessonPlanTechniques
-  techniqueLinks   LessonPlanTechniques[]
-  // Back-relations for LessonPlanActivity items
-  activityItems    LessonPlanActivity[]
+  id                String                    @id @default(uuid())
+  courseId          String
+  title             String
+  description       String?
+  lessonNumber      Int
+  weekNumber        Int
+  unit              String?
+  level             Int                       @default(1)
+  warmup            Json
+  techniques        Json
+  simulations       Json
+  cooldown          Json
+  mentalModule      Json?
+  tacticalModule    String?
+  adaptations       Json?
+  duration          Int                       @default(60)
+  difficulty        Int                       @default(1)
+  objectives        String[]
+  equipment         String[]
+  activities        String[]
+  videoUrl          String?
+  thumbnailUrl      String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @default(now())
+  archivedAt        DateTime?
+  isActive          Boolean                   @default(true)
+  previousVersionId String?
+  version           Int                       @default(1)
+  classes           Class[]
+  activityItems     LessonPlanActivity[]
+  techniqueLinks    LessonPlanTechniques[]
+  course            Course                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  previousVersion   LessonPlan?               @relation("LessonPlanVersions", fields: [previousVersionId], references: [id])
+  nextVersions      LessonPlan[]              @relation("LessonPlanVersions")
+  personalSessions  PersonalTrainingSession[]
+  techniqueRecords  TechniqueRecord[]
+  turmaLessons      TurmaLesson[]
 
-  @@unique([courseId, lessonNumber])
+  @@unique([courseId, lessonNumber, isActive])
   @@map("lesson_plans")
 }
 
-// --- Techniques Module (Banco de Técnicas - API-first) ---
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Technique {
-  id                   String   @id @default(uuid())
-  martialArtId         String?
-  // Identidade e SEO
-  name                 String
-  // Reintroduced legacy / extended fields (kept optional to avoid destructive diffs)
-  slug                 String?  @unique
-  shortDescription     String?
-  category             String?
-  subcategory          String?
-  modality             String?
-  complexity           String? // originally string-based taxonomy
-  difficulty           Int? // numeric difficulty scale
-  description          String?
-  durationMin          Int?
-  durationMax          Int?
-  groupSizeMin         Int?
-  groupSizeMax         Int?
-  ageRangeMin          Int?
-  ageRangeMax          Int?
-  // Conteúdo e recursos
-  objectives           String[]
-  resources            String[]
-  stepByStep           Json[]
-  assessmentCriteria   String[]
-  risksMitigation      String[]
-  // BNCC e competências
-  bnccCompetencies     Json[]
-  bnccCompetenciesText String?  @default("")
-  // skills             String[]
-  tags                 String[]
-  references           String[]
-  prerequisites        String[] // raw list of technique IDs (still have pivot for normalized graph)
-  imageUrl             String?
-  videoUrl             String?
-  instructions         Json[] // generic structured instructions blocks
-  masteryXP            Int?
-  baseXP               Int?
-  badgeIcon            String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  // Relações opcionais
-  martialArt         MartialArt?                 @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
-  // Opposite sides for existing relations
-  courseTechniques   CourseTechnique[]
-  techniqueProgress  TechniqueProgress[]
-  techniqueRecords   TechniqueRecord[]
-  educationalLinks   EducationalPlanTechniques[]
-  lessonLinks        LessonPlanTechniques[]
-  // Normalized prerequisite graph relations
-  prerequisitesEdges TechniquePrerequisite[]     @relation("TechniquePrerequisitesTechnique")
-  requiredByEdges    TechniquePrerequisite[]     @relation("TechniquePrerequisitesPrerequisite")
-  // Back-relations for Activity references
-  referencedByActivities Activity[] @relation("ActivityTechniqueRef")
+  id                     String                      @id @default(uuid())
+  martialArtId           String?
+  name                   String
+  description            String?
+  difficulty             Int?
+  prerequisites          String[]
+  videoUrl               String?
+  imageUrl               String?
+  baseXP                 Int?
+  masteryXP              Int?
+  badgeIcon              String?
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+  slug                   String?                     @unique
+  shortDescription       String?
+  subcategory            String?
+  modality               String?
+  complexity             String?
+  durationMin            Int?
+  durationMax            Int?
+  groupSizeMin           Int?
+  groupSizeMax           Int?
+  ageRangeMin            Int?
+  ageRangeMax            Int?
+  objectives             String[]
+  resources              String[]
+  assessmentCriteria     String[]
+  risksMitigation        String[]
+  tags                   String[]
+  references             String[]
+  bnccCompetenciesText   String?                     @default("")
+  category               String?
+  instructions           Json[]
+  stepByStep             Json[]
+  bnccCompetencies       Json[]
+  referencedByActivities Activity[]                  @relation("ActivityTechniqueRef")
+  courseTechniques       CourseTechnique[]
+  educationalLinks       EducationalPlanTechniques[]
+  lessonLinks            LessonPlanTechniques[]
+  requiredByEdges        TechniquePrerequisite[]     @relation("TechniquePrerequisitesPrerequisite")
+  prerequisitesEdges     TechniquePrerequisite[]     @relation("TechniquePrerequisitesTechnique")
+  techniqueProgress      TechniqueProgress[]
+  techniqueRecords       TechniqueRecord[]
+  martialArt             MartialArt?                 @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
 
   @@map("techniques")
 }
@@ -328,80 +339,120 @@ model CourseTechnique {
 }
 
 model User {
-  id             String       @id @default(uuid())
-  organizationId String
-  email          String
-  password       String
-  role           UserRole     @default(STUDENT)
-  firstName      String
-  lastName       String
-  avatarUrl      String?
-  phone          String?
-  cpf            String?
-  birthDate      DateTime?
-  isActive       Boolean      @default(true)
-  emailVerified  Boolean      @default(false)
-  lastLoginAt    DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now())
-  instructor     Instructor?
-  student        Student?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                 String              @id @default(uuid())
+  organizationId     String
+  email              String?
+  password           String
+  role               UserRole            @default(STUDENT)
+  firstName          String
+  lastName           String
+  avatarUrl          String?
+  phone              String?
+  cpf                String?
+  birthDate          DateTime?
+  isActive           Boolean             @default(true)
+  emailVerified      Boolean             @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now())
+  
+  // ✅ Permissões de Agentes
+  permissions              Json             @default("[]")  // Array de permissões específicas
+  canApproveAgentTasks     Boolean          @default(false)
+  canExecuteAgentTasks     Boolean          @default(false)
+  canCreateAgents          Boolean          @default(false)
+  canDeleteAgents          Boolean          @default(false)
+  maxTaskPriority          String           @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  canApproveCategories     Json             @default("[]")  // Array de categorias ['EMAIL', 'WHATSAPP']
+  
+  agendaItems        AgendaItem[]
+  agentConversations AgentConversation[]
+  approvedPermissions AgentPermission[]  @relation("ApprovedPermissions")
+  createdTasks       AgentTask[]         @relation("CreatedTasks")
+  assignedTasks      AgentTask[]         @relation("AssignedTasks")
+  approvedTasks      AgentTask[]         @relation("ApprovedTasks")
+  executorTasks      AgentTask[]         @relation("ExecutorTasks")
+  taskExecutions     TaskExecution[]     @relation("TaskExecutions")
+  instructor         Instructor?
+  leadActivities     LeadActivity[]      @relation("LeadActivities")
+  leadNotes          LeadNote[]          @relation("LeadNotes")
+  assignedLeads      Lead[]              @relation("LeadAssignedTo")
+  student            Student?
+  attendanceChecks   TurmaAttendance[]   @relation("AttendanceChecker")
+  turmas             Turma[]
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, email])
   @@map("users")
 }
 
 model Student {
-  id                     String                @id @default(uuid())
-  organizationId         String
-  userId                 String                @unique
-  emergencyContact       String?
-  medicalConditions      String?
-  category               StudentCategory       @default(ADULT)
-  gender                 Gender?               @default(MASCULINO)
-  age                    Int?
-  physicalCondition      PhysicalCondition?    @default(INICIANTE)
-  specialNeeds           SpecialNeed[]
-  totalXP                Int                   @default(0)
-  globalLevel            Int                   @default(1)
-  currentStreak          Int                   @default(0)
-  longestStreak          Int                   @default(0)
-  lastCheckinDate        DateTime?
-  preferredDays          String[]
-  preferredTimes         String[]
-  notifications          Boolean               @default(true)
-  enrollmentDate         DateTime              @default(now())
-  isActive               Boolean               @default(true)
-  createdAt              DateTime              @default(now())
-  updatedAt              DateTime              @default(now())
-  financialResponsibleId String?
-  asaasCustomer          AsaasCustomer?
-  attendancePatterns     AttendancePattern?
-  attendanceRecords      AttendanceRecord[]
-  attendances            Attendance[]
-  challengeProgress      ChallengeProgress[]
-  enrollments            CourseEnrollment[]
-  evaluationRecords      EvaluationRecord[]
-  evaluations            Evaluation[]
-  payments               Payment[]
-  progressRecords        Progress[]
-  achievements           StudentAchievement[]
-  studentCourses         StudentCourse[]
-  progressions           StudentProgression[]
-  subscriptions          StudentSubscription[]
-  financialResponsible   FinancialResponsible? @relation(fields: [financialResponsibleId], references: [id])
-  organization           Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user                   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  techniqueRecords       TechniqueRecord[]
-  // Back-relations for new entities
-  assessmentAttempts     AssessmentAttempt[]
-  physicalTestAttempts   PhysicalTestAttempt[]
-  feedbackLessons        FeedbackLesson[]
-  feedbackActivities     FeedbackActivity[]
-  teacherEvaluations     TeacherEvaluation[]
-  badgeUnlocks           BadgeUnlock[]
-  pointsTransactions     PointsTransaction[]
+  id                            String                      @id @default(uuid())
+  organizationId                String
+  userId                        String                      @unique
+  emergencyContact              String?
+  medicalConditions             String?
+  category                      StudentCategory             @default(ADULT)
+  gender                        Gender?                     @default(MASCULINO)
+  age                           Int?
+  physicalCondition             PhysicalCondition?          @default(INICIANTE)
+  specialNeeds                  SpecialNeed[]
+  totalXP                       Int                         @default(0)
+  globalLevel                   Int                         @default(1)
+  currentStreak                 Int                         @default(0)
+  longestStreak                 Int                         @default(0)
+  lastCheckinDate               DateTime?
+  preferredDays                 String[]
+  preferredTimes                String[]
+  notifications                 Boolean                     @default(true)
+  enrollmentDate                DateTime                    @default(now())
+  isActive                      Boolean                     @default(true)
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @default(now())
+  financialResponsibleId        String?
+  registrationNumber            String?                     @unique
+  financialResponsibleStudentId String?
+  agentConversations            AgentConversation[]
+  asaasCustomer                 AsaasCustomer?
+  assessmentAttempts            AssessmentAttempt[]
+  attendancePatterns            AttendancePattern?
+  attendanceRecords             AttendanceRecord[]
+  attendances                   Attendance[]
+  badgeUnlocks                  BadgeUnlock[]
+  biometricAttempts             BiometricAttempt[]
+  biometricData                 BiometricData?
+  challengeProgress             ChallengeProgress[]
+  enrollments                   CourseEnrollment[]
+  creditRenewals                CreditRenewal[]
+  creditUsages                  CreditUsage[]
+  evaluationRecords             EvaluationRecord[]
+  evaluations                   Evaluation[]
+  feedbackActivities            FeedbackActivity[]
+  feedbackLessons               FeedbackLesson[]
+  convertedFromLead             Lead?                       @relation("LeadToStudent")
+  activityExecutions            LessonActivityExecution[]
+  payments                      Payment[]
+  personalClasses               PersonalTrainingClass[]
+  personalPreferences           PersonalTrainingPreference?
+  physicalTestAttempts          PhysicalTestAttempt[]
+  pointsTransactions            PointsTransaction[]
+  progressRecords               Progress[]
+  achievements                  StudentAchievement[]
+  studentCourses                StudentCourse[]
+  studentCredits                StudentCredit[]
+  degreeHistory                 StudentDegreeHistory[]
+  graduations                   StudentGraduation[]
+  progressTracking              StudentProgress[]
+  progressions                  StudentProgression[]
+  subscriptions                 StudentSubscription[]
+  financialResponsible          FinancialResponsible?       @relation(fields: [financialResponsibleId], references: [id])
+  financialResponsibleStudent   Student?                    @relation("FinancialDependents", fields: [financialResponsibleStudentId], references: [id])
+  financialDependents           Student[]                   @relation("FinancialDependents")
+  organization                  Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teacherEvaluations            TeacherEvaluation[]
+  techniqueRecords              TechniqueRecord[]
+  turmaAttendances              TurmaAttendance[]
+  turmaStudents                 TurmaStudent[]
 
   @@map("students")
 }
@@ -411,7 +462,6 @@ model EducationalPlanTechniques {
   techniqueId       String
   order             Int       @default(0)
   notes             String?
-  // Relations (assumindo existência de EducationalPlan em outro arquivo/esquema)
   technique         Technique @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@id([educationalPlanId, techniqueId])
@@ -423,8 +473,7 @@ model LessonPlanTechniques {
   techniqueId       String
   order             Int        @default(0)
   allocationMinutes Int        @default(0)
-  objectiveMapping  String[] // mapeamento de objetivos vinculados à técnica
-  // Relations
+  objectiveMapping  String[]
   lessonPlan        LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
   technique         Technique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
@@ -487,31 +536,58 @@ model TechniqueRecord {
 }
 
 model Unit {
-  id              String       @id @default(uuid())
-  organizationId  String
-  name            String
-  description     String?
-  address         String
-  addressNumber   String?
-  complement      String?
-  neighborhood    String?
-  city            String
-  state           String
-  zipCode         String
-  phone           String?
-  email           String?
-  capacity        Int          @default(100)
-  totalMats       Int          @default(1)
-  responsibleName String?
-  isActive        Boolean      @default(true)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @default(now())
-  classes         Class[]
-  mats            Mat[]
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id               String                    @id @default(uuid())
+  organizationId   String
+  name             String
+  description      String?
+  address          String
+  addressNumber    String?
+  complement       String?
+  neighborhood     String?
+  city             String
+  state            String
+  zipCode          String
+  phone            String?
+  email            String?
+  capacity         Int                       @default(100)
+  totalMats        Int                       @default(1)
+  responsibleName  String?
+  isActive         Boolean                   @default(true)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @default(now())
+  agendaItems      AgendaItem[]
+  classes          Class[]
+  mats             Mat[]
+  personalSessions PersonalTrainingSession[]
+  trainingAreas    TrainingArea[]
+  turmas           Turma[]
+  organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, name])
   @@map("units")
+}
+
+model TrainingArea {
+  id               String                    @id @default(uuid())
+  unitId           String
+  name             String
+  description      String?
+  capacity         Int                       @default(20)
+  areaType         String
+  dimensions       String?
+  equipment        String[]
+  flooring         String?
+  isActive         Boolean                   @default(true)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @default(now())
+  agendaItems      AgendaItem[]
+  classes          Class[]                   @relation("ClassTrainingArea")
+  personalSessions PersonalTrainingSession[] @relation("PersonalSessionTrainingArea")
+  unit             Unit                      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  turmas           Turma[]                   @relation("TurmaTrainingArea")
+
+  @@unique([unitId, name])
+  @@map("training_areas")
 }
 
 model Mat {
@@ -521,9 +597,9 @@ model Mat {
   name           String
   description    String?
   capacity       Int          @default(20)
-  dimensions     String? // "8x8m" ou similar
-  equipment      String[] // ["Tatame", "Saco de pancada", "Espelhos"]
-  materialType   String? // "EVA", "Tatame tradicional", etc
+  dimensions     String?
+  equipment      String[]
+  materialType   String?
   isActive       Boolean      @default(true)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @default(now())
@@ -536,28 +612,30 @@ model Mat {
 }
 
 model Instructor {
-  id                  String       @id @default(uuid())
-  organizationId      String
-  userId              String       @unique
-  specializations     String[]
-  certifications      String[]
-  bio                 String?
-  martialArts         String[]
-  maxStudentsPerClass Int          @default(20)
-  experience          String? // "5 anos", "Faixa Preta 2º Dan"
-  availability        Json? // Horários disponíveis por dia da semana
-  hourlyRate          Decimal?     @db.Decimal(10, 2) // Taxa por hora
-  preferredUnits      String[] // IDs das unidades preferenciais
-  hireDate            DateTime     @default(now())
-  isActive            Boolean      @default(true)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @default(now())
-  classes             Class[]
-  evaluations         Evaluation[]
-  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Back-relations for teacher evaluations
-  teacherEvaluations  TeacherEvaluation[]
+  id                     String                    @id @default(uuid())
+  organizationId         String
+  userId                 String                    @unique
+  specializations        String[]
+  certifications         String[]
+  bio                    String?
+  martialArts            String[]
+  maxStudentsPerClass    Int                       @default(20)
+  experience             String?
+  availability           Json?
+  hourlyRate             Decimal?                  @db.Decimal(10, 2)
+  preferredUnits         String[]
+  hireDate               DateTime                  @default(now())
+  isActive               Boolean                   @default(true)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @default(now())
+  classes                Class[]
+  evaluations            Evaluation[]
+  organization           Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityValidations    LessonActivityExecution[] @relation("ActivityValidation")
+  personalClasses        PersonalTrainingClass[]
+  qualitativeAssessments QualitativeAssessment[]
+  teacherEvaluations     TeacherEvaluation[]
 
   @@map("instructors")
 }
@@ -577,44 +655,46 @@ model ClassSchedule {
 }
 
 model Class {
-  id                String             @id @default(uuid())
-  organizationId    String
-  unitId            String?
-  matId             String?
-  scheduleId        String?
-  instructorId      String
-  courseId          String
-  lessonPlanId      String?
-  date              DateTime
-  startTime         DateTime
-  endTime           DateTime
-  title             String?
-  description       String?
-  status            ClassStatus        @default(SCHEDULED)
-  actualStudents    Int                @default(0)
-  maxStudents       Int                @default(20)
-  agenda            Json? // Agenda detalhada da aula
-  notes             String? // Observações do instrutor
-  qrCode            String?            @unique
-  qrCodeExpiry      DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @default(now())
-  attendanceRecords AttendanceRecord[]
-  attendances       Attendance[]
-  course            Course             @relation(fields: [courseId], references: [id])
-  instructor        Instructor         @relation(fields: [instructorId], references: [id])
-  lessonPlan        LessonPlan?        @relation(fields: [lessonPlanId], references: [id])
-  mat               Mat?               @relation(fields: [matId], references: [id])
-  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  schedule          ClassSchedule?     @relation(fields: [scheduleId], references: [id])
-  studentCourses    StudentCourse[]
-  unit              Unit?              @relation(fields: [unitId], references: [id])
-  // Back-relations for new entities
-  activities        ClassActivity[]
-  assessmentAttempts AssessmentAttempt[]
+  id                   String                @id @default(uuid())
+  organizationId       String
+  unitId               String?
+  matId                String?
+  scheduleId           String?
+  instructorId         String
+  courseId             String
+  lessonPlanId         String?
+  date                 DateTime
+  startTime            DateTime
+  endTime              DateTime
+  title                String?
+  description          String?
+  status               ClassStatus           @default(SCHEDULED)
+  actualStudents       Int                   @default(0)
+  maxStudents          Int                   @default(20)
+  agenda               Json?
+  notes                String?
+  qrCode               String?               @unique
+  qrCodeExpiry         DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now())
+  location             String?
+  trainingAreaId       String?
+  assessmentAttempts   AssessmentAttempt[]
+  attendanceRecords    AttendanceRecord[]
+  attendances          Attendance[]
+  activities           ClassActivity[]
+  course               Course                @relation(fields: [courseId], references: [id])
+  instructor           Instructor            @relation(fields: [instructorId], references: [id])
+  lessonPlan           LessonPlan?           @relation(fields: [lessonPlanId], references: [id])
+  mat                  Mat?                  @relation(fields: [matId], references: [id])
+  organization         Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schedule             ClassSchedule?        @relation(fields: [scheduleId], references: [id])
+  trainingArea         TrainingArea?         @relation("ClassTrainingArea", fields: [trainingAreaId], references: [id])
+  unit                 Unit?                 @relation(fields: [unitId], references: [id])
+  feedbackLessons      FeedbackLesson[]
   physicalTestAttempts PhysicalTestAttempt[]
-  feedbackLessons   FeedbackLesson[]
-  teacherEvaluations TeacherEvaluation[]
+  studentCourses       StudentCourse[]
+  teacherEvaluations   TeacherEvaluation[]
 
   @@map("classes")
 }
@@ -635,6 +715,7 @@ model Attendance {
   class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  creditUsages   CreditUsage[]
 
   @@unique([studentId, classId])
   @@map("attendances")
@@ -848,7 +929,7 @@ model StudentCourse {
   id              String           @id @default(uuid())
   studentId       String
   courseId        String
-  classId         String
+  classId         String?
   paymentPlanId   String?
   startDate       DateTime         @default(now())
   expectedEndDate DateTime?
@@ -857,12 +938,12 @@ model StudentCourse {
   isActive        Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @default(now())
-  class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  class           Class?           @relation(fields: [classId], references: [id], onDelete: Cascade)
   course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   paymentPlan     BillingPlan?     @relation("BillingPlanStudentCourses", fields: [paymentPlanId], references: [id])
   student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, courseId, classId])
+  @@unique([studentId, courseId])
   @@map("student_courses")
 }
 
@@ -998,7 +1079,7 @@ model AsaasCustomer {
   financialResponsibleId String?               @unique
   asaasId                String                @unique
   name                   String
-  cpfCnpj                String
+  cpfCnpj                String?
   email                  String?
   phone                  String?
   mobilePhone            String?
@@ -1031,36 +1112,49 @@ model BillingPlan {
   category                StudentCategory?
   price                   Decimal               @db.Decimal(10, 2)
   billingType             BillingType           @default(MONTHLY)
-  classesPerWeek          Int                   @default(2)
+  classesPerWeek          Int?                  @default(2)
   maxClasses              Int?
-  duration                Int? // Duração em meses
-  isUnlimitedAccess       Boolean               @default(false) // Plano ilimitado
+  duration                Int?
+  isUnlimitedAccess       Boolean               @default(false)
   hasPersonalTraining     Boolean               @default(false)
   hasNutrition            Boolean               @default(false)
-  // Parcelamento no cartão
   allowInstallments       Boolean               @default(false)
-  maxInstallments         Int                   @default(1) // Máximo 8x
-  installmentInterestRate Decimal?              @db.Decimal(5, 2) // Taxa de juros (futuro)
-  // Recorrência automática
+  maxInstallments         Int                   @default(1)
+  installmentInterestRate Decimal?              @db.Decimal(5, 2)
   isRecurring             Boolean               @default(false)
-  recurringInterval       Int? // Intervalo em dias
-  // Recursos extras
-  accessAllModalities     Boolean               @default(false) // Acesso a todas modalidades
-  allowFreeze             Boolean               @default(true) // Permite congelar plano
-  freezeMaxDays           Int                   @default(30) // Máximo de dias congelado
-  // Metadata
-  features                Json? // Recursos extras em JSON
+  recurringInterval       Int?
+  accessAllModalities     Boolean               @default(false)
+  allowFreeze             Boolean               @default(true)
+  freezeMaxDays           Int                   @default(30)
+  features                Json?
   isActive                Boolean               @default(true)
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @default(now())
-  // Name the primary course relation to avoid clashing with other relations
+  creditsValidity         Int?
+  pricePerClass           Decimal?              @db.Decimal(10, 2)
+  allowPartialCredit      Boolean?              @default(false)
+  allowRefund             Boolean?              @default(false)
+  allowTransfer           Boolean?              @default(false)
+  bulkDiscountTiers       Json?
+  creditQuantity          Int?
+  creditType              CreditType?
+  creditValidityDays      Int?                  @default(90)
+  minCreditsPerClass      Int?                  @default(1)
+  planType                PlanType?
+  refundDaysBeforeExp     Int?                  @default(7)
+  transferFeePercent      Decimal?              @db.Decimal(5, 2)
+  autoRenewChargeMethod   String?
+  autoRenewCredits        Boolean?              @default(false)
+  maxAutoRenewals         Int?
+  renewalIntervalDays     Int?
+  creditRenewalMethod     CreditRenewalMethod?  @default(INCLUDED)
+  creditRenewalTrigger    CreditRenewalTrigger? @default(MONTHLY)
   course                  Course?               @relation("BillingPlanPrimaryCourse", fields: [courseId], references: [id])
   organization            Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  // Explicit back-relations with names to avoid ambiguity
-  studentCourses          StudentCourse[]       @relation("BillingPlanStudentCourses")
-  subscriptions          StudentSubscription[]  @relation("BillingPlanSubscriptions")
-  // Pivot using explicit join model
   planCourses             PlanCourse[]          @relation("PlanCourseToPlan")
+  studentCourses          StudentCourse[]       @relation("BillingPlanStudentCourses")
+  studentCredits          StudentCredit[]       @relation("BillingPlanCredits")
+  subscriptions           StudentSubscription[] @relation("BillingPlanSubscriptions")
 
   @@map("billing_plans")
 }
@@ -1084,6 +1178,7 @@ model StudentSubscription {
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @default(now())
   payments               Payment[]
+  StudentCredit          StudentCredit[]
   asaasCustomer          AsaasCustomer?        @relation(fields: [asaasCustomerId], references: [id])
   financialResponsible   FinancialResponsible? @relation(fields: [financialResponsibleId], references: [id])
   organization           Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1142,6 +1237,1292 @@ model FinancialSettings {
   @@map("financial_settings")
 }
 
+model StudentCredit {
+  id               String               @id @default(uuid())
+  organizationId   String
+  studentId        String
+  planId           String
+  subscriptionId   String?
+  totalCredits     Int
+  creditsUsed      Int                  @default(0)
+  creditsAvailable Int
+  creditType       CreditType
+  purchasedAt      DateTime             @default(now())
+  expiresAt        DateTime?
+  status           String               @default("ACTIVE")
+  notes            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @default(now())
+  autoRenew        Boolean              @default(false)
+  nextRenewalDate  DateTime?
+  previousCreditId String?
+  renewalChargeId  String?
+  renewalCount     Int                  @default(0)
+  usages           CreditUsage[]        @relation("StudentCreditUsages")
+  organization     Organization         @relation("StudentCreditsOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
+  plan             BillingPlan          @relation("BillingPlanCredits", fields: [planId], references: [id])
+  previousCredit   StudentCredit?       @relation("CreditRenewal", fields: [previousCreditId], references: [id])
+  renewedCredits   StudentCredit[]      @relation("CreditRenewal")
+  student          Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subscription     StudentSubscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([studentId, status])
+  @@index([expiresAt])
+  @@index([organizationId])
+  @@map("student_credits")
+}
+
+model CreditUsage {
+  id             String        @id @default(uuid())
+  organizationId String
+  studentId      String
+  creditId       String
+  attendanceId   String?
+  creditsUsed    Int
+  usedAt         DateTime      @default(now())
+  description    String?
+  createdAt      DateTime      @default(now())
+  attendance     Attendance?   @relation(fields: [attendanceId], references: [id])
+  credit         StudentCredit @relation("StudentCreditUsages", fields: [creditId], references: [id], onDelete: Cascade)
+  organization   Organization  @relation("CreditUsageOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([creditId])
+  @@index([attendanceId])
+  @@index([usedAt])
+  @@map("credit_usages")
+}
+
+model CreditRenewal {
+  id               String       @id @default(uuid())
+  organizationId   String
+  studentId        String
+  originalCreditId String
+  renewedCreditId  String
+  renewalDate      DateTime     @default(now())
+  renewalReason    String?
+  chargedAmount    Decimal?     @db.Decimal(10, 2)
+  chargeMethod     String?
+  chargeId         String?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  organization     Organization @relation("CreditRenewalOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, renewalDate])
+  @@index([organizationId])
+  @@map("credit_renewals")
+}
+
+model PlanCourse {
+  planId    String
+  courseId  String
+  createdAt DateTime    @default(now())
+  course    Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  plan      BillingPlan @relation("PlanCourseToPlan", fields: [planId], references: [id], onDelete: Cascade)
+
+  @@id([planId, courseId])
+  @@map("plan_courses")
+}
+
+model TechniquePrerequisite {
+  techniqueId             String
+  prerequisiteTechniqueId String
+  createdAt               DateTime  @default(now())
+  prerequisite            Technique @relation("TechniquePrerequisitesPrerequisite", fields: [prerequisiteTechniqueId], references: [id], onDelete: Cascade)
+  technique               Technique @relation("TechniquePrerequisitesTechnique", fields: [techniqueId], references: [id], onDelete: Cascade)
+
+  @@id([techniqueId, prerequisiteTechniqueId])
+  @@map("technique_prerequisite")
+}
+
+model MentalModule {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  objective        String
+  recommendedPhase String?
+  durationMin      Int?
+  tags             String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+
+  @@map("mental_modules")
+}
+
+model AdaptationSnippet {
+  id          String   @id @default(uuid())
+  audienceTag String
+  text        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([audienceTag])
+  @@map("adaptation_snippets")
+}
+
+model RagChunk {
+  id             String        @id @default(uuid())
+  organizationId String?
+  type           String
+  sourceType     String?
+  sourceId       String?
+  version        Int           @default(1)
+  lang           String        @default("pt-BR")
+  tags           String[]
+  text           String
+  hash           String        @unique
+  embedding      Bytes?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now())
+  embeddings     RagEmbedding?
+
+  @@index([organizationId, type])
+  @@index([type, version])
+  @@map("rag_chunks")
+}
+
+model RagEmbedding {
+  id           String   @id @default(uuid())
+  chunkId      String   @unique
+  provider     String
+  modelVersion String
+  dim          Int
+  createdAt    DateTime @default(now())
+  chunk        RagChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@map("rag_embeddings")
+}
+
+model Activity {
+  id              String               @id @default(uuid())
+  organizationId  String
+  type            ActivityType
+  title           String
+  description     String?
+  equipment       String[]             @default([])
+  safety          String?
+  adaptations     String[]             @default([])
+  difficulty      Int?
+  refTechniqueId  String?
+  defaultParams   Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @default(now())
+  categoryId      String?
+  category        ActivityCategory?    @relation(fields: [categoryId], references: [id])
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  refTechnique    Technique?           @relation("ActivityTechniqueRef", fields: [refTechniqueId], references: [id], onDelete: Cascade)
+  classItems      ClassActivity[]
+  lessonPlanItems LessonPlanActivity[]
+
+  @@map("activities")
+}
+
+model LessonPlanActivity {
+  id                   String                    @id @default(uuid())
+  lessonPlanId         String
+  activityId           String
+  segment              LessonSegment
+  ord                  Int                       @default(1)
+  params               Json?
+  objectives           String?
+  safetyNotes          String?
+  adaptations          String?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @default(now())
+  intensityMultiplier  Float                     @default(1.0)
+  minimumForGraduation Int?
+  repetitionsPerClass  Int                       @default(1)
+  executions           LessonActivityExecution[]
+  activity             Activity                  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  lessonPlan           LessonPlan                @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonPlanId, ord])
+  @@map("lesson_plan_activities")
+}
+
+model ClassActivity {
+  id              String             @id @default(uuid())
+  classId         String
+  activityId      String
+  segment         LessonSegment
+  ord             Int                @default(1)
+  paramsUsed      Json?
+  completed       Boolean            @default(false)
+  adaptationsUsed String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @default(now())
+  activity        Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  class           Class              @relation(fields: [classId], references: [id], onDelete: Cascade)
+  feedbacks       FeedbackActivity[]
+
+  @@unique([classId, ord])
+  @@map("class_activities")
+}
+
+model Rubric {
+  id          String                 @id @default(uuid())
+  name        String
+  minScore    Int                    @default(0)
+  maxScore    Int                    @default(100)
+  assessments AssessmentDefinition[]
+  criteria    RubricCriterion[]
+
+  @@map("rubrics")
+}
+
+model RubricCriterion {
+  id          String  @id @default(uuid())
+  rubricId    String
+  name        String
+  description String?
+  weight      Int     @default(1)
+  rubric      Rubric  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@map("rubric_criteria")
+}
+
+model AssessmentDefinition {
+  id       String              @id @default(uuid())
+  courseId String
+  name     String
+  type     AssessmentType
+  when     String?
+  rubricId String?
+  attempts AssessmentAttempt[]
+  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  rubric   Rubric?             @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
+  @@map("assessment_definitions")
+}
+
+model AssessmentAttempt {
+  id           String               @id @default(uuid())
+  assessmentId String
+  studentId    String
+  classId      String?
+  evaluatorId  String?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  scoreTotal   Int?
+  details      Json?
+  assessment   AssessmentDefinition @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  class        Class?               @relation(fields: [classId], references: [id])
+  student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("assessment_attempts")
+}
+
+model PhysicalTestDefinition {
+  id            String                @id @default(uuid())
+  name          String
+  metric        Metric
+  targetValue   Float?
+  passThreshold Float?
+  attempts      PhysicalTestAttempt[]
+
+  @@map("physical_test_definitions")
+}
+
+model PhysicalTestAttempt {
+  id        String                 @id @default(uuid())
+  testId    String
+  studentId String
+  classId   String?
+  value     Float
+  passed    Boolean?
+  comment   String?
+  class     Class?                 @relation(fields: [classId], references: [id])
+  student   Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  test      PhysicalTestDefinition @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@map("physical_test_attempts")
+}
+
+model FeedbackLesson {
+  id        String   @id @default(uuid())
+  classId   String
+  studentId String
+  rating    Int
+  mood      String?
+  comment   String?
+  createdAt DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@map("feedback_lessons")
+}
+
+model FeedbackActivity {
+  id                  String        @id @default(uuid())
+  classActivityId     String
+  studentId           String
+  rating              Int
+  perceivedDifficulty Int?
+  comment             String?
+  createdAt           DateTime      @default(now())
+  classActivity       ClassActivity @relation(fields: [classActivityId], references: [id], onDelete: Cascade)
+  student             Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classActivityId, studentId])
+  @@map("feedback_activities")
+}
+
+model TeacherEvaluation {
+  id           String     @id @default(uuid())
+  classId      String?
+  courseId     String?
+  studentId    String
+  instructorId String
+  rating       Int
+  criteria     Json?
+  comment      String?
+  createdAt    DateTime   @default(now())
+  class        Class?     @relation(fields: [classId], references: [id])
+  course       Course?    @relation(fields: [courseId], references: [id])
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_evaluations")
+}
+
+model Badge {
+  id             String        @id @default(uuid())
+  organizationId String
+  name           String
+  criteria       Json?
+  iconUrl        String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now())
+  unlocks        BadgeUnlock[]
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
+  @@map("badges")
+}
+
+model BadgeUnlock {
+  id         String   @id @default(uuid())
+  badgeId    String
+  studentId  String
+  unlockedAt DateTime @default(now())
+  reason     String?
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([badgeId, studentId])
+  @@map("badge_unlocks")
+}
+
+model PointsTransaction {
+  id         String   @id @default(uuid())
+  studentId  String
+  amount     Int
+  source     String
+  refType    String?
+  refId      String?
+  occurredAt DateTime @default(now())
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("points_transactions")
+}
+
+model Turma {
+  id                           String            @id @default(uuid())
+  organizationId               String
+  courseId                     String
+  name                         String
+  description                  String?
+  classType                    ClassType         @default(COLLECTIVE)
+  status                       TurmaStatus       @default(SCHEDULED)
+  instructorId                 String
+  maxStudents                  Int               @default(20)
+  startDate                    DateTime
+  endDate                      DateTime?
+  schedule                     Json
+  unitId                       String?
+  room                         String?
+  price                        Decimal?          @db.Decimal(10, 2)
+  isActive                     Boolean           @default(true)
+  createdAt                    DateTime          @default(now())
+  updatedAt                    DateTime          @default(now())
+  trainingAreaId               String?
+  requireAttendanceForProgress Boolean           @default(false)
+  attendances                  TurmaAttendance[]
+  courses                      TurmaCourse[]
+  lessons                      TurmaLesson[]
+  students                     TurmaStudent[]
+  course                       Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor                   User              @relation(fields: [instructorId], references: [id])
+  organization                 Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  trainingArea                 TrainingArea?     @relation("TurmaTrainingArea", fields: [trainingAreaId], references: [id])
+  unit                         Unit?             @relation(fields: [unitId], references: [id])
+
+  @@map("turmas")
+}
+
+model TurmaLesson {
+  id                 String                    @id @default(uuid())
+  turmaId            String
+  lessonPlanId       String?
+  lessonNumber       Int
+  title              String
+  scheduledDate      DateTime
+  actualDate         DateTime?
+  status             TurmaStatus               @default(SCHEDULED)
+  duration           Int                       @default(60)
+  notes              String?
+  materials          String[]                  @default([])
+  objectives         String[]                  @default([])
+  techniques         Json?
+  isActive           Boolean                   @default(true)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @default(now())
+  activityExecutions LessonActivityExecution[]
+  attendances        TurmaAttendance[]
+  lessonPlan         LessonPlan?               @relation(fields: [lessonPlanId], references: [id])
+  turma              Turma                     @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaId, lessonNumber])
+  @@map("turma_lessons")
+}
+
+model TurmaStudent {
+  id            String            @id @default(uuid())
+  turmaId       String
+  studentId     String
+  enrolledAt    DateTime          @default(now())
+  status        String            @default("ACTIVE")
+  paymentStatus String            @default("PENDING")
+  notes         String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now())
+  attendances   TurmaAttendance[]
+  student       Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  turma         Turma             @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaId, studentId])
+  @@map("turma_students")
+}
+
+model TurmaAttendance {
+  id                 String                    @id @default(uuid())
+  turmaId            String
+  turmaLessonId      String
+  turmaStudentId     String
+  studentId          String
+  present            Boolean                   @default(false)
+  late               Boolean                   @default(false)
+  justified          Boolean                   @default(false)
+  notes              String?
+  checkedAt          DateTime?
+  checkedBy          String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @default(now())
+  activityExecutions LessonActivityExecution[]
+  checker            User?                     @relation("AttendanceChecker", fields: [checkedBy], references: [id])
+  student            Student                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  turma              Turma                     @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  lesson             TurmaLesson               @relation(fields: [turmaLessonId], references: [id], onDelete: Cascade)
+  turmaStudent       TurmaStudent              @relation(fields: [turmaStudentId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaLessonId, studentId])
+  @@map("turma_attendances")
+}
+
+/// Configurações de rastreamento de atividades por organização
+/// Define se a validação é automática (no check-in) ou manual (pelo professor)
+model ActivityTrackingSettings {
+  id                          String       @id @default(uuid())
+  organizationId              String       @unique
+  autoCompleteOnCheckin       Boolean      @default(false)
+  requireInstructorValidation Boolean      @default(true)
+  enablePerformanceRating     Boolean      @default(true)
+  enableVideos                Boolean      @default(false)
+  defaultActivityDuration     Int          @default(15)
+  createdAt                   DateTime     @default(now())
+  updatedAt                   DateTime     @default(now())
+  organization                Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("activity_tracking_settings")
+}
+
+model TurmaCourse {
+  id        String   @id @default(cuid())
+  turmaId   String
+  courseId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  turma     Turma    @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaId, courseId])
+  @@map("turma_courses")
+}
+
+model PersonalTrainingClass {
+  id             String                    @id @default(uuid())
+  organizationId String
+  studentId      String
+  instructorId   String
+  title          String
+  description    String?
+  focusAreas     String[]
+  trainingType   PersonalTrainingType      @default(INDIVIDUAL)
+  intensity      String                    @default("Intermediário")
+  duration       Int                       @default(60)
+  location       String?
+  notes          String?
+  status         PersonalClassStatus       @default(ACTIVE)
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  instructor     Instructor                @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  organization   Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        Student                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sessions       PersonalTrainingSession[]
+
+  @@map("personal_training_classes")
+}
+
+model PersonalTrainingSession {
+  id                   String                @id @default(uuid())
+  personalClassId      String
+  date                 DateTime
+  startTime            DateTime
+  endTime              DateTime
+  actualDuration       Int?
+  status               SessionStatus         @default(SCHEDULED)
+  attendanceConfirmed  Boolean               @default(false)
+  studentNotes         String?
+  instructorNotes      String?
+  rating               Int?
+  feedback             String?
+  location             String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  courseId             String?
+  lessonContent        Json?
+  lessonPlanId         String?
+  nextLessonSuggestion String?
+  progressNotes        String?
+  trainingAreaId       String?
+  unitId               String?
+  course               Course?               @relation(fields: [courseId], references: [id])
+  lessonPlan           LessonPlan?           @relation(fields: [lessonPlanId], references: [id])
+  personalClass        PersonalTrainingClass @relation(fields: [personalClassId], references: [id], onDelete: Cascade)
+  trainingArea         TrainingArea?         @relation("PersonalSessionTrainingArea", fields: [trainingAreaId], references: [id])
+  unit                 Unit?                 @relation(fields: [unitId], references: [id])
+
+  @@map("personal_training_sessions")
+}
+
+model PersonalTrainingPreference {
+  id                   String   @id @default(uuid())
+  studentId            String   @unique
+  preferredDays        String[]
+  preferredTimes       String[]
+  preferredInstructors String[]
+  trainingFocus        String[]
+  intensity            String   @default("Intermediário")
+  sessionDuration      Int      @default(60)
+  maxSessionsPerWeek   Int      @default(2)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  student              Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("personal_training_preferences")
+}
+
+model AgendaItem {
+  id             String           @id @default(uuid())
+  organizationId String
+  type           AgendaItemType
+  referenceId    String
+  title          String
+  description    String?
+  startTime      DateTime
+  endTime        DateTime
+  instructorId   String
+  unitId         String?
+  trainingAreaId String?
+  status         AgendaItemStatus @default(SCHEDULED)
+  maxStudents    Int?
+  actualStudents Int              @default(0)
+  isRecurring    Boolean          @default(false)
+  recurrenceRule String?
+  color          String?
+  notes          String?
+  isVirtual      Boolean          @default(false)
+  meetingUrl     String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  instructor     User             @relation(fields: [instructorId], references: [id])
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  trainingArea   TrainingArea?    @relation(fields: [trainingAreaId], references: [id])
+  unit           Unit?            @relation(fields: [unitId], references: [id])
+
+  @@map("agenda_items")
+}
+
+model Lead {
+  id                  String          @id @default(uuid())
+  organizationId      String
+  name                String
+  email               String
+  phone               String?
+  cpf                 String?
+  birthDate           DateTime?
+  sourceCampaign      String?
+  sourceAdGroup       String?
+  sourceKeyword       String?
+  gclid               String?         @unique
+  landingPage         String?
+  utmSource           String?
+  utmMedium           String?
+  utmCampaign         String?
+  utmContent          String?
+  utmTerm             String?
+  referrer            String?
+  deviceType          String?
+  browserInfo         String?
+  stage               LeadStage       @default(NEW)
+  status              LeadStatus      @default(ACTIVE)
+  assignedToId        String?
+  temperature         LeadTemperature @default(COLD)
+  priority            Int             @default(0)
+  courseInterest      String?
+  billingPlanInterest String?
+  modalityInterest    String?
+  preferredSchedule   String?
+  budget              Decimal?        @db.Decimal(10, 2)
+  message             String?
+  leadCreatedAt       DateTime        @default(now())
+  firstContactAt      DateTime?
+  qualifiedAt         DateTime?
+  trialScheduledAt    DateTime?
+  trialAttendedAt     DateTime?
+  enrolledAt          DateTime?
+  convertedStudentId  String?         @unique
+  conversionUploaded  Boolean         @default(false)
+  lostAt              DateTime?
+  lostReason          String?
+  timeToContact       Int?
+  timeToQualify       Int?
+  timeToTrial         Int?
+  timeToEnrollment    Int?
+  costPerClick        Decimal?        @db.Decimal(10, 2)
+  costPerLead         Decimal?        @db.Decimal(10, 2)
+  costPerAcquisition  Decimal?        @db.Decimal(10, 2)
+  estimatedLTV        Decimal?        @db.Decimal(10, 2)
+  actualRevenue       Decimal?        @db.Decimal(10, 2)
+  tags                String[]
+  customFields        Json?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  activities          LeadActivity[]
+  notes               LeadNote[]
+  assignedTo          User?           @relation("LeadAssignedTo", fields: [assignedToId], references: [id])
+  convertedStudent    Student?        @relation("LeadToStudent", fields: [convertedStudentId], references: [id])
+  organization        Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, stage, status])
+  @@index([gclid])
+  @@index([email])
+  @@index([assignedToId])
+  @@map("leads")
+}
+
+model LeadActivity {
+  id           String           @id @default(uuid())
+  leadId       String
+  userId       String
+  type         LeadActivityType
+  title        String
+  description  String?
+  outcome      String?
+  nextAction   String?
+  scheduledFor DateTime?
+  completedAt  DateTime?
+  duration     Int?
+  attachments  Json?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  lead         Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user         User             @relation("LeadActivities", fields: [userId], references: [id])
+
+  @@index([leadId, createdAt])
+  @@map("lead_activities")
+}
+
+model LeadNote {
+  id        String   @id @default(uuid())
+  leadId    String
+  userId    String
+  content   String
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user      User     @relation("LeadNotes", fields: [userId], references: [id])
+
+  @@index([leadId, createdAt])
+  @@map("lead_notes")
+}
+
+model GoogleAdsCampaign {
+  id                String             @id @default(uuid())
+  organizationId    String
+  campaignId        String             @unique
+  campaignName      String
+  campaignStatus    String
+  campaignType      String?
+  budget            Decimal?           @db.Decimal(10, 2)
+  budgetType        String?
+  impressions       Int                @default(0)
+  clicks            Int                @default(0)
+  cost              Decimal            @default(0) @db.Decimal(10, 2)
+  conversions       Int                @default(0)
+  conversionValue   Decimal            @default(0) @db.Decimal(10, 2)
+  ctr               Decimal?           @db.Decimal(5, 2)
+  cpc               Decimal?           @db.Decimal(10, 2)
+  conversionRate    Decimal?           @db.Decimal(5, 2)
+  costPerConversion Decimal?           @db.Decimal(10, 2)
+  roi               Decimal?           @db.Decimal(10, 2)
+  startDate         DateTime?
+  endDate           DateTime?
+  lastSyncAt        DateTime           @default(now())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  adGroups          GoogleAdsAdGroup[]
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, campaignStatus])
+  @@map("google_ads_campaigns")
+}
+
+model GoogleAdsAdGroup {
+  id              String             @id @default(uuid())
+  campaignId      String
+  adGroupId       String             @unique
+  adGroupName     String
+  adGroupStatus   String
+  impressions     Int                @default(0)
+  clicks          Int                @default(0)
+  cost            Decimal            @default(0) @db.Decimal(10, 2)
+  conversions     Int                @default(0)
+  conversionValue Decimal            @default(0) @db.Decimal(10, 2)
+  lastSyncAt      DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  campaign        GoogleAdsCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  keywords        GoogleAdsKeyword[]
+
+  @@index([campaignId])
+  @@map("google_ads_ad_groups")
+}
+
+model GoogleAdsKeyword {
+  id              String           @id @default(uuid())
+  adGroupId       String
+  keywordId       String           @unique
+  keywordText     String
+  matchType       String
+  status          String
+  impressions     Int              @default(0)
+  clicks          Int              @default(0)
+  cost            Decimal          @default(0) @db.Decimal(10, 2)
+  conversions     Int              @default(0)
+  conversionValue Decimal          @default(0) @db.Decimal(10, 2)
+  qualityScore    Int?
+  lastSyncAt      DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  adGroup         GoogleAdsAdGroup @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+
+  @@index([adGroupId])
+  @@index([keywordText])
+  @@map("google_ads_keywords")
+}
+
+model CrmSettings {
+  id                        String       @id @default(uuid())
+  organizationId            String       @unique
+  googleAdsCustomerId       String?
+  googleAdsClientId         String?
+  googleAdsClientSecret     String?
+  googleAdsRefreshToken     String?
+  googleAdsDeveloperToken   String?
+  googleAdsConversionAction String?
+  googleAdsConnected        Boolean      @default(false)
+  googleAdsEnabled          Boolean      @default(false)
+  conversionActionId        String?
+  defaultLTV                Decimal?     @db.Decimal(10, 2)
+  autoAssignLeads           Boolean      @default(false)
+  defaultAssigneeId         String?
+  notifyNewLead             Boolean      @default(true)
+  notifyHotLead             Boolean      @default(true)
+  notifyLostLead            Boolean      @default(false)
+  autoFollowUpDays          Int          @default(3)
+  autoArchiveDays           Int          @default(30)
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
+  organization              Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("crm_settings")
+}
+
+model ActivityCategory {
+  id                   String     @id @default(uuid())
+  name                 String     @unique
+  description          String?
+  color                String?
+  icon                 String?
+  order                Int        @default(0)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  minimumForGraduation Int?       @default(50)
+  activities           Activity[]
+
+  @@map("activity_categories")
+}
+
+model LessonActivityExecution {
+  id                String             @id @default(uuid())
+  studentId         String
+  activityId        String
+  attendanceId      String
+  turmaLessonId     String
+  executedAt        DateTime           @default(now())
+  repetitionsCount  Int                @default(1)
+  durationMinutes   Int?
+  intensityApplied  Float              @default(1.0)
+  performanceRating Int?
+  instructorNotes   String?
+  validatedBy       String?
+  validatedAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  activity          LessonPlanActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  attendance        TurmaAttendance    @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  student           Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  turmaLesson       TurmaLesson        @relation(fields: [turmaLessonId], references: [id], onDelete: Cascade)
+  instructor        Instructor?        @relation("ActivityValidation", fields: [validatedBy], references: [id])
+
+  @@unique([attendanceId, activityId])
+  @@index([studentId, activityId])
+  @@index([turmaLessonId])
+  @@map("lesson_activity_executions")
+}
+
+model CourseGraduationLevel {
+  id                         String   @id @default(uuid())
+  courseId                   String
+  currentBelt                String
+  nextBelt                   String
+  totalDegrees               Int      @default(4)
+  degreePercentageIncrement  Float    @default(20)
+  minimumAttendanceRate      Float    @default(80)
+  minimumQualityRating       Float    @default(3.0)
+  minimumRepetitionsTotal    Int      @default(500)
+  minimumMonthsEnrolled      Int      @default(3)
+  requiresInstructorApproval Boolean  @default(true)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  course                     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, currentBelt])
+  @@map("course_graduation_levels")
+}
+
+model StudentDegreeHistory {
+  id               String   @id @default(uuid())
+  studentId        String
+  courseId         String
+  degree           Int
+  degreePercentage Float
+  belt             String
+  completedLessons Int
+  totalRepetitions Int
+  averageQuality   Float?
+  attendanceRate   Float
+  achievedAt       DateTime @default(now())
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, courseId])
+  @@map("student_degree_history")
+}
+
+model StudentGraduation {
+  id                    String    @id @default(uuid())
+  studentId             String
+  courseId              String
+  fromBelt              String
+  toBelt                String
+  approvedBy            String
+  approvedAt            DateTime  @default(now())
+  finalAttendanceRate   Float
+  finalQualityRating    Float
+  totalRepetitions      Int
+  totalLessonsCompleted Int
+  certificateGenerated  Boolean   @default(false)
+  certificateUrl        String?
+  ceremonyDate          DateTime?
+  ceremonyNotes         String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  course                Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student               Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId, toBelt])
+  @@map("student_graduations")
+}
+
+model AIAgent {
+  id             String              @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  specialization AgentSpecialization
+  model          String              @default("gemini-1.5-flash")
+  systemPrompt   String
+  ragSources     String[]
+  mcpTools       String[]
+  temperature    Float               @default(0.7)
+  maxTokens      Int                 @default(2048)
+  noCodeMode     Boolean             @default(true)
+  autoSaveInsights Boolean           @default(false)
+  isActive       Boolean             @default(true)
+  isPublic       Boolean             @default(false)
+  averageRating  Float?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  conversations  AgentConversation[]
+  interactions   AgentInteraction[]  @relation("AgentInteractions")
+  permissions    AgentPermission[]   @relation("AgentPermissions")
+  tasks          AgentTask[]         @relation("AgentTasks")
+  insights       AgentInsight[]      @relation("AgentInsights")
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@index([specialization])
+  @@map("ai_agents")
+}
+
+model AgentConversation {
+  id        String   @id @default(uuid())
+  agentId   String
+  userId    String?
+  studentId String?
+  messages  Json
+  rating    Int?
+  feedback  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agent     AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  student   Student? @relation(fields: [studentId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([studentId])
+  @@index([createdAt])
+  @@map("agent_conversations")
+}
+
+model AgentInteraction {
+  id             String       @id @default(uuid())
+  agentId        String
+  organizationId String
+  type           String // REPORT, SUGGESTION, REQUEST, ERROR
+  message        String
+  action         Json? // { label: string, url: string }
+  metadata       Json? // Additional context
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  agent          AIAgent      @relation("AgentInteractions", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentInteractions", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([agentId])
+  @@index([type])
+  @@index([isRead])
+  @@map("agent_interactions")
+}
+
+model AgentPermission {
+  id             String       @id @default(uuid())
+  agentId        String
+  organizationId String
+  action         String // Description of action
+  details        Json // { action: string, students?: string[], cost?: string, etc }
+  status         String       @default("PENDING") // PENDING, APPROVED, DENIED
+  approvedBy     String?
+  approvedAt     DateTime?
+  deniedReason   String?
+  executedAt     DateTime?
+  executionResult Json? // Result after execution
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
+  approver       User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
+
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_permissions")
+}
+
+model AgentTask {
+  id                String    @id @default(uuid())
+  organizationId    String
+  agentId           String?
+  createdByUserId   String?
+  assignedToUserId  String?
+  
+  // Task Definition
+  title             String
+  description       String
+  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
+  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
+  targetEntity      String? // Student, Course, Payment, etc
+  actionPayload     Json // Data needed to execute the action
+  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
+  
+  // Approval Workflow
+  requiresApproval  Boolean   @default(true)
+  autoExecute       Boolean   @default(false)
+  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
+  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
+  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+  
+  // 🆕 EXECUTION & ORCHESTRATION
+  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
+  executorId        String? // ID do agente IA ou usuário que vai executar
+  scheduledFor      DateTime? // Data/hora agendada para execução futura
+  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda às 9h)
+  maxRetries        Int       @default(3) // Máximo de tentativas em caso de falha
+  retryCount        Int       @default(0) // Tentativas já realizadas
+  lastRetryAt       DateTime? // Data da última tentativa
+  nextRetryAt       DateTime? // Próxima tentativa agendada
+  
+  // Execution Results
+  executedAt        DateTime?
+  executionResult   Json? // Result after execution
+  errorMessage      String?
+  executionLog      Json? // Array de logs de execução: [{ timestamp, action, result, error }]
+  
+  // Metadata
+  dueDate           DateTime?
+  metadata          Json? // Additional context
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  agent             AIAgent?  @relation("AgentTasks", fields: [agentId], references: [id], onDelete: SetNull)
+  organization      Organization @relation("AgentTasks", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
+  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
+  executions        TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("agent_tasks")
+}
+
+/// 🆕 Log de execuções de tarefas (tentativas, resultados, erros)
+model TaskExecution {
+  id              String    @id @default(uuid())
+  taskId          String
+  attemptNumber   Int       @default(1)
+  executorType    String // AGENT, USER, SYSTEM
+  executorId      String?
+  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  duration        Int? // Duração em milissegundos
+  result          Json? // Resultado da execução
+  errorMessage    String?
+  errorStack      String?
+  metadata        Json? // Logs adicionais
+  
+  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
+  
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("task_executions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String? // ID da execução que gerou o insight
+  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
+  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
+  title          String
+  content        String
+  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       Json? // Additional context, metrics, etc
+  relatedEntity  String? // Student, Course, Payment, etc
+  relatedId      String? // ID of related entity
+  actionTaken    String? // What action was taken (if any)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentInsights", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("AgentInsights", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
+}
+
+model StudentProgress {
+  id                     String                  @id @default(uuid())
+  studentId              String
+  courseId               String
+  lessonNumber           Int
+  activityName           String
+  completedReps          Int                     @default(0)
+  targetReps             Int
+  completionPercentage   Float                   @default(0)
+  lastUpdated            DateTime                @default(now())
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  qualitativeAssessments QualitativeAssessment[]
+  course                 Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student                Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId, lessonNumber, activityName])
+  @@index([studentId, courseId])
+  @@index([courseId, lessonNumber])
+  @@map("student_progress")
+}
+
+model QualitativeAssessment {
+  id                String          @id @default(uuid())
+  studentProgressId String
+  instructorId      String?
+  rating            Int
+  notes             String?
+  assessmentDate    DateTime        @default(now())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  instructor        Instructor?     @relation(fields: [instructorId], references: [id])
+  studentProgress   StudentProgress @relation(fields: [studentProgressId], references: [id], onDelete: Cascade)
+
+  @@index([studentProgressId])
+  @@index([instructorId])
+  @@map("qualitative_assessments")
+}
+
+model CourseRequirement {
+  id            String   @id @default(uuid())
+  courseId      String
+  beltLevel     String
+  category      String
+  activityName  String
+  minimumReps   Int
+  minimumRating Float?
+  isMandatory   Boolean  @default(true)
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, beltLevel, activityName])
+  @@index([courseId, beltLevel])
+  @@map("course_requirements")
+}
+
+model BiometricData {
+  id               String   @id @default(uuid())
+  studentId        String   @unique
+  embedding        Float[]
+  photoUrl         String
+  photoBase64      String?
+  qualityScore     Int
+  enrolledAt       DateTime @default(now())
+  lastUpdatedAt    DateTime @updatedAt
+  enrollmentMethod String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([isActive])
+  @@map("biometric_data")
+}
+
+model BiometricAttempt {
+  id                String    @id @default(uuid())
+  organizationId    String
+  studentId         String?
+  detectedStudentId String?
+  similarity        Float
+  confidence        String
+  method            String
+  result            String
+  errorMessage      String?
+  ipAddress         String?
+  userAgent         String?
+  attemptedAt       DateTime  @default(now())
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  student           Student?  @relation(fields: [studentId], references: [id])
+
+  @@index([organizationId])
+  @@index([studentId])
+  @@index([detectedStudentId])
+  @@index([attemptedAt])
+  @@index([method])
+  @@map("biometric_attempts")
+}
+
+enum CourseCategory {
+  MARTIAL_ARTS
+  DANCE
+  FITNESS
+  LANGUAGE
+  MUSIC
+  OTHER
+}
+
 enum SubscriptionPlan {
   BASIC
   STANDARD
@@ -1180,10 +2561,10 @@ enum CourseLevel {
 }
 
 enum StudentCategory {
-  ADULT // Adulto padrão
-  FEMALE // Feminino
-  SENIOR // Idoso/Senior
-  CHILD // Infantil/Criança
+  ADULT
+  FEMALE
+  SENIOR
+  CHILD
   INICIANTE1
   INICIANTE2
   INICIANTE3
@@ -1193,6 +2574,12 @@ enum StudentCategory {
   MASTER_1
   MASTER_2
   MASTER_3
+  TEEN
+  KIDS
+  WOMEN
+  MEN
+  MIXED
+  LAW_ENFORCEMENT
 }
 
 enum Gender {
@@ -1338,8 +2725,9 @@ enum BillingType {
   QUARTERLY
   YEARLY
   LIFETIME
-  CREDIT_CARD_INSTALLMENT // Cartão parcelado até 8x
-  RECURRING // Assinatura recorrente automática
+  CREDIT_CARD_INSTALLMENT
+  RECURRING
+  CREDITS
 }
 
 enum SubscriptionStatus {
@@ -1368,6 +2756,36 @@ enum PaymentMethod {
   STRIPE
 }
 
+enum PlanType {
+  MONTHLY
+  CREDIT_PACK
+  ONE_TIME
+  TRIAL
+  HYBRID
+  GIFT
+  CORPORATE
+  PARTNERSHIP
+}
+
+enum CreditType {
+  CLASS
+  HOUR
+  PERSONAL_HOUR
+  PACKAGE
+}
+
+enum CreditRenewalTrigger {
+  MONTHLY
+  ON_CONSUMPTION
+  MANUAL
+}
+
+enum CreditRenewalMethod {
+  INCLUDED
+  SEPARATE
+  SUBSCRIPTION
+}
+
 enum AttendanceTrend {
   IMPROVING
   DECLINING
@@ -1381,96 +2799,6 @@ enum DropoutRisk {
   HIGH
   CRITICAL
 }
-
-model PlanCourse {
-  planId    String
-  courseId  String
-  createdAt DateTime    @default(now())
-  plan      BillingPlan @relation("PlanCourseToPlan", fields: [planId], references: [id], onDelete: Cascade)
-  course    Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@id([planId, courseId])
-  @@map("plan_courses")
-}
-
-// ================= RAG SCHEMA (F1-01) =================
-// Pivot de pré-requisitos entre técnicas (knowledge graph leve)
-model TechniquePrerequisite {
-  techniqueId             String
-  prerequisiteTechniqueId String
-  createdAt               DateTime  @default(now())
-  technique               Technique @relation("TechniquePrerequisitesTechnique", fields: [techniqueId], references: [id], onDelete: Cascade)
-  prerequisite            Technique @relation("TechniquePrerequisitesPrerequisite", fields: [prerequisiteTechniqueId], references: [id], onDelete: Cascade)
-
-  @@id([techniqueId, prerequisiteTechniqueId])
-  @@map("technique_prerequisite")
-}
-
-// Módulos mentais / cognitivos utilizados em planejamento de aula
-model MentalModule {
-  id               String   @id @default(uuid())
-  name             String
-  objective        String
-  recommendedPhase String?
-  durationMin      Int?
-  tags             String[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
-
-  @@unique([name])
-  @@map("mental_modules")
-}
-
-// Snippets de adaptação para públicos específicos (inclusão / necessidades especiais)
-model AdaptationSnippet {
-  id          String   @id @default(uuid())
-  audienceTag String // TEA, TDAH, mobility, etc
-  text        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-
-  @@index([audienceTag])
-  @@map("adaptation_snippets")
-}
-
-// Chunk textual indexável – mantém texto + metadados estruturais
-model RagChunk {
-  id             String         @id @default(uuid())
-  organizationId String?
-  type           String // technique|mental_module|challenge|guideline|policy|engagement_signal
-  sourceType     String? // tabela ou origem (ex: TECHNIQUE, POLICY_DOC)
-  sourceId       String? // id fonte
-  version        Int            @default(1)
-  lang           String         @default("pt-BR")
-  tags           String[]
-  text           String
-  hash           String         @unique // hash para idempotência / reindex
-  // Opcional: armazenar embedding direto (fallback caso não use tabela separada)
-  embedding      Bytes? // se usar tabela RagEmbedding preferir deixar null
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @default(now())
-  embeddings     RagEmbedding[]
-
-  @@index([organizationId, type])
-  @@index([type, version])
-  @@map("rag_chunks")
-}
-
-// Metadados + vetor (pgvector). Usa Unsupported("vector") enquanto Prisma não tem tipo nativo.
-model RagEmbedding {
-  id           String                 @id @default(uuid())
-  chunkId      String                 @unique
-  provider     String // openai|anthropic|local
-  modelVersion String // ex: text-embedding-3-large
-  dim          Int
-  vector       Unsupported("vector")? // requer extensão pgvector
-  createdAt    DateTime               @default(now())
-  chunk        RagChunk               @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-
-  @@map("rag_embeddings")
-}
-
-// === Generic Activity Catalog and Associations ===
 
 enum ActivityType {
   TECHNIQUE
@@ -1491,71 +2819,6 @@ enum LessonSegment {
   COOLDOWN
 }
 
-model Activity {
-  id              String        @id @default(uuid())
-  organizationId  String
-  type            ActivityType
-  title           String
-  description     String?
-  equipment       String[]      @default([])
-  safety          String?
-  adaptations     String[]      @default([])
-  difficulty      Int?
-  refTechniqueId  String?
-  defaultParams   Json?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @default(now())
-  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  refTechnique    Technique?    @relation("ActivityTechniqueRef", fields: [refTechniqueId], references: [id], onDelete: Cascade)
-
-  // Mappings
-  lessonPlanItems  LessonPlanActivity[]
-  classItems       ClassActivity[]
-
-  @@map("activities")
-}
-
-model LessonPlanActivity {
-  id            String        @id @default(uuid())
-  lessonPlanId  String
-  activityId    String
-  segment       LessonSegment
-  ord           Int           @default(1)
-  params        Json?
-  objectives    String?
-  safetyNotes   String?
-  adaptations   String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now())
-  lessonPlan    LessonPlan    @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
-  activity      Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
-
-  @@unique([lessonPlanId, ord])
-  @@map("lesson_plan_activities")
-}
-
-model ClassActivity {
-  id              String        @id @default(uuid())
-  classId         String
-  activityId      String
-  segment         LessonSegment
-  ord             Int           @default(1)
-  paramsUsed      Json?
-  completed       Boolean       @default(false)
-  adaptationsUsed String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @default(now())
-  class           Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
-  activity        Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  // Back-relations for feedback
-  feedbacks       FeedbackActivity[]
-
-  @@unique([classId, ord])
-  @@map("class_activities")
-}
-
-// === Assessments and Rubrics ===
-
 enum AssessmentType {
   TECHNICAL
   PHYSICAL
@@ -1569,176 +2832,108 @@ enum Metric {
   LOAD
 }
 
-model Rubric {
-  id        String            @id @default(uuid())
-  name      String
-  minScore  Int               @default(0)
-  maxScore  Int               @default(100)
-  criteria  RubricCriterion[]
-  // Back-relations
-  assessments AssessmentDefinition[]
-
-  @@map("rubrics")
+enum ClassType {
+  COLLECTIVE
+  PRIVATE
+  SEMI_PRIVATE
 }
 
-model RubricCriterion {
-  id          String   @id @default(uuid())
-  rubricId    String
-  name        String
-  description String?
-  weight      Int      @default(1)
-  rubric      Rubric   @relation(fields: [rubricId], references: [id], onDelete: Cascade)
-
-  @@map("rubric_criteria")
+enum TurmaStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
 }
 
-model AssessmentDefinition {
-  id          String          @id @default(uuid())
-  courseId    String
-  name        String
-  type        AssessmentType
-  when        String?
-  rubricId    String?
-  course      Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  rubric      Rubric?         @relation(fields: [rubricId], references: [id], onDelete: Cascade)
-  attempts    AssessmentAttempt[]
-
-  @@map("assessment_definitions")
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
-model AssessmentAttempt {
-  id            String               @id @default(uuid())
-  assessmentId  String
-  studentId     String
-  classId       String?
-  evaluatorId   String?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  scoreTotal    Int?
-  details       Json?
-  assessment    AssessmentDefinition  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  class         Class?                @relation(fields: [classId], references: [id])
-  student       Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@map("assessment_attempts")
+enum PersonalTrainingType {
+  INDIVIDUAL
+  SEMI_PRIVATE
+  SMALL_GROUP
 }
 
-model PhysicalTestDefinition {
-  id            String  @id @default(uuid())
-  name          String
-  metric        Metric
-  targetValue   Float?
-  passThreshold Float?
-
-  attempts      PhysicalTestAttempt[]
-
-  @@map("physical_test_definitions")
+enum PersonalClassStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
 }
 
-model PhysicalTestAttempt {
-  id        String                 @id @default(uuid())
-  testId    String
-  studentId String
-  classId   String?
-  value     Float
-  passed    Boolean?
-  comment   String?
-  test      PhysicalTestDefinition @relation(fields: [testId], references: [id], onDelete: Cascade)
-  class     Class?                 @relation(fields: [classId], references: [id])
-  student   Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@map("physical_test_attempts")
+enum SessionStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
 }
 
-// === Feedback, Satisfaction and Teacher Evaluation ===
-
-model FeedbackLesson {
-  id         String   @id @default(uuid())
-  classId    String
-  studentId  String
-  rating     Int      // 1..5
-  mood       String?
-  comment    String?
-  createdAt  DateTime @default(now())
-  class      Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([classId, studentId])
-  @@map("feedback_lessons")
+enum AgendaItemType {
+  TURMA
+  PERSONAL_SESSION
 }
 
-model FeedbackActivity {
-  id             String         @id @default(uuid())
-  classActivityId String
-  studentId      String
-  rating         Int
-  perceivedDifficulty Int?
-  comment        String?
-  createdAt      DateTime       @default(now())
-  classActivity  ClassActivity  @relation(fields: [classActivityId], references: [id], onDelete: Cascade)
-  student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([classActivityId, studentId])
-  @@map("feedback_activities")
+enum AgendaItemStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  POSTPONED
 }
 
-model TeacherEvaluation {
-  id           String   @id @default(uuid())
-  classId      String?
-  courseId     String?
-  studentId    String
-  instructorId String
-  rating       Int
-  criteria     Json?
-  comment      String?
-  createdAt    DateTime @default(now())
-  class        Class?   @relation(fields: [classId], references: [id])
-  course       Course?  @relation(fields: [courseId], references: [id])
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  instructor   Instructor @relation(fields: [instructorId], references: [id])
-
-  @@map("teacher_evaluations")
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  TRIAL_SCHEDULED
+  TRIAL_ATTENDED
+  NEGOTIATION
+  CONVERTED
+  LOST
 }
 
-// === Gamification (Badges & Points) ===
-
-model Badge {
-  id         String        @id @default(uuid())
-  organizationId String
-  name       String
-  criteria   Json?
-  iconUrl    String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @default(now())
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  unlocks    BadgeUnlock[]
-
-  @@unique([organizationId, name])
-  @@map("badges")
+enum LeadStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
 }
 
-model BadgeUnlock {
-  id         String   @id @default(uuid())
-  badgeId    String
-  studentId  String
-  unlockedAt DateTime @default(now())
-  reason     String?
-  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([badgeId, studentId])
-  @@map("badge_unlocks")
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
 }
 
-model PointsTransaction {
-  id         String   @id @default(uuid())
-  studentId  String
-  amount     Int
-  source     String   // CHALLENGE, ATTENDANCE, ASSESSMENT, BADGE
-  refType    String?
-  refId      String?
-  occurredAt DateTime @default(now())
-  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@map("points_transactions")
+enum LeadActivityType {
+  CALL
+  EMAIL
+  WHATSAPP
+  SMS
+  MEETING
+  TRIAL_CLASS
+  FOLLOW_UP
+  NOTE
+  STATUS_CHANGE
+  DOCUMENT_SENT
+  PAYMENT_RECEIVED
 }
+
+enum AgentSpecialization {
+  pedagogical
+  analytical
+  support
+  progression
+  commercial
+  curriculum

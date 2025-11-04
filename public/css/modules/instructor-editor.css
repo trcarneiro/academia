@@ -1,0 +1,353 @@
+/* Instructor Editor - Premium Styling */
+.module-isolated-instructors .form-container-premium {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+.module-isolated-instructors .instructor-form-premium {
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.module-isolated-instructors .form-section {
+  padding: 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.module-isolated-instructors .form-section:last-child {
+  border-bottom: none;
+}
+
+.module-isolated-instructors .section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.module-isolated-instructors .section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-isolated-instructors .section-header p {
+  color: var(--color-text-muted);
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.module-isolated-instructors .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.module-isolated-instructors .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.module-isolated-instructors .form-group.span-full {
+  grid-column: 1 / -1;
+}
+
+.module-isolated-instructors .form-group label {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-isolated-instructors .form-group input,
+.module-isolated-instructors .form-group select,
+.module-isolated-instructors .form-group textarea {
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: var(--transition-smooth);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.module-isolated-instructors .form-group input:focus,
+.module-isolated-instructors .form-group select:focus,
+.module-isolated-instructors .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.module-isolated-instructors .form-group input.error,
+.module-isolated-instructors .form-group select.error,
+.module-isolated-instructors .form-group textarea.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.module-isolated-instructors .form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.module-isolated-instructors .form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+.module-isolated-instructors .form-group input[readonly] {
+  background: var(--color-background);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.module-isolated-instructors .field-error {
+  color: var(--error-color);
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: none;
+  margin-top: 0.25rem;
+}
+
+.module-isolated-instructors .form-actions {
+  padding: 2rem;
+  background: var(--color-background);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.module-isolated-instructors .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-isolated-instructors .btn-secondary:hover {
+  background: var(--color-background);
+  transform: translateY(-2px);
+}
+
+.module-isolated-instructors .success-state-premium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  color: var(--color-text);
+  padding: 2rem;
+}
+
+.module-isolated-instructors .success-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--success-color);
+}
+
+.module-isolated-instructors .success-state-premium h3 {
+  color: var(--success-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.module-isolated-instructors .success-state-premium p {
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+.module-isolated-instructors .success-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.module-isolated-instructors .error-state-premium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  color: var(--color-text);
+  padding: 2rem;
+}
+
+.module-isolated-instructors .error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--error-color);
+}
+
+.module-isolated-instructors .error-state-premium h3 {
+  color: var(--error-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.module-isolated-instructors .error-state-premium p {
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .module-isolated-instructors .form-container-premium {
+    padding: 0 1rem 1rem;
+  }
+  
+  .module-isolated-instructors .form-section {
+    padding: 1.5rem;
+  }
+  
+  .module-isolated-instructors .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .module-isolated-instructors .section-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .module-isolated-instructors .form-actions {
+    padding: 1.5rem;
+    flex-direction: column;
+  }
+  
+  .module-isolated-instructors .btn-secondary,
+  .module-isolated-instructors .btn-primary-premium {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .module-isolated-instructors .success-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .module-isolated-instructors .form-section {
+    padding: 1rem;
+  }
+  
+  .module-isolated-instructors .section-header h3 {
+    font-size: 1.125rem;
+  }
+  
+  .module-isolated-instructors .form-actions {
+    padding: 1rem;
+  }
+}
+
+/* Animation for form validation */
+.module-isolated-instructors .form-group input.error,
+.module-isolated-instructors .form-group select.error,
+.module-isolated-instructors .form-group textarea.error {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Focus ring for better accessibility */
+.module-isolated-instructors .form-group input:focus-visible,
+.module-isolated-instructors .form-group select:focus-visible,
+.module-isolated-instructors .form-group textarea:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Checkbox styling */
+.module-isolated-instructors .form-group input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  cursor: pointer;
+  position: relative;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.module-isolated-instructors .form-group input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.module-isolated-instructors .form-group input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.module-isolated-instructors .form-group input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Select arrow styling */
+.module-isolated-instructors .form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* Required field indicator */
+.module-isolated-instructors .form-group label[for="name"]::after,
+.module-isolated-instructors .form-group label[for="email"]::after,
+.module-isolated-instructors .form-group label[for="belt"]::after,
+.module-isolated-instructors .form-group label[for="status"]::after {
+  content: ' *';
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+/* Placeholder styling */
+.module-isolated-instructors .form-group input::placeholder,
+.module-isolated-instructors .form-group textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+/* Disabled state */
+.module-isolated-instructors .form-group input:disabled,
+.module-isolated-instructors .form-group select:disabled,
+.module-isolated-instructors .form-group textarea:disabled {
+  background: var(--color-background);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}

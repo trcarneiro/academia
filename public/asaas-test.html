@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Teste de Sincronização Asaas - Academia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            line-height: 1.5;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 20px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .button { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            cursor: pointer; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .button:hover { 
+            background: #0056b3; 
+            transform: translateY(-1px);
+        }
+        
+        .button.small { 
+            padding: 6px 12px; 
+            font-size: 12px; 
+            margin: 4px; 
+        }
+        
+        .button.success { 
+            background: #28a745; 
+        }
+        
+        .button.success:hover { 
+            background: #1e7e34; 
+        }
+        
+        .button.warning { 
+            background: #ffc107; 
+            color: #212529; 
+        }
+        
+        .button.warning:hover { 
+            background: #e0a800; 
+        }
+        
+        .button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        
+        .result { 
+            background: white; 
+            border: 1px solid #dee2e6; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .error { 
+            background: #f8d7da; 
+            border-color: #f5c6cb; 
+            color: #721c24;
+        }
+        
+        .success { 
+            background: #d4edda; 
+            border-color: #c3e6cb; 
+            color: #155724;
+        }
+        
+        .comparison-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th, .comparison-table td { 
+            border: 1px solid #dee2e6; 
+            padding: 12px; 
+            text-align: left; 
+            vertical-align: middle;
+        }
+        
+        .comparison-table th { 
+            background: #f8f9fa; 
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .imported { 
+            background: #d4edda !important; 
+        }
+        
+        .not-imported { 
+            background: #fff3cd !important; 
+        }
+        
+        .loading { 
+            opacity: 0.6; 
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-imported {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        pre { 
+            white-space: pre-wrap; 
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🔄 Sincronização Asaas - Academia Krav Maga</h1>
+            <p>Gerencie a importação de clientes do Asaas para o sistema local</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <h3>🎛️ Controles</h3>
+            <button class="button" onclick="testConnection()">🔗 Testar Conexão</button>
+            <button class="button" onclick="listLocalCustomers()">👥 Clientes Locais</button>
+            <button class="button" onclick="compareCustomers()">📊 Comparar Asaas vs Local</button>
+            <button class="button" onclick="syncAllCustomers()">🔄 Sincronizar Todos</button>
+        </div>
+
+        <div id="stats"></div>
+        <div id="result"></div>
+        <div id="comparison-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api/asaas';
+        
+        function showResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const className = isError ? 'result error' : 'result success';
+            const icon = isError ? '❌' : '✅';
+            
+            resultDiv.innerHTML = `
+                <div class="${className}">
+                    <h3>${icon} ${isError ? 'Erro' : 'Resultado'}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        function showStats(stats) {
+            const statsDiv = document.getElementById('stats');
+            if (!stats) return;
+            
+            statsDiv.innerHTML = `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.asaasTotal || 0}</div>
+                        <div class="stat-label">Total no Asaas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.localTotal || 0}</div>
+                        <div class="stat-label">Já Importados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.notImported || 0}</div>
+                        <div class="stat-label">Pendentes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.percentage || 0}%</div>
+                        <div class="stat-label">Concluído</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                console.log('Making request to:', url);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${data.message || data.error || 'Request failed'}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Request error:', error);
+                throw error;
+            }
+        }
+
+        async function testConnection() {
+            try {
+                showResult({ message: 'Testando conexão...' });
+                const data = await makeRequest(`${API_BASE}/test`);
+                showResult({
+                    message: 'Conexão estabelecida com sucesso!',
+                    ...data
+                });
+            } catch (error) {
+                showResult({ 
+                    error: error.message, 
+                    apiBase: API_BASE,
+                    timestamp: new Date().toISOString()
+                }, true);
+            }
+        }
+
+        async function listLocalCustomers() {
+            try {
+                showResult({ message: 'Buscando clientes locais...' });
+                const data = await makeRequest(`${API_BASE}/customers/local`);
+                showResult({
+                    message: `Encontrados ${data.data?.total || 0} clientes locais`,
+                    ...data
+                });
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function compareCustomers() {
+            try {
+                showResult({ message: 'Comparando clientes Asaas vs Local... aguarde...' });
+                
+                // Buscar clientes do Asaas
+                const asaasData = await makeRequest(`${API_BASE}/customers`);
+                console.log('Asaas data:', asaasData);
+                
+                // Buscar clientes locais
+                const localData = await makeRequest(`${API_BASE}/customers/local`);
+                console.log('Local data:', localData);
+                
+                const asaasCustomers = asaasData.data?.data || [];
+                const localCustomers = localData.data?.items || [];
+                
+                // Criar mapa dos clientes locais por asaasId
+                const localMap = {};
+                localCustomers.forEach(customer => {
+                    localMap[customer.asaasId] = customer;
+                });
+                
+                const notImported = asaasCustomers.filter(customer => !localMap[customer.id]).length;
+                const percentage = Math.round((localCustomers.length / asaasCustomers.length) * 100) || 0;
+                
+                const stats = {
+                    asaasTotal: asaasCustomers.length,
+                    localTotal: localCustomers.length,
+                    notImported: notImported,
+                    percentage: percentage
+                };
+                
+                showStats(stats);
+                
+                // Criar tabela de comparação
+                displayComparisonTable(asaasCustomers, localMap);
+                
+                showResult({
+                    message: `Comparação concluída: ${asaasCustomers.length} no Asaas, ${localCustomers.length} importados`,
+                    ...stats
+                });
+                
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        function displayComparisonTable(asaasCustomers, localMap) {
+            const comparisonDiv = document.getElementById('comparison-result');
+            
+            if (asaasCustomers.length === 0) {
+                comparisonDiv.innerHTML = `
+                    <div class="result">
+                        <h3>📊 Nenhum cliente encontrado no Asaas</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableHTML = `
+                <div class="result">
+                    <h3>📊 Comparação Detalhada (${asaasCustomers.length} clientes)</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>CPF/CNPJ</th>
+                                <th>Telefone</th>
+                                <th>Asaas ID</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            asaasCustomers.forEach(customer => {
+                const isImported = localMap[customer.id];
+                const statusClass = isImported ? 'imported' : 'not-imported';
+                const statusBadge = isImported 
+                    ? '<span class="status-badge status-imported">✅ Importado</span>'
+                    : '<span class="status-badge status-pending">⏳ Pendente</span>';
+                    
+                const buttonHTML = isImported 
+                    ? `<button class="button small success" disabled>✅ Já Importado</button>`
+                    : `<button class="button small warning" onclick="importSingleCustomer('${customer.id}', this)">📥 Importar Agora</button>`;
+                
+                tableHTML += `
+                    <tr class="${statusClass}">
+                        <td>${statusBadge}</td>
+                        <td><strong>${customer.name || 'Sem nome'}</strong></td>
+                        <td>${customer.email || '-'}</td>
+                        <td>${customer.cpfCnpj || '-'}</td>
+                        <td>${customer.phone || customer.mobilePhone || '-'}</td>
+                        <td><code>${customer.id}</code></td>
+                        <td>${buttonHTML}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            comparisonDiv.innerHTML = tableHTML;
+        }
+
+        async function importSingleCustomer(asaasId, buttonElement) {
+            try {
+                // Desabilitar botão e mostrar loading
+                const originalText = buttonElement.textContent;
+                buttonElement.disabled = true;
+                buttonElement.textContent = '⏳ Importando...';
+                buttonElement.classList.add('loading');
+                
+                console.log('Importing customer:', asaasId);
+                
+                // Fazer requisição para importar cliente específico
+                const data = await makeRequest(`${API_BASE}/sync/customer/${asaasId}`, {
+                    method: 'POST'
+                });
+                
+                console.log('Import result:', data);
+                
+                // Atualizar botão para sucesso
+                buttonElement.textContent = '✅ Importado';
+                buttonElement.classList.remove('warning', 'loading');
+                buttonElement.classList.add('success');
+                
+                // Atualizar linha da tabela
+                const row = buttonElement.closest('tr');
+                row.classList.remove('not-imported');
+                row.classList.add('imported');
+                
+                const statusCell = row.querySelector('td:first-child');
+                statusCell.innerHTML = '<span class="status-badge status-imported">✅ Importado</span>';
+                
+                // Atualizar estatísticas
+                const statsDiv = document.getElementById('stats');
+                if (statsDiv.innerHTML) {
+                    // Recarregar comparação para atualizar stats
+                    setTimeout(compareCustomers, 1000);
+                }
+                
+                showResult({
+                    message: `✅ Cliente importado com sucesso!`,
+                    customer: data.data?.name || asaasId,
+                    action: data.data?.action || 'imported',
+                    timestamp: new Date().toLocaleString()
+                });
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                
+                // Restaurar botão em caso de erro
+                buttonElement.disabled = false;
+                buttonElement.textContent = '📥 Importar Agora';
+                buttonElement.classList.remove('loading');
+                
+                showResult({ 
+                    error: `Erro ao importar cliente ${asaasId}`, 
+                    details: error.message,
+                    timestamp: new Date().toLocaleString()
+                }, true);
+            }
+        }
+
+        async function syncAllCustomers() {
+            try {
+                showResult({ message: 'Sincronizando todos os clientes... aguarde...' });
+                
+                const data = await makeRequest(`${API_BASE}/sync/customers`, {
+                    method: 'POST'
+                });
+                
+                showResult({
+                    message: '🎉 Sincronização completa realizada com sucesso!',
+                    ...data
+                });
+                
+                // Recarregar comparação após sync
+                setTimeout(compareCustomers, 2000);
+                
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        // Testar conexão ao carregar a página
+        window.addEventListener('load', () => {
+            console.log('Page loaded, testing connection...');
+            testConnection();
+        });
+    </script>
+</body>
+</html>

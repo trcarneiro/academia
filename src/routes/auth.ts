@@ -11,8 +11,41 @@ const updatePasswordSchema = z.object({
 });
 
 export default async function authRoutes(fastify: FastifyInstance) {
+  // Get user by email (for organization sync)
+  fastify.get('/users/by-email', {
+    schema: {
+      tags: ['Authentication'],
+      summary: 'Get user organization by email',
+      querystring: {
+        type: 'object',
+        required: ['email'],
+        properties: {
+          email: { type: 'string', format: 'email' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                email: { type: 'string' },
+                organizationId: { type: 'string' },
+                role: { type: 'string' }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, AuthController.getUserByEmail);
+
   // Register
   fastify.post('/register', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Register a new user',
@@ -55,6 +88,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   // Login
   fastify.post('/login', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Login user',
@@ -141,6 +175,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   // Refresh token
   fastify.post('/refresh', {
+    config: { rateLimit: { max: 60, timeWindow: '1 minute' } },
     schema: {
       tags: ['Authentication'],
       summary: 'Refresh JWT token',

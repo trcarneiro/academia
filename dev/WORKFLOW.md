@@ -75,7 +75,7 @@ Criar módulo [NOME] seguindo dev/GUIDELINES2:
 - CSS: tokens do DESIGN_SYSTEM.md
 - Naming: BEM + .module-isolated-*
 - Estados: loading/empty/error implementados
-- Base: copiar estrutura Students module
+- **Template**: Instructors (single-file) OU Activities (multi-file)
 - Premium: .stat-card-enhanced, .module-header-premium
 - Validar: responsividade + acessibilidade
 - Registrar: AcademyApp.loadModules() + window exposure

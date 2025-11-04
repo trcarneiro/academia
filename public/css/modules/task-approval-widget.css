@@ -1,0 +1,308 @@
+/**
+ * Task Approval Widget Styles
+ * Widget premium para dashboard com tasks pendentes de agentes
+ */
+
+/* ========= CONTAINER ========= */
+.task-approval-widget {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.task-approval-widget:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* ========= HEADER ========= */
+.task-approval-widget .widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.task-approval-widget .widget-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-approval-widget .widget-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.task-approval-widget .pending-badge {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.task-approval-widget .pending-badge.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.task-approval-widget .btn-refresh {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-approval-widget .btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(180deg);
+}
+
+/* ========= CONTENT ========= */
+.task-approval-widget .widget-content {
+  padding: 16px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+.task-approval-widget .widget-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.task-approval-widget .widget-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.task-approval-widget .widget-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.task-approval-widget .widget-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ========= EMPTY STATE ========= */
+.task-approval-widget .empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.task-approval-widget .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.task-approval-widget .empty-state p {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.task-approval-widget .empty-state small {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* ========= TASK CARD ========= */
+.task-approval-widget .task-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.task-approval-widget .task-card:last-child {
+  margin-bottom: 0;
+}
+
+.task-approval-widget .task-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.1);
+  transform: translateX(4px);
+}
+
+/* ========= TASK HEADER ========= */
+.task-approval-widget .task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.task-approval-widget .task-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.task-approval-widget .category-badge,
+.task-approval-widget .priority-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.task-approval-widget .priority-badge {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.task-approval-widget .task-time {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* ========= TASK BODY ========= */
+.task-approval-widget .task-body h4 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.task-approval-widget .task-body p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.task-approval-widget .task-agent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 12px;
+}
+
+.task-approval-widget .agent-icon {
+  font-size: 16px;
+}
+
+/* ========= TASK ACTIONS ========= */
+.task-approval-widget .task-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.task-approval-widget .task-actions button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-approval-widget .btn-approve {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.task-approval-widget .btn-approve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
+}
+
+.task-approval-widget .btn-reject {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.task-approval-widget .btn-reject:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);
+}
+
+.task-approval-widget .btn-details {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.task-approval-widget .btn-details:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.4);
+}
+
+/* ========= FOOTER ========= */
+.task-approval-widget .widget-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.task-approval-widget .btn-view-all {
+  display: inline-block;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.task-approval-widget .btn-view-all:hover {
+  color: #764ba2;
+  transform: translateX(4px);
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 768px) {
+  .task-approval-widget .task-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .task-approval-widget .widget-content {
+    max-height: 400px;
+  }
+
+  .task-approval-widget .task-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .task-approval-widget .task-actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}

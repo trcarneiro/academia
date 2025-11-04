@@ -467,11 +467,14 @@ export class RAGService {
                 } catch (error) {
                     console.error('Erro ao usar Gemini, usando contexto real:', error);
                     response = await this.generateContextualResponse(message);
+                    console.log('🔍 Fallback response generated:', response ? response.substring(0, 100) + '...' : 'UNDEFINED/NULL');
                 }
             } else {
                 console.log('Gemini não disponível, usando contexto dos documentos reais');
                 response = await this.generateContextualResponse(message);
             }
+            
+            console.log('🔍 RAG Response generated:', response ? response.substring(0, 100) + '...' : 'UNDEFINED/NULL');
             
             return {
                 message: response,
@@ -821,6 +824,61 @@ export class RAGService {
         } catch (error) {
             console.error('Erro na reindexação:', error);
             throw new Error('Erro na reindexação de documentos');
+        }
+    }
+
+    /**
+     * Execute RAG Query - wrapper for processChat optimized for single queries
+     */
+    static async executeRAGQuery(
+        query: string, 
+        context?: string
+    ): Promise<{
+        response: string;
+        sources: Array<{
+            document: string;
+            excerpt: string;
+            relevance: number;
+        }>;
+        confidence: number;
+        processingTime: number;
+        documentsScanned: number;
+    }> {
+        const startTime = Date.now();
+        
+        try {
+            console.log('Executing RAG query:', query);
+            
+            // Use processChat with minimal context
+            const chatContext: ChatContext = {
+                conversationId: `query_${Date.now()}`,
+                sessionData: { context }
+            };
+            
+            const chatResponse = await this.processChat(query, chatContext);
+            const processingTime = Date.now() - startTime;
+            
+            console.log('🔍 Chat response message:', chatResponse.message ? chatResponse.message.substring(0, 100) + '...' : 'UNDEFINED/NULL');
+            
+            return {
+                response: chatResponse.message,
+                sources: chatResponse.sources,
+                confidence: 0.85, // Default confidence for now
+                processingTime,
+                documentsScanned: chatResponse.sources.length
+            };
+            
+        } catch (error) {
+            console.error('Error executing RAG query:', error);
+            
+            // Fallback response
+            return {
+                response: 'Desculpe, não foi possível processar sua consulta no momento. Tente novamente mais tarde.',
+                sources: [],
+                confidence: 0.0,
+                processingTime: Date.now() - startTime,
+                documentsScanned: 0
+            };
         }
     }
 }

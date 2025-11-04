@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Course Import</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .log-success { color: #4ade80; }
+        .log-error { color: #f87171; }
+        .log-warning { color: #fbbf24; }
+        .log-info { color: #60a5fa; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            border: 2px dashed #667eea;
+            transition: all 0.3s ease;
+        }
+        .file-label:hover {
+            background: #e0e0f0;
+            border-color: #764ba2;
+        }
+        .file-name {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test Course Import - Krav Maga Faixa Branca</h1>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="statTechniques">-</div>
+                <div class="stat-label">Técnicas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statWeeks">-</div>
+                <div class="stat-label">Semanas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statLessons">-</div>
+                <div class="stat-label">Aulas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statStatus">Aguardando</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+
+        <div>
+            <label for="fileInput" class="file-label">
+                📂 Selecionar cursofaixabranca.json
+            </label>
+            <input type="file" id="fileInput" class="file-input" accept=".json">
+            <div class="file-name" id="fileName">Nenhum arquivo selecionado</div>
+            
+            <button class="button" id="importBtn" disabled>
+                🚀 Importar Curso com Técnicas
+            </button>
+            <button class="button" id="clearBtn">
+                🗑️ Limpar Log
+            </button>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        let courseData = null;
+
+        // Elements
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const importBtn = document.getElementById('importBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const log = document.getElementById('log');
+        const statTechniques = document.getElementById('statTechniques');
+        const statWeeks = document.getElementById('statWeeks');
+        const statLessons = document.getElementById('statLessons');
+        const statStatus = document.getElementById('statStatus');
+
+        // File input handler
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            fileName.textContent = file.name;
+            addLog('info', `📂 Arquivo selecionado: ${file.name}`);
+
+            try {
+                const text = await file.text();
+                courseData = JSON.parse(text);
+                
+                addLog('success', '✅ JSON carregado com sucesso');
+                addLog('info', `📊 Curso: ${courseData.name}`);
+                addLog('info', `📊 Técnicas: ${courseData.techniques.length}`);
+                addLog('info', `📊 Semanas: ${courseData.durationTotalWeeks}`);
+                addLog('info', `📊 Aulas: ${courseData.totalLessons}`);
+
+                // Update stats
+                statTechniques.textContent = courseData.techniques.length;
+                statWeeks.textContent = courseData.durationTotalWeeks;
+                statLessons.textContent = courseData.totalLessons;
+                statStatus.textContent = 'Pronto';
+                statStatus.style.color = '#4ade80';
+
+                importBtn.disabled = false;
+            } catch (error) {
+                addLog('error', `❌ Erro ao ler JSON: ${error.message}`);
+                importBtn.disabled = true;
+            }
+        });
+
+        // Import button handler
+        importBtn.addEventListener('click', async () => {
+            if (!courseData) return;
+
+            importBtn.disabled = true;
+            statStatus.textContent = 'Importando...';
+            statStatus.style.color = '#fbbf24';
+
+            addLog('info', '🚀 Iniciando importação...');
+
+            try {
+                const response = await fetch('/api/courses/import-full-course', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...courseData,
+                        createMissingTechniques: true
+                    })
+                });
+
+                const contentType = response.headers.get('content-type');
+                addLog('info', `📥 Response status: ${response.status}`);
+                addLog('info', `📥 Content-Type: ${contentType}`);
+
+                let result;
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    const text = await response.text();
+                    addLog('error', `❌ Response não é JSON: ${text}`);
+                    throw new Error('Invalid response format');
+                }
+
+                if (response.ok && result.success) {
+                    addLog('success', '✅ Curso importado com sucesso!');
+                    addLog('success', `✅ Curso ID: ${result.data.courseId}`);
+                    addLog('success', `✅ Lesson Plans: ${result.data.lessonCount}`);
+                    addLog('success', `✅ Técnicas criadas: ${result.data.techniquesCreated || 0}`);
+                    addLog('success', `✅ Semanas: ${result.data.weeksCreated}`);
+
+                    statStatus.textContent = 'Sucesso!';
+                    statStatus.style.color = '#4ade80';
+
+                    // Show navigation link
+                    addLog('info', '🔗 Navegue para:');
+                    addLog('info', `   Dashboard: http://localhost:3000/#courses`);
+                    addLog('info', `   Editor: http://localhost:3000/#course-editor/${result.data.courseId}`);
+                } else {
+                    addLog('error', `❌ Erro na importação: ${result.message || 'Unknown error'}`);
+                    if (result.data) {
+                        addLog('warning', `⚠️ Detalhes: ${JSON.stringify(result.data, null, 2)}`);
+                    }
+                    statStatus.textContent = 'Erro';
+                    statStatus.style.color = '#f87171';
+                }
+            } catch (error) {
+                addLog('error', `❌ Erro: ${error.message}`);
+                statStatus.textContent = 'Erro';
+                statStatus.style.color = '#f87171';
+            } finally {
+                importBtn.disabled = false;
+            }
+        });
+
+        // Clear log button
+        clearBtn.addEventListener('click', () => {
+            log.innerHTML = '';
+        });
+
+        // Helper function to add log entries
+        function addLog(type, message) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Initial message
+        addLog('info', '👋 Bem-vindo ao Test Course Import');
+        addLog('info', '📂 Selecione o arquivo cursofaixabranca.json para começar');
+    </script>
+</body>
+</html>

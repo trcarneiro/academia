@@ -1,0 +1,13 @@
+# Docs governance
+/AGENTS.md @trcarneiro1
+/dev/** @trcarneiro1
+/.github/** @trcarneiro1
+
+# Frontend modules
+/public/js/modules/** @trcarneiro1
+
+# Backend (Fastify/TS)
+/src/** @trcarneiro1
+/routes/** @trcarneiro1
+/services/** @trcarneiro1
+/schemas/** @trcarneiro1

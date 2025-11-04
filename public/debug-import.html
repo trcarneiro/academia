@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Módulo Import - Debug</title>
+    <link rel="stylesheet" href="/css/modules/import.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .debug-title {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔍 Debug do Módulo Import</h1>
+        
+        <div class="debug-section">
+            <h3 class="debug-title">📊 Status do Sistema</h3>
+            <div id="system-status"></div>
+            <button class="test-button" onclick="checkSystemStatus()">🔄 Verificar Status</button>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">📦 Módulo Import</h3>
+            <div id="module-status"></div>
+            <button class="test-button" onclick="testImportModule()">🔍 Testar Módulo</button>
+            <button class="test-button" onclick="loadImportModule()">📥 Carregar Módulo</button>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">🎨 Teste Visual das Abas</h3>
+            <div id="tabs-test"></div>
+            <button class="test-button" onclick="showTabsTest()">👀 Mostrar Abas</button>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">📋 Container do Módulo</h3>
+            <div id="import-container" style="min-height: 400px; border: 2px dashed #ddd; padding: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const className = isError ? 'status error' : 'status success';
+            element.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        function checkSystemStatus() {
+            let status = '<h4>🔍 Verificações do Sistema:</h4><ul>';
+            
+            status += `<li>🌐 URL: ${window.location.href}</li>`;
+            status += `<li>📱 User Agent: ${navigator.userAgent}</li>`;
+            status += `<li>🔧 DOM Ready: ${document.readyState}</li>`;
+            
+            // Verificar scripts carregados
+            const scripts = Array.from(document.querySelectorAll('script[src*="import"]'));
+            status += `<li>📜 Scripts Import: ${scripts.length} encontrados</li>`;
+            scripts.forEach(script => {
+                status += `<li style="margin-left: 20px;">📄 ${script.src}</li>`;
+            });
+            
+            // Verificar CSS carregados
+            const stylesheets = Array.from(document.querySelectorAll('link[href*="import"]'));
+            status += `<li>🎨 CSS Import: ${stylesheets.length} encontrados</li>`;
+            stylesheets.forEach(css => {
+                status += `<li style="margin-left: 20px;">🎨 ${css.href}</li>`;
+            });
+            
+            status += '</ul>';
+            
+            showStatus('system-status', status);
+        }
+
+        function testImportModule() {
+            let status = '<h4>🧪 Teste do Módulo Import:</h4><ul>';
+            
+            // Verificar se o módulo existe
+            const hasImportModule = typeof window.importModule !== 'undefined';
+            status += `<li>📦 window.importModule existe: ${hasImportModule ? '✅ Sim' : '❌ Não'}</li>`;
+            
+            if (hasImportModule) {
+                status += `<li>🔧 Tipo: ${typeof window.importModule}</li>`;
+                status += `<li>🏗️ Constructor: ${window.importModule.constructor.name}</li>`;
+                status += `<li>📋 Inicializado: ${window.importModule.initialized ? '✅ Sim' : '❌ Não'}</li>`;
+                
+                // Verificar métodos
+                const methods = ['init', 'render', 'cleanup'];
+                methods.forEach(method => {
+                    const hasMethod = typeof window.importModule[method] === 'function';
+                    status += `<li>⚡ ${method}(): ${hasMethod ? '✅ Disponível' : '❌ Não encontrado'}</li>`;
+                });
+            }
+            
+            // Verificar função global
+            const hasGlobalFunction = typeof window.initImportModule === 'function';
+            status += `<li>🌐 window.initImportModule existe: ${hasGlobalFunction ? '✅ Sim' : '❌ Não'}</li>`;
+            
+            status += '</ul>';
+            
+            showStatus('module-status', status);
+        }
+
+        async function loadImportModule() {
+            try {
+                showStatus('module-status', '⏳ Carregando módulo import...');
+                
+                const container = document.getElementById('import-container');
+                
+                // Verificar se a função global existe
+                if (typeof window.initImportModule === 'function') {
+                    const module = await window.initImportModule(container);
+                    showStatus('module-status', '✅ Módulo import carregado com sucesso!');
+                } else {
+                    showStatus('module-status', '❌ Função initImportModule não encontrada', true);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulo:', error);
+                showStatus('module-status', `❌ Erro: ${error.message}`, true);
+            }
+        }
+
+        function showTabsTest() {
+            const tabsHTML = `
+                <div class="module-isolated-import">
+                    <h4>🧪 Teste das Abas de Formato:</h4>
+                    <div class="format-tabs">
+                        <div class="format-tab active" data-format="sistema">
+                            <h4>🎓 Formato Padrão</h4>
+                            <p>Campos: nome, email, telefone, documento, endereco, valor_mensalidade</p>
+                        </div>
+                        <div class="format-tab" data-format="asaas">
+                            <h4>💳 Formato Asaas</h4>
+                            <p>Importação direta de exportações do Asaas (mapeamento automático)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="format-details active" data-format="sistema">
+                        <p><strong>📋 Formato Padrão do Sistema:</strong></p>
+                        <ul>
+                            <li><strong>nome</strong> - Nome completo do aluno</li>
+                            <li><strong>email</strong> - Email válido</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="format-details" data-format="asaas">
+                        <p><strong>💳 Formato Asaas (Detecção Automática):</strong></p>
+                        <ul>
+                            <li><strong>Nome</strong> → mapeado para <code>nome</code></li>
+                            <li><strong>Email</strong> → mapeado para <code>email</code></li>
+                        </ul>
+                        <p class="format-note">✨ O sistema detecta automaticamente o formato e faz a conversão!</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tabs-test').innerHTML = tabsHTML;
+            
+            // Configurar funcionalidade das abas
+            setupTabsFunctionality();
+            
+            showStatus('tabs-test', '✅ Abas de teste carregadas! Clique nas abas acima para testar.');
+        }
+
+        function setupTabsFunctionality() {
+            const formatTabs = document.querySelectorAll('.format-tab');
+            const formatDetails = document.querySelectorAll('.format-details');
+
+            formatTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const format = tab.dataset.format;
+                    console.log('Tab clicked:', format);
+                    
+                    // Update active tab
+                    formatTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Update active details
+                    formatDetails.forEach(detail => {
+                        detail.classList.remove('active');
+                        if (detail.dataset.format === format) {
+                            detail.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Auto-verificar status ao carregar
+        window.addEventListener('load', () => {
+            checkSystemStatus();
+            testImportModule();
+        });
+    </script>
+
+    <!-- Carregar o módulo import -->
+    <script type="module" src="/js/modules/import/index.js"></script>
+</body>
+</html>

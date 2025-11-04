@@ -1,0 +1,296 @@
+<!-- Course Creation/Edit Form Module -->
+<div class="courses-isolated">
+    <!-- GUIDELINES2.MD: Header Premium Enhanced -->
+    <header class="module-header-premium">
+        <div class="header-left">
+            <h1 class="page-title">
+                <span class="title-icon">📚</span>
+                <span id="formTitle">Novo Curso</span>
+            </h1>
+            <nav class="breadcrumb">
+                <a href="#" data-action="navigateToCourses">Cursos</a> &gt; <span id="breadcrumbCurrent">Novo</span>
+            </nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" data-action="navigateToCourses">
+                ← Voltar
+            </button>
+            <button class="btn btn-primary" id="saveCourseBtn">
+                💾 Salvar Curso
+            </button>
+            <button class="btn btn-import" id="importFromJsonBtn">
+                📥 Importar JSON
+            </button>
+            <input type="file" id="importJsonFile" accept="application/json" style="display:none" />
+        </div>
+    </header>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Salvando curso...</div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-container" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Erro ao salvar</h3>
+            <p id="errorMessage">Ocorreu um erro inesperado.</p>
+            <button class="btn btn-primary" onclick="retrySave()">Tentar Novamente</button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs-container">
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="basic">📋 Básico</button>
+                <button class="tab-btn" data-tab="techniques">🥋 Técnicas</button>
+                <button class="tab-btn" data-tab="schedule">📅 Cronograma</button>
+                <button class="tab-btn" data-tab="advanced">⚙️ Avançado</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tabs-content">
+                <!-- 📋 Informações Básicas -->
+                <div id="basic-tab" class="tab-pane active">
+                    <section class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-icon">📋</span>
+                            Informações Básicas
+                        </h2>
+                        <p class="section-subtitle">Configure as informações fundamentais do curso</p>
+
+                        <div class="form-group">
+                            <label for="courseId">ID do Curso</label>
+                            <input type="text" id="courseId" name="courseId" placeholder="Ex: krav-maga-faixa-branca-2025">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="courseName">Nome do Curso *</label>
+                            <input type="text" id="courseName" name="name" required placeholder="Ex: Krav Maga Faixa Branca">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="courseDescription">Descrição do Curso</label>
+                            <textarea id="courseDescription" name="description" rows="4" placeholder="Curso introdutório de Krav Maga para iniciantes..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="durationTotalWeeks">Duração Total (semanas)</label>
+                            <input type="number" id="durationTotalWeeks" name="durationTotalWeeks" min="1" placeholder="18">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalLessons">Total de Aulas</label>
+                            <input type="number" id="totalLessons" name="totalLessons" min="1" placeholder="35">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessonDurationMinutes">Duração da Aula (minutos)</label>
+                            <input type="number" id="lessonDurationMinutes" name="lessonDurationMinutes" min="1" placeholder="60">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="difficulty">Dificuldade</label>
+                            <select id="difficulty" name="difficulty">
+                                <option value="Iniciante">Iniciante</option>
+                                <option value="Intermediário">Intermediário</option>
+                                <option value="Avançado">Avançado</option>
+                                <option value="Especialista">Especialista</option>
+                                <option value="Mestre">Mestre</option>
+                            </select>
+                        </div>
+
+                        <!-- 🎯 Objetivos -->
+                        <h3 class="subsection-title">🎯 Objetivos</h3>
+                        <div class="dynamic-list">
+                            <div id="objectivesList" class="objectives-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addObjective()">
+                                + Adicionar Objetivo
+                            </button>
+                        </div>
+
+                        <!-- 📦 Equipamentos -->
+                        <h3 class="subsection-title">📦 Equipamentos Necessários</h3>
+                        <div class="dynamic-list">
+                            <div id="equipmentList" class="equipment-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addEquipment()">
+                                + Adicionar Equipamento
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 🥋 Técnicas Tab -->
+                <div id="techniques-tab" class="tab-pane">
+                    <section class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-icon">🥋</span>
+                            Técnicas
+                        </h2>
+                        <p class="section-subtitle">Configure as técnicas ensinadas no curso</p>
+
+                        <!-- 🏃 Aquecimento -->
+                        <h3 class="subsection-title">🏃 Aquecimento</h3>
+                        <div class="form-group">
+                            <label for="warmupDescription">Descrição do Aquecimento</label>
+                            <textarea id="warmupDescription" name="warmupDescription" rows="3" placeholder="Corrida suave, alongamentos dinâmicos, saltos."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warmupDuration">Duração (minutos)</label>
+                            <input type="number" id="warmupDuration" name="warmupDuration" min="1" placeholder="5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warmupType">Tipo</label>
+                            <input type="text" id="warmupType" name="warmupType" placeholder="STRETCH">
+                        </div>
+
+                        <!-- 🥋 Técnicas -->
+                        <h3 class="subsection-title">🥋 Técnicas do Curso</h3>
+                        <div class="dynamic-list">
+                            <div id="techniquesList" class="techniques-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addTechnique()">
+                                + Adicionar Técnica
+                            </button>
+                        </div>
+
+                        <!-- 🧠 Simulações -->
+                        <h3 class="subsection-title">🧠 Simulações</h3>
+                        <div class="dynamic-list">
+                            <div id="simulationsList" class="simulations-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addSimulation()">
+                                + Adicionar Simulação
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 📅 Cronograma Tab -->
+                <div id="schedule-tab" class="tab-pane">
+                    <section class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-icon">📅</span>
+                            Cronograma
+                        </h2>
+                        <p class="section-subtitle">Configure o cronograma semanal do curso</p>
+
+                        <!-- 📅 Cronograma Semanal -->
+                        <h3 class="subsection-title">📅 Cronograma Semanal</h3>
+                        <div class="dynamic-list">
+                            <div id="scheduleList" class="schedule-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addWeek()">
+                                + Adicionar Semana
+                            </button>
+                        </div>
+
+                        <!-- 🏋️ Preparação Física -->
+                        <h3 class="subsection-title">🏋️ Preparação Física</h3>
+                        <div class="form-group">
+                            <label for="physicalPrepDescription">Descrição</label>
+                            <textarea id="physicalPrepDescription" name="physicalPrepDescription" rows="3" placeholder="Exercícios para condicionamento físico..."></textarea>
+                        </div>
+
+                        <h4>Exercícios</h4>
+                        <div class="dynamic-list">
+                            <div id="exercisesList" class="exercises-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addExercise()">
+                                + Adicionar Exercício
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ⚙️ Avançado Tab -->
+                <div id="advanced-tab" class="tab-pane">
+                    <section class="form-section">
+                        <h2 class="section-title">
+                            <span class="section-icon">⚙️</span>
+                            Configurações Avançadas
+                        </h2>
+                        <p class="section-subtitle">Configure recursos avançados do curso</p>
+
+                        <!-- 📚 Recursos de Apoio -->
+                        <h3 class="subsection-title">📚 Recursos de Apoio</h3>
+                        <div class="dynamic-list">
+                            <div id="supportResourcesList" class="support-resources-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addSupportResource()">
+                                + Adicionar Recurso
+                            </button>
+                        </div>
+
+                        <!-- 📝 Notas Gerais -->
+                        <h3 class="subsection-title">📝 Notas Gerais</h3>
+                        <div class="dynamic-list">
+                            <div id="generalNotesList" class="general-notes-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addGeneralNote()">
+                                + Adicionar Nota
+                            </button>
+                        </div>
+
+                        <!-- 🎮 Gamificação -->
+                        <h3 class="subsection-title">🎮 Gamificação</h3>
+                        <div class="form-group">
+                            <label for="gamificationDescription">Descrição</label>
+                            <textarea id="gamificationDescription" name="gamificationDescription" rows="3" placeholder="Sistema de recompensas para motivar os alunos..."></textarea>
+                        </div>
+
+                        <h4>Recompensas</h4>
+                        <div class="dynamic-list">
+                            <div id="rewardsList" class="rewards-list">
+                                <!-- Dynamic items will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addReward()">
+                                + Adicionar Recompensa
+                            </button>
+                        </div>
+
+                        <!-- 🏁 Evento Final -->
+                        <h3 class="subsection-title">🏁 Evento Final</h3>
+                        <div class="form-group">
+                            <label for="finalEventDescription">Descrição</label>
+                            <textarea id="finalEventDescription" name="finalEventDescription" rows="3" placeholder="Demonstração prática e avaliação final..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finalEventDuration">Duração (minutos)</label>
+                            <input type="number" id="finalEventDuration" name="finalEventDuration" min="1" placeholder="120">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finalEventType">Tipo</label>
+                            <input type="text" id="finalEventType" name="finalEventType" placeholder="ASSESSMENT">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finalEventDate">Data</label>
+                            <input type="text" id="finalEventDate" name="finalEventDate" placeholder="Final da semana 18">
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load CSS and JS -->
+<link rel="stylesheet" href="/css/modules/courses/course-form-tabs.css">
+<script src="/js/modules/courses/controllers/courseFormController.js"></script>

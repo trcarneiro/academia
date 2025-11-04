@@ -1,0 +1,191 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor de Instrutor - Academia Krav Maga</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/modules/instructors.css">
+<link rel="stylesheet" href="/css/modules/instructor-editor.css">
+
+<!-- Header Premium -->
+<div class="module-header-premium">
+  <div class="breadcrumb-premium">
+    <a href="#/instructors" class="breadcrumb-item">
+      <i class="fas fa-chevron-left"></i>
+      Instrutores
+    </a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">Editor</span>
+  </div>
+  <h1>Novo Instrutor</h1>
+</div>
+
+<!-- Loading State -->
+<div id="loading-state" class="loading-premium">
+  <div class="spinner-premium"></div>
+  <p>Carregando...</p>
+</div>
+
+<!-- Error State -->
+<div id="error-state" class="error-state-premium" style="display: none;">
+  <div class="error-icon-premium">
+    <i class="fas fa-exclamation-triangle"></i>
+  </div>
+  <p class="error-message">Ocorreu um erro. Tente novamente.</p>
+  <button class="btn-primary" onclick="window.location.reload()">Tentar Novamente</button>
+</div>
+
+<!-- Success State -->
+<div id="success-state" class="success-state-premium" style="display: none;">
+  <div class="success-icon-premium">
+    <i class="fas fa-check-circle"></i>
+  </div>
+  <p class="success-message">Instrutor salvo com sucesso!</p>
+</div>
+
+<!-- Form Container -->
+<div id="form-container" class="form-container-premium">
+  <form id="instructor-form" class="instructor-form-premium">
+    <!-- Basic Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>📋 Informações Básicas</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Nome Completo *</label>
+          <input type="text" id="name" name="name" required placeholder="Ex: João Silva Santos">
+          <div class="field-error" id="name-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail *</label>
+          <input type="email" id="email" name="email" required placeholder="Ex: joao@academia.com">
+          <div class="field-error" id="email-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Telefone</label>
+          <input type="tel" id="phone" name="phone" placeholder="Ex: (11) 99999-9999">
+          <div class="field-error" id="phone-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" name="cpf" placeholder="Ex: 123.456.789-00">
+          <div class="field-error" id="cpf-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="birthdate">Data de Nascimento</label>
+          <input type="date" id="birthdate" name="birthdate">
+          <div class="field-error" id="birthdate-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+            <option value="pending">Pendente</option>
+          </select>
+          <div class="field-error" id="status-error"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Professional Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>🥋 Informações Profissionais</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="specialization">Especialização</label>
+          <input type="text" id="specialization" name="specialization" placeholder="Ex: Defesa Pessoal, Combate, etc.">
+        </div>
+        <div class="form-group">
+          <label for="certifications">Certificações</label>
+          <input type="text" id="certifications" name="certifications" placeholder="Ex: Faixa Preta 3º Dan">
+        </div>
+        <div class="form-group full-width">
+          <label for="bio">Biografia</label>
+          <textarea id="bio" name="bio" rows="4" placeholder="Uma breve biografia do instrutor..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employment Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>💼 Informações de Contratação</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="hireDate">Data de Contratação</label>
+          <input type="date" id="hireDate" name="hireDate">
+        </div>
+        <div class="form-group">
+          <label for="salary">Salário</label>
+          <input type="number" id="salary" name="salary" placeholder="Ex: 3000" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="contractType">Tipo de Contrato</label>
+          <select id="contractType" name="contractType">
+            <option value="clt">CLT</option>
+            <option value="pj">PJ</option>
+            <option value="freelance">Freelance</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>📍 Endereço</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="address">Endereço</label>
+          <input type="text" id="address" name="address" placeholder="Ex: Rua das Flores, 123">
+        </div>
+        <div class="form-group">
+          <label for="addressComplement">Complemento</label>
+          <input type="text" id="addressComplement" name="addressComplement" placeholder="Ex: Apto 101">
+        </div>
+        <div class="form-group">
+          <label for="neighborhood">Bairro</label>
+          <input type="text" id="neighborhood" name="neighborhood" placeholder="Ex: Centro">
+        </div>
+        <div class="form-group">
+          <label for="city">Cidade</label>
+          <input type="text" id="city" name="city" placeholder="Ex: São Paulo">
+        </div>
+        <div class="form-group">
+          <label for="state">Estado</label>
+          <input type="text" id="state" name="state" placeholder="Ex: SP">
+        </div>
+        <div class="form-group">
+          <label for="zipCode">CEP</label>
+          <input type="text" id="zipCode" name="zipCode" placeholder="Ex: 12345-678">
+        </div>
+        <div class="form-group">
+          <label for="country">País</label>
+          <input type="text" id="country" name="country" value="Brasil" readonly>
+          <div class="field-error" id="country-error"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-secondary">Cancelar</button>
+      <div class="action-group">
+        <button type="button" id="delete-instructor-btn" class="btn-danger" style="display: none;">
+          <i class="fas fa-trash"></i>
+          Excluir
+        </button>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Scripts -->
+<script src="/js/shared/api-client.js"></script>
+<script src="/js/shared/utils.js"></script>
+<script src="/js/modules/instructors/instructor-editor.js"></script>

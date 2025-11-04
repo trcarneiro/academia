@@ -4,7 +4,7 @@ import { lessonPlanController } from '../controllers/lessonPlanController';
 // Middleware de autenticação (simulado)
 async function authenticate(_request: any, reply: any) {
   try {
-    // Em um app real, isso verificaria o token JWT
+    // Em um app real, isso verificaria o   token JWT
     // await request.jwtVerify();
   } catch (err) {
     reply.send(err);
@@ -29,4 +29,9 @@ export async function lessonPlansRoutes(app: FastifyInstance) {
   app.get('/:id/activities', lessonPlanController.getActivities);
   app.post('/:id/activities', lessonPlanController.addActivity);
   app.delete('/:id/activities/:activityId', lessonPlanController.removeActivity);
+  
+  // Technique management routes for lesson plans
+  app.get('/:id/techniques', lessonPlanController.getTechniques);
+  app.post('/:id/techniques', lessonPlanController.addTechniques);
+  app.delete('/:id/techniques/:techniqueId', lessonPlanController.removeTechnique);
 }

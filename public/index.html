@@ -6,6 +6,8 @@
     <title>Academia Dashboard</title>
     <!-- FORÇA RESET - Para garantir design minimalista -->
     <link rel="stylesheet" href="css/force-reset.css">
+    <!-- LAYOUT CENTER FIX - Correção de centralização -->
+    <link rel="stylesheet" href="css/layout-center-fix.css">
     <!-- FORMULÁRIOS UX PROFISSIONAIS -->
     <link rel="stylesheet" href="css/forms-ux.css">
     <!-- Design System - Guidelines.MD Compliance -->
@@ -13,8 +15,37 @@
     <link rel="stylesheet" href="css/dashboard/main.css">
     <!-- Correção de emergência para o menu -->
     <link rel="stylesheet" href="css/menu-fix.css">
+    <!-- Global Premium Colors - Academia v2.0 -->
+    <link rel="stylesheet" href="css/global-premium-colors.css">
     <!-- Module CSS -->
     <link rel="stylesheet" href="css/modules/courses.css">
+    <link rel="stylesheet" href="css/modules/courses-premium.css">
+    <link rel="stylesheet" href="css/modules/course-editor-premium.css">
+    <link rel="stylesheet" href="css/modules/turmas.css">
+    <link rel="stylesheet" href="css/modules/turmas-clean.css">
+    <link rel="stylesheet" href="css/modules/turmas-courses.css">
+    <link rel="stylesheet" href="css/modules/turmas-tabs.css">
+    <link rel="stylesheet" href="css/modules/frequency-basic.css">
+    <link rel="stylesheet" href="css/modules/frequency-dashboard.css">
+    <link rel="stylesheet" href="css/modules/frequency-history.css">
+    <link rel="stylesheet" href="css/modules/lesson-execution.css">
+    <link rel="stylesheet" href="css/modules/import.css">
+    <link rel="stylesheet" href="css/modules/import-enhanced.css">
+    <link rel="stylesheet" href="css/modules/agenda.css">
+    <link rel="stylesheet" href="css/modules/units.css">
+    <link rel="stylesheet" href="css/modules/students-premium.css">
+    <link rel="stylesheet" href="css/modules/student-progress.css">
+    <link rel="stylesheet" href="css/modules/graduation.css">
+    <link rel="stylesheet" href="css/modules/crm.css">
+    <link rel="stylesheet" href="css/modules/checkin-kiosk.css">
+    <link rel="stylesheet" href="css/modules/ai.css">
+    <link rel="stylesheet" href="css/modules/agents.css">
+    <link rel="stylesheet" href="css/modules/agent-dashboard-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-chat.css">
+    <link rel="stylesheet" href="css/modules/agent-chat-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-chat-fullscreen.css">
+    <link rel="stylesheet" href="css/modules/task-approval-widget.css">
+    <link rel="stylesheet" href="css/modules/agent-activity.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -44,11 +75,11 @@
                 <li data-module="students">
                     <i>👥</i> <span>Alunos</span>
                 </li>
-                <li data-module="billing">
-                    <i>📋</i> <span>Cobrança</span>
+                <li data-module="crm">
+                    <i>🎯</i> <span>CRM & Leads</span>
                 </li>
-                <li data-module="financial">
-                    <i>💰</i> <span>Financeiro</span>
+                <li data-module="packages">
+                    <i>🏷️</i> <span>Comercial</span>
                 </li>
                 <li data-module="activities">
                     <i>🏃</i> <span>Atividades</span>
@@ -59,11 +90,56 @@
                 <li data-module="courses">
                     <i>🎓</i> <span>Cursos</span>
                 </li>
-                <li data-module="rag">
-                    <i>🧠</i> <span>RAG System</span>
+                <li data-module="turmas">
+                    <i>👥</i> <span>Turmas</span>
+                </li>
+                <li data-module="organizations">
+                    <i>🏫</i> <span>Organizações</span>
+                </li>
+                <li data-module="units">
+                    <i>🏢</i> <span>Unidades</span>
+                </li>
+                <li data-module="instructors">
+                    <i>👨‍🏫</i> <span>Instrutores</span>
+                </li>
+                <li data-module="checkin-kiosk">
+                    <i>✅</i> <span>Check-in Kiosk</span>
+                </li>
+                <li data-module="agenda">
+                    <i>📅</i> <span>Agenda</span>
+                </li>
+                <li data-module="frequency">
+                    <i>📊</i> <span>Frequência</span>
+                </li>
+                <li data-module="student-progress">
+                    <i>📈</i> <span>Progresso</span>
+                </li>
+                <li data-module="graduation">
+                    <i>🎓</i> <span>Graduação</span>
+                </li>
+                <li data-module="crm">
+                    <i>🎯</i> <span>CRM</span>
+                </li>
+                <li data-module="ai">
+                    <i>🤖</i> <span>IA & Agentes</span>
+                </li>
+                <li data-module="agents">
+                    <i>🎯</i> <span>Agentes</span>
+                </li>
+                <li data-module="agent-chat-fullscreen">
+                    <i>💬</i> <span>Chat com Agentes</span>
+                </li>
+                <li data-module="agent-activity">
+                    <i>🤖</i> <span>Atividade de Agentes</span>
+                </li>
+                <li data-module="import">
+                    <i>📥</i> <span>Importação</span>
                 </li>
                 <li data-module="reports">
                     <i>📈</i> <span>Relatórios</span>
+                </li>
+                <li data-module="settings">
+                    <i>⚙️</i> <span>Configurações</span>
                 </li>
             </ul>
         </nav>
@@ -77,30 +153,81 @@
         </div>
 
         <div class="module-content" id="module-container">
-            <div id="contentContainer">
-                <!-- Conteúdo dos módulos será carregado aqui via SPA -->
-                <div class="welcome-message">
-                    <h2>Bem-vindo à Academia</h2>
-                    <p>Gerencie alunos, planos e atividades com facilidade. Selecione uma opção no menu lateral para começar.</p>
-                </div>
+            <!-- Conteúdo dos módulos será carregado aqui via SPA -->
+            <div class="welcome-message">
+                <h2>Dashboard Principal</h2>
+                <p>Selecione um módulo no menu lateral para começar.</p>
             </div>
         </div>
     </main>
 
+    <!-- Auth Container (sobrepõe tudo quando não há session) -->
+    <div id="auth-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;z-index:9999;overflow:auto">
+      <div id="auth-container"></div>
+    </div>
+
+    <!-- Chart.js for Dashboard Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Load core app utilities FIRST (organization context) -->
+    <script src="js/core/app.js"></script>
+    
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="js/shared/utils/feedback.js"></script>
     <script src="js/shared/api-client.js"></script>
-
-    <!-- Course RAG Integration -->
-    <script src="js/modules/course-rag-integration.js"></script>
+    <script src="js/shared/websocket-client.js"></script>
+    <!-- Design Tokens (theme/branding) runtime applier -->
+    <script src="js/shared/design-tokens.js"></script>
 
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
     <script src="js/dashboard/ui-controller.js"></script>
     
-    <!-- Students Module -->
-    <script type="module" src="js/modules/students/students.js"></script>
+    <!-- Agent Chat Module -->
+    <script src="js/modules/agent-chat/index.js"></script>
+    <script src="js/modules/dashboard/agent-chat-widget.js"></script>
+
+    <!-- Agent Chat Fullscreen Module -->
+    <script type="module" src="js/modules/agent-chat-fullscreen/index.js"></script>
+
+    <!-- AI Module -->
+    <script type="module" src="js/modules/ai/index.js"></script>
     
+    <!-- Agents Module -->
+    <script type="module" src="js/modules/agents/index.js"></script>
+    <script type="module" src="js/modules/agents/dashboard-widget.js"></script>
+
+    <!-- Agent Activity Module -->
+    <script type="module" src="js/modules/agent-activity/index.js"></script>
+
+    <!-- Students Module -->
+    <script type="module" src="js/modules/students/index.js"></script>
+
+    <!-- Turmas Module -->
+    <script type="module" src="js/modules/turmas/index.js"></script>
+
+    <!-- Frequency Module -->
+    <script type="module" src="js/modules/frequency/index.js"></script>
+
+    <!-- Lesson Execution Module (Activity Tracking) -->
+    <script type="module" src="js/modules/lesson-execution/index.js"></script>
+
+    <!-- Import Module -->
+    <script src="js/modules/import/controllers/importControllerEnhanced.js"></script>
+    <script type="module" src="js/modules/import/index.js"></script>
+
+    <!-- CRM Module -->
+    <script type="module" src="js/modules/crm/index.js"></script>
+
+    <!-- Packages Module (Comercial) -->
+    <script type="module" src="js/modules/packages/index.js"></script>
+
+    <!-- Dashboard Widgets -->
+    <script src="js/modules/dashboard/widgets/task-approval-widget.js"></script>
+
+    <!-- Test Guide for Anti-Duplication System - REMOVED: file does not exist -->
+    <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->
+
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
 </body>
 </html>

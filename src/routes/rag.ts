@@ -267,6 +267,43 @@ export async function ragRoutes(fastify: FastifyInstance) {
         }
     });
 
+    // Query endpoint - alias for chat functionality
+    fastify.post('/query', async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            const { query, context } = request.body as { query: string, context?: string };
+            
+            if (!query || query.trim().length === 0) {
+                return reply.status(400).send({
+                    success: false,
+                    error: 'Query is required'
+                });
+            }
+
+            // Use the same logic as chat endpoint but adapted for query format
+            const response = await RAGService.executeRAGQuery(query.trim(), context);
+            
+            reply.send({
+                success: true,
+                data: {
+                    query,
+                    response,
+                    sources: response.sources || [],
+                    metadata: {
+                        confidence: response.confidence || 0.8,
+                        processingTime: response.processingTime || 0,
+                        documentsScanned: response.documentsScanned || 0
+                    }
+                }
+            });
+        } catch (error) {
+            fastify.log.error('Erro no RAG query: ' + String(error));
+            reply.status(500).send({
+                success: false,
+                error: 'Failed to execute query'
+            });
+        }
+    });
+
     // Remover documento
     fastify.delete('/documents/:id', async (request: FastifyRequest, reply: FastifyReply) => {
         try {

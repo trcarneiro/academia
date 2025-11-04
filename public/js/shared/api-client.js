@@ -51,10 +51,15 @@ class ApiClient {
     }
 
     /**
-     * DELETE request
+     * DELETE request (with extended timeout for heavy operations)
      */
     async delete(url, options = {}) {
-        return this.request('DELETE', url, null, options);
+        // DELETE operations may involve cascade deletes - use 30s timeout
+        const deleteOptions = {
+            timeout: 30000, // 30 seconds for delete operations
+            ...options
+        };
+        return this.request('DELETE', url, null, deleteOptions);
     }
 
     /**
@@ -162,10 +167,18 @@ class ApiClient {
             try {
                 const ls = (typeof window !== 'undefined') ? window.localStorage : null;
                 const ss = (typeof window !== 'undefined') ? window.sessionStorage : null;
-                const orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
+                let orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
                 const orgSlug = (ls?.getItem('activeOrganizationSlug')) || (ss?.getItem('activeOrganizationSlug')) || (typeof window !== 'undefined' ? window.currentOrganizationSlug : null);
-                if (orgId) orgHeaders['X-Organization-Id'] = orgId;
-                else if (orgSlug) orgHeaders['X-Organization-Slug'] = orgSlug;
+                
+                // Note: org context may be available shortly after page load; only warn if truly missing after app initialization
+                // Modules should call ensureOrganizationContext() before making API calls to avoid timing issues
+                
+                // ✅ FIX: Use lowercase para compatibilidade com Fastify schema validation
+                if (orgId) orgHeaders['x-organization-id'] = orgId;
+                else if (orgSlug) orgHeaders['x-organization-slug'] = orgSlug;
+                
+                // Removed warning here - it was firing before org context was ready and causing confusion
+                // Org context is set during app.js initialization and should be available within 500ms
             } catch (_) {}
 
             const fetchOptions = {
@@ -177,8 +190,9 @@ class ApiClient {
                 }
             };
 
-            // Only add Content-Type for methods that send data
-            if (data && ['POST', 'PUT', 'PATCH'].includes(method)) {
+            // Only add Content-Type and body for methods that send data
+            // DELETE without body should NOT include Content-Type (Fastify 400 fix)
+            if (data) {
                 fetchOptions.headers['Content-Type'] = 'application/json';
                 fetchOptions.body = JSON.stringify(data);
             }
@@ -231,8 +245,16 @@ class ApiClient {
     async parseResponse(response) {
         const contentType = response.headers.get('content-type');
         
+        console.log('🔧 parseResponse - Content-Type:', contentType);
+        
         if (contentType?.includes('application/json')) {
-            return await response.json();
+            const text = await response.text();
+            console.log('🔧 parseResponse - Raw text:', text);
+            
+            const json = JSON.parse(text);
+            console.log('🔧 parseResponse - Parsed JSON:', json);
+            
+            return json;
         }
         
         if (contentType?.includes('text/')) {
@@ -257,8 +279,22 @@ class ApiClient {
      * Build cache key
      */
     buildCacheKey(method, url, data) {
-        const dataHash = data ? btoa(JSON.stringify(data)).slice(0, 10) : '';
+        // Safe hash for Unicode strings (emojis, special chars)
+        const dataHash = data ? this.hashString(JSON.stringify(data)).slice(0, 10) : '';
         return `${method}:${url}:${dataHash}`;
+    }
+
+    /**
+     * Simple hash function for Unicode strings (replaces btoa)
+     */
+    hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return Math.abs(hash).toString(36); // Base36 encoding
     }
 
     /**
@@ -357,8 +393,8 @@ class ModuleAPIHelper {
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 this._setState(UI_STATES.EMPTY, { targetElement, onEmpty });
             } else {
-                // CORRIGIDO: Passar o resultado completo ao invés de apenas data
-                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data: result });
+                // Passar apenas os dados (data) ao callback onSuccess
+                this._setState(UI_STATES.SUCCESS, { targetElement, onSuccess, data: data });
             }
 
             return result;
@@ -366,7 +402,13 @@ class ModuleAPIHelper {
         } catch (error) {
             console.error(`❌ ${this.moduleName} fetch error:`, error);
             this._setState(UI_STATES.ERROR, { targetElement, onError, error });
-            throw error;
+            
+            // Não re-lançar erro se há um handler onError (previne "Uncaught in promise")
+            if (options.onError) {
+                return { success: false, message: error.message, error };
+            }
+            
+            throw error; // Apenas lança se não há handler
         }
     }
 
@@ -410,13 +452,21 @@ class ModuleAPIHelper {
                 break;
 
             case UI_STATES.ERROR:
-                if (onError) onError(error);
-                if (targetElement) this._showError(targetElement, error);
+                if (onError) {
+                    onError(error);
+                    // If consumer handles error, don't overwrite with default UI
+                } else if (targetElement) {
+                    this._showError(targetElement, error);
+                }
                 break;
 
             case UI_STATES.EMPTY:
-                if (onEmpty) onEmpty();
-                if (targetElement) this._showEmpty(targetElement);
+                if (onEmpty) {
+                    onEmpty();
+                    // If consumer renders custom empty, skip default UI to avoid overwrite
+                } else if (targetElement) {
+                    this._showEmpty(targetElement);
+                }
                 break;
         }
     }
@@ -455,6 +505,15 @@ class ModuleAPIHelper {
                 </div>
             `;
         }
+    }
+
+    /**
+     * Wrapper para método request do apiClient (convenience method)
+     */
+    async request(url, options = {}) {
+        const method = options.method || 'GET';
+        const data = options.body ? JSON.parse(options.body) : null;
+        return this.api.request(method, url, data, options);
     }
 }
 
@@ -503,8 +562,42 @@ if (typeof window !== 'undefined') {
     window.UI_STATES = UI_STATES;
 
     // Helper factory para módulos
-    window.createModuleAPI = function(moduleName) {
-        return new ModuleAPIHelper(moduleName, apiClient);
+    window.createModuleAPI = function(moduleName, options = {}) {
+        const moduleAPI = new ModuleAPIHelper(moduleName, apiClient);
+        
+        // Se foram fornecidos headers padrão, override o método request
+        if (options.defaultHeaders) {
+            const originalRequest = moduleAPI.api.request.bind(moduleAPI.api);
+            moduleAPI.api.request = async function(method, url, data = null, requestOptions = {}) {
+                const mergedOptions = {
+                    ...requestOptions,
+                    headers: {
+                        ...options.defaultHeaders,
+                        ...requestOptions.headers
+                    }
+                };
+                return originalRequest(method, url, data, mergedOptions);
+            };
+        }
+        
+        return moduleAPI;
+    };
+
+    // Wait for API client to be ready
+    window.waitForAPIClient = async function() {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds (50 * 100ms)
+        
+        while (!window.createModuleAPI && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.createModuleAPI) {
+            throw new Error('API client not available after waiting 5 seconds');
+        }
+        
+        return true;
     };
 
     console.log('🌐 API Client carregado - Guidelines.MD compliance');

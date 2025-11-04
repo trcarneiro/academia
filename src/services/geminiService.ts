@@ -1,431 +1,269 @@
-/**
+﻿/**
  * Gemini AI Service - Google Generative AI Integration
- * Academia Krav Maga v2.0
- * 
- * Serviço para integração com Google Gemini API
- * Usado pelo sistema RAG para geração de conteúdo inteligente
+ * Clean implementation with model fallback and safe defaults
  */
 
 import { config } from 'dotenv';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 
-// Carregar variáveis de ambiente
 config();
 
-// Configuração do Gemini
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL_NAME = process.env.RAG_MODEL || 'gemini-1.5-flash';
+// Safety settings to prevent overly aggressive blocking
+const SAFETY_SETTINGS = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
+];
 
-console.log('🔧 GeminiService - API Key:', GEMINI_API_KEY ? 'CONFIGURADA' : 'NÃO ENCONTRADA');
-console.log('🔧 GeminiService - Model:', MODEL_NAME);
+// Quickstart: the SDK only needs a valid API key; accept common env var names
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+const ENV_MODEL = process.env.GEMINI_MODEL || process.env.RAG_MODEL || '';
 
-// Inicialização do cliente Gemini
+// Ordered list of model candidates (deduped)
+const MODEL_CANDIDATES = Array.from(new Set([
+  ENV_MODEL,
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-exp',
+  'gemini-2.5-pro-exp',
+  'gemini-2.0-flash-exp',
+  'gemini-2.0-flash',
+  'gemini-2.0-pro',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b'
+].filter(Boolean)));
+
 let genAI: GoogleGenerativeAI | null = null;
-let model: any = null;
+let model: GenerativeModel | null = null;
+let currentModelName: string | null = null;
 
-/**
- * Inicializa o serviço Gemini
- */
-export function initializeGemini() {
-    if (!GEMINI_API_KEY) {
-        console.warn('⚠️ GEMINI_API_KEY não configurada - usando modo mock');
-        return false;
-    }
-    
+export function initializeGemini(): boolean {
+  if (!GEMINI_API_KEY) {
+    console.warn('[Gemini] GEMINI_API_KEY ausente — modo fallback ativo');
+    return false;
+  }
+  try {
+    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    console.log('[Gemini] SDK inicializado');
+    return true;
+  } catch (err) {
+    console.error('[Gemini] Falha ao inicializar SDK:', err);
+    return false;
+  }
+}
+
+function isNotFoundModelError(err: unknown): boolean {
+  const msg = (err as any)?.message || String(err);
+  return /is not found|not supported for generateContent|404/i.test(msg);
+}
+
+async function ensureModel(): Promise<void> {
+  if (!genAI) throw new Error('Gemini indisponível: configure GEMINI_API_KEY');
+  if (model) return;
+
+  let lastErr: unknown = null;
+  for (const candidate of MODEL_CANDIDATES) {
     try {
-        genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        model = genAI.getGenerativeModel({ model: MODEL_NAME });
-        console.log('✅ Gemini AI inicializado com sucesso');
-        return true;
-    } catch (error) {
-        console.error('❌ Erro ao inicializar Gemini:', error);
-        return false;
+      const m = genAI.getGenerativeModel({ model: candidate });
+      // Lazy verify with a tiny noop prompt to detect 404 early
+      await m.generateContent({ contents: [{ role: 'user', parts: [{ text: 'ping' }] }] });
+      model = m;
+      currentModelName = candidate;
+      console.log(`[Gemini] Modelo selecionado: ${candidate}`);
+      return;
+    } catch (err) {
+      lastErr = err;
+      if (isNotFoundModelError(err)) {
+        console.warn(`[Gemini] Modelo indisponível: ${candidate}. Tentando próximo...`);
+        continue;
+      }
+      // Other errors (e.g., quota, auth) — stop early
+      break;
     }
+  }
+  // If we reach here, no candidate worked
+  throw lastErr ?? new Error('Nenhum modelo Gemini disponível');
 }
 
-/**
- * Classe principal do serviço Gemini
- */
 export class GeminiService {
-    
-    /**
-     * Verifica se o Gemini está disponível
-     */
-    static isAvailable(): boolean {
-        return genAI !== null && model !== null;
+  static isAvailable(): boolean {
+    return Boolean(genAI);
+  }
+
+  static async generateSimple(
+    prompt: string,
+    options: { temperature?: number; maxTokens?: number } = {}
+  ): Promise<string> {
+    if (!GEMINI_API_KEY || !genAI) {
+      // Soft fallback when API key missing
+      return '[Fallback AI] Configure GEMINI_API_KEY para respostas reais. Prompt recebido: ' + prompt.slice(0, 200);
     }
-    
-    /**
-     * Gera resposta com contexto RAG
-     */
-    static async generateRAGResponse(
-        question: string,
-        context: string[],
-        options: {
-            temperature?: number;
-            maxTokens?: number;
-            systemPrompt?: string;
-        } = {}
-    ): Promise<string> {
-        if (!this.isAvailable()) {
-            throw new Error('Gemini não está disponível');
+    try {
+      await ensureModel();
+      const generationConfig = {
+        temperature: options.temperature ?? 0.7,
+        maxOutputTokens: options.maxTokens ?? 2048,
+      } as any;
+      
+      console.log('[Gemini] 🎛️ Generation config:', generationConfig);
+
+      const res = await (model as GenerativeModel).generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig,
+        safetySettings: SAFETY_SETTINGS
+      });
+      
+      // Debug: log full response object
+      console.log('[Gemini] Response candidates:', res.response.candidates?.length || 0);
+      console.log('[Gemini] Response finish reason:', res.response.candidates?.[0]?.finishReason);
+      
+      const text = res.response.text();
+      if (!text || text.trim().length === 0) {
+        const finishReason = res.response.candidates?.[0]?.finishReason;
+        console.error('[Gemini] Empty response - finish reason:', finishReason);
+        console.error('[Gemini] Safety ratings:', JSON.stringify(res.response.candidates?.[0]?.safetyRatings));
+        
+        // Specific error message for MAX_TOKENS
+        if (finishReason === 'MAX_TOKENS') {
+          throw new Error('Resposta truncada: maxTokens muito baixo. Aumente o limite ou reduza o prompt.');
         }
-        
-        const systemPrompt = options.systemPrompt || this.getDefaultSystemPrompt();
-        const contextText = context.join('\n\n');
-        
-        const prompt = `${systemPrompt}
-
-CONTEXTO DA BASE DE CONHECIMENTO:
-${contextText}
-
-PERGUNTA DO USUÁRIO:
-${question}
-
-INSTRUÇÕES:
-- Use APENAS informações do contexto fornecido
-- Se a resposta não estiver no contexto, diga "Não encontrei essa informação na base de conhecimento"
-- Seja específico e detalhado
-- Use exemplos práticos quando possível
-- Mantenha o foco em Krav Maga e defesa pessoal
-
-RESPOSTA:`;
-
+        throw new Error('Resposta vazia do modelo');
+      }
+      return text;
+    } catch (err) {
+      // If model not found, rotate to next and retry once
+      if (isNotFoundModelError(err)) {
+        model = null; // force reselect
         try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return response.text();
-        } catch (error) {
-            console.error('Erro na geração Gemini:', error);
-            throw new Error('Erro ao gerar resposta com Gemini');
-        }
+          await ensureModel();
+          const res = await (model as GenerativeModel).generateContent({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            safetySettings: SAFETY_SETTINGS
+          });
+          const text = res.response.text();
+          if (text) return text;
+        } catch (_) { /* ignore and fallthrough */ }
+      }
+      console.error('[Gemini] generateSimple error:', err);
+      // Non-throwing fallback to keep API responsive
+      return '[Fallback AI] Não foi possível obter resposta do Gemini agora. Tente novamente mais tarde.';
     }
-    
-    /**
-     * Gera técnica de Krav Maga
-     */
-    static async generateTechnique(parameters: {
-        level: string;
-        type: string;
-        context: string;
-        category?: string;
-    }): Promise<any> {
-        if (!this.isAvailable()) {
-            throw new Error('Gemini não está disponível');
-        }
-        
-        const prompt = `Você é um especialista em Krav Maga com mais de 20 anos de experiência.
+  }
 
-TAREFA: Criar uma técnica de Krav Maga com as seguintes especificações:
-- Nível: ${parameters.level}
-- Tipo: ${parameters.type}
-- Contexto: ${parameters.context}
-- Categoria: ${parameters.category || 'defesa pessoal'}
+  static async generateRAGResponse(
+    question: string,
+    context: string[],
+    options: { temperature?: number; maxTokens?: number; systemPrompt?: string } = {}
+  ): Promise<string> {
+    const systemPrompt = options.systemPrompt || this.getDefaultSystemPrompt();
+    const prompt = `${systemPrompt}\n\nCONTEXTO:\n${(context || []).join('\n\n')}\n\nPERGUNTA:\n${question}\n\nRESPOSTA:`;
 
-FORMATO DE RESPOSTA (JSON):
-{
-    "name": "Nome da técnica",
-    "description": "Descrição breve e clara",
-    "level": "${parameters.level}",
-    "type": "${parameters.type}",
-    "steps": [
-        "Passo 1: descrição detalhada",
-        "Passo 2: descrição detalhada",
-        "Passo 3: descrição detalhada",
-        "Passo 4: descrição detalhada"
-    ],
-    "keyPoints": [
-        "Ponto importante 1",
-        "Ponto importante 2",
-        "Ponto importante 3"
-    ],
-    "commonMistakes": [
-        "Erro comum 1",
-        "Erro comum 2"
-    ],
-    "tips": "Dicas práticas para execução",
-    "variations": [
-        "Variação 1 da técnica",
-        "Variação 2 da técnica"
-    ],
-    "contraindications": "Quando NÃO usar esta técnica",
-    "trainingDrills": [
-        "Exercício 1 para praticar",
-        "Exercício 2 para praticar"
-    ]
+    return this.generateSimple(prompt, options);
+  }
+
+  private static getDefaultSystemPrompt(): string {
+    return [
+      'Você é um assistente pedagógico especializado em artes marciais.',
+      'Responda de forma objetiva, usando dados do contexto.',
+      'Se não souber, diga explicitamente que não encontrou no contexto.'
+    ].join(' ');
+  }
+
+  // Optional helpers with graceful fallbacks when Gemini is unavailable
+  static async generateTechnique(parameters: { level: string; type: string; context: string; category?: string; }): Promise<any> {
+    if (!this.isAvailable()) {
+      return {
+        name: 'Técnica (fallback)',
+        description: 'Gemini indisponível no momento.',
+        level: parameters.level,
+        type: parameters.type,
+        steps: [],
+        keyPoints: [],
+        commonMistakes: [],
+        safetyNotes: []
+      };
+    }
+    const prompt = `Você é um especialista em Krav Maga. Gere um JSON de técnica com: nível=${parameters.level}, tipo=${parameters.type}, contexto=${parameters.context}, categoria=${parameters.category || 'defesa'}. Responda apenas JSON.`;
+    try {
+      await ensureModel();
+      const result = await (model as GenerativeModel).generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }] });
+      const jsonText = result.response.text().trim();
+      const clean = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      return JSON.parse(clean);
+    } catch (err) {
+      console.warn('[Gemini] generateTechnique fallback JSON:', err);
+      return {
+        name: 'Técnica (fallback)',
+        description: 'Falha ao gerar via Gemini.',
+        level: parameters.level,
+        type: parameters.type,
+        steps: [],
+        keyPoints: [],
+        commonMistakes: [],
+        safetyNotes: []
+      };
+    }
+  }
+
+  static async generateCourseModule(parameters: { weeks: string; level: string; theme: string; prerequisites?: string[]; }): Promise<any> {
+    if (!this.isAvailable()) {
+      return {
+        title: 'Módulo (fallback)',
+        duration: parameters.weeks,
+        level: parameters.level,
+        theme: parameters.theme,
+        description: 'Gemini indisponível.',
+        prerequisites: parameters.prerequisites || [],
+        learningOutcomes: [],
+        weeklyProgression: [],
+        finalAssessment: {},
+        resources: [],
+        certification: ''
+      };
+    }
+    const prompt = `Coordene um módulo de curso. Gere JSON (apenas JSON) com campos padrão. semanas=${parameters.weeks}, nível=${parameters.level}, tema=${parameters.theme}.`;
+    try {
+      await ensureModel();
+      const result = await (model as GenerativeModel).generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }] });
+      const jsonText = result.response.text().trim();
+      const clean = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      return JSON.parse(clean);
+    } catch (err) {
+      console.warn('[Gemini] generateCourseModule fallback JSON:', err);
+      return {
+        title: 'Módulo (fallback)',
+        duration: parameters.weeks,
+        level: parameters.level,
+        theme: parameters.theme,
+        description: 'Falha ao gerar via Gemini.',
+        prerequisites: parameters.prerequisites || [],
+        learningOutcomes: [],
+        weeklyProgression: [],
+        finalAssessment: {},
+        resources: [],
+        certification: ''
+      };
+    }
+  }
+
+  static async generateEvaluationCriteria(parameters: { type: string; level: string; focus: string; }): Promise<any> {
+    if (!this.isAvailable()) {
+      return { criteria: [], rubric: [] };
+    }
+    const prompt = `Crie critérios de avaliação (JSON) para tipo=${parameters.type}, nível=${parameters.level}, foco=${parameters.focus}. Responda apenas JSON.`;
+    try {
+      await ensureModel();
+      const result = await (model as GenerativeModel).generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }] });
+      const jsonText = result.response.text().trim();
+      const clean = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      return JSON.parse(clean);
+    } catch (err) {
+      console.warn('[Gemini] generateEvaluationCriteria fallback JSON:', err);
+      return { criteria: [], rubric: [] };
+    }
+  }
 }
 
-Responda APENAS com o JSON, sem texto adicional:`;
-
-        try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const jsonText = response.text().trim();
-            
-            // Remove markdown se presente
-            const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-            
-            return JSON.parse(cleanJson);
-        } catch (error) {
-            console.error('Erro na geração de técnica:', error);
-            throw new Error('Erro ao gerar técnica com Gemini');
-        }
-    }
-    
-    /**
-     * Gera plano de aula
-     */
-    static async generateLessonPlan(parameters: {
-        duration: string;
-        level: string;
-        focus: string;
-        objectives?: string[];
-    }): Promise<any> {
-        if (!this.isAvailable()) {
-            throw new Error('Gemini não está disponível');
-        }
-        
-        const prompt = `Você é um instrutor experiente de Krav Maga criando um plano de aula.
-
-ESPECIFICAÇÕES:
-- Duração: ${parameters.duration} minutos
-- Nível: ${parameters.level}
-- Foco: ${parameters.focus}
-- Objetivos: ${parameters.objectives?.join(', ') || 'desenvolver habilidades básicas'}
-
-FORMATO DE RESPOSTA (JSON):
-{
-    "title": "Título da aula",
-    "duration": "${parameters.duration}",
-    "level": "${parameters.level}",
-    "focus": "${parameters.focus}",
-    "objectives": [
-        "Objetivo específico 1",
-        "Objetivo específico 2",
-        "Objetivo específico 3"
-    ],
-    "structure": {
-        "warmup": {
-            "duration": "X minutos",
-            "activities": ["Atividade 1", "Atividade 2"],
-            "description": "Descrição do aquecimento"
-        },
-        "mainActivity": {
-            "duration": "X minutos", 
-            "techniques": ["Técnica 1", "Técnica 2"],
-            "drills": ["Exercício 1", "Exercício 2"],
-            "description": "Descrição da atividade principal"
-        },
-        "sparring": {
-            "duration": "X minutos",
-            "scenarios": ["Cenário 1", "Cenário 2"],
-            "description": "Descrição da prática livre"
-        },
-        "cooldown": {
-            "duration": "X minutos",
-            "activities": ["Alongamento 1", "Alongamento 2"],
-            "description": "Descrição do relaxamento"
-        }
-    },
-    "materials": ["Material 1", "Material 2"],
-    "safetyNotes": ["Nota de segurança 1", "Nota de segurança 2"],
-    "assessmentCriteria": ["Critério 1", "Critério 2"],
-    "homework": "Tarefa para casa opcional"
-}
-
-Responda APENAS com o JSON:`;
-
-        try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const jsonText = response.text().trim();
-            
-            const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-            
-            return JSON.parse(cleanJson);
-        } catch (error) {
-            console.error('Erro na geração de plano:', error);
-            throw new Error('Erro ao gerar plano de aula com Gemini');
-        }
-    }
-    
-    /**
-     * Gera módulo de curso
-     */
-    static async generateCourseModule(parameters: {
-        weeks: string;
-        level: string;
-        theme: string;
-        prerequisites?: string[];
-    }): Promise<any> {
-        if (!this.isAvailable()) {
-            throw new Error('Gemini não está disponível');
-        }
-        
-        const prompt = `Você é um coordenador pedagógico de Krav Maga criando um módulo de curso.
-
-ESPECIFICAÇÕES:
-- Duração: ${parameters.weeks} semanas
-- Nível: ${parameters.level}
-- Tema: ${parameters.theme}
-- Pré-requisitos: ${parameters.prerequisites?.join(', ') || 'nenhum'}
-
-FORMATO DE RESPOSTA (JSON):
-{
-    "title": "Título do módulo",
-    "duration": "${parameters.weeks}",
-    "level": "${parameters.level}",
-    "theme": "${parameters.theme}",
-    "description": "Descrição detalhada do módulo",
-    "prerequisites": ["Pré-requisito 1", "Pré-requisito 2"],
-    "learningOutcomes": [
-        "Resultado 1",
-        "Resultado 2", 
-        "Resultado 3"
-    ],
-    "weeklyProgression": [
-        {
-            "week": 1,
-            "title": "Título da semana 1",
-            "objectives": ["Objetivo 1", "Objetivo 2"],
-            "techniques": ["Técnica 1", "Técnica 2"],
-            "assessment": "Método de avaliação"
-        }
-    ],
-    "finalAssessment": {
-        "type": "Tipo de avaliação final",
-        "criteria": ["Critério 1", "Critério 2"],
-        "passingGrade": "Nota mínima"
-    },
-    "resources": ["Recurso 1", "Recurso 2"],
-    "certification": "Tipo de certificação obtida"
-}
-
-Crie progressão semanal para todas as ${parameters.weeks} semanas.
-Responda APENAS com o JSON:`;
-
-        try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const jsonText = response.text().trim();
-            
-            const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-            
-            return JSON.parse(cleanJson);
-        } catch (error) {
-            console.error('Erro na geração de curso:', error);
-            throw new Error('Erro ao gerar módulo de curso com Gemini');
-        }
-    }
-    
-    /**
-     * Gera critérios de avaliação
-     */
-    static async generateEvaluationCriteria(parameters: {
-        type: string;
-        level: string;
-        focus: string;
-    }): Promise<any> {
-        if (!this.isAvailable()) {
-            throw new Error('Gemini não está disponível');
-        }
-        
-        const prompt = `Você é um avaliador certificado de Krav Maga criando critérios de avaliação.
-
-ESPECIFICAÇÕES:
-- Tipo: ${parameters.type}
-- Nível: ${parameters.level}
-- Foco: ${parameters.focus}
-
-FORMATO DE RESPOSTA (JSON):
-{
-    "title": "Título da avaliação",
-    "type": "${parameters.type}",
-    "level": "${parameters.level}",
-    "focus": "${parameters.focus}",
-    "criteria": [
-        {
-            "category": "Execução Técnica",
-            "weight": 40,
-            "subcriteria": [
-                "Postura correta",
-                "Precisão dos movimentos",
-                "Fluidez da execução"
-            ]
-        },
-        {
-            "category": "Timing e Velocidade", 
-            "weight": 30,
-            "subcriteria": [
-                "Tempo de reação",
-                "Velocidade de execução",
-                "Timing de contra-ataque"
-            ]
-        }
-    ],
-    "gradingScale": {
-        "excellent": "9-10 pontos",
-        "good": "7-8 pontos", 
-        "satisfactory": "5-6 pontos",
-        "needsImprovement": "0-4 pontos"
-    },
-    "practicalTests": [
-        "Teste prático 1",
-        "Teste prático 2"
-    ],
-    "theoreticalQuestions": [
-        "Pergunta teórica 1",
-        "Pergunta teórica 2"
-    ],
-    "passingGrade": "7 pontos",
-    "feedback": {
-        "strengths": "Como identificar pontos fortes",
-        "improvements": "Como sugerir melhorias"
-    }
-}
-
-Responda APENAS com o JSON:`;
-
-        try {
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const jsonText = response.text().trim();
-            
-            const cleanJson = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-            
-            return JSON.parse(cleanJson);
-        } catch (error) {
-            console.error('Erro na geração de avaliação:', error);
-            throw new Error('Erro ao gerar critérios com Gemini');
-        }
-    }
-    
-    /**
-     * Prompt de sistema padrão para RAG
-     */
-    private static getDefaultSystemPrompt(): string {
-        return `Você é um assistente especializado em Krav Maga e defesa pessoal da Academia.
-
-PERSONALIDADE:
-- Instrutor experiente e paciente
-- Focado na segurança e técnica correta
-- Didático e encorajador
-- Baseado em evidências e experiência prática
-
-CONHECIMENTO:
-- Técnicas de Krav Maga de todos os níveis
-- Princípios de defesa pessoal
-- Metodologias de ensino
-- Condicionamento físico para artes marciais
-- Filosofia e princípios do Krav Maga
-
-ESTILO DE RESPOSTA:
-- Claro e objetivo
-- Use exemplos práticos
-- Inclua dicas de segurança quando relevante
-- Adapte a linguagem ao nível do praticante
-- Seja encorajador mas realista`;
-    }
-}
-
-export default GeminiService;

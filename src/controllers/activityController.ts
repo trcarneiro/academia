@@ -3,13 +3,13 @@ import { prisma } from '@/utils/database';
 import { validateActivity } from '../schemas/activitySchema';
 import type { ValidationErrorItem } from 'joi';
 
-// Helper function to get organization ID dynamically
-async function getOrganizationId(): Promise<string> {
-  const org = await prisma.organization.findFirst();
-  if (!org) {
-    throw new Error('No organization found');
+// Helper: require organization from header (Express controller)
+function getOrganizationId(req: Request): string {
+  const orgId = (req.headers['x-organization-id'] as string) || '';
+  if (!orgId) {
+    throw new Error('Organization context required');
   }
-  return org.id;
+  return orgId;
 }
 
 export const createActivity = async (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ export const createActivity = async (req: Request, res: Response) => {
   }
 
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = getOrganizationId(req);
     
     // Verificar se atividade já existe
     const existing = await prisma.activity.findFirst({
@@ -65,12 +65,10 @@ export const updateActivity = async (req: Request, res: Response) => {
   }
 
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = getOrganizationId(req);
     
-    // Verificar se atividade existe
-    const existingActivity = await prisma.activity.findUnique({
-      where: { id }
-    });
+    // Verificar se atividade existe e pertence à organização
+    const existingActivity = await prisma.activity.findFirst({ where: { id, organizationId } });
     
     if (!existingActivity) {
       return res.status(404).json({ error: 'Atividade não encontrada' });
@@ -127,7 +125,7 @@ export const deleteActivity = async (req: Request, res: Response) => {
 
 export const getActivities = async (req: Request, res: Response) => {
   try {
-    const organizationId = await getOrganizationId();
+    const organizationId = getOrganizationId(req);
     const query = req.query as any || {};
     
     // Filtros
@@ -192,8 +190,9 @@ export const getActivity = async (req: Request, res: Response) => {
   }
 
   try {
-    const activity = await prisma.activity.findUnique({
-      where: { id },
+    const organizationId = getOrganizationId(req);
+    const activity = await prisma.activity.findFirst({
+      where: { id, organizationId },
       include: {
         refTechnique: {
           select: { id: true, name: true }

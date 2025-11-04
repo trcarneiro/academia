@@ -63,30 +63,56 @@ export const extractTenantContext = async (
 
     // If we have organizationId but no tenant context yet, fetch it
     if (organizationId && !request.tenant) {
-      const organization = await prisma.organization.findUnique({
-        where: { id: organizationId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          isActive: true,
-          organizationSettings: true,
-        },
-      });
+      try {
+        // Add timeout to prevent connection pool exhaustion
+        const orgPromise = prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            isActive: true,
+            organizationSettings: true,
+          },
+        });
 
-      if (!organization || !organization.isActive) {
-        return ResponseHelper.error(reply, 'Organization not found or inactive', 404);
+        // Timeout after 10 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Organization fetch timeout')), 10000);
+        });
+
+        const organization = await Promise.race([
+          orgPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (!organization || !organization.isActive) {
+          return ResponseHelper.error(reply, 'Organization not found or inactive', 404);
+        }
+
+        request.tenant = {
+          organizationId: organization.id,
+          organization: {
+            id: organization.id,
+            name: organization.name,
+            slug: organization.slug,
+            settings: organization.organizationSettings || undefined,
+          },
+        };
+      } catch (error: any) {
+        logger.error('❌ Failed to fetch organization:', {
+          organizationId,
+          error: error.message,
+          code: error.code
+        });
+        
+        // Return 503 Service Unavailable for connection issues
+        if (error.code === 'P2024' || error.code === 'P1017' || error.message?.includes('timeout')) {
+          return ResponseHelper.error(reply, 'Database temporarily unavailable, please try again', 503);
+        }
+        
+        return ResponseHelper.error(reply, 'Failed to load organization context', 500);
       }
-
-      request.tenant = {
-        organizationId: organization.id,
-        organization: {
-          id: organization.id,
-          name: organization.name,
-          slug: organization.slug,
-          settings: organization.organizationSettings || undefined,
-        },
-      };
     }
 
     // If still no tenant context found

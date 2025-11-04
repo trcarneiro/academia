@@ -1,0 +1,900 @@
+/**
+ * AI Dashboard Module CSS
+ * Student Data Agent Interface Styles
+ */
+
+/* Reset and Base Styles */
+.ai-dashboard-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    min-height: 100vh;
+    position: relative;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+/* Header Styles */
+.ai-dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-header {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+}
+
+.ai-dashboard-header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-dashboard-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.ai-dashboard-title i {
+    font-size: 2rem;
+    color: #ffd700;
+}
+
+.ai-dashboard-header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .btn-secondary {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: white;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .btn-secondary:hover {
+    background-color: #718096;
+    border-color: #a0aec0;
+}
+
+/* Main Content Layout */
+.ai-dashboard-main-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 120px);
+}
+
+/* Sidebar Styles */
+.ai-dashboard-sidebar {
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    height: fit-content;
+    position: sticky;
+    top: 1rem;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-sidebar {
+    background: #2d3748;
+    border-right-color: #4a5568;
+}
+
+.ai-dashboard-search-section,
+.ai-dashboard-tools-section,
+.ai-dashboard-analytics-section {
+    margin-bottom: 2rem;
+}
+
+.ai-dashboard-search-section h3,
+.ai-dashboard-tools-section h3,
+.ai-dashboard-analytics-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode h3 {
+    color: #cbd5e0;
+}
+
+.ai-dashboard-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ai-dashboard-student-id-input {
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.ai-dashboard-student-id-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-student-id-input {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: white;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-student-id-input:focus {
+    border-color: #667eea;
+}
+
+.ai-dashboard-tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.ai-dashboard-tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: #f7fafc;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    text-align: left;
+    width: 100%;
+}
+
+.ai-dashboard-tool-btn:hover {
+    background-color: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.ai-dashboard-tool-btn i {
+    font-size: 1rem;
+    width: 20px;
+}
+
+.ai-dashboard-analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.ai-dashboard-analytics-item {
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-analytics-item {
+    background: #4a5568;
+    border-color: #718096;
+}
+
+.ai-dashboard-analytics-icon {
+    font-size: 1.5rem;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.ai-dashboard-analytics-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ai-dashboard-analytics-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-analytics-value {
+    color: #e2e8f0;
+}
+
+.ai-dashboard-analytics-label {
+    font-size: 0.75rem;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Content Area */
+.ai-dashboard-content {
+    padding: 2rem;
+}
+
+.ai-dashboard-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-tabs {
+    border-bottom-color: #4a5568;
+}
+
+.ai-dashboard-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    color: #718096;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.ai-dashboard-tab-btn:hover {
+    color: #4a5568;
+}
+
+.ai-dashboard-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-tab-btn {
+    color: #cbd5e0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-tab-btn:hover {
+    color: #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.ai-dashboard-tab-content {
+    min-height: 500px;
+}
+
+.ai-dashboard-tab-pane {
+    display: none;
+}
+
+.ai-dashboard-tab-pane.active {
+    display: block;
+}
+
+/* Overview Grid */
+.ai-dashboard-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.ai-dashboard-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.ai-dashboard-card-header {
+    background: #f7fafc;
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-card-header {
+    background: #4a5568;
+    border-bottom-color: #718096;
+}
+
+.ai-dashboard-card-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-card-header h3 {
+    color: #e2e8f0;
+}
+
+.ai-dashboard-card-body {
+    padding: 1.5rem;
+}
+
+/* Student Info */
+.ai-dashboard-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ai-dashboard-info-row:last-child {
+    border-bottom: none;
+}
+
+.ai-dashboard-info-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-info-row label {
+    color: #a0aec0;
+}
+
+.ai-dashboard-info-row span {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-info-row span {
+    color: #f7fafc;
+}
+
+/* Status */
+.ai-dashboard-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ai-dashboard-status.active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.ai-dashboard-status.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-status.active {
+    background-color: #065f46;
+    color: #d1fae5;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-status.inactive {
+    background-color: #991b1b;
+    color: #fee2e2;
+}
+
+/* Progress Overview */
+.ai-dashboard-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ai-dashboard-progress-item:last-child {
+    border-bottom: none;
+}
+
+.ai-dashboard-progress-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-progress-label {
+    color: #a0aec0;
+}
+
+.ai-dashboard-progress-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-progress-value {
+    color: #f7fafc;
+}
+
+/* Courses List */
+.ai-dashboard-courses-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.ai-dashboard-course-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-course-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.ai-dashboard-course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f7fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-course-header {
+    background: #4a5568;
+    border-bottom-color: #718096;
+}
+
+.ai-dashboard-course-header h4 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-course-header h4 {
+    color: #f7fafc;
+}
+
+.ai-dashboard-course-level {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ai-dashboard-course-body {
+    padding: 1.5rem;
+}
+
+.ai-dashboard-course-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ai-dashboard-course-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.ai-dashboard-course-stat i {
+    color: #667eea;
+}
+
+.ai-dashboard-course-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Attendance List */
+.ai-dashboard-attendance-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.ai-dashboard-attendance-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-attendance-item {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.ai-dashboard-attendance-date,
+.ai-dashboard-attendance-time {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-attendance-date,
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-attendance-time {
+    color: #a0aec0;
+}
+
+.ai-dashboard-attendance-class {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-attendance-class {
+    color: #f7fafc;
+}
+
+/* Insights Section */
+.ai-dashboard-insights-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ai-dashboard-insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.ai-dashboard-insights-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-header h3 {
+    color: #f7fafc;
+}
+
+.ai-dashboard-insights-content {
+    display: grid;
+    gap: 2rem;
+}
+
+.ai-dashboard-insights-section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-section {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.ai-dashboard-insights-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-section h4 {
+    color: #f7fafc;
+}
+
+.ai-dashboard-insights-summary {
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border-left: 4px solid #667eea;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-summary {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+.ai-dashboard-insights-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.ai-dashboard-insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f7fafc;
+    border-radius: 0.5rem;
+    border-left: 3px solid #667eea;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insight-item {
+    background: #4a5568;
+}
+
+.ai-dashboard-insight-item i {
+    color: #667eea;
+    margin-top: 0.125rem;
+}
+
+.ai-dashboard-insights-meta {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-meta {
+    border-top-color: #4a5568;
+}
+
+.ai-dashboard-insights-meta small {
+    color: #6b7280;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-insights-meta small {
+    color: #a0aec0;
+}
+
+/* Empty States */
+.ai-dashboard-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+}
+
+.ai-dashboard-empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #d1d5db;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-empty-state i {
+    color: #4a5568;
+}
+
+.ai-dashboard-empty-state p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Loading Overlay */
+.ai-dashboard-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+}
+
+.ai-dashboard-loading-spinner {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.ai-dashboard-loading-text {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+/* Notifications */
+.ai-dashboard-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 9998;
+    display: none;
+}
+
+.ai-dashboard-notification-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.ai-dashboard-notification-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.ai-dashboard-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ai-dashboard-notification-content i {
+    font-size: 1.25rem;
+}
+
+/* Export Menu */
+.ai-dashboard-export-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-export-menu {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.ai-dashboard-export-title {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-export-title {
+    color: #e2e8f0;
+    border-bottom-color: #4a5568;
+}
+
+.ai-dashboard-export-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    color: #4a5568;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.2s;
+}
+
+.ai-dashboard-export-option:hover {
+    background-color: #f7fafc;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-export-option {
+    color: #e2e8f0;
+}
+
+.ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-export-option:hover {
+    background-color: #4a5568;
+}
+
+.ai-dashboard-export-option i {
+    color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .ai-dashboard-main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-dashboard-sidebar {
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .ai-dashboard-container.ai-dashboard-dark-mode .ai-dashboard-sidebar {
+        border-bottom-color: #4a5568;
+    }
+    
+    .ai-dashboard-overview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-dashboard-course-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .ai-dashboard-header-content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .ai-dashboard-header-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .ai-dashboard-content {
+        padding: 1rem;
+    }
+    
+    .ai-dashboard-analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-dashboard-attendance-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .ai-dashboard-insights-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ai-dashboard-tab-pane.active {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.ai-dashboard-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.ai-dashboard-course-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.ai-dashboard-insights-section {
+    animation: fadeIn 0.3s ease-out;
+}

@@ -1,0 +1,68 @@
+{
+  "server_name": "student-rag-server",
+  "version": "1.0.0",
+  "description": "MCP Server for RAG module with student data access",
+  "tools": [
+    {
+      "name": "getStudentData",
+      "description": "Retrieve comprehensive student information including courses, subscriptions, and attendance",
+      "parameters": {
+        "required": ["studentId"],
+        "optional": ["organizationId", "includeHistory"]
+      },
+      "return_type": "object"
+    },
+    {
+      "name": "getCourseData",
+      "description": "Retrieve course details including schedule, requirements, and enrolled students",
+      "parameters": {
+        "required": ["courseId"],
+        "optional": ["organizationId", "includeStudents"]
+      },
+      "return_type": "object"
+    },
+    {
+      "name": "executeQuery",
+      "description": "Execute custom database queries for advanced analytics and reporting",
+      "parameters": {
+        "required": ["query"],
+        "optional": ["organizationId", "limit"]
+      },
+      "return_type": "array"
+    },
+    {
+      "name": "getSystemAnalytics",
+      "description": "Retrieve system-wide analytics for RAG training and insights",
+      "parameters": {
+        "optional": ["organizationId", "timeRange", "metrics"]
+      },
+      "return_type": "object"
+    }
+  ],
+  "security_rules": {
+    "permissions": {
+      "getStudentData": ["STAFF", "ADMIN", "AGENT"],
+      "getCourseData": ["STAFF", "ADMIN", "AGENT"],
+      "executeQuery": ["ADMIN", "AGENT"],
+      "getSystemAnalytics": ["ADMIN", "AGENT"]
+    },
+    "gdpr_compliance": true,
+    "data_retention": "7_years",
+    "audit_logging": true
+  },
+  "database_connections": [
+    {
+      "name": "prisma",
+      "type": "prisma",
+      "connectionString": "prisma://localhost:3306/academia",
+      "read_only": true
+    }
+  ],
+  "rag_config": {
+    "embedding_model": "text-embedding-ada-002",
+    "vector_store": "pinecone",
+    "chunk_size": 1000,
+    "overlap": 200,
+    "similarity_threshold": 0.8
+  }
+}

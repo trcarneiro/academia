@@ -1,0 +1,200 @@
+{
+  "timestamp": "2025-10-15T19:54:51.333Z",
+  "config": {
+    "organizationId": "452c0b35-1822-4890-851e-922356c812fb",
+    "defaultPlanId": "18f7d0e9-c375-4792-afb3-f59b2e4c2157",
+    "csvPath": "H:\\projetos\\academia\\scripts\\alunos-asaas-import.csv",
+    "dryRun": false,
+    "skipExisting": true
+  },
+  "summary": {
+    "total": 23,
+    "successful": 21,
+    "skipped": 2,
+    "failed": 0
+  },
+  "results": [
+    {
+      "success": true,
+      "skipped": true,
+      "reason": "Email mari.oliveiravidal@gmail.com já cadastrado",
+      "email": "mari.oliveiravidal@gmail.com",
+      "cpf": "01882078640"
+    },
+    {
+      "success": true,
+      "userId": "c70f1797-6cd5-48cb-bf86-b1d996a91f5c",
+      "studentId": "d4727771-e9ca-4976-961b-354e04bd0086",
+      "subscriptionId": "c535573e-6c5b-4f12-8c2d-3303be33d02a",
+      "email": "nathalia.sena.goulart@gmail.com",
+      "cpf": "13190484635"
+    },
+    {
+      "success": true,
+      "userId": "88bf9903-8cd7-494e-86ff-2d09ddd61f55",
+      "studentId": "db65d776-ab2d-4f61-827c-1bb76c960300",
+      "subscriptionId": "dc576da6-4dce-4ac6-8d2a-6a94d575289a",
+      "email": "joaoalvaro866@gmail.com",
+      "cpf": "10740316605"
+    },
+    {
+      "success": true,
+      "userId": "d8796b9b-d6e6-437c-8add-ef0b14f073a6",
+      "studentId": "00de530a-daa8-40d5-9f19-6078f4484b34",
+      "subscriptionId": "d71ea418-dfec-46de-b9e5-882306c2ac92",
+      "email": "brenoharantes@hotmail.com",
+      "cpf": "08946466642"
+    },
+    {
+      "success": true,
+      "userId": "2300b11b-fcba-41f3-8abc-d70deb26ffd0",
+      "studentId": "fb6a408b-48d9-4b7a-b7b1-5d8952c3535b",
+      "subscriptionId": "5df5df1c-968c-4817-b8c3-b3c75bcf0024",
+      "email": "gustavo@ontic.com.br",
+      "cpf": "03797000693"
+    },
+    {
+      "success": true,
+      "userId": "38757a72-fd4f-4f2a-8fff-a2256fbe9128",
+      "studentId": "f3df5bc1-a0dc-4ac9-9b76-58e2c88ce176",
+      "subscriptionId": "0ccff1a7-31e0-4ab1-a2c1-be9877828600",
+      "email": "tpratesnogueira@gmail.com",
+      "cpf": "76146588687"
+    },
+    {
+      "success": true,
+      "skipped": true,
+      "reason": "Email karineoliveirastudy@gmail.com já cadastrado",
+      "email": "karineoliveirastudy@gmail.com",
+      "cpf": "15259401638"
+    },
+    {
+      "success": true,
+      "userId": "f57237e7-7d0a-4d1f-bbf9-36a9a080a753",
+      "studentId": "655a7dd6-9852-43f2-8c1c-022315074980",
+      "subscriptionId": "669eb3a8-d22e-45ad-b218-69aeb98641d7",
+      "email": "saramartins298@gmail.com",
+      "cpf": "15680812789"
+    },
+    {
+      "success": true,
+      "userId": "a3774ee5-59b3-4e57-b9da-aa1f043327d8",
+      "studentId": "6f0341b0-dc22-42dc-90a8-cd5db1f94a65",
+      "subscriptionId": "a9c31895-6e35-419e-a1fc-209c0c28c4a4",
+      "email": "anamfbicalho@gmail.com",
+      "cpf": "11479184659"
+    },
+    {
+      "success": true,
+      "userId": "0d63947c-bf05-43e8-be3d-7a2d8b078de9",
+      "studentId": "fb9b4863-fe81-4f8c-948d-a566b5228126",
+      "subscriptionId": "0e1a2fba-b8f2-4ade-bad2-b8d2c017f906",
+      "email": "rodrigocomercial78@gmail.com",
+      "cpf": "03954690667"
+    },
+    {
+      "success": true,
+      "userId": "12a9dd8d-94a5-4e94-8a22-5566da3d2ea1",
+      "studentId": "795f945a-3e6d-4c9e-a6bd-dac37c1b538c",
+      "subscriptionId": "22af8be1-d182-420f-ab73-eaf292593a5a",
+      "email": "sarahgarciamm@gmail.com",
+      "cpf": "11438123604"
+    },
+    {
+      "success": true,
+      "userId": "a70cccfd-2d47-441c-9335-2056a43f9819",
+      "studentId": "19dc12b3-a0ee-4029-9cd9-7e080927696a",
+      "subscriptionId": "55a63190-0117-4766-944a-cde7da5684b3",
+      "email": "fellipe.santos@gmail.com",
+      "cpf": "01345547609"
+    },
+    {
+      "success": true,
+      "userId": "bc239939-7a48-4977-b425-e0e2e6a668a9",
+      "studentId": "a6bd0e0f-eb1c-4344-89e9-dbb21b0ccb94",
+      "subscriptionId": "671fc441-b34e-469f-b632-917b692931e1",
+      "email": "marciavgl@gmail.com",
+      "cpf": "03753021660"
+    },
+    {
+      "success": true,
+      "userId": "e3143e76-aa90-4f6e-aa2d-5820911a3e9c",
+      "studentId": "3c3b5c5c-aca7-4059-b2bb-8c9e38073757",
+      "subscriptionId": "22268d30-889e-4ba0-acf8-228c397a998c",
+      "email": "adrianobaiao@otimisaeventos.com.br",
+      "cpf": "91286557615"
+    },
+    {
+      "success": true,
+      "userId": "90a180e5-421f-439f-9bec-63db2a0d15b5",
+      "studentId": "3f38ed8f-0630-4a96-95d3-499d3de96a9a",
+      "subscriptionId": "f03b47b7-8317-4fc5-bfd8-8c51bc0ed825",
+      "email": "adryze@gmail.com",
+      "cpf": "00233002642"
+    },
+    {
+      "success": true,
+      "userId": "eae5fd4d-fe35-4e6c-9846-9e5219ddc007",
+      "studentId": "741b9732-9c9b-454e-a7bf-d01ae52b3941",
+      "subscriptionId": "87f2dc6a-56f4-4675-b8b9-44cb7b65ed57",
+      "email": "roger@agpsa.com.br",
+      "cpf": "42205972634"
+    },
+    {
+      "success": true,
+      "userId": "6f449bf7-d6fd-430a-812c-a0b415adb2da",
+      "studentId": "78cb6820-018e-4c58-ab79-186d9b3463fe",
+      "subscriptionId": "426cabe0-2e6d-4799-9140-5a1dba2b21dc",
+      "email": "antonio.lucio@unisys.com",
+      "cpf": "42962528600"
+    },
+    {
+      "success": true,
+      "userId": "889d17c0-71d1-42c4-bf96-d9fec8bd763f",
+      "studentId": "ee8b0fc9-5db3-4b85-bf46-df6a5ad69925",
+      "subscriptionId": "a09de872-54b8-434b-a258-5773bd03a4ad",
+      "email": "henriquecesarb2@gmail.com",
+      "cpf": "13054713695"
+    },
+    {
+      "success": true,
+      "userId": "2136b76a-10a2-4368-a3aa-68855d52b63d",
+      "studentId": "2b9c8e05-7807-4069-b995-f464fecc93bd",
+      "subscriptionId": "b74e4d45-7536-48a7-a4f8-f2351f2abc1d",
+      "email": "aluno18@academia.demo",
+      "cpf": "44554672620"
+    },
+    {
+      "success": true,
+      "userId": "3d94ce3d-8375-405e-a0a7-22bc97cf6cd4",
+      "studentId": "bce5897a-7de1-46ed-aaff-e8787e7e8290",
+      "subscriptionId": "8f5256cd-332e-42f0-843b-40f314e51302",
+      "email": "lorrainechrissouza@gmail.com",
+      "cpf": "09348256610"
+    },
+    {
+      "success": true,
+      "userId": "aaa42787-6a02-4b24-adc7-dfaee9936634",
+      "studentId": "e2ce2a98-6198-4398-844a-5a5ac3126256",
+      "subscriptionId": "e586845c-d4ab-4386-81fe-002e68d7070c",
+      "email": "julicmol@hotmail.com",
+      "cpf": "78547622012"
+    },
+    {
+      "success": true,
+      "userId": "22994c37-bb02-4bee-90e2-cb8ec60da3a2",
+      "studentId": "1e50f013-bf93-4273-9b78-f0995d805e0e",
+      "subscriptionId": "e323cafb-f37b-41ef-b1c9-5be0410fe9c0",
+      "email": "wollscheid@uol.com.br",
+      "cpf": "67565190691"
+    },
+    {
+      "success": true,
+      "userId": "17e61a98-6acc-4fc2-9c01-4257cd6988a9",
+      "studentId": "41fc8e20-b525-45c2-8450-54ba011e68d9",
+      "subscriptionId": "6e2b0e56-7354-49a0-bc13-2cddc2eb625c",
+      "email": "aluno22@academia.demo",
+      "cpf": "02780485604"
+    }
+  ]
+}

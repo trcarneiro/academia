@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Debug Delete Button</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .good { color: green; } .bad { color: red; } .warn { color: orange; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 4px; overflow: auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 4px; }
+        .btn-test { background: #667eea; color: white; border: none; }
+        .btn-test:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>🔧 Delete Button Diagnostic Tool</h2>
+    <p>Use este dashboard para debugar o botão deletar</p>
+</div>
+
+<div class="box">
+    <h3>📊 Status Atual</h3>
+    <div id="status"></div>
+</div>
+
+<div class="box">
+    <h3>🧪 Testes</h3>
+    <button class="btn-test" onclick="runDiagnostics()">▶️ Executar Diagnóstico</button>
+    <button class="btn-test" onclick="testDelete()">🗑️ Testar Delete</button>
+    <button class="btn-test" onclick="clearLog()">🗑️ Limpar Log</button>
+</div>
+
+<div class="box">
+    <h3>📋 Log de Diagnóstico</h3>
+    <pre id="log" style="min-height: 300px;"></pre>
+</div>
+
+<script>
+    const log = (msg, type = 'info') => {
+        const logEl = document.getElementById('log');
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix = {
+            info: 'ℹ️',
+            good: '✅',
+            bad: '❌',
+            warn: '⚠️',
+            api: '🌐'
+        }[type] || '•';
+        logEl.textContent += `${prefix} [${timestamp}] ${msg}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    const clearLog = () => {
+        document.getElementById('log').textContent = '';
+    };
+
+    async function runDiagnostics() {
+        log('=== INICIANDO DIAGNÓSTICO ===', 'info');
+        
+        // 1. Check window.studentEditor
+        log('1. Verificando window.studentEditor...', 'info');
+        if (!window.studentEditor) {
+            log('❌ window.studentEditor NÃO EXISTE!', 'bad');
+            log('   Possível causa: Módulo Students não inicializado', 'warn');
+            return;
+        }
+        log('✅ window.studentEditor existe', 'good');
+
+        // 2. Check methods
+        log('2. Verificando métodos...', 'info');
+        const methods = ['checkAndDeleteSubscription', 'confirmDeleteSubscription', 'deleteSubscription', 'api'];
+        for (const m of methods) {
+            const exists = !!window.studentEditor[m];
+            const type = typeof window.studentEditor[m];
+            log(`   ${exists ? '✅' : '❌'} ${m}: ${type}`, exists ? 'good' : 'bad');
+        }
+
+        // 3. Check API
+        log('3. Verificando API Chain...', 'info');
+        const api = window.studentEditor.api;
+        const hasApi = !!api;
+        const hasApiApi = !!(api?.api);
+        const hasDelete = !!(api?.api?.delete);
+        
+        log(`   ${hasApi ? '✅' : '❌'} studentEditor.api existe: ${hasApi}`, hasApi ? 'good' : 'bad');
+        log(`   ${hasApiApi ? '✅' : '❌'} studentEditor.api.api existe: ${hasApiApi}`, hasApiApi ? 'good' : 'bad');
+        log(`   ${hasDelete ? '✅' : '❌'} studentEditor.api.api.delete existe: ${hasDelete}`, hasDelete ? 'good' : 'bad');
+
+        // 4. Check current data
+        log('4. Verificando dados atuais...', 'info');
+        const current = window.studentEditor.current;
+        if (!current) {
+            log('   ❌ Sem dados do aluno!', 'bad');
+        } else {
+            log(`   ✅ Student ID: ${current.id}`, 'good');
+            log(`   ✅ Subscriptions: ${current.subscriptions?.length || 0}`, 'good');
+            if (current.subscriptions?.length > 0) {
+                const sub = current.subscriptions[0];
+                log(`      └─ ID: ${sub.id}`, 'info');
+                log(`      └─ Status: ${sub.status}`, 'info');
+            }
+        }
+
+        // 5. Test method call
+        log('5. Testando chamada de método...', 'info');
+        try {
+            if (current?.subscriptions?.length > 0) {
+                const subId = current.subscriptions[0].id;
+                log(`   Chamando checkAndDeleteSubscription('${subId}')...`, 'info');
+                window.studentEditor.checkAndDeleteSubscription(subId);
+                log('   ✅ Método chamado sem erro', 'good');
+            } else {
+                log('   ⚠️ Sem subscriptions para testar', 'warn');
+            }
+        } catch (err) {
+            log(`   ❌ Erro: ${err.message}`, 'bad');
+            log(`   Stack: ${err.stack}`, 'bad');
+        }
+
+        log('=== FIM DO DIAGNÓSTICO ===', 'info');
+    }
+
+    async function testDelete() {
+        log('=== TESTANDO DELETE DIRETO ===', 'api');
+        
+        if (!window.studentEditor?.current?.subscriptions?.[0]) {
+            log('❌ Sem subscription para testar!', 'bad');
+            return;
+        }
+
+        const subId = window.studentEditor.current.subscriptions[0].id;
+        log(`Testando DELETE /api/subscriptions/${subId}`, 'api');
+
+        try {
+            const result = await window.studentEditor.api.api.delete(`/api/subscriptions/${subId}`);
+            log(`✅ Resposta: ${JSON.stringify(result)}`, 'good');
+        } catch (err) {
+            log(`❌ Erro: ${err.message}`, 'bad');
+            if (err.response) {
+                log(`Status: ${err.response.status}`, 'bad');
+            }
+        }
+    }
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+        log('Página carregada', 'info');
+        log('Clique em "Executar Diagnóstico" para começar', 'warn');
+    });
+</script>
+
+</body>
+</html>

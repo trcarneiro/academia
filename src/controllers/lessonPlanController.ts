@@ -670,5 +670,218 @@ export const lessonPlanController = {
         error: 'Falha ao importar plano de aula'
       });
     }
+  },
+
+  // GET /api/lesson-plans/:id/techniques - Get techniques for a lesson plan
+  async getTechniques(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string };
+
+      const lessonPlan = await prisma.lessonPlan.findUnique({
+        where: { id },
+        include: {
+          techniqueLinks: {
+            include: {
+              technique: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  category: true,
+                  difficulty: true,
+                  description: true
+                }
+              }
+            },
+            orderBy: { order: 'asc' }
+          }
+        }
+      });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      const techniques = lessonPlan.techniqueLinks.map(lt => ({
+        ...lt.technique,
+        order: lt.order,
+        allocationMinutes: lt.allocationMinutes
+      }));
+
+      return reply.send({
+        success: true,
+        data: techniques
+      });
+    } catch (error) {
+      console.error('Get lesson plan techniques error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao buscar técnicas do plano de aula'
+      });
+    }
+  },
+
+  // POST /api/lesson-plans/:id/techniques - Add techniques to a lesson plan
+  async addTechniques(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string };
+      const body = request.body as any;
+
+      const schema = z.object({
+        techniqueIds: z.array(z.string().uuid()).min(1, 'Pelo menos uma técnica deve ser selecionada'),
+        replace: z.boolean().default(false)
+      });
+
+      const { techniqueIds, replace } = schema.parse(body);
+
+      // Verify lesson plan exists
+      const lessonPlan = await prisma.lessonPlan.findUnique({
+        where: { id }
+      });
+
+      if (!lessonPlan) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Plano de aula não encontrado'
+        });
+      }
+
+      // Replace existing techniques if requested
+      if (replace) {
+        await prisma.lessonPlanTechniques.deleteMany({
+          where: { lessonPlanId: id }
+        });
+      }
+
+      // Get current max order
+      const currentTechniques = await prisma.lessonPlanTechniques.findMany({
+        where: { lessonPlanId: id },
+        orderBy: { order: 'desc' },
+        take: 1
+      });
+
+      let orderValue = currentTechniques.length > 0 
+        ? currentTechniques[0].order + 1 
+        : 1;
+
+      // Add new techniques
+      const added: any[] = [];
+      for (const techniqueId of techniqueIds) {
+        // Check if technique exists
+        const technique = await prisma.technique.findUnique({
+          where: { id: techniqueId }
+        });
+
+        if (!technique) {
+          console.warn(`Technique ${techniqueId} not found, skipping`);
+          continue;
+        }
+
+        // Check if already linked (if not replacing)
+        if (!replace) {
+          const existing = await prisma.lessonPlanTechniques.findUnique({
+            where: {
+              lessonPlanId_techniqueId: {
+                lessonPlanId: id,
+                techniqueId
+              }
+            }
+          });
+
+          if (existing) {
+            console.log(`Technique ${techniqueId} already linked, skipping`);
+            continue;
+          }
+        }
+
+        // Create link
+        const lessonTechnique = await prisma.lessonPlanTechniques.create({
+          data: {
+            lessonPlanId: id,
+            techniqueId,
+            order: orderValue++,
+            allocationMinutes: 0,
+            objectiveMapping: []
+          },
+          include: {
+            technique: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                category: true,
+                difficulty: true
+              }
+            }
+          }
+        });
+
+        added.push(lessonTechnique);
+      }
+
+      return reply.send({
+        success: true,
+        data: added,
+        message: `${added.length} técnica(s) adicionada(s) com sucesso`
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({
+          success: false,
+          error: error.errors[0].message
+        });
+      }
+      console.error('Add lesson plan techniques error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao adicionar técnicas ao plano de aula'
+      });
+    }
+  },
+
+  // DELETE /api/lesson-plans/:id/techniques/:techniqueId - Remove technique from lesson plan
+  async removeTechnique(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id, techniqueId } = request.params as { id: string; techniqueId: string };
+
+      const lessonTechnique = await prisma.lessonPlanTechniques.findUnique({
+        where: {
+          lessonPlanId_techniqueId: {
+            lessonPlanId: id,
+            techniqueId
+          }
+        }
+      });
+
+      if (!lessonTechnique) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Técnica não vinculada a este plano de aula'
+        });
+      }
+
+      await prisma.lessonPlanTechniques.delete({
+        where: {
+          lessonPlanId_techniqueId: {
+            lessonPlanId: id,
+            techniqueId
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Técnica removida com sucesso'
+      });
+    } catch (error) {
+      console.error('Remove lesson plan technique error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Falha ao remover técnica do plano de aula'
+      });
+    }
   }
 };

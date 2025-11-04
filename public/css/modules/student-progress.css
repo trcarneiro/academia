@@ -1,0 +1,534 @@
+/**
+ * Student Progress Module - Premium CSS
+ * Sistema de visualização de progresso com heatmap e indicadores de grau
+ */
+
+/* Container Principal */
+.module-isolated-progress-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Seções */
+.degree-progress-section,
+.category-stats-section,
+.performance-trend-section,
+.heatmap-section {
+    margin-bottom: 3rem;
+}
+
+.degree-progress-section h2,
+.category-stats-section h2,
+.performance-trend-section h2,
+.heatmap-section h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color, #667eea);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========================================
+   DEGREE INDICATORS (Circular Progress)
+======================================== */
+
+.degree-indicators {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.degree-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.circular-progress {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.circular-progress svg {
+    transform: rotate(-90deg);
+}
+
+.circular-progress .bg-circle {
+    fill: none;
+    stroke: #E5E7EB;
+    stroke-width: 8;
+}
+
+.circular-progress .progress-circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-in-out;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.degree-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color, #667eea);
+}
+
+.degree-percentage {
+    font-size: 1rem;
+    color: #6B7280;
+    margin-top: -5px;
+}
+
+.degree-label {
+    font-size: 0.9rem;
+    color: #374151;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.degree-indicator.completed .degree-label i {
+    color: #10B981;
+    font-size: 1.2rem;
+}
+
+.degree-indicator.current {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* ========================================
+   CATEGORY STATS GRID
+======================================== */
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+    border-color: var(--primary-color, #667eea);
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.category-icon {
+    font-size: 2rem;
+}
+
+.category-header h3 {
+    font-size: 1.1rem;
+    color: var(--primary-color, #667eea);
+    margin: 0;
+}
+
+.category-stats {
+    margin-bottom: 1rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6B7280;
+}
+
+.stat-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.category-progress {
+    margin-top: 1rem;
+}
+
+.progress-bar {
+    background: #E5E7EB;
+    border-radius: 999px;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    height: 100%;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: width 1s ease-in-out;
+}
+
+/* ========================================
+   PERFORMANCE TREND
+======================================== */
+
+.trend-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.trend-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.trend-icon {
+    font-size: 4rem;
+}
+
+.trend-info {
+    flex: 1;
+}
+
+.trend-message {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+.trend-stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-item .stat-label {
+    font-size: 0.85rem;
+    color: #6B7280;
+}
+
+.stat-item .stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color, #667eea);
+}
+
+/* ========================================
+   HEATMAP
+======================================== */
+
+.heatmap-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.heatmap-grid {
+    display: inline-grid;
+    gap: 2px;
+}
+
+.heatmap-header {
+    display: contents;
+}
+
+.heatmap-corner {
+    width: 150px;
+    height: 30px;
+}
+
+.heatmap-date {
+    width: 40px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #6B7280;
+    font-weight: 600;
+}
+
+.heatmap-row {
+    display: contents;
+}
+
+.heatmap-activity-label {
+    width: 150px;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #374151;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.heatmap-cell {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary-color, #667eea);
+    z-index: 10;
+}
+
+/* Heat color scale (GitHub-style) */
+.heat-0 {
+    background: #EBEDF0;
+    color: #6B7280;
+}
+
+.heat-1 {
+    background: #C6E48B;
+    color: #374151;
+}
+
+.heat-2 {
+    background: #7BC96F;
+    color: white;
+}
+
+.heat-3 {
+    background: #239A3B;
+    color: white;
+}
+
+.heat-4 {
+    background: #196127;
+    color: white;
+}
+
+.heat-5 {
+    background: #0D3F1A;
+    color: white;
+}
+
+/* Heatmap Legend */
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #6B7280;
+}
+
+.legend-cells {
+    display: flex;
+    gap: 2px;
+}
+
+.legend-cell {
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+}
+
+/* ========================================
+   LOADING / EMPTY / ERROR STATES
+======================================== */
+
+.loading-state,
+.empty-state,
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #6B7280;
+}
+
+.loading-state .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #E5E7EB;
+    border-top-color: var(--primary-color, #667eea);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-state i,
+.error-state i {
+    color: #D1D5DB;
+    margin-bottom: 1rem;
+}
+
+.empty-state p,
+.error-state p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+
+.empty-state .hint {
+    font-size: 0.9rem;
+    color: #9CA3AF;
+}
+
+.error-state .error-message {
+    color: #EF4444;
+    font-weight: 600;
+}
+
+.error-state button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.error-state button:hover {
+    opacity: 0.9;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 768px) {
+    .module-isolated-progress-container {
+        padding: 1rem;
+    }
+
+    .degree-indicators {
+        gap: 1rem;
+    }
+
+    .circular-progress {
+        width: 100px;
+        height: 100px;
+    }
+
+    .degree-number {
+        font-size: 1.5rem;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trend-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .trend-icon {
+        font-size: 3rem;
+    }
+
+    .trend-stats {
+        justify-content: center;
+    }
+
+    .heatmap-activity-label {
+        width: 100px;
+        font-size: 0.7rem;
+    }
+
+    .heatmap-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 0.65rem;
+    }
+
+    .heatmap-date {
+        width: 30px;
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .degree-indicators {
+        flex-direction: column;
+    }
+
+    .heatmap-container {
+        padding: 0.5rem;
+    }
+
+    .heatmap-activity-label {
+        width: 80px;
+    }
+
+    .heatmap-cell,
+    .heatmap-date {
+        width: 25px;
+        height: 25px;
+        font-size: 0.6rem;
+    }
+}

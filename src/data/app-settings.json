@@ -1,0 +1,14 @@
+{
+  "theme": {
+    "primaryColor": "#252831",
+    "secondaryColor": "#4a5ba1",
+    "gradientPrimary": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "darkMode": false
+  },
+  "branding": {
+    "appName": "Krav Maga Academy",
+    "logoUrl": "",
+    "contactEmail": "",
+    "contactPhone": ""
+  }
+}
