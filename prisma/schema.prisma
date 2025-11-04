@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  prov  provider  = "mysql"
+  provider  = "mysql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
@@ -2931,9 +2931,10 @@ enum LeadActivityType {
 }
 
 enum AgentSpecialization {
-  pedagogical
-  analytical
-  support
-  progression
-  commercial
-  curriculum
+  PEDAGOGICAL
+  ANALYTICAL
+  SUPPORT
+  PROGRESSION
+  COMMERCIAL
+  CURRICULUM
+}
