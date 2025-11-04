@@ -141,9 +141,9 @@ model Course {
   category              StudentCategory           @default(ADULT)
   orderIndex            Int                       @default(1)
   nextCourseId          String?                   @unique
-  prerequisites         String[]
-  objectives            String[]
-  requirements          String[]
+  prerequisites         Json                      @default("[]")
+  objectives            Json                      @default("[]")
+  requirements          Json                      @default("[]")
   imageUrl              String?
   isActive              Boolean                   @default(true)
   createdAt             DateTime                  @default(now())
@@ -194,8 +194,8 @@ model CourseTemplate {
   totalClasses     Int
   minAge           Int            @default(16)
   maxAge           Int?
-  objectives       String[]
-  requirements     String[]
+  objectives       Json           @default("[]")
+  requirements     Json           @default("[]")
   structure        Json
   ragSettings      Json?
   isSystemTemplate Boolean        @default(false)
@@ -217,8 +217,8 @@ model TechniqueLibrary {
   category          TechniqueCategory
   content           Json
   ragEmbeddings     Json?
-  prerequisites     String[]
-  relatedTechniques String[]
+  prerequisites     Json              @default("[]")
+  relatedTechniques Json              @default("[]")
   difficulty        Int               @default(1)
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
@@ -247,9 +247,9 @@ model LessonPlan {
   adaptations       Json?
   duration          Int                       @default(60)
   difficulty        Int                       @default(1)
-  objectives        String[]
-  equipment         String[]
-  activities        String[]
+  objectives        Json                      @default("[]")
+  equipment         Json                      @default("[]")
+  activities        Json                      @default("[]")
   videoUrl          String?
   thumbnailUrl      String?
   createdAt         DateTime                  @default(now())
@@ -279,7 +279,7 @@ model Technique {
   name                   String
   description            String?
   difficulty             Int?
-  prerequisites          String[]
+  prerequisites          Json                        @default("[]")
   videoUrl               String?
   imageUrl               String?
   baseXP                 Int?
@@ -298,17 +298,17 @@ model Technique {
   groupSizeMax           Int?
   ageRangeMin            Int?
   ageRangeMax            Int?
-  objectives             String[]
-  resources              String[]
-  assessmentCriteria     String[]
-  risksMitigation        String[]
-  tags                   String[]
-  references             String[]
+  objectives             Json                        @default("[]")
+  resources              Json                        @default("[]")
+  assessmentCriteria     Json                        @default("[]")
+  risksMitigation        Json                        @default("[]")
+  tags                   Json                        @default("[]")
+  references             Json                        @default("[]")
   bnccCompetenciesText   String?                     @default("")
   category               String?
-  instructions           Json[]
-  stepByStep             Json[]
-  bnccCompetencies       Json[]
+  instructions           Json                        @default("[]")
+  stepByStep             Json                        @default("[]")
+  bnccCompetencies       Json                        @default("[]")
   referencedByActivities Activity[]                  @relation("ActivityTechniqueRef")
   courseTechniques       CourseTechnique[]
   educationalLinks       EducationalPlanTechniques[]
@@ -395,14 +395,14 @@ model Student {
   gender                        Gender?                     @default(MASCULINO)
   age                           Int?
   physicalCondition             PhysicalCondition?          @default(INICIANTE)
-  specialNeeds                  SpecialNeed[]
+  specialNeeds                  Json                        @default("[]")
   totalXP                       Int                         @default(0)
   globalLevel                   Int                         @default(1)
   currentStreak                 Int                         @default(0)
   longestStreak                 Int                         @default(0)
   lastCheckinDate               DateTime?
-  preferredDays                 String[]
-  preferredTimes                String[]
+  preferredDays                 Json                        @default("[]")
+  preferredTimes                Json                        @default("[]")
   notifications                 Boolean                     @default(true)
   enrollmentDate                DateTime                    @default(now())
   isActive                      Boolean                     @default(true)
@@ -473,7 +473,7 @@ model LessonPlanTechniques {
   techniqueId       String
   order             Int        @default(0)
   allocationMinutes Int        @default(0)
-  objectiveMapping  String[]
+  objectiveMapping  Json       @default("[]")
   lessonPlan        LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
   technique         Technique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
@@ -575,7 +575,7 @@ model TrainingArea {
   capacity         Int                       @default(20)
   areaType         String
   dimensions       String?
-  equipment        String[]
+  equipment        Json                      @default("[]")
   flooring         String?
   isActive         Boolean                   @default(true)
   createdAt        DateTime                  @default(now())
@@ -598,7 +598,7 @@ model Mat {
   description    String?
   capacity       Int          @default(20)
   dimensions     String?
-  equipment      String[]
+  equipment      Json         @default("[]")
   materialType   String?
   isActive       Boolean      @default(true)
   createdAt      DateTime     @default(now())
@@ -615,15 +615,15 @@ model Instructor {
   id                     String                    @id @default(uuid())
   organizationId         String
   userId                 String                    @unique
-  specializations        String[]
-  certifications         String[]
+  specializations        Json                      @default("[]")
+  certifications         Json                      @default("[]")
   bio                    String?
-  martialArts            String[]
+  martialArts            Json                      @default("[]")
   maxStudentsPerClass    Int                       @default(20)
   experience             String?
   availability           Json?
   hourlyRate             Decimal?                  @db.Decimal(10, 2)
-  preferredUnits         String[]
+  preferredUnits         Json                      @default("[]")
   hireDate               DateTime                  @default(now())
   isActive               Boolean                   @default(true)
   createdAt              DateTime                  @default(now())
@@ -831,7 +831,7 @@ model Evaluation {
   passed             Boolean          @default(false)
   instructorNotes    String?
   videoUrl           String?
-  recommendedActions String[]
+  recommendedActions Json             @default("[]")
   evaluatedBy        String
   evaluatedAt        DateTime         @default(now())
   createdAt          DateTime         @default(now())
@@ -973,8 +973,8 @@ model Progress {
   studentId           String
   courseId            String
   lessonNumber        Int
-  techniquesLearned   String[]
-  challengesCompleted String[]
+  techniquesLearned   Json     @default("[]")
+  challengesCompleted Json     @default("[]")
   points              Int      @default(0)
   reflections         String?
   progressDate        DateTime @default(now())
@@ -994,8 +994,8 @@ model TechniqueDetail {
   description   String?
   category      TechniqueCategory
   lessonNumber  Int
-  instructions  String[]
-  objectives    String[]
+  instructions  Json              @default("[]")
+  objectives    Json              @default("[]")
   adaptations   Json?
   orderInLesson Int               @default(1)
   createdAt     DateTime          @default(now())
@@ -1028,11 +1028,11 @@ model EvaluationRecord {
   studentId           String
   courseId            String
   lessonNumber        Int
-  techniquesEvaluated String[]
+  techniquesEvaluated Json             @default("[]")
   physicalTest        String?
   physicalTestResult  String?
-  simulationScenarios String[]
-  simulationResults   String[]
+  simulationScenarios Json             @default("[]")
+  simulationResults   Json             @default("[]")
   precision           Float?
   status              EvaluationStatus
   certificateIssued   Boolean          @default(false)
@@ -1056,13 +1056,13 @@ model AttendancePattern {
   attendanceRate      Float           @default(0)
   consecutiveAbsences Int             @default(0)
   averageCheckInTime  String?
-  preferredDays       String[]
-  preferredTimeSlots  String[]
+  preferredDays       Json            @default("[]")
+  preferredTimeSlots  Json            @default("[]")
   recentTrend         AttendanceTrend @default(STABLE)
   trendConfidence     Float           @default(0)
   dropoutRisk         DropoutRisk     @default(LOW)
-  riskFactors         String[]
-  recommendations     String[]
+  riskFactors         Json            @default("[]")
+  recommendations     Json            @default("[]")
   aiInsights          Json?
   lastAnalyzed        DateTime        @default(now())
   createdAt           DateTime        @default(now())
@@ -1343,7 +1343,7 @@ model MentalModule {
   objective        String
   recommendedPhase String?
   durationMin      Int?
-  tags             String[]
+  tags             Json     @default("[]")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now())
 
@@ -1369,7 +1369,7 @@ model RagChunk {
   sourceId       String?
   version        Int           @default(1)
   lang           String        @default("pt-BR")
-  tags           String[]
+  tags           Json          @default("[]")
   text           String
   hash           String        @unique
   embedding      Bytes?
@@ -1400,9 +1400,9 @@ model Activity {
   type            ActivityType
   title           String
   description     String?
-  equipment       String[]             @default([])
+  equipment       Json                 @default("[]")
   safety          String?
-  adaptations     String[]             @default([])
+  adaptations     Json                 @default("[]")
   difficulty      Int?
   refTechniqueId  String?
   defaultParams   Json?
@@ -1673,8 +1673,8 @@ model TurmaLesson {
   status             TurmaStatus               @default(SCHEDULED)
   duration           Int                       @default(60)
   notes              String?
-  materials          String[]                  @default([])
-  objectives         String[]                  @default([])
+  materials          Json                      @default("[]")
+  objectives         Json                      @default("[]")
   techniques         Json?
   isActive           Boolean                   @default(true)
   createdAt          DateTime                  @default(now())
@@ -1769,7 +1769,7 @@ model PersonalTrainingClass {
   instructorId   String
   title          String
   description    String?
-  focusAreas     String[]
+  focusAreas     Json                      @default("[]")
   trainingType   PersonalTrainingType      @default(INDIVIDUAL)
   intensity      String                    @default("Intermediário")
   duration       Int                       @default(60)
@@ -1821,10 +1821,10 @@ model PersonalTrainingSession {
 model PersonalTrainingPreference {
   id                   String   @id @default(uuid())
   studentId            String   @unique
-  preferredDays        String[]
-  preferredTimes       String[]
-  preferredInstructors String[]
-  trainingFocus        String[]
+  preferredDays        Json     @default("[]")
+  preferredTimes       Json     @default("[]")
+  preferredInstructors Json     @default("[]")
+  trainingFocus        Json     @default("[]")
   intensity            String   @default("Intermediário")
   sessionDuration      Int      @default(60)
   maxSessionsPerWeek   Int      @default(2)
@@ -1918,7 +1918,7 @@ model Lead {
   costPerAcquisition  Decimal?        @db.Decimal(10, 2)
   estimatedLTV        Decimal?        @db.Decimal(10, 2)
   actualRevenue       Decimal?        @db.Decimal(10, 2)
-  tags                String[]
+  tags                Json            @default("[]")
   customFields        Json?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
@@ -2189,8 +2189,8 @@ model AIAgent {
   specialization AgentSpecialization
   model          String              @default("gemini-1.5-flash")
   systemPrompt   String
-  ragSources     String[]
-  mcpTools       String[]
+  ragSources     Json                @default("[]")
+  mcpTools       Json                @default("[]")
   temperature    Float               @default(0.7)
   maxTokens      Int                 @default(2048)
   noCodeMode     Boolean             @default(true)
@@ -2471,7 +2471,7 @@ model CourseRequirement {
 model BiometricData {
   id               String   @id @default(uuid())
   studentId        String   @unique
-  embedding        Float[]
+  embedding        Json     @default("[]")
   photoUrl         String
   photoBase64      String?
   qualityScore     Int
