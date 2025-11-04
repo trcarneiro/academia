@@ -125,13 +125,13 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(helmet, 'helmet'), {
       contentSecurityPolicy: isProd ? {
         directives: {
-          defaultSrc: ['self'],
-          scriptSrc: ['self', 'unsafe-inline'],
-          styleSrc: ['self', 'unsafe-inline'],
-          imgSrc: ['self', 'data:'],
-          connectSrc: ['self'],
-          objectSrc: ['none'],
-          baseUri: ['self']
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"]
         }
       } : false,
       hsts: isProd
