@@ -129,7 +129,7 @@ const start = async (): Promise<void> => {
           scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:'],
-          connectSrc: ["'self'"],
+          connectSrc: ["'self'", 'https://cdn.jsdelivr.net'],
           objectSrc: ["'none'"],
           baseUri: ["'self'"]
         }

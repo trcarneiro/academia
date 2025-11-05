@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Academia LocalStorage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .success {
+            color: #059669;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .info {
+            background: #e0e7ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧹 Clear Academia LocalStorage</h1>
+        
+        <div class="info">
+            <strong>Current Organization ID:</strong>
+            <pre id="currentOrg">Loading...</pre>
+        </div>
+        
+        <button onclick="clearStorage()">Clear LocalStorage</button>
+        <button onclick="setSmartDefence()">Set Smart Defence Org</button>
+        <button onclick="location.href='http://localhost:3001'">Go to Academia</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function showCurrentOrg() {
+            const orgId = localStorage.getItem('activeOrganizationId');
+            document.getElementById('currentOrg').textContent = orgId || 'Not set';
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('result').innerHTML = '<div class="success">✅ LocalStorage cleared!</div>';
+            showCurrentOrg();
+        }
+        
+        function setSmartDefence() {
+            const smartDefenceId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+            localStorage.setItem('activeOrganizationId', smartDefenceId);
+            document.getElementById('result').innerHTML = '<div class="success">✅ Smart Defence organization set!</div>';
+            showCurrentOrg();
+        }
+        
+        showCurrentOrg();
+    </script>
+</body>
+</html>
