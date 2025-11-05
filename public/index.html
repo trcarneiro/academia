@@ -62,6 +62,7 @@
         <div class="user-actions">
             <div class="notifications" title="Notificações">🔔</div>
             <div class="user-profile" title="Perfil">👤</div>
+            <button id="logoutBtn" class="logout-btn" title="Sair">🚪 Sair</button>
         </div>
     </header>
 
@@ -229,5 +230,25 @@
     <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->
 
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
+
+    <!-- Logout Handler -->
+    <script>
+        // Configurar logout quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    // Limpar dados de autenticação
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('activeOrganizationId');
+                    sessionStorage.clear();
+                    
+                    // Redirecionar para página de login
+                    window.location.href = '/login.html';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
