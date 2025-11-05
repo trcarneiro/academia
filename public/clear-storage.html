@@ -58,9 +58,9 @@
             <pre id="currentOrg">Loading...</pre>
         </div>
         
-        <button onclick="clearStorage()">Clear LocalStorage</button>
-        <button onclick="setSmartDefence()">Set Smart Defence Org</button>
-        <button onclick="location.href='http://localhost:3001'">Go to Academia</button>
+        <button id="clearBtn">Clear LocalStorage</button>
+        <button id="setSmartBtn">Set Smart Defence Org</button>
+        <button id="goBtn">Go to Academia</button>
         
         <div id="result"></div>
     </div>
@@ -83,6 +83,15 @@
             document.getElementById('result').innerHTML = '<div class="success">✅ Smart Defence organization set!</div>';
             showCurrentOrg();
         }
+        
+        function goToAcademia() {
+            window.location.href = 'http://localhost:3001';
+        }
+        
+        // Add event listeners
+        document.getElementById('clearBtn').addEventListener('click', clearStorage);
+        document.getElementById('setSmartBtn').addEventListener('click', setSmartDefence);
+        document.getElementById('goBtn').addEventListener('click', goToAcademia);
         
         showCurrentOrg();
     </script>
