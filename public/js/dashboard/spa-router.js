@@ -6,6 +6,7 @@ class SPARouter {
         this.initializingModules = new Set();
         this.isNavigating = false; // ✅ Prevent concurrent navigation
         this.lastNavigatedModule = null; // ✅ Track last module
+        this.lastNavigationTime = null; // ✅ Track last navigation timestamp for re-click detection
     }
     
     /**
@@ -161,8 +162,9 @@ class SPARouter {
             return;
         }
 
-        // ✅ PREVENT DUPLICATE NAVIGATION
-        if (this.lastNavigatedModule === module) {
+        // ✅ PREVENT DUPLICATE NAVIGATION - mas permitir re-click após 1s
+        const now = Date.now();
+        if (this.lastNavigatedModule === module && (!this.lastNavigationTime || (now - this.lastNavigationTime) < 1000)) {
             console.log(`⏸️ [Router] Already on ${module}, skipping navigation`);
             return;
         }
@@ -170,6 +172,7 @@ class SPARouter {
         if (this.routes[module]) {
             this.isNavigating = true;
             this.lastNavigatedModule = module;
+            this.lastNavigationTime = now;
 
             try {
                 // Remover módulo ativo anterior
@@ -194,10 +197,10 @@ class SPARouter {
                 // Executar handler do módulo
                 this.routes[module]();
             } finally {
-                // Reset navigation flag immediately - module init handles async loading
+                // Reset navigation flag após 300ms (suficiente para módulos assíncronos)
                 setTimeout(() => {
                     this.isNavigating = false;
-                }, 100); // Reduced from 500ms to 100ms
+                }, 300);
             }
         }
     }
@@ -1440,6 +1443,8 @@ router.registerRoute('rag', () => {
 // Turmas Module Route
 router.registerRoute('turmas', () => {
     console.log('👥 Carregando módulo Turmas...');
+    console.log('🔍 turmasController disponível:', typeof window.turmasController);
+    console.log('🔍 turmasController.showList:', typeof window.turmasController?.showList);
     
     // Update header
     document.querySelector('.module-header h1').textContent = 'Gestão de Turmas';
@@ -1448,43 +1453,69 @@ router.registerRoute('turmas', () => {
     // Load turmas module assets and initialize the proper listing module
     const moduleContainer = document.getElementById('module-container');
     
+    // ✅ Mostrar loading imediatamente para feedback visual
+    moduleContainer.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando módulo de turmas...</p>
+        </div>
+    `;
+    
     try {
-        // Load turmas module assets (will load the proper index.js with listing view)
-        router.loadModuleAssets('turmas-list');
-        
-        // Initialize the turmas module for listing
-        setTimeout(() => {
-            if (typeof window.turmasModule === 'object' && window.turmasModule.init) {
-                window.turmasModule.init().catch(error => {
-                    console.error('❌ Error initializing turmas module:', error);
-                    moduleContainer.innerHTML = `
-                        <div class="error-state">
-                            <div class="error-icon">⚠️</div>
-                            <h3>Erro ao carregar módulo</h3>
-                            <p>Não foi possível inicializar o módulo de turmas.</p>
-                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
-                        </div>
-                    `;
-                });
-            } else {
-                console.error('❌ Turmas module not found or not properly exported');
+        // Verificar se o módulo já está inicializado
+        if (window.turmasController && typeof window.turmasController.showList === 'function') {
+            console.log('✅ Turmas controller encontrado, chamando showList()...');
+            window.turmasController.showList().catch(error => {
+                console.error('❌ Error calling showList:', error);
                 moduleContainer.innerHTML = `
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
-                        <h3>Módulo não encontrado</h3>
-                        <p>O módulo de turmas não foi carregado corretamente.</p>
+                        <h3>Erro ao carregar lista</h3>
+                        <p>Não foi possível carregar a lista de turmas.</p>
                         <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
                     </div>
                 `;
-            }
-        }, 100);
+            });
+        } else {
+            console.log('⏳ Turmas controller não encontrado, aguardando inicialização...');
+            // Aguardar módulo carregar e tentar novamente
+            setTimeout(() => {
+                console.log('🔍 [Retry] turmasController disponível:', typeof window.turmasController);
+                console.log('🔍 [Retry] turmasController.showList:', typeof window.turmasController?.showList);
+                
+                if (window.turmasController && typeof window.turmasController.showList === 'function') {
+                    console.log('✅ Turmas controller encontrado no retry, chamando showList()...');
+                    window.turmasController.showList().catch(error => {
+                        console.error('❌ Error calling showList (retry):', error);
+                        moduleContainer.innerHTML = `
+                            <div class="error-state">
+                                <div class="error-icon">⚠️</div>
+                                <h3>Erro ao carregar lista</h3>
+                                <p>Não foi possível carregar a lista de turmas.</p>
+                                <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    console.error('❌ Turmas controller ainda não disponível após timeout');
+                    moduleContainer.innerHTML = `
+                        <div class="error-state">
+                            <div class="error-icon">⚠️</div>
+                            <h3>Módulo não disponível</h3>
+                            <p>O módulo de turmas não foi inicializado corretamente. Verifique o console para mais detalhes.</p>
+                            <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
+                        </div>
+                    `;
+                }
+            }, 800); // Aumentado para 800ms para dar tempo do import assíncrono
+        }
     } catch (error) {
-        console.error('❌ Error loading turmas module assets:', error);
+        console.error('❌ Error in turmas route:', error);
         moduleContainer.innerHTML = `
             <div class="error-state">
                 <div class="error-icon">⚠️</div>
-                <h3>Erro ao carregar assets</h3>
-                <p>Não foi possível carregar os recursos do módulo de turmas.</p>
+                <h3>Erro ao carregar módulo</h3>
+                <p>Ocorreu um erro ao carregar o módulo de turmas.</p>
                 <button onclick="router.navigateTo('dashboard')" class="btn btn-primary">Voltar ao Dashboard</button>
             </div>
         `;
@@ -1894,22 +1925,25 @@ router.registerRoute('instructors', async () => {
                 'js/modules/instructors/index.js'
             ];
             
-            // Check if scripts are already loaded
-            const alreadyLoaded = scriptsToLoad.every(src => {
-                return Array.from(document.scripts).some(script => script.src.includes(src));
+            // Force reload scripts (remove old versions first for cache-busting)
+            console.log('Loading instructors module scripts with cache-busting...');
+            
+            // Remove old script tags
+            scriptsToLoad.forEach(src => {
+                const oldScripts = Array.from(document.scripts).filter(script => script.src.includes(src));
+                oldScripts.forEach(script => script.remove());
             });
             
-            if (!alreadyLoaded) {
-                console.log('Loading instructors module scripts...');
-                for (const src of scriptsToLoad) {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    document.head.appendChild(script);
-                }
-                
-                // Wait a bit for scripts to load
-                await new Promise(resolve => setTimeout(resolve, 500));
+            // Add cache-busting timestamp
+            const cacheBuster = Date.now();
+            for (const src of scriptsToLoad) {
+                const script = document.createElement('script');
+                script.src = `${src}?v=${cacheBuster}`;
+                document.head.appendChild(script);
             }
+            
+            // Wait for scripts to load
+            await new Promise(resolve => setTimeout(resolve, 500));
             
             // Try to initialize
             let retries = 0;

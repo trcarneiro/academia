@@ -58,7 +58,8 @@ async function main() {
         canExecuteAgentTasks: true,
         canCreateAgents: true,
         canDeleteAgents: true,
-        maxTaskPriority: 'URGENT'
+        maxTaskPriority: 'URGENT',
+        canApproveCategories: ['DATABASE_CHANGE', 'WHATSAPP_MESSAGE', 'EMAIL', 'SMS', 'MARKETING', 'BILLING', 'ENROLLMENT']
       }
     });
     console.log(`✅ Admin criado: ${adminUser.email}`);
@@ -108,7 +109,7 @@ async function main() {
       capacity: 20,
       areaType: 'TATAME',
       isActive: true,
-      equipment: JSON.stringify(['Tatame', 'Kimono', 'Faixa']),
+  equipment: ['Tatame', 'Kimono', 'Faixa'],
       description: 'Tatame especializado em Jiu-Jitsu Brasileiro'
     }
   });
@@ -127,7 +128,7 @@ async function main() {
       capacity: 20,
       areaType: 'TATAME',
       isActive: true,
-      equipment: JSON.stringify(['Tatame', 'Luvas de Boxe', 'Saco de Pancada', 'Manopla']),
+  equipment: ['Tatame', 'Luvas de Boxe', 'Saco de Pancada', 'Manopla'],
       description: 'Tatame para Krav Maga, Defesa Pessoal e Boxe'
     }
   });

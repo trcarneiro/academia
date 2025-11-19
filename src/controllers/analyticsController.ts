@@ -254,8 +254,12 @@ export class AnalyticsController {
           const student = await prisma.student.findUnique({
             where: { id: item.studentId },
             select: {
-              firstName: true,
-              lastName: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                }
+              }
             },
           });
           return {
@@ -285,7 +289,7 @@ export class AnalyticsController {
           percentage: Math.round((count / totalAttendances) * 100 * 100) / 100,
         })),
         topStudents: topStudentsWithDetails.map(item => ({
-          studentName: `${item.student?.firstName} ${item.student?.lastName}`,
+          studentName: `${item.student?.user?.firstName || ''} ${item.student?.user?.lastName || ''}`,
           attendanceCount: item._count,
         })),
       };

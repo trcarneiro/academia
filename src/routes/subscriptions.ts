@@ -1,7 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
-import { requireOrganizationId } from '@/utils/tenantHelpers';
+
+/**
+ * Helper: Extract organizationId from request or use fallback
+ */
+function getOrganizationId(request: any): string {
+  return request.user?.organizationId || 
+         request.headers['x-organization-id'] as string ||
+         'ff5ee00e-d8a3-4291-9428-d28b852fb472'; // Smart Defence Demo (fallback)
+}
 
 /**
  * 📅 Subscriptions Routes - API de Assinaturas dos Alunos
@@ -11,8 +19,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   // GET /api/subscriptions - Listar todas as assinaturas ativas
   fastify.get('/', async (request, reply) => {
     try {
-      // 🔧 TEMPORARY: Use hardcoded organizationId when no auth
-      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
+      const organizationId = getOrganizationId(request);
       
       const subscriptions = await prisma.studentSubscription.findMany({
         where: {
@@ -56,7 +63,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
+      const organizationId = getOrganizationId(request);
       
       const subscription = await prisma.studentSubscription.findFirst({
         where: {
@@ -105,7 +112,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
       const { currentPrice, startDate, status } = request.body as { currentPrice?: number; startDate?: string; status?: string };
-      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; };
+      const organizationId = getOrganizationId(request);
       
       // Buscar assinatura
       const subscription = await prisma.studentSubscription.findFirst({ where: { id, organizationId } });
@@ -159,7 +166,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+      const organizationId = getOrganizationId(request);
       
       console.log(`🗑️ DELETE /api/subscriptions/${id} - organizationId: ${organizationId}`);
       

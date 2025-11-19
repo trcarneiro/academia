@@ -53,8 +53,12 @@ export async function signUp(email: string, password: string, orgId: string) {
       data: { 
         id: supabaseUserId,
         email, 
-        organizationId: orgId,
-        // Add other fields as needed, e.g., role: 'STUDENT' default
+        organization: {
+          connect: { id: orgId }
+        },
+        firstName: email.split('@')[0], // Default, update later
+        lastName: '', // Default, update later
+        password: '', // Supabase handles auth
         role: 'STUDENT', // Default, update via metadata if needed
       },
     });

@@ -5,6 +5,9 @@ import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, Attendance
 import { AttendanceStatus, CheckInMethod, UserRole, ClassStatus } from '@/types';
 import { EnrollmentStatus, SubscriptionStatus } from '@prisma/client';
 import dayjs from 'dayjs';
+import quarterOfYear from 'dayjs/plugin/quarterOfYear';
+
+dayjs.extend(quarterOfYear);
 
 export class AttendanceService {
   // Helper: course eligibility for a student based on active enrollments and active turma associations
@@ -379,7 +382,7 @@ export class AttendanceService {
     userRole: UserRole,
     query: AttendanceHistoryQuery
   ) {
-    const { page, limit, startDate, endDate, status, classId } = query;
+    const { page, limit, startDate, endDate, status, classId, studentId } = query;
     const skip = (page - 1) * limit;
 
     // Build where clause based on user role
@@ -392,67 +395,68 @@ export class AttendanceService {
       });
 
       if (!student) {
-        throw new Error('Estudante nÃ£o encontrado');
+        throw new Error('Estudante não encontrado');
       }
 
       whereClause.studentId = student.id;
-    } else if (userRole === UserRole.INSTRUCTOR) {
-      // Instructors can see attendance for their classes
-      const instructor = await prisma.instructor.findUnique({
-        where: { userId },
-      });
-
-      if (!instructor) {
-        throw new Error('Instrutor nÃ£o encontrado');
+    } else {
+      // Admins and Instructors can filter by studentId
+      if (studentId) {
+        whereClause.studentId = studentId;
       }
 
-      whereClause.class = {
-        instructorId: instructor.id,
-      };
+      if (userRole === UserRole.INSTRUCTOR) {
+        // Instructors can see attendance for their classes
+        const instructor = await prisma.instructor.findUnique({
+          where: { userId },
+        });
+  
+        if (!instructor) {
+          throw new Error('Instrutor não encontrado');
+        }
+  
+        // ✅ FIX: Use TurmaAttendance relation path
+        whereClause.turmaLesson = {
+          turma: {
+            instructorId: instructor.id,
+          },
+        };
+      }
     }
     // Admins can see all attendance (no additional filter)
 
     // Add date filters
     if (startDate || endDate) {
-      whereClause.checkInTime = {};
+      whereClause.checkedAt = {};
       if (startDate) {
-        whereClause.checkInTime.gte = new Date(startDate);
+        whereClause.checkedAt.gte = new Date(startDate);
       }
       if (endDate) {
-        whereClause.checkInTime.lte = new Date(endDate);
+        whereClause.checkedAt.lte = new Date(endDate);
       }
     }
 
     // Add status filter
     if (status) {
-      whereClause.status = status;
+      if (status === 'PRESENT') whereClause.present = true;
+      if (status === 'ABSENT') whereClause.present = false;
+      if (status === 'LATE') whereClause.late = true;
     }
 
     // Add class filter
     if (classId) {
-      whereClause.classId = classId;
+      whereClause.turmaLessonId = classId;
     }
 
-    const [attendances, total] = await Promise.all([
-      prisma.attendance.findMany({
+    // ✅ FIX: Query TurmaAttendance (New Table) instead of Attendance (Legacy)
+    const [turmaAttendances, total] = await Promise.all([
+      prisma.turmaAttendance.findMany({
         where: whereClause,
         include: {
           student: {
             select: {
               id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          class: {
-            include: {
-              course: {
-                select: {
-                  name: true,
-                  level: true,
-                },
-              },
-              instructor: {
+              user: {
                 select: {
                   firstName: true,
                   lastName: true,
@@ -460,15 +464,60 @@ export class AttendanceService {
               },
             },
           },
+          turmaLesson: {
+            include: {
+              turma: {
+                include: {
+                  course: {
+                    select: {
+                      name: true,
+                      level: true,
+                    },
+                  },
+                  instructor: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         orderBy: {
-          checkInTime: 'desc',
+          checkedAt: 'desc',
         },
         skip,
         take: limit,
       }),
-      prisma.attendance.count({ where: whereClause }),
+      prisma.turmaAttendance.count({ where: whereClause }),
     ]);
+
+    // ✅ FIX: Map to legacy format expected by frontend
+    const attendances = turmaAttendances.map((ta) => ({
+      id: ta.id,
+      studentId: ta.studentId,
+      classId: ta.turmaLessonId,
+      checkInTime: ta.checkedAt,
+      status: ta.late ? 'LATE' : ta.present ? 'PRESENT' : 'ABSENT',
+      notes: ta.notes,
+      student: {
+        id: ta.student.id,
+        firstName: ta.student.user.firstName,
+        lastName: ta.student.user.lastName,
+      },
+      class: {
+        id: ta.turmaLessonId,
+        date: ta.turmaLesson.scheduledDate,
+        startTime: ta.turmaLesson.scheduledDate,
+        endTime: dayjs(ta.turmaLesson.scheduledDate)
+          .add(ta.turmaLesson.duration || 60, 'minute')
+          .toDate(),
+        course: ta.turmaLesson.turma.course,
+        instructor: ta.turmaLesson.turma.instructor,
+      },
+    }));
 
     return {
       attendances,
@@ -845,7 +894,7 @@ export class AttendanceService {
     const startOfDay = today.startOf('day').toDate();
     const endOfDay = today.endOf('day').toDate();
 
-    // If student provided, restrict classes by eligible courses
+    // If student provided, restrict classes to eligible courses
     let eligibleCourseIds: string[] = [];
     if (studentId) {
       eligibleCourseIds = await this.getEligibleCourseIds(studentId);
@@ -967,7 +1016,7 @@ export class AttendanceService {
       where: { id: studentId },
       include: {
         user: { select: { firstName: true, lastName: true, avatarUrl: true } },
-        // ðŸ”¥ FIX: Use correct relation name 'studentCourses' instead of 'enrollments'
+        // ðŸ”¥ FIX: Use correct relation 'studentCourses' instead of 'enrollments'
         studentCourses: { 
           include: { 
             course: { 
@@ -1231,11 +1280,11 @@ export class AttendanceService {
 
     // Derive current course and turma
   const currentEnrollment = student.studentCourses?.[0];
-    let currentCourse = currentEnrollment?.course ? {
-      id: currentEnrollment.course.id,
-      name: currentEnrollment.course.name,
-      level: (currentEnrollment.course as any).level ?? null,
-    } : null;
+  let currentCourse = currentEnrollment?.course ? {
+    id: currentEnrollment.course.id,
+    name: currentEnrollment.course.name,
+    level: (currentEnrollment.course as any).level ?? null,
+  } : null;
 
     // If course missing, try from active turma enrollment
   // turmaEnrollment already loaded
@@ -1296,7 +1345,7 @@ export class AttendanceService {
         checkInTime: att.checkInTime,
         status: att.status,
       })),
-  upcomingClasses: [
+      upcomingClasses: [
         // From Class model
         ...upcomingClasses.map(cls => ({
           id: cls.id,
@@ -1565,5 +1614,204 @@ export class AttendanceService {
       logger.error({ error }, 'Error in getAllActiveStudents');
       return [];
     }
+  }
+
+  /**
+   * Get full class roll (enrolled students + attendance status)
+   */
+  static async getClassRoll(lessonId: string) {
+    // 1. Get Lesson info
+    const lesson = await prisma.turmaLesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        turma: {
+          include: {
+            course: true,
+            instructor: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) throw new Error('Aula não encontrada');
+
+    // 2. Get all enrolled students (Active)
+    const enrolledStudents = await prisma.turmaStudent.findMany({
+      where: {
+        turmaId: lesson.turmaId,
+        isActive: true,
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            registrationNumber: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 3. Get attendance records for this lesson
+    const attendanceRecords = await prisma.turmaAttendance.findMany({
+      where: {
+        turmaLessonId: lessonId,
+      },
+    });
+
+    // 4. Merge data
+    const roll = enrolledStudents.map((enrollment) => {
+      const attendance = attendanceRecords.find(
+        (a) => a.studentId === enrollment.studentId
+      );
+      return {
+        student: {
+          id: enrollment.student.id,
+          firstName: enrollment.student.user.firstName,
+          lastName: enrollment.student.user.lastName,
+          photoUrl: enrollment.student.user.avatarUrl,
+          registrationNumber: enrollment.student.registrationNumber,
+        },
+        status: attendance
+          ? attendance.late
+            ? 'LATE'
+            : attendance.present
+            ? 'PRESENT'
+            : 'ABSENT'
+          : 'NONE',
+        attendanceId: attendance?.id,
+        checkInTime: attendance?.checkedAt,
+        notes: attendance?.notes,
+      };
+    });
+
+    // 5. Add students who are NOT enrolled but attended (e.g. drop-ins)
+    const enrolledStudentIds = new Set(enrolledStudents.map((e) => e.studentId));
+    const dropIns = await Promise.all(
+      attendanceRecords
+        .filter((a) => !enrolledStudentIds.has(a.studentId))
+        .map(async (a) => {
+          const student = await prisma.student.findUnique({
+            where: { id: a.studentId },
+            select: {
+              id: true,
+              registrationNumber: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          });
+
+          if (!student) return null;
+
+          return {
+            student: {
+              id: student.id,
+              firstName: student.user.firstName,
+              lastName: student.user.lastName,
+              photoUrl: student.user.avatarUrl,
+              registrationNumber: student.registrationNumber,
+            },
+            status: a.late ? 'LATE' : a.present ? 'PRESENT' : 'ABSENT',
+            attendanceId: a.id,
+            checkInTime: a.checkedAt,
+            notes: a.notes,
+            isDropIn: true,
+          };
+        })
+    );
+
+    return {
+      lesson: {
+        id: lesson.id,
+        date: lesson.scheduledDate,
+        topic: lesson.topic,
+        turmaName: lesson.turma.name,
+        courseName: lesson.turma.course?.name,
+        instructorName: `${lesson.turma.instructor?.firstName} ${lesson.turma.instructor?.lastName}`,
+      },
+      students: [...roll, ...dropIns.filter((d) => d !== null)],
+    };
+  }
+
+  /**
+   * Update class roll (bulk update)
+   */
+  static async updateClassRoll(
+    lessonId: string,
+    updates: { studentId: string; status: string; notes?: string }[]
+  ) {
+    await prisma.$transaction(async (tx) => {
+      const lesson = await tx.turmaLesson.findUnique({
+        where: { id: lessonId },
+      });
+      if (!lesson) throw new Error('Aula não encontrada');
+
+      for (const update of updates) {
+        if (update.status === 'NONE') {
+          // Remove attendance record if set to NONE
+          await tx.turmaAttendance.deleteMany({
+            where: {
+              turmaLessonId: lessonId,
+              studentId: update.studentId,
+            },
+          });
+          continue;
+        }
+
+        // Find or create TurmaStudent (for drop-ins)
+        let turmaStudent = await tx.turmaStudent.findFirst({
+          where: {
+            turmaId: lesson.turmaId,
+            studentId: update.studentId,
+          },
+        });
+
+        if (!turmaStudent) {
+          turmaStudent = await tx.turmaStudent.create({
+            data: {
+              turmaId: lesson.turmaId,
+              studentId: update.studentId,
+              isActive: true,
+            },
+          });
+        }
+
+        // Upsert Attendance
+        await tx.turmaAttendance.upsert({
+          where: {
+            turmaLessonId_studentId: {
+              turmaLessonId: lessonId,
+              studentId: update.studentId,
+            },
+          },
+          create: {
+            turmaLessonId: lessonId,
+            studentId: update.studentId,
+            turmaStudentId: turmaStudent.id,
+            turmaId: lesson.turmaId,
+            present: update.status === 'PRESENT' || update.status === 'LATE',
+            late: update.status === 'LATE',
+            notes: update.notes,
+            checkedAt: new Date(),
+          },
+          update: {
+            present: update.status === 'PRESENT' || update.status === 'LATE',
+            late: update.status === 'LATE',
+            notes: update.notes,
+          },
+        });
+      }
+    });
   }
 }

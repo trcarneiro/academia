@@ -582,7 +582,7 @@
     
     async function fetchMatsData() {
         try {
-            const response = await fetch('/api/mats');
+            const response = await window.fetchWithOrganization('/api/mats');
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {

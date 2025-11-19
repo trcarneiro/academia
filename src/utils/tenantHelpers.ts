@@ -1,11 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { ResponseHelper } from '@/utils/response';
 
-// Resolve organizationId from authenticated user or request headers
+// Resolve organizationId from authenticated user, request headers, query string, or request body
 export function resolveOrganizationId(request: FastifyRequest): string | undefined {
   const fromUser = (request as any).user?.organizationId as string | undefined;
   const fromHeader = request.headers['x-organization-id'] as string | undefined;
-  return fromUser || fromHeader;
+  const fromQuery = (request.query as any)?.organizationId as string | undefined;
+  const fromBody = (request.body as any)?.organizationId as string | undefined;
+  return fromUser || fromHeader || fromQuery || fromBody;
 }
 
 // Ensure an organizationId is present, otherwise return a 400 response

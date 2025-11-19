@@ -199,8 +199,10 @@ body {
 .main-menu li i {
     margin-right: 12px;
     font-size: 1.125rem;
-    width: 20px;
+    min-width: 24px;
     text-align: center;
+    display: inline-block;
+    font-style: normal;
 }
 
 .main-menu li:hover {

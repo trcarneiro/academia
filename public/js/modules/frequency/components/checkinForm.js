@@ -46,10 +46,16 @@ export class CheckinForm {
                 <form id="checkin-form" class="checkin-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="studentId">👤 Aluno *</label>
-                            <select id="studentId" name="studentId" required>
-                                <option value="">Selecione um aluno...</option>
-                            </select>
+                            <label for="studentSearch">👤 Aluno *</label>
+                            <input 
+                                type="text" 
+                                id="studentSearch" 
+                                placeholder="Digite o nome do aluno..."
+                                autocomplete="off"
+                                required
+                            />
+                            <input type="hidden" id="studentId" name="studentId" />
+                            <div id="student-suggestions" class="autocomplete-suggestions"></div>
                             ${this.options.enableQRScanner ? `
                                 <button type="button" class="btn-qr" id="scan-student">
                                     📷 Escanear QR
@@ -58,10 +64,25 @@ export class CheckinForm {
                         </div>
 
                         <div class="form-group">
+                            <label for="sessionDate">📅 Data da Aula *</label>
+                            <input 
+                                type="date" 
+                                id="sessionDate" 
+                                name="sessionDate" 
+                                required
+                                max="${new Date().toISOString().split('T')[0]}"
+                            />
+                            <small class="form-hint">Selecione a data da aula (incluindo aulas passadas)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="sessionId">🏃 Sessão *</label>
-                            <select id="sessionId" name="sessionId" required>
-                                <option value="">Selecione uma sessão...</option>
+                            <select id="sessionId" name="sessionId" required disabled>
+                                <option value="">Primeiro selecione uma data...</option>
                             </select>
+                            <small class="form-hint" id="session-hint">Mostrando todas as aulas do dia selecionado</small>
                         </div>
                     </div>
 

@@ -104,6 +104,19 @@ class CameraView {
                 </div>
             </div>
 
+            <div class="schedule-section">
+                <div class="schedule-header">
+                    <h3>📅 Turmas Disponíveis Hoje</h3>
+                    <span id="current-time" class="current-time"></span>
+                </div>
+                <div id="available-classes" class="available-classes">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Carregando turmas...</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="checkins-history">
                 <div class="history-header">
                     <h3>📋 Check-ins de Hoje</h3>
@@ -118,6 +131,264 @@ class CameraView {
         `;
 
         this.setupEvents();
+        
+        // Wait for DOM to be ready before loading classes
+        setTimeout(() => {
+            console.log('⏰ Iniciando carregamento de turmas...');
+            this.loadTodayClasses();
+            this.startTimeUpdater();
+        }, 100);
+    }
+
+    /**
+     * Load today's available classes
+     */
+    async loadTodayClasses() {
+        try {
+            console.log('📅 [loadTodayClasses] Iniciando...');
+            
+            const classesContainer = this.container.querySelector('#available-classes');
+            
+            console.log('📦 Container check:', {
+                hasContainer: !!this.container,
+                hasClassesDiv: !!classesContainer,
+                containerHTML: this.container?.innerHTML?.substring(0, 200)
+            });
+            
+            if (!classesContainer) {
+                console.error('❌ Container #available-classes não encontrado!');
+                return;
+            }
+
+            // Get today's day of week (0 = Sunday, 1 = Monday, etc.)
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            
+            console.log('🔍 [Turmas] Contextos disponíveis:', {
+                organizationContext: !!window.organizationContext,
+                app: !!window.app,
+                OrganizationContext: !!window.OrganizationContext,
+                currentOrganizationId: !!window.currentOrganizationId
+            });
+            
+            // Get organization ID from multiple possible sources
+            let organizationId = null;
+            
+            // Try window.currentOrganizationId (CORRETO - usado pelo app.js)
+            if (window.currentOrganizationId) {
+                organizationId = window.currentOrganizationId;
+            }
+            
+            // Try window.organizationContext (secondary)
+            if (!organizationId && window.organizationContext) {
+                organizationId = window.organizationContext.getActiveOrganizationId?.() || 
+                                window.organizationContext.activeOrganizationId ||
+                                window.organizationContext.organizationId;
+            }
+            
+            // Try window.app (tertiary)
+            if (!organizationId && window.app) {
+                organizationId = window.app.organizationId;
+            }
+            
+            // Try window.OrganizationContext (fallback)
+            if (!organizationId && window.OrganizationContext) {
+                organizationId = window.OrganizationContext.getActiveOrganizationId?.() ||
+                                window.OrganizationContext.activeOrganizationId;
+            }
+
+            console.log('🔍 Organization ID:', organizationId);
+            
+            if (!organizationId) {
+                console.error('❌ No organization ID found. Debug info:', {
+                    organizationContext: window.organizationContext,
+                    app: window.app,
+                    OrganizationContext: window.OrganizationContext
+                });
+                classesContainer.innerHTML = '<p class="error-state">❌ Organização não encontrada</p>';
+                return;
+            }
+
+            console.log('📡 Fetching turmas for org:', organizationId, 'day:', dayOfWeek);
+
+            // Fetch turmas from API
+            const response = await fetch(`/api/turmas?organizationId=${organizationId}`);
+            const data = await response.json();
+
+            console.log('📦 API Response:', {
+                success: data.success,
+                totalTurmas: data.data?.length || 0,
+                firstTurma: data.data?.[0] ? {
+                    name: data.data[0].name,
+                    schedule: data.data[0].schedule,
+                    isActive: data.data[0].isActive
+                } : null
+            });
+
+            if (!data.success || !data.data || data.data.length === 0) {
+                console.warn('⚠️ No turmas found in API response');
+                classesContainer.innerHTML = '<p class="empty-state">📭 Nenhuma turma encontrada</p>';
+                return;
+            }
+
+            // Filter turmas for today
+            const todayClasses = data.data.filter(turma => {
+                // Check if turma is for today (schedule.daysOfWeek is an array)
+                if (!turma.isActive || !turma.schedule) return false;
+                
+                // Parse schedule if it's a string
+                const schedule = typeof turma.schedule === 'string' 
+                    ? JSON.parse(turma.schedule) 
+                    : turma.schedule;
+                
+                // Check if today's day is in the daysOfWeek array
+                return schedule.daysOfWeek && schedule.daysOfWeek.includes(dayOfWeek);
+            });
+
+            console.log('🗓️ Filtro aplicado:', {
+                hoje: dayOfWeek,
+                totalTurmas: data.data.length,
+                turmasHoje: todayClasses.length,
+                turmasHojeNomes: todayClasses.map(t => t.name)
+            });
+
+            if (todayClasses.length === 0) {
+                classesContainer.innerHTML = '<p class="empty-state">📭 Nenhuma turma disponível para hoje</p>';
+                return;
+            }
+
+            // Sort by start time
+            todayClasses.sort((a, b) => {
+                // Parse schedule to get time
+                const scheduleA = typeof a.schedule === 'string' ? JSON.parse(a.schedule) : a.schedule;
+                const scheduleB = typeof b.schedule === 'string' ? JSON.parse(b.schedule) : b.schedule;
+                
+                const timeA = this.parseTime(scheduleA.time);
+                const timeB = this.parseTime(scheduleB.time);
+                return timeA - timeB;
+            });
+
+            console.log('✅ Renderizando', todayClasses.length, 'turmas...');
+
+            // Render classes
+            this.renderClasses(todayClasses, classesContainer);
+
+        } catch (error) {
+            console.error('Error loading today classes:', error);
+            const classesContainer = this.container.querySelector('#available-classes');
+            if (classesContainer) {
+                classesContainer.innerHTML = '<p class="error-state">❌ Erro ao carregar turmas</p>';
+            }
+        }
+    }
+
+    /**
+     * Render classes with countdown
+     */
+    renderClasses(classes, container) {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        container.innerHTML = classes.map(turma => {
+            // Parse schedule to get time and duration
+            const schedule = typeof turma.schedule === 'string' 
+                ? JSON.parse(turma.schedule) 
+                : turma.schedule;
+            
+            const startTime = schedule.time; // e.g., "19:00"
+            const duration = schedule.duration || 60;
+            
+            // Calculate end time
+            const startMinutes = this.parseTime(startTime);
+            const endMinutes = startMinutes + duration;
+            const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
+            
+            const minutesUntilStart = startMinutes - currentMinutes;
+            
+            let statusClass = '';
+            let statusText = '';
+            let countdown = '';
+            let canCheckIn = false;
+
+            if (minutesUntilStart > 30) {
+                // More than 30 minutes before start
+                statusClass = 'status-upcoming';
+                statusText = '⏰ Em breve';
+                countdown = this.formatCountdown(minutesUntilStart);
+            } else if (minutesUntilStart >= -15) {
+                // 30 minutes before to 15 minutes after start
+                statusClass = 'status-available';
+                statusText = '✅ Check-in disponível';
+                canCheckIn = true;
+            } else {
+                // More than 15 minutes after start
+                statusClass = 'status-closed';
+                statusText = '🔒 Encerrado';
+            }
+
+            return `
+                <div class="class-card ${statusClass} ${canCheckIn ? 'can-checkin' : ''}">
+                    <div class="class-time">
+                        <span class="time-badge">${startTime} - ${endTime}</span>
+                        ${countdown ? `<span class="countdown">${countdown}</span>` : ''}
+                    </div>
+                    <div class="class-info">
+                        <h4>${turma.name || 'Turma sem nome'}</h4>
+                        <p class="class-instructor">👨‍🏫 ${turma.instructor?.firstName || 'Instrutor'} ${turma.instructor?.lastName || ''}</p>
+                        <p class="class-capacity">👥 ${turma.students?.length || 0}/${turma.maxStudents || 20} alunos</p>
+                    </div>
+                    <div class="class-status ${statusClass}">
+                        ${statusText}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Update countdown every minute
+        setTimeout(() => {
+            this.renderClasses(classes, container);
+        }, 60000); // 60 seconds
+    }
+
+    /**
+     * Parse time string to minutes (HH:MM -> minutes since midnight)
+     */
+    parseTime(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    /**
+     * Format countdown (minutes to HH:MM)
+     */
+    formatCountdown(minutes) {
+        if (minutes <= 0) return '';
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        if (hours > 0) {
+            return `Abre em ${hours}h ${mins}min`;
+        }
+        return `Abre em ${mins}min`;
+    }
+
+    /**
+     * Start time updater
+     */
+    startTimeUpdater() {
+        const updateTime = () => {
+            const timeElement = this.container.querySelector('#current-time');
+            if (timeElement) {
+                const now = new Date();
+                timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            }
+        };
+
+        updateTime();
+        setInterval(updateTime, 1000);
     }
 
     /**
@@ -126,6 +397,20 @@ class CameraView {
     setupEvents() {
         const searchInput = this.container.querySelector('#manual-search');
         const searchBtn = this.container.querySelector('.btn-search-tablet') || this.container.querySelector('.search-btn');
+
+        console.log('🔧 Setting up search events:', {
+            searchInput: !!searchInput,
+            searchBtn: !!searchBtn,
+            inputId: searchInput?.id,
+            inputValue: searchInput?.value
+        });
+
+        if (!searchInput) {
+            console.error('❌ Search input not found! Available inputs:', 
+                Array.from(this.container.querySelectorAll('input')).map(i => ({ id: i.id, class: i.className }))
+            );
+            return;
+        }
 
         let autocompleteTimeout = null;
 
@@ -153,6 +438,8 @@ class CameraView {
         searchInput?.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             
+            console.log('⌨️ Input event fired, query:', `"${query}"`, 'length:', query.length);
+            
             // Clear previous timeout
             if (autocompleteTimeout) {
                 clearTimeout(autocompleteTimeout);
@@ -160,6 +447,7 @@ class CameraView {
 
             // Hide autocomplete if query too short
             if (query.length < 2) {
+                console.log('⚠️ Query too short, hiding autocomplete');
                 this.hideAutocomplete();
                 return;
             }
@@ -232,7 +520,15 @@ class CameraView {
                 console.log('✅ Autocomplete dropdown created and attached');
             }
 
-            dropdown.innerHTML = results.slice(0, 5).map(student => `
+            // Ordenar alfabeticamente antes de exibir
+            const sortedResults = results.sort((a, b) => {
+                const nameA = (a.name || a.firstName + ' ' + a.lastName).toLowerCase();
+                const nameB = (b.name || b.firstName + ' ' + b.lastName).toLowerCase();
+                return nameA.localeCompare(nameB, 'pt-BR');
+            });
+
+            // Mostrar até 10 resultados (aumentado de 5 para 10)
+            dropdown.innerHTML = sortedResults.slice(0, 10).map(student => `
                 <div class="autocomplete-item" data-student-id="${student.id}" data-student-name="${student.name || student.firstName + ' ' + student.lastName}">
                     <span class="student-name">${student.name || student.firstName + ' ' + student.lastName}</span>
                     <span class="student-detail">${student.matricula || student.cpf || 'Sem matrícula'}</span>
@@ -240,7 +536,7 @@ class CameraView {
             `).join('');
 
             dropdown.style.display = 'block';
-            console.log('✅ Autocomplete dropdown visible with', results.length, 'results');
+            console.log('✅ Autocomplete dropdown visible with', sortedResults.length, 'total results, showing first 10');
 
             // Add click listeners to items - IR DIRETO PARA DASHBOARD
             dropdown.querySelectorAll('.autocomplete-item').forEach(item => {

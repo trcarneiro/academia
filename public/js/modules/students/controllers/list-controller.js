@@ -454,13 +454,26 @@ export class StudentsListController {
                 this.updateTable();
             }
         });
-        container.querySelector('#next-page-btn')?.addEventListener('click', () => {
-            const totalPages = this.getTotalPages();
-            if (this.currentPage < totalPages) {
-                this.currentPage++;
-                this.updateTable();
-            }
-        });
+        const nextBtn = container.querySelector('#next-page-btn');
+        if (nextBtn) {
+            console.log('✅ [Students] Next button found, attaching event');
+            nextBtn.addEventListener('click', () => {
+                console.log('🔵 [Students] Next button clicked!', {
+                    currentPage: this.currentPage,
+                    totalPages: this.getTotalPages()
+                });
+                const totalPages = this.getTotalPages();
+                if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    console.log('📄 [Students] Moving to page:', this.currentPage);
+                    this.updateTable();
+                } else {
+                    console.warn('⚠️ [Students] Already on last page');
+                }
+            });
+        } else {
+            console.error('❌ [Students] Next button NOT found!');
+        }
     }
 
     async loadData() {

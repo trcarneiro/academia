@@ -503,7 +503,7 @@
     
     async function fetchEvaluationsData() {
         try {
-            const response = await fetch('/api/evaluations');
+            const response = await window.fetchWithOrganization('/api/evaluations');
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {

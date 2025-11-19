@@ -8,6 +8,16 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   fastify.addHook('onRequest', async (request, _reply) => {
     logger.info(`Students route - ${request.method} ${request.url}`);
   });
+
+  const COURSE_SUMMARY_SELECT = {
+    id: true,
+    name: true,
+    description: true,
+    category: true,
+    level: true,
+    duration: true
+  } as const;
+
   
   // Get all students (scoped by organization)
   fastify.get('/', async (request: FastifyRequest<{ Querystring: { search?: string } }>, reply: FastifyReply) => {
@@ -41,9 +51,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: [
+          { user: { firstName: 'asc' } }, // ✅ Ordenar por nome
+          { user: { lastName: 'asc' } },
+          { createdAt: 'desc' }
+        ],
       });
 
       // Simplified data transformation
@@ -124,6 +136,85 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch student'
+      });
+    }
+  });
+
+  // Get student stats (for overview tab)
+  fastify.get('/:id/stats', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
+      // Get student with counts
+      const student = await prisma.student.findFirst({
+        where: { id, organizationId },
+        include: {
+          _count: {
+            select: {
+              attendances: true,
+              subscriptions: true,
+            }
+          },
+          attendances: {
+            orderBy: { createdAt: 'desc' },
+            take: 10
+          },
+          subscriptions: {
+            where: {
+              status: 'ACTIVE'
+            },
+            include: {
+              plan: true
+            }
+          }
+        }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      // Calculate stats
+      const totalAttendances = student._count.attendances;
+      const activeSubscriptions = student.subscriptions.length;
+      const lastAttendance = student.attendances[0]?.createdAt || null;
+      
+      // Calculate attendance rate (simple version - last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const recentAttendances = await prisma.attendance.count({
+        where: {
+          studentId: id,
+          createdAt: { gte: thirtyDaysAgo }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: {
+          totalAttendances,
+          activeSubscriptions,
+          lastAttendance,
+          recentAttendances,
+          attendanceRate: recentAttendances > 0 ? Math.round((recentAttendances / 30) * 100) : 0,
+          level: student.globalLevel || 1,
+          xp: student.totalXP || 0,
+          currentStreak: student.currentStreak || 0,
+          longestStreak: student.longestStreak || 0
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching student stats:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch student stats'
       });
     }
   });
@@ -525,104 +616,6 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Create student enrollment
-  fastify.post('/:id/enrollments', async (request: FastifyRequest<{ 
-    Params: { id: string },
-    Body: { courseId: string, status?: string, enrolledAt?: string, currentLevel?: string }
-  }>, reply: FastifyReply) => {
-    try {
-      const { id: studentId } = request.params;
-      const { courseId, status = 'ACTIVE', enrolledAt } = request.body;
-
-      // Verify student exists
-      const student = await prisma.student.findUnique({
-        where: { id: studentId }
-      });
-
-      if (!student) {
-        return reply.code(404).send({
-          success: false,
-          message: 'Student not found'
-        });
-      }
-
-      // Verify course exists
-      const course = await prisma.course.findUnique({
-        where: { id: courseId }
-      });
-
-      if (!course) {
-        return reply.code(404).send({
-          success: false,
-          message: 'Course not found'
-        });
-      }
-
-      // Check if student is already enrolled
-      const existingEnrollment = await prisma.courseEnrollment.findUnique({
-        where: {
-          studentId_courseId: {
-            studentId,
-            courseId
-          }
-        }
-      });
-
-      if (existingEnrollment) {
-        return reply.code(409).send({
-          success: false,
-          message: 'Student is already enrolled in this course'
-        });
-      }
-
-      // Calculate expected end date based on course duration
-      const enrollmentDate = enrolledAt ? new Date(enrolledAt) : new Date();
-      const expectedEndDate = new Date(enrollmentDate);
-      expectedEndDate.setDate(expectedEndDate.getDate() + ((course.duration || 12) * 7)); // weeks to days
-
-      // Create enrollment
-      const enrollment = await prisma.courseEnrollment.create({
-        data: {
-          studentId,
-          courseId,
-          enrolledAt: enrollmentDate,
-          expectedEndDate,
-          status: status as any,
-          category: student.category || 'ADULT',
-          gender: 'OTHER', // Default gender, can be updated based on student profile
-          currentLevel: 1,
-          lessonsCompleted: 0,
-          attendanceRate: 0,
-          currentXP: 0
-        },
-        include: {
-          course: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              category: true,
-              level: true,
-              duration: true
-            }
-          }
-        }
-      });
-
-      return reply.send({
-        success: true,
-        data: enrollment
-      });
-
-    } catch (error) {
-      logger.error('Error creating student enrollment:', error);
-      return reply.code(500).send({
-        success: false,
-        message: 'Failed to create student enrollment'
-      });
-    }
-  });
-
   // Delete student enrollment
   fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{ 
     Params: { id: string, enrollmentId: string }
@@ -845,93 +838,8 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Get student course progress
-  fastify.get('/:id/course-progress', async (
-    request: FastifyRequest<{ Params: { id: string } }>,
-    reply: FastifyReply
-  ) => {
-    try {
-      const { id } = request.params;
-      
-      // Get student's active subscriptions with courses
-      const subscriptions = await prisma.studentSubscription.findMany({
-        where: { 
-          studentId: id,
-          status: 'ACTIVE'
-        },
-        include: {
-          plan: {
-            include: {
-              planCourses: {
-                include: {
-                  course: {
-                    select: {
-                      id: true,
-                      name: true,
-                      description: true,
-                      level: true,
-                      duration: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // Get student's attendances to calculate progress
-      const attendances = await prisma.attendance.findMany({
-        where: { studentId: id },
-        include: {
-          class: {
-            select: {
-              courseId: true,
-              title: true,
-              date: true
-            }
-          }
-        }
-      });
-
-      // Calculate progress for each course
-      const courseProgress = subscriptions.flatMap(sub => 
-        sub.plan.planCourses.map(planCourse => {
-          const course = planCourse.course;
-          const courseAttendances = attendances.filter(
-            att => att.class?.courseId === course.id
-          );
-          
-          const totalClasses = course.duration || 0;
-          const attendedClasses = courseAttendances.length;
-          const progressPercentage = totalClasses > 0 ? 
-            Math.round((attendedClasses / totalClasses) * 100) : 0;
-
-          return {
-            courseId: course.id,
-            courseName: course.name,
-            courseLevel: course.level,
-            totalClasses,
-            attendedClasses,
-            progressPercentage,
-            lastAttendance: courseAttendances[courseAttendances.length - 1]?.class?.date || null
-          };
-        })
-      );
-
-      return reply.send({
-        success: true,
-        data: courseProgress,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      logger.error('Error fetching student course progress:', error);
-      return reply.code(500).send({
-        success: false,
-        message: 'Failed to fetch student course progress'
-      });
-    }
-  });
+  // ✅ REMOVIDO: Rota movida para src/routes/course-progress.ts
+  // GET /:id/course-progress agora em arquivo dedicado
 
   // Bulk import students
   fastify.post('/bulk-import', async (request: FastifyRequest<{
@@ -1375,7 +1283,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       const responsibles = await prisma.financialResponsible.findMany({
         where: { organizationId },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { name: 'asc' } // ✅ Ordenar alfabeticamente
       });
 
       return reply.send({
@@ -1708,6 +1616,95 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch consolidated charges'
+      });
+    }
+  });
+
+  // Check for duplicate students (for import cleanup)
+  fastify.get('/check-duplicates', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return; // reply already sent
+
+      // Find students with duplicate emails or CPFs
+      const students = await prisma.student.findMany({
+        where: { organizationId },
+        include: {
+          user: {
+            select: {
+              email: true,
+              cpf: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        }
+      });
+
+      // Group by email and CPF
+      const emailMap = new Map<string, any[]>();
+      const cpfMap = new Map<string, any[]>();
+
+      students.forEach(student => {
+        const email = student.user.email.toLowerCase();
+        const cpf = student.user.cpf;
+
+        if (email && !email.includes('@asaas-import.temp')) {
+          if (!emailMap.has(email)) {
+            emailMap.set(email, []);
+          }
+          emailMap.get(email)!.push(student);
+        }
+
+        if (cpf) {
+          if (!cpfMap.has(cpf)) {
+            cpfMap.set(cpf, []);
+          }
+          cpfMap.get(cpf)!.push(student);
+        }
+      });
+
+      // Find duplicates
+      const emailDuplicates = Array.from(emailMap.entries())
+        .filter(([_, students]) => students.length > 1)
+        .map(([email, students]) => ({
+          email,
+          count: students.length,
+          students: students.map(s => ({
+            id: s.id,
+            name: `${s.user.firstName} ${s.user.lastName}`,
+            createdAt: s.createdAt
+          }))
+        }));
+
+      const cpfDuplicates = Array.from(cpfMap.entries())
+        .filter(([_, students]) => students.length > 1)
+        .map(([cpf, students]) => ({
+          cpf,
+          count: students.length,
+          students: students.map(s => ({
+            id: s.id,
+            name: `${s.user.firstName} ${s.user.lastName}`,
+            createdAt: s.createdAt
+          }))
+        }));
+
+      return reply.send({
+        success: true,
+        data: {
+          emailDuplicates,
+          cpfDuplicates,
+          totalEmailDuplicates: emailDuplicates.length,
+          totalCpfDuplicates: cpfDuplicates.length
+        },
+        message: 'Duplicate check completed'
+      });
+    } catch (error) {
+      logger.error('Error checking duplicates:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to check duplicates'
       });
     }
   });

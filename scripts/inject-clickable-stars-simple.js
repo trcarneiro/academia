@@ -1,0 +1,100 @@
+const fs = require('fs');
+const path = require('path');
+
+const filePath = path.join(__dirname, '..', 'public', 'js', 'modules', 'graduation', 'index.js');
+
+console.log('⭐ Injetando funções de estrelas clicáveis...');
+
+let content = fs.readFileSync(filePath, 'utf-8');
+
+// Check if functions already exist
+if (content.includes('renderClickableStars(activityId')) {
+    console.log('⚠️  Funções já existem no arquivo!');
+    process.exit(0);
+}
+
+// Find location: after renderStarsInline
+const marker = `    renderStarsInline(rating) {
+        if (rating === 0) return '<span class="text-muted">Não avaliado</span>';
+        return '⭐'.repeat(rating);
+    },`;
+
+if (!content.includes(marker)) {
+    console.error('❌ Não encontrei o marcador renderStarsInline!');
+    process.exit(1);
+}
+
+// The two functions to inject
+const newFunctions = `
+    /**
+     * Render clickable stars for inline editing
+     */
+    renderClickableStars(activityId, currentRating) {
+        const stars = [];
+        for (let i = 1; i <= 3; i++) {
+            const filled = i <= currentRating;
+            stars.push(\`<span class="star-clickable" 
+                             onclick="window.graduationModule.updateActivityRatingInline('\${activityId}', \${i}); event.stopPropagation();"
+                             title="Avaliar: \${i} \${i === 1 ? 'estrela' : 'estrelas'}"
+                             style="cursor: pointer; font-size: 1.2rem; margin-right: 2px;">
+                        \${filled ? '⭐' : '☆'}
+                        </span>\`);
+        }
+        return stars.join('');
+    },
+
+    /**
+     * Update activity rating inline (without opening modal)
+     */
+    async updateActivityRatingInline(activityId, rating) {
+        try {
+            const student = this.selectedStudentData?.student;
+            if (!student) {
+                console.error('No student selected');
+                return;
+            }
+
+            // Call API to update rating
+            const response = await this.moduleAPI.request(\`/api/graduation/student/\${student.id}/activity/\${activityId}\`, {
+                method: 'PUT',
+                body: JSON.stringify({ 
+                    qualitativeRating: rating 
+                })
+            });
+
+            if (response.success) {
+                // Update local data
+                const activity = this.selectedStudentData.activities.find(a => a.id === activityId);
+                if (activity) {
+                    activity.qualitativeRating = rating;
+                }
+
+                // Re-render table
+                const tableBody = document.getElementById('activitiesTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = this.renderActivitiesRows(this.selectedStudentData.activities);
+                }
+
+                // Show success toast
+                this.showToast(\`✅ Avaliação salva: \${rating} \${rating === 1 ? 'estrela' : 'estrelas'}\`, 'success');
+            } else {
+                this.showToast('❌ Erro ao salvar avaliação', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating rating inline:', error);
+            this.showToast('❌ Erro ao salvar avaliação', 'error');
+        }
+    },`;
+
+// Inject after renderStarsInline
+content = content.replace(marker, marker + newFunctions);
+
+// Write back
+fs.writeFileSync(filePath, content, 'utf-8');
+
+console.log('✅ Funções injetadas com sucesso!');
+console.log('📝 Funções adicionadas:');
+console.log('   - renderClickableStars(activityId, currentRating)');
+console.log('   - updateActivityRatingInline(activityId, rating)');
+console.log('');
+console.log('🔄 Faça hard refresh no navegador (Ctrl+Shift+R)');

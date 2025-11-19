@@ -503,7 +503,7 @@
     
     async function fetchProgressData() {
         try {
-            const response = await fetch('/api/progress');
+            const response = await window.fetchWithOrganization('/api/progress');
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {

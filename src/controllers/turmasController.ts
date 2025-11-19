@@ -392,9 +392,24 @@ export class TurmasController {
       const { id } = request.params as { id: string };
       const { courseId } = request.body as { courseId: string };
 
+      console.log(`[TurmasController] addCourseToTurma - turmaId: ${id}, courseId: ${courseId}`);
+      
       const result = await this.turmasService.addCourseToTurma(id, courseId);
       return ResponseHelper.created(reply, result);
     } catch (error) {
+      console.error('[TurmasController] Erro ao adicionar curso:', error);
+      
+      // Retornar mensagem específica se for erro conhecido
+      if (error instanceof Error) {
+        if (error.message === 'Curso já está associado à turma') {
+          return ResponseHelper.error(reply, error.message, 409); // Conflict
+        }
+        if (error.message === 'Turma não encontrada' || error.message === 'Curso não encontrado') {
+          return ResponseHelper.error(reply, error.message, 404);
+        }
+        return ResponseHelper.error(reply, error.message, 500);
+      }
+      
       return ResponseHelper.error(reply, 'Erro ao adicionar curso à turma', 500);
     }
   }

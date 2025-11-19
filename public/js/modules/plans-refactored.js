@@ -181,7 +181,7 @@
                 throw new Error('API Client not available');
             }
             
-            const response = await fetch('/api/billing-plans');
+            const response = await window.fetchWithOrganization('/api/billing-plans');
             const result = await response.json();
             
             if (result.success && result.data) {

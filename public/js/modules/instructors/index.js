@@ -1,19 +1,34 @@
 /**
  * Instructors Module - SIMPLIFIED VERSION
+ * Version: 2.1.1 (2025-11-13T04:21 - POST organizationId Debug)
  * Replaces complex multi-file architecture with single, maintainable file
  * Maintains exact same functionality and appearance as original
+ * 
+ * CHANGELOG v2.1.1:
+ * - Added debug logging for organizationId in POST requests
+ * - Verified organizationId is being added to data object
+ * 
+ * CHANGELOG v2.1.0:
+ * - Added organizationId context to loadData() GET request
+ * - Added organizationId context to handleFormSubmit() POST/PUT body
+ * - Fixed 400 Bad Request "Organization context required" error
  */
 
 // Prevent multiple declarations
 if (typeof window.InstructorsModule !== 'undefined') {
-    console.log('👨‍🏫 Instructors Module already loaded, skipping...');
+    console.log('👨‍🏫 Instructors Module already loaded (v2.1.1), skipping...');
 } else {
+
+console.log('👨‍🏫 Instructors Module v2.1.1 - Starting (POST Debug)...');
 
 const InstructorsModule = {
     // Module properties
     container: null,
     instructors: [],
     initialized: false,
+    availableCourses: [],
+    instructorCourses: [],
+    currentInstructorId: null,
 
     /**
      * Initialize the module - SIMPLIFIED
@@ -21,11 +36,11 @@ const InstructorsModule = {
     async init() {
         try {
             if (this.initialized) {
-                console.log('👨‍🏫 Instructors Module already initialized, skipping...');
+                console.log('👨‍🏫 Instructors Module v2.1.1 already initialized, skipping...');
                 return this;
             }
             
-            console.log('👨‍🏫 Instructors Module - Starting (Simplified)...');
+            console.log('👨‍🏫 Instructors Module v2.1.1 - Initializing (POST Debug)...');
             
             if (!this.container) {
                 throw new Error('Container not set before initialization');
@@ -64,7 +79,15 @@ const InstructorsModule = {
         try {
             console.log('📡 Loading instructors data...');
             
-            const response = await fetch('/api/instructors');
+            // Get organization context
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            if (!organizationId) {
+                throw new Error('Organization context required');
+            }
+            
+            const response = await fetch(`/api/instructors?organizationId=${organizationId}`);
             const data = await response.json();
             
             if (data.success) {
@@ -243,11 +266,16 @@ const InstructorsModule = {
     },
 
     /**
-     * Render single instructor row - EXACT SAME AS ORIGINAL
+     * Render single instructor row - ENHANCED WITH PROFESSIONAL FIELDS
      */
     renderInstructorRow(instructor) {
         const statusClass = instructor.isActive ? 'status-active' : 'status-inactive';
         const statusText = instructor.isActive ? 'Ativo' : 'Inativo';
+        
+        // Professional badges
+        const specializations = instructor.specializations || [];
+        const martialArts = instructor.martialArts || [];
+        const hourlyRate = instructor.hourlyRate ? `R$ ${parseFloat(instructor.hourlyRate).toFixed(2)}/h` : null;
 
         return `
             <tr class="data-row-premium" data-id="${instructor.id}">
@@ -259,6 +287,25 @@ const InstructorsModule = {
                         <div class="user-details-premium">
                             <span class="user-name-premium">${instructor.name || 'Nome não informado'}</span>
                             <span class="user-email-premium">${instructor.email || 'Email não informado'}</span>
+                            
+                            <!-- Professional Badges -->
+                            <div class="instructor-badges-container">
+                                ${specializations.length > 0 ? `
+                                    ${specializations.slice(0, 2).map(spec => 
+                                        `<span class="badge badge-specialization">${spec}</span>`
+                                    ).join('')}
+                                    ${specializations.length > 2 ? `<span class="badge badge-count">+${specializations.length - 2}</span>` : ''}
+                                ` : ''}
+                                
+                                ${martialArts.length > 0 ? `
+                                    ${martialArts.slice(0, 2).map(art => 
+                                        `<span class="badge badge-martial-art">🥋 ${art}</span>`
+                                    ).join('')}
+                                    ${martialArts.length > 2 ? `<span class="badge badge-count">+${martialArts.length - 2}</span>` : ''}
+                                ` : ''}
+                                
+                                ${hourlyRate ? `<span class="badge badge-rate">💰 ${hourlyRate}</span>` : ''}
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -453,8 +500,20 @@ const InstructorsModule = {
         // Get instructor data if editing
         let instructorData = null;
         if (isEdit) {
+            // Store current instructor ID for course management
+            this.currentInstructorId = instructorId;
+            
             try {
-                const response = await fetch(`/api/instructors/${instructorId}`);
+                // Get organization context
+                const organizationId = window.currentOrganizationId || 
+                                     localStorage.getItem('currentOrganizationId');
+                
+                if (!organizationId) {
+                    this.showError('Organization context required');
+                    return;
+                }
+                
+                const response = await fetch(`/api/instructors/${instructorId}?organizationId=${organizationId}`);
                 if (response.ok) {
                     const result = await response.json();
                     instructorData = result.data;
@@ -477,6 +536,10 @@ const InstructorsModule = {
                 this.showError('Erro ao carregar dados do instrutor');
                 return;
             }
+        } else {
+            // Clear instructor ID for new instructor
+            this.currentInstructorId = null;
+            this.instructorCourses = [];
         }
 
         // Render editor form
@@ -536,6 +599,87 @@ const InstructorsModule = {
                         <textarea id="bio" name="bio" rows="4">${instructorData?.bio || ''}</textarea>
                     </div>
 
+                    <!-- Professional Fields Section -->
+                    <div class="form-section-header">
+                        <h3>📋 Informações Profissionais</h3>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="specializations">Especializações</label>
+                            <input type="text" id="specializations" name="specializations" 
+                                   placeholder="Ex: Defesa Pessoal, Combate, Tático"
+                                   value="${instructorData?.specializations?.join(', ') || ''}">
+                            <small class="form-help">Separe múltiplas especializações por vírgula</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="certifications">Certificações</label>
+                            <input type="text" id="certifications" name="certifications" 
+                                   placeholder="Ex: Instrutor Nível 3, First Aid"
+                                   value="${instructorData?.certifications?.join(', ') || ''}">
+                            <small class="form-help">Separe múltiplas certificações por vírgula</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="martialArts">Artes Marciais</label>
+                            <input type="text" id="martialArts" name="martialArts" 
+                                   placeholder="Ex: Krav Maga, Muay Thai, BJJ"
+                                   value="${instructorData?.martialArts?.join(', ') || ''}">
+                            <small class="form-help">Separe múltiplas artes marciais por vírgula</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="experience">Tempo de Experiência</label>
+                            <input type="text" id="experience" name="experience" 
+                                   placeholder="Ex: 10 anos ensinando Krav Maga"
+                                   value="${instructorData?.experience || ''}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxStudentsPerClass">Máximo de Alunos por Aula</label>
+                            <input type="number" id="maxStudentsPerClass" name="maxStudentsPerClass" 
+                                   min="1" max="50" value="${instructorData?.maxStudentsPerClass || 20}">
+                            <small class="form-help">Padrão: 20 alunos</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="hourlyRate">Valor por Hora (R$)</label>
+                            <input type="number" id="hourlyRate" name="hourlyRate" 
+                                   step="0.01" min="0" placeholder="150.00"
+                                   value="${instructorData?.hourlyRate || ''}">
+                            <small class="form-help">Valor para aulas particulares</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preferredUnits">Unidades Preferidas</label>
+                        <input type="text" id="preferredUnits" name="preferredUnits" 
+                               placeholder="Ex: Unidade Centro, Unidade Zona Sul"
+                               value="${instructorData?.preferredUnits?.join(', ') || ''}">
+                        <small class="form-help">Separe múltiplas unidades por vírgula</small>
+                    </div>
+
+                    <!-- Courses Section -->
+                    <div class="form-section-header">
+                        <h3>🎓 Cursos Certificados</h3>
+                    </div>
+
+                    <div id="instructor-courses-section" class="courses-section">
+                        <div class="courses-selector">
+                            <select id="course-select" class="form-select">
+                                <option value="">Selecione um curso...</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="window.instructorsModule.addCourse()">
+                                <i class="fas fa-plus"></i> Adicionar Curso
+                            </button>
+                        </div>
+                        <div id="selected-courses-list" class="selected-courses-list">
+                            <!-- Courses will be rendered here -->
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="status">Status</label>
                         <select id="status" name="status">
@@ -563,6 +707,17 @@ const InstructorsModule = {
 
         // Setup form events
         this.setupEditorEvents(instructorId);
+        
+        // Load courses data
+        await this.loadAvailableCourses();
+        
+        // If editing, load instructor's courses
+        if (instructorId) {
+            await this.loadInstructorCourses(instructorId);
+        } else {
+            // For new instructor, show empty state
+            this.renderSelectedCourses();
+        }
     },
 
     /**
@@ -604,6 +759,21 @@ const InstructorsModule = {
         const formData = new FormData(form);
         const isEdit = instructorId !== null;
 
+        // Get organization context
+        const organizationId = window.currentOrganizationId || 
+                             localStorage.getItem('currentOrganizationId');
+        
+        console.log('🔍 [DEBUG] organizationId retrieval:', {
+            fromWindow: window.currentOrganizationId,
+            fromLocalStorage: localStorage.getItem('currentOrganizationId'),
+            final: organizationId
+        });
+        
+        if (!organizationId) {
+            this.showError('Organization context required');
+            return;
+        }
+
         // Prepare data in correct API format
         const data = {
             name: `${formData.get('firstName')} ${formData.get('lastName')}`.trim(),
@@ -612,13 +782,26 @@ const InstructorsModule = {
             document: formData.get('cpf'), // API expects 'document', not 'cpf'
             birthDate: formData.get('birthDate') || null,
             bio: formData.get('bio'),
-            isActive: formData.get('status') === 'ACTIVE' // Convert string to boolean
+            isActive: formData.get('status') === 'ACTIVE', // Convert string to boolean
+            organizationId: organizationId, // Add organization context
+            
+            // Professional fields (arrays from comma-separated strings)
+            specializations: this.parseArrayField(formData.get('specializations')),
+            certifications: this.parseArrayField(formData.get('certifications')),
+            martialArts: this.parseArrayField(formData.get('martialArts')),
+            preferredUnits: this.parseArrayField(formData.get('preferredUnits')),
+            
+            // Professional fields (simple values)
+            experience: formData.get('experience') || null,
+            maxStudentsPerClass: parseInt(formData.get('maxStudentsPerClass')) || 20,
+            hourlyRate: formData.get('hourlyRate') ? parseFloat(formData.get('hourlyRate')) : null
         };
 
         console.log('=== FRONTEND DEBUG ===');
         console.log('Instructor ID:', instructorId);
         console.log('Is Edit:', isEdit);
         console.log('Form Data:', data);
+        console.log('🔍 [DEBUG] organizationId in data object:', data.organizationId);
 
         try {
             const url = isEdit ? `/api/instructors/${instructorId}` : '/api/instructors';
@@ -638,9 +821,42 @@ const InstructorsModule = {
             console.log('Response Status:', response.status);
 
             if (response.ok) {
-                this.showSuccess(isEdit ? 'Instrutor atualizado com sucesso!' : 'Instrutor criado com sucesso!');
-                await this.loadData();
-                this.showList();
+                const result = await response.json();
+                const message = isEdit ? 'Instrutor atualizado com sucesso!' : 'Instrutor criado com sucesso!';
+                
+                this.showSuccess(message);
+                
+                // If creating new instructor, stay on form to allow course assignment
+                if (!isEdit && result.data?.id) {
+                    this.currentInstructorId = result.data.id;
+                    
+                    // Update form to show it's now in edit mode
+                    const submitBtn = document.querySelector('#instructor-form button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Atualizar Instrutor';
+                    }
+                    
+                    // Add delete button
+                    const formActions = document.querySelector('.form-actions');
+                    if (formActions && !formActions.querySelector('.btn-danger')) {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.className = 'btn btn-danger';
+                        deleteBtn.onclick = () => this.confirmDelete(result.data.id);
+                        deleteBtn.innerHTML = '🗑️ Excluir';
+                        formActions.appendChild(deleteBtn);
+                    }
+                    
+                    // Load available courses so user can assign
+                    await this.loadAvailableCourses();
+                    
+                    // Show success message with instruction
+                    this.showSuccess('Instrutor criado! Agora você pode adicionar cursos certificados.');
+                } else {
+                    // For updates, return to list
+                    await this.loadData();
+                    this.showList();
+                }
             } else {
                 const error = await response.json();
                 console.log('Error Response:', error);
@@ -669,6 +885,17 @@ const InstructorsModule = {
     showList() {
         this.render();
         this.setupEvents();
+    },
+
+    /**
+     * Parse comma-separated string into array
+     */
+    parseArrayField(value) {
+        if (!value || typeof value !== 'string') return [];
+        return value
+            .split(',')
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
     },
 
     /**
@@ -725,6 +952,203 @@ const InstructorsModule = {
 
     confirmDelete(id) {
         return this.handleDelete(id);
+    },
+
+    /**
+     * Load available courses for selection
+     */
+    async loadAvailableCourses() {
+        try {
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            if (!organizationId) {
+                console.error('Organization context required');
+                return;
+            }
+            
+            const response = await fetch(`/api/courses?organizationId=${organizationId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.availableCourses = data.data || [];
+                this.renderCourseSelector();
+            }
+        } catch (error) {
+            console.error('Error loading courses:', error);
+        }
+    },
+
+    /**
+     * Load instructor's assigned courses
+     */
+    async loadInstructorCourses(instructorId) {
+        if (!instructorId) return;
+        
+        try {
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            if (!organizationId) {
+                console.error('Organization context required');
+                return;
+            }
+            
+            const response = await fetch(`/api/instructors/${instructorId}/courses?organizationId=${organizationId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                this.instructorCourses = data.data || [];
+                this.renderSelectedCourses();
+            }
+        } catch (error) {
+            console.error('Error loading instructor courses:', error);
+            this.instructorCourses = [];
+            this.renderSelectedCourses();
+        }
+    },
+
+    /**
+     * Render course selector dropdown
+     */
+    renderCourseSelector() {
+        const select = document.getElementById('course-select');
+        if (!select) return;
+        
+        // Filter out already assigned courses
+        const assignedCourseIds = this.instructorCourses.map(ic => ic.courseId);
+        const availableForSelection = this.availableCourses.filter(
+            course => !assignedCourseIds.includes(course.id) && course.isActive
+        );
+        
+        select.innerHTML = '<option value="">Selecione um curso...</option>' +
+            availableForSelection.map(course => 
+                `<option value="${course.id}">${course.name} (${course.level})</option>`
+            ).join('');
+    },
+
+    /**
+     * Render selected courses list
+     */
+    renderSelectedCourses() {
+        const container = document.getElementById('selected-courses-list');
+        if (!container) return;
+        
+        if (this.instructorCourses.length === 0) {
+            container.innerHTML = `
+                <div class="empty-courses-state">
+                    <p>Nenhum curso atribuído ainda</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = this.instructorCourses.map(ic => {
+            const course = ic.course;
+            const isLead = ic.isLead ? '<span class="badge-lead">⭐ Principal</span>' : '';
+            
+            return `
+                <div class="course-card" data-course-id="${course.id}">
+                    <div class="course-card-header">
+                        <div class="course-info">
+                            <h4>${course.name}</h4>
+                            <span class="course-level">${course.level}</span>
+                            ${isLead}
+                        </div>
+                        <button type="button" class="btn-icon delete-btn" 
+                                onclick="window.instructorsModule.removeCourse('${course.id}')" 
+                                title="Remover curso">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    ${course.description ? `<p class="course-description">${course.description}</p>` : ''}
+                    <div class="course-meta">
+                        <small>Certificado em: ${new Date(ic.certifiedAt).toLocaleDateString('pt-BR')}</small>
+                        ${ic.expiresAt ? `<small>Expira em: ${new Date(ic.expiresAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Add course to instructor
+     */
+    async addCourse() {
+        const select = document.getElementById('course-select');
+        const courseId = select?.value;
+        
+        if (!courseId) {
+            alert('Por favor, selecione um curso');
+            return;
+        }
+        
+        if (!this.currentInstructorId) {
+            alert('Salve o instrutor primeiro antes de adicionar cursos');
+            return;
+        }
+        
+        try {
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            const response = await fetch(`/api/instructors/${this.currentInstructorId}/courses?organizationId=${organizationId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    courseId,
+                    isLead: false,
+                    certifiedAt: new Date().toISOString()
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showSuccess('Curso adicionado com sucesso!');
+                await this.loadInstructorCourses(this.currentInstructorId);
+                this.renderCourseSelector(); // Update dropdown
+            } else {
+                this.showError(data.error || 'Erro ao adicionar curso');
+            }
+        } catch (error) {
+            console.error('Error adding course:', error);
+            this.showError('Erro ao adicionar curso');
+        }
+    },
+
+    /**
+     * Remove course from instructor
+     */
+    async removeCourse(courseId) {
+        if (!confirm('Tem certeza que deseja remover este curso?')) {
+            return;
+        }
+        
+        if (!this.currentInstructorId) return;
+        
+        try {
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            const response = await fetch(
+                `/api/instructors/${this.currentInstructorId}/courses/${courseId}?organizationId=${organizationId}`,
+                { method: 'DELETE' }
+            );
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showSuccess('Curso removido com sucesso!');
+                await this.loadInstructorCourses(this.currentInstructorId);
+                this.renderCourseSelector(); // Update dropdown
+            } else {
+                this.showError(data.error || 'Erro ao remover curso');
+            }
+        } catch (error) {
+            console.error('Error removing course:', error);
+            this.showError('Erro ao remover curso');
+        }
     }
 };
 

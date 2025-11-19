@@ -391,13 +391,13 @@ export class FrequencyStatsService {
             orderBy: { createdAt: 'desc' },
             take: 1,
             include: {
-              billingPlan: { select: { name: true } },
+              plan: { select: { name: true } },
             },
           },
           attendances: {
             orderBy: { createdAt: 'desc' },
             take: 1,
-            select: { createdAt: true, present: true },
+            select: { createdAt: true, status: true },
           },
         },
       });
@@ -405,12 +405,12 @@ export class FrequencyStatsService {
       // Filtrar apenas quem não tem attendance recente
       const result = students
         .filter((student) => {
-          const lastAttendance = student.attendances.find(a => a.present);
+          const lastAttendance = student.attendances.find(a => a.status === 'PRESENT');
           const lastAttendanceDate = lastAttendance?.createdAt;
           return !lastAttendanceDate || dayjs(lastAttendanceDate).isBefore(cutoffDate);
         })
         .map((student) => {
-          const lastAttendance = student.attendances.find(a => a.present);
+          const lastAttendance = student.attendances.find(a => a.status === 'PRESENT');
           const lastAttendanceDate = lastAttendance?.createdAt || null;
           const daysAgo = lastAttendanceDate
             ? dayjs().diff(dayjs(lastAttendanceDate), 'day')
@@ -424,7 +424,7 @@ export class FrequencyStatsService {
             name: `${firstName} ${lastName}`.trim(),
             avatar: student.user.avatarUrl || undefined,
             planName:
-              student.subscriptions[0]?.billingPlan?.name || 'Plano Ativo',
+              student.subscriptions[0]?.plan?.name || 'Plano Ativo',
             planExpiresAt: student.subscriptions[0]?.endDate || new Date(),
             lastAttendance: lastAttendanceDate,
             daysAgo,

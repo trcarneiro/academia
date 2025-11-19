@@ -74,7 +74,7 @@ async function seedCurriculumAgent() {
     // Criar novo agente
     const newAgent = await prisma.aIAgent.create({
       data: {
-        organizationId: organization.id,
+        organization: { connect: { id: organization.id } },
         name: 'Professor Virtual de Artes Marciais',
         description: 'Educador físico especialista em preparação física e artes marciais (Krav Maga e Jiu Jitsu). Cria e avalia planos de curso e planos de aula baseados em dados reais da academia.',
         specialization: 'curriculum',

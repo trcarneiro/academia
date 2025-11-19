@@ -1,0 +1,800 @@
+[
+  {
+    "id": "postura-guarda-de-boxe",
+    "type": "TECHNIQUE",
+    "title": "Guarda de Boxe",
+    "description": "Postura base com pés afastados, joelhos levemente flexionados, mãos em guarda alta, queixo protegido.",
+    "equipment": ["Luvas de boxe", "Bandagens"],
+    "safety": "Joelhos flexionados para equilíbrio. Instrutor corrige alinhamento.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Pausas curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 50,
+        "Adulto Feminino": 40
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "postura-posicao-ortodoxa",
+    "type": "TECHNIQUE",
+    "title": "Posição Ortodoxa",
+    "description": "Postura para destros: pé esquerdo à frente, direito atrás, guarda alta.",
+    "equipment": ["Luvas de boxe", "Bandagens"],
+    "safety": "Evitar inclinação do tronco. Instrutor verifica alinhamento.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["postura-guarda-de-boxe"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 50,
+        "Adulto Feminino": 40
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "postura-posicao-canhota",
+    "type": "TECHNIQUE",
+    "title": "Posição Canhota",
+    "description": "Postura para canhotos: pé direito à frente, esquerdo atrás, guarda alta.",
+    "equipment": ["Luvas de boxe", "Bandagens"],
+    "safety": "Peso equilibrado para evitar quedas. Instrutor corrige postura.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["postura-guarda-de-boxe"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 50,
+        "Adulto Feminino": 40
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "postura-shadow-boxing-passo-planos-saltos",
+    "type": "TECHNIQUE",
+    "title": "Shadow Boxing (Passo, Planos, Saltos)",
+    "description": "Treino livre com deslocamentos laterais, frontais e saltos, mantendo guarda de boxe.",
+    "equipment": ["Luvas de boxe", "Bandagens"],
+    "safety": "Evitar saltos altos em iniciantes. Tatame macio. Instrutor supervisiona ritmo.",
+    "adaptations": ["TEA: Fitas para área.", "TDAH: 1 min por série."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 3,
+        "Adulto Feminino": 2
+      },
+      "duration": "3 minutos",
+      "precision": "75%"
+    }
+  },
+  {
+    "id": "soco-jab",
+    "type": "TECHNIQUE",
+    "title": "Jab",
+    "description": "Soco reto com mão dianteira (esquerda para ortodoxos, direita para canhotos), partindo da guarda.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Guarda alta, punho firme para evitar lesões. Treino em pares a 70% de força.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas (10 reps)."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["postura-guarda-de-boxe"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 50,
+        "Adulto Feminino": 40
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "soco-direto",
+    "type": "TECHNIQUE",
+    "title": "Direto",
+    "description": "Soco reto com mão traseira, usando rotação do quadril e ombro para potência.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Proteger queixo com mão oposta. Evitar hiperextensão do cotovelo.",
+    "adaptations": ["TEA: Fitas para pés.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["soco-jab"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 50,
+        "Adulto Feminino": 40
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "soco-gancho-esquerdo-direito",
+    "type": "TECHNIQUE",
+    "title": "Gancho Esquerdo/Direito",
+    "description": "Soco curvo com rotação do tronco, visando lateral da cabeça ou corpo.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Punho firme, evitar rotação excessiva. Treino em pares a 70% de força.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["soco-jab"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "soco-uppercut-esquerdo-direito",
+    "type": "TECHNIQUE",
+    "title": "Uppercut Esquerdo/Direito",
+    "description": "Soco ascendente visando o queixo ou tronco, com flexão de joelhos.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Evitar inclinação excessiva. Punho firme para evitar lesões.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["soco-jab"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "combinacao-jab-direto",
+    "type": "TECHNIQUE",
+    "title": "Jab + Direto",
+    "description": "Sequência de jab seguido de direto, alternando mãos para velocidade e potência.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Manter guarda, evitar hiperextensão. Treino em pares a 70% de força.",
+    "adaptations": ["TEA: Fitas para pés.", "TDAH: Séries de 10 combos."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["soco-jab", "soco-direto"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "combinacao-jab-gancho",
+    "type": "TECHNIQUE",
+    "title": "Jab + Gancho",
+    "description": "Jab seguido de gancho, visando velocidade e ataque lateral.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Evitar rotação excessiva do tronco. Instrutor corrige alinhamento.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["soco-jab", "soco-gancho-esquerdo-direito"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "combinacao-direto-uppercut",
+    "type": "TECHNIQUE",
+    "title": "Direto + Uppercut",
+    "description": "Direto seguido de uppercut, alternando potência e ataque ascendente.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Saco de pancada (opcional)"],
+    "safety": "Proteger queixo com mão oposta. Evitar inclinação excessiva.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["soco-direto", "soco-uppercut-esquerdo-direito"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "cotovelada-traseira",
+    "type": "TECHNIQUE",
+    "title": "Cotovelada Traseira",
+    "description": "Golpe com cotovelo para trás, visando o rosto ou tronco do agressor.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Protetor de cotovelo (opcional)"],
+    "safety": "Evitar contato direto em treinos. Instrutor supervisiona ângulo.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "cotovelada-lateral",
+    "type": "TECHNIQUE",
+    "title": "Cotovelada Lateral",
+    "description": "Golpe com cotovelo lateral, visando a cabeça ou costelas.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Protetor de cotovelo (opcional)"],
+    "safety": "Manter guarda alta. Treino em pares a 50% de força.",
+    "adaptations": ["TEA: Fitas para pés.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "cotovelada-frontal",
+    "type": "TECHNIQUE",
+    "title": "Cotovelada Frontal",
+    "description": "Golpe com cotovelo frontal, visando o rosto ou peito.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Protetor de cotovelo (opcional)"],
+    "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["cotovelada-traseira"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "cotovelada-uppercut",
+    "type": "TECHNIQUE",
+    "title": "Cotovelada Uppercut",
+    "description": "Golpe ascendente com cotovelo, visando o queixo ou tronco.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Protetor de cotovelo (opcional)"],
+    "safety": "Manter guarda alta. Evitar inclinação excessiva.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["cotovelada-frontal"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "cotovelada-martelo",
+    "type": "TECHNIQUE",
+    "title": "Cotovelada Martelo",
+    "description": "Golpe descendente com cotovelo, visando a cabeça ou ombro.",
+    "equipment": ["Luvas de boxe", "Bandagens", "Protetor de cotovelo (opcional)"],
+    "safety": "Evitar contato direto. Instrutor supervisiona ângulo.",
+    "adaptations": ["TEA: Fitas para pés.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["cotovelada-frontal"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 40,
+        "Adulto Feminino": 32
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "chute-reto",
+    "type": "TECHNIQUE",
+    "title": "Chute Reto",
+    "description": "Chute frontal com perna dianteira, visando a virilha ou abdômen.",
+    "equipment": ["Protetor de canela (opcional)", "Tatame macio"],
+    "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "chute-lateral",
+    "type": "TECHNIQUE",
+    "title": "Chute Lateral",
+    "description": "Chute lateral com perna traseira, visando costelas ou cabeça.",
+    "equipment": ["Protetor de canela (opcional)", "Tatame macio"],
+    "safety": "Perna de apoio firme. Instrutor corrige equilíbrio.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["chute-reto"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "chute-circular-baixo",
+    "type": "TECHNIQUE",
+    "title": "Chute Circular Baixo",
+    "description": "Chute circular visando a coxa ou canela, com rotação do quadril.",
+    "equipment": ["Protetor de canela (opcional)", "Tatame macio"],
+    "safety": "Evitar contato direto. Instrutor supervisiona pivô.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["chute-reto"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "chute-joelhada-frontal",
+    "type": "TECHNIQUE",
+    "title": "Joelhada Frontal",
+    "description": "Joelhada frontal visando abdômen ou rosto, com elevação do joelho.",
+    "equipment": ["Protetor de joelho (opcional)", "Tatame macio"],
+    "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "chute-empurrao",
+    "type": "TECHNIQUE",
+    "title": "Empurrão",
+    "description": "Chute de empurrão com sola do pé, visando peito ou abdômen.",
+    "equipment": ["Protetor de canela (opcional)", "Tatame macio"],
+    "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": ["chute-reto"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-dedos-frontal",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Dedos (Frontal)",
+    "description": "Defesa contra estrangulamento frontal, usando dedos para afastar mãos do agressor.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Treino a 50% de força. Evitar lesões no pescoço.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-joelho-frontal",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Joelho (Frontal)",
+    "description": "Defesa contra estrangulamento frontal, usando joelhada para desequilibrar.",
+    "equipment": ["Tatame macio", "Protetor de joelho (opcional)"],
+    "safety": "Evitar contato direto com joelho. Treino a 50% de força.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-estrangulamento-dedos-frontal"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-empurrao-frontal",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Empurrão (Frontal)",
+    "description": "Defesa contra estrangulamento frontal, empurrando o agressor com mãos ou braços.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Evitar força excessiva no pescoço. Instrutor supervisiona.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-estrangulamento-dedos-frontal"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-posterior",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Posterior",
+    "description": "Defesa contra estrangulamento por trás, usando movimento de ombros e contra-ataque.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-empurrao-posterior",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Empurrão (Posterior)",
+    "description": "Defesa contra estrangulamento por trás, empurrando para liberar o pescoço.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Evitar contato direto no pescoço. Instrutor supervisiona.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-estrangulamento-posterior"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-estrangulamento-lateral",
+    "type": "TECHNIQUE",
+    "title": "Defesa Estrangulamento Lateral",
+    "description": "Defesa contra estrangulamento lateral, usando movimento de ombro e contra-ataque.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-agarramento-frontal-nao-agressivo",
+    "type": "TECHNIQUE",
+    "title": "Defesa Agarramento Frontal Não Agressivo",
+    "description": "Defesa contra agarramento frontal (ex.: camisa), liberando com braços.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Evitar força excessiva. Instrutor supervisiona.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-agarramento-frontal-agressivo",
+    "type": "TECHNIQUE",
+    "title": "Defesa Agarramento Frontal Agressivo",
+    "description": "Defesa contra agarramento frontal agressivo, usando braços e contra-ataque.",
+    "equipment": ["Tatame macio", "Luvas de boxe", "Protetor de joelho (opcional)"],
+    "safety": "Treino a 50% de força. Evitar contato direto com joelhada.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-agarramento-frontal-nao-agressivo"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-agarramento-imobilizacao",
+    "type": "TECHNIQUE",
+    "title": "Defesa Agarramento com Imobilização",
+    "description": "Defesa contra agarramento com braços imobilizados, usando movimento de quadril.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Evitar pressão nos braços. Instrutor supervisiona.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Avançado",
+    "refTechniqueId": ["defesa-agarramento-frontal-agressivo"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-agarramento-tras-externa",
+    "type": "TECHNIQUE",
+    "title": "Defesa Agarramento por Trás Externa",
+    "description": "Defesa contra agarramento por trás (braços livres), usando movimento de ombros.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Treino a 50% de força. Evitar contato direto.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-agarramento-tras-interna",
+    "type": "TECHNIQUE",
+    "title": "Defesa Agarramento por Trás Interna",
+    "description": "Defesa contra agarramento por trás (braços presos), usando movimento de quadril.",
+    "equipment": ["Tatame macio", "Luvas de boxe", "Protetor de canela (opcional)"],
+    "safety": "Evitar contato direto com chute. Instrutor supervisiona.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-agarramento-tras-externa"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-geral-360",
+    "type": "TECHNIQUE",
+    "title": "Defesa 360°",
+    "description": "Defesa circular contra ataques de ângulos variados, usando braços para bloquear.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Manter braços firmes. Treino a 50% de força.",
+    "adaptations": ["TEA: Fitas para ângulos.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-geral-360-contra-ataque",
+    "type": "TECHNIQUE",
+    "title": "Defesa 360° + Contra-ataque",
+    "description": "Defesa 360° seguida de contra-ataque (ex.: jab ou chute).",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Evitar contato direto no contra-ataque. Instrutor supervisiona.",
+    "adaptations": ["TEA: Fitas para ângulos.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-geral-360"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-geral-soco-reto",
+    "type": "TECHNIQUE",
+    "title": "Defesa Soco Reto",
+    "description": "Defesa contra soco reto, desviando com antebraço, guarda alta.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Treino a 50% de força. Evitar impacto direto no antebraço.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 30,
+        "Adulto Feminino": 24
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "defesa-geral-soco-gancho",
+    "type": "TECHNIQUE",
+    "title": "Defesa Soco Gancho",
+    "description": "Defesa contra soco gancho, bloqueando com antebraço ou desvio.",
+    "equipment": ["Tatame macio", "Luvas de boxe"],
+    "safety": "Manter guarda alta. Treino a 50% de força.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["defesa-geral-soco-reto"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "2 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "queda-tras",
+    "type": "TECHNIQUE",
+    "title": "Queda para Trás",
+    "description": "Queda protegendo cabeça e coluna, com braços e pernas amortecendo.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Evitar impacto na cabeça.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries curtas."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "queda-frente-suave",
+    "type": "TECHNIQUE",
+    "title": "Queda Frente Suave",
+    "description": "Queda frontal suave, usando braços para amortecer e proteger o rosto.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Evitar impacto no rosto.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Iniciante",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "queda-frente-dura",
+    "type": "TECHNIQUE",
+    "title": "Queda Frente Dura",
+    "description": "Queda frontal com maior impacto, usando braços e pernas para amortecer.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+    "adaptations": ["TEA: Marcações no tatame.", "TDAH: Séries curtas."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": ["queda-frente-suave"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "queda-lateral",
+    "type": "TECHNIQUE",
+    "title": "Queda Lateral",
+    "description": "Queda lateral, protegendo cabeça e quadril, com braço e perna amortecendo.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Evitar impacto no ombro ou cabeça.",
+    "adaptations": ["TEA: Fitas para posição.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Intermediário",
+    "refTechniqueId": [],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 20,
+        "Adulto Feminino": 16
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "rolamento-frente",
+    "type": "TECHNIQUE",
+    "title": "Rolamento Frente",
+    "description": "Rolamento frontal, começando agachado, rolando sobre o ombro para voltar à guarda.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Evitar impacto na cabeça ou pescoço.",
+    "adaptations": ["TEA: Fitas para trajetória.", "TDAH: Séries curtas."],
+    "difficulty": "Avançado",
+    "refTechniqueId": ["queda-frente-suave"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 15,
+        "Adulto Feminino": 12
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  },
+  {
+    "id": "rolamento-tras",
+    "type": "TECHNIQUE",
+    "title": "Rolamento Trás",
+    "description": "Rolamento traseiro, rolando sobre o ombro para voltar à guarda.",
+    "equipment": ["Tatame macio"],
+    "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+    "adaptations": ["TEA: Fitas para trajetória.", "TDAH: Séries de 10 reps."],
+    "difficulty": "Avançado",
+    "refTechniqueId": ["queda-tras"],
+    "defaultParams": {
+      "repetitions": {
+        "Adulto Masculino": 15,
+        "Adulto Feminino": 12
+      },
+      "duration": "3 minutos",
+      "precision": "80%"
+    }
+  }
+]

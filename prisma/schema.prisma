@@ -37,9 +37,9 @@ model Organization {
   activities               Activity[]
   activityTrackingSettings ActivityTrackingSettings?
   agendaItems              AgendaItem[]
-  aiAgents                 AIAgent[]
   agentInteractions        AgentInteraction[]        @relation("AgentInteractions")
   agentPermissions         AgentPermission[]         @relation("AgentPermissions")
+  aiAgents                 AIAgent[]
   asaasCustomers           AsaasCustomer[]
   attendances              Attendance[]
   badges                   Badge[]
@@ -164,6 +164,7 @@ model Course {
   previousCourse        Course?                   @relation("CourseProgression")
   organization          Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   evaluationRecords     EvaluationRecord[]
+  instructor_courses    InstructorCourse[]
   lessonPlans           LessonPlan[]
   personalSessions      PersonalTrainingSession[]
   planCourses           PlanCourse[]
@@ -338,33 +339,39 @@ model CourseTechnique {
 }
 
 model User {
-  id                 String              @id @default(uuid())
-  organizationId     String
-  email              String?
-  password           String
-  role               UserRole            @default(STUDENT)
-  firstName          String
-  lastName           String
-  avatarUrl          String?
-  phone              String?
-  cpf                String?
-  birthDate          DateTime?
-  isActive           Boolean             @default(true)
-  emailVerified      Boolean             @default(false)
-  lastLoginAt        DateTime?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @default(now())
-  agendaItems        AgendaItem[]
-  agentConversations AgentConversation[]
-  approvedPermissions AgentPermission[]  @relation("ApprovedPermissions")
-  instructor         Instructor?
-  leadActivities     LeadActivity[]      @relation("LeadActivities")
-  leadNotes          LeadNote[]          @relation("LeadNotes")
-  assignedLeads      Lead[]              @relation("LeadAssignedTo")
-  student            Student?
-  attendanceChecks   TurmaAttendance[]   @relation("AttendanceChecker")
-  turmas             Turma[]
-  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                   String              @id @default(uuid())
+  organizationId       String
+  email                String?
+  password             String
+  role                 UserRole            @default(STUDENT)
+  firstName            String
+  lastName             String
+  avatarUrl            String?
+  phone                String?
+  cpf                  String?
+  birthDate            DateTime?
+  isActive             Boolean             @default(true)
+  emailVerified        Boolean             @default(false)
+  lastLoginAt          DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @default(now())
+  canApproveAgentTasks Boolean             @default(false)
+  canExecuteAgentTasks Boolean             @default(false)
+  canCreateAgents      Boolean             @default(false)
+  canDeleteAgents      Boolean             @default(false)
+  maxTaskPriority      String              @default("MEDIUM")
+  canApproveCategories String[]            @default([])
+  agendaItems          AgendaItem[]
+  agentConversations   AgentConversation[]
+  approvedPermissions  AgentPermission[]   @relation("ApprovedPermissions")
+  instructor           Instructor?
+  leadActivities       LeadActivity[]      @relation("LeadActivities")
+  leadNotes            LeadNote[]          @relation("LeadNotes")
+  assignedLeads        Lead[]              @relation("LeadAssignedTo")
+  student              Student?
+  attendanceChecks     TurmaAttendance[]   @relation("AttendanceChecker")
+  turmas               Turma[]
+  organization         Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("users")
 }
@@ -614,6 +621,7 @@ model Instructor {
   updatedAt              DateTime                  @default(now())
   classes                Class[]
   evaluations            Evaluation[]
+  instructor_courses     InstructorCourse[]
   organization           Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   activityValidations    LessonActivityExecution[] @relation("ActivityValidation")
@@ -622,6 +630,25 @@ model Instructor {
   teacherEvaluations     TeacherEvaluation[]
 
   @@map("instructors")
+}
+
+model InstructorCourse {
+  id            String     @id @default(dbgenerated("(gen_random_uuid())::text"))
+  instructor_id String
+  course_id     String
+  is_lead       Boolean?   @default(false)
+  certified_at  DateTime?  @db.Timestamptz(6)
+  expires_at    DateTime?  @db.Timestamptz(6)
+  notes         String?
+  created_at    DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?  @default(now()) @db.Timestamptz(6)
+  courses       Course     @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_instructor_courses_course")
+  instructors   Instructor @relation(fields: [instructor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_instructor_courses_instructor")
+
+  @@unique([instructor_id, course_id], map: "unique_instructor_course")
+  @@index([course_id], map: "idx_instructor_courses_course")
+  @@index([instructor_id], map: "idx_instructor_courses_instructor")
+  @@map("instructor_courses")
 }
 
 model ClassSchedule {
@@ -1119,20 +1146,20 @@ model BillingPlan {
   allowPartialCredit      Boolean?              @default(false)
   allowRefund             Boolean?              @default(false)
   allowTransfer           Boolean?              @default(false)
+  autoRenewChargeMethod   String?
+  autoRenewCredits        Boolean?              @default(false)
   bulkDiscountTiers       Json?
   creditQuantity          Int?
+  creditRenewalMethod     CreditRenewalMethod?  @default(INCLUDED)
+  creditRenewalTrigger    CreditRenewalTrigger? @default(MONTHLY)
   creditType              CreditType?
   creditValidityDays      Int?                  @default(90)
+  maxAutoRenewals         Int?
   minCreditsPerClass      Int?                  @default(1)
   planType                PlanType?
   refundDaysBeforeExp     Int?                  @default(7)
-  transferFeePercent      Decimal?              @db.Decimal(5, 2)
-  autoRenewChargeMethod   String?
-  autoRenewCredits        Boolean?              @default(false)
-  maxAutoRenewals         Int?
   renewalIntervalDays     Int?
-  creditRenewalMethod     CreditRenewalMethod?  @default(INCLUDED)
-  creditRenewalTrigger    CreditRenewalTrigger? @default(MONTHLY)
+  transferFeePercent      Decimal?              @db.Decimal(5, 2)
   course                  Course?               @relation("BillingPlanPrimaryCourse", fields: [courseId], references: [id])
   organization            Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   planCourses             PlanCourse[]          @relation("PlanCourseToPlan")
@@ -2219,10 +2246,10 @@ model AgentInteraction {
   id             String       @id @default(uuid())
   agentId        String
   organizationId String
-  type           String // REPORT, SUGGESTION, REQUEST, ERROR
+  type           String
   message        String
-  action         Json? // { label: string, url: string }
-  metadata       Json? // Additional context
+  action         Json?
+  metadata       Json?
   isRead         Boolean      @default(false)
   createdAt      DateTime     @default(now())
   agent          AIAgent      @relation("AgentInteractions", fields: [agentId], references: [id], onDelete: Cascade)
@@ -2236,22 +2263,22 @@ model AgentInteraction {
 }
 
 model AgentPermission {
-  id             String       @id @default(uuid())
-  agentId        String
-  organizationId String
-  action         String // Description of action
-  details        Json // { action: string, students?: string[], cost?: string, etc }
-  status         String       @default("PENDING") // PENDING, APPROVED, DENIED
-  approvedBy     String?
-  approvedAt     DateTime?
-  deniedReason   String?
-  executedAt     DateTime?
-  executionResult Json? // Result after execution
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  agent          AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
-  organization   Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
-  approver       User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
+  id              String       @id @default(uuid())
+  agentId         String
+  organizationId  String
+  action          String
+  details         Json
+  status          String       @default("PENDING")
+  approvedBy      String?
+  approvedAt      DateTime?
+  deniedReason    String?
+  executedAt      DateTime?
+  executionResult Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  agent           AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
+  approver        User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
+  organization    Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, status])
   @@index([agentId])

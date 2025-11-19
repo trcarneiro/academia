@@ -72,7 +72,7 @@
         showLoading('Carregando dados do aluno...');
         
         try {
-            const response = await fetch(`/api/students/${studentId}`);
+            const response = await window.fetchWithOrganization(`/api/students/${studentId}`);
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
             }
@@ -209,7 +209,7 @@
         console.log('💳 Loading financial data for student:', currentStudent.id);
         
         try {
-            const response = await fetch(`/api/students/${currentStudent.id}/subscription`);
+            const response = await window.fetchWithOrganization(`/api/students/${currentStudent.id}/subscription`);
             console.log('📡 Financial API Response:', response.status, response.statusText);
             
             if (!response.ok) {
@@ -503,7 +503,7 @@
 
         showLoading('Salvando...');
         try {
-            const response = await fetch(`/api/students/${currentStudent.id}`, {
+            const response = await window.fetchWithOrganization(`/api/students/${currentStudent.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

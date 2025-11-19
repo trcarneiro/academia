@@ -1,0 +1,452 @@
+/**
+ * Asaas Import Module - Premium Styles
+ * Design System v2.0 compliant
+ */
+
+/* ========================================
+   Container Principal
+   ======================================== */
+.module-isolated-asaas-import {
+    width: 100%;
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* ========================================
+   Stats Grid
+   ======================================== */
+.stats-grid-asaas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* ========================================
+   Ações Principais
+   ======================================== */
+.asaas-actions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-asaas-primary,
+.btn-asaas-success,
+.btn-asaas-secondary {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-asaas-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-asaas-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-asaas-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+}
+
+.btn-asaas-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(86, 171, 47, 0.4);
+}
+
+.btn-asaas-secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.btn-asaas-secondary:hover {
+    background: #cbd5e1;
+}
+
+.btn-asaas-primary:disabled,
+.btn-asaas-success:disabled,
+.btn-asaas-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ========================================
+   Status de Conexão
+   ======================================== */
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.status-unknown {
+    background: #e2e8f0;
+    color: #64748b;
+}
+
+.status-loading {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ========================================
+   Filtros
+   ======================================== */
+.filters-asaas {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.input-search-asaas {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.input-search-asaas:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.select-filter-asaas {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.select-filter-asaas:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* ========================================
+   Lista de Clientes
+   ======================================== */
+.customers-list-asaas {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.customer-card-asaas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.customer-card-asaas:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.customer-card-asaas.imported {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.customer-info {
+    flex: 1;
+}
+
+.customer-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-imported {
+    padding: 0.25rem 0.75rem;
+    background: #10b981;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.customer-email {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.customer-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.customer-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-import-single {
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-import-single:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-import-single:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.text-success {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* ========================================
+   Resultados da Importação
+   ======================================== */
+.results-content-asaas {
+    padding: 1rem;
+}
+
+.results-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.result-stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.result-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+
+.result-failed {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+}
+
+.result-icon {
+    font-size: 2.5rem;
+}
+
+.result-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.result-label {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.errors-list {
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.errors-list h3 {
+    color: #991b1b;
+    margin-bottom: 1rem;
+}
+
+.errors-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.errors-list li {
+    color: #dc2626;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #fecaca;
+}
+
+.errors-list li:last-child {
+    border-bottom: none;
+}
+
+/* ========================================
+   Empty State
+   ======================================== */
+.empty-state-asaas {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-asaas h3 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-asaas p {
+    color: #64748b;
+}
+
+/* ========================================
+   Error State
+   ======================================== */
+.error-state-asaas {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.error-state-asaas h3 {
+    color: #dc2626;
+    margin-bottom: 0.5rem;
+}
+
+.error-state-asaas p {
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+
+/* ========================================
+   Responsividade
+   ======================================== */
+@media (max-width: 768px) {
+    .module-isolated-asaas-import {
+        padding: 1rem;
+    }
+
+    .stats-grid-asaas {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-asaas-primary,
+    .btn-asaas-success,
+    .btn-asaas-secondary {
+        width: 100%;
+    }
+
+    .filters-asaas {
+        flex-direction: column;
+    }
+
+    .input-search-asaas,
+    .select-filter-asaas {
+        width: 100%;
+    }
+
+    .customer-card-asaas {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .customer-actions {
+        width: 100%;
+    }
+
+    .btn-import-single {
+        width: 100%;
+    }
+
+    .results-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   Scrollbar Customizado
+   ======================================== */
+.customers-list-asaas::-webkit-scrollbar {
+    width: 8px;
+}
+
+.customers-list-asaas::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.customers-list-asaas::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.customers-list-asaas::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

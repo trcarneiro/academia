@@ -196,7 +196,7 @@
             this.container.innerHTML = `
                 <div class="module-isolated-container" data-module="activities">
                     <!-- Header Section -->
-                    <div class="module-header">
+                    <div class="module-header-premium">
                         <div class="header-content">
                             <div class="header-left">
                                 <h1 class="module-title">
@@ -788,7 +788,7 @@
             
             this.container.innerHTML = `
                 <div class="module-isolated-container" data-module="activities">
-                    <div class="module-header">
+                    <div class="module-header-premium">
                         <div class="header-content">
                             <div class="header-left">
                                 <button id="back-to-list-btn" class="btn-form btn-secondary-form" onclick="window.openActivitiesList(this.closest('.module-isolated-container').parentElement)">

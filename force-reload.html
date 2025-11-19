@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Recarregar Sistema</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { font-size: 2.5em; margin-bottom: 20px; }
+        p { font-size: 1.2em; margin: 15px 0; }
+        .instructions {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .key {
+            display: inline-block;
+            background: #fff;
+            color: #667eea;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥋 Sistema Atualizado!</h1>
+        <p>O campo de seleção de tatame foi adicionado ao formulário de turmas.</p>
+        
+        <div class="instructions">
+            <h3>📝 Para ver as mudanças:</h3>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Pressione <span class="key">Ctrl</span> + <span class="key">Shift</span> + <span class="key">R</span></li>
+                <li>Ou pressione <span class="key">Ctrl</span> + <span class="key">F5</span></li>
+                <li>Ou clique no botão abaixo</li>
+            </ol>
+            <p style="margin-top: 15px;">
+                <strong>⚠️ Importante:</strong> Isso força o navegador a recarregar todos os arquivos JavaScript sem usar o cache.
+            </p>
+        </div>
+
+        <button onclick="forceReload()">🔄 Recarregar Agora</button>
+        
+        <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
+            Após recarregar, vá em <strong>Turmas</strong> → <strong>Editar uma turma</strong>
+        </p>
+    </div>
+
+    <script>
+        function forceReload() {
+            // Limpar cache do localStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Adicionar timestamp para forçar reload
+            const url = new URL(window.location.href);
+            url.searchParams.set('t', Date.now());
+            
+            // Recarregar com cache limpo
+            window.location.href = url.toString();
+            window.location.reload(true);
+        }
+    </script>
+</body>
+</html>

@@ -112,7 +112,11 @@ const GraduationModule = {
             return;
         }
 
-        const organizationId = '452c0b35-1822-4890-851e-922356c812fb';
+        const organizationId = window.organizationContext?.currentOrganizationId;
+        if (!organizationId) {
+            console.error('❌ Organization ID not found in context');
+            return;
+        }
 
         await this.moduleAPI.fetchWithStates('/api/graduation/students', {
             params: { organizationId, ...this.filters },

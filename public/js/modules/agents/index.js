@@ -25,6 +25,34 @@ if (typeof window.AgentsModule !== 'undefined') {
             'atendimento': { icon: '🎧', label: 'Atendimento', color: '#fa709a' },
             'orchestrator': { icon: '🧠', label: 'Orquestrador', color: '#667eea' }
         },
+
+        normalizeAgentType(type, specialization) {
+            const allowedTypes = ['orchestrator', 'marketing', 'comercial', 'pedagogico', 'financeiro', 'atendimento'];
+            const normalizedType = typeof type === 'string' ? type.toLowerCase() : '';
+
+            if (allowedTypes.includes(normalizedType)) {
+                return normalizedType;
+            }
+
+            const specializationToType = {
+                commercial: 'comercial',
+                marketing: 'marketing',
+                financial: 'financeiro',
+                administrative: 'financeiro',
+                pedagogical: 'pedagogico',
+                curriculum: 'pedagogico',
+                progression: 'pedagogico',
+                support: 'atendimento',
+                analytical: 'orchestrator'
+            };
+
+            const specializationKey = typeof specialization === 'string' ? specialization.toLowerCase() : '';
+            if (specializationKey && specializationToType[specializationKey]) {
+                return specializationToType[specializationKey];
+            }
+
+            return 'atendimento';
+        },
         
         async init(container) {
             console.log('🤖 [Agents Module] Initializing...');
@@ -2422,17 +2450,22 @@ Sempre forneça respostas claras e acionáveis. Quando identificar problemas, su
                 e.preventDefault();
                 
                 const formData = new FormData(form);
-                const tools = formData.getAll('tools');
-                const ragSources = formData.getAll('ragSources');
+                const rawTools = formData.getAll('tools') || [];
+                const rawRagSources = formData.getAll('ragSources') || [];
+                const specializationValue = formData.get('specialization') || 'support';
+                const normalizedType = self.normalizeAgentType(suggestion?.type, specializationValue);
+                const sanitizedTools = rawTools.length > 0 ? rawTools.map(value => value.toString()) : ['database'];
+                const ragSources = rawRagSources.map(value => value.toString());
                 
                 const config = {
                     name: formData.get('name'),
                     description: formData.get('description'),
-                    specialization: formData.get('specialization'),
+                    type: normalizedType,
                     systemPrompt: formData.get('systemPrompt'),
                     autoSaveInsights: formData.get('autoSaveInsights') === 'on',
-                    tools,
-                    ragSources
+                    tools: sanitizedTools,
+                    ragSources,
+                    isActive: true
                 };
                 
                 try {

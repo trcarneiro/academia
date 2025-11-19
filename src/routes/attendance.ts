@@ -26,7 +26,7 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
         properties: {
           classId: { type: 'string', format: 'uuid' },
           studentId: { type: 'string', format: 'uuid' }, // ✅ KIOSK: studentId opcional
-          method: { type: 'string', enum: ['QR_CODE', 'MANUAL', 'GEOLOCATION'] },
+          method: { type: 'string', enum: ['QR_CODE', 'MANUAL', 'FACIAL_RECOGNITION', 'GEOLOCATION', 'NFC'] }, // ✅ CORRIGIDO: todos os valores do enum
           location: { type: 'string' },
           notes: { type: 'string' },
         },
@@ -426,5 +426,90 @@ export default async function attendanceRoutes(fastify: FastifyInstance) {
       },
     },
     handler: AttendanceController.getTodayHistory,
+  });
+
+  // Get class roll (enrolled students + attendance)
+  fastify.get('/lesson/:id/roll', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Get class roll with attendance status',
+      security: [{ Bearer: [] }],
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: {
+              type: 'object',
+              properties: {
+                lesson: { type: 'object' },
+                students: { type: 'array' },
+              },
+            },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    preHandler: [authenticateToken, instructorOrAdmin],
+    handler: AttendanceController.getClassRoll,
+  });
+
+  // Update class roll (bulk update)
+  fastify.put('/lesson/:id/roll', {
+    schema: {
+      tags: ['Attendance'],
+      summary: 'Update class roll (bulk update)',
+      security: [{ Bearer: [] }],
+      params: {
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+        },
+      },
+      body: {
+        type: 'object',
+        required: ['updates'],
+        properties: {
+          updates: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['studentId', 'status'],
+              properties: {
+                studentId: { type: 'string', format: 'uuid' },
+                status: {
+                  type: 'string',
+                  enum: ['PRESENT', 'LATE', 'ABSENT', 'NONE'],
+                },
+                notes: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'null' },
+            message: { type: 'string' },
+            timestamp: { type: 'string' },
+          },
+        },
+      },
+    },
+    preHandler: [authenticateToken, instructorOrAdmin],
+    handler: AttendanceController.updateClassRoll,
   });
 }

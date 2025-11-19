@@ -423,6 +423,7 @@ class PackagesModule {
     // View placeholders - implementar conforme necessário
     renderSubscriptions() {
         const packages = this.state.packages || [];
+        const metrics = this.state.metrics || { totalPackages: 0, activePackages: 0, totalSubscriptions: 0 };
         
         return `
             <div class="subscriptions-view">
@@ -435,6 +436,33 @@ class PackagesModule {
                         <button class="btn-primary" onclick="window.packagesModule.createPackage()">
                             ➕ Novo Plano
                         </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards Premium -->
+                <div class="stats-grid">
+                    <div class="stat-card-enhanced stat-gradient-primary">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-value">${metrics.totalPackages}</div>
+                            <div class="stat-label">Total de Pacotes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-enhanced stat-gradient-success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-value">${metrics.activePackages}</div>
+                            <div class="stat-label">Pacotes Ativos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-enhanced stat-gradient-info">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-value">${metrics.totalSubscriptions}</div>
+                            <div class="stat-label">Total de Assinaturas</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1475,9 +1503,16 @@ class PackagesModule {
     calculateMetrics() {
         const totalPackages = this.state.packages.length;
         const activePackages = this.state.packages.filter(p => p.isActive).length;
+        
+        // Contar total de assinaturas (soma do campo _count de cada package)
+        const totalSubscriptions = this.state.packages.reduce((sum, pkg) => {
+            return sum + (pkg._count?.subscriptions || 0);
+        }, 0);
+        
         this.state.metrics = {
             totalPackages,
             activePackages,
+            totalSubscriptions,
             totalRevenue: 0,
             activeSubscriptions: 0,
             totalCreditsRestantes: 0,

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Editor Premium - Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            padding: 2rem;
+        }
+
+        .preview-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-header h1 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .comparison-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-card h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .old-design h2 {
+            color: #e74c3c;
+        }
+
+        .new-design h2 {
+            color: #27ae60;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+        }
+
+        .feature-removed::before {
+            content: '❌';
+        }
+
+        .feature-added::before {
+            content: '✅';
+        }
+
+        .feature-old::before {
+            content: '⚠️';
+        }
+
+        .screenshot-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .screenshot-section h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+
+        .module-isolated-course-editor {
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .module-header-premium {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-secondary, .btn-primary {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .stat-card-enhanced {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card-enhanced:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .premium-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 2rem 2rem 0 2rem;
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            padding: 2rem;
+            background: white;
+        }
+
+        .data-card-premium {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .testing-checklist {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .testing-checklist h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .next-steps {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .next-steps h2 {
+            margin-bottom: 1rem;
+        }
+
+        .next-steps ol {
+            margin-left: 1.5rem;
+        }
+
+        .next-steps li {
+            padding: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <!-- Header -->
+        <div class="preview-header">
+            <h1>📚 Course Editor Premium - Refactoring Complete</h1>
+            <p style="color: #6c757d; margin-top: 0.5rem;">
+                November 6, 2025 | Version 2.0 | AGENTS.md v2.0 Compliant
+            </p>
+            <span class="status-badge">✅ REFACTORING COMPLETE - READY FOR TESTING</span>
+        </div>
+
+        <!-- Comparison -->
+        <div class="comparison">
+            <div class="comparison-card old-design">
+                <h2>❌ Old Course Editor (Outdated)</h2>
+                <ul class="feature-list">
+                    <li class="feature-removed">Basic header (no gradient)</li>
+                    <li class="feature-removed">No stat cards</li>
+                    <li class="feature-removed">4 tabs (including AI)</li>
+                    <li class="feature-removed">Outdated styling</li>
+                    <li class="feature-removed">Inconsistent with system</li>
+                    <li class="feature-removed">Poor responsive design</li>
+                    <li class="feature-old">User complaint: "bem feia"</li>
+                    <li class="feature-old">583 lines of HTML</li>
+                </ul>
+            </div>
+
+            <div class="comparison-card new-design">
+                <h2>✅ New Course Editor Premium</h2>
+                <ul class="feature-list">
+                    <li class="feature-added">Premium gradient header</li>
+                    <li class="feature-added">4 stat cards with hover</li>
+                    <li class="feature-added">3 focused tabs (AI removed)</li>
+                    <li class="feature-added">Modern premium styling</li>
+                    <li class="feature-added">Matches system standards</li>
+                    <li class="feature-added">Fully responsive (3 breakpoints)</li>
+                    <li class="feature-added">Beautiful professional UI</li>
+                    <li class="feature-added">450+ lines optimized HTML</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Screenshot Section -->
+        <div class="screenshot-section">
+            <h2>🎨 Premium UI Preview</h2>
+            
+            <div class="module-isolated-course-editor">
+                <!-- Premium Header -->
+                <div class="module-header-premium">
+                    <div class="header-left">
+                        <h1>
+                            <span>📚</span>
+                            <span>Editando: Krav Maga - Faixa Branca</span>
+                        </h1>
+                        <nav class="breadcrumb">
+                            <span>Cursos</span>
+                            <span class="breadcrumb-separator">›</span>
+                            <span>Krav Maga - Faixa Branca</span>
+                        </nav>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-secondary">Cancelar</button>
+                        <button class="btn-primary">Salvar Curso</button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">🎓</div>
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">Total de Aulas</div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">🥋</div>
+                        <div class="stat-value">52</div>
+                        <div class="stat-label">Técnicas</div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-value">24 sem</div>
+                        <div class="stat-label">Duração</div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Alunos</div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="premium-tabs">
+                    <button class="tab-btn active">
+                        <span>📋</span>
+                        <span>Informações</span>
+                    </button>
+                    <button class="tab-btn">
+                        <span>🥋</span>
+                        <span>Técnicas</span>
+                    </button>
+                    <button class="tab-btn">
+                        <span>📅</span>
+                        <span>Cronograma</span>
+                    </button>
+                </div>
+
+                <!-- Tab Content Preview -->
+                <div class="tab-content">
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h2>📋 Informações Básicas</h2>
+                        </div>
+                        <p style="color: #6c757d; margin-top: 1rem;">
+                            Form fields for course name, level, category, duration, description, etc.
+                        </p>
+                    </div>
+
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h2>🎯 Objetivos do Curso</h2>
+                        </div>
+                        <p style="color: #6c757d; margin-top: 1rem;">
+                            General and specific objectives management
+                        </p>
+                    </div>
+
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h2>📦 Recursos Necessários</h2>
+                        </div>
+                        <p style="color: #6c757d; margin-top: 1rem;">
+                            List of required resources (tatame, gloves, shields, etc.)
+                        </p>
+                    </div>
+
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h2>📊 Critérios de Avaliação</h2>
+                        </div>
+                        <p style="color: #6c757d; margin-top: 1rem;">
+                            Evaluation criteria and methods
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testing Checklist -->
+        <div class="testing-checklist">
+            <h2>🧪 Testing Checklist</h2>
+            <div class="checklist-item">
+                <input type="checkbox" id="test1">
+                <label for="test1"> Load course editor (http://localhost:3001/dashboard#course-editor)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test2">
+                <label for="test2"> Verify premium header displays with gradient</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test3">
+                <label for="test3"> Verify 4 stat cards show correct values</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test4">
+                <label for="test4"> Verify 3 tabs are visible (not 4 - AI removed)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test5">
+                <label for="test5"> Test tab switching (click each tab)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test6">
+                <label for="test6"> Test form field input</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test7">
+                <label for="test7"> Test save button</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test8">
+                <label for="test8"> Test cancel button (redirects to #courses)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test9">
+                <label for="test9"> Test responsive design (resize browser)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="test10">
+                <label for="test10"> Check browser console for errors</label>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="next-steps">
+            <h2>🚀 Next Steps</h2>
+            <ol>
+                <li><strong>Reload Browser</strong>: Clear cache (Ctrl+Shift+R) and navigate to course editor</li>
+                <li><strong>Test Functionality</strong>: Complete testing checklist above</li>
+                <li><strong>Import Course</strong>: Use cursokravmagafaixabranca-WEB-IMPORT.json (48 lessons, 52 techniques)</li>
+                <li><strong>Verify Display</strong>: Check course displays correctly in new premium UI</li>
+                <li><strong>User Acceptance</strong>: Confirm user is satisfied with new design</li>
+            </ol>
+
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+                <p style="font-size: 1.25rem; font-weight: 600;">
+                    ✨ From "bem feia" to Premium Professional Interface! ✨
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

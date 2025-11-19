@@ -22,7 +22,8 @@ export {
   PaymentMethod,
   CourseCategory,
   AttendanceTrend,
-  DropoutRisk
+  DropoutRisk,
+  AIProvider
 } from '@prisma/client';
 
 // Authentication Types

@@ -148,7 +148,7 @@ const AuthModule = {
       
       // Hardcoded organization for trcampos@gmail.com
       if (user.email === 'trcampos@gmail.com') {
-        orgId = '452c0b35-1822-4890-851e-922356c812fb';
+        orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
         console.log('✅ Using hardcoded organizationId for trcampos@gmail.com');
       }
       

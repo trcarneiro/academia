@@ -649,6 +649,12 @@ export class GraduationService {
             allAssessments.length
           : undefined;
 
+      // Contar atividades que têm avaliação qualitativa (rating > 0)
+      const evaluatedActivities = progressRecords.filter(
+        (p) => p.qualitativeAssessments && p.qualitativeAssessments.length > 0 && 
+               p.qualitativeAssessments.some(a => a.rating > 0)
+      ).length;
+
       const categories: Record<string, any> = {};
       progressRecords.forEach((record) => {
         const parts = record.activityName.split(':');
@@ -672,6 +678,7 @@ export class GraduationService {
       return {
         totalActivities,
         completedActivities,
+        evaluatedActivities,
         completionPercentage: (completedActivities / totalActivities) * 100,
         totalRepsCompleted,
         totalRepsTarget,

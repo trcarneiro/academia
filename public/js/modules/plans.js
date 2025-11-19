@@ -257,7 +257,7 @@ async function loadAndShowPlans() {
         if (window.apiClient && typeof window.apiClient.get === 'function') {
             result = await window.apiClient.get('/api/billing-plans');
         } else {
-            const response = await fetch('/api/billing-plans');
+            const response = await window.fetchWithOrganization('/api/billing-plans');
             result = await response.json();
         }
 
@@ -404,7 +404,7 @@ async function toggleStatus(planId, isActiveCurrent) {
             resp = await window.apiClient.put(`/api/billing-plans/${encodeURIComponent(planId)}`, { isActive: next });
             if (resp?.success === false) throw new Error(resp?.message || 'Falha ao alternar status');
         } else {
-            const r = await fetch(`/api/billing-plans/${encodeURIComponent(planId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: next }) });
+            const r = await window.fetchWithOrganization(`/api/billing-plans/${encodeURIComponent(planId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: next }) });
             if (!r.ok) {
                 const msg = await r.text();
                 throw new Error(msg || 'Falha ao alternar status');
@@ -426,7 +426,7 @@ async function deletePlan(planId) {
             const r = await window.apiClient.delete(`/api/billing-plans/${encodeURIComponent(planId)}`);
             if (r?.success === false) throw new Error(r?.message || 'Falha ao excluir');
         } else {
-            const r = await fetch(`/api/billing-plans/${encodeURIComponent(planId)}`, { method: 'DELETE' });
+            const r = await window.fetchWithOrganization(`/api/billing-plans/${encodeURIComponent(planId)}`, { method: 'DELETE' });
             if (!r.ok) {
                 const text = await r.text();
                 throw new Error(text || (r.status===400 ? 'Plano vinculado a alunos. Remova vínculos antes de excluir.' : 'Erro ao excluir plano'));

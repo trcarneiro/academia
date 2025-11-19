@@ -215,7 +215,10 @@ class CheckinController {
 
             // 3. Render confirmation view with REAL data
             this.confirmationView = new ConfirmationView(this.container, {
-                onConfirm: (courseId) => this.completeCheckin(match.studentId, courseId),
+                onConfirm: (courseId, additionalData) => {
+                    // additionalData pode conter { turmaId }
+                    this.completeCheckin(match.studentId, courseId, additionalData);
+                },
                 onReject: () => this.rejectMatch(),
             });
 
@@ -237,7 +240,7 @@ class CheckinController {
     /**
      * Complete check-in after course selection
      */
-    async completeCheckin(studentId, courseId) {
+    async completeCheckin(studentId, courseId, additionalData = {}) {
         try {
             this.confirmationView?.showConfirmLoading();
             this.confirmationView?.disable();
@@ -248,7 +251,9 @@ class CheckinController {
             const response = await this.attendanceService.completeCheckin({
                 studentId: studentId,
                 courseId: courseId,
-                method: 'biometric',
+                turmaId: additionalData.turmaId, // ✅ ADICIONADO: turmaId do objeto adicional
+                lessonId: additionalData.lessonId, // ✅ ADICIONADO: lessonId da TurmaLesson
+                method: 'FACIAL_RECOGNITION', // ✅ CORRIGIDO: valor correto do enum
                 faceConfidence: this.currentMatch?.similarity || 0,
             });
 

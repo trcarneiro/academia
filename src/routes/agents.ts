@@ -203,7 +203,6 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
             // Create agent
             const agent = await agentService.createAgent({
                 ...validatedData,
-                organizationId,
                 noCodeMode: true, // Always enforce
                 organization: {
                     connect: { id: organizationId }

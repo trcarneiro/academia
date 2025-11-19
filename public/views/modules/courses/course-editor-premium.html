@@ -1,0 +1,480 @@
+<!-- Course Editor Premium - Sistema Academia v2.0 -->
+<div class="module-isolated-course-editor">
+    <!-- Premium Header -->
+    <header class="module-header-premium">
+        <div class="header-content-wrapper">
+            <div class="header-left">
+                <h1 class="header-title">
+                    <span class="header-icon">📚</span>
+                    <span id="courseEditorTitle">Novo Curso</span>
+                </h1>
+                <nav class="breadcrumb">
+                    <a href="#courses" class="breadcrumb-link">Cursos</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-current" id="breadcrumbCurrent">Novo Curso</span>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="cancelCourseBtn">
+                    <span class="btn-icon">✖</span>
+                    Cancelar
+                </button>
+                <button class="btn-primary" id="saveCourseBtn">
+                    <span class="btn-icon">💾</span>
+                    Salvar Curso
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="courseEditorLoading" class="loading-state" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Carregando dados do curso...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="module-content">
+        <!-- Premium Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card-enhanced">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statTotalLessons">48</div>
+                    <div class="stat-label">Total de Aulas</div>
+                </div>
+            </div>
+            <div class="stat-card-enhanced">
+                <div class="stat-icon">🥋</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statTotalTechniques">0</div>
+                    <div class="stat-label">Técnicas</div>
+                </div>
+            </div>
+            <div class="stat-card-enhanced">
+                <div class="stat-icon">📅</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statDuration">24 sem</div>
+                    <div class="stat-label">Duração</div>
+                </div>
+            </div>
+            <div class="stat-card-enhanced">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="statStudents">0</div>
+                    <div class="stat-label">Alunos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Tabs -->
+        <div class="premium-tabs">
+            <button class="tab-btn active" data-tab="info">
+                <span class="tab-icon">📋</span>
+                <span class="tab-label">Informações</span>
+            </button>
+            <button class="tab-btn" data-tab="techniques">
+                <span class="tab-icon">🥋</span>
+                <span class="tab-label">Técnicas</span>
+            </button>
+            <button class="tab-btn" data-tab="lessons">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Cronograma</span>
+            </button>
+        </div>
+
+        <!-- Tab Content: Informações -->
+        <div class="tab-content active" data-tab-content="info">
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">📋</span>
+                        Informações Básicas
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Nome do Curso <span class="required">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="courseName" 
+                                   class="form-input" 
+                                   placeholder="Ex: Krav Maga - Faixa Branca"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Nível <span class="required">*</span>
+                            </label>
+                            <select id="courseLevel" class="form-select" required>
+                                <option value="">Selecione o nível</option>
+                                <option value="BEGINNER">Iniciante</option>
+                                <option value="INTERMEDIATE">Intermediário</option>
+                                <option value="ADVANCED">Avançado</option>
+                                <option value="EXPERT">Especialista</option>
+                                <option value="MASTER">Mestre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Público-Alvo <span class="required">*</span>
+                            </label>
+                            <select id="courseCategory" class="form-select" required>
+                                <option value="">Selecione</option>
+                                <option value="ADULT">Adultos</option>
+                                <option value="TEEN">Adolescentes</option>
+                                <option value="KIDS">Crianças</option>
+                                <option value="SENIOR">Idosos</option>
+                                <option value="WOMEN">Mulheres</option>
+                                <option value="MEN">Homens</option>
+                                <option value="MIXED">Misto</option>
+                                <option value="LAW_ENFORCEMENT">Forças de Segurança</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Duração (semanas) <span class="required">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="courseDuration" 
+                                   class="form-input" 
+                                   min="1" 
+                                   max="52" 
+                                   value="24"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Aulas por Semana <span class="required">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="courseClassesPerWeek" 
+                                   class="form-input" 
+                                   min="1" 
+                                   max="7" 
+                                   value="2"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Total de Aulas <span class="required">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="courseTotalClasses" 
+                                   class="form-input" 
+                                   min="1" 
+                                   value="48"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Idade Mínima
+                            </label>
+                            <input type="number" 
+                                   id="courseMinAge" 
+                                   class="form-input" 
+                                   min="4" 
+                                   max="99" 
+                                   value="16">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Idade Máxima
+                            </label>
+                            <input type="number" 
+                                   id="courseMaxAge" 
+                                   class="form-input" 
+                                   min="4" 
+                                   max="99" 
+                                   placeholder="Sem limite">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                Descrição do Curso
+                            </label>
+                            <textarea id="courseDescription" 
+                                      class="form-textarea" 
+                                      rows="4"
+                                      placeholder="Descrição completa do curso, metodologia e objetivos..."></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <div class="form-checkbox">
+                                <input type="checkbox" 
+                                       id="courseIsActive" 
+                                       checked>
+                                <label for="courseIsActive">Curso Ativo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objectives Section -->
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">🎯</span>
+                        Objetivos do Curso
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="objectives-container">
+                        <div class="objectives-group">
+                            <h3 class="group-title">Objetivos Gerais</h3>
+                            <div id="generalObjectivesList" class="objectives-list">
+                                <!-- Dynamic content -->
+                            </div>
+                            <button type="button" 
+                                    class="btn-text" 
+                                    id="addGeneralObjective">
+                                <span class="btn-icon">+</span>
+                                Adicionar Objetivo Geral
+                            </button>
+                        </div>
+
+                        <div class="objectives-group">
+                            <h3 class="group-title">Objetivos Específicos</h3>
+                            <div id="specificObjectivesList" class="objectives-list">
+                                <!-- Dynamic content -->
+                            </div>
+                            <button type="button" 
+                                    class="btn-text" 
+                                    id="addSpecificObjective">
+                                <span class="btn-icon">+</span>
+                                Adicionar Objetivo Específico
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Section -->
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">📦</span>
+                        Recursos Necessários
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="resourcesList" class="resources-list">
+                        <!-- Dynamic content -->
+                    </div>
+                    <button type="button" 
+                            class="btn-text" 
+                            id="addResource">
+                        <span class="btn-icon">+</span>
+                        Adicionar Recurso
+                    </button>
+                </div>
+            </div>
+
+            <!-- Evaluation Section -->
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">📊</span>
+                        Sistema de Avaliação
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="evaluation-grid">
+                        <div class="eval-group">
+                            <h3 class="group-title">Critérios</h3>
+                            <div id="evaluationCriteriaList" class="eval-list">
+                                <!-- Dynamic content -->
+                            </div>
+                            <button type="button" 
+                                    class="btn-text" 
+                                    id="addEvalCriteria">
+                                <span class="btn-icon">+</span>
+                                Adicionar Critério
+                            </button>
+                        </div>
+
+                        <div class="eval-group">
+                            <h3 class="group-title">Métodos</h3>
+                            <div id="evaluationMethodsList" class="eval-list">
+                                <!-- Dynamic content -->
+                            </div>
+                            <button type="button" 
+                                    class="btn-text" 
+                                    id="addEvalMethod">
+                                <span class="btn-icon">+</span>
+                                Adicionar Método
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label class="form-label">
+                            Requisitos para Aprovação
+                        </label>
+                        <textarea id="evaluationRequirements" 
+                                  class="form-textarea" 
+                                  rows="3"
+                                  placeholder="Descreva os requisitos necessários para aprovação..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Técnicas -->
+        <div class="tab-content" data-tab-content="techniques" style="display: none;">
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">🥋</span>
+                        Técnicas do Curso
+                    </h2>
+                    <div class="card-actions">
+                        <button class="btn-primary" id="addTechniqueBtn">
+                            <span class="btn-icon">+</span>
+                            Adicionar Técnica
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Stats Row -->
+                    <div class="mini-stats-row">
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="techniquesCount">0</span>
+                            <span class="mini-stat-label">Técnicas</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="stancesCount">0</span>
+                            <span class="mini-stat-label">Posturas</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="punchesCount">0</span>
+                            <span class="mini-stat-label">Socos</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="kicksCount">0</span>
+                            <span class="mini-stat-label">Chutes</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="defensesCount">0</span>
+                            <span class="mini-stat-label">Defesas</span>
+                        </div>
+                    </div>
+
+                    <!-- Techniques Table -->
+                    <div class="table-container">
+                        <table class="data-table" id="techniquesTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Técnica</th>
+                                    <th style="width: 150px;">Categoria</th>
+                                    <th style="width: 120px;">Dificuldade</th>
+                                    <th style="width: 100px;">Obrigatória</th>
+                                    <th style="width: 100px;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="techniquesTableBody">
+                                <tr class="empty-state-row">
+                                    <td colspan="6" class="empty-state-cell">
+                                        <div class="empty-state-content">
+                                            <span class="empty-icon">🥋</span>
+                                            <p>Nenhuma técnica adicionada</p>
+                                            <p class="empty-hint">Clique em "Adicionar Técnica" para começar</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Cronograma -->
+        <div class="tab-content" data-tab-content="lessons" style="display: none;">
+            <div class="data-card-premium">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="title-icon">📅</span>
+                        Planos de Aula
+                    </h2>
+                    <div class="card-actions">
+                        <button class="btn-secondary" id="importLessonsBtn">
+                            <span class="btn-icon">📥</span>
+                            Importar
+                        </button>
+                        <button class="btn-primary" id="generateLessonsBtn">
+                            <span class="btn-icon">🔄</span>
+                            Gerar Cronograma
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Lessons Summary -->
+                    <div class="mini-stats-row">
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="lessonsCount">0</span>
+                            <span class="mini-stat-label">Aulas Planejadas</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="weeksCount">0</span>
+                            <span class="mini-stat-label">Semanas</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="assignedTechniquesCount">0</span>
+                            <span class="mini-stat-label">Técnicas Atribuídas</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-value" id="completionRate">0%</span>
+                            <span class="mini-stat-label">Completo</span>
+                        </div>
+                    </div>
+
+                    <!-- Lessons Grid -->
+                    <div id="lessonsGridContainer" class="lessons-grid">
+                        <div class="empty-state-content">
+                            <span class="empty-icon">📅</span>
+                            <p>Nenhum cronograma carregado</p>
+                            <p class="empty-hint">Importe um curso ou gere um cronograma automático</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Technique Modal -->
+<div id="addTechniqueModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 class="modal-title">🥋 Adicionar Técnica</h3>
+            <button class="modal-close" id="closeTechniqueModal">✖</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Buscar Técnica</label>
+                <input type="text" 
+                       id="techniqueSearchInput" 
+                       class="form-input" 
+                       placeholder="Digite o nome da técnica...">
+            </div>
+            <div id="techniqueSearchResults" class="search-results">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="cancelTechniqueModal">Cancelar</button>
+        </div>
+    </div>
+</div>

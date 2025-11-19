@@ -1,0 +1,642 @@
+{
+  "techniques": [
+    {
+      "name": "Guarda de Boxe",
+      "description": "Postura base com pés afastados, joelhos levemente flexionados, mãos em guarda alta, queixo protegido.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens"
+      ],
+      "safety": "Joelhos flexionados para equilíbrio. Instrutor corrige alinhamento.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Pausas curtas."
+      ]
+    },
+    {
+      "name": "Posição Ortodoxa",
+      "description": "Postura para destros: pé esquerdo à frente, direito atrás, guarda alta.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens"
+      ],
+      "safety": "Evitar inclinação do tronco. Instrutor verifica alinhamento.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Posição Canhota",
+      "description": "Postura para canhotos: pé direito à frente, esquerdo atrás, guarda alta.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens"
+      ],
+      "safety": "Peso equilibrado para evitar quedas. Instrutor corrige postura.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Shadow Boxing (Passo, Planos, Saltos)",
+      "description": "Treino livre com deslocamentos laterais, frontais e saltos, mantendo guarda de boxe.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens"
+      ],
+      "safety": "Evitar saltos altos em iniciantes. Tatame macio. Instrutor supervisiona ritmo.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para área.",
+        "TDAH: 1 min por série."
+      ]
+    },
+    {
+      "name": "Jab",
+      "description": "Soco reto com mão dianteira (esquerda para ortodoxos, direita para canhotos), partindo da guarda.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Guarda alta, punho firme para evitar lesões. Treino em pares a 70% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas (10 reps)."
+      ]
+    },
+    {
+      "name": "Direto",
+      "description": "Soco reto com mão traseira, usando rotação do quadril e ombro para potência.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Proteger queixo com mão oposta. Evitar hiperextensão do cotovelo.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para pés.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Gancho Esquerdo/Direito",
+      "description": "Soco curvo com rotação do tronco, visando lateral da cabeça ou corpo.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Punho firme, evitar rotação excessiva. Treino em pares a 70% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Uppercut Esquerdo/Direito",
+      "description": "Soco ascendente visando o queixo ou tronco, com flexão de joelhos.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Evitar inclinação excessiva. Punho firme para evitar lesões.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Jab + Direto",
+      "description": "Sequência de jab seguido de direto, alternando mãos para velocidade e potência.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Manter guarda, evitar hiperextensão. Treino em pares a 70% de força.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para pés.",
+        "TDAH: Séries de 10 combos."
+      ]
+    },
+    {
+      "name": "Jab + Gancho",
+      "description": "Jab seguido de gancho, visando velocidade e ataque lateral.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Evitar rotação excessiva do tronco. Instrutor corrige alinhamento.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Direto + Uppercut",
+      "description": "Direto seguido de uppercut, alternando potência e ataque ascendente.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Saco de pancada (opcional)"
+      ],
+      "safety": "Proteger queixo com mão oposta. Evitar inclinação excessiva.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Cotovelada Traseira",
+      "description": "Golpe com cotovelo para trás, visando o rosto ou tronco do agressor.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Protetor de cotovelo (opcional)"
+      ],
+      "safety": "Evitar contato direto em treinos. Instrutor supervisiona ângulo.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Cotovelada Lateral",
+      "description": "Golpe com cotovelo lateral, visando a cabeça ou costelas.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Protetor de cotovelo (opcional)"
+      ],
+      "safety": "Manter guarda alta. Treino em pares a 50% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para pés.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Cotovelada Frontal",
+      "description": "Golpe com cotovelo frontal, visando o rosto ou peito.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Protetor de cotovelo (opcional)"
+      ],
+      "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Cotovelada Uppercut",
+      "description": "Golpe ascendente com cotovelo, visando o queixo ou tronco.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Protetor de cotovelo (opcional)"
+      ],
+      "safety": "Manter guarda alta. Evitar inclinação excessiva.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Cotovelada Martelo",
+      "description": "Golpe descendente com cotovelo, visando a cabeça ou ombro.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Luvas de boxe",
+        "Bandagens",
+        "Protetor de cotovelo (opcional)"
+      ],
+      "safety": "Evitar contato direto. Instrutor supervisiona ângulo.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para pés.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Chute Reto",
+      "description": "Chute frontal com perna dianteira, visando a virilha ou abdômen.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Protetor de canela (opcional)",
+        "Tatame macio"
+      ],
+      "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Chute Lateral",
+      "description": "Chute lateral com perna traseira, visando costelas ou cabeça.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Protetor de canela (opcional)",
+        "Tatame macio"
+      ],
+      "safety": "Perna de apoio firme. Instrutor corrige equilíbrio.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Chute Circular Baixo",
+      "description": "Chute circular visando a coxa ou canela, com rotação do quadril.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Protetor de canela (opcional)",
+        "Tatame macio"
+      ],
+      "safety": "Evitar contato direto. Instrutor supervisiona pivô.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Joelhada Frontal",
+      "description": "Joelhada frontal visando abdômen ou rosto, com elevação do joelho.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Protetor de joelho (opcional)",
+        "Tatame macio"
+      ],
+      "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Empurrão",
+      "description": "Chute de empurrão com sola do pé, visando peito ou abdômen.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Protetor de canela (opcional)",
+        "Tatame macio"
+      ],
+      "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Dedos (Frontal)",
+      "description": "Defesa contra estrangulamento frontal, usando dedos para afastar mãos do agressor.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Treino a 50% de força. Evitar lesões no pescoço.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Joelho (Frontal)",
+      "description": "Defesa contra estrangulamento frontal, usando joelhada para desequilibrar.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Protetor de joelho (opcional)"
+      ],
+      "safety": "Evitar contato direto com joelho. Treino a 50% de força.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Empurrão (Frontal)",
+      "description": "Defesa contra estrangulamento frontal, empurrando o agressor com mãos ou braços.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Evitar força excessiva no pescoço. Instrutor supervisiona.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Posterior",
+      "description": "Defesa contra estrangulamento por trás, usando movimento de ombros e contra-ataque.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Empurrão (Posterior)",
+      "description": "Defesa contra estrangulamento por trás, empurrando para liberar o pescoço.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Evitar contato direto no pescoço. Instrutor supervisiona.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Estrangulamento Lateral",
+      "description": "Defesa contra estrangulamento lateral, usando movimento de ombro e contra-ataque.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Agarramento Frontal Não Agressivo",
+      "description": "Defesa contra agarramento frontal (ex.: camisa), liberando com braços.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Evitar força excessiva. Instrutor supervisiona.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Agarramento Frontal Agressivo",
+      "description": "Defesa contra agarramento frontal agressivo, usando braços e contra-ataque.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe",
+        "Protetor de joelho (opcional)"
+      ],
+      "safety": "Treino a 50% de força. Evitar contato direto com joelhada.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Agarramento com Imobilização",
+      "description": "Defesa contra agarramento com braços imobilizados, usando movimento de quadril.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Evitar pressão nos braços. Instrutor supervisiona.",
+      "difficulty": "Avançado",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Agarramento por Trás Externa",
+      "description": "Defesa contra agarramento por trás (braços livres), usando movimento de ombros.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Treino a 50% de força. Evitar contato direto.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Agarramento por Trás Interna",
+      "description": "Defesa contra agarramento por trás (braços presos), usando movimento de quadril.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe",
+        "Protetor de canela (opcional)"
+      ],
+      "safety": "Evitar contato direto com chute. Instrutor supervisiona.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa 360°",
+      "description": "Defesa circular contra ataques de ângulos variados, usando braços para bloquear.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Manter braços firmes. Treino a 50% de força.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para ângulos.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa 360° + Contra-ataque",
+      "description": "Defesa 360° seguida de contra-ataque (ex.: jab ou chute).",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Evitar contato direto no contra-ataque. Instrutor supervisiona.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para ângulos.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Defesa Soco Reto",
+      "description": "Defesa contra soco reto, desviando com antebraço, guarda alta.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Treino a 50% de força. Evitar impacto direto no antebraço.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Defesa Soco Gancho",
+      "description": "Defesa contra soco gancho, bloqueando com antebraço ou desvio.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio",
+        "Luvas de boxe"
+      ],
+      "safety": "Manter guarda alta. Treino a 50% de força.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Queda para Trás",
+      "description": "Queda protegendo cabeça e coluna, com braços e pernas amortecendo.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Evitar impacto na cabeça.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Queda Frente Suave",
+      "description": "Queda frontal suave, usando braços para amortecer e proteger o rosto.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Evitar impacto no rosto.",
+      "difficulty": "Iniciante",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Queda Frente Dura",
+      "description": "Queda frontal com maior impacto, usando braços e pernas para amortecer.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Marcações no tatame.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Queda Lateral",
+      "description": "Queda lateral, protegendo cabeça e quadril, com braço e perna amortecendo.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Evitar impacto no ombro ou cabeça.",
+      "difficulty": "Intermediário",
+      "adaptations": [
+        "TEA: Fitas para posição.",
+        "TDAH: Séries de 10 reps."
+      ]
+    },
+    {
+      "name": "Rolamento Frente",
+      "description": "Rolamento frontal, começando agachado, rolando sobre o ombro para voltar à guarda.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Evitar impacto na cabeça ou pescoço.",
+      "difficulty": "Avançado",
+      "adaptations": [
+        "TEA: Fitas para trajetória.",
+        "TDAH: Séries curtas."
+      ]
+    },
+    {
+      "name": "Rolamento Trás",
+      "description": "Rolamento traseiro, rolando sobre o ombro para voltar à guarda.",
+      "type": "TECHNIQUE",
+      "equipment": [
+        "Tatame macio"
+      ],
+      "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+      "difficulty": "Avançado",
+      "adaptations": [
+        "TEA: Fitas para trajetória.",
+        "TDAH: Séries de 10 reps."
+      ]
+    }
+  ]
+}

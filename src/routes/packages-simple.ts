@@ -7,7 +7,7 @@ import { ResponseHelper } from '@/utils/response';
  * Versão simplificada sem schemas inline - TEMPORARY
  */
 function resolveOrganizationId(request: any) {
-  return request.user?.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+  return request.user?.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
 }
 
 function normalizeBillingType(rawType?: string) {

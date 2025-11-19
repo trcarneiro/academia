@@ -22,7 +22,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
       try {
         // TODO: Pegar organizationId do token JWT autenticado
         const organizationId =
-          request.query.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
 
         const stats = await FrequencyStatsService.getDashboardStats(organizationId);
 
@@ -50,7 +50,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const organizationId =
-          request.query.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
 
         const charts = await FrequencyStatsService.getChartsData(organizationId);
 
@@ -78,7 +78,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const organizationId =
-          request.query.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
         const daysThreshold = request.query.daysThreshold
           ? parseInt(request.query.daysThreshold, 10)
           : 7;
@@ -119,7 +119,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const organizationId =
-          request.query.organizationId || '452c0b35-1822-4890-851e-922356c812fb';
+          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
         
         const page = parseInt(request.query.page || '1', 10);
         const pageSize = parseInt(request.query.pageSize || '20', 10);
@@ -203,7 +203,15 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
           absentStudents: lesson.attendances.filter((a: any) => !a.present).length,
           attendanceRate: lesson.attendances.length > 0 
             ? Math.round((lesson.attendances.filter((a: any) => a.present).length / lesson.attendances.length) * 100)
-            : 0
+            : 0,
+          participants: lesson.attendances.map((a: any) => ({
+            studentId: a.studentId,
+            studentName: `${a.student.user.firstName} ${a.student.user.lastName}`,
+            present: a.present,
+            late: a.late,
+            justified: a.justified,
+            checkedAt: a.checkedAt
+          }))
         }));
 
         return reply.send({

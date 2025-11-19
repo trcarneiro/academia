@@ -161,7 +161,9 @@ export class AgentOrchestratorService {
                     mcpTools: config.tools || [],
                     autoSaveInsights: config.autoSaveInsights || false,
                     isActive: config.isActive,
-                    organizationId: config.organizationId
+                    organization: {
+                        connect: { id: config.organizationId }
+                    }
                 }
             });
             

@@ -21,6 +21,12 @@ class CoursesController {
 
     async init() {
         try {
+            console.log('📚 [Courses] Initializing controller...');
+            
+            // AGENTS.md: Esperar DOM estar pronto ANTES de inicializar
+            await this.waitForDOM();
+            console.log('📚 [Courses] DOM ready');
+            
             // AGENTS.md: Wait for API client and create module API
             await this.waitForAPIClient();
             this.moduleAPI = window.createModuleAPI('Courses');
@@ -38,10 +44,49 @@ class CoursesController {
                 name: 'courses-controller',
                 controller: this 
             });
+            
+            console.log('✅ [Courses] Controller initialized successfully');
 
         } catch (error) {
+            console.error('❌ [Courses] Initialization error:', error);
             window.app?.handleError(error, 'Initializing courses controller');
         }
+    }
+
+    async waitForDOM() {
+        return new Promise((resolve) => {
+            // Verificar se elemento crítico já existe
+            const checkElement = document.getElementById('coursesGrid');
+            if (checkElement) {
+                console.log('📚 [Courses] coursesGrid found immediately');
+                resolve();
+                return;
+            }
+            
+            console.log('📚 [Courses] Waiting for coursesGrid element...');
+            
+            // Observer para detectar quando elemento for adicionado
+            const observer = new MutationObserver(() => {
+                const element = document.getElementById('coursesGrid');
+                if (element) {
+                    console.log('📚 [Courses] coursesGrid found via observer');
+                    observer.disconnect();
+                    resolve();
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Timeout de segurança (5 segundos)
+            setTimeout(() => {
+                console.warn('⚠️ [Courses] Timeout waiting for coursesGrid, proceeding anyway');
+                observer.disconnect();
+                resolve();
+            }, 5000);
+        });
     }
 
     async waitForAPIClient() {

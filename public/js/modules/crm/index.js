@@ -155,87 +155,65 @@ const CrmModule = {
         this.container.innerHTML = `
             <div class="module-header-premium">
                 <div class="header-content">
-                    <div class="header-left">
-                        <i class="fas fa-users-cog"></i>
-                        <div>
-                            <h1>CRM - Customer Relationship Management</h1>
-                            <nav class="breadcrumb">
-                                <span class="breadcrumb-item">Home</span>
-                                <i class="fas fa-chevron-right"></i>
-                                <span class="breadcrumb-item active">CRM Dashboard</span>
-                            </nav>
-                        </div>
+                    <div class="breadcrumb">
+                        <span>Academia</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current">CRM Dashboard</span>
                     </div>
-                    <div class="header-actions">
-                        <button class="btn-secondary" onclick="crm.navigateTo('settings')">
-                            <i class="fas fa-cog"></i>
-                            Settings
-                        </button>
-                        <button class="btn-secondary" onclick="crm.navigateTo('analytics')">
-                            <i class="fas fa-chart-line"></i>
-                            Analytics
-                        </button>
-                        <button class="btn-secondary" onclick="crm.navigateTo('kanban')">
-                            <i class="fas fa-columns"></i>
-                            Pipeline Kanban
-                        </button>
-                        <button class="btn-primary" onclick="crm.showCreateLeadForm()">
-                            <i class="fas fa-plus"></i>
-                            Novo Lead
-                        </button>
-                    </div>
+                    <h1>CRM - Customer Relationship Management</h1>
+                    <p class="header-subtitle">Gerencie leads e acompanhe conversões</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="crm.navigateTo('settings')">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button class="btn-secondary" onclick="crm.navigateTo('analytics')">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics
+                    </button>
+                    <button class="btn-secondary" onclick="crm.navigateTo('kanban')">
+                        <i class="fas fa-columns"></i>
+                        Pipeline Kanban
+                    </button>
+                    <button class="btn-primary" onclick="crm.showCreateLeadForm()">
+                        <i class="fas fa-plus"></i>
+                        Novo Lead
+                    </button>
                 </div>
             </div>
 
             <!-- Key Metrics -->
-            <div class="metrics-grid">
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total de Leads</div>
+            <div class="stats-grid">
+                <div class="stat-card-enhanced stat-gradient-primary">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
                         <div class="stat-value">${stats.totalLeads || 0}</div>
-                        <div class="stat-trend positive">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>+15% este mês</span>
-                        </div>
+                        <div class="stat-label">Total de Leads</div>
                     </div>
                 </div>
 
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Taxa de Conversão</div>
-                        <div class="stat-value">${stats.conversionRate?.toFixed(1) || 0}%</div>
-                        <div class="stat-trend ${stats.conversionRate > 15 ? 'positive' : 'negative'}">
-                            <i class="fas fa-${stats.conversionRate > 15 ? 'arrow-up' : 'arrow-down'}"></i>
-                            <span>${stats.conversionRate > 15 ? '+3%' : '-2%'} vs meta</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Tempo Médio p/ Contato</div>
-                        <div class="stat-value">${this.formatMinutes(stats.avgTimeToContact || 0)}</div>
-                        <div class="stat-subtitle">Meta: &lt; 30 min</div>
-                    </div>
-                </div>
-
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-label">Leads Convertidos</div>
+                <div class="stat-card-enhanced stat-gradient-success">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-info">
                         <div class="stat-value">${stats.convertedLeads || 0}</div>
-                        <div class="stat-subtitle">últimos 30 dias</div>
+                        <div class="stat-label">Leads Convertidos</div>
+                    </div>
+                </div>
+
+                <div class="stat-card-enhanced stat-gradient-info">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-value">${stats.conversionRate?.toFixed(1) || 0}%</div>
+                        <div class="stat-label">Taxa de Conversão</div>
+                    </div>
+                </div>
+
+                <div class="stat-card-enhanced stat-gradient-warning">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-info">
+                        <div class="stat-value">${this.getHotLeadsCount()}</div>
+                        <div class="stat-label">Leads Quentes</div>
                     </div>
                 </div>
             </div>

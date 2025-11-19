@@ -10,7 +10,7 @@ async function loadAndShowPlans() {
     
     try {
         // 1. Buscar dados da API (modo mais simples)
-        const response = await fetch('/api/billing-plans');
+        const response = await window.fetchWithOrganization('/api/billing-plans');
         const result = await response.json();
         
         console.log('✅ Dados recebidos:', result);

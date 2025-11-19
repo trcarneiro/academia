@@ -2762,3 +2762,675 @@
         justify-content: center;
     }
 }
+
+/* ============================================================================
+   CHECK-IN V2.0 - SALES ENHANCEMENTS
+   ============================================================================ */
+
+/* Loading State */
+.checkin-dashboard.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.loading-content {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.spinner-large {
+    width: 64px;
+    height: 64px;
+    border: 4px solid var(--kiosk-border);
+    border-top-color: var(--kiosk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Reactivation Screen */
+.reactivation-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+}
+
+.reactivation-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.reactivation-header h2 {
+    color: var(--kiosk-warning);
+    font-size: 2.5rem;
+    margin: 1rem 0;
+}
+
+.reactivation-content {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--kiosk-radius-lg);
+    box-shadow: var(--kiosk-shadow-lg);
+    max-width: 600px;
+    width: 100%;
+}
+
+.reactivation-message {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--kiosk-text);
+}
+
+.reactivation-submessage {
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--kiosk-text-muted);
+    margin-bottom: 2rem;
+}
+
+.reactivation-benefits {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    padding: 2rem;
+    border-radius: var(--kiosk-radius);
+    margin-bottom: 2rem;
+}
+
+.reactivation-benefits h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--kiosk-text);
+}
+
+.reactivation-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reactivation-benefits li {
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+    color: var(--kiosk-text);
+}
+
+.reactivation-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-reactivate {
+    flex: 2;
+    background: var(--kiosk-gradient);
+    color: white;
+    padding: 1.5rem 2rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-reactivate:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.btn-back {
+    flex: 1;
+    background: var(--kiosk-border);
+    color: var(--kiosk-text);
+    padding: 1.5rem 2rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-back:hover {
+    background: #d1d5db;
+}
+
+/* Course Progress Section */
+.course-progress-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--kiosk-radius-lg);
+    box-shadow: var(--kiosk-shadow);
+    margin-bottom: 2rem;
+}
+
+.progress-content {
+    margin-top: 1rem;
+}
+
+.progress-info {
+    margin-bottom: 1rem;
+}
+
+.course-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.progress-stats {
+    font-size: 1rem;
+    color: var(--kiosk-text-muted);
+}
+
+/* Progress Bar with Animation */
+.progress-bar-container {
+    width: 100%;
+    height: 32px;
+    background: #f3f4f6;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    margin: 1rem 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--kiosk-gradient);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 1rem;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-label {
+    position: relative;
+    z-index: 1;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Graduation Badge */
+.graduation-badge {
+    padding: 1rem 1.5rem;
+    border-radius: var(--kiosk-radius);
+    font-weight: 600;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+
+.graduation-badge.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    animation: pulse-success 2s ease-in-out infinite;
+}
+
+.graduation-badge.warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+
+@keyframes pulse-success {
+    0%, 100% { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); }
+    50% { box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5); }
+}
+
+/* Classes Section */
+.classes-section {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--kiosk-radius-lg);
+    box-shadow: var(--kiosk-shadow);
+    margin-bottom: 2rem;
+}
+
+.classes-subtitle {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--kiosk-text);
+    margin: 1.5rem 0 1rem 0;
+}
+
+.classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+/* Class Cards */
+.class-card {
+    background: white;
+    border: 2px solid var(--kiosk-border);
+    border-radius: var(--kiosk-radius);
+    padding: 1.5rem;
+    transition: var(--kiosk-transition);
+    cursor: pointer;
+}
+
+.class-card.active {
+    border-left: 4px solid #10b981;
+}
+
+.class-card.active:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.class-card.selected {
+    border-color: var(--kiosk-primary);
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.class-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.class-time {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kiosk-primary);
+}
+
+.class-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.class-status-badge.open {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.class-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--kiosk-text);
+    margin-bottom: 0.75rem;
+}
+
+.class-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.class-instructor,
+.class-room,
+.class-slots {
+    font-size: 0.95rem;
+    color: var(--kiosk-text-muted);
+}
+
+.btn-select-class {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--kiosk-gradient);
+    color: white;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+}
+
+.btn-select-class:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* New: Direct Check-in Button on Cards */
+.btn-checkin-turma {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #00d084 0%, #00a66c 100%);
+    color: white;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 208, 132, 0.3);
+}
+
+.btn-checkin-turma:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 208, 132, 0.5);
+}
+
+.btn-checkin-turma:active {
+    transform: scale(0.98);
+}
+
+.btn-checkin-turma .icon {
+    font-size: 1.3rem;
+}
+
+.btn-checkin-turma .text {
+    font-weight: 700;
+}
+
+/* Upcoming Classes */
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.upcoming-card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 2px solid #fbbf24;
+    border-radius: var(--kiosk-radius);
+    padding: 1rem;
+}
+
+.upcoming-time {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.upcoming-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.upcoming-countdown {
+    font-size: 0.95rem;
+    color: #d97706;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.upcoming-instructor {
+    font-size: 0.9rem;
+    color: var(--kiosk-text-muted);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   SCHEDULE SECTION - TURMAS DISPONÍVEIS
+   ============================================================================ */
+
+.schedule-section {
+    background: var(--kiosk-surface);
+    border-radius: var(--kiosk-radius-lg);
+    box-shadow: var(--kiosk-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--kiosk-border);
+}
+
+.schedule-header h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin: 0;
+}
+
+.current-time {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--kiosk-primary);
+    font-family: 'Courier New', monospace;
+}
+
+.available-classes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.class-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: var(--kiosk-radius);
+    padding: 1.5rem;
+    border-left: 4px solid var(--kiosk-border);
+    transition: var(--kiosk-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.class-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    transition: var(--kiosk-transition);
+}
+
+.class-card.status-upcoming {
+    border-left-color: var(--kiosk-warning);
+}
+
+.class-card.status-upcoming::before {
+    background: var(--kiosk-warning);
+}
+
+.class-card.status-available {
+    border-left-color: var(--kiosk-success);
+    box-shadow: 0 4px 16px rgba(0, 208, 132, 0.2);
+}
+
+.class-card.status-available::before {
+    background: var(--kiosk-success);
+}
+
+.class-card.status-closed {
+    border-left-color: #9ca3af;
+    opacity: 0.6;
+}
+
+.class-card.can-checkin {
+    cursor: pointer;
+    transform: scale(1);
+}
+
+.class-card.can-checkin:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.class-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.time-badge {
+    background: var(--kiosk-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.countdown {
+    font-size: 0.85rem;
+    color: var(--kiosk-warning);
+    font-weight: 600;
+    background: rgba(244, 167, 64, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+}
+
+.class-info h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin: 0 0 0.5rem 0;
+}
+
+.class-instructor,
+.class-capacity {
+    font-size: 0.9rem;
+    color: var(--kiosk-text-muted);
+    margin: 0.25rem 0;
+}
+
+.class-status {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--kiosk-border);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.class-status.status-upcoming {
+    color: var(--kiosk-warning);
+}
+
+.class-status.status-available {
+    color: var(--kiosk-success);
+}
+
+.class-status.status-closed {
+    color: #9ca3af;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--kiosk-text-muted);
+}
+
+.loading-state .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--kiosk-border);
+    border-top-color: var(--kiosk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-state {
+    color: var(--kiosk-error);
+}
+
+.empty-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.empty-hint {
+    font-size: 1rem;
+    color: var(--kiosk-text-muted);
+    font-style: italic;
+}
+
+/* Responsive Adjustments for V2 */
+@media (max-width: 768px) {
+    .classes-grid,
+    .upcoming-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .available-classes {
+        grid-template-columns: 1fr;
+    }
+    
+    .reactivation-actions {
+        flex-direction: column;
+    }
+    
+    .btn-reactivate,
+    .btn-back {
+        width: 100%;
+    }
+    
+    .schedule-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+

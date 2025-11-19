@@ -16,6 +16,7 @@ export const attendanceHistoryQuerySchema = z.object({
   endDate: z.string().datetime().optional(),
   status: z.nativeEnum(AttendanceStatus).optional(),
   classId: z.string().uuid().optional(),
+  studentId: z.string().uuid().optional(),
 });
 
 export const updateAttendanceSchema = z.object({

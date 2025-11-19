@@ -1,0 +1,120 @@
+<!-- Turmas List View -->
+<div class="turmas-container">
+    <!-- Header -->
+    <div class="module-header-premium">
+        <div class="header-left">
+            <h1>Gestão de Turmas</h1>
+            <p class="subtitle">Gerencie as turmas e aulas da academia</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="window.location.hash = 'turmas/create'">
+                ➕ Nova Turma
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="module-filters-premium">
+        <div class="filter-group">
+            <input 
+                type="text" 
+                id="turmas-search" 
+                placeholder="Buscar turmas..."
+                class="search-input"
+            >
+        </div>
+        <div class="filter-group">
+            <select id="turmas-status-filter" class="filter-select">
+                <option value="all">Todos os Status</option>
+                <option value="ACTIVE">Ativas</option>
+                <option value="INACTIVE">Inativas</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <div class="stat-label">Total de Turmas</div>
+                <div class="stat-value" id="total-turmas">0</div>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-label">Turmas Ativas</div>
+                <div class="stat-value" id="active-turmas">0</div>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">👨‍🎓</div>
+            <div class="stat-content">
+                <div class="stat-label">Total de Alunos</div>
+                <div class="stat-value" id="total-students">0</div>
+            </div>
+        </div>
+        <div class="stat-card-enhanced">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <div class="stat-label">Aulas Esta Semana</div>
+                <div class="stat-value" id="lessons-week">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Turmas List -->
+    <div class="data-card-premium">
+        <div class="card-header">
+            <h3>Todas as Turmas</h3>
+        </div>
+        <div class="card-content">
+            <!-- Loading State -->
+            <div id="turmas-loading" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Carregando turmas...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="turmas-empty" class="empty-state" style="display: none;">
+                <div class="empty-icon">📋</div>
+                <h3>Nenhuma turma encontrada</h3>
+                <p>Crie sua primeira turma para começar</p>
+                <button class="btn-primary" onclick="window.turmasModule?.navigateToCreate()">
+                    ➕ Criar Primeira Turma
+                </button>
+            </div>
+
+            <!-- Error State -->
+            <div id="turmas-error" class="error-state" style="display: none;">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro ao carregar turmas</h3>
+                <p id="error-message"></p>
+                <button class="btn-secondary" onclick="window.turmasModule?.loadTurmas()">
+                    🔄 Tentar Novamente
+                </button>
+            </div>
+
+            <!-- Turmas Table -->
+            <div id="turmas-table-container" style="display: none;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Curso</th>
+                            <th>Instrutor</th>
+                            <th>Alunos</th>
+                            <th>Horário</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="turmas-tbody">
+                        <!-- Rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -238,10 +238,12 @@ export class TurmasService {
             const cached = this._getCache(cacheKey);
             if (cached) return cached;
         }
+        console.log('🔄 [TurmasService] Buscando cursos...');
         const result = await this.api.fetchWithStates('/api/courses', {
             method: 'GET',
             onEmpty: () => ({ success: true, data: [] })
         });
+        console.log('📚 [TurmasService] Cursos retornados:', result);
         if (result && result.success) this._setCache(cacheKey, result);
         return result;
     }
@@ -303,6 +305,22 @@ export class TurmasService {
         });
         if (result && result.success) this._setCache(cacheKey, result);
         console.log('🏢 [TurmasService] Unidades retornadas:', result);
+        return result;
+    }
+
+    async getTrainingAreas({ force = false } = {}) {
+        const cacheKey = 'trainingAreas';
+        if (!force) {
+            const cached = this._getCache(cacheKey);
+            if (cached) return cached;
+        }
+        console.log('🔄 [TurmasService] Buscando áreas de treino...');
+        const result = await this.api.fetchWithStates('/api/training-areas', {
+            method: 'GET',
+            onEmpty: () => ({ success: true, data: [] })
+        });
+        if (result && result.success) this._setCache(cacheKey, result);
+        console.log('🥋 [TurmasService] Áreas de treino retornadas:', result);
         return result;
     }
 

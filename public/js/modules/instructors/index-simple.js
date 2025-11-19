@@ -1,13 +1,20 @@
 /**
  * Instructors Module - SIMPLIFIED VERSION
+ * Version: 2.1.0 (2025-11-13 - Organization Context Fix)
  * Replaces complex multi-file architecture with single, maintainable file
  * Maintains exact same functionality and appearance as original
+ * 
+ * CHANGELOG v2.1.0:
+ * - Added organizationId context to loadData() GET request
+ * - Fixed 400 Bad Request "Organization context required" error
  */
 
 // Prevent multiple declarations
 if (typeof window.InstructorsModule !== 'undefined') {
-    console.log('👨‍🏫 Instructors Module already loaded, skipping...');
+    console.log('👨‍🏫 Instructors Module (Simple) already loaded (v2.1.0), skipping...');
 } else {
+
+console.log('👨‍🏫 Instructors Module (Simple) v2.1.0 - Starting...');
 
 const InstructorsModule = {
     // Module properties
@@ -21,11 +28,11 @@ const InstructorsModule = {
     async init() {
         try {
             if (this.initialized) {
-                console.log('👨‍🏫 Instructors Module already initialized, skipping...');
+                console.log('👨‍🏫 Instructors Module (Simple) v2.1.0 already initialized, skipping...');
                 return this;
             }
             
-            console.log('👨‍🏫 Instructors Module - Starting (Simplified)...');
+            console.log('👨‍🏫 Instructors Module (Simple) v2.1.0 - Initializing...');
             
             if (!this.container) {
                 throw new Error('Container not set before initialization');
@@ -64,7 +71,15 @@ const InstructorsModule = {
         try {
             console.log('📡 Loading instructors data...');
             
-            const response = await fetch('/api/instructors');
+            // Get organization context
+            const organizationId = window.currentOrganizationId || 
+                                 localStorage.getItem('currentOrganizationId');
+            
+            if (!organizationId) {
+                throw new Error('Organization context required');
+            }
+            
+            const response = await fetch(`/api/instructors?organizationId=${organizationId}`);
             const data = await response.json();
             
             if (data.success) {

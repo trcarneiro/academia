@@ -11,6 +11,7 @@ interface ClassFilters {
   type?: 'CLASS' | 'PERSONAL_SESSION' | 'TURMA';
   limit: number;
   offset: number;
+  organizationId?: string;
 }
 
 export class AgendaController {
@@ -291,7 +292,7 @@ export class AgendaController {
   /**
    * Gerar classes virtuais a partir das turmas para uma data específica
    */
-  private async generateVirtualClassesFromTurmas(filters: ClassFilters) {
+  private async generateVirtualClassesFromTurmas(filters: ClassFilters & { organizationId?: string }) {
     try {
       if (!filters.startDate || !filters.endDate) {
         return [];
@@ -301,10 +302,14 @@ export class AgendaController {
       const endDate = this.parseLocalDate(filters.endDate);
       endDate.setHours(23, 59, 59, 999);
 
+      // 1. Buscar turmas ativas
       const turmaConditions: any = {
-        isActive: true,
-        status: { in: ['SCHEDULED', 'IN_PROGRESS'] } as any
+        isActive: true
       };
+
+      if (filters.organizationId) {
+        turmaConditions.organizationId = filters.organizationId;
+      }
 
       if (filters.instructor) {
         turmaConditions.instructorId = filters.instructor;
@@ -314,6 +319,35 @@ export class AgendaController {
         turmaConditions.courseId = filters.course;
       }
 
+      const turmas = await this.prisma.turma.findMany({
+        where: turmaConditions,
+        include: {
+          course: {
+            select: {
+              id: true,
+              name: true,
+              category: true,
+              description: true
+            }
+          },
+          instructor: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          unit: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      // 2. Buscar lições existentes (exceções ou confirmações)
       const lessonWhere: any = {
         scheduledDate: {
           gte: startDate,
@@ -326,34 +360,15 @@ export class AgendaController {
         lessonWhere.status = filters.status as any;
       }
 
-      const lessons = await this.prisma.turmaLesson.findMany({
+      const existingLessons = await this.prisma.turmaLesson.findMany({
         where: lessonWhere,
         include: {
           turma: {
-            include: {
-              course: {
-                select: {
-                  id: true,
-                  name: true,
-                  category: true,
-                  description: true
-                }
-              },
-              instructor: {
-                select: {
-                  id: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true
-                }
-              },
-              unit: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            }
+             include: {
+                course: true,
+                instructor: true,
+                unit: true
+             }
           },
           lessonPlan: {
             select: {
@@ -378,62 +393,136 @@ export class AgendaController {
               }
             }
           }
-        },
-        orderBy: {
-          scheduledDate: 'asc'
         }
       });
 
-      const mapped = lessons.map((lesson) => {
-        const turma = lesson.turma;
-        if (!turma) {
-          return null;
+      // Mapa de lições existentes: turmaId-YYYY-MM-DD -> Lesson
+      const lessonMap = new Map<string, any>();
+      existingLessons.forEach(lesson => {
+        const dateKey = this.formatLocalYMD(lesson.scheduledDate);
+        lessonMap.set(`${lesson.turmaId}-${dateKey}`, lesson);
+      });
+
+      const virtualClasses: any[] = [];
+      
+      // 3. Iterar dias e turmas
+      const currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        const dayOfWeek = currentDate.getDay(); // 0-6
+        const dateKey = this.formatLocalYMD(currentDate);
+
+        for (const turma of turmas) {
+           // Check turma validity dates
+           if (turma.startDate && currentDate < turma.startDate) continue;
+           if (turma.endDate && currentDate > turma.endDate) continue;
+
+           // Parse schedule
+           const schedule = turma.schedule as any; 
+           if (!schedule || !Array.isArray(schedule.daysOfWeek)) continue;
+
+           if (schedule.daysOfWeek.includes(dayOfWeek)) {
+             // Check if concrete lesson exists
+             const existing = lessonMap.get(`${turma.id}-${dateKey}`);
+             
+             if (existing) {
+               // Use existing lesson
+               const startTime = existing.scheduledDate;
+               const endTime = new Date(startTime.getTime() + (existing.duration || 60) * 60 * 1000);
+               const instructor = existing.turma?.instructor || turma.instructor;
+               const instructorName = instructor
+                  ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
+                  : '';
+
+               virtualClasses.push({
+                  id: `turmaLesson-${existing.id}`,
+                  type: 'TURMA',
+                  title: this.formatTurmaLessonTitle(existing.title, existing.lessonNumber),
+                  lessonNumber: existing.lessonNumber,
+                  startTime: startTime.toISOString(),
+                  endTime: endTime.toISOString(),
+                  status: existing.status,
+                  maxStudents: turma.maxStudents ?? 0,
+                  actualStudents: existing.attendances.length,
+                  description: existing.lessonPlan?.description || existing.notes || turma.description || `Aula da turma ${turma.name}`,
+                  notes: existing.notes || null,
+                  course: turma.course ? {
+                    id: turma.course.id,
+                    name: turma.course.name,
+                    category: turma.course.category
+                  } : null,
+                  instructor: instructor ? {
+                    id: turma.instructorId,
+                    name: instructorName || instructor.email || 'Instrutor',
+                    email: instructor.email ?? ''
+                  } : null,
+                  attendanceCount: existing.attendances.length,
+                  attendances: [], 
+                  isVirtual: false,
+                  turmaId: existing.turmaId,
+                  unit: turma.unit ? {
+                    id: turma.unit.id,
+                    name: turma.unit.name
+                  } : null
+               });
+             } else {
+               // Create virtual lesson
+               if (filters.status && filters.status !== 'SCHEDULED') continue;
+
+               const timeParts = (schedule.time || '00:00').split(':');
+               const hour = parseInt(timeParts[0]);
+               const minute = parseInt(timeParts[1]);
+               
+               const startTime = new Date(currentDate);
+               startTime.setHours(hour, minute, 0, 0);
+               
+               const duration = parseInt(schedule.duration || '60');
+               const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+               
+               const instructor = turma.instructor;
+               const instructorName = instructor
+                  ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
+                  : '';
+
+               virtualClasses.push({
+                  id: `virtual-${turma.id}-${dateKey}`,
+                  type: 'TURMA',
+                  title: turma.name,
+                  lessonNumber: null,
+                  startTime: startTime.toISOString(),
+                  endTime: endTime.toISOString(),
+                  status: 'SCHEDULED',
+                  maxStudents: turma.maxStudents ?? 0,
+                  actualStudents: 0,
+                  description: turma.description || `Aula da turma ${turma.name}`,
+                  notes: null,
+                  course: turma.course ? {
+                    id: turma.course.id,
+                    name: turma.course.name,
+                    category: turma.course.category
+                  } : null,
+                  instructor: instructor ? {
+                    id: turma.instructorId,
+                    name: instructorName || instructor.email || 'Instrutor',
+                    email: instructor.email ?? ''
+                  } : null,
+                  attendanceCount: 0,
+                  attendances: [],
+                  isVirtual: true,
+                  turmaId: turma.id,
+                  unit: turma.unit ? {
+                    id: turma.unit.id,
+                    name: turma.unit.name
+                  } : null
+               });
+             }
+           }
         }
+        
+        // Next day
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
 
-        const startTime = lesson.scheduledDate;
-        const endTime = new Date(startTime.getTime() + (lesson.duration || 60) * 60 * 1000);
-        const instructor = turma.instructor;
-
-        const instructorName = instructor
-          ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
-          : '';
-
-        const formattedTitle = this.formatTurmaLessonTitle(lesson.title, lesson.lessonNumber);
-
-        return {
-          id: `turmaLesson-${lesson.id}`,
-          type: 'TURMA',
-          title: formattedTitle,
-          lessonNumber: lesson.lessonNumber,
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
-          status: lesson.status,
-          maxStudents: turma.maxStudents ?? 0,
-          actualStudents: lesson.attendances.length,
-          description: lesson.lessonPlan?.description || lesson.notes || turma.description || `Aula da turma ${turma.name}`,
-          notes: lesson.notes || null,
-          course: turma.course ? {
-            id: turma.course.id,
-            name: turma.course.name,
-            category: turma.course.category
-          } : null,
-          instructor: instructor ? {
-            id: turma.instructorId,
-            name: instructorName || instructor.email || 'Instrutor',
-            email: instructor.email ?? ''
-          } : null,
-          attendanceCount: lesson.attendances.length,
-          attendances: [],
-          isVirtual: true,
-          turmaId: lesson.turmaId,
-          unit: turma.unit ? {
-            id: turma.unit.id,
-            name: turma.unit.name
-          } : null
-        };
-      }).filter(Boolean) as any[];
-
-      return mapped.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      return virtualClasses.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
     } catch (error) {
       console.error('Error generating turma lessons:', error);
       return [];

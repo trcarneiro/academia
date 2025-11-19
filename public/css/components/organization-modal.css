@@ -1,0 +1,461 @@
+/**
+ * 🏢 Organization Selection Modal Styles
+ * Premium design with smooth animations
+ */
+
+/* Modal Overlay */
+.org-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.org-modal.active {
+  display: flex;
+  opacity: 1;
+}
+
+.org-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.org-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(40px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Modal Header */
+.org-modal-header {
+  padding: 40px 40px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.org-modal-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: iconBounce 0.6s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.org-modal-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  letter-spacing: -0.5px;
+}
+
+.org-modal-subtitle {
+  font-size: 16px;
+  opacity: 0.95;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Modal Body */
+.org-modal-body {
+  padding: 32px 40px;
+}
+
+.org-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Organization Cards */
+.org-modal-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.org-modal-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.org-modal-card:hover::before {
+  opacity: 0.05;
+}
+
+.org-modal-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  transform: translateX(8px);
+}
+
+.org-modal-card:active {
+  transform: translateX(8px) scale(0.98);
+}
+
+.org-modal-card.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.org-modal-card.loading .org-modal-card-arrow {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.org-modal-card.selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+}
+
+.org-modal-card.selected .org-modal-card-title,
+.org-modal-card.selected .org-modal-card-slug,
+.org-modal-card.selected .org-modal-card-location {
+  color: white;
+}
+
+.org-modal-card.selected .org-modal-card-arrow {
+  color: white;
+  transform: scale(1.2);
+}
+
+/* Card Icon */
+.org-modal-card-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.org-modal-card:hover .org-modal-card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.org-modal-card.selected .org-modal-card-icon {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Card Content */
+.org-modal-card-content {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.org-modal-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #1a202c;
+  transition: color 0.3s ease;
+}
+
+.org-modal-card-slug {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 8px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  transition: color 0.3s ease;
+}
+
+.org-modal-card-location {
+  font-size: 13px;
+  color: #a0aec0;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* Card Arrow */
+.org-modal-card-arrow {
+  font-size: 24px;
+  color: #667eea;
+  font-weight: bold;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.org-modal-card:hover .org-modal-card-arrow {
+  transform: translateX(4px);
+}
+
+/* Modal Footer */
+.org-modal-footer {
+  padding: 24px 40px 40px;
+  background: #f8f9fa;
+  border-radius: 0 0 16px 16px;
+}
+
+.org-modal-help {
+  margin: 0;
+  font-size: 14px;
+  color: #718096;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Scrollbar Styling */
+.org-modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.org-modal-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 16px 16px 0;
+}
+
+.org-modal-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.org-modal-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .org-modal-overlay {
+    padding: 16px;
+  }
+
+  .org-modal-container {
+    max-height: 95vh;
+  }
+
+  .org-modal-header {
+    padding: 32px 24px 20px;
+  }
+
+  .org-modal-icon {
+    font-size: 48px;
+  }
+
+  .org-modal-title {
+    font-size: 24px;
+  }
+
+  .org-modal-subtitle {
+    font-size: 14px;
+  }
+
+  .org-modal-body {
+    padding: 24px;
+  }
+
+  .org-modal-card {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .org-modal-card-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 32px;
+  }
+
+  .org-modal-card-title {
+    font-size: 18px;
+  }
+
+  .org-modal-card-slug {
+    font-size: 13px;
+  }
+
+  .org-modal-card-location {
+    font-size: 12px;
+  }
+
+  .org-modal-footer {
+    padding: 20px 24px 32px;
+  }
+
+  .org-modal-help {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .org-modal-header {
+    padding: 24px 20px 16px;
+  }
+
+  .org-modal-body {
+    padding: 20px;
+  }
+
+  .org-modal-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .org-modal-card-arrow {
+    display: none;
+  }
+
+  .org-modal-footer {
+    padding: 16px 20px 24px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .org-modal-container {
+    background: #1a202c;
+    color: white;
+  }
+
+  .org-modal-card {
+    background: #2d3748;
+  }
+
+  .org-modal-card-title {
+    color: white;
+  }
+
+  .org-modal-card-slug {
+    color: #a0aec0;
+  }
+
+  .org-modal-card-location {
+    color: #718096;
+  }
+
+  .org-modal-card-icon {
+    background: #4a5568;
+  }
+
+  .org-modal-footer {
+    background: #2d3748;
+  }
+
+  .org-modal-help {
+    color: #a0aec0;
+  }
+}
+
+/* Accessibility */
+.org-modal-card:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+.org-modal-card:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animation for multiple cards */
+.org-modal-card {
+  animation: cardSlideIn 0.4s ease backwards;
+}
+
+.org-modal-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.org-modal-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.org-modal-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.org-modal-card:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.org-modal-card:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

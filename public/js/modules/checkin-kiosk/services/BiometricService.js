@@ -24,7 +24,7 @@ class BiometricService {
             });
 
             if (response.success && response.data) {
-                // Store basic info for fast search
+                // Load ALL students for autocomplete (no filter by subscription status)
                 this.studentsCache = response.data.map(student => ({
                     id: student.id,
                     name: student.user ? `${student.user.firstName} ${student.user.lastName}` : 'Sem nome',
@@ -34,7 +34,27 @@ class BiometricService {
                     cpf: student.cpf || student.user?.cpf || '',
                     email: student.user?.email || '',
                     avatarUrl: student.user?.avatarUrl || '',
+                    subscriptions: student.subscriptions || [],
+                    isActive: student.isActive !== false, // Student active status
                 }));
+                
+                console.log(`✅ Loaded ${this.studentsCache.length} students (no subscription filter)`);
+                
+                // DEBUG: Verificar se Pedro Teste foi carregado
+                const pedro = this.studentsCache.find(s => 
+                    s.firstName === 'Pedro' && s.lastName === 'Teste'
+                );
+                if (pedro) {
+                    console.log('✅ Pedro Teste carregado no cache inicial:', pedro);
+                } else {
+                    console.warn('❌ Pedro Teste NÃO foi carregado no cache!');
+                    console.log('🔍 Procurando "Pedro" no cache...');
+                    const pedros = this.studentsCache.filter(s => 
+                        s.firstName.toLowerCase().includes('pedro') || 
+                        s.lastName.toLowerCase().includes('pedro')
+                    );
+                    console.log(`📋 Encontrados ${pedros.length} alunos com "Pedro":`, pedros);
+                }
                 
                 this.cacheLoaded = true;
                 console.log(`✅ Loaded ${this.studentsCache.length} students for autocomplete`);
@@ -92,20 +112,40 @@ class BiometricService {
             }
 
             const queryLower = query.toLowerCase().trim();
-            console.log(`� Searching locally for: "${query}"`);
+            console.log(`🔍 Searching locally for: "${query}"`);
 
-            // Busca LOCAL - instantânea!
+            // Busca progressiva letra por letra - elimina os que não batem
             const results = this.studentsCache.filter(student => {
-                const nameMatch = student.name.toLowerCase().includes(queryLower);
-                const firstNameMatch = student.firstName.toLowerCase().includes(queryLower);
-                const lastNameMatch = student.lastName.toLowerCase().includes(queryLower);
-                const matriculaMatch = student.matricula && student.matricula.toLowerCase().includes(queryLower);
-                const cpfMatch = student.cpf && student.cpf.replace(/\D/g, '').includes(queryLower.replace(/\D/g, ''));
+                const fullName = student.name.toLowerCase();
+                const firstName = student.firstName.toLowerCase();
+                const lastName = student.lastName.toLowerCase();
+                const matricula = (student.matricula || '').toLowerCase();
+                const cpf = (student.cpf || '').replace(/\D/g, '');
+                const queryCpf = queryLower.replace(/\D/g, '');
                 
-                return nameMatch || firstNameMatch || lastNameMatch || matriculaMatch || cpfMatch;
+                // Busca progressiva: cada letra digitada elimina mais alunos
+                // Verifica se COMEÇA com a query (mais preciso que includes)
+                const startsWithFirstName = firstName.startsWith(queryLower);
+                const startsWithLastName = lastName.startsWith(queryLower);
+                const startsWithFullName = fullName.startsWith(queryLower);
+                
+                // Busca secundária: contém em qualquer parte do nome
+                const containsInFirstName = firstName.includes(queryLower);
+                const containsInLastName = lastName.includes(queryLower);
+                const containsInFullName = fullName.includes(queryLower);
+                
+                // Busca por matrícula e CPF
+                const matchesMatricula = matricula.startsWith(queryLower);
+                const matchesCpf = queryCpf && cpf.startsWith(queryCpf);
+                
+                // Prioridade: 1) Começa com | 2) Contém | 3) Matrícula/CPF
+                return startsWithFirstName || startsWithLastName || startsWithFullName ||
+                       containsInFirstName || containsInLastName || containsInFullName ||
+                       matchesMatricula || matchesCpf;
             });
             
-            console.log(`✅ Found ${results.length} results locally:`, results.slice(0, 5).map(r => r.name));
+            console.log(`✅ Found ${results.length} results locally:`, results.slice(0, 10).map(r => r.name));
+            
             return results;
         } catch (error) {
             console.error('❌ Error searching students:', error);

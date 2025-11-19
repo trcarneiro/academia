@@ -534,4 +534,158 @@ export class GraduationController {
       });
     }
   }
+
+  /**
+   * GET /api/graduation/student/:id/detailed-progress
+   * Retorna progresso detalhado com timeline de check-ins e atividades
+   */
+  static async getStudentDetailedProgressWithCheckins(
+    request: FastifyRequest<{
+      Params: { id: string };
+      Querystring: { courseId?: string; organizationId: string };
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+      const { courseId, organizationId } = request.query;
+
+      console.log(`📊 [GRADUATION] Getting detailed progress for student ${id}`);
+
+      if (!organizationId) {
+        return reply.code(400).send({
+          success: false,
+          message: 'organizationId is required',
+        });
+      }
+
+      // Buscar progresso detalhado (usa método existente)
+      const progressData = await GraduationService.getStudentDetailedProgress(
+        id,
+        courseId,
+        organizationId
+      );
+
+      // Buscar check-ins com detalhes das aulas
+      const { prisma } = await import('@/utils/database');
+      
+      const checkins = await prisma.turmaAttendance.findMany({
+        where: {
+          studentId: id,
+          present: true,
+        },
+        include: {
+          lesson: {
+            include: {
+              lessonPlan: {
+                select: {
+                  lessonNumber: true,
+                  title: true,
+                  description: true,
+                  activities: {
+                    include: {
+                      activity: {
+                        select: {
+                          id: true,
+                          title: true,
+                          type: true,
+                          estimatedDuration: true,
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 30 // Últimos 30 check-ins
+      });
+
+      console.log(`✅ Found ${checkins.length} check-ins for student`);
+
+      // Criar timeline combinando check-ins com execuções
+      const timeline = checkins
+        .filter(checkin => checkin.lesson?.lessonPlan)
+        .map(checkin => {
+          const lesson = checkin.lesson!;
+          const lessonPlan = lesson.lessonPlan!;
+          const lessonActivities = lessonPlan.activities || [];
+
+          // Buscar atividades executadas nesta aula
+          const executedActivities = progressData.activities
+            .filter(act => act.lessonNumber === lessonPlan.lessonNumber)
+            .map(act => ({
+              name: act.name,
+              category: act.category,
+              quantitativeProgress: act.quantitativeProgress,
+              qualitativeRating: act.qualitativeRating,
+              targetReps: act.targetReps || 0,
+              completed: act.quantitativeProgress >= (act.targetReps || 0),
+            }));
+
+          return {
+            checkinId: checkin.id,
+            checkinDate: checkin.createdAt,
+            lessonId: lesson.id,
+            lessonNumber: lessonPlan.lessonNumber,
+            lessonTitle: lessonPlan.title,
+            lessonDescription: lessonPlan.description,
+            scheduledDate: lesson.scheduledDate,
+            activitiesInLesson: lessonActivities.map(la => {
+              const executed = executedActivities.find(
+                e => e.name === la.activity.title
+              );
+              return {
+                id: la.activity.id,
+                name: la.activity.title,
+                category: la.activity.type,
+                targetReps: la.minimumForGraduation || 0,
+                executed: executed || null,
+              };
+            }),
+            completionRate: lessonActivities.length > 0
+              ? (executedActivities.length / lessonActivities.length) * 100
+              : 0,
+          };
+        });
+
+      // Calcular estatísticas de frequência
+      const last7Days = checkins.filter(c => {
+        const diff = Date.now() - new Date(c.createdAt).getTime();
+        return diff <= 7 * 24 * 60 * 60 * 1000;
+      }).length;
+
+      const last30Days = checkins.filter(c => {
+        const diff = Date.now() - new Date(c.createdAt).getTime();
+        return diff <= 30 * 24 * 60 * 60 * 1000;
+      }).length;
+
+      return reply.send({
+        success: true,
+        data: {
+          ...progressData,
+          timeline,
+          stats: {
+            ...progressData.stats,
+            recentCheckins: {
+              last7Days,
+              last30Days,
+              total: checkins.length,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      logger.error('Error fetching detailed progress with checkins:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to fetch detailed progress',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
 }

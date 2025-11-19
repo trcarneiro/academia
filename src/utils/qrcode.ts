@@ -13,10 +13,9 @@ export class QRCodeService {
       };
 
       const qrCodeString = JSON.stringify(qrCodeData);
-      const qrCodeDataUrl = await QRCode.toDataURL(qrCodeString, {
+      const qrCodeDataUrl: string = await QRCode.toDataURL(qrCodeString, {
         errorCorrectionLevel: 'M',
         type: 'image/png',
-        quality: 0.92,
         margin: 1,
         color: {
           dark: '#000000',

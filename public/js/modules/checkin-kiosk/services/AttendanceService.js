@@ -10,7 +10,7 @@ class AttendanceService {
 
     /**
      * Complete check-in for student in course
-     * @param {Object} data - { studentId, courseId, method }
+     * @param {Object} data - { studentId, courseId, turmaId, lessonId, method }
      * @returns {Promise<Object>} Attendance record
      */
     async completeCheckin(data) {
@@ -19,13 +19,14 @@ class AttendanceService {
 
             const payload = {
                 studentId: data.studentId,
-                courseId: data.courseId || data.classId,
-                method: data.method || 'biometric',
-                faceConfidence: data.faceConfidence || 0,
-                timestamp: new Date().toISOString(),
+                classId: data.lessonId || data.turmaId || data.classId, // ✅ PRIORIDADE: lessonId > turmaId > classId
+                method: data.method || 'MANUAL',
+                location: data.location || 'Kiosk Check-in',
             };
 
-            const response = await this.moduleAPI.request('/api/checkin', {
+            console.log('📦 Check-in payload:', payload);
+
+            const response = await this.moduleAPI.request('/api/attendance/checkin', {
                 method: 'POST',
                 body: JSON.stringify(payload),
             });

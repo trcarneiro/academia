@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GRADUATION MODULE - REFACTORED v2.0
  * Single-file architecture following AGENTS.md standards
  * Template: Instructors module (745 lines)
@@ -113,7 +113,7 @@ const GraduationModule = {
             return;
         }
 
-        const organizationId = '452c0b35-1822-4890-851e-922356c812fb';
+        const organizationId = typeof getActiveOrganizationId === 'function' ? getActiveOrganizationId() : window.organizationContext?.currentOrganizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'; console.log(' Using organizationId:', organizationId);
 
         await this.moduleAPI.fetchWithStates('/api/graduation/students', {
             params: { organizationId, ...this.filters },
@@ -204,7 +204,27 @@ const GraduationModule = {
             filtered = filtered.filter(s => this.determineStatus(s.stats?.completionPercentage || 0) === this.filters.status);
         }
 
+        // Update stats cards
+        this.updateStatsCards();
+        
         this.renderStudentsList(filtered);
+    },
+
+    /**
+     * Update stats cards with current data
+     */
+    updateStatsCards() {
+        const totalStudents = this.students.length;
+        const ready = this.students.filter(s => this.determineStatus(s.stats?.completionPercentage || 0) === 'ready').length;
+        const pending = this.students.filter(s => this.determineStatus(s.stats?.completionPercentage || 0) === 'needs-attention').length;
+        
+        const totalEl = document.getElementById('stat-total-students');
+        const readyEl = document.getElementById('stat-ready');
+        const pendingEl = document.getElementById('stat-pending');
+        
+        if (totalEl) totalEl.textContent = totalStudents;
+        if (readyEl) readyEl.textContent = ready;
+        if (pendingEl) pendingEl.textContent = pending;
     },
 
     /**
@@ -239,8 +259,12 @@ const GraduationModule = {
             const initials = this.getInitials(student.name || 'NA');
             const belt = student.beltLevel || 'white';
             const progress = student.stats?.completionPercentage || 0;
-            const status = this.determineStatus(progress);
+            const status = this.determineStatus(progress, student);
             const courseName = student.courses?.[0]?.name || 'Sem curso';
+            
+            // Calcular atividades avaliadas (com qualitativeRating > 0)
+            const evaluatedActivities = student.stats?.evaluatedActivities || student.stats?.completedActivities || 0;
+            const totalActivities = student.stats?.totalActivities || 0;
 
             return `
                 <div class="student-card" onclick="window.graduationModule.openStudentDetail('${student.id}')">
@@ -263,16 +287,12 @@ const GraduationModule = {
                     
                     <div class="student-stats">
                         <div class="stat-item">
-                            <p class="stat-value">${student.stats?.completedActivities || 0}/${student.stats?.totalActivities || 0}</p>
-                            <p class="stat-label">Atividades</p>
+                            <p class="stat-value">${evaluatedActivities}/${totalActivities}</p>
+                            <p class="stat-label">Avaliadas</p>
                         </div>
                         <div class="stat-item">
-                            <p class="stat-value">${student.stats?.averageRating || 0}⭐</p>
+                            <p class="stat-value">${((student.stats?.averageRating || 0) * 10 / 3).toFixed(1)}/10</p>
                             <p class="stat-label">Avaliação</p>
-                        </div>
-                        <div class="stat-item">
-                            <p class="stat-value">${Math.round(student.stats?.repsPercentage || 0)}%</p>
-                            <p class="stat-label">Repetições</p>
                         </div>
                     </div>
                     
@@ -291,7 +311,7 @@ const GraduationModule = {
         if (!activities || activities.length === 0) {
             return `
                 <tr>
-                    <td colspan="7" class="empty-table-cell">
+                    <td colspan="8" class="empty-table-cell">
                         <div class="empty-state-small">
                             <p>📭 Nenhuma atividade registrada</p>
                         </div>
@@ -305,6 +325,31 @@ const GraduationModule = {
                 ? Math.round((activity.quantitativeProgress / activity.quantitativeTarget) * 100) 
                 : 0;
 
+            // Calcular nota automática baseada em progresso (0-10)
+            const autoRating = activity.quantitativeTarget > 0
+                ? (activity.quantitativeProgress / activity.quantitativeTarget) * 10
+                : 0;
+            
+            // Usar nota manual se existir, senão usar automática
+            const finalRating = activity.qualitativeRating > 0 
+                ? (activity.qualitativeRating * 10) / 3  // Converter 0-3 para 0-10
+                : autoRating;
+
+            // Determine badge color and text based on qualification method
+            const hasManualRating = activity.qualitativeRating > 0;
+            const hasCheckInProgress = activity.quantitativeProgress >= activity.quantitativeTarget;
+            
+            let originBadge = '';
+            if (hasManualRating && hasCheckInProgress) {
+                originBadge = '<span class="badge-source badge-both">✓ Check-in + Manual</span>';
+            } else if (hasManualRating) {
+                originBadge = '<span class="badge-source badge-manual">✏️ Manual</span>';
+            } else if (hasCheckInProgress) {
+                originBadge = '<span class="badge-source badge-checkin">✓ Check-in</span>';
+            } else {
+                originBadge = '<span class="badge-source badge-pending">⏳ Pendente</span>';
+            }
+
             return `
                 <tr 
                     data-activity-id="${activity.id}" 
@@ -312,6 +357,13 @@ const GraduationModule = {
                     style="cursor: pointer;"
                     title="Duplo-clique para editar"
                 >
+                    <td style="width: 40px; text-align: center;">
+                        <input type="checkbox" 
+                               class="activity-checkbox" 
+                               data-activity-id="${activity.id}"
+                               onclick="event.stopPropagation(); window.graduationModule.toggleActivitySelection(this);"
+                               style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;">
+                    </td>
                     <td>${activity.lessonNumber || index + 1}</td>
                     <td>
                         <strong>${activity.name}</strong><br>
@@ -326,13 +378,15 @@ const GraduationModule = {
                             </div>
                         </div>
                     </td>
-                    <td>${activity.quantitativeTarget || 0}</td>
-                    <td>
-                        <span class="rating-display">
-                            ${this.renderStarsInline(activity.qualitativeRating || 0)}
-                        </span>
+                    <td ondblclick="window.graduationModule.navigateToActivityEdit('${activity.id}')">${activity.quantitativeTarget || 0}</td>
+                    <td onclick="event.stopPropagation();" style="cursor: default;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="rating-display">
+                                ${this.renderClickableStars(activity.id, finalRating, autoRating)}
+                            </span>
+                        </div>
                     </td>
-                    <td><span class="badge-source">${this.translateSource(activity.source)}</span></td>
+                    <td ondblclick="window.graduationModule.navigateToActivityEdit('${activity.id}')">${originBadge}</td>
                 </tr>
             `;
         }).join('');
@@ -440,7 +494,10 @@ const GraduationModule = {
         const initials = this.getInitials(student.name || 'NA');
         const belt = student.beltLevel || 'white';
         const progress = data.progressPercentage || 0;
-        const status = this.determineStatus(progress);
+        // Passar student completo com activities para verificar elegibilidade
+        const studentWithActivities = { ...student, activities: data.activities || [] };
+        const status = this.determineStatus(progress, studentWithActivities);
+        const courseName = data.courseName || 'Curso não definido';
 
         this.container.innerHTML = `
             <!-- HEADER PREMIUM -->
@@ -462,41 +519,54 @@ const GraduationModule = {
                 </div>
             </div>
 
+            <!-- COURSE INFO BANNER -->
+            <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-left: 4px solid #667eea; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.5rem;">🥋</span>
+                            <h3 style="margin: 0; color: #667eea; font-size: 1.3rem; font-weight: 600;">${courseName || 'Curso não definido'}</h3>
+                        </div>
+                        <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                            <strong>${(data.activities || []).filter(a => a.qualitativeRating > 0).length}</strong> de <strong>${(data.activities || []).length}</strong> atividades avaliadas
+                            ${data.qualitativeAverage > 0 ? `• Média: <strong style="color: #fbbf24;">${((data.qualitativeAverage * 10) / 3).toFixed(1)}/10</strong>` : ''}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div style="text-align: center; padding: 0.75rem 1.5rem; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #667eea; line-height: 1;">${Math.round(((data.activities || []).filter(a => a.qualitativeRating > 0).length / (data.activities || []).length) * 100)}%</div>
+                            <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; margin-top: 4px;">Avaliado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- STATS CARDS -->
             <div class="stats-grid-premium" style="margin-bottom: 2rem;">
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">📊</div>
+                <div class="stat-card-enhanced" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="stat-icon" style="font-size: 2.5rem;">📊</div>
                     <div class="stat-content">
-                        <p class="stat-label">Repetições</p>
-                        <h3 class="stat-value">${data.stats.totalReps || 0} / ${data.stats.targetReps || 0}</h3>
-                        <p class="stat-change">Meta: ${data.stats.repsPercentage?.toFixed(1) || 0}%</p>
+                        <p class="stat-label" style="color: rgba(255,255,255,0.9);">Progresso de Avaliações</p>
+                        <h3 class="stat-value" style="font-size: 2.5rem; font-weight: 700;">${Math.round(((data.activities || []).filter(a => a.qualitativeRating > 0).length / (data.activities || []).length) * 100)}%</h3>
+                        <p class="stat-change" style="color: rgba(255,255,255,0.8);">${(data.activities || []).filter(a => a.qualitativeRating > 0).length} de ${(data.activities || []).length} avaliadas</p>
                     </div>
                 </div>
 
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">⭐</div>
+                <div class="stat-card-enhanced" style="border-left: 4px solid #fbbf24;">
+                    <div class="stat-icon" style="font-size: 2.5rem;">⭐</div>
                     <div class="stat-content">
                         <p class="stat-label">Avaliação Média</p>
-                        <h3 class="stat-value">${data.stats.averageRating?.toFixed(1) || 0} ⭐</h3>
-                        <p class="stat-change">${data.stats.completedActivities || 0} atividades avaliadas</p>
+                        <h3 class="stat-value" style="font-size: 2.5rem; color: #fbbf24;">${((data.qualitativeAverage || 0) * 10 / 3).toFixed(1)} <span style="font-size: 1.2rem;">/ 10</span></h3>
+                        <p class="stat-change">${(data.activities || []).filter(a => a.qualitativeRating > 0).length} de ${(data.activities || []).length} atividades avaliadas</p>
                     </div>
                 </div>
 
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">✅</div>
+                <div class="stat-card-enhanced" style="border-left: 4px solid #ef4444;">
+                    <div class="stat-icon" style="font-size: 2.5rem;">⏳</div>
                     <div class="stat-content">
-                        <p class="stat-label">Atividades</p>
-                        <h3 class="stat-value">${data.stats.completedActivities || 0} / ${data.stats.totalActivities || 0}</h3>
-                        <p class="stat-change">${data.progressPercentage?.toFixed(1) || 0}% concluído</p>
-                    </div>
-                </div>
-
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-content">
-                        <p class="stat-label">Check-ins</p>
-                        <h3 class="stat-value">${data.stats.totalCheckins || 0}</h3>
-                        <p class="stat-change">Presença registrada</p>
+                        <p class="stat-label">Pendentes</p>
+                        <h3 class="stat-value" style="font-size: 2.5rem; color: #ef4444;">${(data.activities || []).filter(a => a.qualitativeRating === 0).length}</h3>
+                        <p class="stat-change">Atividades sem avaliação</p>
                     </div>
                 </div>
             </div>
@@ -504,27 +574,220 @@ const GraduationModule = {
             <!-- ACTIVITIES TABLE -->
             <div class="data-card-premium">
                 <div class="card-header">
-                    <h2>📋 Atividades do Plano de Aula</h2>
-                    <p class="card-subtitle">Duplo-clique em uma linha para editar</p>
+                    <h2>📋 Atividades do Plano de Aula (${(data.activities || []).length} total)</h2>
+                    <p class="card-subtitle">Clique nas ⭐ para avaliar | Duplo-clique na linha para editar | Selecione múltiplas para avaliar em massa</p>
                 </div>
                 <div class="card-body">
+                    <div id="timeline-container" style="margin-bottom: 2rem;">
+                        <!-- Timeline será carregada aqui -->
+                        <div class="loading-spinner">Carregando timeline...</div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table-premium">
                             <thead>
-                                <tr>
-                                    <th>#</th>
+                                <tr style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+                                    <th style="width: 40px; text-align: center;">
+                                        <input type="checkbox" 
+                                               id="select-all-activities" 
+                                               onclick="window.graduationModule.toggleSelectAll(this)"
+                                               style="width: 18px; height: 18px; cursor: pointer; accent-color: #667eea;"
+                                               title="Selecionar todas">
+                                    </th>
+                                    <th style="width: 60px;">#</th>
                                     <th>Atividade</th>
-                                    <th>Categoria</th>
-                                    <th>Progresso</th>
-                                    <th>Meta</th>
-                                    <th>Avaliação</th>
-                                    <th>Origem</th>
+                                    <th style="width: 150px;">Categoria</th>
+                                    <th style="width: 120px;">Progresso</th>
+                                    <th style="width: 80px;">Meta</th>
+                                    <th style="width: 180px; text-align: center;">Avaliação ⭐</th>
+                                    <th style="width: 150px;">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="activitiesTableBody">
                                 ${this.renderActivitiesRows(data.activities || [])}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Carregar timeline após renderizar
+        this.loadAndRenderTimeline(student.id);
+    },
+
+    /**
+     * Load and render student timeline with check-ins
+     */
+    async loadAndRenderTimeline(studentId) {
+        console.log('📊 Loading timeline for student:', studentId);
+        
+        try {
+            const organizationId = typeof getActiveOrganizationId === 'function' 
+                ? getActiveOrganizationId() 
+                : window.organizationContext?.currentOrganizationId 
+                || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+            
+            const response = await this.moduleAPI.request(`/api/graduation/student/${studentId}/detailed-progress?organizationId=${organizationId}`, {
+                method: 'GET'
+            });
+            
+            if (response.success && response.data) {
+                const { timeline, stats } = response.data;
+                
+                // Render evolution chart if there's data
+                if (timeline && timeline.length > 0) {
+                    this.renderEvolutionChart(timeline);
+                    
+                    // Render timeline items
+                    const timelineContainer = document.getElementById('timelineContainer');
+                    if (timelineContainer) {
+                        timelineContainer.innerHTML = timeline.map((item, index) => 
+                            this.renderTimelineItem(item, index)
+                        ).join('');
+                    }
+                } else {
+                    console.log('ℹ️ No timeline data available');
+                    const chartContainer = document.getElementById('evolutionChart');
+                    if (chartContainer) {
+                        chartContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 2rem;">Nenhum dado de evolução disponível ainda.</p>';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error loading timeline:', error);
+        }
+    },
+
+    /**
+     * Render evolution chart with Chart.js
+     */
+    renderEvolutionChart(timeline) {
+        const chartContainer = document.getElementById('evolutionChart');
+        if (!chartContainer || !window.Chart) return;
+        
+        const canvas = document.createElement('canvas');
+        canvas.id = 'progressChart';
+        canvas.style.maxHeight = '300px';
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Prepare data
+        const labels = timeline.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+        });
+        
+        const completionData = timeline.map(item => item.completionPercentage || 0);
+        const activitiesData = timeline.map(item => item.activitiesCount || 0);
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Progresso (%)',
+                        data: completionData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Atividades',
+                        data: activitiesData,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolução do Aluno'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Progresso (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Atividades'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        min: 0
+                    }
+                }
+            }
+        });
+    },
+
+    /**
+     * Render individual timeline item
+     */
+    renderTimelineItem(item, index) {
+        const date = new Date(item.date);
+        const dateStr = date.toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric' 
+        });
+        
+        const activities = item.activities || [];
+        const activitiesHtml = activities.length > 0
+            ? activities.map(act => `
+                <div class="activity-in-timeline">
+                    <span class="activity-name">${act.name}</span>
+                    ${act.completed ? '<span class="completion-badge">✓ Concluído</span>' : ''}
+                </div>
+            `).join('')
+            : '<p class="no-activities">Nenhuma atividade registrada</p>';
+        
+        return `
+            <div class="timeline-item" style="animation-delay: ${index * 0.1}s">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <h4>${dateStr}</h4>
+                        <span class="timeline-badge">${item.activitiesCount || 0} atividades</span>
+                    </div>
+                    <div class="timeline-body">
+                        ${activitiesHtml}
+                    </div>
+                    <div class="timeline-footer">
+                        <span class="progress-indicator">Progresso: ${(item.completionPercentage || 0).toFixed(1)}%</span>
                     </div>
                 </div>
             </div>
@@ -799,7 +1062,62 @@ const GraduationModule = {
         return belts[belt] || belt;
     },
 
-    determineStatus(progress) {
+    /**
+     * Check if student is eligible for graduation
+     * Criteria: ALL activities >= 7.0/10 AND average >= 7.0/10
+     */
+    isEligibleForGraduation(student) {
+        const activities = student.activities || [];
+        
+        // Se tem array de atividades (tela de detalhes), calcula completo
+        if (activities.length > 0) {
+            // Calcular nota final para cada atividade (automática ou manual)
+            const activityRatings = activities.map(activity => {
+                const autoRating = activity.quantitativeTarget > 0
+                    ? (activity.quantitativeProgress / activity.quantitativeTarget) * 10
+                    : 0;
+                
+                // Se tem nota manual (qualitativeRating > 0), usa ela; senão usa automática
+                const finalRating = activity.qualitativeRating > 0 
+                    ? (activity.qualitativeRating * 10) / 3
+                    : autoRating;
+                
+                return finalRating;
+            });
+            
+            // Verificar se TODAS atividades estão >= 7.0
+            const allActivitiesAbove7 = activityRatings.every(rating => rating >= 7.0);
+            
+            // Calcular média geral
+            const averageRating = activityRatings.length > 0 
+                ? activityRatings.reduce((sum, rating) => sum + rating, 0) / activityRatings.length
+                : 0;
+            
+            // Elegível se TODAS >= 7.0 E média >= 7.0
+            return allActivitiesAbove7 && averageRating >= 7.0;
+        }
+        
+        // Se não tem atividades (listagem), usa stats do backend
+        const stats = student.stats || {};
+        const averageRating = ((stats.averageRating || 0) * 10) / 3; // Converter 0-3 para 0-10
+        const totalActivities = stats.totalActivities || 0;
+        const evaluatedActivities = stats.evaluatedActivities || 0;
+        
+        // Critérios:
+        // 1. Todas atividades avaliadas (100% completo)
+        // 2. Média >= 7.0
+        const allEvaluated = totalActivities > 0 && evaluatedActivities === totalActivities;
+        const goodAverage = averageRating >= 7.0;
+        
+        return allEvaluated && goodAverage;
+    },
+
+    determineStatus(progress, student = null) {
+        // Se student foi passado, verificar elegibilidade para graduação
+        if (student && this.isEligibleForGraduation(student)) {
+            return 'ready';
+        }
+        
         if (progress >= 80) return 'ready';
         if (progress >= 40) return 'in-progress';
         return 'needs-attention';
@@ -827,6 +1145,349 @@ const GraduationModule = {
         return '⭐'.repeat(rating);
     },
 
+
+    // ============================================
+    // BULK EDIT FUNCTIONS
+
+    renderClickableStars(activityId, currentRating, autoRating = 0) {
+        // Converter de escala 0-3 para 0-10 se necessário
+        const rating10 = currentRating <= 3 ? (currentRating * 10) / 3 : currentRating;
+        const displayRating = Math.round(rating10 * 10) / 10; // 1 decimal
+        const displayAutoRating = Math.round(autoRating * 10) / 10;
+        
+        const isManual = displayRating !== displayAutoRating && displayRating > 0;
+        
+        return `
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3);">
+                ${isManual ? `<span style="font-size: 0.75rem; color: #999; text-decoration: line-through;">${displayAutoRating}</span>` : ''}
+                <input type="number" 
+                       id="rating-${activityId}"
+                       value="${displayRating}"
+                       min="0" 
+                       max="10" 
+                       step="0.5"
+                       onchange="window.graduationModule.updateActivityRatingInline('${activityId}', this.value); event.stopPropagation();"
+                       onclick="event.stopPropagation();"
+                       style="width: 60px; padding: 6px 8px; border: 2px solid #fbbf24; border-radius: 6px; font-size: 1.1rem; font-weight: 600; text-align: center; color: ${isManual ? '#764ba2' : '#667eea'}; background: white;"
+                       title="${isManual ? 'Nota ajustada manualmente pelo professor' : 'Nota automática baseada em execuções'}">
+                <span style="font-size: 1.3rem; color: #fbbf24; font-weight: 600;">/ 10</span>
+                ${isManual ? `<span style="font-size: 0.75rem; color: #764ba2; font-weight: 600;">✏️</span>` : ''}
+            </div>
+        `;
+    },
+
+    async updateActivityRatingInline(activityId, rating) {
+        try {
+            const student = this.selectedStudentData?.student;
+            if (!student) {
+                console.error('No student selected');
+                return;
+            }
+
+            // Converter de 0-10 para 0-3 para o backend (mantém compatibilidade)
+            const rating3 = Math.round((parseFloat(rating) * 3) / 10);
+            
+            console.log(`Updating activity ${activityId}: ${rating}/10 → ${rating3}/3 para o backend`);
+
+            const response = await this.moduleAPI.request(`/api/graduation/student/${student.id}/activity/${activityId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ qualitativeRating: rating3 })
+            });
+
+            if (response.success) {
+                // ✅ Reload full student data to update badges and stats
+                await this.showStudentDetail(student.id);
+                
+                this.showToast(`✅ Avaliação ${parseFloat(rating).toFixed(1)}/10 salva com sucesso!`, 'success');
+            } else {
+                this.showToast('❌ Erro ao salvar avaliação', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating rating inline:', error);
+            this.showToast('❌ Erro ao salvar avaliação', 'error');
+        }
+    },
+
+    // ============================================
+
+    toggleActivitySelection(checkbox) {
+        this.updateBulkToolbar();
+    },
+
+    toggleSelectAll(checked) {
+        const checkboxes = document.querySelectorAll('.activity-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checked;
+        });
+        this.updateBulkToolbar();
+    },
+
+    updateBulkToolbar() {
+        const checkboxes = document.querySelectorAll('.activity-checkbox:checked');
+        const toolbar = document.getElementById('bulkEditToolbar');
+        const countEl = document.getElementById('selectedCount');
+        
+        if (toolbar && countEl) {
+            if (checkboxes.length > 0) {
+                toolbar.style.display = 'block';
+                countEl.textContent = checkboxes.length;
+            } else {
+                toolbar.style.display = 'none';
+            }
+        }
+    },
+
+    clearBulkSelection() {
+        const checkboxes = document.querySelectorAll('.activity-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+        });
+        
+        const selectAll = document.getElementById('selectAllActivities');
+        if (selectAll) {
+            selectAll.checked = false;
+        }
+        
+        this.updateBulkToolbar();
+    },
+
+    openBulkEvaluationModal() {
+        const selectedCheckboxes = document.querySelectorAll('.activity-checkbox:checked');
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.activityId);
+        
+        if (selectedIds.length === 0) {
+            this.showToast('Selecione pelo menos uma atividade', 'error');
+            return;
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'bulkEvaluationModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content-premium" style="max-width: 500px;">
+                <div class="modal-header-premium">
+                    <h2>⭐ Avaliação em Massa</h2>
+                    <button class="modal-close" onclick="document.getElementById('bulkEvaluationModal').remove()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 1.5rem; color: #666;">
+                        <strong>${selectedIds.length}</strong> atividades selecionadas serão avaliadas.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">Avaliação Qualitativa (Estrelas)</label>
+                        <div class="star-rating-input" style="display: flex; gap: 0.5rem; font-size: 2rem;">
+                            ${[1, 2, 3].map(star => `
+                                <span 
+                                    class="star-clickable" 
+                                    data-rating="${star}"
+                                    onclick="window.graduationModule.setBulkRating(${star})"
+                                    style="cursor: pointer; opacity: 0.3; transition: opacity 0.2s;"
+                                    onmouseover="this.style.opacity='1'"
+                                    onmouseout="if(!this.classList.contains('active')) this.style.opacity='0.3'"
+                                >⭐</span>
+                            `).join('')}
+                        </div>
+                        <input type="hidden" id="bulkRating" value="0" />
+                        <p class="form-hint" style="margin-top: 0.5rem;">
+                            <small>⭐ = Iniciante | ⭐⭐ = Intermediário | ⭐⭐⭐ = Avançado</small>
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Observações (Opcional)</label>
+                        <textarea 
+                            id="bulkNotes" 
+                            class="form-control" 
+                            rows="3" 
+                            placeholder="Observações gerais sobre essas atividades..."
+                        ></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer-premium">
+                    <button 
+                        class="btn-secondary" 
+                        onclick="document.getElementById('bulkEvaluationModal').remove()"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        class="btn-primary" 
+                        onclick="window.graduationModule.saveBulkEvaluation()"
+                    >
+                        💾 Salvar Avaliações
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        if (!document.getElementById('bulkModalStyles')) {
+            const style = document.createElement('style');
+            style.id = 'bulkModalStyles';
+            style.textContent = `
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    animation: fadeIn 0.3s ease;
+                }
+                .modal-content-premium {
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    animation: slideUp 0.3s ease;
+                }
+                .modal-header-premium {
+                    padding: 1.5rem;
+                    border-bottom: 1px solid #e0e0e0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 12px 12px 0 0;
+                }
+                .modal-header-premium h2 {
+                    margin: 0;
+                    font-size: 1.5rem;
+                }
+                .modal-close {
+                    background: rgba(255,255,255,0.2);
+                    border: none;
+                    color: white;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 1.2rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background 0.2s;
+                }
+                .modal-close:hover {
+                    background: rgba(255,255,255,0.3);
+                }
+                .modal-body {
+                    padding: 2rem;
+                }
+                .modal-footer-premium {
+                    padding: 1.5rem;
+                    border-top: 1px solid #e0e0e0;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 1rem;
+                    background: #f9fafb;
+                    border-radius: 0 0 12px 12px;
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { 
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to { 
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .star-clickable.active {
+                    opacity: 1 !important;
+                    transform: scale(1.1);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    },
+
+    setBulkRating(rating) {
+        document.getElementById('bulkRating').value = rating;
+        
+        const stars = document.querySelectorAll('.star-clickable');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+                star.style.opacity = '1';
+            } else {
+                star.classList.remove('active');
+                star.style.opacity = '0.3';
+            }
+        });
+    },
+
+    async saveBulkEvaluation() {
+        const rating = parseInt(document.getElementById('bulkRating').value);
+        const notes = document.getElementById('bulkNotes').value;
+
+        if (rating === 0) {
+            this.showToast('Selecione uma avaliação (estrelas)', 'error');
+            return;
+        }
+
+        const selectedCheckboxes = document.querySelectorAll('.activity-checkbox:checked');
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.activityId);
+
+        try {
+            const modal = document.getElementById('bulkEvaluationModal');
+            const saveBtn = modal.querySelector('.btn-primary');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Salvando...';
+
+            const studentId = this.selectedStudentData.student.id;
+            const organizationId = typeof getActiveOrganizationId === 'function' 
+                ? getActiveOrganizationId() 
+                : window.organizationContext?.currentOrganizationId 
+                || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const activityId of selectedIds) {
+                try {
+                    await this.moduleAPI.request(`/api/graduation/student/${studentId}/activity/${activityId}?organizationId=${organizationId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({
+                            qualitativeRating: rating,
+                            notes: notes || undefined
+                        })
+                    });
+                    successCount++;
+                } catch (error) {
+                    console.error(`Error updating activity ${activityId}:`, error);
+                    errorCount++;
+                }
+            }
+
+            modal.remove();
+
+            if (errorCount === 0) {
+                this.showToast(`✅ ${successCount} atividades avaliadas com sucesso!`, 'success');
+            } else {
+                this.showToast(`⚠️ ${successCount} avaliadas, ${errorCount} com erro`, 'error');
+            }
+
+            await this.showStudentDetail(studentId);
+            this.clearBulkSelection();
+
+        } catch (error) {
+            console.error('Error in bulk evaluation:', error);
+            this.showToast('Erro ao salvar avaliações', 'error');
+        }
+    },
     showToast(message, type = 'info') {
         // Simple toast notification
         const toast = document.createElement('div');

@@ -36,7 +36,7 @@ async function fetchClasses() {
         classesState.loading = true;
         updateLoadingState(true);
         
-        const response = await fetch('/api/classes');
+        const response = await window.fetchWithOrganization('/api/classes');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -73,7 +73,7 @@ async function saveClassToAPI(classData) {
         const url = isEdit ? `/api/classes/${classData.id}` : '/api/classes';
         const method = isEdit ? 'PUT' : 'POST';
         
-        const response = await fetch(url, {
+        const response = await window.fetchWithOrganization(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ async function saveClassToAPI(classData) {
  */
 async function deleteClassFromAPI(classId) {
     try {
-        const response = await fetch(`/api/classes/${classId}`, {
+        const response = await window.fetchWithOrganization(`/api/classes/${classId}`, {
             method: 'DELETE'
         });
         
@@ -395,7 +395,7 @@ async function loadClassData(classId) {
             populateForm(classData);
         } else {
             // Try to fetch from API
-            const response = await fetch(`/api/classes/${classId}`);
+            const response = await window.fetchWithOrganization(`/api/classes/${classId}`);
             if (response.ok) {
                 const data = await response.json();
                 populateForm(data.data);

@@ -14,6 +14,33 @@ const UI_STATES = {
 };
 
 // ==============================================
+// AUTH CONTEXT (DEV AUTO-LOGIN FALLBACK)
+// ==============================================
+
+const AUTH_STORAGE_KEYS = {
+    token: 'authToken',
+    userId: 'currentUserId'
+};
+
+const DevAuthState = {
+    token: null,
+    userId: null,
+    promise: null
+};
+
+function getStorageInstance(type = 'local') {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        return type === 'session' ? window.sessionStorage : window.localStorage;
+    } catch (_) {
+        return null;
+    }
+}
+
+// ==============================================
 // API CLIENT PRINCIPAL
 // ==============================================
 
@@ -197,6 +224,8 @@ class ApiClient {
                 fetchOptions.body = JSON.stringify(data);
             }
 
+            await this.applyAuthHeaders(fetchOptions.headers, config);
+
             console.log(`🌐 ${method} ${url}`, data ? { body: data } : '');
 
             const response = await fetch(url, fetchOptions);
@@ -322,6 +351,196 @@ class ApiClient {
      */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async applyAuthHeaders(headers = {}, config = {}) {
+        if (typeof window === 'undefined' || config?.skipAuth === true) {
+            return;
+        }
+
+        if (headers.Authorization || headers.authorization) {
+            // Respect manually provided Authorization header
+            return;
+        }
+
+        const existing = this.getCachedAuthContext(config);
+        if (existing?.token && existing?.userId) {
+            headers['Authorization'] = this.formatBearer(existing.token);
+            headers['x-user-id'] = existing.userId;
+            return;
+        }
+
+        const devAutoAuthDisabled = config?.disableAutoDevAuth === true || window.__DISABLE_DEV_AUTO_AUTH__ === true;
+        if (devAutoAuthDisabled) {
+            return;
+        }
+
+        const devContext = await this.ensureDevAuthSession();
+        if (devContext?.token && devContext?.userId) {
+            headers['Authorization'] = this.formatBearer(devContext.token);
+            headers['x-user-id'] = devContext.userId;
+        }
+    }
+
+    formatBearer(token) {
+        if (!token) return '';
+        return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    }
+
+    getCachedAuthContext(config = {}) {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+
+        if (DevAuthState.token && DevAuthState.userId) {
+            return { token: DevAuthState.token, userId: DevAuthState.userId };
+        }
+
+        const headerToken = config?.authToken || config?.headers?.Authorization || config?.headers?.authorization;
+        const headerUserId = config?.userId || config?.headers?.['x-user-id'];
+        if (headerToken && headerUserId) {
+            return { token: headerToken.replace(/^Bearer\s+/i, ''), userId: headerUserId };
+        }
+
+        const token = this.readFromSources([
+            () => window.AuthModule?.getToken?.(),
+            () => window.app?.auth?.getToken?.(),
+            () => window.authToken,
+            () => window.currentUser?.token,
+            () => this.safeStorageGet(getStorageInstance('local'), AUTH_STORAGE_KEYS.token),
+            () => this.safeStorageGet(getStorageInstance('session'), AUTH_STORAGE_KEYS.token)
+        ]);
+
+        const userId = this.readFromSources([
+            () => window.AuthModule?.getUserId?.(),
+            () => window.app?.auth?.getUserId?.(),
+            () => window.currentUser?.id,
+            () => window.currentUserId,
+            () => this.safeStorageGet(getStorageInstance('local'), AUTH_STORAGE_KEYS.userId),
+            () => this.safeStorageGet(getStorageInstance('session'), AUTH_STORAGE_KEYS.userId)
+        ]);
+
+        if (token && userId) {
+            DevAuthState.token = token;
+            DevAuthState.userId = userId;
+            return { token, userId };
+        }
+
+        return null;
+    }
+
+    readFromSources(sources = []) {
+        for (const getter of sources) {
+            try {
+                const value = getter?.();
+                if (value) {
+                    return value;
+                }
+            } catch (_) {
+                // Ignore storage errors (Safari private mode, etc.)
+            }
+        }
+        return null;
+    }
+
+    safeStorageGet(storage, key) {
+        try {
+            return storage?.getItem?.(key) || null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    safeStorageSet(storage, key, value) {
+        try {
+            storage?.setItem?.(key, value ?? '');
+        } catch (_) {
+            // Ignore quota errors
+        }
+    }
+
+    async ensureDevAuthSession() {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+
+        if (DevAuthState.token && DevAuthState.userId) {
+            return DevAuthState;
+        }
+
+        if (DevAuthState.promise) {
+            return DevAuthState.promise;
+        }
+
+        const devAuthUrl = this.buildURL('/api/dev-auth/auto-login');
+
+        DevAuthState.promise = (async () => {
+            const response = await fetch(devAuthUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Dev auth failed: ${response.status} ${text}`);
+            }
+
+            const payload = await response.json();
+
+            if (!payload?.success) {
+                throw new Error(payload?.message || 'Dev auth error');
+            }
+
+            const token = payload?.data?.token;
+            const userId = payload?.data?.user?.id;
+
+            if (!token || !userId) {
+                throw new Error('Dev auth response missing token or userId');
+            }
+
+            this.persistAuthContext(token, userId, payload?.data?.user);
+
+            return { token, userId };
+        })();
+
+        try {
+            const context = await DevAuthState.promise;
+            return context;
+        } catch (error) {
+            console.error('⚠️ Dev auto-auth failed:', error);
+            return null;
+        } finally {
+            DevAuthState.promise = null;
+        }
+    }
+
+    persistAuthContext(token, userId, userPayload) {
+        DevAuthState.token = token;
+        DevAuthState.userId = userId;
+
+        if (typeof window !== 'undefined') {
+            window.authToken = token;
+            window.currentUserId = userId;
+            window.currentUser = window.currentUser || {};
+            window.currentUser.id = userId;
+            window.currentUser.token = token;
+
+            if (userPayload) {
+                window.currentUser.email = userPayload.email;
+                window.currentUser.firstName = userPayload.firstName;
+                window.currentUser.lastName = userPayload.lastName;
+                window.currentUser.role = userPayload.role;
+                window.currentUser.organizationId = userPayload.organizationId;
+            }
+        }
+
+        this.safeStorageSet(getStorageInstance('local'), AUTH_STORAGE_KEYS.token, token);
+        this.safeStorageSet(getStorageInstance('session'), AUTH_STORAGE_KEYS.token, token);
+        this.safeStorageSet(getStorageInstance('local'), AUTH_STORAGE_KEYS.userId, userId);
+        this.safeStorageSet(getStorageInstance('session'), AUTH_STORAGE_KEYS.userId, userId);
     }
 
     /**

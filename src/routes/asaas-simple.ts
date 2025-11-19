@@ -82,50 +82,82 @@ export default async function asaasSimpleRoutes(
     }
   });
 
-  // Mock customers endpoint for testing
-  fastify.get('/customers', async (_request, reply) => {
+  // Get customers from Asaas API (with fallback to mock)
+  fastify.get('/customers', async (request, reply) => {
     try {
-      // Return mock data first to test the interface
-      const mockCustomers = [
-        {
-          id: 'cus_000001',
-          name: 'João Silva',
-          email: 'joao@email.com',
-          cpfCnpj: '123.456.789-00',
-          phone: '(11) 99999-1111',
-          dateCreated: '2024-01-15'
-        },
-        {
-          id: 'cus_000002', 
-          name: 'Maria Santos',
-          email: 'maria@email.com',
-          cpfCnpj: '987.654.321-00',
-          phone: '(11) 88888-2222',
-          dateCreated: '2024-02-20'
-        },
-        {
-          id: 'cus_000003',
-          name: 'Pedro Costa',
-          email: 'pedro@email.com', 
-          cpfCnpj: '456.789.123-00',
-          phone: '(11) 77777-3333',
-          dateCreated: '2024-03-10'
-        }
-      ];
+      // Get API key from environment
+      const apiKey = process.env.ASAAS_API_KEY;
+      const isSandbox = process.env.ASAAS_IS_SANDBOX === 'true';
+      
+      if (!apiKey) {
+        reply.code(500);
+        return {
+          success: false,
+          error: 'ASAAS_API_KEY not configured',
+          message: 'Please set ASAAS_API_KEY in .env file'
+        };
+      }
+      
+      const asaasService = new AsaasService(apiKey, isSandbox);
+      
+      // Get query parameters for pagination
+      const { limit = 100, offset = 0 } = request.query as { limit?: number; offset?: number };
+      
+      try {
+        // Try to fetch real customers from Asaas
+        const customers = await asaasService.listCustomers({ limit, offset });
+        
+        return {
+          success: true,
+          data: customers,
+          message: `${customers.totalCount || 0} customers found from Asaas`
+        };
+      } catch (asaasError: any) {
+        // If Asaas API fails (401, invalid key, etc.), return mock data
+        console.warn('⚠️ Asaas API failed, using mock data:', asaasError.message);
+        
+        const mockCustomers = [
+          {
+            id: 'cus_000001',
+            name: 'João Silva',
+            email: 'joao@email.com',
+            cpfCnpj: '123.456.789-00',
+            phone: '(11) 99999-1111',
+            dateCreated: '2024-01-15'
+          },
+          {
+            id: 'cus_000002', 
+            name: 'Maria Santos',
+            email: 'maria@email.com',
+            cpfCnpj: '987.654.321-00',
+            phone: '(11) 88888-2222',
+            dateCreated: '2024-02-20'
+          },
+          {
+            id: 'cus_000003',
+            name: 'Pedro Costa',
+            email: 'pedro@email.com', 
+            cpfCnpj: '456.789.123-00',
+            phone: '(11) 77777-3333',
+            dateCreated: '2024-03-10'
+          }
+        ];
 
-      return {
-        success: true,
-        data: {
-          object: 'list',
-          hasMore: false,
-          totalCount: mockCustomers.length,
-          limit: 100,
-          offset: 0,
-          data: mockCustomers
-        },
-        message: `${mockCustomers.length} customers found (mock data)`
-      };
+        return {
+          success: true,
+          data: {
+            object: 'list',
+            hasMore: false,
+            totalCount: mockCustomers.length,
+            limit: 100,
+            offset: 0,
+            data: mockCustomers
+          },
+          message: `${mockCustomers.length} customers (MOCK DATA - Asaas API unavailable: ${asaasError.message})`
+        };
+      }
     } catch (error) {
+      console.error('❌ Error in /customers endpoint:', error);
       reply.code(500);
       return {
         success: false,

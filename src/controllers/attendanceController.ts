@@ -3,8 +3,9 @@ import { AttendanceService } from '@/services/attendanceService';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, AttendanceStatsQuery } from '@/schemas/attendance';
-import { UserRole } from '@/types';
+import { UserRole, AuthenticatedUser } from '@/types';
 import { prisma } from '@/utils/database';
+import dayjs from 'dayjs';
 
 export class AttendanceController {
   static async checkIn(
@@ -15,15 +16,16 @@ export class AttendanceController {
       // ✅ KIOSK MODE: Se não há usuário autenticado, esperar studentId no body
       let studentId: string;
 
-      if (request.user) {
+      if ((request as any).user) {
+        const user = (request as any).user as AuthenticatedUser;
         // Modo autenticado: usuário logado faz check-in
-        if (request.user.role !== UserRole.STUDENT) {
+        if (user.role !== UserRole.STUDENT) {
           return ResponseHelper.error(reply, 'Apenas estudantes podem fazer check-in', 403);
         }
 
         // Get student ID from authenticated user
         const student = await prisma.student.findUnique({
-          where: { userId: request.user.id },
+          where: { userId: user.id },
         });
 
         if (!student) {
@@ -63,7 +65,7 @@ export class AttendanceController {
         201
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id, body: request.body }, 'Check-in failed');
+      logger.error({ error, userId: ((request as any).user as AuthenticatedUser)?.id, body: request.body }, 'Check-in failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 400);
@@ -78,13 +80,15 @@ export class AttendanceController {
     reply: FastifyReply
   ) {
     try {
-      if (!request.user) {
+      if (!(request as any).user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
 
+      const user = (request as any).user as AuthenticatedUser;
+
       const result = await AttendanceService.getAttendanceHistory(
-        request.user.id,
-        request.user.role,
+        user.id,
+        user.role,
         request.query
       );
 
@@ -97,7 +101,7 @@ export class AttendanceController {
         'Histórico de presença recuperado com sucesso'
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id, query: request.query }, 'Get attendance history failed');
+      logger.error({ error, userId: ((request as any).user as AuthenticatedUser)?.id, query: request.query }, 'Get attendance history failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 400);
@@ -115,14 +119,16 @@ export class AttendanceController {
     reply: FastifyReply
   ) {
     try {
-      if (!request.user) {
+      if (!(request as any).user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+
+      const user = (request as any).user as AuthenticatedUser;
 
       const updatedAttendance = await AttendanceService.updateAttendance(
         request.params.id,
         request.body,
-        request.user.role
+        user.role
       );
 
       return ResponseHelper.success(
@@ -133,7 +139,7 @@ export class AttendanceController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: ((request as any).user as AuthenticatedUser)?.id,
         attendanceId: request.params.id,
         body: request.body,
       }, 'Update attendance failed');
@@ -151,22 +157,24 @@ export class AttendanceController {
     reply: FastifyReply
   ) {
     try {
-      if (!request.user) {
+      if (!(request as any).user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
 
+      const user = (request as any).user as AuthenticatedUser;
+
       // Students can only see their own stats
       let queryData = request.query;
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         const student = await prisma.student.findUnique({
-          where: { userId: request.user.id },
+          where: { userId: user.id },
         });
 
         if (!student) {
           return ResponseHelper.error(reply, 'Estudante não encontrado', 404);
         }
 
-        queryData = { ...request.query, studentId: student.id };
+        queryData = { ...(request.query as any), studentId: student.id };
       }
 
       const stats = await AttendanceService.getAttendanceStats(queryData);
@@ -177,7 +185,7 @@ export class AttendanceController {
         'Estatísticas de presença recuperadas com sucesso'
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id, query: request.query }, 'Get attendance stats failed');
+      logger.error({ error, userId: ((request as any).user as AuthenticatedUser)?.id, query: request.query }, 'Get attendance stats failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 400);
@@ -192,12 +200,14 @@ export class AttendanceController {
     reply: FastifyReply
   ) {
     try {
-      if (!request.user) {
+      if (!(request as any).user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
 
+      const user = (request as any).user as AuthenticatedUser;
+
       // Only admins and instructors can see student patterns
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         return ResponseHelper.error(reply, 'Permissões insuficientes', 403);
       }
 
@@ -226,7 +236,7 @@ export class AttendanceController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: ((request as any).user as AuthenticatedUser)?.id,
         studentId: request.params.studentId,
       }, 'Get student pattern failed');
       
@@ -598,11 +608,13 @@ export class AttendanceController {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      // Query all check-ins from today
-      const checkins = await prisma.attendance.findMany({
+      // Query all check-ins from today (using TurmaAttendance)
+      const checkins = await prisma.turmaAttendance.findMany({
         where: {
-          organizationId,
-          checkInTime: {
+          turma: {
+            organizationId,
+          },
+          checkedAt: {
             gte: today,
             lt: tomorrow,
           },
@@ -619,19 +631,23 @@ export class AttendanceController {
               },
             },
           },
-          turma: {
+          lesson: {
             include: {
-              course: {
-                select: {
-                  name: true,
-                },
-              },
-              instructor: {
+              turma: {
                 include: {
-                  user: {
+                  course: {
                     select: {
-                      firstName: true,
-                      lastName: true,
+                      name: true,
+                    },
+                  },
+                  instructor: {
+                    include: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -640,7 +656,7 @@ export class AttendanceController {
           },
         },
         orderBy: {
-          checkInTime: 'desc',
+          checkedAt: 'desc',
         },
       });
 
@@ -651,12 +667,12 @@ export class AttendanceController {
         studentName: `${checkin.student.user.firstName} ${checkin.student.user.lastName}`,
         registrationNumber: checkin.student.registrationNumber,
         avatar: checkin.student.user.avatarUrl,
-        checkInTime: checkin.checkInTime.toISOString(),
+        checkInTime: checkin.checkedAt ? checkin.checkedAt.toISOString() : null,
         turmaId: checkin.turmaId,
-        turmaName: checkin.turma?.course?.name || 'N/A',
-        courseName: checkin.turma?.course?.name || 'N/A',
-        instructorName: checkin.turma?.instructor?.user 
-          ? `${checkin.turma.instructor.user.firstName} ${checkin.turma.instructor.user.lastName}`
+        turmaName: checkin.lesson?.turma?.name || 'N/A',
+        courseName: checkin.lesson?.turma?.course?.name || 'N/A',
+        instructorName: checkin.lesson?.turma?.instructor?.user 
+          ? `${checkin.lesson.turma.instructor.user.firstName} ${checkin.lesson.turma.instructor.user.lastName}`
           : 'N/A',
         present: checkin.present,
       }));
@@ -674,6 +690,60 @@ export class AttendanceController {
         return ResponseHelper.error(reply, error.message, 400);
       }
 
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async getClassRoll(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+      const roll = await AttendanceService.getClassRoll(id);
+      return ResponseHelper.success(
+        reply,
+        roll,
+        'Lista de chamada recuperada com sucesso'
+      );
+    } catch (error) {
+      logger.error(
+        { error, lessonId: request.params.id },
+        'Get class roll failed'
+      );
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
+      return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
+    }
+  }
+
+  static async updateClassRoll(
+    request: FastifyRequest<{
+      Params: { id: string };
+      Body: { updates: any[] };
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { id } = request.params;
+      const { updates } = request.body;
+
+      await AttendanceService.updateClassRoll(id, updates);
+
+      return ResponseHelper.success(
+        reply,
+        null,
+        'Chamada atualizada com sucesso'
+      );
+    } catch (error) {
+      logger.error(
+        { error, lessonId: request.params.id },
+        'Update class roll failed'
+      );
+      if (error instanceof Error) {
+        return ResponseHelper.error(reply, error.message, 400);
+      }
       return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
     }
   }

@@ -192,8 +192,8 @@ async function loadFinancialContent(container) {
     try {
         // Get student subscription and enrollment data
         const [subscriptionResponse, enrollmentResponse] = await Promise.all([
-            fetch(`/api/students/${currentStudentId}/subscription`),
-            fetch(`/api/students/${currentStudentId}/enrollments`)
+            window.fetchWithOrganization(`/api/students/${currentStudentId}/subscription`),
+            window.fetchWithOrganization(`/api/students/${currentStudentId}/enrollments`)
         ]);
         
         const subscriptionData = await subscriptionResponse.json();
@@ -371,7 +371,7 @@ function renderNoEnrollments() {
 // Load financial history
 async function loadFinancialHistory() {
     try {
-        const response = await fetch(`/api/students/${currentStudentId}/financial-summary`);
+        const response = await window.fetchWithOrganization(`/api/students/${currentStudentId}/financial-summary`);
         const result = await response.json();
         
         const container = document.getElementById('financialHistoryContainer');
@@ -446,7 +446,7 @@ async function loadStudentData() {
     console.log('📊 Loading student data...');
     
     try {
-        const response = await fetch(`/api/students/${currentStudentId}`);
+        const response = await window.fetchWithOrganization(`/api/students/${currentStudentId}`);
         const result = await response.json();
         
         if (result.success && result.data) {
@@ -531,7 +531,7 @@ async function saveStudentData() {
         const formData = new FormData(activeForm);
         const data = Object.fromEntries(formData);
         
-        const response = await fetch(`/api/students/${currentStudentId}`, {
+        const response = await window.fetchWithOrganization(`/api/students/${currentStudentId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

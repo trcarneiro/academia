@@ -93,15 +93,15 @@
         try {
             // Load lesson plans, courses, and activities in parallel
             const [lessonPlansResponse, coursesResponse, activitiesResponse] = await Promise.all([
-                fetch('/api/lesson-plans', {
+                window.fetchWithOrganization('/api/lesson-plans', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 }),
-                fetch('/api/courses', {
+                window.fetchWithOrganization('/api/courses', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 }),
-                fetch('/api/activities', {
+                window.fetchWithOrganization('/api/activities', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 })
@@ -394,7 +394,7 @@
         }
         
         try {
-            const response = await fetch(`/api/lesson-plans/${id}`, {
+            const response = await window.fetchWithOrganization(`/api/lesson-plans/${id}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' }
             });

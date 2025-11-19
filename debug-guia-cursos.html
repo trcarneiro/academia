@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Guia de Debug - Campo de Curso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid #fff;
+        }
+        
+        .step h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: white;
+            color: #667eea;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .instruction {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .key {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 0 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 5px solid #4caf50;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 5px solid #f44336;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .expected {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .console-example {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .console-log {
+            color: #4ec9b0;
+        }
+        
+        .console-error {
+            color: #f48771;
+        }
+        
+        .console-value {
+            color: #ce9178;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Guia de Debug - Campo de Curso</h1>
+        <p class="subtitle">Siga este passo a passo para identificar o problema</p>
+        
+        <div class="card">
+            <h2>📋 Contexto do Problema</h2>
+            <p>O campo "Curso Principal" não está aparecendo populado no formulário de edição da turma. Vamos investigar por quê.</p>
+            
+            <div class="warning">
+                <strong>⚠️ IMPORTANTE:</strong> Certifique-se de que você fez <code>Ctrl + Shift + R</code> para recarregar completamente o navegador.
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🚀 Passo a Passo</h2>
+            
+            <div class="step">
+                <h3><span class="step-number">1</span>Abrir DevTools</h3>
+                <div class="instruction">
+                    Pressione <span class="key">F12</span> ou <span class="key">Ctrl</span> + <span class="key">Shift</span> + <span class="key">I</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3><span class="step-number">2</span>Ir para a aba Console</h3>
+                <div class="instruction">
+                    Clique na aba "Console" no DevTools
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3><span class="step-number">3</span>Limpar o Console</h3>
+                <div class="instruction">
+                    Clique no ícone 🚫 ou pressione <span class="key">Ctrl</span> + <span class="key">L</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3><span class="step-number">4</span>Navegar para Turmas</h3>
+                <ul>
+                    <li>Clique em <strong>Turmas</strong> no menu lateral</li>
+                    <li>Escolha uma turma existente</li>
+                    <li>Clique para <strong>editar</strong></li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <h3><span class="step-number">5</span>Verificar Logs no Console</h3>
+                <p>Procure por estas mensagens:</p>
+                
+                <div class="expected">
+                    <p><strong>✅ Esperado - Se tudo estiver OK:</strong></p>
+                    <div class="console-example">
+<span class="console-log">🔄 [TurmasService] Buscando cursos...</span>
+<span class="console-log">📚 [TurmasService] Cursos retornados:</span> <span class="console-value">{ success: true, data: Array(X) }</span>
+<span class="console-log">🔄 [TurmasDetailView] Carregando cursos disponíveis...</span>
+<span class="console-log">📚 [TurmasDetailView] Resposta de cursos:</span> <span class="console-value">{ success: true, data: Array(X) }</span>
+<span class="console-log">✅ [TurmasDetailView] Cursos parseados:</span> <span class="console-value">Array(X)</span>
+                    </div>
+                </div>
+                
+                <div class="error">
+                    <p><strong>❌ Problema Identificado - Se aparecer:</strong></p>
+                    <div class="console-example">
+<span class="console-log">📚 [TurmasService] Cursos retornados:</span> <span class="console-value">{ success: true, data: [] }</span>
+<span class="console-log">✅ [TurmasDetailView] Cursos parseados:</span> <span class="console-value">[]</span>
+                    </div>
+                    <p style="margin-top: 10px;"><strong>Isso significa:</strong> A API não está retornando cursos. Problema no backend.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3><span class="step-number">6</span>Capturar Screenshot</h3>
+                <ul>
+                    <li>Tire um print do <strong>console completo</strong></li>
+                    <li>Tire um print do <strong>formulário de edição</strong></li>
+                    <li>Envie ambos para análise</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🔎 O Que Estamos Procurando</h2>
+            
+            <div class="expected">
+                <h3>No Console:</h3>
+                <ul>
+                    <li>Logs de carregamento de cursos</li>
+                    <li>Quantidade de cursos retornados</li>
+                    <li>Possíveis erros de API</li>
+                </ul>
+            </div>
+            
+            <div class="expected">
+                <h3>No Formulário:</h3>
+                <ul>
+                    <li>Campo "Curso Principal" aparece?</li>
+                    <li>O dropdown está vazio?</li>
+                    <li>Há mensagem de erro?</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🎯 Possíveis Causas</h2>
+            
+            <div class="step">
+                <h3>1️⃣ Cache do Navegador</h3>
+                <p>O JavaScript antigo ainda está em cache</p>
+                <div class="instruction">
+                    Solução: <span class="key">Ctrl</span> + <span class="key">Shift</span> + <span class="key">R</span> (hard reload)
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>2️⃣ API Não Retorna Cursos</h3>
+                <p>O endpoint <code>/api/courses</code> está retornando array vazio</p>
+                <div class="instruction">
+                    Solução: Verificar se há cursos cadastrados no banco
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>3️⃣ Erro de Organização</h3>
+                <p>Header <code>x-organization-id</code> não está sendo enviado</p>
+                <div class="instruction">
+                    Solução: Verificar no Network tab se o header está presente
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📊 Teste Rápido da API</h2>
+            <p>Abra uma nova aba do navegador e acesse:</p>
+            <div class="console-example">
+http://localhost:3001/api/courses
+            </div>
+            <p style="margin-top: 15px;">Você deve ver uma resposta JSON com cursos. Se não ver, o problema é no backend.</p>
+        </div>
+        
+        <button onclick="window.close()">Fechar e Começar Debug</button>
+    </div>
+</body>
+</html>

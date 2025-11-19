@@ -147,7 +147,7 @@ export class AuthService {
         id: 'hardcoded-user-id',
         email: 'trcampos@gmail.com',
         role: 'ADMIN' as any,
-        organizationId: '452c0b35-1822-4890-851e-922356c812fb',
+        organizationId: 'ff5ee00e-d8a3-4291-9428-d28b852fb472',
         profile: null,
       };
     }

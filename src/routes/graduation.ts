@@ -33,6 +33,25 @@ export default async function graduationRoutes(fastify: FastifyInstance) {
   fastify.get('/student/:id/progress', GraduationController.getStudentProgress);
 
   /**
+   * GET /student/:id/detailed-progress
+   * Busca progresso detalhado COM TIMELINE de check-ins e atividades executadas
+   * 
+   * Params:
+   * - id (required): Student ID
+   * 
+   * Query params:
+   * - organizationId (required)
+   * - courseId (optional): Se não fornecido, usa o primeiro curso matriculado
+   * 
+   * Response:
+   * - Progresso completo do estudante
+   * - Timeline de check-ins (últimos 30)
+   * - Atividades executadas por aula
+   * - Estatísticas de frequência (7 dias, 30 dias, total)
+   */
+  fastify.get('/student/:id/detailed-progress', GraduationController.getStudentDetailedProgressWithCheckins);
+
+  /**
    * GET /progress/:studentId
    * Busca progresso detalhado de um estudante (DEPRECATED - usar /student/:id/progress)
    * 

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Correção de organizationId</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-align: center;
+        }
+        
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .status.success {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .status h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .status p {
+            color: #666;
+            line-height: 1.6;
+            font-family: monospace;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log div {
+            margin: 5px 0;
+        }
+        
+        .log .success { color: #4ec9b0; }
+        .log .error { color: #f48771; }
+        .log .info { color: #9cdcfe; }
+        .log .warn { color: #dcdcaa; }
+        
+        .icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .redirect-info {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔧</div>
+        <h1>Correção de organizationId</h1>
+        
+        <div id="status" class="status">
+            <h3>📊 Verificando estado atual...</h3>
+            <p>Aguarde enquanto verificamos o localStorage e sessionStorage.</p>
+        </div>
+        
+        <button id="fixBtn" onclick="applyFix()" disabled>
+            🔨 Aplicar Correção
+        </button>
+        
+        <div id="log" class="log" style="display: none;"></div>
+        
+        <div id="redirectInfo" class="redirect-info" style="display: none;">
+            Redirecionando para o sistema em <span id="countdown">3</span> segundos...
+        </div>
+    </div>
+    
+    <script>
+        const WRONG_ORG = '452c0b35-1822-4890-851e-922356c812fb';
+        const CORRECT_ORG = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+        
+        let needsFix = false;
+        const logDiv = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            logDiv.style.display = 'block';
+            const div = document.createElement('div');
+            div.className = type;
+            
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            div.textContent = `[${timestamp}] ${message}`;
+            
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function checkStatus() {
+            const statusDiv = document.getElementById('status');
+            const fixBtn = document.getElementById('fixBtn');
+            
+            const currentLocal = localStorage.getItem('activeOrganizationId');
+            const currentSession = sessionStorage.getItem('activeOrganizationId');
+            
+            addLog('Verificando localStorage...', 'info');
+            addLog(`localStorage: ${currentLocal || 'null'}`, 'info');
+            
+            addLog('Verificando sessionStorage...', 'info');
+            addLog(`sessionStorage: ${currentSession || 'null'}`, 'info');
+            
+            // Verificar se precisa correção
+            if (currentLocal === WRONG_ORG || currentSession === WRONG_ORG) {
+                needsFix = true;
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Problema Detectado!</h3>
+                    <p><strong>localStorage:</strong> ${currentLocal || 'null'}</p>
+                    <p><strong>sessionStorage:</strong> ${currentSession || 'null'}</p>
+                    <p style="margin-top: 10px;">organizationId inválida detectada. Clique em "Aplicar Correção" para resolver.</p>
+                `;
+                fixBtn.disabled = false;
+                addLog('❌ organizationId INVÁLIDA detectada!', 'error');
+            } else if (currentLocal === CORRECT_ORG && currentSession === CORRECT_ORG) {
+                needsFix = false;
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    <h3>✅ Tudo Correto!</h3>
+                    <p><strong>localStorage:</strong> ${currentLocal}</p>
+                    <p><strong>sessionStorage:</strong> ${currentSession}</p>
+                    <p style="margin-top: 10px;">organizationId está correta. Você pode acessar o sistema normalmente.</p>
+                `;
+                fixBtn.textContent = '↗️ Abrir Sistema';
+                fixBtn.disabled = false;
+                addLog('✅ organizationId está CORRETA!', 'success');
+            } else {
+                needsFix = true;
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>⚠️ Configuração Incompleta</h3>
+                    <p><strong>localStorage:</strong> ${currentLocal || 'null'}</p>
+                    <p><strong>sessionStorage:</strong> ${currentSession || 'null'}</p>
+                    <p style="margin-top: 10px;">organizationId não está configurada. Clique em "Aplicar Correção".</p>
+                `;
+                fixBtn.disabled = false;
+                addLog('⚠️ organizationId não configurada', 'warn');
+            }
+        }
+        
+        function applyFix() {
+            const fixBtn = document.getElementById('fixBtn');
+            const statusDiv = document.getElementById('status');
+            
+            if (!needsFix) {
+                // Já está correto, apenas redirecionar
+                addLog('Redirecionando para o sistema...', 'info');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+                return;
+            }
+            
+            fixBtn.disabled = true;
+            fixBtn.textContent = '⏳ Aplicando correção...';
+            
+            addLog('🔨 Iniciando correção...', 'info');
+            
+            // Limpar valores inválidos
+            const currentLocal = localStorage.getItem('activeOrganizationId');
+            const currentSession = sessionStorage.getItem('activeOrganizationId');
+            
+            if (currentLocal === WRONG_ORG || !currentLocal) {
+                localStorage.removeItem('activeOrganizationId');
+                addLog('🧹 localStorage limpo', 'success');
+            }
+            
+            if (currentSession === WRONG_ORG || !currentSession) {
+                sessionStorage.removeItem('activeOrganizationId');
+                addLog('🧹 sessionStorage limpo', 'success');
+            }
+            
+            // Definir org correta
+            localStorage.setItem('activeOrganizationId', CORRECT_ORG);
+            sessionStorage.setItem('activeOrganizationId', CORRECT_ORG);
+            
+            addLog(`✅ organizationId correta definida: ${CORRECT_ORG}`, 'success');
+            
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                <h3>✅ Correção Aplicada com Sucesso!</h3>
+                <p><strong>Nova organizationId:</strong> ${CORRECT_ORG}</p>
+                <p style="margin-top: 10px;">Redirecionando para o sistema...</p>
+            `;
+            
+            fixBtn.textContent = '✅ Corrigido!';
+            
+            addLog('🔄 Redirecionando para o sistema...', 'info');
+            
+            // Mostrar contagem regressiva
+            document.getElementById('redirectInfo').style.display = 'block';
+            let countdown = 3;
+            const countdownSpan = document.getElementById('countdown');
+            
+            const interval = setInterval(() => {
+                countdown--;
+                countdownSpan.textContent = countdown;
+                
+                if (countdown === 0) {
+                    clearInterval(interval);
+                    window.location.href = '/';
+                }
+            }, 1000);
+        }
+        
+        // Executar verificação ao carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkStatus, 500);
+        });
+    </script>
+</body>
+</html>

@@ -37,7 +37,7 @@ class LessonsModule {
     async loadData() {
         try {
             // Load lessons
-            const lessonsResponse = await fetch('/api/lessons');
+            const lessonsResponse = await window.fetchWithOrganization('/api/lessons');
             if (lessonsResponse.ok) {
                 this.lessons = await lessonsResponse.json();
             } else {
@@ -46,7 +46,7 @@ class LessonsModule {
             }
 
             // Load courses for filtering
-            const coursesResponse = await fetch('/api/courses');
+            const coursesResponse = await window.fetchWithOrganization('/api/courses');
             if (coursesResponse.ok) {
                 this.courses = await coursesResponse.json();
             } else {
@@ -54,7 +54,7 @@ class LessonsModule {
             }
 
             // Load units
-            const unitsResponse = await fetch('/api/units');
+            const unitsResponse = await window.fetchWithOrganization('/api/units');
             if (unitsResponse.ok) {
                 this.units = await unitsResponse.json();
             } else {
@@ -435,7 +435,7 @@ class LessonsModule {
 
         if (confirm(`Tem certeza que deseja excluir a aula ${this.currentLesson.lessonNumber} - ${this.currentLesson.title}?`)) {
             try {
-                const response = await fetch(`/api/lessons/${this.currentLesson.id}`, {
+                const response = await window.fetchWithOrganization(`/api/lessons/${this.currentLesson.id}`, {
                     method: 'DELETE'
                 });
 

@@ -65,7 +65,7 @@ const UnitsModule = {
         try {
             console.log('📡 Loading units data...');
             
-            const response = await fetch('/api/units');
+            const response = await window.fetchWithOrganization('/api/units');
             const data = await response.json();
             
             if (data.success) {
@@ -332,7 +332,7 @@ const UnitsModule = {
 
         if (confirm(`Tem certeza que deseja excluir a unidade "${unit.name}"?`)) {
             try {
-                const response = await fetch(`/api/units/${unitId}`, {
+                const response = await window.fetchWithOrganization(`/api/units/${unitId}`, {
                     method: 'DELETE'
                 });
 
@@ -378,7 +378,7 @@ const UnitsModule = {
         let unitData = null;
         if (isEdit) {
             try {
-                const response = await fetch(`/api/units/${unitId}`);
+                const response = await window.fetchWithOrganization(`/api/units/${unitId}`);
                 if (response.ok) {
                     const result = await response.json();
                     unitData = result.data;
@@ -695,7 +695,7 @@ const UnitsModule = {
         try {
             console.log('📡 Loading training areas for unit:', unitId);
             
-            const response = await fetch(`/api/training-areas?unitId=${unitId}`);
+            const response = await window.fetchWithOrganization(`/api/training-areas?unitId=${unitId}`);
             const data = await response.json();
             
             if (data.success) {
@@ -831,7 +831,7 @@ const UnitsModule = {
      */
     async editTrainingArea(areaId) {
         try {
-            const response = await fetch(`/api/training-areas/${areaId}`);
+            const response = await window.fetchWithOrganization(`/api/training-areas/${areaId}`);
             const data = await response.json();
             
             if (data.success) {
@@ -1015,7 +1015,7 @@ const UnitsModule = {
         }
 
         try {
-            const response = await fetch(`/api/training-areas/${areaId}`, {
+            const response = await window.fetchWithOrganization(`/api/training-areas/${areaId}`, {
                 method: 'DELETE'
             });
 

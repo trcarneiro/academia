@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academia Dashboard</title>
+    <!-- Font Awesome 6.x - Professional Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- FORÇA RESET - Para garantir design minimalista -->
     <link rel="stylesheet" href="css/force-reset.css">
     <!-- LAYOUT CENTER FIX - Correção de centralização -->
@@ -31,10 +33,12 @@
     <link rel="stylesheet" href="css/modules/lesson-execution.css">
     <link rel="stylesheet" href="css/modules/import.css">
     <link rel="stylesheet" href="css/modules/import-enhanced.css">
+    <link rel="stylesheet" href="css/modules/asaas-import.css">
     <link rel="stylesheet" href="css/modules/agenda.css">
     <link rel="stylesheet" href="css/modules/units.css">
     <link rel="stylesheet" href="css/modules/students-premium.css">
     <link rel="stylesheet" href="css/modules/student-progress.css">
+    <link rel="stylesheet" href="css/modules/instructors.css">
     <link rel="stylesheet" href="css/modules/graduation.css">
     <link rel="stylesheet" href="css/modules/crm.css">
     <link rel="stylesheet" href="css/modules/checkin-kiosk.css">
@@ -59,10 +63,29 @@
         <div class="search-bar">
             <input type="text" placeholder="Buscar alunos, planos...">
         </div>
+        
+        <!-- Organization Selector -->
+        <div class="organization-selector">
+            <button class="org-button" id="orgSelectorBtn" title="Selecionar organização">
+                <span class="org-icon"><i class="fas fa-building"></i></span>
+                <span class="org-name" id="currentOrgName">Carregando...</span>
+                <span class="org-arrow">▼</span>
+            </button>
+            <div class="org-dropdown" id="orgDropdown" style="display: none;">
+                <div class="org-dropdown-header">
+                    <strong>Organização Atual</strong>
+                </div>
+                <div class="org-list" id="orgList">
+                    <!-- Organizations will be loaded here -->
+                    <div class="org-loading">Carregando organizações...</div>
+                </div>
+            </div>
+        </div>
+        
         <div class="user-actions">
-            <div class="notifications" title="Notificações">🔔</div>
-            <div class="user-profile" title="Perfil">👤</div>
-            <button id="logoutBtn" class="logout-btn" title="Sair">🚪 Sair</button>
+            <div class="notifications" title="Notificações"><i class="fas fa-bell"></i></div>
+            <div class="user-profile" title="Perfil"><i class="fas fa-user"></i></div>
+            <button id="logoutBtn" class="logout-btn" title="Sair"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
     </header>
 
@@ -71,76 +94,76 @@
         <nav class="main-menu">
             <ul>
                 <li class="active" data-module="dashboard">
-                    <i>📊</i> <span>Dashboard</span>
+                    <i class="fas fa-chart-line"></i> <span>Dashboard</span>
                 </li>
                 <li data-module="students">
-                    <i>👥</i> <span>Alunos</span>
+                    <i class="fas fa-users"></i> <span>Alunos</span>
                 </li>
                 <li data-module="crm">
-                    <i>🎯</i> <span>CRM & Leads</span>
+                    <i class="fas fa-bullseye"></i> <span>CRM & Leads</span>
                 </li>
                 <li data-module="packages">
-                    <i>🏷️</i> <span>Comercial</span>
+                    <i class="fas fa-tags"></i> <span>Comercial</span>
                 </li>
                 <li data-module="activities">
-                    <i>🏃</i> <span>Atividades</span>
+                    <i class="fas fa-running"></i> <span>Atividades</span>
                 </li>
                 <li data-module="lesson-plans">
-                    <i>📚</i> <span>Planos de Aula</span>
+                    <i class="fas fa-book"></i> <span>Planos de Aula</span>
                 </li>
                 <li data-module="courses">
-                    <i>🎓</i> <span>Cursos</span>
+                    <i class="fas fa-graduation-cap"></i> <span>Cursos</span>
                 </li>
                 <li data-module="turmas">
-                    <i>👥</i> <span>Turmas</span>
+                    <i class="fas fa-user-friends"></i> <span>Turmas</span>
                 </li>
                 <li data-module="organizations">
-                    <i>🏫</i> <span>Organizações</span>
+                    <i class="fas fa-building"></i> <span>Organizações</span>
                 </li>
                 <li data-module="units">
-                    <i>🏢</i> <span>Unidades</span>
+                    <i class="fas fa-map-marker-alt"></i> <span>Unidades</span>
                 </li>
                 <li data-module="instructors">
-                    <i>👨‍🏫</i> <span>Instrutores</span>
+                    <i class="fas fa-chalkboard-teacher"></i> <span>Instrutores</span>
                 </li>
                 <li data-module="checkin-kiosk">
-                    <i>✅</i> <span>Check-in Kiosk</span>
+                    <i class="fas fa-check-circle"></i> <span>Check-in Kiosk</span>
                 </li>
                 <li data-module="agenda">
-                    <i>📅</i> <span>Agenda</span>
+                    <i class="fas fa-calendar-alt"></i> <span>Agenda</span>
                 </li>
                 <li data-module="frequency">
-                    <i>📊</i> <span>Frequência</span>
+                    <i class="fas fa-chart-bar"></i> <span>Frequência</span>
                 </li>
                 <li data-module="student-progress">
-                    <i>📈</i> <span>Progresso</span>
+                    <i class="fas fa-chart-area"></i> <span>Progresso</span>
                 </li>
                 <li data-module="graduation">
-                    <i>🎓</i> <span>Graduação</span>
+                    <i class="fas fa-user-graduate"></i> <span>Graduação</span>
                 </li>
                 <li data-module="crm">
-                    <i>🎯</i> <span>CRM</span>
+                    <i class="fas fa-bullseye"></i> <span>CRM</span>
                 </li>
                 <li data-module="ai">
-                    <i>🤖</i> <span>IA & Agentes</span>
+                    <i class="fas fa-robot"></i> <span>IA & Agentes</span>
                 </li>
                 <li data-module="agents">
-                    <i>🎯</i> <span>Agentes</span>
+                    <i class="fas fa-robot"></i> <span>Agentes</span>
                 </li>
                 <li data-module="agent-chat-fullscreen">
-                    <i>💬</i> <span>Chat com Agentes</span>
+                    <i class="fas fa-comments"></i> <span>Chat com Agentes</span>
                 </li>
                 <li data-module="agent-activity">
-                    <i>🤖</i> <span>Atividade de Agentes</span>
+                    <i class="fas fa-tasks"></i> <span>Atividade de Agentes</span>
                 </li>
                 <li data-module="import">
-                    <i>📥</i> <span>Importação</span>
+                    <i class="fas fa-file-import"></i> <span>Importação</span>
                 </li>
                 <li data-module="reports">
-                    <i>📈</i> <span>Relatórios</span>
+                    <i class="fas fa-chart-pie"></i> <span>Relatórios</span>
                 </li>
                 <li data-module="settings">
-                    <i>⚙️</i> <span>Configurações</span>
+                    <i class="fas fa-cog"></i> <span>Configurações</span>
                 </li>
             </ul>
         </nav>
@@ -175,10 +198,14 @@
     
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="js/shared/utils/feedback.js"></script>
+    <script src="js/shared/organization-context.js"></script>
     <script src="js/shared/api-client.js"></script>
     <script src="js/shared/websocket-client.js"></script>
     <!-- Design Tokens (theme/branding) runtime applier -->
     <script src="js/shared/design-tokens.js"></script>
+    
+    <!-- Organization Selector Component -->
+    <script src="js/components/organization-selector.js"></script>
 
     <!-- SPA Router and UI Controller -->
     <script src="js/dashboard/spa-router.js"></script>
@@ -217,6 +244,9 @@
     <script src="js/modules/import/controllers/importControllerEnhanced.js"></script>
     <script type="module" src="js/modules/import/index.js"></script>
 
+    <!-- Asaas Import Module -->
+    <script type="module" src="js/modules/asaas-import/index.js"></script>
+
     <!-- CRM Module -->
     <script type="module" src="js/modules/crm/index.js"></script>
 
@@ -225,6 +255,9 @@
 
     <!-- Dashboard Widgets -->
     <script src="js/modules/dashboard/widgets/task-approval-widget.js"></script>
+    
+    <!-- Organization Selector Initializer -->
+    <script src="js/components/organization-selector-init.js"></script>
 
     <!-- Test Guide for Anti-Duplication System - REMOVED: file does not exist -->
     <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->

@@ -37,25 +37,28 @@ export class TurmasFormView {
         try {
             console.log('🔄 [Turmas Form] Carregando dados do formulário...');
             // Carregar dados necessários para o formulário
-            const [coursesResult, instructorsResult, organizationsResult, unitsResult] = await Promise.all([
+            const [coursesResult, instructorsResult, organizationsResult, unitsResult, trainingAreasResult] = await Promise.all([
                 this.service.getCourses(),
                 this.service.getInstructors(), 
                 this.service.getOrganizations(),
-                this.service.getUnits()
+                this.service.getUnits(),
+                this.service.getTrainingAreas()
             ]);
 
             console.log('📋 [Turmas Form] Resultados das APIs:', {
                 courses: coursesResult,
                 instructors: instructorsResult,
                 organizations: organizationsResult,
-                units: unitsResult
+                units: unitsResult,
+                trainingAreas: trainingAreasResult
             });
 
             this.formData = {
                 courses: coursesResult.success ? coursesResult.data : [],
                 instructors: instructorsResult.success ? instructorsResult.data : [],
                 organizations: organizationsResult.success ? organizationsResult.data : [],
-                units: unitsResult.success ? unitsResult.data : []
+                units: unitsResult.success ? unitsResult.data : [],
+                trainingAreas: trainingAreasResult.success ? trainingAreasResult.data : []
             };
 
             console.log('💾 [Turmas Form] Dados processados:', this.formData);
@@ -290,6 +293,17 @@ export class TurmasFormView {
                                         ).join('')}
                                     </select>
                                     <div class="field-error hidden" id="unitIdError"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="turma-training-area">🥋 Tatame / Área de Treino</label>
+                                    <select id="turma-training-area" name="trainingAreaId" class="form-select-premium">
+                                        <option value="">Selecione o tatame...</option>
+                                        ${(this.formData.trainingAreas || []).map(area => 
+                                            `<option value="${area.id}">${area.name} (${area.capacity} pessoas)</option>`
+                                        ).join('')}
+                                    </select>
+                                    <small class="form-helper">Selecione onde acontecerão as aulas desta turma</small>
                                 </div>
                             </div>
                         </div>

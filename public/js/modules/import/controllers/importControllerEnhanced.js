@@ -7,7 +7,7 @@ class ImportControllerEnhanced {
     constructor(container) {
         this.container = container;
         this.currentStep = 1;
-        this.currentTab = 'courses'; // 'courses', 'techniques', 'students'
+        this.currentTab = 'courses'; // 'courses', 'techniques', 'students', 'asaas'
         this.uploadedData = null;
         this.importResults = {
             total: 0,
@@ -19,6 +19,10 @@ class ImportControllerEnhanced {
             startTime: null,
             endTime: null
         };
+        
+        // Controle da aba Asaas
+        this.asaasTabLoaded = false;
+        this.asaasCustomers = [];
         
         this.onError = null;
         this.moduleAPI = null;
@@ -97,6 +101,9 @@ class ImportControllerEnhanced {
                         </button>
                         <button class="tab-btn" data-tab="students">
                             👥 Alunos
+                        </button>
+                        <button class="tab-btn" data-tab="asaas">
+                            💳 Sincronizar Asaas
                         </button>
                     </div>
                     <div class="tab-info" id="tab-info">
@@ -249,7 +256,8 @@ class ImportControllerEnhanced {
         const infoTexts = {
             courses: '<strong>📚 Cursos Completos:</strong> Importa curso com técnicas, cronograma e atividades em JSON completo',
             techniques: '<strong>🥋 Técnicas:</strong> Importa apenas técnicas em CSV ou JSON (nome, categoria, descrição)',
-            students: '<strong>👥 Alunos:</strong> Importa alunos do Asaas ou CSV personalizado com dados básicos'
+            students: '<strong>👥 Alunos:</strong> Importa alunos do Asaas ou CSV personalizado com dados básicos',
+            asaas: '<strong>💳 Asaas:</strong> Sincroniza e importa clientes diretamente da plataforma Asaas'
         };
         
         tabInfo.querySelector('.info-text').innerHTML = infoTexts[tabType] || '';
@@ -257,9 +265,14 @@ class ImportControllerEnhanced {
         // Atualizar estado atual
         this.currentTab = tabType;
         
-        // Resetar importação e recarregar view de upload
-        this.resetImport();
-        this.loadUploadView();
+        // Se for aba Asaas, carregar conteúdo específico
+        if (tabType === 'asaas') {
+            this.loadAsaasTab();
+        } else {
+            // Resetar importação e recarregar view de upload
+            this.resetImport();
+            this.loadUploadView();
+        }
         
         this.addLog('info', `Tab alterada para: ${tabType}`);
     }
@@ -1291,6 +1304,528 @@ class ImportControllerEnhanced {
     cleanup() {
         this.resetImport();
         this.container.innerHTML = '';
+    }
+
+    // ==========================================
+    // MÉTODOS PARA ABA ASAAS
+    // ==========================================
+
+    /**
+     * Carregar conteúdo da aba Asaas
+     */
+    loadAsaasTab() {
+        const mainContent = this.container.querySelector('#import-content');
+        
+        if (!mainContent) {
+            console.error('❌ Container #import-content não encontrado');
+            return;
+        }
+
+        mainContent.innerHTML = `
+            <div class="asaas-import-wrapper">
+                <!-- Header da aba -->
+                <div class="asaas-tab-header">
+                    <h2>💳 Sincronização com Asaas</h2>
+                    <p>Importe seus clientes do Asaas para o sistema</p>
+                    <div id="connection-status" class="connection-status">
+                        <span class="status-badge status-idle">⚪ Aguardando teste de conexão</span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="asaas-stats-grid">
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="asaas-total-customers">-</div>
+                        <div class="stat-label">Total no Asaas</div>
+                    </div>
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="asaas-imported">-</div>
+                        <div class="stat-label">Já Importados</div>
+                    </div>
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-value" id="asaas-pending">-</div>
+                        <div class="stat-label">Pendentes</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="asaas-actions">
+                    <button id="btn-test-connection" class="btn-import-secondary">
+                        🔌 Testar Conexão
+                    </button>
+                    <button id="btn-fetch-asaas" class="btn-import-primary">
+                        🔄 Buscar Clientes do Asaas
+                    </button>
+                    <button id="btn-import-all-asaas" class="btn-import-success" style="display: none;">
+                        📥 Importar Todos Pendentes
+                    </button>
+                    <button id="btn-clean-duplicates" class="btn-import-warning" style="display: none;">
+                        🧹 Limpar Duplicatas
+                    </button>
+                </div>
+
+                <!-- Customers Container -->
+                <div id="asaas-customers-container" style="display: none;">
+                    <!-- Filters -->
+                    <div class="asaas-filters">
+                        <input 
+                            type="text" 
+                            id="search-asaas-customers" 
+                            placeholder="🔍 Buscar por nome ou email..."
+                            class="filter-input"
+                        />
+                        <select id="filter-asaas-status" class="filter-select">
+                            <option value="all">Todos</option>
+                            <option value="pending">Pendentes</option>
+                            <option value="imported">Importados</option>
+                        </select>
+                    </div>
+
+                    <!-- Customer List -->
+                    <div id="asaas-customers-list" class="asaas-customers-list">
+                        <!-- Será preenchido dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Import Results -->
+                <div id="asaas-import-results" class="import-results" style="display: none;">
+                    <h3>📊 Resultados da Importação</h3>
+                    <div id="asaas-results-content"></div>
+                </div>
+            </div>
+        `;
+
+        // Configurar event listeners dos botões
+        const btnTest = this.container.querySelector('#btn-test-connection');
+        const btnFetch = this.container.querySelector('#btn-fetch-asaas');
+        const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
+        const btnClean = this.container.querySelector('#btn-clean-duplicates');
+
+        if (btnTest) {
+            btnTest.addEventListener('click', () => this.testAsaasConnection());
+        }
+
+        if (btnFetch) {
+            btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
+        }
+
+        if (btnImportAll) {
+            btnImportAll.addEventListener('click', () => this.importAllAsaas());
+        }
+
+        if (btnClean) {
+            btnClean.addEventListener('click', () => this.cleanDuplicates());
+        }
+
+        // Configurar filtros
+        const searchInput = this.container.querySelector('#search-asaas-customers');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterAsaasCustomers(e.target.value);
+            });
+        }
+
+        const filterStatus = this.container.querySelector('#filter-asaas-status');
+        if (filterStatus) {
+            filterStatus.addEventListener('change', (e) => {
+                this.filterAsaasByStatus(e.target.value);
+            });
+        }
+
+        this.addLog('info', 'Aba Asaas carregada');
+        console.log('✅ Aba Asaas carregada');
+    }
+
+    /**
+     * Testar conexão com Asaas
+     */
+    async testAsaasConnection() {
+        try {
+            const statusEl = this.container.querySelector('#connection-status');
+            statusEl.innerHTML = '<span class="status-badge status-loading">⏳ Testando conexão...</span>';
+
+            const response = await this.moduleAPI.request('/api/asaas/test', {
+                method: 'GET'
+            });
+
+            if (response.success) {
+                statusEl.innerHTML = '<span class="status-badge status-success">✅ Conexão OK</span>';
+                this.addLog('success', 'Conexão com Asaas estabelecida!');
+            } else {
+                throw new Error(response.message || 'Falha na conexão');
+            }
+
+        } catch (error) {
+            const statusEl = this.container.querySelector('#connection-status');
+            statusEl.innerHTML = '<span class="status-badge status-error">❌ Conexão falhou</span>';
+            this.addLog('error', `Erro ao testar conexão: ${error.message}`);
+        }
+    }
+
+    /**
+     * Buscar clientes do Asaas
+     */
+    async fetchAsaasCustomers() {
+        try {
+            const btn = this.container.querySelector('#btn-fetch-asaas');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Buscando...';
+
+            this.addLog('info', 'Buscando clientes do Asaas...');
+
+            const response = await this.moduleAPI.request('/api/asaas/customers', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                this.asaasCustomers = response.data.data || [];
+                
+                // Atualizar stats
+                this.container.querySelector('#asaas-total-customers').textContent = this.asaasCustomers.length;
+                
+                // Verificar quais já foram importados
+                await this.checkImportedAsaasCustomers();
+                
+                // Renderizar lista
+                this.renderAsaasCustomersList();
+                
+                // Mostrar botões
+                this.container.querySelector('#btn-import-all-asaas').style.display = 'inline-block';
+                this.container.querySelector('#btn-clean-duplicates').style.display = 'inline-block';
+                this.container.querySelector('#asaas-customers-container').style.display = 'block';
+                
+                this.addLog('success', `${this.asaasCustomers.length} clientes encontrados!`);
+            } else {
+                throw new Error(response.message || 'Falha ao buscar clientes');
+            }
+
+        } catch (error) {
+            this.addLog('error', `Erro ao buscar clientes: ${error.message}`);
+        } finally {
+            const btn = this.container.querySelector('#btn-fetch-asaas');
+            btn.disabled = false;
+            btn.innerHTML = '🔄 Buscar Clientes do Asaas';
+        }
+    }
+
+    /**
+     * Verificar clientes já importados
+     */
+    async checkImportedAsaasCustomers() {
+        try {
+            const response = await this.moduleAPI.request('/api/students', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                const existingEmails = new Set(
+                    response.data.map(s => s.user?.email?.toLowerCase()).filter(Boolean)
+                );
+
+                // Marcar clientes que já existem
+                this.asaasCustomers.forEach(customer => {
+                    customer.isImported = existingEmails.has(customer.email?.toLowerCase());
+                });
+
+                // Atualizar stats
+                const imported = this.asaasCustomers.filter(c => c.isImported).length;
+                const pending = this.asaasCustomers.length - imported;
+
+                this.container.querySelector('#asaas-imported').textContent = imported;
+                this.container.querySelector('#asaas-pending').textContent = pending;
+            }
+
+        } catch (error) {
+            console.error('Erro ao verificar clientes importados:', error);
+        }
+    }
+
+    /**
+     * Renderizar lista de clientes Asaas
+     */
+    renderAsaasCustomersList() {
+        const container = this.container.querySelector('#asaas-customers-list');
+        
+        if (this.asaasCustomers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-asaas">
+                    <div class="empty-icon">📭</div>
+                    <h3>Nenhum cliente encontrado</h3>
+                    <p>Não há clientes no Asaas para importar</p>
+                </div>
+            `;
+            return;
+        }
+
+        const html = this.asaasCustomers.map(customer => `
+            <div class="customer-card-asaas ${customer.isImported ? 'imported' : ''}" data-email="${customer.email || ''}">
+                <div class="customer-info">
+                    <div class="customer-name">
+                        ${customer.name || 'Nome não informado'}
+                        ${customer.isImported ? '<span class="badge-imported">✅ Importado</span>' : ''}
+                    </div>
+                    <div class="customer-email">
+                        📧 ${customer.email || 'Email não informado'}
+                    </div>
+                    <div class="customer-details">
+                        <span>📱 ${customer.phone || 'N/A'}</span>
+                        <span>📄 ${customer.cpfCnpj || 'N/A'}</span>
+                        <span>🆔 ${customer.id}</span>
+                    </div>
+                </div>
+                <div class="customer-actions">
+                    ${!customer.isImported ? `
+                        <button 
+                            class="btn-import-single" 
+                            onclick="window.import.controller.importSingleAsaas('${customer.id}')"
+                            ${!customer.email ? 'disabled title="Email não informado"' : ''}>
+                            📥 Importar
+                        </button>
+                    ` : `
+                        <span class="text-success">✓ Já está no sistema</span>
+                    `}
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Filtrar clientes por busca
+     */
+    filterAsaasCustomers(searchTerm) {
+        const cards = this.container.querySelectorAll('.customer-card-asaas');
+        const term = searchTerm.toLowerCase();
+
+        cards.forEach(card => {
+            const name = card.querySelector('.customer-name').textContent.toLowerCase();
+            const email = card.querySelector('.customer-email').textContent.toLowerCase();
+            
+            if (name.includes(term) || email.includes(term)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Filtrar por status
+     */
+    filterAsaasByStatus(status) {
+        const cards = this.container.querySelectorAll('.customer-card-asaas');
+
+        cards.forEach(card => {
+            const isImported = card.classList.contains('imported');
+
+            if (status === 'all') {
+                card.style.display = 'flex';
+            } else if (status === 'imported' && isImported) {
+                card.style.display = 'flex';
+            } else if (status === 'pending' && !isImported) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Importar cliente individual
+     */
+    async importSingleAsaas(customerId) {
+        try {
+            const customer = this.asaasCustomers.find(c => c.id === customerId);
+            if (!customer) {
+                throw new Error('Cliente não encontrado');
+            }
+
+            this.addLog('info', `Importando ${customer.name}...`);
+
+            const response = await this.moduleAPI.request('/api/asaas/import-customer', {
+                method: 'POST',
+                body: JSON.stringify({ customerId })
+            });
+
+            if (response.success) {
+                customer.isImported = true;
+                this.renderAsaasCustomersList();
+                await this.checkImportedAsaasCustomers();
+                this.addLog('success', `${customer.name} importado com sucesso!`);
+            } else {
+                throw new Error(response.message || 'Falha na importação');
+            }
+
+        } catch (error) {
+            this.addLog('error', `Erro ao importar: ${error.message}`);
+        }
+    }
+
+    /**
+     * Importar todos os clientes pendentes
+     */
+    async importAllAsaas() {
+        try {
+            const pending = this.asaasCustomers.filter(c => !c.isImported && c.email);
+            
+            if (pending.length === 0) {
+                this.addLog('warning', 'Não há clientes pendentes para importar');
+                return;
+            }
+
+            const confirmed = confirm(`Importar ${pending.length} clientes do Asaas?\n\nApós a importação, duplicatas serão automaticamente removidas.`);
+            if (!confirmed) return;
+
+            const btn = this.container.querySelector('#btn-import-all-asaas');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Importando...';
+
+            const results = {
+                success: 0,
+                failed: 0,
+                errors: []
+            };
+
+            this.addLog('info', `Iniciando importação de ${pending.length} clientes...`);
+
+            // Importar em lote
+            for (let i = 0; i < pending.length; i++) {
+                const customer = pending[i];
+                
+                try {
+                    const response = await this.moduleAPI.request('/api/asaas/import-customer', {
+                        method: 'POST',
+                        body: JSON.stringify({ customerId: customer.id })
+                    });
+
+                    if (response.success) {
+                        results.success++;
+                        customer.isImported = true;
+                        this.addLog('success', `✓ ${customer.name}`);
+                    } else {
+                        results.failed++;
+                        results.errors.push(`${customer.name}: ${response.message}`);
+                        this.addLog('error', `✗ ${customer.name}: ${response.message}`);
+                    }
+
+                } catch (error) {
+                    results.failed++;
+                    results.errors.push(`${customer.name}: ${error.message}`);
+                    this.addLog('error', `✗ ${customer.name}: ${error.message}`);
+                }
+
+                // Atualizar progresso
+                btn.innerHTML = `⏳ Importando... ${i + 1}/${pending.length}`;
+            }
+
+            // Limpar duplicatas automaticamente
+            if (results.success > 0) {
+                btn.innerHTML = '🧹 Limpando duplicatas...';
+                await this.cleanDuplicates();
+            }
+
+            // Mostrar resultados
+            this.showAsaasImportResults(results);
+            this.renderAsaasCustomersList();
+            await this.checkImportedAsaasCustomers();
+
+            this.addLog('success', `Importação concluída: ${results.success} sucesso, ${results.failed} erros`);
+
+        } catch (error) {
+            this.addLog('error', `Erro na importação: ${error.message}`);
+        } finally {
+            const btn = this.container.querySelector('#btn-import-all-asaas');
+            btn.disabled = false;
+            btn.innerHTML = '📥 Importar Todos Pendentes';
+        }
+    }
+
+    /**
+     * Limpar duplicatas
+     */
+    async cleanDuplicates() {
+        try {
+            this.addLog('info', 'Verificando duplicatas...');
+
+            // Buscar duplicatas
+            const response = await this.moduleAPI.request('/api/students/check-duplicates', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                const { duplicates, total } = response.data;
+
+                if (duplicates === 0) {
+                    this.addLog('success', 'Nenhuma duplicata encontrada!');
+                    return;
+                }
+
+                const confirmed = confirm(`Encontradas ${duplicates} duplicatas de ${total} alunos.\n\nDeseja removê-las? (Será mantido o registro mais recente)`);
+                if (!confirmed) return;
+
+                // Remover duplicatas
+                const removeResponse = await this.moduleAPI.request('/api/students/remove-duplicates', {
+                    method: 'DELETE'
+                });
+
+                if (removeResponse.success) {
+                    this.addLog('success', `${removeResponse.data.removed} duplicatas removidas com sucesso!`);
+                    
+                    // Atualizar lista
+                    await this.checkImportedAsaasCustomers();
+                } else {
+                    throw new Error(removeResponse.message || 'Falha ao remover duplicatas');
+                }
+            }
+
+        } catch (error) {
+            this.addLog('error', `Erro ao limpar duplicatas: ${error.message}`);
+        }
+    }
+
+    /**
+     * Mostrar resultados da importação Asaas
+     */
+    showAsaasImportResults(results) {
+        const container = this.container.querySelector('#asaas-import-results');
+        const content = this.container.querySelector('#asaas-results-content');
+
+        const html = `
+            <div class="results-summary">
+                <div class="result-stat result-success">
+                    <div class="result-icon">✅</div>
+                    <div class="result-info">
+                        <div class="result-value">${results.success}</div>
+                        <div class="result-label">Importados com sucesso</div>
+                    </div>
+                </div>
+
+                <div class="result-stat result-failed">
+                    <div class="result-icon">❌</div>
+                    <div class="result-info">
+                        <div class="result-value">${results.failed}</div>
+                        <div class="result-label">Falharam</div>
+                    </div>
+                </div>
+            </div>
+
+            ${results.errors.length > 0 ? `
+                <div class="errors-list">
+                    <h3>⚠️ Erros Encontrados:</h3>
+                    <ul>
+                        ${results.errors.map(err => `<li>${err}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        `;
+
+        content.innerHTML = html;
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
     }
 }
 

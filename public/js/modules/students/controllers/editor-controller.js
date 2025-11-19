@@ -678,25 +678,27 @@ export class StudentEditorController {
                 }
                 
                 // Lazy load tab content
-                console.log('🔍 [Tab Click] Checking if tab needs loading... loaded:', btn.dataset.loaded, 'studentId:', this.current?.id);
-                if (!btn.dataset.loaded && this.current?.id) {
-                    console.log('📡 [Tab Click] Loading tab content...');
-                    btn.dataset.loaded = '1';
-                    await this.loadTabContent(tab, this.current.id);
-                } else {
-                    console.warn('⚠️ [Tab Click] Tab already loaded or no student ID. loaded:', btn.dataset.loaded, 'studentId:', this.current?.id);
-                }
+                console.log('🔍 [Tab Click] Tab:', tab, 'Loaded:', btn.dataset.loaded, 'StudentId:', this.current?.id);
                 
-                // Load packages for plan tab (new student)
-                if (tab === 'plano' && !btn.dataset.loaded) {
+                // Load packages for plan tab (new student mode)
+                if (tab === 'plano' && !this.current?.id && !btn.dataset.loaded) {
+                    console.log('� [Tab Click] Loading packages for NEW student...');
                     btn.dataset.loaded = '1';
                     await this.loadPackagesForEnrollment();
                 }
                 
-                // Load courses for courses tab (new student)
-                if (tab === 'cursos' && !btn.dataset.loaded) {
+                // Load courses for courses tab (new student mode)
+                if (tab === 'cursos' && !this.current?.id && !btn.dataset.loaded) {
+                    console.log('📚 [Tab Click] Loading courses for NEW student...');
                     btn.dataset.loaded = '1';
                     await this.loadCoursesForEnrollment();
+                }
+                
+                // Load tab content for existing student (edit mode)
+                if (!btn.dataset.loaded && this.current?.id) {
+                    console.log('📡 [Tab Click] Loading tab content for EXISTING student...');
+                    btn.dataset.loaded = '1';
+                    await this.loadTabContent(tab, this.current.id);
                 }
             });
         });
@@ -810,7 +812,7 @@ export class StudentEditorController {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'x-organization-id': window.academyApp?.organizationId || localStorage.getItem('organizationId')
+                    'x-organization-id': window.academyApp?.organizationId || localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
                 }
             });
             
@@ -1398,7 +1400,15 @@ export class StudentEditorController {
             console.log('📡 [ResponsibleTab] Fetching all students...');
             const allStudentsRes = await this.api.request('/api/students');
             console.log('✅ [ResponsibleTab] All students received:', allStudentsRes?.data?.length);
-            const allStudents = (allStudentsRes.data || []).filter(s => s.id !== studentId); // Excluir o próprio aluno
+            
+            // Filtrar e ordenar alunos alfabeticamente
+            const allStudents = (allStudentsRes.data || [])
+                .filter(s => s.id !== studentId) // Excluir o próprio aluno
+                .sort((a, b) => {
+                    const nameA = [a.user?.firstName, a.user?.lastName].filter(Boolean).join(' ').toLowerCase();
+                    const nameB = [b.user?.firstName, b.user?.lastName].filter(Boolean).join(' ').toLowerCase();
+                    return nameA.localeCompare(nameB, 'pt-BR');
+                });
             
             // Carregar lista de responsáveis financeiros (cadastros separados)
             let responsibles = [];
@@ -1479,11 +1489,14 @@ export class StudentEditorController {
                                 </label>
                                 <select id="responsibleStudentSelect" class="form-control">
                                     <option value="">-- Selecionar Aluno --</option>
-                                    ${allStudents.map(s => `
+                                    ${allStudents.map(s => {
+                                        const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
+                                        return `
                                         <option value="${s.id}" ${student.financialResponsibleStudentId === s.id ? 'selected' : ''}>
-                                            ${s.user?.name || 'Sem nome'} - ${s.user?.email || 'Sem email'}
+                                            ${fullName} - ${s.user?.email || 'Sem email'}
                                         </option>
-                                    `).join('')}
+                                    `;
+                                    }).join('')}
                                 </select>
                                 <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos, etc.</small>
                             </div>
@@ -2147,6 +2160,84 @@ export class StudentEditorController {
         await this.loadCoursesTab(studentId);
     }
 
+    async loadCoursesTab(studentId) {
+        const enrolledContainer = this.container.querySelector('#enrolled-courses-tab');
+        const availableContainer = this.container.querySelector('#available-courses-tab');
+        
+        if (!enrolledContainer || !availableContainer) {
+            console.error('❌ Courses tab containers not found');
+            return;
+        }
+
+        try {
+            // Load student's course enrollments and available courses
+            const coursesRes = await this.api.request(`/api/students/${studentId}/courses`);
+            const enrollments = coursesRes.data?.enrolledCourses || [];
+            const availableCourses = coursesRes.data?.availableCourses || [];
+            
+            console.log('📚 Course enrollments:', enrollments);
+            console.log('📚 Available courses:', availableCourses);
+
+            // Render enrolled courses
+            if (enrollments.length === 0) {
+                enrolledContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <p>Nenhum curso matriculado</p>
+                    </div>
+                `;
+            } else {
+                enrolledContainer.innerHTML = enrollments.map(enrollment => {
+                    const course = enrollment.course || {};
+                    return `
+                        <div class="course-item data-card-premium">
+                            <div class="course-header">
+                                <h5>${course.name || 'Sem nome'}</h5>
+                                <span class="badge badge-success">Matriculado</span>
+                            </div>
+                            ${course.description ? `<p class="course-description">${course.description}</p>` : ''}
+                            <div class="course-meta">
+                                <span class="badge badge-info">${enrollment.status || 'ACTIVE'}</span>
+                                ${enrollment.enrolledAt ? `<small>Matrícula: ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render available courses (not enrolled)
+            if (availableCourses.length === 0) {
+                availableContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <p>Todos os cursos disponíveis já estão matriculados</p>
+                    </div>
+                `;
+            } else {
+                availableContainer.innerHTML = availableCourses.map(course => `
+                    <div class="course-item data-card-premium">
+                        <div class="course-header">
+                            <h5>${course.name || 'Sem nome'}</h5>
+                            <button class="btn btn-sm btn-primary" onclick="window.enrollCourse('${course.id}')">
+                                Matricular
+                            </button>
+                        </div>
+                        ${course.description ? `<p class="course-description">${course.description}</p>` : ''}
+                    </div>
+                `).join('');
+            }
+
+        } catch (error) {
+            console.error('Error loading courses tab:', error);
+            enrolledContainer.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <p>Erro ao carregar cursos</p>
+                </div>
+            `;
+        }
+    }
+
     async renderFinancialTab(studentId) {
         const panel = this.container.querySelector('#tab-financial');
         
@@ -2175,7 +2266,16 @@ export class StudentEditorController {
             const subscriptions = subscriptionsRes.data || [];
             const payments = paymentsRes.data || [];
             const packages = packagesRes.data || [];
-            const allStudents = (allStudentsRes.data || []).filter(s => s.id !== studentId);
+            
+            // Filtrar e ordenar alunos alfabeticamente
+            const allStudents = (allStudentsRes.data || [])
+                .filter(s => s.id !== studentId)
+                .sort((a, b) => {
+                    const nameA = [a.user?.firstName, a.user?.lastName].filter(Boolean).join(' ').toLowerCase();
+                    const nameB = [b.user?.firstName, b.user?.lastName].filter(Boolean).join(' ').toLowerCase();
+                    return nameA.localeCompare(nameB, 'pt-BR');
+                });
+                
             const responsibles = responsiblesRes.data || [];
             const dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
 
@@ -2266,11 +2366,14 @@ export class StudentEditorController {
                                     </label>
                                     <select id="responsibleStudentSelect" class="form-control">
                                         <option value="">-- Selecionar Aluno --</option>
-                                        ${allStudents.map(s => `
+                                        ${allStudents.map(s => {
+                                            const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
+                                            return `
                                             <option value="${s.id}" ${studentFull.financialResponsibleStudentId === s.id ? 'selected' : ''}>
-                                                ${s.user?.name || 'Sem nome'} - ${s.user?.email || 'Sem email'}
+                                                ${fullName} - ${s.user?.email || 'Sem email'}
                                             </option>
-                                        `).join('')}
+                                        `;
+                                        }).join('')}
                                     </select>
                                     <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos</small>
                                 </div>
@@ -2861,24 +2964,40 @@ export class StudentEditorController {
     }
 
     async loadPackagesForEnrollment() {
+        console.log('📦 [Packages] Starting to load packages...');
         const loadingEl = this.container.querySelector('#packages-loading');
         const containerEl = this.container.querySelector('#packages-container');
+        
+        console.log('📦 [Packages] Elements found:', {
+            loading: !!loadingEl,
+            container: !!containerEl
+        });
+
+        if (!loadingEl || !containerEl) {
+            console.error('❌ [Packages] Required elements not found!');
+            return;
+        }
 
         try {
+            console.log('📡 [Packages] Fetching from /api/billing-plans...');
             const response = await this.api.fetchWithStates('/api/billing-plans', {
                 loadingElement: loadingEl,
-                onError: (error) => console.error('Error loading packages:', error)
+                onError: (error) => console.error('❌ [Packages] Error loading packages:', error)
             });
+            console.log('✅ [Packages] Response received:', response);
             const packages = response.data || [];
+            console.log('📦 [Packages] Total packages:', packages.length);
 
             loadingEl.style.display = 'none';
             containerEl.style.display = 'block';
 
             if (packages.length === 0) {
+                console.warn('⚠️ [Packages] No packages available');
                 containerEl.innerHTML = '<p class="empty-state">Nenhum pacote disponível no momento</p>';
                 return;
             }
 
+            console.log('🎨 [Packages] Rendering', packages.length, 'packages...');
             containerEl.innerHTML = `
                 <div class="packages-grid-enrollment">
                     ${packages.map(pkg => {
@@ -3269,7 +3388,8 @@ window.enrollInCourse = async function(studentId, courseId, courseName) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             },
             body: JSON.stringify({
                 courseId: courseId,
@@ -3300,7 +3420,8 @@ window.unenrollFromCourse = async function(studentId, enrollmentId) {
         const response = await fetch(`/api/students/${studentId}/enrollments/${enrollmentId}`, {
             method: 'DELETE',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             }
         });
         
@@ -3740,7 +3861,7 @@ window.submitSubscriptionForm = async function(event) {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+                'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             },
             body: JSON.stringify(payload)
         });
@@ -3823,7 +3944,7 @@ window.pauseSubscription = async function(subscriptionId) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+                'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             },
             body: JSON.stringify({ status: 'PAUSED' })
         });
@@ -3851,6 +3972,176 @@ window.pauseSubscription = async function(subscriptionId) {
     }
 };
 
+/**
+ * Enroll student in a course (called from onclick in HTML)
+ * @param {string} courseId - The course ID to enroll
+ */
+window.enrollCourse = async function(courseId) {
+    const editor = window.studentEditor;
+    if (!editor?.current?.id) {
+        console.error('❌ [enrollCourse] No current student');
+        alert('Erro: Aluno não carregado');
+        return;
+    }
+
+    console.log('📚 [enrollCourse] Enrolling student', editor.current.id, 'in course', courseId);
+
+    try {
+        const response = await editor.api.request(`/api/students/${editor.current.id}/courses`, {
+            method: 'POST',
+            body: JSON.stringify({ courseId })
+        });
+
+        if (response.success) {
+            window.app?.showToast?.('Aluno matriculado no curso com sucesso!', 'success');
+            // Reload courses tab
+            await editor.loadTabContent('courses', editor.current.id);
+        } else {
+            throw new Error(response.message || 'Falha ao matricular no curso');
+        }
+    } catch (error) {
+        console.error('❌ [enrollCourse] Error:', error);
+        window.app?.showToast?.(error.message || 'Erro ao matricular no curso', 'error');
+    }
+};
+
+// Global function for package selector (called from onclick in HTML)
+window.openPackageSelector = async function(studentId) {
+    console.log('📦 [openPackageSelector] Opening for student:', studentId);
+    
+    if (!window.studentEditor) {
+        console.error('❌ [openPackageSelector] StudentEditor not available');
+        alert('Erro: Editor não disponível');
+        return;
+    }
+
+    // Load packages in modal or inline section
+    try {
+        // Get student data
+        const response = await window.studentEditor.api.request(`/api/students/${studentId}`);
+        const student = response.data;
+
+        // Load billing plans
+        const plansResponse = await window.studentEditor.api.request('/api/billing-plans');
+        const plans = plansResponse.data || [];
+
+        if (plans.length === 0) {
+            alert('Nenhum plano disponível no momento');
+            return;
+        }
+
+        // Show plans in a modal or inline section
+        // For now, let's create a simple modal
+        const modalHTML = `
+            <div class="modal-overlay" id="package-selector-modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    max-width: 800px;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    width: 90%;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2>Selecionar Plano para ${student.user.firstName} ${student.user.lastName}</h2>
+                        <button onclick="document.getElementById('package-selector-modal').remove()" style="
+                            background: none;
+                            border: none;
+                            font-size: 2rem;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div class="packages-grid" style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                        gap: 1rem;
+                    ">
+                        ${plans.map(pkg => `
+                            <div class="package-card" style="
+                                border: 2px solid #e0e0e0;
+                                border-radius: 8px;
+                                padding: 1.5rem;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                            " onmouseover="this.style.borderColor='#667eea'" onmouseout="this.style.borderColor='#e0e0e0'">
+                                <h3 style="margin-top: 0; color: #667eea;">${pkg.name}</h3>
+                                <p style="color: #666; font-size: 0.9rem;">${pkg.description || ''}</p>
+                                <div style="margin: 1rem 0;">
+                                    <span style="font-size: 1.5rem; font-weight: bold; color: #333;">R$ ${parseFloat(pkg.price).toFixed(2)}</span>
+                                    <span style="color: #666; font-size: 0.9rem;">/${pkg.billingType === 'MONTHLY' ? 'mês' : 'período'}</span>
+                                </div>
+                                <button onclick="window.createSubscription('${studentId}', '${pkg.id}')" style="
+                                    width: 100%;
+                                    padding: 0.75rem;
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                    font-weight: bold;
+                                ">Selecionar</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    } catch (error) {
+        console.error('❌ [openPackageSelector] Error:', error);
+        alert('Erro ao carregar planos: ' + error.message);
+    }
+};
+
+// Global function to create subscription (called from package selector)
+window.createSubscription = async function(studentId, planId) {
+    console.log('💳 [createSubscription] Creating subscription:', { studentId, planId });
+
+    try {
+        const response = await window.studentEditor.api.request('/api/subscriptions', {
+            method: 'POST',
+            body: JSON.stringify({
+                studentId,
+                planId,
+                startDate: new Date().toISOString().split('T')[0]
+            })
+        });
+
+        if (response.success) {
+            // Close modal
+            document.getElementById('package-selector-modal')?.remove();
+            
+            // Show success message
+            window.app?.showToast?.('Assinatura criada com sucesso!', 'success');
+            
+            // Reload financial tab if student is currently open
+            if (window.studentEditor.current?.id === studentId) {
+                await window.studentEditor.renderFinancialTab(studentId);
+            }
+        } else {
+            throw new Error(response.message || 'Falha ao criar assinatura');
+        }
+    } catch (error) {
+        console.error('❌ [createSubscription] Error:', error);
+        alert('Erro ao criar assinatura: ' + error.message);
+    }
+};
+
 window.cancelSubscription = async function(subscriptionId) {
     if (!confirm('Deseja cancelar esta assinatura? Esta ação não pode ser desfeita.')) return;
 
@@ -3859,7 +4150,7 @@ window.cancelSubscription = async function(subscriptionId) {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'x-organization-id': localStorage.getItem('organizationId') || '452c0b35-1822-4890-851e-922356c812fb'
+                'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             }
         });
 

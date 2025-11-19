@@ -14,6 +14,9 @@ class ImportController {
         this.uploadedData = null;
         this.validationResults = null;
         this.previewData = null;
+        this.activeTab = 'asaas'; // Aba ativa padrão
+        this.moduleAPI = null;
+        this.asaasCustomers = [];
         
         // Estados do workflow
         this.steps = {
@@ -22,6 +25,10 @@ class ImportController {
             3: 'preview',
             4: 'import'
         };
+        
+        // Controle da aba Asaas
+        this.asaasTabLoaded = false;
+        this.asaasCustomers = [];
         
         this.onError = null; // Callback para erros
     }
@@ -33,9 +40,14 @@ class ImportController {
         try {
             console.log('🎮 Inicializando ImportController...');
             
+            await this.initializeAPI();
             this.setupMainStructure();
             this.setupEventListeners();
-            this.loadUploadView();
+            this.setupTabSwitching(); // Configurar troca de abas
+            await this.loadImportStats();
+            
+            // Renderizar aba ativa (CSV por padrão)
+            this.loadCSVTab();
             
             console.log('✅ ImportController inicializado com sucesso');
             
@@ -49,6 +61,209 @@ class ImportController {
     }
 
     /**
+     * Inicializar API client
+     */
+    async initializeAPI() {
+        if (typeof waitForAPIClient !== 'undefined') {
+            await waitForAPIClient();
+            this.moduleAPI = window.createModuleAPI('Import');
+        }
+    }
+
+    /**
+     * Carregar estatísticas de importações
+     */
+    async loadImportStats() {
+        try {
+            // Buscar histórico de importações (simulado por enquanto)
+            // TODO: Implementar endpoint /api/imports/stats no backend
+            const stats = {
+                total: parseInt(localStorage.getItem('import_total') || '0'),
+                successful: parseInt(localStorage.getItem('import_successful') || '0'),
+                failed: parseInt(localStorage.getItem('import_failed') || '0')
+            };
+            
+            this.updateStatsCards(stats);
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar stats de importação:', error);
+            // Não bloquear a inicialização se stats falharem
+        }
+    }
+
+    /**
+     * Configurar troca de abas
+     */
+    setupTabSwitching() {
+        const tabs = this.container.querySelectorAll('.import-tab');
+        const csvContent = this.container.querySelector('#csv-tab-content');
+        const asaasContent = this.container.querySelector('#asaas-tab-content');
+
+        if (!tabs.length || !csvContent || !asaasContent) {
+            console.warn('⚠️ Elementos de abas não encontrados');
+            return;
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const targetTab = e.currentTarget.dataset.tab;
+
+                // Remover active de todas as abas
+                tabs.forEach(t => t.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+
+                // Alternar conteúdo
+                if (targetTab === 'csv') {
+                    csvContent.style.display = 'block';
+                    asaasContent.style.display = 'none';
+                    this.currentTab = 'csv';
+                    console.log('📄 Aba CSV ativa');
+                } else if (targetTab === 'asaas') {
+                    csvContent.style.display = 'none';
+                    asaasContent.style.display = 'block';
+                    this.currentTab = 'asaas';
+                    
+                    // Carregar conteúdo da aba Asaas na primeira vez
+                    if (!this.asaasTabLoaded) {
+                        this.loadAsaasTab();
+                        this.asaasTabLoaded = true;
+                    }
+                    
+                    console.log('💳 Aba Asaas ativa');
+                }
+            });
+        });
+    }
+
+    /**
+     * Carregar conteúdo da aba Asaas
+     */
+    loadAsaasTab() {
+        const asaasContent = this.container.querySelector('#asaas-tab-content');
+        
+        if (!asaasContent) {
+            console.error('❌ Container da aba Asaas não encontrado');
+            return;
+        }
+
+        asaasContent.innerHTML = `
+            <div class="asaas-import-wrapper">
+                <!-- Header da aba -->
+                <div class="asaas-tab-header">
+                    <h2>💳 Sincronização com Asaas</h2>
+                    <p>Importe seus clientes do Asaas para o sistema</p>
+                    <div id="connection-status" class="connection-status">
+                        <span class="status-badge status-idle">⚪ Aguardando teste de conexão</span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="asaas-stats-grid">
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="asaas-total-customers">-</div>
+                        <div class="stat-label">Total no Asaas</div>
+                    </div>
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="asaas-imported">-</div>
+                        <div class="stat-label">Já Importados</div>
+                    </div>
+                    <div class="stat-card-asaas">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-value" id="asaas-pending">-</div>
+                        <div class="stat-label">Pendentes</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="asaas-actions">
+                    <button id="btn-test-connection" class="btn-import-secondary">
+                        🔌 Testar Conexão
+                    </button>
+                    <button id="btn-fetch-asaas" class="btn-import-primary">
+                        🔄 Buscar Clientes do Asaas
+                    </button>
+                    <button id="btn-import-all-asaas" class="btn-import-success" style="display: none;">
+                        📥 Importar Todos Pendentes
+                    </button>
+                    <button id="btn-clean-duplicates" class="btn-import-warning" style="display: none;">
+                        🧹 Limpar Duplicatas
+                    </button>
+                </div>
+
+                <!-- Customers Container -->
+                <div id="asaas-customers-container" style="display: none;">
+                    <!-- Filters -->
+                    <div class="asaas-filters">
+                        <input 
+                            type="text" 
+                            id="search-asaas-customers" 
+                            placeholder="🔍 Buscar por nome ou email..."
+                            class="filter-input"
+                        />
+                        <select id="filter-asaas-status" class="filter-select">
+                            <option value="all">Todos</option>
+                            <option value="pending">Pendentes</option>
+                            <option value="imported">Importados</option>
+                        </select>
+                    </div>
+
+                    <!-- Customer List -->
+                    <div id="asaas-customers-list" class="asaas-customers-list">
+                        <!-- Será preenchido dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Import Results -->
+                <div id="asaas-import-results" class="import-results" style="display: none;">
+                    <h3>📊 Resultados da Importação</h3>
+                    <div id="asaas-results-content"></div>
+                </div>
+            </div>
+        `;
+
+        // Configurar eventos da aba Asaas
+        this.setupAsaasEvents();
+
+        // Configurar event listeners dos botões
+        const btnTest = this.container.querySelector('#btn-test-connection');
+        const btnFetch = this.container.querySelector('#btn-fetch-asaas');
+        const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
+        const btnClean = this.container.querySelector('#btn-clean-duplicates');
+
+        if (btnTest) {
+            btnTest.addEventListener('click', () => this.testAsaasConnection());
+        }
+
+        if (btnFetch) {
+            btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
+        }
+
+        if (btnImportAll) {
+            btnImportAll.addEventListener('click', () => this.importAllAsaas());
+        }
+
+        if (btnClean) {
+            btnClean.addEventListener('click', () => this.cleanDuplicates());
+        }
+
+        console.log('✅ Aba Asaas carregada');
+    }
+
+    /**
+     * Atualizar cards de estatísticas
+     */
+    updateStatsCards(stats) {
+        const totalEl = this.container.querySelector('#stat-total-imports');
+        const successEl = this.container.querySelector('#stat-successful');
+        const failedEl = this.container.querySelector('#stat-failed');
+        
+        if (totalEl) totalEl.textContent = stats.total || 0;
+        if (successEl) successEl.textContent = stats.successful || 0;
+        if (failedEl) failedEl.textContent = stats.failed || 0;
+    }
+
+    /**
      * Configurar estrutura principal do módulo
      */
     setupMainStructure() {
@@ -56,34 +271,225 @@ class ImportController {
             <div class="module-isolated-import">
                 <!-- Header Premium -->
                 <div class="import-header-premium">
-                    <h1>📥 Importação de Alunos</h1>
-                    <div class="breadcrumb">Módulo / Importação / Asaas</div>
+                    <h1>📥 Central de Importação</h1>
+                    <nav class="breadcrumb">
+                        <span>Home</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current">Importação</span>
+                    </nav>
                 </div>
 
-                <!-- Progress Steps -->
-                <div class="progress-steps">
-                    <div class="progress-step active" data-step="1">1</div>
-                    <div class="progress-step" data-step="2">2</div>
-                    <div class="progress-step" data-step="3">3</div>
-                    <div class="progress-step" data-step="4">4</div>
-                </div>
-
-                <!-- Main Content Area -->
-                <div id="import-content" class="import-content">
-                    <!-- Conteúdo dinâmico será inserido aqui -->
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="import-actions">
-                    <button id="btn-back" class="btn-import-secondary" style="display: none;">
-                        ← Voltar
+                <!-- Navegação de Abas -->
+                <div class="import-tabs">
+                    <button class="import-tab active" data-tab="csv">
+                        � Importar CSV
                     </button>
-                    <button id="btn-next" class="btn-import-primary" style="display: none;">
-                        Próximo →
+                    <button class="import-tab" data-tab="asaas">
+                        💳 Sincronizar Asaas
                     </button>
+                </div>
+
+                <!-- Conteúdo Aba CSV -->
+                <div id="csv-tab-content" class="tab-content active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card-enhanced stat-gradient-primary">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="stat-total">0</div>
+                                <div class="stat-label">Total Importações</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card-enhanced stat-gradient-success">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="stat-successful">0</div>
+                                <div class="stat-label">Sucesso</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card-enhanced stat-gradient-danger">
+                            <div class="stat-icon">❌</div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="stat-failed">0</div>
+                                <div class="stat-label">Erros</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Steps -->
+                    <div class="progress-steps">
+                        <div class="progress-step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Upload</div>
+                        </div>
+                        <div class="progress-step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Validação</div>
+                        </div>
+                        <div class="progress-step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Preview</div>
+                        </div>
+                        <div class="progress-step" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-label">Importação</div>
+                        </div>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div id="import-content" class="import-content">
+                        <!-- Conteúdo dinâmico será renderizado aqui -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="import-actions">
+                        <button id="btn-cancel" class="btn-import-secondary" style="display: none;">
+                            ❌ Cancelar
+                        </button>
+                        <button id="btn-back" class="btn-import-secondary" style="display: none;">
+                            ⬅️ Voltar
+                        </button>
+                        <button id="btn-next" class="btn-import-primary" style="display: none;">
+                            Próximo ➡️
+                        </button>
+                        <button id="btn-import" class="btn-import-success" style="display: none;">
+                            ✅ Confirmar Importação
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conteúdo Aba Asaas -->
+                <div id="asaas-tab-content" class="tab-content" style="display: none;">
+                    <!-- Será carregado dinamicamente pelo loadAsaasTab() -->
                 </div>
             </div>
         `;
+    }
+    /**
+     * Carregar aba CSV (upload de arquivo)
+     */
+    loadCSVTab() {
+        const content = this.container.querySelector('#import-content');
+        
+        if (!content) {
+            console.warn('⚠️ Container #import-content não encontrado');
+            return;
+        }
+        
+        // Renderizar view de upload
+        this.renderUploadView();
+    }
+
+    /**
+     * Renderizar view de upload de arquivo CSV
+     */
+    renderUploadView() {
+        const content = this.container.querySelector('#import-content');
+                        <div class="stat-info">
+                            <div class="stat-value" id="asaas-total-customers">-</div>
+                            <div class="stat-label">Clientes no Asaas</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-enhanced stat-gradient-success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="asaas-imported">-</div>
+                            <div class="stat-label">Já Importados</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-enhanced stat-gradient-warning">
+                        <div class="stat-icon">📥</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="asaas-pending">-</div>
+                            <div class="stat-label">Pendentes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="data-card-premium">
+                    <div class="asaas-actions-section">
+                        <div class="action-buttons">
+                            <button 
+                                id="btn-fetch-asaas" 
+                                class="btn-import-primary"
+                                onclick="window.import.controller.fetchAsaasCustomers()">
+                                🔄 Buscar Clientes do Asaas
+                            </button>
+                            
+                            <button 
+                                id="btn-import-all-asaas" 
+                                class="btn-import-success"
+                                style="display: none;"
+                                onclick="window.import.controller.importAllAsaas()">
+                                📥 Importar Todos Pendentes
+                            </button>
+
+                            <button 
+                                id="btn-test-asaas" 
+                                class="btn-import-secondary"
+                                onclick="window.import.controller.testAsaasConnection()">
+                                🔌 Testar Conexão
+                            </button>
+
+                            <button 
+                                id="btn-clean-duplicates" 
+                                class="btn-import-warning"
+                                style="display: none;"
+                                onclick="window.import.controller.cleanDuplicates()">
+                                🧹 Limpar Duplicatas
+                            </button>
+                        </div>
+
+                        <div class="connection-status" id="connection-status">
+                            <span class="status-badge status-unknown">⚪ Status desconhecido</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Clientes -->
+                <div class="data-card-premium" id="asaas-customers-container" style="display: none;">
+                    <div class="card-header">
+                        <h2>📋 Clientes do Asaas</h2>
+                        <div class="filters-asaas">
+                            <input 
+                                type="text" 
+                                id="search-asaas-customers" 
+                                placeholder="🔍 Buscar por nome ou email..."
+                                class="input-search-asaas">
+                            
+                            <select id="filter-asaas-status" class="select-filter-asaas">
+                                <option value="all">Todos</option>
+                                <option value="pending">Pendentes</option>
+                                <option value="imported">Já Importados</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="asaas-customers-list" class="customers-list-asaas">
+                        <!-- Lista será renderizada aqui -->
+                    </div>
+                </div>
+
+                <!-- Resultados -->
+                <div class="data-card-premium" id="asaas-import-results" style="display: none;">
+                    <div class="card-header">
+                        <h2>📊 Resultados da Importação</h2>
+                    </div>
+                    <div id="asaas-results-content" class="results-content-asaas">
+                        <!-- Resultados serão renderizados aqui -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Configurar eventos da aba Asaas
+        this.setupAsaasEvents();
+        console.log('✅ Aba Asaas carregada');
     }
 
     /**
@@ -844,6 +1250,18 @@ class ImportController {
      * Exibir resultados da importação
      */
     showImportResults(results) {
+        // Atualizar estatísticas persistentes
+        const totalImports = parseInt(localStorage.getItem('import_total') || '0') + 1;
+        const successful = parseInt(localStorage.getItem('import_successful') || '0') + (results.imported > 0 ? 1 : 0);
+        const failed = parseInt(localStorage.getItem('import_failed') || '0') + (results.skipped > 0 ? 1 : 0);
+        
+        localStorage.setItem('import_total', totalImports.toString());
+        localStorage.setItem('import_successful', successful.toString());
+        localStorage.setItem('import_failed', failed.toString());
+        
+        // Atualizar cards imediatamente
+        this.updateStatsCards({ total: totalImports, successful, failed });
+        
         const content = this.container.querySelector('#import-content');
         
         // Determinar tipo de mensagem
@@ -927,6 +1345,450 @@ class ImportController {
         this.validationResults = null;
         this.previewData = null;
     }
+
+    // ==========================================
+    // MÉTODOS PARA ABA ASAAS
+    // ==========================================
+
+    /**
+     * Setup eventos da aba Asaas
+     */
+    setupAsaasEvents() {
+        // Event listeners dos botões principais
+        const btnTest = this.container.querySelector('#btn-test-connection');
+        const btnFetch = this.container.querySelector('#btn-fetch-asaas');
+        const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
+        const btnClean = this.container.querySelector('#btn-clean-duplicates');
+
+        if (btnTest) {
+            btnTest.addEventListener('click', () => this.testAsaasConnection());
+        }
+
+        if (btnFetch) {
+            btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
+        }
+
+        if (btnImportAll) {
+            btnImportAll.addEventListener('click', () => this.importAllAsaas());
+        }
+
+        if (btnClean) {
+            btnClean.addEventListener('click', () => this.cleanDuplicates());
+        }
+
+        // Busca em tempo real
+        const searchInput = this.container.querySelector('#search-asaas-customers');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterAsaasCustomers(e.target.value);
+            });
+        }
+
+        // Filtro de status
+        const filterStatus = this.container.querySelector('#filter-asaas-status');
+        if (filterStatus) {
+            filterStatus.addEventListener('change', (e) => {
+                this.filterAsaasByStatus(e.target.value);
+            });
+        }
+    }
+
+    /**
+     * Testar conexão com Asaas
+     */
+    async testAsaasConnection() {
+        try {
+            const statusEl = document.getElementById('connection-status');
+            statusEl.innerHTML = '<span class="status-badge status-loading">⏳ Testando conexão...</span>';
+
+            const response = await this.moduleAPI.request('/api/asaas/test', {
+                method: 'GET'
+            });
+
+            if (response.success) {
+                statusEl.innerHTML = '<span class="status-badge status-success">✅ Conexão OK</span>';
+                this.showNotification('Conexão com Asaas estabelecida!', 'success');
+            } else {
+                throw new Error(response.message || 'Falha na conexão');
+            }
+
+        } catch (error) {
+            const statusEl = document.getElementById('connection-status');
+            statusEl.innerHTML = '<span class="status-badge status-error">❌ Conexão falhou</span>';
+            this.showNotification(`Erro: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * Buscar clientes do Asaas
+     */
+    async fetchAsaasCustomers() {
+        try {
+            const btn = document.getElementById('btn-fetch-asaas');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Buscando...';
+
+            const response = await this.moduleAPI.request('/api/asaas/customers', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                this.asaasCustomers = response.data.data || [];
+                
+                // Atualizar stats
+                document.getElementById('asaas-total-customers').textContent = this.asaasCustomers.length;
+                
+                // Verificar quais já foram importados
+                await this.checkImportedAsaasCustomers();
+                
+                // Renderizar lista
+                this.renderAsaasCustomersList();
+                
+                // Mostrar botões
+                document.getElementById('btn-import-all-asaas').style.display = 'inline-block';
+                document.getElementById('btn-clean-duplicates').style.display = 'inline-block';
+                document.getElementById('asaas-customers-container').style.display = 'block';
+                
+                this.showNotification(`${this.asaasCustomers.length} clientes encontrados!`, 'success');
+            } else {
+                throw new Error(response.message || 'Falha ao buscar clientes');
+            }
+
+        } catch (error) {
+            this.showNotification(`Erro: ${error.message}`, 'error');
+        } finally {
+            const btn = document.getElementById('btn-fetch-asaas');
+            btn.disabled = false;
+            btn.innerHTML = '🔄 Buscar Clientes do Asaas';
+        }
+    }
+
+    /**
+     * Verificar clientes já importados
+     */
+    async checkImportedAsaasCustomers() {
+        try {
+            const response = await this.moduleAPI.request('/api/students', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                const existingEmails = new Set(
+                    response.data.map(s => s.user?.email?.toLowerCase()).filter(Boolean)
+                );
+
+                // Marcar clientes que já existem
+                this.asaasCustomers.forEach(customer => {
+                    customer.isImported = existingEmails.has(customer.email?.toLowerCase());
+                });
+
+                // Atualizar stats
+                const imported = this.asaasCustomers.filter(c => c.isImported).length;
+                const pending = this.asaasCustomers.length - imported;
+
+                document.getElementById('asaas-imported').textContent = imported;
+                document.getElementById('asaas-pending').textContent = pending;
+            }
+
+        } catch (error) {
+            console.error('Erro ao verificar clientes importados:', error);
+        }
+    }
+
+    /**
+     * Renderizar lista de clientes Asaas
+     */
+    renderAsaasCustomersList() {
+        const container = document.getElementById('asaas-customers-list');
+        
+        if (this.asaasCustomers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-asaas">
+                    <div class="empty-icon">📭</div>
+                    <h3>Nenhum cliente encontrado</h3>
+                    <p>Não há clientes no Asaas para importar</p>
+                </div>
+            `;
+            return;
+        }
+
+        const html = this.asaasCustomers.map(customer => `
+            <div class="customer-card-asaas ${customer.isImported ? 'imported' : ''}" data-email="${customer.email || ''}">
+                <div class="customer-info">
+                    <div class="customer-name">
+                        ${customer.name || 'Nome não informado'}
+                        ${customer.isImported ? '<span class="badge-imported">✅ Importado</span>' : ''}
+                    </div>
+                    <div class="customer-email">
+                        📧 ${customer.email || 'Email não informado'}
+                    </div>
+                    <div class="customer-details">
+                        <span>📱 ${customer.phone || 'N/A'}</span>
+                        <span>📄 ${customer.cpfCnpj || 'N/A'}</span>
+                        <span>🆔 ${customer.id}</span>
+                    </div>
+                </div>
+                <div class="customer-actions">
+                    ${!customer.isImported ? `
+                        <button 
+                            class="btn-import-single" 
+                            onclick="window.import.controller.importSingleAsaas('${customer.id}')"
+                            ${!customer.email ? 'disabled title="Email não informado"' : ''}>
+                            📥 Importar
+                        </button>
+                    ` : `
+                        <span class="text-success">✓ Já está no sistema</span>
+                    `}
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Filtrar clientes por busca
+     */
+    filterAsaasCustomers(searchTerm) {
+        const cards = document.querySelectorAll('.customer-card-asaas');
+        const term = searchTerm.toLowerCase();
+
+        cards.forEach(card => {
+            const name = card.querySelector('.customer-name').textContent.toLowerCase();
+            const email = card.querySelector('.customer-email').textContent.toLowerCase();
+            
+            if (name.includes(term) || email.includes(term)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Filtrar por status
+     */
+    filterAsaasByStatus(status) {
+        const cards = document.querySelectorAll('.customer-card-asaas');
+
+        cards.forEach(card => {
+            const isImported = card.classList.contains('imported');
+
+            if (status === 'all') {
+                card.style.display = 'flex';
+            } else if (status === 'imported' && isImported) {
+                card.style.display = 'flex';
+            } else if (status === 'pending' && !isImported) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Importar cliente individual
+     */
+    async importSingleAsaas(customerId) {
+        try {
+            const customer = this.asaasCustomers.find(c => c.id === customerId);
+            if (!customer) {
+                throw new Error('Cliente não encontrado');
+            }
+
+            this.showNotification(`Importando ${customer.name}...`, 'info');
+
+            const response = await this.moduleAPI.request('/api/asaas/import-customer', {
+                method: 'POST',
+                body: JSON.stringify({ customerId })
+            });
+
+            if (response.success) {
+                customer.isImported = true;
+                this.renderAsaasCustomersList();
+                await this.checkImportedAsaasCustomers();
+                this.showNotification(`${customer.name} importado com sucesso!`, 'success');
+            } else {
+                throw new Error(response.message || 'Falha na importação');
+            }
+
+        } catch (error) {
+            this.showNotification(`Erro: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * Importar todos os clientes pendentes
+     */
+    async importAllAsaas() {
+        try {
+            const pending = this.asaasCustomers.filter(c => !c.isImported && c.email);
+            
+            if (pending.length === 0) {
+                this.showNotification('Não há clientes pendentes para importar', 'warning');
+                return;
+            }
+
+            const confirmed = confirm(`Importar ${pending.length} clientes do Asaas?\n\nApós a importação, duplicatas serão automaticamente removidas.`);
+            if (!confirmed) return;
+
+            const btn = document.getElementById('btn-import-all-asaas');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Importando...';
+
+            const results = {
+                success: 0,
+                failed: 0,
+                errors: []
+            };
+
+            // Importar em lote
+            for (let i = 0; i < pending.length; i++) {
+                const customer = pending[i];
+                
+                try {
+                    const response = await this.moduleAPI.request('/api/asaas/import-customer', {
+                        method: 'POST',
+                        body: JSON.stringify({ customerId: customer.id })
+                    });
+
+                    if (response.success) {
+                        results.success++;
+                        customer.isImported = true;
+                    } else {
+                        results.failed++;
+                        results.errors.push(`${customer.name}: ${response.message}`);
+                    }
+
+                } catch (error) {
+                    results.failed++;
+                    results.errors.push(`${customer.name}: ${error.message}`);
+                }
+
+                // Atualizar progresso
+                btn.innerHTML = `⏳ Importando... ${i + 1}/${pending.length}`;
+            }
+
+            // Limpar duplicatas automaticamente
+            if (results.success > 0) {
+                btn.innerHTML = '🧹 Limpando duplicatas...';
+                await this.cleanDuplicates();
+            }
+
+            // Mostrar resultados
+            this.showAsaasImportResults(results);
+            this.renderAsaasCustomersList();
+            await this.checkImportedAsaasCustomers();
+
+        } catch (error) {
+            this.showNotification(`Erro na importação: ${error.message}`, 'error');
+        } finally {
+            const btn = document.getElementById('btn-import-all-asaas');
+            btn.disabled = false;
+            btn.innerHTML = '📥 Importar Todos Pendentes';
+        }
+    }
+
+    /**
+     * Limpar duplicatas
+     */
+    async cleanDuplicates() {
+        try {
+            this.showNotification('Verificando duplicatas...', 'info');
+
+            // Buscar duplicatas
+            const response = await this.moduleAPI.request('/api/students/check-duplicates', {
+                method: 'GET'
+            });
+
+            if (response.success && response.data) {
+                const { duplicates, total } = response.data;
+
+                if (duplicates === 0) {
+                    this.showNotification('Nenhuma duplicata encontrada!', 'success');
+                    return;
+                }
+
+                const confirmed = confirm(`Encontradas ${duplicates} duplicatas de ${total} alunos.\n\nDeseja removê-las? (Será mantido o registro mais recente)`);
+                if (!confirmed) return;
+
+                // Remover duplicatas
+                const removeResponse = await this.moduleAPI.request('/api/students/remove-duplicates', {
+                    method: 'DELETE'
+                });
+
+                if (removeResponse.success) {
+                    this.showNotification(`${removeResponse.data.removed} duplicatas removidas com sucesso!`, 'success');
+                    
+                    // Atualizar lista
+                    await this.checkImportedAsaasCustomers();
+                } else {
+                    throw new Error(removeResponse.message || 'Falha ao remover duplicatas');
+                }
+            }
+
+        } catch (error) {
+            this.showNotification(`Erro ao limpar duplicatas: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * Mostrar resultados da importação Asaas
+     */
+    showAsaasImportResults(results) {
+        const container = document.getElementById('asaas-import-results');
+        const content = document.getElementById('asaas-results-content');
+
+        const html = `
+            <div class="results-summary">
+                <div class="result-stat result-success">
+                    <div class="result-icon">✅</div>
+                    <div class="result-info">
+                        <div class="result-value">${results.success}</div>
+                        <div class="result-label">Importados com sucesso</div>
+                    </div>
+                </div>
+
+                <div class="result-stat result-failed">
+                    <div class="result-icon">❌</div>
+                    <div class="result-info">
+                        <div class="result-value">${results.failed}</div>
+                        <div class="result-label">Falharam</div>
+                    </div>
+                </div>
+            </div>
+
+            ${results.errors.length > 0 ? `
+                <div class="errors-list">
+                    <h3>⚠️ Erros Encontrados:</h3>
+                    <ul>
+                        ${results.errors.map(err => `<li>${err}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        `;
+
+        content.innerHTML = html;
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /**
+     * Mostrar notificação
+     */
+    showNotification(message, type = 'info') {
+        if (window.app && window.app.showNotification) {
+            window.app.showNotification(message, type);
+        } else {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Fallback: alert para mensagens importantes
+            if (type === 'error' || type === 'warning') {
+                alert(message);
+            }
+        }
+    }
 }
 
 export default ImportController;
+

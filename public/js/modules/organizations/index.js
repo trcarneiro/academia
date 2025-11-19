@@ -149,14 +149,14 @@ const OrganizationsModule = {
         this.container.innerHTML = `
             <!-- Premium Header -->
             <div class="module-header-premium">
-                <div class="breadcrumb">
-                    <span class="breadcrumb-item active">🏫 Organizações</span>
-                </div>
-                <h1 class="module-title-premium">
-                    🏫 Gestão de Organizações
-                </h1>
-                <div class="module-subtitle">
-                    Gerencie organizações e configurações da academia
+                <div class="header-content">
+                    <div class="breadcrumb">
+                        <span>Academia</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current">Organizações</span>
+                    </div>
+                    <h1>🏫 Gestão de Organizações</h1>
+                    <p class="header-subtitle">Gerencie organizações e configurações da academia</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="window.organizationsModule.navigateToEditor()">
@@ -166,34 +166,28 @@ const OrganizationsModule = {
                 </div>
             </div>
 
-            <!-- Stats Cards - EXACT SAME AS INSTRUCTORS -->
+            <!-- Stats Cards -->
             <div class="stats-grid">
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">
-                        <i class="fas fa-university"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">${totalOrganizations}</div>
+                <div class="stat-card-enhanced stat-gradient-primary">
+                    <div class="stat-icon">🏫</div>
+                    <div class="stat-info">
+                        <div class="stat-value">${totalOrganizations}</div>
                         <div class="stat-label">Total de Organizações</div>
                     </div>
                 </div>
 
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">${activeOrganizations}</div>
+                <div class="stat-card-enhanced stat-gradient-success">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-value">${activeOrganizations}</div>
                         <div class="stat-label">Organizações Ativas</div>
                     </div>
                 </div>
 
-                <div class="stat-card-enhanced">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number">${totalStudents}</div>
+                <div class="stat-card-enhanced stat-gradient-info">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value">${totalStudents}</div>
                         <div class="stat-label">Capacidade Total</div>
                     </div>
                 </div>

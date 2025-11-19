@@ -17,6 +17,7 @@ export class TurmasDetailView {
     this.instructors = [];
     this.units = [];
     this.organizations = [];
+    this.trainingAreas = [];
 
     this.coursesLoading = false;
     this.coursesError = null;
@@ -38,6 +39,7 @@ export class TurmasDetailView {
       instructorId: '',
       organizationId: '',
       unitId: '',
+      trainingAreaId: '',
       startDate: '',
       endDate: null,
       schedule: {
@@ -109,15 +111,17 @@ export class TurmasDetailView {
 
   async loadSupportLists() {
     try {
-      const [instructorsRes, unitsRes, organizationsRes] = await Promise.all([
+      const [instructorsRes, unitsRes, organizationsRes, trainingAreasRes] = await Promise.all([
         this.service.getInstructors?.(),
         this.service.getUnits?.(),
         this.service.getOrganizations?.(),
+        this.service.getTrainingAreas?.(),
       ]);
 
       this.instructors = this.parseResult(instructorsRes, []);
       this.units = this.parseResult(unitsRes, []);
       this.organizations = this.parseResult(organizationsRes, []);
+      this.trainingAreas = this.parseResult(trainingAreasRes, []);
     } catch (error) {
       this.reportError(error, 'Falha ao carregar referências da turma');
       throw error;
@@ -132,8 +136,11 @@ export class TurmasDetailView {
     this.coursesError = null;
 
     try {
+      console.log('🔄 [TurmasDetailView] Carregando cursos disponíveis...');
       const availableResponse = await this.service.getAvailableCourses?.();
+      console.log('📚 [TurmasDetailView] Resposta de cursos:', availableResponse);
       this.availableCourses = this.parseResult(availableResponse, []);
+      console.log('✅ [TurmasDetailView] Cursos parseados:', this.availableCourses);
 
       if (this.turmaData.id && this.service.getTurmaCourses) {
         const turmaCoursesResponse = await this.service.getTurmaCourses(this.turmaData.id);
@@ -144,6 +151,7 @@ export class TurmasDetailView {
       }
       this._coursesDataLoaded = true;
     } catch (error) {
+      console.error('❌ [TurmasDetailView] Erro ao carregar cursos:', error);
       this.coursesError = error;
       this.reportError(error, 'Falha ao carregar cursos da turma');
     } finally {
@@ -468,6 +476,9 @@ export class TurmasDetailView {
           })}
           ${this.renderSelect('unitId', 'Unidade', this.turmaData.unitId, this.getUnitOptions(), {
             icon: '📍',
+          })}
+          ${this.renderSelect('trainingAreaId', 'Tatame / Área de Treino', this.turmaData.trainingAreaId, this.getTrainingAreaOptions(), {
+            icon: '🥋',
           })}
           ${this.renderSelect('classType', 'Formato da Turma', this.turmaData.classType, [
             { value: 'COLLECTIVE', label: 'Coletiva' },
@@ -1309,6 +1320,19 @@ export class TurmasDetailView {
   async handleAddCourse(courseId) {
     if (!this.turmaData?.id) return;
 
+    // Verificar se o curso já está vinculado
+    const alreadyLinked = this.turmaCourses.some(c => c.id === courseId);
+    if (alreadyLinked) {
+      this.showWarning('Este curso já está vinculado à turma.');
+      return;
+    }
+
+    // Verificar se é o curso principal
+    if (this.turmaData.courseId === courseId) {
+      this.showWarning('Este é o curso principal da turma. Use a aba "Visão Geral" para alterá-lo.');
+      return;
+    }
+
     this.coursesLoading = true;
     this.refreshCoursesContent();
 
@@ -1380,6 +1404,7 @@ export class TurmasDetailView {
       instructorId: formData.get('instructorId') || null,
       organizationId: formData.get('organizationId') || null,
       unitId: formData.get('unitId') || null,
+      trainingAreaId: formData.get('trainingAreaId') || null,
       classType: formData.get('classType') || 'COLLECTIVE',
       status: formData.get('status') || 'SCHEDULED',
       maxStudents: formData.get('maxStudents') ? parseInt(formData.get('maxStudents'), 10) : null,
@@ -1576,6 +1601,7 @@ export class TurmasDetailView {
     form.querySelector('#instructorId').value = this.turmaData.instructorId || '';
     form.querySelector('#organizationId').value = this.turmaData.organizationId || '';
     form.querySelector('#unitId').value = this.turmaData.unitId || '';
+    form.querySelector('#trainingAreaId').value = this.turmaData.trainingAreaId || '';
     form.querySelector('#classType').value = this.turmaData.classType || 'COLLECTIVE';
     form.querySelector('#status').value = this.turmaData.status || 'SCHEDULED';
     form.querySelector('#maxStudents').value = this.turmaData.maxStudents ?? '';
@@ -1963,6 +1989,13 @@ export class TurmasDetailView {
     }));
   }
 
+  getTrainingAreaOptions() {
+    return (this.trainingAreas || []).map((area) => ({
+      value: area.id,
+      label: `${area.name} (${area.capacity} pessoas)`,
+    }));
+  }
+
   getUnassignedCourses() {
     const assignedIds = new Set((this.turmaCourses || []).map((course) => course.id));
     return (this.availableCourses || []).filter((course) => !assignedIds.has(course.id));
@@ -2051,6 +2084,12 @@ export class TurmasDetailView {
 
   showError(message) {
     if (window.app?.showError) window.app.showError(message);
+    else alert(message);
+  }
+
+  showWarning(message) {
+    if (window.app?.showWarning) window.app.showWarning(message);
+    else if (window.app?.showError) window.app.showError(message);
     else alert(message);
   }
 }
