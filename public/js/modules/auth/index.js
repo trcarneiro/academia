@@ -6,7 +6,8 @@ if (typeof window.AuthModule !== 'undefined') {
 
     const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
-    const BACKEND_URL = 'http://localhost:3000';
+    // Use current origin for backend URL to support both local and production environments
+    const BACKEND_URL = window.location.origin;
     const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
     const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
 
