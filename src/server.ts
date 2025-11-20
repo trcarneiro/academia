@@ -163,7 +163,13 @@ const start = async (): Promise<void> => {
     await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
     await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
 
-    await server.register(normalizePlugin(staticFiles, 'static'), { root: path.join(__dirname, '..', 'public'), prefix: '/' } as any);
+    // Static files - check both locations (dev: ../public, prod: ./public in dist)
+    const publicPath = path.join(__dirname, '..', 'public');
+    const publicPathDist = path.join(__dirname, 'public');
+    const staticPath = require('fs').existsSync(publicPathDist) ? publicPathDist : publicPath;
+    
+    logger.info(`📁 Serving static files from: ${staticPath}`);
+    await server.register(normalizePlugin(staticFiles, 'static'), { root: staticPath, prefix: '/' } as any);
 
     // Tenant extraction for API routes (skip auth and health)
     server.addHook('onRequest', async (request, reply) => {
