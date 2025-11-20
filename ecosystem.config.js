@@ -22,9 +22,10 @@ module.exports = {
     // Main Application Server
     {
       name: 'academia',
-      script: './dist/server.js',
-      instances: 1, // Usar '1' para servidor small, 'max' para usar todos os cores
-      exec_mode: 'fork', // 'cluster' para múltiplas instâncias
+      script: './src/server.ts',
+      interpreter: 'tsx',
+      instances: 1,
+      exec_mode: 'fork',
       
       // Restart behavior
       autorestart: true,
@@ -60,10 +61,9 @@ module.exports = {
       // Restart strategy
       restart_delay: 4000, // Aguardar 4s antes de reiniciar
       
-      // Node.js specific
+      // Node.js specific (tsx handles TypeScript, no need for tsconfig-paths)
       node_args: [
-        '-r', 'tsconfig-paths/register',
-        '--max-old-space-size=1024' // Limitar heap size do V8 a 1GB
+        '--max-old-space-size=1024'
       ],
       
       // Cron restart (opcional - reiniciar diariamente às 3am)
