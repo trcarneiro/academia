@@ -155,7 +155,9 @@ const start = async (): Promise<void> => {
           baseUri: ["'self'"]
         }
       } : false,
-      hsts: isProd && useHTTPS // Only enable HSTS if actually using HTTPS
+      hsts: false, // Disabled - only works with HTTPS
+      crossOriginOpenerPolicy: false, // Disabled - requires HTTPS
+      originAgentCluster: false // Disabled - causes warnings on HTTP
     } as any);
     await server.register(normalizePlugin(cors, 'cors'), { origin: appConfig.cors.origin, credentials: true } as any);
     await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
