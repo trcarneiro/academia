@@ -74,27 +74,25 @@ module.exports = {
     },
 
     // Google Ads Sync Cron Job (OPCIONAL)
-    /*
-    {
-      name: 'google-ads-sync',
-      script: 'scripts/sync-google-ads.ts',
-      interpreter: 'tsx',
-      instances: 1,
-      exec_mode: 'fork',
-      cron_restart: '0 */6 * * *', // Every 6 hours (00:00, 06:00, 12:00, 18:00)
-      autorestart: false, // Don't auto-restart, only run on cron schedule
-      watch: false,
-      max_memory_restart: '500M',
-      env: {
-        NODE_ENV: 'production'
-      },
-      error_file: './logs/google-ads-sync-error.log',
-      out_file: './logs/google-ads-sync-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      time: true
-    }
-    */
+    // {
+    //   name: 'google-ads-sync',
+    //   script: 'scripts/sync-google-ads.ts',
+    //   interpreter: 'tsx',
+    //   instances: 1,
+    //   exec_mode: 'fork',
+    //   cron_restart: '0 */6 * * *', // Every 6 hours (00:00, 06:00, 12:00, 18:00)
+    //   autorestart: false, // Don't auto-restart, only run on cron schedule
+    //   watch: false,
+    //   max_memory_restart: '500M',
+    //   env: {
+    //     NODE_ENV: 'production'
+    //   },
+    //   error_file: './logs/google-ads-sync-error.log',
+    //   out_file: './logs/google-ads-sync-out.log',
+    //   log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    //   merge_logs: true,
+    //   time: true
+    // }
   ],
   
   // Deploy configuration (opcional - para PM2 deploy)
