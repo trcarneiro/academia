@@ -16,7 +16,6 @@
  * 
  * @version 2.0.0
  */
- */
 
 module.exports = {
   apps: [
@@ -63,6 +62,7 @@ module.exports = {
       
       // Node.js specific
       node_args: [
+        '-r', 'tsconfig-paths/register',
         '--max-old-space-size=1024' // Limitar heap size do V8 a 1GB
       ],
       
