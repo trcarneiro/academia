@@ -143,21 +143,10 @@ const start = async (): Promise<void> => {
 
     const isProd = appConfig.server.nodeEnv === 'production';
     await server.register(normalizePlugin(helmet, 'helmet'), {
-      contentSecurityPolicy: isProd ? {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
-          fontSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
-          imgSrc: ["'self'", 'data:'],
-          connectSrc: ["'self'", 'https://cdn.jsdelivr.net'],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"]
-        }
-      } : false,
-      hsts: false, // Disabled - only works with HTTPS
-      crossOriginOpenerPolicy: false, // Disabled - requires HTTPS
-      originAgentCluster: false // Disabled - causes warnings on HTTP
+      contentSecurityPolicy: false, // Disabled completely for HTTP server
+      hsts: false,
+      crossOriginOpenerPolicy: false,
+      originAgentCluster: false
     } as any);
     await server.register(normalizePlugin(cors, 'cors'), { origin: appConfig.cors.origin, credentials: true } as any);
     await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
