@@ -1,0 +1,368 @@
+# Relatório de Auditoria de Limpeza
+
+**Data:** 2025-11-20T13:40:36.791Z
+**Total de arquivos para arquivar:** 273
+**Total de arquivos desconhecidos:** 29
+
+## 📦 Arquivos para Arquivar (.archive/)
+Estes arquivos parecem ser scripts temporários, logs, relatórios ou backups antigos.
+
+- [ ] Agenda do Aluno Faixa Branca.pdf (2727.08 KB)
+- [ ] AGENT_COURSE_EDITOR_REFACTOR_COMPLETE.md (17.09 KB)
+- [ ] AGENT_DASHBOARD_CHAT_IMPLEMENTATION.md (9.77 KB)
+- [ ] analyze-activities-techniques.js (0.00 KB)
+- [ ] analyze-technique-names.js (0.00 KB)
+- [ ] asaas-complete-2025-09-05T03-10-47-493Z-report.json (5.22 KB)
+- [ ] asaas-complete-2025-09-05T03-10-47-493Z.json (420.79 KB)
+- [ ] asaas-complete-2025-09-05T03-10-47-493Z.sql (75.65 KB)
+- [ ] asaas-import-report-2025-09-02T03-03-10-122Z.json (1.84 KB)
+- [ ] asaas-sample.csv (1.33 KB)
+- [ ] asaas-students-2025-09-02T03-03-10-122Z.json (127.73 KB)
+- [ ] asaas-students-2025-09-02T03-03-10-122Z.sql (76.66 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-28-31-469Z-report.json (7.67 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-28-31-469Z.json (13.97 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-28-31-469Z.sql (8.92 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-47-45-148Z-report.json (7.67 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-47-45-148Z.json (13.97 KB)
+- [ ] asaas-students-fixed-2025-09-02T03-47-45-148Z.sql (8.92 KB)
+- [ ] asaas-students-fixed-2025-09-02T04-08-40-097Z-report.json (7.67 KB)
+- [ ] asaas-students-fixed-2025-09-02T04-08-40-097Z.json (13.97 KB)
+- [ ] asaas-students-fixed-2025-09-02T04-08-40-097Z.sql (8.92 KB)
+- [ ] asaas-students-fixed-2025-09-05T02-53-13-049Z-report.json (7.67 KB)
+- [ ] asaas-students-fixed-2025-09-05T02-53-13-049Z.json (13.97 KB)
+- [ ] asaas-students-fixed-2025-09-05T02-53-13-049Z.sql (8.92 KB)
+- [ ] ASAAS_IMPORT_MIGRATION_COMPLETE.md (9.31 KB)
+- [ ] associate-plan-courses.ts (1.84 KB)
+- [ ] associate-techniques-to-lessons.ts (0.00 KB)
+- [ ] audit-report-1760133230887.json (2.78 KB)
+- [ ] audit-report-1760133595854.json (2.06 KB)
+- [ ] audit-report-1760134093180.json (1.88 KB)
+- [ ] AUDITORIA_ORGANIZACAO.md (20.98 KB)
+- [ ] AUDIT_FREQUENCY_MODULE.md (3.26 KB)
+- [ ] AUDIT_SANITIZATION_REPORT.txt (0.50 KB)
+- [ ] backup-before-move.bat (4.85 KB)
+- [ ] BACKUP_SEGURANCA_20251019_1502 (0.00 KB)
+- [ ] BACKUP_SEGURANCA_20252410_0127 (0.00 KB)
+- [ ] build-log.txt (405.29 KB)
+- [ ] build_errors.txt (305.07 KB)
+- [ ] check-activities-db.ts (0.00 KB)
+- [ ] check-adriana.ts (0.65 KB)
+- [ ] check-all-crm-data.js (1.29 KB)
+- [ ] check-and-delete-turma-lessons.mjs (1.58 KB)
+- [ ] check-classes-today.ts (4.09 KB)
+- [ ] check-classes-turmas.ts (1.46 KB)
+- [ ] check-counts.ts (0.45 KB)
+- [ ] check-course-associations.js (0.00 KB)
+- [ ] check-course-associations.ts (0.00 KB)
+- [ ] check-course.js (1.43 KB)
+- [ ] check-crm-data.js (1.70 KB)
+- [ ] check-data.js (1.09 KB)
+- [ ] check-database-setup.ts (0.00 KB)
+- [ ] check-database.js (3.12 KB)
+- [ ] check-db-data.js (1.04 KB)
+- [ ] check-db-user.js (1.36 KB)
+- [ ] check-db.js (1.18 KB)
+- [ ] check-enrollment.ts (1.60 KB)
+- [ ] check-frontend-org.js (2.28 KB)
+- [ ] check-instructors.ts (0.82 KB)
+- [ ] check-martial-art-relations.ts (0.00 KB)
+- [ ] check-org-exists.ts (3.54 KB)
+- [ ] check-org-mismatch.js (1.34 KB)
+- [ ] check-organizations.ts (0.75 KB)
+- [ ] check-pedro-checkin.js (2.09 KB)
+- [ ] check-pedro-graduacao.js (1.66 KB)
+- [ ] check-pedro-progress.ts (3.04 KB)
+- [ ] check-pedro-status.js (1.95 KB)
+- [ ] check-plans.js (1.19 KB)
+- [ ] check-slugs.js (0.00 KB)
+- [ ] check-students.js (1.19 KB)
+- [ ] check-supabase.js (3.39 KB)
+- [ ] check-techniques-import.js (0.00 KB)
+- [ ] check-techniques-tables.js (0.00 KB)
+- [ ] check-training-areas.ts (0.86 KB)
+- [ ] check-turma-lessons.mjs (0.84 KB)
+- [ ] check-turma-lessons.ts (2.70 KB)
+- [ ] check-turma-schedule.mjs (0.92 KB)
+- [ ] check-turma.mjs (0.57 KB)
+- [ ] check-turma4.ts (3.48 KB)
+- [ ] check-turmas-schedule.ts (1.13 KB)
+- [ ] check-users-orgs.ts (0.83 KB)
+- [ ] check-users.js (0.81 KB)
+- [ ] CHECKIN_V2_COMPLETE.md (13.42 KB)
+- [ ] CHECKIN_V2_PROGRESS.md (20.54 KB)
+- [ ] CHECK_IN_SALES_REQUIREMENTS.md (8.26 KB)
+- [ ] CHECK_IN_V2_STATUS.md (8.54 KB)
+- [ ] clean-reset-reimport.ts (0.00 KB)
+- [ ] cleanup-final.bat (7.73 KB)
+- [ ] Clientes - Sheet0.csv (34.37 KB)
+- [ ] clientes-real.csv (34.37 KB)
+- [ ] Clientes.xlsx (33.43 KB)
+- [ ] convert-arrays-to-json.ps1 (1.29 KB)
+- [ ] create-all-turma-lessons-v2.mjs (5.78 KB)
+- [ ] create-all-turma-lessons.mjs (3.42 KB)
+- [ ] create-billing-plans-test.ts (1.54 KB)
+- [ ] create-classes.ts (4.65 KB)
+- [ ] create-defesa-pessoal-turmas.js (4.83 KB)
+- [ ] create-enrollment.js (2.27 KB)
+- [ ] create-multiple-turma-lessons.mjs (4.01 KB)
+- [ ] create-night-turma-lessons.mjs (5.67 KB)
+- [ ] create-now-turma-lessons.mjs (3.53 KB)
+- [ ] create-technique-mapping.js (0.00 KB)
+- [ ] create-test-instructor.ts (3.55 KB)
+- [ ] create-test-turmas-afternoon.ts (4.24 KB)
+- [ ] create-test-turmas.ts (9.13 KB)
+- [ ] create-test-user.js (1.30 KB)
+- [ ] create-training-areas.ts (3.10 KB)
+- [ ] create-trcampos-user.js (1.67 KB)
+- [ ] create-turma-lesson.mjs (1.00 KB)
+- [ ] create-unit.ts (2.05 KB)
+- [ ] curso-exemplo.txt (1.48 KB)
+- [ ] debug-activities.log (16.17 KB)
+- [ ] debug-auth.js (2.00 KB)
+- [ ] debug-course-db.ts (0.00 KB)
+- [ ] debug-guia-cursos.html (11.41 KB)
+- [ ] debug-instructors.js (2.67 KB)
+- [ ] debug-list-course-data.ts (0.00 KB)
+- [ ] debug-pedro-turmas.mjs (3.29 KB)
+- [ ] debug-schedule.js (2.66 KB)
+- [ ] debug-student-courses.ts (1.98 KB)
+- [ ] debug-techniques-api.js (0.00 KB)
+- [ ] debug-techniques-browser.js (1.73 KB)
+- [ ] debug-techniques.js (0.00 KB)
+- [ ] debug-turmas.js (0.00 KB)
+- [ ] delete-old-turma-lessons.mjs (1.22 KB)
+- [ ] demo-lorraine-personal.js (6.99 KB)
+- [ ] DEPLOY_MANUAL_MYSQL.md (4.09 KB)
+- [ ] enroll-pedro-all-turmas.mjs (2.36 KB)
+- [ ] enums-extracted.txt (12.47 KB)
+- [ ] FASE_1_COMPLETE_SUMMARY.md (10.70 KB)
+- [ ] FINAL_SUMMARY_VISUAL.txt (18.61 KB)
+- [ ] find-pedro.ts (0.71 KB)
+- [ ] fix-course-techniques.ts (0.00 KB)
+- [ ] fix-graduation-controller.js (0.91 KB)
+- [ ] fix-pedro-matricula.js (1.30 KB)
+- [ ] fix-pedro-progress.ts (2.81 KB)
+- [ ] fix-prisma.ps1 (1.80 KB)
+- [ ] fix-relations.ps1 (7.52 KB)
+- [ ] fix-schema-mysql.py (1.27 KB)
+- [ ] fix-schema-relations.ps1 (1.04 KB)
+- [ ] fix-techniques-martial-art.ts (0.00 KB)
+- [ ] FIX_500_ERROR_INSTRUCTOR_COURSES.md (3.28 KB)
+- [ ] FIX_ALPHABETICAL_ORDER.md (6.70 KB)
+- [ ] FIX_CHECKIN_CONFLICT_VALIDATION.ts (2.48 KB)
+- [ ] force-prisma-regen.ps1 (1.63 KB)
+- [ ] force-reload.html (3.24 KB)
+- [ ] format-output.txt (28.38 KB)
+- [ ] generate-turma-lessons.ts (2.44 KB)
+- [ ] GRADUATION_BULK_EDIT_COMPLETE.md (11.30 KB)
+- [ ] import-asaas-complete.js (12.16 KB)
+- [ ] import-asaas-students-fixed.js (13.07 KB)
+- [ ] import-asaas-students.js (29.91 KB)
+- [ ] import-complete-to-db.ts (6.74 KB)
+- [ ] import-krav-maga-complete.ts (0.00 KB)
+- [ ] import-krav-maga-course.ts (0.00 KB)
+- [ ] import-real-clients.js (8.40 KB)
+- [ ] import-students-direct.js (6.65 KB)
+- [ ] import-students-to-db.ts (5.19 KB)
+- [ ] INSTRUCTORS_FIX_COMPLETE_V2.1.md (11.86 KB)
+- [ ] INSTRUCTORS_FIX_TEST_GUIDE.md (7.17 KB)
+- [ ] INSTRUCTOR_COURSE_FEATURE.md (12.08 KB)
+- [ ] investigate-org-issue.js (1.64 KB)
+- [ ] krav-maga-complete-data.ts (0.00 KB)
+- [ ] krav-maga-data.ts (0.00 KB)
+- [ ] LEIA_ME_PRIMEIRO.txt (1.72 KB)
+- [ ] link-techniques-to-course.ts (0.00 KB)
+- [ ] merge-schemas.js (3.27 KB)
+- [ ] MIGRATION_INSTRUCTOR_COURSES.md (9.83 KB)
+- [ ] move-files-execute.bat (9.76 KB)
+- [ ] move-files-preview.bat (12.88 KB)
+- [ ] MOVIMENTO_FASE_3B_COMPLETO.txt (2.13 KB)
+- [ ] MOVIMENTO_FASE_3B_RELATORIO.txt (1.92 KB)
+- [ ] normalize-registrations.js (4.15 KB)
+- [ ] OLD_191025 (0.00 KB)
+- [ ] ORGANIZACAO_MODAL_IMPLEMENTACAO.md (18.38 KB)
+- [ ] ORGANIZATION_AUDIT_SUMMARY.md (7.10 KB)
+- [ ] ORGANIZATION_CONTEXT_AUDIT.md (10.86 KB)
+- [ ] PHASE1_BACKEND_ENDPOINTS.ts (7.45 KB)
+- [ ] PHASE1_CSS_STYLES.css (7.09 KB)
+- [ ] PHASE1_SYNC_DASHBOARD_CODE.js (14.22 KB)
+- [ ] Plano de Curso_ Krav Maga Faixa Branca - Defesa Pessoal 1 (Adultos).pdf (323.49 KB)
+- [ ] populate-agenda-items.ts (5.45 KB)
+- [ ] recreate-trcampos-user.js (1.75 KB)
+- [ ] recreate-user.js (1.39 KB)
+- [ ] rename-lucas-to-pedro.js (1.16 KB)
+- [ ] reset-and-reimport-course.ts (0.00 KB)
+- [ ] reset-password-email.js (0.97 KB)
+- [ ] reset-trcampos-password.js (1.63 KB)
+- [ ] sanitizacao.bat (8.85 KB)
+- [ ] SANITIZACAO_RELATORIO_FINAL.txt (8.15 KB)
+- [ ] SANITIZACAO_SUMARIO_EXECUTIVO.txt (3.44 KB)
+- [ ] save-test-credentials.js (2.46 KB)
+- [ ] search-techniques.js (0.00 KB)
+- [ ] seed-basic-techniques.ts (7.00 KB)
+- [ ] seed-database.ts (7.84 KB)
+- [ ] server-log.txt (4.44 KB)
+- [ ] server-setup.sh (12.92 KB)
+- [ ] setup-default-user.js (5.41 KB)
+- [ ] setup-default-user.ts (5.40 KB)
+- [ ] setup-training-areas.js (4.65 KB)
+- [ ] SOLUCAO_CONNECTION_POOL.ts (3.81 KB)
+- [ ] SOLUCAO_ORG_VALIDATION.md (8.68 KB)
+- [ ] start-server.bat (0.14 KB)
+- [ ] SUPABASE_SETUP.md (2.86 KB)
+- [ ] temp-get-course.ts (0.78 KB)
+- [ ] test-activity-sync.js (2.74 KB)
+- [ ] test-agenda-query.ts (1.74 KB)
+- [ ] test-agenda.json (0.24 KB)
+- [ ] test-agent-conversation.ps1 (5.79 KB)
+- [ ] test-agents-suggest.ps1 (1.53 KB)
+- [ ] test-ai-agents.js (11.93 KB)
+- [ ] test-api-endpoints.ps1 (2.70 KB)
+- [ ] test-api.js (1.61 KB)
+- [ ] test-auth-auto.js (10.65 KB)
+- [ ] test-auth.js (2.44 KB)
+- [ ] test-billing-plan.ts (0.54 KB)
+- [ ] test-chat.json (0.06 KB)
+- [ ] test-checkin-apis.js (3.13 KB)
+- [ ] test-checkin-e2e.ts (11.02 KB)
+- [ ] test-checkin-final.js (10.52 KB)
+- [ ] test-course-import-service.js (0.00 KB)
+- [ ] test-courses-serialization.ts (2.01 KB)
+- [ ] test-db.js (0.53 KB)
+- [ ] test-enhanced-course-import.ts (0.00 KB)
+- [ ] test-express-server.js (0.00 KB)
+- [ ] test-final-enhanced-import.ts (0.00 KB)
+- [ ] test-full-import.js (0.00 KB)
+- [ ] test-google-ads-api.js (2.45 KB)
+- [ ] test-google-oauth.js (2.25 KB)
+- [ ] test-import-faixabranca.ts (6.69 KB)
+- [ ] test-import-service.js (0.00 KB)
+- [ ] test-import-simple.ps1 (3.51 KB)
+- [ ] test-import.ps1 (3.64 KB)
+- [ ] test-improved-mapping.js (0.00 KB)
+- [ ] test-login-flow.sh (2.27 KB)
+- [ ] test-login.js (3.17 KB)
+- [ ] test-new-categories.js (2.87 KB)
+- [ ] test-org-cache.js (2.64 KB)
+- [ ] test-org-validation.html (12.77 KB)
+- [ ] test-prisma-direct.ts (2.20 KB)
+- [ ] test-progress.js (2.40 KB)
+- [ ] test-quick-import.ts (0.00 KB)
+- [ ] test-real-import.js (0.00 KB)
+- [ ] test-search-api.js (1.93 KB)
+- [ ] test-server-simple.js (2.42 KB)
+- [ ] test-server.js (0.51 KB)
+- [ ] test-student-courses-query.ts (1.51 KB)
+- [ ] test-student.js (1.66 KB)
+- [ ] test-successful-import.js (0.00 KB)
+- [ ] test-supabase-connection.ts (2.48 KB)
+- [ ] test-technique-full.js (0.00 KB)
+- [ ] test-technique-mapping-final.js (0.00 KB)
+- [ ] test-technique-mapping.js (0.00 KB)
+- [ ] test-technique-service.js (0.00 KB)
+- [ ] test-technique-validation.js (0.00 KB)
+- [ ] test-training-areas-api.js (0.98 KB)
+- [ ] test-training-areas-api.ts (0.69 KB)
+- [ ] test-trcampos-login.js (1.39 KB)
+- [ ] test-turma-save.js (2.88 KB)
+- [ ] test-turmas.js (1.31 KB)
+- [ ] test-turmas.json (0.43 KB)
+- [ ] teste-asaas-format.csv (0.88 KB)
+- [ ] teste-cursos.txt (0.08 KB)
+- [ ] teste-format-padrao.csv (0.73 KB)
+- [ ] UI_AUDIT_REPORT_VISUAL.md (10.19 KB)
+- [ ] UI_FIX_SUMMARY.md (6.93 KB)
+- [ ] update-prisma.sh (0.24 KB)
+- [ ] UX_AUDIT_REPORT.md (20.45 KB)
+- [ ] UX_IMPLEMENTATION_PLAN.md (9.51 KB)
+- [ ] UX_PROGRESS_REPORT.md (10.94 KB)
+- [ ] UX_STANDARDIZATION_COMPLETE.md (22.14 KB)
+- [ ] validation-errors.txt (128.33 KB)
+- [ ] VERCEL_BUILD_FIX.md (0.00 KB)
+- [ ] verify-imported-course.js (0.00 KB)
+
+## ❓ Arquivos Desconhecidos (Revisar)
+Estes arquivos não estão na lista de "Manter" nem na lista de "Arquivar".
+
+- [ ] .dockerignore
+- [ ] apply-enum-migration.js
+- [ ] change-password.js
+- [ ] cleanup-test-turmas.ts
+- [ ] confirm-emails.js
+- [ ] course-editor-premium-preview.html
+- [ ] curso-faixa-branca-completo.json
+- [ ] cursos
+- [ ] data
+- [ ] DEBUG_CONSOLE_TEST.js
+- [ ] DEBUG_DELETE_BUTTON.js
+- [ ] deploy.sh
+- [ ] dev
+- [ ] dist-simple
+- [ ] exemplo-atividades.json
+- [ ] exemplo-curso.json
+- [ ] exemplo-planos-aula.json
+- [ ] package-test.json
+- [ ] ssl
+- [ ] Tecnicas.json
+- [ ] test-api-now.mjs
+- [ ] test-checkin.mjs
+- [ ] test-gemini.mjs
+- [ ] test-zod-enum.mjs
+- [ ] teste-importacao-simples.json
+- [ ] teste-tecnicas.json
+- [ ] TEST_CHECKIN_UX_PRACTICAL.js
+- [ ] turmas-module
+- [ ] webhook-server.js
+
+## ✅ Arquivos Mantidos (Produção/Config)
+Estes arquivos permanecerão na raiz.
+
+- .env
+- .env.example
+- .env.production
+- .eslintrc.js
+- .git
+- .gitignore
+- .github
+- .npmrc
+- .prettierrc
+- AGENTS.md
+- DEPLOY_RENDER.md
+- Dockerfile
+- Dockerfile.dev
+- README-DEPLOY.md
+- docker-compose.yml
+- docker-compose.dev.yml
+- ecosystem.config.js
+- nginx.conf
+- package.json
+- package-lock.json
+- render.yaml
+- tsconfig.json
+- vercel.json
+- version.json
+- node_modules
+- dist
+- src
+- public
+- prisma
+- scripts
+- tests
+- docs
+- logs
+- backup
+- backups
+- migrations
+- models
+- services
+- utils
+- routes
+- middlewares
+- schemas
+- api
+- templates
+- tools
+- .archive
+- .claude
+- .reports
+- .idea
