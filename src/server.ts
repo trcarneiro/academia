@@ -147,8 +147,8 @@ const start = async (): Promise<void> => {
         directives: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com/ajax/libs'],
-          fontSrc: ["'self'", 'https://cdnjs.cloudflare.com/ajax/libs'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+          fontSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
           imgSrc: ["'self'", 'data:'],
           connectSrc: ["'self'", 'https://cdn.jsdelivr.net'],
           objectSrc: ["'none'"],
