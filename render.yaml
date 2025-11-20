@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: academia-krav-maga
+    env: node
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: USE_HTTPS
+        value: false
+    autoDeploy: false

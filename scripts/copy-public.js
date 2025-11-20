@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const publicSrc = path.join(__dirname, '..', 'public');
@@ -9,8 +9,8 @@ console.log('   From:', publicSrc);
 console.log('   To:', publicDest);
 
 try {
-  // Use native cp command (faster, less memory)
-  execSync(`cp -r "${publicSrc}" "${publicDest}"`, { stdio: 'inherit' });
+  // Use Node.js native recursive copy (Node 16.7+)
+  fs.cpSync(publicSrc, publicDest, { recursive: true });
   console.log('✅ Public folder copied successfully!');
 } catch (error) {
   console.error('❌ Error copying public folder:', error.message);

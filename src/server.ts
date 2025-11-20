@@ -1,5 +1,5 @@
 // Register tsconfig path aliases at runtime
-import 'tsconfig-paths/register';
+// import 'tsconfig-paths/register';
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
