@@ -7,7 +7,7 @@ interface ImportCustomerBody {
 }
 
 // Fetch customer details from Asaas
-async function fetchAsaasCustomer(customerId: string) {
+async function fetchAsaasCustomer(customerId: string): Promise<any> {
   const apiKey = process.env.ASAAS_API_KEY;
   const baseUrl = process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3';
 

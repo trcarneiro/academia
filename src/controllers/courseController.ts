@@ -142,6 +142,8 @@ export const courseController = {
 
       const courseData: CourseData = {
         ...input,
+        name: input.name,
+        duration: input.duration,
         organizationId,
         martialArtId,
         level: input.level,
@@ -195,6 +197,9 @@ export const courseController = {
       const { id } = request.params;
       console.log('🗑️ Attempting to delete course:', id);
       
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      if (!organizationId) return;
+
       // Verificar se o curso existe primeiro
       const existingCourse = await prisma.course.findFirst({
         where: { id, organizationId },

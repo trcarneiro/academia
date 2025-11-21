@@ -206,13 +206,18 @@ export default async function financialRoutes(
     }
   }, async (request, reply) => {
     try {
-      const subscriptions = await prisma.subscription.findMany({
+      const subscriptions = await prisma.studentSubscription.findMany({
         include: {
           student: {
             select: {
               id: true,
-              name: true,
-              email: true
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  email: true
+                }
+              }
             }
           },
           plan: {
@@ -658,7 +663,7 @@ export default async function financialRoutes(
       // Por agora, vamos simular dados de crédito baseados nas assinaturas de crédito
       const creditPlans = await prisma.billingPlan.findMany({
         where: {
-          billingType: 'CREDIT'
+          billingType: 'CREDITS'
         },
         include: {
           subscriptions: {
@@ -666,8 +671,13 @@ export default async function financialRoutes(
               student: {
                 select: {
                   id: true,
-                  name: true,
-                  email: true
+                  user: {
+                    select: {
+                      firstName: true,
+                      lastName: true,
+                      email: true
+                    }
+                  }
                 }
               }
             }

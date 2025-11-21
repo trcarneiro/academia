@@ -38,8 +38,6 @@ export default async function asaasImportRoutes(
   // GET /api/asaas/customers - List all customers from Asaas
   fastify.get('/customers', {
     schema: {
-      description: 'List customers from Asaas',
-      tags: ['Asaas'],
       response: {
         200: {
           type: 'object',
@@ -53,19 +51,9 @@ export default async function asaasImportRoutes(
                 totalCount: { type: 'number' },
                 limit: { type: 'number' },
                 offset: { type: 'number' },
-                data: {
+                data: { 
                   type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string' },
-                      name: { type: 'string' },
-                      email: { type: 'string' },
-                      cpfCnpj: { type: 'string' },
-                      phone: { type: 'string' },
-                      dateCreated: { type: 'string' },
-                    }
-                  }
+                  items: { type: 'object', additionalProperties: true }
                 }
               }
             },
@@ -76,7 +64,7 @@ export default async function asaasImportRoutes(
     }
   }, async (request, reply) => {
     try {
-      const asaasData = await fetchAsaasCustomers();
+      const asaasData = await fetchAsaasCustomers() as any;
       
       return {
         success: true,
@@ -84,7 +72,7 @@ export default async function asaasImportRoutes(
         message: `${asaasData.data?.length || 0} customers found`
       };
     } catch (error) {
-      reply.code(500);
+      reply.status(500);
       return {
         success: false,
         error: 'Failed to fetch customers from Asaas',
@@ -96,8 +84,6 @@ export default async function asaasImportRoutes(
   // GET /api/asaas/test - Test Asaas connection
   fastify.get('/test', {
     schema: {
-      description: 'Test Asaas API connection',
-      tags: ['Asaas']
     }
   }, async (request, reply) => {
     try {

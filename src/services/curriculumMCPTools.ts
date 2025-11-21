@@ -226,7 +226,8 @@ export const getActivityExecutionStats: MCPTool = {
               id: true,
               user: {
                 select: {
-                  name: true
+                  firstName: true,
+                  lastName: true
                 }
               }
             }
@@ -303,7 +304,7 @@ export const getActivityCategories: MCPTool = {
           activities: {
             select: {
               id: true,
-              name: true
+              title: true
             }
           }
         },
@@ -383,7 +384,8 @@ export const getStudentProgress: MCPTool = {
             include: {
               user: {
                 select: {
-                  name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               }

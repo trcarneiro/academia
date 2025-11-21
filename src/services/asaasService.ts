@@ -47,7 +47,17 @@ export interface AsaasCustomerResponse {
   name: string;
   email: string;
   cpfCnpj: string;
-  // ... outros campos
+  phone?: string;
+  mobilePhone?: string;
+  address?: string;
+  addressNumber?: string;
+  complement?: string;
+  province?: string; // Neighborhood
+  postalCode?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  observations?: string;
 }
 
 export interface AsaasPaymentResponse {

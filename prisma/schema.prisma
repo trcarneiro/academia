@@ -48,6 +48,8 @@ model Organization {
   classes                  Class[]
   courseTemplates          CourseTemplate[]
   courses                  Course[]
+  coursePrograms           CourseProgram[]
+  googleAdsConfig          GoogleAdsConfig?
   creditRenewals           CreditRenewal[]           @relation("CreditRenewalOrganization")
   creditUsages             CreditUsage[]             @relation("CreditUsageOrganization")
   crmSettings              CrmSettings?
@@ -68,6 +70,9 @@ model Organization {
   turmas                   Turma[]
   units                    Unit[]
   users                    User[]
+
+  agentTasks               AgentTask[]               @relation("OrgToAgentTask")
+  agentInsights            AgentInsight[]            @relation("OrgToInsight")
 
   @@map("organizations")
 }
@@ -250,6 +255,7 @@ model LessonPlan {
   objectives        String[]
   equipment         String[]
   activities        String[]
+  activityItems     LessonPlanActivity[]
   videoUrl          String?
   thumbnailUrl      String?
   createdAt         DateTime                  @default(now())
@@ -259,7 +265,6 @@ model LessonPlan {
   previousVersionId String?
   version           Int                       @default(1)
   classes           Class[]
-  activityItems     LessonPlanActivity[]
   techniqueLinks    LessonPlanTechniques[]
   course            Course                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   previousVersion   LessonPlan?               @relation("LessonPlanVersions", fields: [previousVersionId], references: [id])
@@ -373,6 +378,13 @@ model User {
   turmas               Turma[]
   organization         Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Agent System Relations
+  createdTasks         AgentTask[]         @relation("CreatedTasks")
+  assignedTasks        AgentTask[]         @relation("AssignedTasks")
+  approvedTasks        AgentTask[]         @relation("ApprovedTasks")
+  executorTasks        AgentTask[]         @relation("ExecutorTasks")
+  taskExecutions       TaskExecution[]     @relation("TaskExecutions")
+
   @@map("users")
 }
 
@@ -444,6 +456,7 @@ model Student {
   techniqueRecords              TechniqueRecord[]
   turmaAttendances              TurmaAttendance[]
   turmaStudents                 TurmaStudent[]
+  turmaInterests                TurmaInterest[]             @relation("StudentTurmaInterests")
 
   @@map("students")
 }
@@ -673,6 +686,7 @@ model Class {
   scheduleId           String?
   instructorId         String
   courseId             String
+  courseProgramId      String?
   lessonPlanId         String?
   date                 DateTime
   startTime            DateTime
@@ -695,6 +709,7 @@ model Class {
   attendances          Attendance[]
   activities           ClassActivity[]
   course               Course                @relation(fields: [courseId], references: [id])
+  courseProgram        CourseProgram?        @relation(fields: [courseProgramId], references: [id])
   instructor           Instructor            @relation(fields: [instructorId], references: [id])
   lessonPlan           LessonPlan?           @relation(fields: [lessonPlanId], references: [id])
   mat                  Mat?                  @relation(fields: [matId], references: [id])
@@ -836,7 +851,7 @@ model Evaluation {
   enrollmentId       String
   type               EvaluationType
   lessonNumber       Int
-  techniqueseTested  Json
+  techniquesTested   Json
   physicalTest       Json?
   overallScore       Float
   passed             Boolean          @default(false)
@@ -1668,6 +1683,7 @@ model Turma {
   instructor                   User              @relation(fields: [instructorId], references: [id])
   organization                 Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trainingArea                 TrainingArea?     @relation("TurmaTrainingArea", fields: [trainingAreaId], references: [id])
+  turmaInterests               TurmaInterest[]             @relation("TurmaInterests")
   unit                         Unit?             @relation(fields: [unitId], references: [id])
 
   @@map("turmas")
@@ -1743,8 +1759,8 @@ model TurmaAttendance {
   @@map("turma_attendances")
 }
 
-/// Configurações de rastreamento de atividades por organização
-/// Define se a validação é automática (no check-in) ou manual (pelo professor)
+/// ConfiguraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes de rastreamento de atividades por organizaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
+/// Define se a validaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o ÃƒÆ’Ã‚Â© automÃƒÆ’Ã‚Â¡tica (no check-in) ou manual (pelo professor)
 model ActivityTrackingSettings {
   id                          String       @id @default(uuid())
   organizationId              String       @unique
@@ -1782,7 +1798,7 @@ model PersonalTrainingClass {
   description    String?
   focusAreas     String[]
   trainingType   PersonalTrainingType      @default(INDIVIDUAL)
-  intensity      String                    @default("Intermediário")
+  intensity      String                    @default("IntermediÃƒÆ’Ã‚Â¡rio")
   duration       Int                       @default(60)
   location       String?
   notes          String?
@@ -1813,7 +1829,8 @@ model PersonalTrainingSession {
   location             String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @default(now())
-  courseId             String?
+  courseId             String
+  
   lessonContent        Json?
   lessonPlanId         String?
   nextLessonSuggestion String?
@@ -1836,7 +1853,7 @@ model PersonalTrainingPreference {
   preferredTimes       String[]
   preferredInstructors String[]
   trainingFocus        String[]
-  intensity            String   @default("Intermediário")
+  intensity            String   @default("IntermediÃƒÆ’Ã‚Â¡rio")
   sessionDuration      Int      @default(60)
   maxSessionsPerWeek   Int      @default(2)
   notes                String?
@@ -2217,6 +2234,9 @@ model AIAgent {
 
   @@index([organizationId, isActive])
   @@index([specialization])
+  tasks                AgentTask[]         @relation("AgentToTask")
+  insights             AgentInsight[]      @relation("AgentToInsight")
+
   @@map("ai_agents")
 }
 
@@ -2814,4 +2834,184 @@ enum AgentSpecialization {
   progression
   commercial
   curriculum
+}
+
+model AgentTask {
+  id                String    @id @default(uuid())
+  organizationId    String
+  agentId           String?
+  createdByUserId   String?
+  assignedToUserId  String?
+  
+  // Task Definition
+  title             String
+  description       String
+  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
+  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
+  targetEntity      String? // Student, Course, Payment, etc
+  actionPayload     Json // Data needed to execute the action
+  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
+  
+  // Approval Workflow
+  requiresApproval  Boolean   @default(true)
+  autoExecute       Boolean   @default(false)
+  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
+  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
+  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+  
+  //  EXECUTION & ORCHESTRATION
+  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
+  executorId        String? // ID do agente IA ou usuÃƒÂ¡rio que vai executar
+  scheduledFor      DateTime? // Data/hora agendada para execuÃƒÂ§ÃƒÂ£o futura
+  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda ÃƒÂ s 9h)
+  maxRetries        Int       @default(3) // MÃƒÂ¡ximo de tentativas em caso de falha
+  retryCount        Int       @default(0) // Tentativas jÃƒÂ¡ realizadas
+  lastRetryAt       DateTime? // Data da ÃƒÂºltima tentativa
+  nextRetryAt       DateTime? // PrÃƒÂ³xima tentativa agendada
+  
+  // Execution Results
+  executedAt        DateTime?
+  executionResult   Json? // Result after execution
+  errorMessage      String?
+  executionLog      Json? // Array de logs de execuÃƒÂ§ÃƒÂ£o: [{ timestamp, action, result, error }]
+  
+  // Metadata
+  dueDate           DateTime?
+  metadata          Json? // Additional context
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  agent             AIAgent?  @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
+  organization      Organization @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
+  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
+  executions        TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model TaskExecution {
+  id              String    @id @default(uuid())
+  taskId          String
+  attemptNumber   Int       @default(1)
+  executorType    String // AGENT, USER, SYSTEM
+  executorId      String?
+  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  duration        Int? // DuraÃƒÂ§ÃƒÂ£o em milissegundos
+  result          Json? // Resultado da execuÃƒÂ§ÃƒÂ£o
+  errorMessage    String?
+  errorStack      String?
+  metadata        Json? // Logs adicionais
+  
+  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
+  
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("task_executions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String? // ID da execuÃƒÂ§ÃƒÂ£o que gerou o insight
+  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
+  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
+  title          String
+  content        String
+  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       Json? // Additional context, metrics, etc
+  relatedEntity  String? // Student, Course, Payment, etc
+  relatedId      String? // ID of related entity
+  actionTaken    String? // What action was taken (if any)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
+}
+
+
+
+
+
+
+
+
+model CourseProgram {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  level          CourseLevel
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  classes        Class[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("course_programs")
+}
+
+model GoogleAdsConfig {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  customerId     String
+  managerId      String?
+  refreshToken   String
+  isActive       Boolean      @default(true)
+  lastSyncAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("google_ads_configs")
+}
+
+model TurmaInterest {
+  id              String    @id @default(uuid())
+  turmaId         String
+  studentId       String
+  createdAt       DateTime  @default(now())
+  notified        Boolean   @default(false)
+  
+  turma           Turma     @relation("TurmaInterests", fields: [turmaId], references: [id], onDelete: Cascade)
+  student         Student   @relation("StudentTurmaInterests", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([turmaId, studentId])
+  @@map("turma_interests")
 }

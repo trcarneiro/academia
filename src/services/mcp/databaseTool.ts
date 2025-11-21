@@ -13,18 +13,18 @@ export class DatabaseTool {
   private static readonly APPROVED_QUERIES = {
     // Pagamentos atrasados
     overdue_payments: {
-      description: 'Listar alunos com pagamentos atrasados',
+      description: 'Listar pagamentos pendentes vencidos',
       query: async (organizationId: string, params?: { days?: number }) => {
         const days = params?.days || 7;
         const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - days);
+        // cutoffDate.setDate(cutoffDate.getDate() - days); // Not used for overdue check usually, but maybe for "how long overdue"
 
-        return prisma.studentSubscription.findMany({
+        return prisma.payment.findMany({
           where: {
             organizationId,
-            status: 'OVERDUE',
-            updatedAt: {
-              lte: cutoffDate,
+            status: 'PENDING',
+            dueDate: {
+              lte: new Date(), // Vencido
             },
           },
           include: {
@@ -40,7 +40,11 @@ export class DatabaseTool {
                 },
               },
             },
-            plan: true,
+            subscription: {
+              include: {
+                plan: true
+              }
+            }
           },
           take: 100,
         });
@@ -187,7 +191,7 @@ export class DatabaseTool {
         return prisma.lead.findMany({
           where: {
             organizationId,
-            status: {
+            stage: {
               notIn: ['CONVERTED', 'LOST'],
             },
             createdAt: {

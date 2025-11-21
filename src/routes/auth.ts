@@ -14,7 +14,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   // Get user by email (for organization sync)
   fastify.get('/users/by-email', {
     schema: {
-      tags: ['Authentication'],
+      // tags: ['Authentication'],
       summary: 'Get user organization by email',
       querystring: {
         type: 'object',
@@ -47,7 +47,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/register', {
     config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
     schema: {
-      tags: ['Authentication'],
+      // tags: ['Authentication'],
       summary: 'Register a new user',
       body: {
         type: 'object',
@@ -90,7 +90,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/login', {
     config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
     schema: {
-      tags: ['Authentication'],
+      // tags: ['Authentication'],
       summary: 'Login user',
       body: {
         type: 'object',
@@ -125,7 +125,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   // Get profile
   fastify.get('/profile', {
     schema: {
-      tags: ['Authentication'],
+      // tags: ['Authentication'],
       summary: 'Get user profile',
       security: [{ Bearer: [] }],
       response: {
@@ -141,13 +141,13 @@ export default async function authRoutes(fastify: FastifyInstance) {
       },
     },
     preHandler: [authenticateToken],
-    handler: AuthController.profile,
+    handler: AuthController.getProfile,
   });
 
   // Update password
   fastify.put('/password', {
     schema: {
-      tags: ['Authentication'],
+      // tags: ['Authentication'],
       summary: 'Update user password',
       security: [{ Bearer: [] }],
       body: {

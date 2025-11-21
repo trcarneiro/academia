@@ -221,7 +221,7 @@ export class SendGridService {
       const responses = await sgMail.send(messages);
 
       const results: EmailResult[] = responses.map((response, index) => {
-        const messageId = response.headers['x-message-id'] as string;
+        const messageId = (response as any).headers?.['x-message-id'] as string;
         return {
           messageId: messageId || `sg-bulk-${Date.now()}-${index}`,
           status: 'sent',

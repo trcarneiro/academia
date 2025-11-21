@@ -165,9 +165,11 @@ export class BiometricService {
           enrolledAt: true,
           student: {
             select: {
+              id: true,
               user: {
                 select: {
-                  name: true,
+                  firstName: true,
+                  lastName: true,
                   email: true
                 }
               },
@@ -183,7 +185,7 @@ export class BiometricService {
         .map((e) => ({
           id: e.id,
           studentId: e.studentId,
-          studentName: e.student!.user!.name || 'Unknown',
+          studentName: `${e.student!.user!.firstName} ${e.student!.user!.lastName}`.trim() || 'Unknown',
           studentMatricula: e.student!.registrationNumber || 'N/A',
           embedding: e.embedding,
           photoUrl: e.photoUrl,

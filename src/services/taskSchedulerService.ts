@@ -14,7 +14,7 @@
 
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
-import cron from 'node-cron';
+import cron, { ScheduledTask } from 'node-cron';
 
 interface ScheduleTaskInput {
   taskId: string;
@@ -35,7 +35,7 @@ interface RecurringTaskConfig {
 }
 
 export class TaskSchedulerService {
-  private scheduledJobs: Map<string, cron.ScheduledTask> = new Map();
+  private scheduledJobs: Map<string, ScheduledTask> = new Map();
 
   /**
    * Agendar tarefa para execução futura

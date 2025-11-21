@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { AIService } from '@/services/aiService';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { UserRole } from '@/types';
+import { UserRole, AuthenticatedUser } from '@/types';
 import { prisma } from '@/utils/database';
 
 export class AnalyticsController {
@@ -14,9 +14,10 @@ export class AnalyticsController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       // Only admins and instructors can access dropout risk analysis
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         return ResponseHelper.error(reply, 'Permissões insuficientes', 403);
       }
 
@@ -30,7 +31,7 @@ export class AnalyticsController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         studentId: request.params.studentId,
       }, 'Dropout risk analysis failed');
       
@@ -50,11 +51,12 @@ export class AnalyticsController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       // Students can only see their own progress
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         const student = await prisma.student.findUnique({
-          where: { userId: request.user.id },
+          where: { userId: user.id },
         });
 
         if (!student || student.id !== request.params.studentId) {
@@ -72,7 +74,7 @@ export class AnalyticsController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         studentId: request.params.studentId,
       }, 'Progress analysis failed');
       
@@ -92,11 +94,12 @@ export class AnalyticsController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       // Students can only get their own recommendations
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         const student = await prisma.student.findUnique({
-          where: { userId: request.user.id },
+          where: { userId: user.id },
         });
 
         if (!student || student.id !== request.params.studentId) {
@@ -114,7 +117,7 @@ export class AnalyticsController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         studentId: request.params.studentId,
       }, 'Class recommendations failed');
       
@@ -140,9 +143,10 @@ export class AnalyticsController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       // Only admins and instructors can see overall patterns
-      if (request.user.role === UserRole.STUDENT) {
+      if (user.role === UserRole.STUDENT) {
         return ResponseHelper.error(reply, 'Permissões insuficientes', 403);
       }
 
@@ -302,7 +306,7 @@ export class AnalyticsController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         query: request.query,
       }, 'Attendance patterns analysis failed');
       

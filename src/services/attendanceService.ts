@@ -3,7 +3,7 @@ import { logger } from '@/utils/logger';
 import { QRCodeService } from '@/utils/qrcode';
 import { CheckInInput, AttendanceHistoryQuery, UpdateAttendanceInput, AttendanceStatsQuery } from '@/schemas/attendance';
 import { AttendanceStatus, CheckInMethod, UserRole, ClassStatus } from '@/types';
-import { EnrollmentStatus, SubscriptionStatus } from '@prisma/client';
+import { EnrollmentStatus, SubscriptionStatus, AttendanceTrend } from '@prisma/client';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 
@@ -194,7 +194,7 @@ export class AttendanceService {
     }
 
     // Determine attendance status based on check-in time
-    let status = AttendanceStatus.PRESENT;
+    let status: AttendanceStatus = AttendanceStatus.PRESENT;
     if (currentTime.isAfter(startTime)) {
       status = AttendanceStatus.LATE;
     }
@@ -464,7 +464,7 @@ export class AttendanceService {
               },
             },
           },
-          turmaLesson: {
+          lesson: {
             include: {
               turma: {
                 include: {
@@ -509,13 +509,13 @@ export class AttendanceService {
       },
       class: {
         id: ta.turmaLessonId,
-        date: ta.turmaLesson.scheduledDate,
-        startTime: ta.turmaLesson.scheduledDate,
-        endTime: dayjs(ta.turmaLesson.scheduledDate)
-          .add(ta.turmaLesson.duration || 60, 'minute')
+        date: ta.lesson.scheduledDate,
+        startTime: ta.lesson.scheduledDate,
+        endTime: dayjs(ta.lesson.scheduledDate)
+          .add(ta.lesson.duration || 60, 'minute')
           .toDate(),
-        course: ta.turmaLesson.turma.course,
-        instructor: ta.turmaLesson.turma.instructor,
+        course: ta.lesson.turma.course,
+        instructor: ta.lesson.turma.instructor,
       },
     }));
 
@@ -730,11 +730,11 @@ export class AttendanceService {
       ? (recentAttendances.filter(a => a.status !== AttendanceStatus.ABSENT).length / recentAttendances.length) * 100
       : 0;
 
-    let recentTrend = 'STABLE';
+    let recentTrend: AttendanceTrend = AttendanceTrend.STABLE;
     if (recentAttendanceRate > attendanceRate + 10) {
-      recentTrend = 'IMPROVING';
+      recentTrend = AttendanceTrend.IMPROVING;
     } else if (recentAttendanceRate < attendanceRate - 10) {
-      recentTrend = 'DECLINING';
+      recentTrend = AttendanceTrend.DECLINING;
     }
 
     // Update or create attendance pattern
@@ -1464,7 +1464,7 @@ export class AttendanceService {
               status: true,
               startDate: true,
               endDate: true,
-              package: {
+              plan: {
                 select: {
                   id: true,
                   name: true,
@@ -1510,7 +1510,7 @@ export class AttendanceService {
         hasActivePlan: student.subscriptions && student.subscriptions.length > 0,
         activePlan: student.subscriptions?.[0] ? {
           id: student.subscriptions[0].id,
-          name: student.subscriptions[0].package.name,
+          name: student.subscriptions[0].plan.name,
           status: student.subscriptions[0].status,
           startDate: student.subscriptions[0].startDate,
           endDate: student.subscriptions[0].endDate,

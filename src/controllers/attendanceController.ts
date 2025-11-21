@@ -216,8 +216,12 @@ export class AttendanceController {
         include: {
           student: {
             select: {
-              firstName: true,
-              lastName: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                }
+              },
               isActive: true,
             },
           },
@@ -563,7 +567,6 @@ export class AttendanceController {
             ? {
                 id: att.turma.id,
                 name: att.turma.name,
-                color: att.turma.color,
               }
             : null,
         })),
@@ -641,13 +644,9 @@ export class AttendanceController {
                     },
                   },
                   instructor: {
-                    include: {
-                      user: {
-                        select: {
-                          firstName: true,
-                          lastName: true,
-                        },
-                      },
+                    select: {
+                      firstName: true,
+                      lastName: true,
                     },
                   },
                 },
@@ -671,8 +670,8 @@ export class AttendanceController {
         turmaId: checkin.turmaId,
         turmaName: checkin.lesson?.turma?.name || 'N/A',
         courseName: checkin.lesson?.turma?.course?.name || 'N/A',
-        instructorName: checkin.lesson?.turma?.instructor?.user 
-          ? `${checkin.lesson.turma.instructor.user.firstName} ${checkin.lesson.turma.instructor.user.lastName}`
+        instructorName: checkin.lesson?.turma?.instructor
+          ? `${checkin.lesson.turma.instructor.firstName} ${checkin.lesson.turma.instructor.lastName}`
           : 'N/A',
         present: checkin.present,
       }));

@@ -3,6 +3,7 @@ import { AuthService } from '@/services/authService';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { RegisterInput, LoginInput } from '@/schemas/auth';
+import { AuthenticatedUser } from '@/types';
 
 export class AuthController {
   static async getUserByEmail(
@@ -94,7 +95,7 @@ export class AuthController {
     }
   }
 
-  static async profile(
+  static async getProfile(
     request: FastifyRequest,
     reply: FastifyReply
   ) {
@@ -102,8 +103,9 @@ export class AuthController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
-      const userData = await AuthService.findUserById(request.user.id);
+      const userData = await AuthService.findUserById(user.id);
 
       return ResponseHelper.success(
         reply,
@@ -111,7 +113,7 @@ export class AuthController {
         'Perfil recuperado com sucesso'
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id }, 'Profile fetch failed');
+      logger.error({ error, userId: (request.user as AuthenticatedUser)?.id }, 'Profile fetch failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 404);
@@ -131,11 +133,12 @@ export class AuthController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const { currentPassword, newPassword } = request.body;
 
       await AuthService.updatePassword(
-        request.user.id,
+        user.id,
         currentPassword,
         newPassword
       );
@@ -146,7 +149,7 @@ export class AuthController {
         'Senha atualizada com sucesso'
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id }, 'Password update failed');
+      logger.error({ error, userId: (request.user as AuthenticatedUser)?.id }, 'Password update failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 400);
@@ -164,8 +167,9 @@ export class AuthController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Token inválido', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
-      const userData = await AuthService.findUserById(request.user.id);
+      const userData = await AuthService.findUserById(user.id);
       
       // For Supabase, refresh is handled client-side; here return user data for session update
       // Frontend calls Supabase refreshSession
@@ -178,7 +182,7 @@ export class AuthController {
         'Sessão renovada com sucesso'
       );
     } catch (error) {
-      logger.error({ error, userId: request.user?.id }, 'Token refresh failed');
+      logger.error({ error, userId: (request.user as AuthenticatedUser)?.id }, 'Token refresh failed');
       
       if (error instanceof Error) {
         return ResponseHelper.error(reply, error.message, 404);

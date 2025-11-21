@@ -80,12 +80,8 @@ export class AIMonitorController {
     Params: { courseId: string }
   }>, reply: FastifyReply) {
     try {
-      const courseId = parseInt(request.params.courseId);
+      const courseId = request.params.courseId;
       
-      if (isNaN(courseId)) {
-        return ResponseHelper.error(reply, 'ID do curso deve ser um número válido', 400);
-      }
-
       // Executar análise completa e filtrar pelo curso específico
       const fullAnalysis = await lessonPlanMonitorAgent.runFullAnalysis();
       const courseAnalysis = fullAnalysis.coursesAnalysis.find(c => c.courseId === courseId);
@@ -119,11 +115,7 @@ export class AIMonitorController {
     Params: { activityId: string }
   }>, reply: FastifyReply) {
     try {
-      const activityId = parseInt(request.params.activityId);
-      
-      if (isNaN(activityId)) {
-        return ResponseHelper.error(reply, 'ID da atividade deve ser um número válido', 400);
-      }
+      const activityId = request.params.activityId;
 
       // Executar análise completa e filtrar pela atividade específica
       const fullAnalysis = await lessonPlanMonitorAgent.runFullAnalysis();
@@ -165,7 +157,7 @@ export class AIMonitorController {
         topIssues: {
           coursesWithLowestCoverage: fullAnalysis.coursesAnalysis
             .slice(0, 5)
-            .map(c => ({ name: c.courseName, coverage: c.coverage })),
+            .map(c => ({ name: c.courseName, coverage: c.plansCoverage })),
           mostUrgentSuggestions: fullAnalysis.suggestions
             .filter(s => s.priority === 'high')
             .slice(0, 5)

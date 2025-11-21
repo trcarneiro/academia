@@ -140,7 +140,7 @@ export class AgentOrchestratorService {
             const permissions = config.permissions || AGENT_PERMISSIONS[config.type];
             
             // Determinar specialization baseado no tipo (com cast para tipo correto)
-            const specialization = (AGENT_TYPE_TO_SPECIALIZATION[config.type] || 'support') as 'pedagogical' | 'administrative' | 'marketing' | 'financial' | 'support';
+            const specialization = (AGENT_TYPE_TO_SPECIALIZATION[config.type] || 'support');
             
             console.log('🔧 [AgentOrchestrator] Creating agent:', {
                 name: config.name,
@@ -156,10 +156,10 @@ export class AgentOrchestratorService {
                     name: config.name,
                     description: config.description,
                     systemPrompt: config.systemPrompt,
-                    specialization: specialization,
+                    specialization: specialization as any,
                     ragSources: [],
                     mcpTools: config.tools || [],
-                    autoSaveInsights: config.autoSaveInsights || false,
+                    // autoSaveInsights: config.autoSaveInsights || false, // Removed as it's not in schema
                     isActive: config.isActive,
                     organization: {
                         connect: { id: config.organizationId }
@@ -507,21 +507,54 @@ RESPONDA APENAS COM O JSON, SEM TEXTO ADICIONAL.
                 console.error('Agent execution logging skipped:', logError);
             }
             
-            // 🆕 AUTO-SAVE INSIGHTS SE CONFIGURADO
-            if (agent.autoSaveInsights && context?.organizationId) {
+            // 🆕 AUTO-SAVE INSIGHTS (sempre salvar quando houver insights)
+            if (result.insights && Array.isArray(result.insights) && context?.organizationId) {
                 try {
-                    const { agentInsightService } = await import('@/services/agentInsightService');
+                    const { AgentInsightService } = await import('@/services/agentInsightService');
+                    const insightService = new AgentInsightService();
                     
-                    await agentInsightService.createInsightsFromExecution(
-                        agent.id,
-                        context.organizationId,
-                        result
-                    );
+                    // Criar insights individuais a partir dos insights retornados
+                    for (const insightText of result.insights) {
+                        await insightService.createInsight({
+                            organizationId: context.organizationId,
+                            agentId: agent.id,
+                            type: 'INSIGHT',
+                            category: 'OPERATIONAL',
+                            title: insightText.substring(0, 100), // Primeiros 100 chars como título
+                            content: insightText,
+                            priority: result.priority || 'MEDIUM'
+                        });
+                    }
                     
-                    console.log('[AgentOrchestrator] ✅ Auto-saved insights to database');
+                    console.log(`[AgentOrchestrator] ✅ Saved ${result.insights.length} insights to database`);
                 } catch (saveError: any) {
                     console.error('[AgentOrchestrator] ⚠️ Failed to auto-save insights:', saveError.message);
                     // Não falhar a execução se o salvamento falhar
+                }
+            }
+            
+            // 🆕 CREATE TASKS FROM ACTIONS
+            if (result.actions && Array.isArray(result.actions) && context?.organizationId) {
+                try {
+                    const { AgentTaskService } = await import('@/services/agentTaskService');
+                    const taskService = new AgentTaskService();
+                    
+                    for (const action of result.actions) {
+                        await taskService.createTask({
+                            organizationId: context.organizationId,
+                            agentId: agent.id,
+                            title: action.description || 'Nova Tarefa',
+                            description: action.executionDetails || action.description || 'Tarefa gerada pelo agente',
+                            category: 'GENERATED',
+                            actionType: action.executionMethod || 'MANUAL',
+                            actionPayload: action,
+                            priority: result.priority || 'MEDIUM',
+                            requiresApproval: action.requiresApproval !== false // Default to true
+                        });
+                    }
+                    console.log(`[AgentOrchestrator] ✅ Created ${result.actions.length} tasks from actions`);
+                } catch (taskError: any) {
+                    console.error('[AgentOrchestrator] ⚠️ Failed to create tasks:', taskError.message);
                 }
             }
             

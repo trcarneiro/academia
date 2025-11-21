@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { GraduationService } from '@/services/graduationService';
 import { logger } from '@/utils/logger';
+import { prisma } from '@/utils/database';
 
 /**
  * Controller para endpoints de graduação
@@ -75,7 +76,7 @@ export class GraduationController {
    * GET /api/graduation/progress/:studentId
    * Busca progresso detalhado de um estudante
    */
-  static async getStudentProgress(
+  static async getStudentStats(
     request: FastifyRequest<{
       Params: { studentId: string };
       Querystring: { courseId?: string };
@@ -231,7 +232,7 @@ export class GraduationController {
 
       // Recalcular percentage
       if (updateData.completedReps || updateData.targetReps) {
-        const current = await request.server.prisma.studentProgress.findUnique({
+        const current = await prisma.studentProgress.findUnique({
           where: { id: progressId },
         });
 
@@ -249,7 +250,7 @@ export class GraduationController {
         updateData.lastUpdated = new Date();
       }
 
-      const updated = await request.server.prisma.studentProgress.update({
+      const updated = await prisma.studentProgress.update({
         where: { id: progressId },
         data: updateData,
         include: {
@@ -562,17 +563,26 @@ export class GraduationController {
       // Buscar progresso detalhado (usa método existente)
       const progressData = await GraduationService.getStudentDetailedProgress(
         id,
-        courseId,
-        organizationId
+        courseId
       );
 
+      if (!progressData) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Student progress not found',
+        });
+      }
+
       // Buscar check-ins com detalhes das aulas
-      const { prisma } = await import('@/utils/database');
-      
       const checkins = await prisma.turmaAttendance.findMany({
         where: {
           studentId: id,
           present: true,
+          lesson: {
+            turma: {
+              courseId: courseId || undefined,
+            }
+          }
         },
         include: {
           lesson: {
@@ -582,14 +592,13 @@ export class GraduationController {
                   lessonNumber: true,
                   title: true,
                   description: true,
-                  activities: {
-                    include: {
+                  activityItems: {
+                    select: {
                       activity: {
                         select: {
                           id: true,
                           title: true,
                           type: true,
-                          estimatedDuration: true,
                         }
                       }
                     }
@@ -600,9 +609,8 @@ export class GraduationController {
           }
         },
         orderBy: {
-          createdAt: 'desc'
-        },
-        take: 30 // Últimos 30 check-ins
+          checkedAt: 'desc'
+        }
       });
 
       console.log(`✅ Found ${checkins.length} check-ins for student`);
@@ -613,47 +621,30 @@ export class GraduationController {
         .map(checkin => {
           const lesson = checkin.lesson!;
           const lessonPlan = lesson.lessonPlan!;
-          const lessonActivities = lessonPlan.activities || [];
+          // const lessonActivities = lessonPlan.activityItems || [];
 
-          // Buscar atividades executadas nesta aula
-          const executedActivities = progressData.activities
-            .filter(act => act.lessonNumber === lessonPlan.lessonNumber)
-            .map(act => ({
+          // Buscar atividades execuções nesta aula
+          const executedActivities = (progressData as any).activities
+            .filter((act: any) => act.lessonNumber === lessonPlan.lessonNumber)
+            .map((act: any) => ({
               name: act.name,
               category: act.category,
               quantitativeProgress: act.quantitativeProgress,
               qualitativeRating: act.qualitativeRating,
-              targetReps: act.targetReps || 0,
-              completed: act.quantitativeProgress >= (act.targetReps || 0),
+              targetReps: act.quantitativeTarget || 0,
+              completed: act.quantitativeProgress >= (act.quantitativeTarget || 0),
             }));
 
           return {
-            checkinId: checkin.id,
-            checkinDate: checkin.createdAt,
-            lessonId: lesson.id,
+            date: checkin.checkedAt,
             lessonNumber: lessonPlan.lessonNumber,
-            lessonTitle: lessonPlan.title,
-            lessonDescription: lessonPlan.description,
-            scheduledDate: lesson.scheduledDate,
-            activitiesInLesson: lessonActivities.map(la => {
-              const executed = executedActivities.find(
-                e => e.name === la.activity.title
-              );
-              return {
-                id: la.activity.id,
-                name: la.activity.title,
-                category: la.activity.type,
-                targetReps: la.minimumForGraduation || 0,
-                executed: executed || null,
-              };
-            }),
-            completionRate: lessonActivities.length > 0
-              ? (executedActivities.length / lessonActivities.length) * 100
-              : 0,
+            title: lessonPlan.title,
+            description: lessonPlan.description,
+            activities: executedActivities,
           };
         });
 
-      // Calcular estatísticas de frequência
+      // Calcular estatísticas adicionais
       const last7Days = checkins.filter(c => {
         const diff = Date.now() - new Date(c.createdAt).getTime();
         return diff <= 7 * 24 * 60 * 60 * 1000;
@@ -670,7 +661,6 @@ export class GraduationController {
           ...progressData,
           timeline,
           stats: {
-            ...progressData.stats,
             recentCheckins: {
               last7Days,
               last30Days,

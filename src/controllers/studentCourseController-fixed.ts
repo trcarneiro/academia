@@ -51,7 +51,7 @@ export class StudentCourseController {
 
             const courses = await StudentCourseService.getStudentActiveCourses(studentId);
             
-            console.log('📚 [Controller] Courses returned from service:', courses.length, 'courses');
+            console.log('📚 [Controller] Courses returned from service:', courses.enrolledCourses.length, 'enrolled courses');
             
             return ResponseHelper.success(reply, courses, 'Cursos ativos carregados com sucesso');
 

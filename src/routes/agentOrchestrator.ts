@@ -1,6 +1,6 @@
-﻿/**
+/**
  * AGENT ORCHESTRATOR ROUTES
- * API para criar, gerenciar e executar agentes autônomos
+ * API para criar, gerenciar e executar agentes aut�nomos
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
@@ -12,7 +12,7 @@ import { AgentPermissionService } from '@/services/agentPermissionService';
 import { AgentAutomationService } from '@/services/agentAutomationService';
 import { authorizationService } from '@/services/authorizationService';
 
-// Schemas de validaÃ§Ã£o
+// Schemas de validação
 const CreateAgentSchema = z.object({
     name: z.string().min(3).max(100),
     type: z.nativeEnum(AgentType),
@@ -37,8 +37,8 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * POST /api/agents/orchestrator/suggest
-     * Sugerir agentes para criar baseado no negócio
-     * ✅ RETORNA: Agentes existentes + Novas sugestões da IA
+     * Sugerir agentes para criar baseado no neg�cio
+     * ? RETORNA: Agentes existentes + Novas sugest�es da IA
      */
     fastify.post('/orchestrator/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -47,7 +47,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 return reply.status(400).send({ success: false, error: 'organizationId is required' });
             }
 
-            // 🆕 BUSCAR AGENTES EXISTENTES (já criados)
+            // ?? BUSCAR AGENTES EXISTENTES (j� criados)
             const existingAgents = await prisma.aIAgent.findMany({
                 where: { 
                     organizationId,
@@ -69,17 +69,17 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
 
             // Fallback suggestions when AI is unavailable or returns non-JSON/empty
             const fallbackSuggestions = [
-                { name: 'Assistente Administrativo', type: 'financeiro', description: 'Monitora planos, pagamentos e inscrições; sugere ações e relatórios.', tools: ['database', 'reports', 'notifications'] },
-                { name: 'Agente Pedagógico', type: 'pedagogico', description: 'Analisa cursos e planos de aula; sugere melhorias baseadas em dados.', tools: ['lesson_plans', 'courses', 'activity_stats'] },
-                { name: 'Agente de Marketing', type: 'marketing', description: 'Analisa leads e campanhas; propõe próximas ações comerciais.', tools: ['crm', 'google_ads'] }
+                { name: 'Assistente Administrativo', type: 'financeiro', description: 'Monitora planos, pagamentos e inscri��es; sugere a��es e relat�rios.', tools: ['database', 'reports', 'notifications'] },
+                { name: 'Agente Pedag�gico', type: 'pedagogico', description: 'Analisa cursos e planos de aula; sugere melhorias baseadas em dados.', tools: ['lesson_plans', 'courses', 'activity_stats'] },
+                { name: 'Agente de Marketing', type: 'marketing', description: 'Analisa leads e campanhas; prop�e pr�ximas a��es comerciais.', tools: ['crm', 'google_ads'] }
             ];
 
-            // 🆕 COMBINAR: Agentes existentes + Sugestões novas
+            // ?? COMBINAR: Agentes existentes + Sugest�es novas
             const existingFormatted = existingAgents.map(agent => ({
                 id: agent.id,
                 name: agent.name,
                 type: agent.specialization,
-                description: agent.description || 'Agente já criado',
+                description: agent.description || 'Agente j� criado',
                 tools: agent.mcpTools || [],
                 status: 'created',
                 createdAt: agent.createdAt
@@ -99,7 +99,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                     status: 'suggested'
                 }));
 
-                return reply.send({
+                return (reply as any).send({
                     success: true,
                     data: {
                         organizationStats: stats || null,
@@ -114,7 +114,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             request.log.warn('[AgentOrchestrator] AI suggestAgents failed; returning fallback suggestions');
             const fallbackWithStatus = fallbackSuggestions.map(s => ({ ...s, status: 'suggested' }));
             
-            return reply.send({ 
+            return (reply as any).send({ 
                 success: true, 
                 data: { 
                     organizationStats: null, 
@@ -128,9 +128,9 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
         } catch (error) {
             fastify.log.error('Error suggesting agents:', error);
             const fb = [
-                { name: 'Assistente Administrativo', type: 'financeiro', description: 'Acompanha finanças e inscrições.', tools: ['database', 'reports'], status: 'suggested' }
+                { name: 'Assistente Administrativo', type: 'financeiro', description: 'Acompanha finan�as e inscri��es.', tools: ['database', 'reports'], status: 'suggested' }
             ];
-            return reply.send({ success: true, data: { organizationStats: null, existingAgents: [], suggestedAgents: fb, allAgents: fb }, message: 'AI unavailable, using fallback' });
+            return (reply as any).send({ success: true, data: { organizationStats: null, existingAgents: [], suggestedAgents: fb, allAgents: fb }, message: 'AI unavailable, using fallback' });
         }
     });
     
@@ -150,7 +150,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // 🔒 AUTHORIZATION CHECK
+            // ?? AUTHORIZATION CHECK
             const userId = (request.headers['x-user-id'] as string) || (request as any).user?.id;
             
             if (!userId) {
@@ -160,7 +160,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Verificar permissão de criação
+            // Verificar permiss�o de cria��o
             const authCheck = await authorizationService.canCreateAgent(userId);
             
             if (!authCheck.allowed) {
@@ -176,14 +176,21 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             const validated = CreateAgentSchema.parse(body);
             
             const config: AgentConfig = {
-                ...validated,
+                name: validated.name as string,
+                type: validated.type as AgentType,
+                description: (validated.description || '') as string,
+                systemPrompt: validated.systemPrompt as string,
+                tools: validated.tools as string[],
+                autoSaveInsights: validated.autoSaveInsights as boolean,
+                automationRules: validated.automationRules as any,
+                isActive: validated.isActive as boolean,
                 organizationId
             };
             
             const result = await AgentOrchestratorService.createAgent(config);
             
             if (result.success) {
-                reply.send({
+                (reply as any).send({
                     success: true,
                     data: result.data
                 });
@@ -221,7 +228,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             const result = await AgentOrchestratorService.listAgents(organizationId);
             
             if (result.success) {
-                reply.send({
+                (reply as any).send({
                     success: true,
                     data: result.data
                 });
@@ -243,7 +250,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * POST /api/agents/orchestrator/execute/:agentId
-     * Executar uma tarefa com um agente especÃ­fico
+     * Executar uma tarefa com um agente específico
      */
     fastify.post('/orchestrator/execute/:agentId', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -258,7 +265,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             );
             
             if (result.success) {
-                reply.send({
+                (reply as any).send({
                     success: true,
                     data: result.data,
                     executionTime: result.executionTime
@@ -297,7 +304,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
             const result = await AgentOrchestratorService.monitorAgents(organizationId);
             
             if (result.success) {
-                reply.send({
+                (reply as any).send({
                     success: true,
                     data: result.data
                 });
@@ -319,7 +326,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * GET /api/agents/orchestrator/templates
-     * Obter templates de agentes prÃ©-configurados
+     * Obter templates de agentes pré-configurados
      */
     fastify.get('/orchestrator/templates', async (_request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -328,7 +335,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                     name: 'Agente de Marketing',
                     type: AgentType.MARKETING,
                     description: 'Gerencia campanhas do Google Ads, envia emails marketing e posta em redes sociais',
-                    systemPrompt: 'VocÃª Ã© um especialista em marketing digital para academias de artes marciais. Seu objetivo Ã© atrair novos alunos atravÃ©s de campanhas bem planejadas.',
+                    systemPrompt: 'Você é um especialista em marketing digital para academias de artes marciais. Seu objetivo é atrair novos alunos através de campanhas bem planejadas.',
                     tools: ['google_ads_api', 'email_sender', 'social_media_poster'],
                     automationRules: [
                         {
@@ -345,7 +352,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                     name: 'Agente Comercial WhatsApp',
                     type: AgentType.COMERCIAL,
                     description: 'Responde leads via WhatsApp Business, agenda visitas e faz follow-up de vendas',
-                    systemPrompt: 'VocÃª Ã© um vendedor especializado em academias. Seja cordial, profissional e use linguagem natural. Sempre tente marcar uma visita presencial.',
+                    systemPrompt: 'Você é um vendedor especializado em academias. Seja cordial, profissional e use linguagem natural. Sempre tente marcar uma visita presencial.',
                     tools: ['whatsapp_business_api', 'crm_api', 'calendar_api'],
                     automationRules: [
                         {
@@ -359,10 +366,10 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                     ]
                 },
                 {
-                    name: 'Agente PedagÃ³gico',
+                    name: 'Agente Pedagógico',
                     type: AgentType.PEDAGOGICO,
-                    description: 'Cria planos de aula personalizados, sugere tÃ©cnicas e analisa progresso dos alunos',
-                    systemPrompt: 'VocÃª Ã© um instrutor experiente de Krav Maga. Crie planos de aula desafiadores mas seguros, adaptados ao nÃ­vel dos alunos.',
+                    description: 'Cria planos de aula personalizados, sugere técnicas e analisa progresso dos alunos',
+                    systemPrompt: 'Você é um instrutor experiente de Krav Maga. Crie planos de aula desafiadores mas seguros, adaptados ao nível dos alunos.',
                     tools: ['database_read', 'database_write', 'lesson_generator'],
                     automationRules: [
                         {
@@ -378,8 +385,8 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 {
                     name: 'Agente Financeiro',
                     type: AgentType.FINANCEIRO,
-                    description: 'Monitora pagamentos, envia cobranÃ§as automÃ¡ticas via Asaas e detecta inadimplÃªncia',
-                    systemPrompt: 'VocÃª gerencia as finanÃ§as da academia. Seja gentil mas firme com cobranÃ§as. OfereÃ§a alternativas de pagamento quando necessÃ¡rio.',
+                    description: 'Monitora pagamentos, envia cobranças automáticas via Asaas e detecta inadimplência',
+                    systemPrompt: 'Você gerencia as finanças da academia. Seja gentil mas firme com cobranças. Ofereça alternativas de pagamento quando necessário.',
                     tools: ['asaas_api', 'database_read', 'email_sender', 'sms_sender'],
                     automationRules: [
                         {
@@ -395,8 +402,8 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 {
                     name: 'Agente de Atendimento',
                     type: AgentType.ATENDIMENTO,
-                    description: 'Chatbot 24/7 que responde perguntas frequentes e escalona para humanos quando necessÃ¡rio',
-                    systemPrompt: 'VocÃª Ã© um assistente virtual da academia. Responda perguntas sobre horÃ¡rios, valores, modalidades e localizaÃ§Ã£o. Se nÃ£o souber, ofereÃ§a transferir para um atendente humano.',
+                    description: 'Chatbot 24/7 que responde perguntas frequentes e escalona para humanos quando necessário',
+                    systemPrompt: 'Você é um assistente virtual da academia. Responda perguntas sobre horários, valores, modalidades e localização. Se não souber, ofereça transferir para um atendente humano.',
                     tools: ['knowledge_base_search', 'email_sender'],
                     automationRules: [
                         {
@@ -407,7 +414,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 }
             ];
             
-            reply.send({
+            (reply as any).send({
                 success: true,
                 data: templates
             });
@@ -423,7 +430,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * GET /api/agents/orchestrator/interactions
-     * Obter interaÃ§Ãµes e permissÃµes pendentes dos agentes
+     * Obter interações e permissões pendentes dos agentes
      */
     fastify.get('/orchestrator/interactions', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -436,13 +443,13 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Buscar interaÃ§Ãµes recentes (Ãºltimas 10, incluindo jÃ¡ lidas)
+            // Buscar interações recentes (últimas 10, incluindo já lidas)
             const interactionsResult = await AgentInteractionService.listByOrganization(
                 organizationId, 
                 { limit: 10, includeRead: true }
             );
             
-            // Buscar permissÃµes pendentes
+            // Buscar permissões pendentes
             const permissionsResult = await AgentPermissionService.listPending(organizationId);
             
             if (!interactionsResult.success || !permissionsResult.success) {
@@ -452,7 +459,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Formatar interaÃ§Ãµes para o frontend
+            // Formatar interações para o frontend
             const formattedInteractions = (interactionsResult.data || []).map((interaction: any) => ({
                 id: interaction.id,
                 agentId: interaction.agentId,
@@ -465,7 +472,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 action: interaction.action // JSON com { label, url }
             }));
             
-            // Formatar permissÃµes pendentes para o frontend
+            // Formatar permissões pendentes para o frontend
             const formattedPermissions = (permissionsResult.data || []).map((permission: any) => ({
                 id: permission.id,
                 agentId: permission.agentId,
@@ -473,10 +480,10 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 agentType: permission.agent?.type || 'ADMINISTRATIVE',
                 action: permission.action,
                 createdAt: permission.createdAt,
-                details: permission.details // JSON com detalhes da aÃ§Ã£o
+                details: permission.details // JSON com detalhes da ação
             }));
             
-            reply.send({
+            (reply as any).send({
                 success: true,
                 data: {
                     interactions: formattedInteractions,
@@ -495,7 +502,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * PATCH /api/agents/orchestrator/permissions/:permissionId
-     * Aprovar ou recusar uma permissÃ£o solicitada por um agente
+     * Aprovar ou recusar uma permissão solicitada por um agente
      */
     fastify.patch('/orchestrator/permissions/:permissionId', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -510,12 +517,12 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Atualizar status da permissÃ£o
+            // Atualizar status da permissão
             const result = await AgentPermissionService.updateStatus({
                 permissionId,
                 status: body.approved ? 'APPROVED' : 'DENIED',
                 approvedBy: userId,
-                deniedReason: body.approved ? undefined : 'Recusado pelo usuÃ¡rio'
+                deniedReason: body.approved ? undefined : 'Recusado pelo usuário'
             });
             
             if (!result.success) {
@@ -525,9 +532,9 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Se aprovado, executar a aÃ§Ã£o (isso pode ser feito em background tambÃ©m)
+            // Se aprovado, executar a ação (isso pode ser feito em background também)
             if (body.approved && result.data) {
-                // TODO: Implementar execuÃ§Ã£o da aÃ§Ã£o aprovada
+                // TODO: Implementar execução da ação aprovada
                 // Por exemplo: NotificationTool.executeApprovedAction(permissionId, details)
                 fastify.log.info('Permission approved, action will be executed:', {
                     permissionId,
@@ -535,15 +542,15 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            reply.send({
+            (reply as any).send({
                 success: true,
                 data: {
                     permissionId,
                     approved: body.approved,
                     status: result.data?.status,
                     message: body.approved 
-                        ? 'PermissÃ£o aprovada. Agente executarÃ¡ a aÃ§Ã£o em breve.' 
-                        : 'PermissÃ£o recusada. Nenhuma aÃ§Ã£o serÃ¡ tomada.'
+                        ? 'Permissão aprovada. Agente executará a ação em breve.' 
+                        : 'Permissão recusada. Nenhuma ação será tomada.'
                 }
             });
             
@@ -558,7 +565,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * POST /api/agents/orchestrator/triggers/payment-overdue
-     * Disparar verificaÃ§Ã£o de pagamentos atrasados (trigger manual)
+     * Disparar verificação de pagamentos atrasados (trigger manual)
      */
     fastify.post('/orchestrator/triggers/payment-overdue', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -577,7 +584,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 body.daysOverdue || 7
             );
             
-            reply.send(result);
+            (reply as any).send(result);
             
         } catch (error) {
             fastify.log.error('Error triggering payment overdue check:', error);
@@ -590,7 +597,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * POST /api/agents/orchestrator/triggers/student-inactive
-     * Disparar verificaÃ§Ã£o de alunos inativos (trigger manual)
+     * Disparar verificação de alunos inativos (trigger manual)
      */
     fastify.post('/orchestrator/triggers/student-inactive', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -609,7 +616,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 body.daysInactive || 30
             );
             
-            reply.send(result);
+            (reply as any).send(result);
             
         } catch (error) {
             fastify.log.error('Error triggering student inactive check:', error);
@@ -622,7 +629,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
     
     /**
      * GET /api/agents/orchestrator/executions/:agentId
-     * Obter histórico de execuções de um agente
+     * Obter hist�rico de execu��es de um agente
      */
     fastify.get('/orchestrator/executions/:agentId', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
@@ -636,31 +643,19 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
                 });
             }
             
-            // Buscar execuções do agente no banco de dados
-            const executions = await prisma.agentExecution.findMany({
+            // Buscar execues do agente no banco de dados
+            const executions = await prisma.agentInteraction.findMany({
                 where: {
                     agentId,
                     organizationId
                 },
                 orderBy: {
-                    startedAt: 'desc'
+                    createdAt: 'desc'
                 },
-                take: 50, // Últimas 50 execuções
-                select: {
-                    id: true,
-                    agentId: true,
-                    task: true,
-                    status: true,
-                    startedAt: true,
-                    completedAt: true,
-                    executionTime: true,
-                    result: true,
-                    error: true,
-                    createdAt: true
-                }
+                take: 50
             });
             
-            reply.send({
+            (reply as any).send({
                 success: true,
                 data: executions
             });
@@ -674,6 +669,7 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
         }
     });
 }
+
 
 
 

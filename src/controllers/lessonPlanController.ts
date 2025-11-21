@@ -208,7 +208,16 @@ export const lessonPlanController = {
 
       const lessonPlan = await prisma.lessonPlan.create({
         data: {
-          ...data,
+          title: data.title,
+          lessonNumber: data.lessonNumber,
+          weekNumber: data.weekNumber,
+          level: data.level,
+          duration: data.duration,
+          difficulty: data.difficulty,
+          objectives: data.objectives,
+          equipment: data.equipment,
+          activities: data.activities,
+          course: { connect: { id: data.courseId } },
           description: data.description ?? null,
           unit: data.unit ?? null,
           mentalModule: data.mentalModule ?? null,
@@ -220,11 +229,6 @@ export const lessonPlanController = {
           techniques: data.techniques || {},
           simulations: data.simulations || {},
           cooldown: data.cooldown || {}
-        },
-        include: {
-          course: {
-            select: { id: true, name: true, level: true }
-          }
         }
       });
 

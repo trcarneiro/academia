@@ -202,8 +202,18 @@ export default async function agentsRoutes(fastify: FastifyInstance) {
 
             // Create agent
             const agent = await agentService.createAgent({
-                ...validatedData,
-                noCodeMode: true, // Always enforce
+                name: validatedData.name,
+                description: validatedData.description,
+                specialization: validatedData.specialization,
+                model: validatedData.model,
+                systemPrompt: validatedData.systemPrompt,
+                ragSources: validatedData.ragSources,
+                mcpTools: validatedData.mcpTools,
+                temperature: validatedData.temperature,
+                maxTokens: validatedData.maxTokens,
+                isActive: validatedData.isActive,
+                isPublic: validatedData.isPublic,
+                noCodeMode: true,
                 organization: {
                     connect: { id: organizationId }
                 }

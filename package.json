@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "set \"NODE_OPTIONS=-r tsconfig-paths/register\" && tsx watch src/server.ts",
         "dev:simple": "node servers/server-simple.js",
-        "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && tsc || echo 'Build completed with warnings'",
+        "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && tsc",
         "build": "tsc && tsc-alias && node scripts/copy-public.js",
         "render-build": "npx prisma generate && npm run build",
         "start": "node dist/server.js",
@@ -69,6 +69,7 @@
         "@prisma/client": "^6.19.0",
         "@sendgrid/mail": "^8.1.6",
         "@supabase/supabase-js": "^2.38.4",
+        "@tensorflow/tfjs": "^4.22.0",
         "@types/joi": "^17.2.2",
         "@types/multiparty": "^4.2.1",
         "@types/ws": "^8.18.1",
