@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import * as bcrypt from 'bcrypt';
 
 interface ImportCustomerBody {
   customerId: string;
@@ -90,8 +91,9 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         const firstName = names[0] || asaasCustomer.name;
         const lastName = names.slice(1).join(' ') || '';
 
-        // Generate temporary password
+        // Generate temporary password and hash it
         const tempPassword = Math.random().toString(36).substring(2, 15);
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         // Create user and student in transaction
         const result = await prisma.$transaction(async (tx) => {
@@ -99,7 +101,7 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           const user = await tx.user.create({
             data: {
               email: asaasCustomer.email.toLowerCase(),
-              password: tempPassword,
+              password: hashedPassword,
               firstName,
               lastName,
               phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
@@ -141,6 +143,15 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         });
       } catch (error) {
         logger.error('Error importing customer:', error);
+
+        // Log detailed error information
+        if (error instanceof Error) {
+          logger.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+          });
+        }
 
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
@@ -208,15 +219,16 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           const firstName = names[0] || asaasCustomer.name;
           const lastName = names.slice(1).join(' ') || '';
 
-          // Generate temporary password
+          // Generate temporary password and hash it
           const tempPassword = Math.random().toString(36).substring(2, 15);
+          const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
           // Create user and student
           await prisma.$transaction(async (tx) => {
             const user = await tx.user.create({
               data: {
                 email: asaasCustomer.email.toLowerCase(),
-                password: tempPassword,
+                password: hashedPassword,
                 firstName,
                 lastName,
                 phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
@@ -245,9 +257,9 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           results.success++;
         } catch (error) {
           results.failed++;
-          results.errors.push(
-            `${customerId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          );
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          logger.error(`Error importing customer ${customerId}:`, errorMsg);
+          results.errors.push(`${customerId}: ${errorMsg}`);
         }
       }
 
