@@ -335,10 +335,10 @@ const AsaasImportModule = {
                     ${!customer.isImported ? `
                         <button 
                             class="btn-import-single" 
-                            onclick="window.asaasImport.importSingle('${customer.id}')"
-                            ${!customer.email ? 'disabled title="Email não informado"' : ''}>
+                            onclick="window.asaasImport.importSingle('${customer.id}')">
                             📥 Importar
                         </button>
+                        ${!customer.email ? '<div class="text-warning" style="font-size: 11px; margin-top: 4px;">⚠️ Email temporário será criado</div>' : ''}
                     ` : `
                         <span class="text-success">✓ Já está no sistema</span>
                     `}

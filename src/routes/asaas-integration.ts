@@ -59,22 +59,40 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           });
         }
 
-        logger.info(`Importing customer ${customerId} for organization ${organizationId}`);
+        // Validate organization exists
+        const organization = await prisma.organization.findUnique({
+          where: { id: organizationId },
+        });
+
+        if (!organization) {
+          logger.error(`Organization not found: ${organizationId}`);
+          return reply.code(404).send({
+            success: false,
+            message: 'Organization not found. Please check your organization ID.',
+          });
+        }
+
+        logger.info(`Importing customer ${customerId} for organization ${organizationId} (${organization.name})`);
 
         // Fetch customer from Asaas
         const asaasCustomer = await fetchAsaasCustomer(customerId);
 
-        if (!asaasCustomer.email) {
-          return reply.code(400).send({
-            success: false,
-            message: 'Customer has no email address',
-          });
+        // Generate temporary email if not provided
+        let customerEmail = asaasCustomer.email;
+        if (!customerEmail) {
+          // Generate email from CPF, phone, or ID
+          const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
+                           asaasCustomer.phone?.replace(/\D/g, '') || 
+                           asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
+                           customerId;
+          customerEmail = `customer_${identifier}@temp.academia.local`;
+          logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
         }
 
         // Check if user already exists (using findFirst with composite filter)
         const existingUser = await prisma.user.findFirst({
           where: {
-            email: asaasCustomer.email.toLowerCase(),
+            email: customerEmail.toLowerCase(),
             organizationId,
           },
         });
@@ -100,7 +118,7 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           // Create user
           const user = await tx.user.create({
             data: {
-              email: asaasCustomer.email.toLowerCase(),
+              email: customerEmail.toLowerCase(),
               password: hashedPassword,
               firstName,
               lastName,
@@ -184,6 +202,21 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Validate organization exists
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId },
+      });
+
+      if (!organization) {
+        logger.error(`Organization not found: ${organizationId}`);
+        return reply.code(404).send({
+          success: false,
+          message: 'Organization not found. Please check your organization ID.',
+        });
+      }
+
+      logger.info(`Starting batch import for organization ${organizationId} (${organization.name}): ${customerIds.length} customers`);
+
       const results = {
         success: 0,
         failed: 0,
@@ -194,16 +227,21 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         try {
           const asaasCustomer = await fetchAsaasCustomer(customerId);
 
-          if (!asaasCustomer.email) {
-            results.failed++;
-            results.errors.push(`${asaasCustomer.name}: No email provided`);
-            continue;
+          // Generate temporary email if not provided
+          let customerEmail = asaasCustomer.email;
+          if (!customerEmail) {
+            const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
+                             asaasCustomer.phone?.replace(/\D/g, '') || 
+                             asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
+                             customerId;
+            customerEmail = `customer_${identifier}@temp.academia.local`;
+            logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
           }
 
           // Check if exists
           const existingUser = await prisma.user.findFirst({
             where: {
-              email: asaasCustomer.email.toLowerCase(),
+              email: customerEmail.toLowerCase(),
               organizationId,
             },
           });
@@ -227,7 +265,7 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           await prisma.$transaction(async (tx) => {
             const user = await tx.user.create({
               data: {
-                email: asaasCustomer.email.toLowerCase(),
+                email: customerEmail.toLowerCase(),
                 password: hashedPassword,
                 firstName,
                 lastName,
