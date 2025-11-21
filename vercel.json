@@ -4,10 +4,23 @@
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
   "outputDirectory": "dist",
-  "rewrites": [
+  "functions": {
+    "api/serverless.ts": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/api/serverless"
+      "src": "/api/(.*)",
+      "dest": "/api/serverless"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/serverless"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/serverless"
     }
   ]
 }
