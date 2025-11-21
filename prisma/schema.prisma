@@ -188,6 +188,21 @@ model Course {
   @@map("courses")
 }
 
+model CourseProgram {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  level          CourseLevel
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  classes        Class[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("course_programs")
+}
+
 model CourseTemplate {
   id               String         @id @default(uuid())
   organizationId   String
@@ -392,6 +407,7 @@ model Student {
   id                            String                      @id @default(uuid())
   organizationId                String
   userId                        String                      @unique
+  user                          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   emergencyContact              String?
   medicalConditions             String?
   category                      StudentCategory             @default(ADULT)
@@ -447,16 +463,15 @@ model Student {
   progressTracking              StudentProgress[]
   progressions                  StudentProgression[]
   subscriptions                 StudentSubscription[]
+  turmaInterests                TurmaInterest[]           @relation("StudentTurmaInterests")
   financialResponsible          FinancialResponsible?       @relation(fields: [financialResponsibleId], references: [id])
   financialResponsibleStudent   Student?                    @relation("FinancialDependents", fields: [financialResponsibleStudentId], references: [id])
   financialDependents           Student[]                   @relation("FinancialDependents")
   organization                  Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user                          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   teacherEvaluations            TeacherEvaluation[]
   techniqueRecords              TechniqueRecord[]
   turmaAttendances              TurmaAttendance[]
   turmaStudents                 TurmaStudent[]
-  turmaInterests                TurmaInterest[]             @relation("StudentTurmaInterests")
 
   @@map("students")
 }
@@ -619,6 +634,7 @@ model Instructor {
   id                     String                    @id @default(uuid())
   organizationId         String
   userId                 String                    @unique
+  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   specializations        String[]
   certifications         String[]
   bio                    String?
@@ -636,7 +652,6 @@ model Instructor {
   evaluations            Evaluation[]
   instructor_courses     InstructorCourse[]
   organization           Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   activityValidations    LessonActivityExecution[] @relation("ActivityValidation")
   personalClasses        PersonalTrainingClass[]
   qualitativeAssessments QualitativeAssessment[]
@@ -859,7 +874,7 @@ model Evaluation {
   videoUrl           String?
   recommendedActions String[]
   evaluatedBy        String
-  evaluatedAt        DateTime         @default(now())
+  evaluatedAt         DateTime         @default(now())
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @default(now())
   enrollment         CourseEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
@@ -1671,6 +1686,9 @@ model Turma {
   room                         String?
   price                        Decimal?          @db.Decimal(10, 2)
   isActive                     Boolean           @default(true)
+  inactiveReason               String?
+  minimumStudents              Int               @default(5)
+  activationDate               DateTime?
   createdAt                    DateTime          @default(now())
   updatedAt                    DateTime          @default(now())
   trainingAreaId               String?
@@ -1679,14 +1697,28 @@ model Turma {
   courses                      TurmaCourse[]
   lessons                      TurmaLesson[]
   students                     TurmaStudent[]
+  interests                    TurmaInterest[]   @relation("TurmaInterests")
   course                       Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   instructor                   User              @relation(fields: [instructorId], references: [id])
   organization                 Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trainingArea                 TrainingArea?     @relation("TurmaTrainingArea", fields: [trainingAreaId], references: [id])
-  turmaInterests               TurmaInterest[]             @relation("TurmaInterests")
   unit                         Unit?             @relation(fields: [unitId], references: [id])
 
   @@map("turmas")
+}
+
+model TurmaInterest {
+  id        String   @id @default(uuid())
+  turmaId   String
+  studentId String
+  createdAt DateTime @default(now())
+  notified  Boolean  @default(false)
+
+  turma   Turma   @relation("TurmaInterests", fields: [turmaId], references: [id], onDelete: Cascade)
+  student Student @relation("StudentTurmaInterests", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaId, studentId])
+  @@map("turma_interests")
 }
 
 model TurmaLesson {
@@ -1759,8 +1791,8 @@ model TurmaAttendance {
   @@map("turma_attendances")
 }
 
-/// ConfiguraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes de rastreamento de atividades por organizaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
-/// Define se a validaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o ÃƒÆ’Ã‚Â© automÃƒÆ’Ã‚Â¡tica (no check-in) ou manual (pelo professor)
+/// Configurações de rastreamento de atividades por organização
+/// Define se a validação é automática (no check-in) ou manual (pelo professor)
 model ActivityTrackingSettings {
   id                          String       @id @default(uuid())
   organizationId              String       @unique
@@ -1781,7 +1813,7 @@ model TurmaCourse {
   turmaId   String
   courseId  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   turma     Turma    @relation(fields: [turmaId], references: [id], onDelete: Cascade)
 
@@ -1798,13 +1830,13 @@ model PersonalTrainingClass {
   description    String?
   focusAreas     String[]
   trainingType   PersonalTrainingType      @default(INDIVIDUAL)
-  intensity      String                    @default("IntermediÃƒÆ’Ã‚Â¡rio")
+  intensity      String                    @default("Intermediário")
   duration       Int                       @default(60)
   location       String?
   notes          String?
   status         PersonalClassStatus       @default(ACTIVE)
   createdAt      DateTime                  @default(now())
-  updatedAt      DateTime                  @updatedAt
+  updatedAt      DateTime                  @default(now())
   instructor     Instructor                @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   organization   Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   student        Student                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -1829,8 +1861,7 @@ model PersonalTrainingSession {
   location             String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @default(now())
-  courseId             String
-  
+  courseId             String?
   lessonContent        Json?
   lessonPlanId         String?
   nextLessonSuggestion String?
@@ -1853,7 +1884,7 @@ model PersonalTrainingPreference {
   preferredTimes       String[]
   preferredInstructors String[]
   trainingFocus        String[]
-  intensity            String   @default("IntermediÃƒÆ’Ã‚Â¡rio")
+  intensity            String   @default("Intermediário")
   sessionDuration      Int      @default(60)
   maxSessionsPerWeek   Int      @default(2)
   notes                String?
@@ -1886,7 +1917,7 @@ model AgendaItem {
   isVirtual      Boolean          @default(false)
   meetingUrl     String?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  updatedAt      DateTime         @default(now())
   instructor     User             @relation(fields: [instructorId], references: [id])
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trainingArea   TrainingArea?    @relation(fields: [trainingAreaId], references: [id])
@@ -1949,7 +1980,7 @@ model Lead {
   tags                String[]
   customFields        Json?
   createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  updatedAt           DateTime        @default(now())
   activities          LeadActivity[]
   notes               LeadNote[]
   assignedTo          User?           @relation("LeadAssignedTo", fields: [assignedToId], references: [id])
@@ -1977,7 +2008,7 @@ model LeadActivity {
   duration     Int?
   attachments  Json?
   createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  updatedAt    DateTime         @default(now())
   lead         Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
   user         User             @relation("LeadActivities", fields: [userId], references: [id])
 
@@ -2023,7 +2054,7 @@ model GoogleAdsCampaign {
   endDate           DateTime?
   lastSyncAt        DateTime           @default(now())
   createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  updatedAt         DateTime           @default(now())
   adGroups          GoogleAdsAdGroup[]
   organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -2044,7 +2075,7 @@ model GoogleAdsAdGroup {
   conversionValue Decimal            @default(0) @db.Decimal(10, 2)
   lastSyncAt      DateTime           @default(now())
   createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  updatedAt       DateTime           @default(now())
   campaign        GoogleAdsCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   keywords        GoogleAdsKeyword[]
 
@@ -2067,12 +2098,27 @@ model GoogleAdsKeyword {
   qualityScore    Int?
   lastSyncAt      DateTime         @default(now())
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  updatedAt       DateTime         @default(now())
   adGroup         GoogleAdsAdGroup @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
 
   @@index([adGroupId])
   @@index([keywordText])
   @@map("google_ads_keywords")
+}
+
+model GoogleAdsConfig {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  customerId     String
+  managerId      String?
+  refreshToken   String
+  isActive       Boolean      @default(true)
+  lastSyncAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("google_ads_configs")
 }
 
 model CrmSettings {
@@ -2096,7 +2142,7 @@ model CrmSettings {
   autoFollowUpDays          Int          @default(3)
   autoArchiveDays           Int          @default(30)
   createdAt                 DateTime     @default(now())
-  updatedAt                 DateTime     @updatedAt
+  updatedAt                 DateTime     @default(now())
   organization              Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("crm_settings")
@@ -2110,7 +2156,7 @@ model ActivityCategory {
   icon                 String?
   order                Int        @default(0)
   createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  updatedAt            DateTime   @default(now())
   minimumForGraduation Int?       @default(50)
   activities           Activity[]
 
@@ -2124,6 +2170,7 @@ model LessonActivityExecution {
   attendanceId      String
   turmaLessonId     String
   executedAt        DateTime           @default(now())
+  completed         Boolean            @default(false)
   repetitionsCount  Int                @default(1)
   durationMinutes   Int?
   intensityApplied  Float              @default(1.0)
@@ -2132,7 +2179,7 @@ model LessonActivityExecution {
   validatedBy       String?
   validatedAt       DateTime?
   createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  updatedAt         DateTime           @default(now())
   activity          LessonPlanActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   attendance        TurmaAttendance    @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   student           Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -2201,7 +2248,7 @@ model StudentGraduation {
   ceremonyDate          DateTime?
   ceremonyNotes         String?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  updatedAt             DateTime  @default(now())
   course                Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   student               Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -2223,20 +2270,21 @@ model AIAgent {
   maxTokens      Int                 @default(2048)
   noCodeMode     Boolean             @default(true)
   isActive       Boolean             @default(true)
+  autoSaveInsights Boolean           @default(true)
   isPublic       Boolean             @default(false)
   averageRating  Float?
   createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  updatedAt      DateTime            @default(now())
   conversations  AgentConversation[]
   interactions   AgentInteraction[]  @relation("AgentInteractions")
   permissions    AgentPermission[]   @relation("AgentPermissions")
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId, isActive])
-  @@index([specialization])
   tasks                AgentTask[]         @relation("AgentToTask")
   insights             AgentInsight[]      @relation("AgentToInsight")
 
+  @@index([organizationId, isActive])
+  @@index([specialization])
   @@map("ai_agents")
 }
 
@@ -2250,7 +2298,7 @@ model AgentConversation {
   feedback  String?
   metadata  Json?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
   agent     AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
   student   Student? @relation(fields: [studentId], references: [id])
   user      User?    @relation(fields: [userId], references: [id])
@@ -2295,7 +2343,7 @@ model AgentPermission {
   executedAt      DateTime?
   executionResult Json?
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  updatedAt       DateTime     @default(now())
   agent           AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
   approver        User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
   organization    Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
@@ -2305,6 +2353,130 @@ model AgentPermission {
   @@index([status])
   @@index([createdAt])
   @@map("agent_permissions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String?
+  type           String
+  category       String?
+  title          String
+  content        String
+  priority       String       @default("MEDIUM")
+  status         String       @default("NEW")
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       Json?
+  relatedEntity  String?
+  relatedId      String?
+  actionTaken    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
+}
+
+model AgentTask {
+  id               String   @id @default(uuid())
+  organizationId   String
+  agentId          String?
+  createdByUserId  String?
+  assignedToUserId String?
+
+  title        String
+  description  String
+  category     String
+  actionType   String
+  targetEntity String?
+  actionPayload Json
+  reasoning     Json?
+
+  requiresApproval Boolean  @default(true)
+  autoExecute      Boolean  @default(false)
+  automationLevel  String   @default("MANUAL")
+  approvalStatus   String   @default("PENDING")
+  status           String   @default("PENDING")
+  priority         String   @default("MEDIUM")
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectedReason   String?
+
+  executorType   String?  @default("AGENT")
+  executorId     String?
+  scheduledFor   DateTime?
+  recurrenceRule String?
+  maxRetries     Int       @default(3)
+  retryCount     Int       @default(0)
+  lastRetryAt    DateTime?
+  nextRetryAt    DateTime?
+
+  executedAt      DateTime?
+  executionResult Json?
+  errorMessage    String?
+  executionLog    Json?
+
+  dueDate  DateTime?
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agent        AIAgent?      @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
+  organization Organization  @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?         @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedTo   User?         @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  approver     User?         @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
+  executor     User?         @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
+  executions   TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("agent_tasks")
+}
+
+model TaskExecution {
+  id            String   @id @default(uuid())
+  taskId        String
+  attemptNumber Int      @default(1)
+  executorType  String
+  executorId    String?
+  status        String
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  duration      Int?
+  result        Json?
+  errorMessage  String?
+  errorStack    String?
+  metadata      Json?
+
+  task     AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+  executor User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
+
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("task_executions")
 }
 
 model StudentProgress {
@@ -2318,7 +2490,7 @@ model StudentProgress {
   completionPercentage   Float                   @default(0)
   lastUpdated            DateTime                @default(now())
   createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
+  updatedAt              DateTime                @default(now())
   qualitativeAssessments QualitativeAssessment[]
   course                 Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   student                Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -2337,7 +2509,7 @@ model QualitativeAssessment {
   notes             String?
   assessmentDate    DateTime        @default(now())
   createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  updatedAt         DateTime        @default(now())
   instructor        Instructor?     @relation(fields: [instructorId], references: [id])
   studentProgress   StudentProgress @relation(fields: [studentProgressId], references: [id], onDelete: Cascade)
 
@@ -2357,7 +2529,7 @@ model CourseRequirement {
   isMandatory   Boolean  @default(true)
   description   String?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now())
   course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, beltLevel, activityName])
@@ -2377,7 +2549,7 @@ model BiometricData {
   enrollmentMethod String
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime @default(now())
   student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
@@ -2400,7 +2572,7 @@ model BiometricAttempt {
   attemptedAt       DateTime  @default(now())
   processedAt       DateTime?
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  updatedAt         DateTime  @default(now())
   student           Student?  @relation(fields: [studentId], references: [id])
 
   @@index([organizationId])
@@ -2834,184 +3006,4 @@ enum AgentSpecialization {
   progression
   commercial
   curriculum
-}
-
-model AgentTask {
-  id                String    @id @default(uuid())
-  organizationId    String
-  agentId           String?
-  createdByUserId   String?
-  assignedToUserId  String?
-  
-  // Task Definition
-  title             String
-  description       String
-  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
-  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
-  targetEntity      String? // Student, Course, Payment, etc
-  actionPayload     Json // Data needed to execute the action
-  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
-  
-  // Approval Workflow
-  requiresApproval  Boolean   @default(true)
-  autoExecute       Boolean   @default(false)
-  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
-  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
-  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
-  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  approvedBy        String?
-  approvedAt        DateTime?
-  rejectedReason    String?
-  
-  //  EXECUTION & ORCHESTRATION
-  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
-  executorId        String? // ID do agente IA ou usuÃƒÂ¡rio que vai executar
-  scheduledFor      DateTime? // Data/hora agendada para execuÃƒÂ§ÃƒÂ£o futura
-  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda ÃƒÂ s 9h)
-  maxRetries        Int       @default(3) // MÃƒÂ¡ximo de tentativas em caso de falha
-  retryCount        Int       @default(0) // Tentativas jÃƒÂ¡ realizadas
-  lastRetryAt       DateTime? // Data da ÃƒÂºltima tentativa
-  nextRetryAt       DateTime? // PrÃƒÂ³xima tentativa agendada
-  
-  // Execution Results
-  executedAt        DateTime?
-  executionResult   Json? // Result after execution
-  errorMessage      String?
-  executionLog      Json? // Array de logs de execuÃƒÂ§ÃƒÂ£o: [{ timestamp, action, result, error }]
-  
-  // Metadata
-  dueDate           DateTime?
-  metadata          Json? // Additional context
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relations
-  agent             AIAgent?  @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
-  organization      Organization @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
-  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
-  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
-  executions        TaskExecution[] @relation("TaskExecutions")
-
-  @@index([organizationId, approvalStatus])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([createdByUserId])
-  @@index([assignedToUserId])
-  @@index([executorType, executorId])
-  @@index([scheduledFor])
-  @@index([approvalStatus])
-  @@index([status])
-  @@index([priority])
-  @@index([createdAt])
-}
-
-model TaskExecution {
-  id              String    @id @default(uuid())
-  taskId          String
-  attemptNumber   Int       @default(1)
-  executorType    String // AGENT, USER, SYSTEM
-  executorId      String?
-  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
-  startedAt       DateTime  @default(now())
-  completedAt     DateTime?
-  duration        Int? // DuraÃƒÂ§ÃƒÂ£o em milissegundos
-  result          Json? // Resultado da execuÃƒÂ§ÃƒÂ£o
-  errorMessage    String?
-  errorStack      String?
-  metadata        Json? // Logs adicionais
-  
-  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
-  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
-  
-  @@index([taskId])
-  @@index([executorType, executorId])
-  @@index([status])
-  @@index([startedAt])
-  @@map("task_executions")
-}
-
-model AgentInsight {
-  id             String       @id @default(uuid())
-  organizationId String
-  agentId        String
-  executionId    String? // ID da execuÃƒÂ§ÃƒÂ£o que gerou o insight
-  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
-  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
-  title          String
-  content        String
-  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
-  isPinned       Boolean      @default(false)
-  isRead         Boolean      @default(false)
-  metadata       Json? // Additional context, metrics, etc
-  relatedEntity  String? // Student, Course, Payment, etc
-  relatedId      String? // ID of related entity
-  actionTaken    String? // What action was taken (if any)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
-  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, type])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([type])
-  @@index([category])
-  @@index([priority])
-  @@index([status])
-  @@index([createdAt])
-  @@map("agent_insights")
-}
-
-
-
-
-
-
-
-
-model CourseProgram {
-  id             String       @id @default(uuid())
-  organizationId String
-  name           String
-  description    String?
-  level          CourseLevel
-  isActive       Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now())
-  classes        Class[]
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("course_programs")
-}
-
-model GoogleAdsConfig {
-  id             String       @id @default(uuid())
-  organizationId String       @unique
-  customerId     String
-  managerId      String?
-  refreshToken   String
-  isActive       Boolean      @default(true)
-  lastSyncAt     DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now())
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("google_ads_configs")
-}
-
-model TurmaInterest {
-  id              String    @id @default(uuid())
-  turmaId         String
-  studentId       String
-  createdAt       DateTime  @default(now())
-  notified        Boolean   @default(false)
-  
-  turma           Turma     @relation("TurmaInterests", fields: [turmaId], references: [id], onDelete: Cascade)
-  student         Student   @relation("StudentTurmaInterests", fields: [studentId], references: [id], onDelete: Cascade)
-  
-  @@unique([turmaId, studentId])
-  @@map("turma_interests")
 }
