@@ -10,7 +10,6 @@
     "noImplicitThis": false,
     "alwaysStrict": false,
     "skipLibCheck": true,
-    "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitReturns": false,

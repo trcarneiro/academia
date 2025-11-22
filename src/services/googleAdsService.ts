@@ -537,7 +537,7 @@ export class GoogleAdsService {
             // Get lead data
             const lead = await prisma.lead.findUnique({
                 where: { id: leadId },
-                include: { convertedToStudent: true },
+                include: { convertedStudent: true },
             });
 
             if (!lead || !lead.gclid) {
