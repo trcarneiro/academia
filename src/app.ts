@@ -119,13 +119,19 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(rateLimit, 'rateLimit'), { max: appConfig.rateLimit.max, timeWindow: appConfig.rateLimit.window } as any);
   await server.register(normalizePlugin(jwt, 'jwt'), { secret: appConfig.jwt.secret, sign: { expiresIn: appConfig.jwt.expiresIn } } as any);
 
-  // Static files
-  const publicPath = path.join(__dirname, '..', 'public');
-  const publicPathDist = path.join(__dirname, 'public');
-  const staticPath = require('fs').existsSync(publicPathDist) ? publicPathDist : publicPath;
+  // Static files (skip in serverless environment)
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
   
-  logger.info(`📁 Serving static files from: ${staticPath}`);
-  await server.register(normalizePlugin(staticFiles, 'static'), { root: staticPath, prefix: '/' } as any);
+  if (!isServerless) {
+    const publicPath = path.join(__dirname, '..', 'public');
+    const publicPathDist = path.join(__dirname, 'public');
+    const staticPath = require('fs').existsSync(publicPathDist) ? publicPathDist : publicPath;
+    
+    logger.info(`📁 Serving static files from: ${staticPath}`);
+    await server.register(normalizePlugin(staticFiles, 'static'), { root: staticPath, prefix: '/' } as any);
+  } else {
+    logger.info('⚡ Running in serverless mode - static files disabled');
+  }
 
   // Tenant extraction
   server.addHook('onRequest', async (request, reply) => {
@@ -156,7 +162,10 @@ export const buildApp = async () => {
     catch { throw new Error('Database connection failed'); }
   });
 
-  server.get('/', async (_: any, reply: any) => reply.sendFile('index.html'));
+  // Root route only when not in serverless (handled by serverless.ts in Vercel)
+  if (!isServerless) {
+    server.get('/', async (_: any, reply: any) => reply.sendFile('index.html'));
+  }
 
   // Register Routes
   await server.register(normalizePlugin(authRoutes, 'authRoutes'), { prefix: '/api/auth' } as any);
