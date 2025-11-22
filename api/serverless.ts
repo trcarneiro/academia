@@ -1,19 +1,58 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, extname } from 'path';
 
 // Simplified serverless handler without full app initialization
 // This prevents cold start issues and static file plugin conflicts
+
+// MIME type mapping for static files
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject'
+};
+
+function getMimeType(filePath: string): string {
+  const ext = extname(filePath).toLowerCase();
+  return MIME_TYPES[ext] || 'application/octet-stream';
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const url = req.url || '/';
     
-    // Handle root route and static HTML files
-    if (url === '/' || url === '/index.html' || url.endsWith('.html')) {
+    // Handle static files (HTML, CSS, JS, images, fonts)
+    const isStaticFile = url === '/' || 
+                        url === '/index.html' || 
+                        url.endsWith('.html') ||
+                        url.endsWith('.css') ||
+                        url.endsWith('.js') ||
+                        url.endsWith('.png') ||
+                        url.endsWith('.jpg') ||
+                        url.endsWith('.jpeg') ||
+                        url.endsWith('.gif') ||
+                        url.endsWith('.svg') ||
+                        url.endsWith('.ico') ||
+                        url.endsWith('.woff') ||
+                        url.endsWith('.woff2') ||
+                        url.endsWith('.ttf') ||
+                        url.endsWith('.eot');
+    
+    if (isStaticFile) {
       const fileName = url === '/' ? 'index.html' : url.replace(/^\//, '');
       
-      // Try multiple paths for the HTML file
+      // Try multiple paths for static files
       const possiblePaths = [
         join(process.cwd(), 'dist', 'public', fileName),
         join(process.cwd(), 'public', fileName),
@@ -22,21 +61,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         join(__dirname, 'public', fileName)
       ];
       
-      for (const htmlPath of possiblePaths) {
-        if (existsSync(htmlPath)) {
-          const html = readFileSync(htmlPath, 'utf-8');
-          res.setHeader('Content-Type', 'text/html; charset=utf-8');
-          res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-          res.status(200).send(html);
+      for (const filePath of possiblePaths) {
+        if (existsSync(filePath)) {
+          const fileContent = readFileSync(filePath);
+          const mimeType = getMimeType(filePath);
+          
+          res.setHeader('Content-Type', mimeType);
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.status(200).send(fileContent);
           return;
         }
       }
       
-      // If no HTML file found, return 404
+      // If no file found, return 404
       res.status(404).json({ 
         error: 'Not Found',
-        message: 'HTML file not found',
-        paths: possiblePaths 
+        message: 'Static file not found',
+        requestedFile: fileName
       });
       return;
     }
