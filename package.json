@@ -6,8 +6,8 @@
     "scripts": {
         "dev": "set \"NODE_OPTIONS=-r tsconfig-paths/register\" && tsx watch src/server.ts",
         "dev:simple": "node servers/server-simple.js",
-        "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && tsc && tsc-alias && node scripts/copy-public.js",
-        "build": "tsc && tsc-alias && node scripts/copy-public.js",
+        "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && tsc --project tsconfig.build.json && tsc-alias && node scripts/copy-public.js",
+        "build": "tsc --project tsconfig.build.json && tsc-alias && node scripts/copy-public.js",
         "render-build": "npx prisma generate && npm run build",
         "start": "node dist/server.js",
         "start:simple": "node servers/server-simple.js",
