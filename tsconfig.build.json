@@ -16,6 +16,11 @@
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
     "allowUnusedLabels": true,
-    "allowUnreachableCode": true
+    "allowUnreachableCode": true,
+    "noEmit": false,
+    "isolatedModules": false
+  },
+  "ts-node": {
+    "transpileOnly": true
   }
 }
