@@ -115,11 +115,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (appError) {
       console.error('Error loading/using Fastify app:', appError);
       
-      // Fallback: return basic error
+      // Clear cached app on error so next request can retry
+      delete (global as any).fastifyApp;
+      
+      // Return detailed error for debugging
       res.status(500).json({ 
         error: 'Internal Server Error',
         message: 'Failed to initialize application',
-        details: appError instanceof Error ? appError.message : 'Unknown error'
+        details: appError instanceof Error ? appError.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' && appError instanceof Error ? appError.stack : undefined
       });
     }
     
