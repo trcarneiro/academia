@@ -1,5 +1,5 @@
-// Re-export Prisma enums for type safety
-export {
+// Import Prisma enums first to use them in this file
+import {
   UserRole,
   StudentCategory,
   CourseLevel,
@@ -25,6 +25,34 @@ export {
   DropoutRisk,
   AIProvider
 } from '@prisma/client';
+
+// Re-export them
+export {
+  UserRole,
+  StudentCategory,
+  CourseLevel,
+  TechniqueCategory,
+  TechniqueProficiency,
+  ClassStatus,
+  AttendanceStatus,
+  CheckInMethod,
+  EnrollmentStatus,
+  EvaluationType,
+  EvaluationStatus,
+  AchievementCategory,
+  AchievementRarity,
+  ChallengeType,
+  ChallengeDifficulty,
+  RecurringType,
+  BillingType,
+  SubscriptionStatus,
+  PaymentStatus,
+  PaymentMethod,
+  CourseCategory,
+  AttendanceTrend,
+  DropoutRisk,
+  AIProvider
+};
 
 // Authentication Types
 export interface AuthenticatedUser {

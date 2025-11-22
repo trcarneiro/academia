@@ -61,12 +61,8 @@ export class HybridAgendaController {
           include: {
             instructor: {
               select: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  }
-                }
+                firstName: true,
+                lastName: true,
               }
             },
             unit: {
@@ -101,7 +97,7 @@ export class HybridAgendaController {
         startTime: item.startTime.toISOString(),
         endTime: item.endTime.toISOString(),
         instructor: {
-          name: `${item.instructor.user.firstName} ${item.instructor.user.lastName}`
+          name: `${item.instructor.firstName} ${item.instructor.lastName}`
         },
         unit: item.unit ? { name: item.unit.name } : null,
         trainingArea: item.trainingArea ? { name: item.trainingArea.name } : null,

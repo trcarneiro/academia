@@ -280,23 +280,22 @@ export class HistoryView {
               throw new Error(response.message || 'Erro ao carregar histórico do aluno');
           }
 
-          this.studentHistory = response.data;
-          this.renderStudentHistoryTable(response.data);
-          
-          // Pagination logic for student history (assuming API returns pagination metadata)
-          // If API structure is different, adjust here.
-          // Based on AttendanceController.getHistory:
-          // return ResponseHelper.paginated(reply, result.attendances, result.page, result.limit, result.total);
+          // Handle ResponseHelper.paginated structure
+          const items = response.data.items || response.data;
+          const pagination = response.data.pagination || response.pagination;
+
+          this.studentHistory = items;
+          this.renderStudentHistoryTable(items);
           
           this.updatePagination({
-              page: response.pagination?.page || this.currentPage,
-              pageSize: response.pagination?.pageSize || this.pageSize,
-              total: response.pagination?.total || 0,
-              totalPages: response.pagination?.totalPages || 1
+              page: pagination?.page || this.currentPage,
+              pageSize: pagination?.limit || pagination?.pageSize || this.pageSize,
+              total: pagination?.total || 0,
+              totalPages: pagination?.totalPages || 1
           });
 
           this.hideEmptyState();
-          if (response.data.length === 0) {
+          if (items.length === 0) {
               this.showEmptyState();
           }
 

@@ -239,9 +239,12 @@ export const fastifyActivityController = {
 
       const activity = await prisma.activity.create({
         data: {
-          ...data,
-          organizationId,
-          refTechniqueId: data.refTechniqueId ?? null,
+          type: data.type,
+          title: data.title,
+          equipment: data.equipment,
+          adaptations: data.adaptations,
+          organization: { connect: { id: organizationId } },
+          refTechnique: data.refTechniqueId ? { connect: { id: data.refTechniqueId } } : undefined,
           description: data.description ?? null,
           safety: data.safety ?? null,
           defaultParams: data.defaultParams ?? null,

@@ -128,7 +128,7 @@ export default async function financialResponsibleRoutes(
         birthDate: validatedData.birthDate ? new Date(validatedData.birthDate) : undefined
       };
       
-      const responsible = await service.createFinancialResponsible(data);
+      const responsible = await service.createFinancialResponsible(data as any);
 
       return {
         success: true,
@@ -289,7 +289,7 @@ export default async function financialResponsibleRoutes(
       const service = new FinancialResponsibleService(organizationId);
       
       const validatedData = importAsaasCustomerSchema.parse(request.body);
-      const responsible = await service.importAsaasCustomer(validatedData);
+      const responsible = await service.importAsaasCustomer(validatedData as any);
 
       return {
         success: true,

@@ -418,9 +418,7 @@ export class BiometricController {
         where: {
           organizationId,
           biometricData: {
-            faceEmbedding: {
-              not: null,
-            },
+            isNot: null,
           },
         },
         select: {
@@ -428,13 +426,14 @@ export class BiometricController {
           registrationNumber: true,
           biometricData: {
             select: {
-              faceEmbedding: true,
+              embedding: true,
             },
           },
           user: {
             select: {
-              name: true,
-              avatar: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
             },
           },
         },
@@ -442,14 +441,14 @@ export class BiometricController {
 
       // Format response
       const embeddings = students
-        .filter(student => student.biometricData?.faceEmbedding)
+        .filter(student => student.biometricData?.embedding)
         .map(student => ({
           studentId: student.id,
-          name: student.user.name,
-        registrationNumber: student.registrationNumber,
-        avatar: student.user.avatar,
-        embedding: student.biometricData!.faceEmbedding as number[], // Cast to number[]
-      }));
+          name: `${student.user.firstName} ${student.user.lastName}`,
+          registrationNumber: student.registrationNumber,
+          avatar: student.user.avatarUrl,
+          embedding: student.biometricData!.embedding as number[], // Cast to number[]
+        }));
 
       return reply.code(200).send({
         success: true,

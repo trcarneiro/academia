@@ -297,7 +297,8 @@ export async function getExpiringCredits(organizationId: string, daysUntilExpiry
           id: true,
           user: {
             select: {
-              name: true,
+              firstName: true,
+              lastName: true,
               email: true
             }
           }

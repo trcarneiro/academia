@@ -641,11 +641,11 @@ export default async function crmRoutes(fastify: FastifyInstance) {
         stage: LeadStage.CONVERTED
       };
 
-      if (startDate) {
-        where.enrolledAt = { gte: new Date(startDate) };
-      }
-      if (endDate) {
-        where.enrolledAt = { ...where.enrolledAt, lte: new Date(endDate) };
+      if (startDate || endDate) {
+        const dateFilter: Prisma.DateTimeFilter = {};
+        if (startDate) dateFilter.gte = new Date(startDate);
+        if (endDate) dateFilter.lte = new Date(endDate);
+        where.enrolledAt = dateFilter;
       }
 
       // Group by campaign

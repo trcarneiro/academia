@@ -100,6 +100,7 @@ export class TurmasService {
             student: true
           }
         },
+        interests: true,
         lessons: {
           orderBy: {
             scheduledDate: 'asc'
@@ -132,6 +133,11 @@ export class TurmasService {
         organization: true,
         unit: true,
         students: {
+          include: {
+            student: true
+          }
+        },
+        interests: {
           include: {
             student: true
           }
@@ -1010,5 +1016,75 @@ export class TurmasService {
     }
 
     return `Aula ${normalizedNumber} - ${baseTitle}`;
+  }
+
+  async registerInterest(turmaId: string, studentId: string) {
+    // Check if already interested
+    const existing = await prisma.turmaInterest.findUnique({
+      where: {
+        turmaId_studentId: {
+          turmaId,
+          studentId
+        }
+      }
+    });
+
+    if (existing) return existing;
+
+    const interest = await prisma.turmaInterest.create({
+      data: {
+        turmaId,
+        studentId
+      }
+    });
+
+    // Check activation logic
+    await this.checkActivation(turmaId);
+
+    return interest;
+  }
+
+  async removeInterest(turmaId: string, studentId: string) {
+    try {
+      await prisma.turmaInterest.delete({
+        where: {
+          turmaId_studentId: {
+            turmaId,
+            studentId
+          }
+        }
+      });
+    } catch (e) {
+      // Ignore if not found
+    }
+  }
+
+  async checkActivation(turmaId: string) {
+    const turma = await prisma.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        interests: true,
+        students: true // Enrollments
+      }
+    });
+
+    if (!turma) return;
+
+    // If already active, do nothing
+    if (turma.isActive) return;
+
+    const totalInterested = turma.interests.length + turma.students.length;
+
+    if (totalInterested >= turma.minimumStudents) {
+      await prisma.turma.update({
+        where: { id: turmaId },
+        data: {
+          isActive: true,
+          activationDate: new Date()
+        }
+      });
+      
+      // TODO: Notify students
+    }
   }
 }

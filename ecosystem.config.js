@@ -16,16 +16,16 @@
  * 
  * @version 2.0.0
  */
- */
 
 module.exports = {
   apps: [
     // Main Application Server
     {
       name: 'academia',
-      script: './dist/server.js',
-      instances: 1, // Usar '1' para servidor small, 'max' para usar todos os cores
-      exec_mode: 'fork', // 'cluster' para múltiplas instâncias
+      script: './src/server.ts',
+      interpreter: 'tsx',
+      instances: 1,
+      exec_mode: 'fork',
       
       // Restart behavior
       autorestart: true,
@@ -61,9 +61,9 @@ module.exports = {
       // Restart strategy
       restart_delay: 4000, // Aguardar 4s antes de reiniciar
       
-      // Node.js specific
+      // Node.js specific (tsx handles TypeScript, no need for tsconfig-paths)
       node_args: [
-        '--max-old-space-size=1024' // Limitar heap size do V8 a 1GB
+        '--max-old-space-size=1024'
       ],
       
       // Cron restart (opcional - reiniciar diariamente às 3am)
@@ -74,27 +74,25 @@ module.exports = {
     },
 
     // Google Ads Sync Cron Job (OPCIONAL)
-    /*
-    {
-      name: 'google-ads-sync',
-      script: 'scripts/sync-google-ads.ts',
-      interpreter: 'tsx',
-      instances: 1,
-      exec_mode: 'fork',
-      cron_restart: '0 */6 * * *', // Every 6 hours (00:00, 06:00, 12:00, 18:00)
-      autorestart: false, // Don't auto-restart, only run on cron schedule
-      watch: false,
-      max_memory_restart: '500M',
-      env: {
-        NODE_ENV: 'production'
-      },
-      error_file: './logs/google-ads-sync-error.log',
-      out_file: './logs/google-ads-sync-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      merge_logs: true,
-      time: true
-    }
-    */
+    // {
+    //   name: 'google-ads-sync',
+    //   script: 'scripts/sync-google-ads.ts',
+    //   interpreter: 'tsx',
+    //   instances: 1,
+    //   exec_mode: 'fork',
+    //   cron_restart: '0 */6 * * *', // Every 6 hours (00:00, 06:00, 12:00, 18:00)
+    //   autorestart: false, // Don't auto-restart, only run on cron schedule
+    //   watch: false,
+    //   max_memory_restart: '500M',
+    //   env: {
+    //     NODE_ENV: 'production'
+    //   },
+    //   error_file: './logs/google-ads-sync-error.log',
+    //   out_file: './logs/google-ads-sync-out.log',
+    //   log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    //   merge_logs: true,
+    //   time: true
+    // }
   ],
   
   // Deploy configuration (opcional - para PM2 deploy)

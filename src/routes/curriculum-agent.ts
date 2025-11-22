@@ -35,8 +35,8 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/analyze-course', {
     schema: {
-      description: 'Analisa um curso e fornece recomendações pedagógicas do agente educador',
-      tags: ['AI Agents', 'Curriculum'],
+      // description: 'Analisa um curso e fornece recomendações pedagógicas do agente educador',
+      // tags: ['AI Agents', 'Curriculum'],
       body: {
         type: 'object',
         required: ['courseId', 'organizationId'],
@@ -95,8 +95,8 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/create-lesson', {
     schema: {
-      description: 'Cria um plano de aula com sugestões do agente educador',
-      tags: ['AI Agents', 'Curriculum'],
+      // description: 'Cria um plano de aula com sugestões do agente educador',
+      // tags: ['AI Agents', 'Curriculum'],
       body: {
         type: 'object',
         required: ['courseId', 'lessonNumber', 'organizationId'],
@@ -157,8 +157,8 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/evaluate-lesson', {
     schema: {
-      description: 'Avalia um plano de aula e fornece feedback do agente educador',
-      tags: ['AI Agents', 'Curriculum'],
+      // description: 'Avalia um plano de aula e fornece feedback do agente educador',
+      // tags: ['AI Agents', 'Curriculum'],
       body: {
         type: 'object',
         required: ['lessonPlanId', 'organizationId'],
@@ -217,8 +217,8 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/mcp-tools', {
     schema: {
-      description: 'Lista ferramentas MCP disponíveis para o curriculum agent',
-      tags: ['AI Agents', 'Curriculum'],
+      // description: 'Lista ferramentas MCP disponíveis para o curriculum agent',
+      // tags: ['AI Agents', 'Curriculum'],
       response: {
         200: {
           type: 'object',
@@ -266,8 +266,8 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/execute-tool', {
     schema: {
-      description: 'Executa uma ferramenta MCP do curriculum agent',
-      tags: ['AI Agents', 'Curriculum'],
+      // description: 'Executa uma ferramenta MCP do curriculum agent',
+      // tags: ['AI Agents', 'Curriculum'],
       body: {
         type: 'object',
         required: ['toolName', 'params'],

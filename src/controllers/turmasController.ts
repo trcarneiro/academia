@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { TurmasService } from '@/services/turmasService';
+import { TurmasService, CreateTurmaData, MarkAttendanceData } from '@/services/turmasService';
 import { ResponseHelper } from '@/utils/response';
 import { z } from 'zod';
 
@@ -121,7 +121,7 @@ export class TurmasController {
         validatedData.instructorId = instructor.userId;
       }
       
-      const turma = await this.turmasService.create(validatedData);
+      const turma = await this.turmasService.create(validatedData as CreateTurmaData);
       if (!turma) {
         console.error('[TurmasController] Service returned null on create');
         return ResponseHelper.error(reply, 'Erro ao criar turma', 500);
@@ -311,7 +311,7 @@ export class TurmasController {
       const { id } = request.params as { id: string };
       const validatedData = MarkAttendanceSchema.parse(request.body);
       
-      const attendance = await this.turmasService.markAttendance(id, validatedData);
+      const attendance = await this.turmasService.markAttendance(id, validatedData as MarkAttendanceData);
       
       return ResponseHelper.success(reply, attendance);
     } catch (error) {
@@ -422,6 +422,33 @@ export class TurmasController {
       return ResponseHelper.success(reply, null, 'Curso removido da turma');
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao remover curso da turma', 500);
+    }
+  }
+
+  async registerInterest(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as { id: string };
+      const { studentId } = request.body as { studentId: string };
+
+      if (!studentId) {
+        return ResponseHelper.badRequest(reply, 'Student ID is required');
+      }
+
+      const interest = await this.turmasService.registerInterest(id, studentId);
+      return ResponseHelper.success(reply, interest);
+    } catch (error) {
+      return ResponseHelper.error(reply, 'Error registering interest', 500);
+    }
+  }
+
+  async removeInterest(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id, studentId } = request.params as { id: string, studentId: string };
+      
+      await this.turmasService.removeInterest(id, studentId);
+      return ResponseHelper.success(reply, { success: true });
+    } catch (error) {
+      return ResponseHelper.error(reply, 'Error removing interest', 500);
     }
   }
 }

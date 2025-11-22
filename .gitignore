@@ -4,6 +4,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Archives
+.archive/
+
 # Production build
 dist/
 build/
@@ -45,7 +48,9 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage/
-*.lcov
+
+# Backups
+BACKUP_SEGURANCA_20251019_1502/
 
 # nyc test coverage
 .nyc_output

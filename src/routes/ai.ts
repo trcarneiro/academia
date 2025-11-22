@@ -150,7 +150,7 @@ export async function aiRoutes(app: FastifyInstance) {
       const course = await prisma.course.findUnique({
         where: { id: courseId },
         include: {
-          courseTechniques: {
+          techniques: {
             include: {
               technique: true,
             },
@@ -253,7 +253,6 @@ export async function aiRoutes(app: FastifyInstance) {
         try {
           const saved = await prisma.technique.create({
             data: {
-              organizationId: orgId,
               name: technique.name,
               description: technique.description,
               type: technique.type || 'TECHNIQUE',
@@ -378,9 +377,10 @@ export async function aiRoutes(app: FastifyInstance) {
 
         const saved = await prisma.lessonPlan.upsert({
           where: {
-            courseId_lessonNumber: {
+            courseId_lessonNumber_isActive: {
               courseId,
               lessonNumber: lessonNumber,
+              isActive: true
             },
           },
           update: {

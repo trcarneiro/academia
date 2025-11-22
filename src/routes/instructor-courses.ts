@@ -24,9 +24,9 @@ export default async function instructorCoursesRoutes(
       }
 
       const courses = await prisma.instructorCourse.findMany({
-        where: { instructorId },
+        where: { instructor_id: instructorId },
         include: {
-          course: {
+          courses: {
             select: {
               id: true,
               name: true,
@@ -37,7 +37,7 @@ export default async function instructorCoursesRoutes(
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { created_at: 'desc' }
       });
 
       return { success: true, data: courses };
@@ -85,9 +85,9 @@ export default async function instructorCoursesRoutes(
       // Check if association already exists
       const existing = await prisma.instructorCourse.findUnique({
         where: {
-          instructorId_courseId: {
-            instructorId,
-            courseId: payload.courseId
+          instructor_id_course_id: {
+            instructor_id: instructorId,
+            course_id: payload.courseId
           }
         }
       });
@@ -100,15 +100,15 @@ export default async function instructorCoursesRoutes(
       // Create association
       const instructorCourse = await prisma.instructorCourse.create({
         data: {
-          instructorId,
-          courseId: payload.courseId,
-          isLead: payload.isLead || false,
-          certifiedAt: payload.certifiedAt ? new Date(payload.certifiedAt) : new Date(),
-          expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : null,
+          instructor_id: instructorId,
+          course_id: payload.courseId,
+          is_lead: payload.isLead || false,
+          certified_at: payload.certifiedAt ? new Date(payload.certifiedAt) : new Date(),
+          expires_at: payload.expiresAt ? new Date(payload.expiresAt) : null,
           notes: payload.notes || null
         },
         include: {
-          course: {
+          courses: {
             select: {
               id: true,
               name: true,
@@ -152,8 +152,8 @@ export default async function instructorCoursesRoutes(
       // Delete the association
       const deleted = await prisma.instructorCourse.deleteMany({
         where: {
-          instructorId,
-          courseId
+          instructor_id: instructorId,
+          course_id: courseId
         }
       });
 
@@ -191,7 +191,7 @@ export default async function instructorCoursesRoutes(
       // Find existing assignment
       const existing = await prisma.instructorCourse.findUnique({
         where: {
-          instructorId_courseId: { instructorId, courseId }
+          instructor_id_course_id: { instructor_id: instructorId, course_id: courseId }
         }
       });
 
@@ -202,18 +202,18 @@ export default async function instructorCoursesRoutes(
 
       // Update assignment
       const updateData: any = {};
-      if (payload.isLead !== undefined) updateData.isLead = payload.isLead;
-      if (payload.certifiedAt !== undefined) updateData.certifiedAt = payload.certifiedAt ? new Date(payload.certifiedAt) : null;
-      if (payload.expiresAt !== undefined) updateData.expiresAt = payload.expiresAt ? new Date(payload.expiresAt) : null;
+      if (payload.isLead !== undefined) updateData.is_lead = payload.isLead;
+      if (payload.certifiedAt !== undefined) updateData.certified_at = payload.certifiedAt ? new Date(payload.certifiedAt) : null;
+      if (payload.expiresAt !== undefined) updateData.expires_at = payload.expiresAt ? new Date(payload.expiresAt) : null;
       if (payload.notes !== undefined) updateData.notes = payload.notes;
 
       const updated = await prisma.instructorCourse.update({
         where: {
-          instructorId_courseId: { instructorId, courseId }
+          instructor_id_course_id: { instructor_id: instructorId, course_id: courseId }
         },
         data: updateData,
         include: {
-          course: {
+          courses: {
             select: {
               id: true,
               name: true,

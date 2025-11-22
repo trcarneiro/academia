@@ -4,14 +4,14 @@ import { AIMonitorController } from '../controllers/aiMonitorController.js';
 export async function aiMonitorRoutes(fastify: FastifyInstance) {
   // Registrar schema de autenticação se necessário
   const authHook = {
-    preHandler: fastify.authenticate
+    preHandler: (fastify as any).authenticate
   };
 
   // Health check (sem autenticação para monitoramento)
   fastify.get('/health', {
     schema: {
-      description: 'Health check do serviço de monitoramento',
-      tags: ['AI Monitor'],
+      // description: 'Health check do serviço de monitoramento',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',
@@ -36,8 +36,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   // Endpoint de teste simples
   fastify.get('/test-simple', {
     schema: {
-      description: 'Teste simples para debug',
-      tags: ['AI Monitor']
+      // description: 'Teste simples para debug',
+      // tags: ['AI Monitor']
     }
   }, async (request, reply) => {
     return reply.send({ 
@@ -53,8 +53,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   // Teste com dados mock
   fastify.get('/test-mock', {
     schema: {
-      description: 'Teste com dados simulados para debug',
-      tags: ['AI Monitor']
+      // description: 'Teste com dados simulados para debug',
+      // tags: ['AI Monitor']
     }
   }, async (request, reply) => {
     const mockData = {
@@ -74,8 +74,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   // Teste mínimo com banco
   fastify.get('/test-db', {
     schema: {
-      description: 'Teste mínimo com banco de dados',
-      tags: ['AI Monitor']
+      // description: 'Teste mínimo com banco de dados',
+      // tags: ['AI Monitor']
     }
   }, async (request, reply) => {
     try {
@@ -135,8 +135,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/metrics/quick', {
     ...authHook,
     schema: {
-      description: 'Obtém métricas rápidas do sistema de planos de aula',
-      tags: ['AI Monitor'],
+      // description: 'Obtém métricas rápidas do sistema de planos de aula',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',
@@ -164,8 +164,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/analysis/full', {
     ...authHook,
     schema: {
-      description: 'Executa análise completa do sistema de planos de aula',
-      tags: ['AI Monitor'],
+      // description: 'Executa análise completa do sistema de planos de aula',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',
@@ -199,8 +199,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/courses/missing-plans', {
     ...authHook,
     schema: {
-      description: 'Obtém cursos com planos de aula faltando',
-      tags: ['AI Monitor'],
+      // description: 'Obtém cursos com planos de aula faltando',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',
@@ -231,8 +231,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/activities/orphan', {
     ...authHook,
     schema: {
-      description: 'Obtém atividades órfãs (sem associação a planos de aula)',
-      tags: ['AI Monitor'],
+      // description: 'Obtém atividades órfãs (sem associação a planos de aula)',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',
@@ -263,8 +263,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/courses/:courseId/analysis', {
     ...authHook,
     schema: {
-      description: 'Obtém análise detalhada de um curso específico',
-      tags: ['AI Monitor'],
+      // description: 'Obtém análise detalhada de um curso específico',
+      // tags: ['AI Monitor'],
       params: {
         type: 'object',
         properties: {
@@ -308,8 +308,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/activities/:activityId/analysis', {
     ...authHook,
     schema: {
-      description: 'Obtém análise detalhada de uma atividade específica',
-      tags: ['AI Monitor'],
+      // description: 'Obtém análise detalhada de uma atividade específica',
+      // tags: ['AI Monitor'],
       params: {
         type: 'object',
         properties: {
@@ -351,8 +351,8 @@ export async function aiMonitorRoutes(fastify: FastifyInstance) {
   fastify.get('/report/summary', {
     ...authHook,
     schema: {
-      description: 'Gera relatório de monitoramento em formato resumido',
-      tags: ['AI Monitor'],
+      // description: 'Gera relatório de monitoramento em formato resumido',
+      // tags: ['AI Monitor'],
       response: {
         200: {
           type: 'object',

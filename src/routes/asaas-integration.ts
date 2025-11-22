@@ -1,13 +1,14 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import * as bcrypt from 'bcrypt';
 
 interface ImportCustomerBody {
   customerId: string;
 }
 
 // Fetch customer details from Asaas
-async function fetchAsaasCustomer(customerId: string) {
+async function fetchAsaasCustomer(customerId: string): Promise<any> {
   const apiKey = process.env.ASAAS_API_KEY;
   const baseUrl = process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3';
 
@@ -58,22 +59,40 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           });
         }
 
-        logger.info(`Importing customer ${customerId} for organization ${organizationId}`);
+        // Validate organization exists
+        const organization = await prisma.organization.findUnique({
+          where: { id: organizationId },
+        });
+
+        if (!organization) {
+          logger.error(`Organization not found: ${organizationId}`);
+          return reply.code(404).send({
+            success: false,
+            message: 'Organization not found. Please check your organization ID.',
+          });
+        }
+
+        logger.info(`Importing customer ${customerId} for organization ${organizationId} (${organization.name})`);
 
         // Fetch customer from Asaas
         const asaasCustomer = await fetchAsaasCustomer(customerId);
 
-        if (!asaasCustomer.email) {
-          return reply.code(400).send({
-            success: false,
-            message: 'Customer has no email address',
-          });
+        // Generate temporary email if not provided
+        let customerEmail = asaasCustomer.email;
+        if (!customerEmail) {
+          // Generate email from CPF, phone, or ID
+          const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
+                           asaasCustomer.phone?.replace(/\D/g, '') || 
+                           asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
+                           customerId;
+          customerEmail = `customer_${identifier}@temp.academia.local`;
+          logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
         }
 
         // Check if user already exists (using findFirst with composite filter)
         const existingUser = await prisma.user.findFirst({
           where: {
-            email: asaasCustomer.email.toLowerCase(),
+            email: customerEmail.toLowerCase(),
             organizationId,
           },
         });
@@ -90,16 +109,17 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         const firstName = names[0] || asaasCustomer.name;
         const lastName = names.slice(1).join(' ') || '';
 
-        // Generate temporary password
+        // Generate temporary password and hash it
         const tempPassword = Math.random().toString(36).substring(2, 15);
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         // Create user and student in transaction
         const result = await prisma.$transaction(async (tx) => {
           // Create user
           const user = await tx.user.create({
             data: {
-              email: asaasCustomer.email.toLowerCase(),
-              password: tempPassword,
+              email: customerEmail.toLowerCase(),
+              password: hashedPassword,
               firstName,
               lastName,
               phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
@@ -142,6 +162,15 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
       } catch (error) {
         logger.error('Error importing customer:', error);
 
+        // Log detailed error information
+        if (error instanceof Error) {
+          logger.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+          });
+        }
+
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
         return reply.code(500).send({
@@ -173,6 +202,21 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Validate organization exists
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId },
+      });
+
+      if (!organization) {
+        logger.error(`Organization not found: ${organizationId}`);
+        return reply.code(404).send({
+          success: false,
+          message: 'Organization not found. Please check your organization ID.',
+        });
+      }
+
+      logger.info(`Starting batch import for organization ${organizationId} (${organization.name}): ${customerIds.length} customers`);
+
       const results = {
         success: 0,
         failed: 0,
@@ -183,16 +227,21 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         try {
           const asaasCustomer = await fetchAsaasCustomer(customerId);
 
-          if (!asaasCustomer.email) {
-            results.failed++;
-            results.errors.push(`${asaasCustomer.name}: No email provided`);
-            continue;
+          // Generate temporary email if not provided
+          let customerEmail = asaasCustomer.email;
+          if (!customerEmail) {
+            const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
+                             asaasCustomer.phone?.replace(/\D/g, '') || 
+                             asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
+                             customerId;
+            customerEmail = `customer_${identifier}@temp.academia.local`;
+            logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
           }
 
           // Check if exists
           const existingUser = await prisma.user.findFirst({
             where: {
-              email: asaasCustomer.email.toLowerCase(),
+              email: customerEmail.toLowerCase(),
               organizationId,
             },
           });
@@ -208,15 +257,16 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           const firstName = names[0] || asaasCustomer.name;
           const lastName = names.slice(1).join(' ') || '';
 
-          // Generate temporary password
+          // Generate temporary password and hash it
           const tempPassword = Math.random().toString(36).substring(2, 15);
+          const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
           // Create user and student
           await prisma.$transaction(async (tx) => {
             const user = await tx.user.create({
               data: {
-                email: asaasCustomer.email.toLowerCase(),
-                password: tempPassword,
+                email: customerEmail.toLowerCase(),
+                password: hashedPassword,
                 firstName,
                 lastName,
                 phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
@@ -245,9 +295,9 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           results.success++;
         } catch (error) {
           results.failed++;
-          results.errors.push(
-            `${customerId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          );
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          logger.error(`Error importing customer ${customerId}:`, errorMsg);
+          results.errors.push(`${customerId}: ${errorMsg}`);
         }
       }
 

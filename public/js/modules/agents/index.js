@@ -1503,7 +1503,7 @@ Sempre forneça respostas claras e acionáveis. Quando identificar problemas, su
                 
             } catch (error) {
                 console.error('❌ [Agents] Error loading saved insights:', error);
-                this.showToast('Erro ao carregar insights salvos', 'error');
+                window.app?.showToast?.('Erro ao carregar insights salvos', 'error');
                 return [];
             }
         },
@@ -1511,14 +1511,14 @@ Sempre forneça respostas claras e acionáveis. Quando identificar problemas, su
         // 🆕 ATUALIZAR DASHBOARD COM INSIGHTS SALVOS
         async refreshDashboard(agentId = null) {
             try {
-                this.showToast('⏳ Carregando insights...', 'info');
+                window.app?.showToast?.('⏳ Carregando insights...', 'info');
                 
                 // Buscar insights salvos
                 const filters = agentId ? { agentId } : {};
                 const savedInsights = await this.loadSavedInsights(filters);
                 
                 if (savedInsights.length === 0) {
-                    this.showToast('Nenhum insight salvo encontrado. Execute um agente com auto-save ativado.', 'info');
+                    window.app?.showToast?.('Nenhum insight salvo encontrado. Execute um agente com auto-save ativado.', 'info');
                     // Renderizar view vazia
                     this.renderDashboardView([]);
                     return;
@@ -1544,11 +1544,11 @@ Sempre forneça respostas claras e acionáveis. Quando identificar problemas, su
                 // Renderizar dashboard
                 this.renderDashboardView(dashboardItems);
                 
-                this.showToast(`✅ ${savedInsights.length} insights carregados`, 'success');
+                window.app?.showToast?.(`✅ ${savedInsights.length} insights carregados`, 'success');
                 
             } catch (error) {
                 console.error('❌ [Agents] Error refreshing dashboard:', error);
-                this.showToast('Erro ao atualizar dashboard', 'error');
+                window.app?.showToast?.('Erro ao atualizar dashboard', 'error');
             }
         },
 

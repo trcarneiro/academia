@@ -61,8 +61,12 @@ export class ClassService {
           instructor: {
             select: {
               id: true,
-              firstName: true,
-              lastName: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
           courseProgram: {
@@ -112,9 +116,13 @@ export class ClassService {
         instructor: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
-            specialization: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            specializations: true,
           },
         },
         courseProgram: {
@@ -141,8 +149,12 @@ export class ClassService {
             student: {
               select: {
                 id: true,
-                firstName: true,
-                lastName: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
               },
             },
           },

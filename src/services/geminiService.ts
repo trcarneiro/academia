@@ -97,6 +97,35 @@ export class GeminiService {
     prompt: string,
     options: { temperature?: number; maxTokens?: number } = {}
   ): Promise<string> {
+    if (process.env.MOCK_AI === 'true') {
+      if (prompt.includes('JSON array (máx 2 agentes')) {
+        return JSON.stringify([
+          {
+            name: "Agente Comercial",
+            type: "marketing",
+            description: "Focado em converter leads e recuperar ex-alunos",
+            justification: "Alto número de leads não convertidos detectado"
+          }
+        ]);
+      }
+      if (prompt.includes('TAREFA:')) {
+        return JSON.stringify({
+          summary: "Análise concluída com sucesso",
+          insights: ["Insight 1: Alta taxa de cancelamento", "Insight 2: Poucos leads novos"],
+          actions: [
+            {
+              description: "Enviar email de recuperação",
+              executionMethod: "MCP_IMMEDIATE",
+              executionDetails: "Usar ferramenta de email",
+              requiresApproval: false
+            }
+          ],
+          priority: "HIGH"
+        });
+      }
+      return '{"mock": "response"}';
+    }
+
     if (!GEMINI_API_KEY || !genAI) {
       // Soft fallback when API key missing
       return '[Fallback AI] Configure GEMINI_API_KEY para respostas reais. Prompt recebido: ' + prompt.slice(0, 200);

@@ -2252,24 +2252,213 @@ input[type="date"]:focus {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Responsividade do autocomplete */
-@media (max-width: 768px) {
-  .autocomplete-suggestions {
-    max-height: 200px;
+/* ====== HISTORY VIEW ====== */
+.history-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background: var(--frequency-surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: var(--frequency-shadow);
+}
+
+.view-mode-toggle {
+  display: flex;
+  background: var(--frequency-surface-alt);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid var(--frequency-border);
+}
+
+.btn-toggle {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--frequency-text-light);
+  transition: var(--frequency-transition);
+}
+
+.btn-toggle.active {
+  background: var(--frequency-surface);
+  color: var(--frequency-primary);
+  box-shadow: var(--frequency-shadow);
+}
+
+/* Search Dropdown */
+.search-wrapper {
+  position: relative;
+}
+
+.search-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--frequency-surface);
+  border: 1px solid var(--frequency-border);
+  border-radius: 8px;
+  box-shadow: var(--frequency-shadow-lg);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--frequency-border);
+  transition: background 0.2s;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--frequency-surface-alt);
+}
+
+.search-result-item .student-name {
+  font-weight: 600;
+  color: var(--frequency-text);
+}
+
+.search-result-item small {
+  color: var(--frequency-text-light);
+}
+
+.no-results {
+  padding: 16px;
+  text-align: center;
+  color: var(--frequency-text-light);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-completed {
+  background: rgba(39, 174, 96, 0.1);
+  color: var(--frequency-success);
+}
+
+.status-scheduled {
+  background: rgba(243, 156, 18, 0.1);
+  color: var(--frequency-warning);
+}
+
+.status-cancelled {
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--frequency-error);
+}
+
+/* Table Actions */
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+  background: var(--frequency-surface-alt);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--frequency-surface);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--frequency-shadow-lg);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--frequency-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--frequency-text);
+}
+
+.close-modal {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--frequency-text-light);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--frequency-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .suggestion-item {
-    padding: 10px 12px;
-  }
-  
-  .suggestion-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-  }
-  
-  .suggestion-meta {
-    font-size: 0.75rem;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

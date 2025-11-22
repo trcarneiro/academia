@@ -114,19 +114,20 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/lessons-history',
     async (
-      request: FastifyRequest<{ Querystring: any }>,
+      request: FastifyRequest,
       reply: FastifyReply
     ) => {
       try {
+        const query = request.query as any;
         const organizationId =
-          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+          query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
         
-        const page = parseInt(request.query.page || '1', 10);
-        const pageSize = parseInt(request.query.pageSize || '20', 10);
-        const turmaId = request.query.turmaId;
-        const status = request.query.status;
-        const startDate = request.query.startDate;
-        const endDate = request.query.endDate;
+        const page = parseInt(query.page || '1', 10);
+        const pageSize = parseInt(query.pageSize || '20', 10);
+        const turmaId = query.turmaId;
+        const status = query.status;
+        const startDate = query.startDate;
+        const endDate = query.endDate;
 
         // Buscar aulas (TurmaLesson) com presenças
         const where: any = {};

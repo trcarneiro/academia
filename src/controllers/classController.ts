@@ -3,6 +3,7 @@ import { ClassService } from '@/services/classService';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { UpcomingClassesQuery, ClassIdParams, CreateClassInput, UpdateClassInput } from '@/schemas/class';
+import { AuthenticatedUser } from '@/types';
 
 export class ClassController {
   static async getUpcomingClasses(
@@ -13,10 +14,11 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const result = await ClassService.getUpcomingClasses(
-        request.user.id,
-        request.user.role,
+        user.id,
+        user.role,
         request.query
       );
 
@@ -31,7 +33,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         query: request.query,
       }, 'Get upcoming classes failed');
       
@@ -51,11 +53,12 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const classInfo = await ClassService.getClassById(
         request.params.id,
-        request.user.id,
-        request.user.role
+        user.id,
+        user.role
       );
 
       return ResponseHelper.success(
@@ -66,7 +69,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         classId: request.params.id,
       }, 'Get class by ID failed');
       
@@ -86,11 +89,12 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const qrCodeData = await ClassService.generateClassQRCode(
         request.params.id,
-        request.user.id,
-        request.user.role
+        user.id,
+        user.role
       );
 
       return ResponseHelper.success(
@@ -101,7 +105,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         classId: request.params.id,
       }, 'Generate QR code failed');
       
@@ -121,10 +125,11 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const newClass = await ClassService.createClass(
         request.body,
-        request.user.role
+        user.role
       );
 
       return ResponseHelper.success(
@@ -136,7 +141,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         body: request.body,
       }, 'Create class failed');
       
@@ -159,11 +164,12 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const updatedClass = await ClassService.updateClass(
         request.params.id,
         request.body,
-        request.user.role
+        user.role
       );
 
       return ResponseHelper.success(
@@ -174,7 +180,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         classId: request.params.id,
         body: request.body,
       }, 'Update class failed');
@@ -195,10 +201,11 @@ export class ClassController {
       if (!request.user) {
         return ResponseHelper.error(reply, 'Usuário não autenticado', 401);
       }
+      const user = request.user as AuthenticatedUser;
 
       const cancelledClass = await ClassService.cancelClass(
         request.params.id,
-        request.user.role
+        user.role
       );
 
       return ResponseHelper.success(
@@ -209,7 +216,7 @@ export class ClassController {
     } catch (error) {
       logger.error({
         error,
-        userId: request.user?.id,
+        userId: (request.user as AuthenticatedUser)?.id,
         classId: request.params.id,
       }, 'Cancel class failed');
       

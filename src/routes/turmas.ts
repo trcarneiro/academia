@@ -37,4 +37,8 @@ export default async function turmasRoutes(fastify: FastifyInstance) {
 
   // Operação administrativa: limpar datas de término de todas as turmas
   fastify.post('/turmas/clear-end-dates', turmasController.clearAllEndDates.bind(turmasController));
+
+  // Gestão de interesse (Turmas Inativas)
+  fastify.post('/turmas/:id/interest', turmasController.registerInterest.bind(turmasController));
+  fastify.delete('/turmas/:id/interest/:studentId', turmasController.removeInterest.bind(turmasController));
 }

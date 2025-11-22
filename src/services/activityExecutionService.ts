@@ -24,7 +24,7 @@ export class ActivityExecutionService {
     actualDuration?: number;
     actualReps?: number;
     notes?: string;
-    recordedBy?: string;
+    validatedBy?: string;
   }): Promise<LessonActivityExecution> {
     try {
       // Validar performanceRating se fornecido
@@ -47,22 +47,22 @@ export class ActivityExecutionService {
         update: {
           completed: data.completed,
           performanceRating: data.performanceRating,
-          actualDuration: data.actualDuration,
-          actualReps: data.actualReps,
-          notes: data.notes,
-          recordedBy: data.recordedBy,
-          recordedAt: new Date()
+          durationMinutes: data.actualDuration,
+          repetitionsCount: data.actualReps || 1,
+          instructorNotes: data.notes,
+          validatedBy: data.validatedBy,
+          executedAt: new Date()
         },
         create: {
           attendanceId: data.attendanceId,
           activityId: data.activityId,
           completed: data.completed,
           performanceRating: data.performanceRating,
-          actualDuration: data.actualDuration,
-          actualReps: data.actualReps,
-          notes: data.notes,
-          recordedBy: data.recordedBy,
-          recordedAt: new Date()
+          durationMinutes: data.actualDuration,
+          repetitionsCount: data.actualReps || 1,
+          instructorNotes: data.notes,
+          validatedBy: data.validatedBy,
+          executedAt: new Date()
         }
       });
 
@@ -160,7 +160,7 @@ export class ActivityExecutionService {
                 orderBy: { ord: 'asc' },
                 include: {
                   activity: {
-                    select: { name: true, duration: true }
+                    select: { title: true, duration: true }
                   }
                 }
               }
@@ -203,7 +203,7 @@ export class ActivityExecutionService {
 
           return {
             activityId: activityItem.id,
-            activityName: activityItem.activity.name,
+            activityName: activityItem.activity.title,
             segment: activityItem.segment,
             duration: activityItem.activity.duration,
             completed: execution?.completed || false,
@@ -326,7 +326,7 @@ export class ActivityExecutionService {
           activity: {
             include: {
               activity: {
-                select: { name: true }
+                select: { title: true }
               }
             }
           },
@@ -339,7 +339,7 @@ export class ActivityExecutionService {
           }
         },
         orderBy: {
-          recordedAt: 'asc'
+          executedAt: 'asc'
         }
       });
 
@@ -353,7 +353,7 @@ export class ActivityExecutionService {
       }>();
 
       executions.forEach(exec => {
-        const activityName = exec.activity.activity.name;
+        const activityName = exec.activity.activity.title;
         
         if (!activityMap.has(activityName)) {
           activityMap.set(activityName, {
@@ -369,7 +369,7 @@ export class ActivityExecutionService {
         stats.attempts++;
         if (exec.completed) stats.completions++;
         if (exec.performanceRating) stats.ratings.push(exec.performanceRating);
-        if (exec.actualDuration) stats.durations.push(exec.actualDuration);
+        if (exec.durationMinutes) stats.durations.push(exec.durationMinutes);
       });
 
       // Converter para array com estatísticas calculadas
@@ -435,7 +435,7 @@ export class ActivityExecutionService {
    * Compara média de ratings das últimas 5 aulas vs 5 anteriores
    */
   private static calculateTrend(
-    executions: Array<{ performanceRating: number | null; recordedAt: Date }>
+    executions: Array<{ performanceRating: number | null; executedAt: Date }>
   ): 'improving' | 'stable' | 'declining' {
     const withRatings = executions.filter(e => e.performanceRating !== null);
     
@@ -492,7 +492,7 @@ export class ActivityExecutionService {
         attendanceId: attendanceId,
         activityId: activity.id,
         completed: true,
-        recordedAt: new Date()
+        executedAt: new Date()
       }));
 
       // Bulk insert
@@ -559,7 +559,7 @@ export class ActivityExecutionService {
       actualDuration?: number | null;
       actualReps?: number | null;
       notes?: string | null;
-      recordedBy?: string;
+      validatedBy?: string;
     }
   ): Promise<LessonActivityExecution> {
     try {
@@ -572,8 +572,13 @@ export class ActivityExecutionService {
       const execution = await prisma.lessonActivityExecution.update({
         where: { id: executionId },
         data: {
-          ...data,
-          recordedAt: new Date()
+          completed: data.completed,
+          performanceRating: data.performanceRating,
+          durationMinutes: data.actualDuration,
+          repetitionsCount: data.actualReps,
+          instructorNotes: data.notes,
+          validatedBy: data.validatedBy,
+          executedAt: new Date()
         }
       });
 
@@ -644,7 +649,7 @@ export class ActivityExecutionService {
           activity: {
             include: {
               activity: {
-                select: { name: true }
+                select: { title: true }
               }
             }
           },
@@ -664,7 +669,7 @@ export class ActivityExecutionService {
           }
         },
         orderBy: {
-          recordedAt: 'asc'
+          executedAt: 'asc'
         }
       });
 
@@ -674,7 +679,7 @@ export class ActivityExecutionService {
       const heatmapData: Record<string, Record<string, Array<{ date: string; repetitions: number; rating?: number }>>> = {};
 
       for (const execution of executions) {
-        const activityName = execution.activity?.activity?.name || 'Atividade desconhecida';
+        const activityName = execution.activity?.activity?.title || 'Atividade desconhecida';
         const lessonDate = execution.attendance.lesson.scheduledDate;
         const lessonNumber = execution.attendance.lesson.lessonPlan?.lessonNumber || 0;
         const dateStr = lessonDate.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -692,7 +697,7 @@ export class ActivityExecutionService {
 
         heatmapData[lessonNumber][activityName].push({
           date: dateStr,
-          repetitions: execution.actualReps || 0,
+          repetitions: execution.repetitionsCount || 0,
           rating: execution.performanceRating || undefined
         });
       }

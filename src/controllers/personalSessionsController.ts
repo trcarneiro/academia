@@ -208,7 +208,20 @@ export class PersonalSessionsController {
       }
 
       const session = await prisma.personalTrainingSession.create({
-        data,
+        data: {
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          instructorNotes: data.instructorNotes,
+          lessonContent: data.lessonContent,
+          progressNotes: data.progressNotes,
+          nextLessonSuggestion: data.nextLessonSuggestion,
+          personalClass: { connect: { id: data.personalClassId } },
+          course: data.courseId ? { connect: { id: data.courseId } } : undefined,
+          unit: data.unitId ? { connect: { id: data.unitId } } : undefined,
+          lessonPlan: data.lessonPlanId ? { connect: { id: data.lessonPlanId } } : undefined,
+          trainingArea: data.trainingAreaId ? { connect: { id: data.trainingAreaId } } : undefined,
+        },
         include: {
           personalClass: {
             include: {
@@ -247,7 +260,7 @@ export class PersonalSessionsController {
       });
 
       if (!existingSession) {
-        return ResponseHelper.error(reply, 'Sessão não encontrada', null, 404);
+        return ResponseHelper.error(reply, 'Sessão não encontrada', 404);
       }
 
       const session = await prisma.personalTrainingSession.update({
@@ -271,7 +284,7 @@ export class PersonalSessionsController {
 
       return ResponseHelper.success(reply, session);
     } catch (error) {
-      return ResponseHelper.error(reply, 'Erro ao atualizar sessão', error);
+      return ResponseHelper.error(reply, 'Erro ao atualizar sessão', 500);
     }
   }
 
@@ -291,12 +304,12 @@ export class PersonalSessionsController {
       });
 
       if (!existingSession) {
-        return ResponseHelper.error(reply, 'Sessão não encontrada', null, 404);
+        return ResponseHelper.error(reply, 'Sessão não encontrada', 404);
       }
 
       // Verificar se a sessão pode ser reagendada
       if (existingSession.status === 'COMPLETED' || existingSession.status === 'CANCELLED') {
-        return ResponseHelper.error(reply, 'Sessão não pode ser reagendada', null, 400);
+        return ResponseHelper.error(reply, 'Sessão não pode ser reagendada', 400);
       }
 
       const session = await prisma.personalTrainingSession.update({
@@ -328,7 +341,7 @@ export class PersonalSessionsController {
 
       return ResponseHelper.success(reply, session);
     } catch (error) {
-      return ResponseHelper.error(reply, 'Erro ao reagendar sessão', error);
+      return ResponseHelper.error(reply, 'Erro ao reagendar sessão', 500);
     }
   }
 
@@ -348,7 +361,7 @@ export class PersonalSessionsController {
       });
 
       if (!existingSession) {
-        return ResponseHelper.error(reply, 'Sessão não encontrada', null, 404);
+        return ResponseHelper.error(reply, 'Sessão não encontrada', 404);
       }
 
       const session = await prisma.personalTrainingSession.update({
@@ -377,7 +390,7 @@ export class PersonalSessionsController {
 
       return ResponseHelper.success(reply, session);
     } catch (error) {
-      return ResponseHelper.error(reply, 'Erro ao cancelar sessão', error);
+      return ResponseHelper.error(reply, 'Erro ao cancelar sessão', 500);
     }
   }
 
@@ -402,7 +415,7 @@ export class PersonalSessionsController {
       });
 
       if (!existingSession) {
-        return ResponseHelper.error(reply, 'Sessão não encontrada', null, 404);
+        return ResponseHelper.error(reply, 'Sessão não encontrada', 404);
       }
 
       const session = await prisma.personalTrainingSession.update({
@@ -433,7 +446,7 @@ export class PersonalSessionsController {
 
       return ResponseHelper.success(reply, session);
     } catch (error) {
-      return ResponseHelper.error(reply, 'Erro ao confirmar presença', error);
+      return ResponseHelper.error(reply, 'Erro ao confirmar presença', 500);
     }
   }
 
@@ -452,7 +465,7 @@ export class PersonalSessionsController {
       });
 
       if (!existingSession) {
-        return ResponseHelper.error(reply, 'Sessão não encontrada', null, 404);
+        return ResponseHelper.error(reply, 'Sessão não encontrada', 404);
       }
 
       await prisma.personalTrainingSession.delete({
@@ -461,7 +474,8 @@ export class PersonalSessionsController {
 
       return ResponseHelper.success(reply, { message: 'Sessão excluída com sucesso' });
     } catch (error) {
-      return ResponseHelper.error(reply, 'Erro ao excluir sessão', error);
+      return ResponseHelper.error(reply, 'Erro ao excluir sessão', 500);
     }
   }
 }
+

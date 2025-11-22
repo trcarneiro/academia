@@ -1,0 +1,29 @@
+﻿model CourseProgram {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  level          CourseLevel
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  classes        Class[]
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("course_programs")
+}
+
+model GoogleAdsConfig {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  customerId     String
+  managerId      String?
+  refreshToken   String
+  isActive       Boolean      @default(true)
+  lastSyncAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("google_ads_configs")
+}
