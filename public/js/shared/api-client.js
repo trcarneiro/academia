@@ -6,12 +6,16 @@
  */
 
 // Estados padrão para UI (Guidelines.MD requirement)
-const UI_STATES = {
-    LOADING: 'loading',
-    SUCCESS: 'success', 
-    ERROR: 'error',
-    EMPTY: 'empty'
-};
+// Proteção contra redeclaração se script for carregado múltiplas vezes
+if (typeof window.UI_STATES === 'undefined') {
+    window.UI_STATES = {
+        LOADING: 'loading',
+        SUCCESS: 'success', 
+        ERROR: 'error',
+        EMPTY: 'empty'
+    };
+}
+const UI_STATES = window.UI_STATES;
 
 // ==============================================
 // AUTH CONTEXT (DEV AUTO-LOGIN FALLBACK)

@@ -225,7 +225,7 @@ class SPARouter {
     loadModuleAssets(module) {
         // Always ensure shared utils first
         this.loadJS('js/shared/utils/feedback.js');
-        this.loadJS('js/shared/api-client.js');
+        // api-client.js já carregado no index.html - não recarregar
         
         // Mapeamento de caminhos específicos para cada módulo
         const assetMap = {
@@ -585,7 +585,7 @@ router.registerRoute('students', async () => {
                 moduleScript.onload = async () => {
                     try {
                         // Manage header visibility
-                        routerInstance.manageDefaultHeader('students');
+                        // routerInstance.manageDefaultHeader('students'); // Método não existe
                         
                         if (typeof window.initStudentsModule === 'function') {
                             const instance = await window.initStudentsModule(container);
