@@ -9,18 +9,18 @@
       "maxDuration": 30
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/serverless"
+      "source": "/api/(.*)",
+      "destination": "/api/serverless"
     },
     {
-      "src": "/health",
-      "dest": "/api/serverless"
+      "source": "/health",
+      "destination": "/api/serverless"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/serverless"
+      "source": "/(.*)",
+      "destination": "/api/serverless"
     }
   ]
 }

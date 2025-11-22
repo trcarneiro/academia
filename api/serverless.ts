@@ -1,5 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { buildApp } from '../dist/app';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 let app: any = null;
 
@@ -13,12 +15,29 @@ async function getApp() {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    const url = req.url || '/';
+    
+    // Handle root route - serve index.html
+    if (url === '/' || url === '/index.html') {
+      const indexPath = join(__dirname, '..', 'dist', 'public', 'index.html');
+      const indexPathAlt = join(__dirname, '..', 'public', 'index.html');
+      
+      const htmlPath = existsSync(indexPath) ? indexPath : indexPathAlt;
+      
+      if (existsSync(htmlPath)) {
+        const html = readFileSync(htmlPath, 'utf-8');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.status(200).send(html);
+        return;
+      }
+    }
+    
     const fastify = await getApp();
     
     // Convert Vercel request to Node.js request format
     await fastify.inject({
       method: req.method || 'GET',
-      url: req.url || '/',
+      url: url,
       headers: req.headers as any,
       payload: req.body,
       query: req.query as any
