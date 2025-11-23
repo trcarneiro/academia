@@ -2325,179 +2325,7 @@ model AgentInteraction {
 
   @@index([organizationId, createdAt])
   @@index([agentId])
-  @@index([type])organization-context.js:113 ✅ Organization context helper loaded
-api-client.js:822 🌐 API Client carregado - Guidelines.MD compliance
-organization-selector.js:249 ✅ OrganizationSelector component loaded
-spa-router.js:150 ✅ [Router] Route 'dashboard' registered
-spa-router.js:150 ✅ [Router] Route 'students' registered
-spa-router.js:150 ✅ [Router] Route 'student-editor' registered
-spa-router.js:150 ✅ [Router] Route 'packages' registered
-spa-router.js:150 ✅ [Router] Route 'package-editor' registered
-spa-router.js:150 ✅ [Router] Route 'billing' registered
-spa-router.js:150 ✅ [Router] Route 'plans' registered
-spa-router.js:150 ✅ [Router] Route 'financial' registered
-spa-router.js:150 ✅ [Router] Route 'courses' registered
-spa-router.js:150 ✅ [Router] Route 'techniques' registered
-spa-router.js:150 ✅ [Router] Route 'activities' registered
-spa-router.js:150 ✅ [Router] Route 'activity-editor' registered
-spa-router.js:150 ✅ [Router] Route 'lesson-plans' registered
-spa-router.js:150 ✅ [Router] Route 'plan-editor' registered
-spa-router.js:150 ✅ [Router] Route 'lesson-plan-editor' registered
-spa-router.js:150 ✅ [Router] Route 'course-editor' registered
-spa-router.js:150 ✅ [Router] Route 'ai' registered
-spa-router.js:150 ✅ [Router] Route 'agents' registered
-spa-router.js:150 ✅ [Router] Route 'agent-activity' registered
-spa-router.js:150 ✅ [Router] Route 'agent-chat-fullscreen' registered
-spa-router.js:150 ✅ [Router] Route 'ai-monitor' registered
-spa-router.js:150 ✅ [Router] Route 'rag' registered
-spa-router.js:150 ✅ [Router] Route 'turmas' registered
-spa-router.js:150 ✅ [Router] Route 'turma-editor' registered
-spa-router.js:150 ✅ [Router] Route 'organizations' registered
-spa-router.js:150 ✅ [Router] Route 'units' registered
-spa-router.js:150 ✅ [Router] Route 'unit-editor' registered
-spa-router.js:150 ✅ [Router] Route 'instructors' registered
-spa-router.js:150 ✅ [Router] Route 'hybrid-agenda' registered
-spa-router.js:150 ✅ [Router] Route 'checkin-kiosk' registered
-spa-router.js:150 ✅ [Router] Route 'import' registered
-spa-router.js:150 ✅ [Router] Route 'lesson-execution/:lessonId' registered
-spa-router.js:150 ✅ [Router] Route 'agenda' registered
-spa-router.js:150 ✅ [Router] Route 'frequency' registered
-spa-router.js:150 ✅ [Router] Route 'graduation' registered
-spa-router.js:150 ✅ [Router] Route 'crm' registered
-spa-router.js:150 ✅ [Router] Route 'settings' registered
-index.js:652 ✅ [Agent Chat] Module class exported globally
-importControllerEnhanced.js:1834 📦 ImportControllerEnhanced loaded
-organization-selector-init.js:10 🏢 [OrgSelector Init] Loading...
-index.js:670 ✅ Agent Chat Fullscreen module loaded (awaiting init)
-index.js:18 ðŸ”§ [AI Module] First load - defining module...
-index.js:766 ðŸŒ [AI Module] Exported to global scope: {AIModule: 'object', aiModule: 'object', ai: 'object', methods: Array(31)}
-index.js:5 🔧 [Agents Module] First load - defining module...
-index.js:2547 🌐 [Agents Module] Exported to global scope
-index.js:1661 🌐 [AgentActivity] Module exported to window.agentActivityModule
-index.js:3 Uncaught ReferenceError: require is not defined
-    at index.js:3:23
-(anonymous) @ index.js:3
-index.js:3 Uncaught ReferenceError: exports is not defined
-    at index.js:3:23
-(anonymous) @ index.js:3
-index.js:3 Uncaught ReferenceError: exports is not defined
-    at index.js:3:23
-(anonymous) @ index.js:3
-index.js:882 🎯 Lesson Execution Module loaded and registered globally
-index.js:3 Uncaught ReferenceError: exports is not defined
-    at index.js:3:23
-(anonymous) @ index.js:3
-index.js:2460 ✅ CRM Module loaded and ready
-index.js:1953 📦 PackagesModule carregado e pronto
-app.js:12 🚀 Initializing AcademyApp...
-app.js:35 ✅ Organization context initialized: ff5ee00e-d8a3-4291-9428-d28b852fb472
-app.js:54 📦 Loading application modules...
-app.js:61 ℹ️ Auth module not available
-app.js:82 ℹ️ Module not available: students
-app.js:82 ℹ️ Module not available: classes
-app.js:82 ℹ️ Module not available: packages
-app.js:82 ℹ️ Module not available: attendance
-app.js:82 ℹ️ Module not available: dashboard
-app.js:82 ℹ️ Module not available: activities
-app.js:82 ℹ️ Module not available: lesson-plans
-app.js:82 ℹ️ Module not available: courses
-app.js:82 ℹ️ Module not available: frequency
-app.js:82 ℹ️ Module not available: import
-app.js:82 ℹ️ Module not available: asaas-import
-index.js:33 ðŸ¤– [AI Module] Initializing...
-index.js:37 ℹ️ [AI Module] Initialized without container (app.js mode)
-app.js:74 ✅ Module loaded: ai
-index.js:58 🤖 [Agents Module] Initializing...
-index.js:62 ℹ️ [Agents Module] Initialized without container (app.js mode)
-app.js:74 ✅ Module loaded: agents
-app.js:82 ℹ️ Module not available: agent-activity
-app.js:82 ℹ️ Module not available: agent-chat-fullscreen
-app.js:82 ℹ️ Module not available: turmas
-app.js:82 ℹ️ Module not available: organizations
-app.js:82 ℹ️ Module not available: units
-app.js:82 ℹ️ Module not available: instructors
-app.js:82 ℹ️ Module not available: agenda
-index.js:42 🚀 Initializing CRM Module...
-index.js:62 🌐 Initializing API Client for CRM...
-app.js:74 ✅ Module loaded: crm
-app.js:82 ℹ️ Module not available: checkin-kiosk
-app.js:82 ℹ️ Module not available: student-progress
-index.js:79 âœ… [AI Module] API client initialized
-index.js:97 ✅ [Agents Module] API client initialized
-index.js:67 ✅ Organization context ready: ff5ee00e-d8a3-4291-9428-d28b852fb472
-app.js:15 ✅ AcademyApp initialized
-api-client.js:229 🌐 GET /api/settings 
-spa-router.js:2633 🚀 Inicializando SPA Router...
-spa-router.js:2637 🏠 [Router] Forcing initial navigation to dashboard
-spa-router.js:490 📊 [Router] Loading dashboard...
-ui-controller.js:3 🎮 UI Controller inicializado
-agent-chat-widget.js:19 💬 [Chat Widget] Initializing...
-agent-chat-widget.js:27 ✅ [Chat Widget] Initialized
-organization-selector-init.js:25 ✅ [OrgSelector Init] Elements found, setting up...
-organization-selector-init.js:42 ✅ [OrgSelector Init] Current org: Smart Defence
-organization-selector-init.js:48 📋 [OrgSelector Init] Loading organizations...
-organization-selector-init.js:212 ✅ [OrgSelector Init] Initialized successfully
-spa-router.js:498 ✅ [Router] Dashboard HTML loaded
-index.js:72 ✅ CRM API helper initialized
-api-client.js:229 🌐 GET /api/crm/leads?limit=10&sortBy=createdAt&sortOrder=desc 
-api-client.js:229 🌐 GET /api/crm/pipeline 
-organization-selector-init.js:59 ✅ [OrgSelector Init] Loaded 1 organizations
-api-client.js:277 🔧 parseResponse - Content-Type: application/json; charset=utf-8
-api-client.js:281 🔧 parseResponse - Raw text: {"success":true,"data":{"theme":{"primaryColor":"#667eea","secondaryColor":"#764ba2","gradientPrimary":"linear-gradient(135deg, #667eea 0%, #764ba2 100%)","darkMode":false},"branding":{"appName":"Krav Maga Academy","logoUrl":null,"contactEmail":null,"contactPhone":null}}}
-api-client.js:284 🔧 parseResponse - Parsed JSON: {success: true, data: {…}}
-api-client.js:252 ✅ GET /api/settings completed successfully
-api-client.js:277 🔧 parseResponse - Content-Type: application/json; charset=utf-8
-api-client.js:281 🔧 parseResponse - Raw text: {"success":true,"data":{"pipeline":[{"stage":"NEW","count":0,"percentage":0},{"stage":"CONTACTED","count":0,"percentage":0},{"stage":"QUALIFIED","count":0,"percentage":0},{"stage":"TRIAL_SCHEDULED","count":0,"percentage":0},{"stage":"TRIAL_ATTENDED","count":0,"percentage":0},{"stage":"NEGOTIATION","count":0,"percentage":0},{"stage":"CONVERTED","count":0,"percentage":0},{"stage":"LOST","count":0,"percentage":0}],"metrics":{"totalLeads":0,"convertedLeads":0,"conversionRate":0,"avgTimeToContact":0,"avgTimeToEnrollment":0}}}
-api-client.js:284 🔧 parseResponse - Parsed JSON: {success: true, data: {…}}
-api-client.js:252 ✅ GET /api/crm/pipeline completed successfully
-spa-router.js:509 🤖 [Router] Initializing Agent Widget...
-dashboard-widget.js:19 🚀 Initializing Agent Dashboard Widget...
-spa-router.js:513 ✅ [Router] Agent widget initialized
-api-client.js:229 🌐 GET /api/agents/orchestrator/interactions 
-spa-router.js:525 📋 [Router] Initializing Task Approval Widget...
-task-approval-widget.js:16 📋 [Task Approval Widget] Initializing...
-spa-router.js:529 ✅ [Router] Task widget initialized
-task-approval-widget.js:55 [Task Approval Widget] Loading tasks...
-api-client.js:229 🌐 GET /api/agent-tasks?approvalStatus=PENDING&limit=5 
-api-client.js:277 🔧 parseResponse - Content-Type: application/json; charset=utf-8
-api-client.js:281 🔧 parseResponse - Raw text: {"success":true,"data":[],"total":0,"limit":5,"offset":0}
-api-client.js:284 🔧 parseResponse - Parsed JSON: {success: true, data: Array(0), total: 0, limit: 5, offset: 0}
-api-client.js:252 ✅ GET /api/agent-tasks?approvalStatus=PENDING&limit=5 completed successfully
-task-approval-widget.js:87 [Task Approval Widget] Rendering 0 tasks...
-task-approval-widget.js:87 [Task Approval Widget] Rendering 0 tasks...
-task-approval-widget.js:34 ✅ [Task Approval Widget] Initialized
-api-client.js:277 🔧 parseResponse - Content-Type: application/json; charset=utf-8
-api-client.js:281 🔧 parseResponse - Raw text: {"success":true,"data":{"interactions":[],"pendingPermissions":[]}}
-api-client.js:284 🔧 parseResponse - Parsed JSON: {success: true, data: {…}}
-api-client.js:252 ✅ GET /api/agents/orchestrator/interactions completed successfully
-dashboard-widget.js:33 ✅ Agent Dashboard Widget initialized
-spa-router.js:2083 🔄 Inicializando módulo de importação...
-spa-router.js:2104 ⏳ Aguardando carregamento do módulo de importação...
-spa-router.js:161 ⏸️ [Router] Already navigating, skipping import
-organization-selector-init.js:163 📁 [OrgSelector Init] Dropdown closed
-api-client.js:277 🔧 parseResponse - Content-Type: application/json; charset=utf-8
-api-client.js:281 🔧 parseResponse - Raw text: {"success":true,"data":[],"pagination":{"page":1,"limit":10,"total":0,"totalPages":0}}
-api-client.js:284 🔧 parseResponse - Parsed JSON: {success: true, data: Array(0), pagination: {…}}
-api-client.js:252 ✅ GET /api/crm/leads?limit=10&sortBy=createdAt&sortOrder=desc completed successfully
-index.js:107 ✅ Initial CRM data loaded: {leads: 0, pipeline: 'loaded'}
-index.js:123 ⚠️ Container not set before render
-render @ index.js:123
-init @ index.js:47
-await in init
-(anonymous) @ app.js:73
-loadModules @ app.js:69
-init @ app.js:14
-(anonymous) @ app.js:93
-index.js:2433 ✅ CRM events setup complete
-index.js:54 ✅ CRM Module initialized successfully
-spa-router.js:2124 ❌ Erro ao inicializar módulo de importação: Error: Módulo de importação não foi carregado após 10 segundos
-    at Object.import (spa-router.js:2119:23)
-(anonymous) @ spa-router.js:2124
-await in (anonymous)
-navigateTo @ spa-router.js:198
-(anonymous) @ spa-router.js:454
-
-  @@index([isRead])
+  @@index([type])
   @@map("agent_interactions")
 }
 
@@ -2514,7 +2342,7 @@ model AgentPermission {
   executedAt      DateTime?
   executionResult Json?
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   agent           AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
   approver        User?        @relation("ApprovedPermissions", fields: [approvedBy], references: [id])
   organization    Organization @relation("AgentPermissions", fields: [organizationId], references: [id], onDelete: Cascade)
@@ -2524,130 +2352,6 @@ model AgentPermission {
   @@index([status])
   @@index([createdAt])
   @@map("agent_permissions")
-}
-
-model AgentInsight {
-  id             String       @id @default(uuid())
-  organizationId String
-  agentId        String
-  executionId    String?
-  type           String
-  category       String?
-  title          String
-  content        String
-  priority       String       @default("MEDIUM")
-  status         String       @default("NEW")
-  isPinned       Boolean      @default(false)
-  isRead         Boolean      @default(false)
-  metadata       Json?
-  relatedEntity  String?
-  relatedId      String?
-  actionTaken    String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
-  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, type])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([type])
-  @@index([category])
-  @@index([priority])
-  @@index([status])
-  @@index([createdAt])
-  @@map("agent_insights")
-}
-
-model AgentTask {
-  id               String   @id @default(uuid())
-  organizationId   String
-  agentId          String?
-  createdByUserId  String?
-  assignedToUserId String?
-
-  title        String
-  description  String
-  category     String
-  actionType   String
-  targetEntity String?
-  actionPayload Json
-  reasoning     Json?
-
-  requiresApproval Boolean  @default(true)
-  autoExecute      Boolean  @default(false)
-  automationLevel  String   @default("MANUAL")
-  approvalStatus   String   @default("PENDING")
-  status           String   @default("PENDING")
-  priority         String   @default("MEDIUM")
-  approvedBy       String?
-  approvedAt       DateTime?
-  rejectedReason   String?
-
-  executorType   String?  @default("AGENT")
-  executorId     String?
-  scheduledFor   DateTime?
-  recurrenceRule String?
-  maxRetries     Int       @default(3)
-  retryCount     Int       @default(0)
-  lastRetryAt    DateTime?
-  nextRetryAt    DateTime?
-
-  executedAt      DateTime?
-  executionResult Json?
-  errorMessage    String?
-  executionLog    Json?
-
-  dueDate  DateTime?
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  agent        AIAgent?      @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
-  organization Organization  @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy    User?         @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  assignedTo   User?         @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
-  approver     User?         @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
-  executor     User?         @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
-  executions   TaskExecution[] @relation("TaskExecutions")
-
-  @@index([organizationId, approvalStatus])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([createdByUserId])
-  @@index([assignedToUserId])
-  @@index([executorType, executorId])
-  @@index([scheduledFor])
-  @@index([approvalStatus])
-  @@index([status])
-  @@index([priority])
-  @@index([createdAt])
-  @@map("agent_tasks")
-}
-
-model TaskExecution {
-  id            String   @id @default(uuid())
-  taskId        String
-  attemptNumber Int      @default(1)
-  executorType  String
-  executorId    String?
-  status        String
-  startedAt     DateTime @default(now())
-  completedAt   DateTime?
-  duration      Int?
-  result        Json?
-  errorMessage  String?
-  errorStack    String?
-  metadata      Json?
-
-  task     AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
-  executor User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
-
-  @@index([taskId])
-  @@index([executorType, executorId])
-  @@index([status])
-  @@index([startedAt])
-  @@map("task_executions")
 }
 
 model StudentProgress {
@@ -2661,7 +2365,7 @@ model StudentProgress {
   completionPercentage   Float                   @default(0)
   lastUpdated            DateTime                @default(now())
   createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
   qualitativeAssessments QualitativeAssessment[]
   course                 Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   student                Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -2680,7 +2384,7 @@ model QualitativeAssessment {
   notes             String?
   assessmentDate    DateTime        @default(now())
   createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   instructor        Instructor?     @relation(fields: [instructorId], references: [id])
   studentProgress   StudentProgress @relation(fields: [studentProgressId], references: [id], onDelete: Cascade)
 
@@ -2700,7 +2404,7 @@ model CourseRequirement {
   isMandatory   Boolean  @default(true)
   description   String?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, beltLevel, activityName])
@@ -2720,7 +2424,7 @@ model BiometricData {
   enrollmentMethod String
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
   student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
@@ -2743,7 +2447,7 @@ model BiometricAttempt {
   attemptedAt       DateTime  @default(now())
   processedAt       DateTime?
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   student           Student?  @relation(fields: [studentId], references: [id])
 
   @@index([organizationId])
@@ -3178,3 +2882,140 @@ enum AgentSpecialization {
   commercial
   curriculum
 }
+
+model AgentTask {
+  id                String    @id @default(uuid())
+  organizationId    String
+  agentId           String?
+  createdByUserId   String?
+  assignedToUserId  String?
+  
+  // Task Definition
+  title             String
+  description       String
+  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
+  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
+  targetEntity      String? // Student, Course, Payment, etc
+  actionPayload     Json // Data needed to execute the action
+  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
+  
+  // Approval Workflow
+  requiresApproval  Boolean   @default(true)
+  autoExecute       Boolean   @default(false)
+  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
+  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
+  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedReason    String?
+  
+  //  EXECUTION & ORCHESTRATION
+  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
+  executorId        String? // ID do agente IA ou usuÃƒÂ¡rio que vai executar
+  scheduledFor      DateTime? // Data/hora agendada para execuÃƒÂ§ÃƒÂ£o futura
+  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda ÃƒÂ s 9h)
+  maxRetries        Int       @default(3) // MÃƒÂ¡ximo de tentativas em caso de falha
+  retryCount        Int       @default(0) // Tentativas jÃƒÂ¡ realizadas
+  lastRetryAt       DateTime? // Data da ÃƒÂºltima tentativa
+  nextRetryAt       DateTime? // PrÃƒÂ³xima tentativa agendada
+  
+  // Execution Results
+  executedAt        DateTime?
+  executionResult   Json? // Result after execution
+  errorMessage      String?
+  executionLog      Json? // Array de logs de execuÃƒÂ§ÃƒÂ£o: [{ timestamp, action, result, error }]
+  
+  // Metadata
+  dueDate           DateTime?
+  metadata          Json? // Additional context
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  agent             AIAgent?  @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
+  organization      Organization @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
+  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
+  executions        TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model TaskExecution {
+  id              String    @id @default(uuid())
+  taskId          String
+  attemptNumber   Int       @default(1)
+  executorType    String // AGENT, USER, SYSTEM
+  executorId      String?
+  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  duration        Int? // DuraÃƒÂ§ÃƒÂ£o em milissegundos
+  result          Json? // Resultado da execuÃƒÂ§ÃƒÂ£o
+  errorMessage    String?
+  errorStack      String?
+  metadata        Json? // Logs adicionais
+  
+  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
+  
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("task_executions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String? // ID da execuÃƒÂ§ÃƒÂ£o que gerou o insight
+  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
+  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
+  title          String
+  content        String
+  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       Json? // Additional context, metrics, etc
+  relatedEntity  String? // Student, Course, Payment, etc
+  relatedId      String? // ID of related entity
+  actionTaken    String? // What action was taken (if any)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
+}
+
+
+
+
+
+
+
+
