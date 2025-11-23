@@ -4,7 +4,7 @@
     "description": "Sistema de gestão para academia de Krav Maga com IA integrada",
     "main": "dist/server.js",
     "scripts": {
-        "dev": "set \"NODE_OPTIONS=-r tsconfig-paths/register\" && tsx watch src/server.ts",
+        "dev": "tsx watch src/server.ts",
         "dev:simple": "node servers/server-simple.js",
         "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && (tsc --project tsconfig.build.json --skipLibCheck true || exit 0) && tsc-alias && node scripts/copy-public.js",
         "build": "(tsc --project tsconfig.build.json --skipLibCheck true || exit 0) && tsc-alias && node scripts/copy-public.js",
