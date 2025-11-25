@@ -40,7 +40,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
           }
         }
       }
-    }
+    },
+    preHandler: [authenticateToken]
   }, AuthController.getUserByEmail);
 
   // Register

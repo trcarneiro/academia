@@ -147,14 +147,8 @@ const AuthModule = {
       const user = session.user;
       let orgId = user.user_metadata?.organizationId || user.app_metadata?.organizationId;
       
-      // Hardcoded organization for trcampos@gmail.com
-      if (user.email === 'trcampos@gmail.com') {
-        orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
-        console.log('✅ Using hardcoded organizationId for trcampos@gmail.com');
-      }
-      
       if (!orgId) {
-        const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email);
+        const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email, session.access_token);
         if (fetchedOrgId) {
           orgId = fetchedOrgId;
           localStorage.setItem('organizationId', fetchedOrgId);
