@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script>
+        // 🔒 AUTH GUARD
+        // Disable dev auto-login to force real authentication
+        window.__DISABLE_DEV_AUTO_AUTH__ = true;
+        
+        // Check for token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('🔒 No token found, redirecting to login...');
+            window.location.href = '/login.html';
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academia Dashboard</title>

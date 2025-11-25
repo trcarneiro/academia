@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script>
+        // 🔒 AUTH GUARD
+        window.__DISABLE_DEV_AUTO_AUTH__ = true;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academia Krav Maga - Sistema de Gestão</title>
