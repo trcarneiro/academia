@@ -293,11 +293,12 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Save token and user info
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    if (data.user.organizationId) {
-                        localStorage.setItem('activeOrganizationId', data.user.organizationId);
+                    // Save token and user info (data is wrapped in data.data by ResponseHelper)
+                    const userData = data.data || data;
+                    localStorage.setItem('token', userData.token);
+                    localStorage.setItem('user', JSON.stringify(userData.user));
+                    if (userData.user?.organizationId) {
+                        localStorage.setItem('activeOrganizationId', userData.user.organizationId);
                     }
                     
                     // Redirect to dashboard
