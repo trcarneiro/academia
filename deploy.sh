@@ -22,10 +22,10 @@ fi
 
 # 3. Pull das mudanças do Git
 echo ""
-echo "📥 Baixando atualizações do Git (branch main)..."
+echo "📥 Baixando atualizações do Git (branch master)..."
 git fetch origin
 CURRENT_COMMIT=$(git rev-parse HEAD)
-git reset --hard origin/main
+git reset --hard origin/master
 NEW_COMMIT=$(git rev-parse HEAD)
 
 if [ "$CURRENT_COMMIT" = "$NEW_COMMIT" ]; then
