@@ -157,22 +157,23 @@ const AuthModule = {
           localStorage.setItem('organizationId', fetchedOrgId);
         }
         if (!orgId) {
-          console.warn('⚠️ No organizationId found for user');
-          return;
+          console.warn(' No organizationId found - using default');
+          orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
         }
       }
       
       localStorage.setItem('token', session.access_token);
       localStorage.setItem('organizationId', orgId);
+      localStorage.setItem('activeOrganizationId', orgId);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('userEmail', user.email);
       console.log(`✅ User synced: ${user.email} → Org: ${orgId.substring(0, 8)}...`);
     } catch (e) { console.error('Sync error:', e); }
   },
 
-  async fetchOrganizationFromBackend(email) {
+  async fetchOrganizationFromBackend(email, token) {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/users/by-email?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${BACKEND_URL}/api/auth/users/by-email?email=${encodeURIComponent(email)}`);
       if (res.ok) return (await res.json()).data?.organizationId;
     } catch (e) { console.error('Fetch org error:', e); }
     return null;
