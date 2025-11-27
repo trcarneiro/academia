@@ -490,11 +490,18 @@ router.registerRoute('dashboard', async () => {
     console.log('📊 [Router] Loading dashboard...');
     
     try {
+        // 🔒 Guard: Check if module-container exists (not on login page)
+        const container = document.getElementById('module-container');
+        if (!container) {
+            console.warn('⚠️ [Router] module-container not found - likely on login page, skipping dashboard load');
+            return;
+        }
+        
         // Load dashboard HTML
         const response = await fetch('/views/dashboard.html');
         const html = await response.text();
         
-        document.getElementById('module-container').innerHTML = html;
+        container.innerHTML = html;
         console.log('✅ [Router] Dashboard HTML loaded');
         
         // Initialize dashboard module if available
@@ -543,12 +550,15 @@ router.registerRoute('dashboard', async () => {
         
     } catch (error) {
         console.error('❌ [Router] Error loading dashboard:', error);
-        document.getElementById('module-container').innerHTML = `
-            <div class="welcome-message">
-                <h2>Dashboard Principal</h2>
-                <p>Selecione um módulo no menu lateral para começar</p>
-            </div>
-        `;
+        const errorContainer = document.getElementById('module-container');
+        if (errorContainer) {
+            errorContainer.innerHTML = `
+                <div class="welcome-message">
+                    <h2>Dashboard Principal</h2>
+                    <p>Selecione um módulo no menu lateral para começar</p>
+                </div>
+            `;
+        }
     }
 });
 

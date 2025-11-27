@@ -21,6 +21,9 @@ class UIController {
         // Comportamento responsivo do menu
         const handleResize = () => {
             const sidebar = document.querySelector('.sidebar');
+            // 🔒 Guard: Only run if sidebar exists (not on login page)
+            if (!sidebar) return;
+            
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('mobile');
             } else {

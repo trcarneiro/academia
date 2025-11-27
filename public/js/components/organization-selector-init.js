@@ -9,6 +9,10 @@
     
     console.log('🏢 [OrgSelector Init] Loading...');
     
+    // 🔒 Retry limit to prevent infinite loop on login page
+    let retryCount = 0;
+    const MAX_RETRIES = 5;
+    
     // Wait for DOM and other dependencies
     function init() {
         const button = document.getElementById('orgSelectorBtn');
@@ -17,7 +21,12 @@
         const orgList = document.getElementById('orgList');
         
         if (!button || !dropdown) {
-            console.warn('⚠️ [OrgSelector Init] Elements not found, retrying...');
+            retryCount++;
+            if (retryCount >= MAX_RETRIES) {
+                console.log('🏢 [OrgSelector Init] Elements not found after max retries - likely on login page, stopping.');
+                return; // Stop retrying
+            }
+            console.warn(`⚠️ [OrgSelector Init] Elements not found, retry ${retryCount}/${MAX_RETRIES}...`);
             setTimeout(init, 500);
             return;
         }
