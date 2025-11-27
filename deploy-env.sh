@@ -1,9 +1,15 @@
+#!/bin/bash
+# Script to update .env on the server
+
+cat > .env << 'EOF'
 # Connect to Supabase PostgreSQL database (Connection Pooling via PgBouncer)
+# Optimized parameters: connection_limit=5 (low for PgBouncer), pool_timeout=10s, connect_timeout=5s
 DATABASE_URL="postgresql://postgres.yawfuymgwukericlhgxh:C3po007%2Aa12@aws-0-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=5&pool_timeout=10&connect_timeout=5"
 
 # Direct connection to the database. Used for migrations (Direct Connection - no pooling)
-# USING POOLER HOST PORT 5432 FOR IPV4 COMPATIBILITY
-DIRECT_URL="postgresql://postgres.yawfuymgwukericlhgxh:C3po007%2Aa12@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
+# Using standard DB URL as pooler port 5432 might be unreachable
+DIRECT_URL="postgresql://postgres:C3po007%2Aa12@db.yawfuymgwukericlhgxh.supabase.co:5432/postgres"
+# DIRECT_URL="postgresql://postgres.yawfuymgwukericlhgxh:C3po007%2Aa12@aws-0-us-east-2.pooler.supabase.com:5432/postgres"
 
 # Shadow database for migrations (opcional)
 SHADOW_DATABASE_URL="postgresql://postgres:C3po007%2Aa12@db.yawfuymgwukericlhgxh.supabase.co:5432/postgres"
@@ -15,7 +21,7 @@ JWT_EXPIRES_IN="7d"
 # Server
 PORT=3000
 HOST="0.0.0.0"
-NODE_ENV="production"
+NODE_ENV="development"
 
 # CORS
 CORS_ORIGIN="http://64.227.28.147:3001,http://64.227.28.147"
@@ -30,7 +36,7 @@ GEMINI_API_KEY=AIzaSyCkyqslUzkL0F5CTT9uzHb-Fxik0-nuZkE#AIzaSyBURQeVbJ0NCCEZVMNs8
 # OpenRouter como fallback (modelo gratuito)
 OPENROUTER_API_KEY=sk-or-v1-d4f8c2a1b5e3f9d7a2c8b4e6f1a9d3c7b2e5f8a4c1d6b9e2f7a3c8d5b1e4f7a0c3
 
-# Configura��es do RAG
+# Configurações do RAG (models/gemini-1.5-flash é o único estável na v1/v1beta)
 RAG_MODEL=models/gemini-2.5-flash
 RAG_MAX_TOKENS=2048
 RAG_TEMPERATURE=0.7
@@ -51,3 +57,6 @@ SUPABASE_SERVICE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 # Kiosk Configuration
 KIOSK_PORT=3001
+EOF
+
+echo ".env file updated successfully."

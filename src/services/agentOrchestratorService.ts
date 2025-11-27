@@ -147,6 +147,8 @@ export class AgentOrchestratorService {
                 type: config.type,
                 specialization,
                 organizationId: config.organizationId,
+                organizationIdType: typeof config.organizationId,
+                organizationIdLength: config.organizationId?.length,
                 tools: config.tools
             });
             

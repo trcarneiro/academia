@@ -42,7 +42,13 @@ export async function agentOrchestratorRoutes(fastify: FastifyInstance) {
      */
     fastify.post('/orchestrator/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
-            const organizationId = (request.headers['x-organization-id'] as string) || (request.body as any)?.organizationId;
+            let organizationId = (request.headers['x-organization-id'] as string) || (request.body as any)?.organizationId;
+            
+            // Sanitize organizationId (remove quotes if present)
+            if (organizationId) {
+                organizationId = organizationId.replace(/['"]/g, '');
+            }
+
             if (!organizationId) {
                 return reply.status(400).send({ success: false, error: 'organizationId is required' });
             }

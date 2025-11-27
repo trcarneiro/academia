@@ -22,10 +22,9 @@ module.exports = {
     // Main Application Server
     {
       name: 'academia',
-      script: './src/server.ts',
-      interpreter: 'tsx',
-      instances: 1,
-      exec_mode: 'fork',
+      script: './dist/server.js',
+      instances: 2,
+      exec_mode: 'cluster',
       
       // Restart behavior
       autorestart: true,
@@ -35,7 +34,7 @@ module.exports = {
       // Environment variables
       env_production: {
         NODE_ENV: 'production',
-        PORT: 3001,
+        PORT: 3000,
         HOST: '0.0.0.0'
       },
       

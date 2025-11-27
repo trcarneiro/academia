@@ -5,6 +5,9 @@ require('dotenv').config();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+console.log('URL:', supabaseUrl);
+console.log('Key (start):', supabaseServiceKey ? supabaseServiceKey.substring(0, 10) : 'undefined');
+
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Variáveis de ambiente SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessárias');
   process.exit(1);

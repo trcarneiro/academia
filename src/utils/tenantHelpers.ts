@@ -7,7 +7,15 @@ export function resolveOrganizationId(request: FastifyRequest): string | undefin
   const fromHeader = request.headers['x-organization-id'] as string | undefined;
   const fromQuery = (request.query as any)?.organizationId as string | undefined;
   const fromBody = (request.body as any)?.organizationId as string | undefined;
-  return fromUser || fromHeader || fromQuery || fromBody;
+  
+  const orgId = fromUser || fromHeader || fromQuery || fromBody;
+  
+  // Sanitize organizationId (remove quotes if present)
+  if (orgId) {
+    return orgId.replace(/['"]/g, '');
+  }
+  
+  return orgId;
 }
 
 // Ensure an organizationId is present, otherwise return a 400 response

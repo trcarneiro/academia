@@ -144,8 +144,11 @@ const AuthModule = {
 
   async syncUserWithBackend(session) {
     try {
+      if (!session || !session.user) return;
       const user = session.user;
-      let orgId = user.user_metadata?.organizationId || user.app_metadata?.organizationId;
+      const userMeta = user.user_metadata || {};
+      const appMeta = user.app_metadata || {};
+      let orgId = userMeta.organizationId || appMeta.organizationId;
       
       if (!orgId) {
         const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email, session.access_token);

@@ -144,7 +144,7 @@ export class AuthService {
     // Hardcoded fallback for trcampos@gmail.com
     if (email === 'trcampos@gmail.com') {
       return {
-        id: 'hardcoded-user-id',
+        id: 'cbe69948-5bc7-4877-afa8-b895e7752cbe',
         email: 'trcampos@gmail.com',
         role: 'ADMIN' as any,
         organizationId: 'ff5ee00e-d8a3-4291-9428-d28b852fb472',

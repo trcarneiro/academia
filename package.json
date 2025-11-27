@@ -44,7 +44,10 @@
         "cert:generate": "powershell -ExecutionPolicy Bypass -File ./scripts/generate-cert.ps1",
         "cert:trust": "powershell -ExecutionPolicy Bypass -File ./scripts/trust-cert.ps1",
         "dev:https": "set \"USE_HTTPS=true\" && set \"NODE_OPTIONS=-r tsconfig-paths/register\" && tsx watch src/server.ts",
-        "test:jobs": "tsx scripts/test-job-application.ts"
+        "test:jobs": "tsx scripts/test-job-application.ts",
+        "deploy": "powershell -ExecutionPolicy Bypass -File ./deploy-remote.ps1",
+        "deploy:skip-tests": "powershell -ExecutionPolicy Bypass -File ./deploy-remote.ps1 -SkipTests",
+        "deploy:dry": "powershell -ExecutionPolicy Bypass -File ./deploy-remote.ps1 -DryRun"
     },
     "keywords": [
         "krav-maga",
