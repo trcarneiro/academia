@@ -1050,7 +1050,14 @@ export class StudentsListController {
         const cardsContainer = this.container.querySelector('#cards-view');
         if (!cardsContainer) return;
 
-        if (!this.students || this.students.length === 0) {
+        // Usar lista filtrada e paginada (igual à tabela)
+        const list = this.getFiltered();
+        const totalPages = this.getTotalPages();
+        const start = this.pageSize === Number.MAX_SAFE_INTEGER ? 0 : (this.currentPage - 1) * this.pageSize;
+        const end = this.pageSize === Number.MAX_SAFE_INTEGER ? list.length : start + this.pageSize;
+        const pageItems = list.slice(start, end);
+
+        if (!pageItems || pageItems.length === 0) {
             cardsContainer.innerHTML = `
                 <div class="module-isolated-empty-state" style="grid-column: 1 / -1;">
                     <div class="empty-icon">😔</div>
@@ -1066,7 +1073,7 @@ export class StudentsListController {
             return;
         }
 
-        cardsContainer.innerHTML = this.students.map((student, index) => {
+        cardsContainer.innerHTML = pageItems.map((student, index) => {
             const user = student.user || {};
             const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Sem nome';
             const initials = this.getInitials(fullName);
