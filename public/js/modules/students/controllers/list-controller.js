@@ -21,7 +21,20 @@ export class StudentsListController {
         this.selectedStudents = new Set();
         
         // View mode: 'table' or 'cards'
-        this.viewMode = localStorage.getItem('students-view-mode') || 'table';
+        // Force cards view on mobile (768px or less)
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        this.viewMode = isMobile ? 'cards' : (localStorage.getItem('students-view-mode') || 'table');
+        
+        // Listen for resize to switch views
+        this.mediaQuery = window.matchMedia('(max-width: 768px)');
+        this.handleMediaQueryChange = (e) => {
+            if (e.matches && this.viewMode === 'table') {
+                this.viewMode = 'cards';
+                this.updateViewDisplay();
+                this.updateViewToggleButton();
+            }
+        };
+        this.mediaQuery.addEventListener('change', this.handleMediaQueryChange);
         
         // Debug helper
         window.studentsListController = this;
@@ -956,8 +969,16 @@ export class StudentsListController {
 
     /**
      * Toggle between table and cards view
+     * Note: On mobile (768px or less), always stays in cards view
      */
     toggleView() {
+        // Don't allow switching to table on mobile
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) {
+            this.viewMode = 'cards';
+            return;
+        }
+        
         this.viewMode = this.viewMode === 'table' ? 'cards' : 'table';
         localStorage.setItem('students-view-mode', this.viewMode);
         

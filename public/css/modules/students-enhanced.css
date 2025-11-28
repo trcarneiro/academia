@@ -3692,6 +3692,488 @@ details[open] .collapsible-header::after {
     }
 }
 
+/* ==========================================================================
+   STUDENTS MODULE - MOBILE RESPONSIVE ENHANCEMENTS
+   Otimizações completas para dispositivos móveis e tablets
+   ========================================================================== */
+
+/* FORÇA CARDS VIEW EM MOBILE - Esconder tabela */
+@media (max-width: 768px) {
+    .students-module .data-table-enhanced,
+    .students-module .table-enhanced,
+    .students-module table.data-table,
+    .students-module .students-table,
+    #table-view,
+    .table-container,
+    .students-table-wrapper,
+    .students-list-table {
+        display: none !important;
+    }
+    
+    #cards-view,
+    .cards-view,
+    .students-cards-grid,
+    .students-cards {
+        display: grid !important;
+    }
+    
+    .view-toggle,
+    [data-view-toggle],
+    .btn-toggle-view {
+        display: none !important;
+    }
+}
+
+/* HEADER MOBILE */
+@media (max-width: 768px) {
+    .students-module .module-header,
+    .students-module .module-header-premium {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+    }
+    
+    .students-module .module-header h1,
+    .students-module .module-header-premium h1 {
+        font-size: 1.25rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .students-module .header-actions,
+    .students-module .action-group-horizontal {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+    
+    .students-module .header-actions .btn,
+    .students-module .header-actions button,
+    .students-module .header-actions .btn-form,
+    .students-module .action-group-horizontal .btn-form {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.8rem !important;
+        min-height: 44px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .students-module .header-actions .btn span:not(.sr-only),
+    .students-module .header-actions button span,
+    .students-module .action-group-horizontal .btn-form span {
+        display: none !important;
+    }
+    
+    .students-module .header-actions .btn i,
+    .students-module .header-actions button i,
+    .students-module .action-group-horizontal .btn-form i {
+        margin: 0 !important;
+        font-size: 1.1rem !important;
+    }
+}
+
+/* STATS CARDS MOBILE */
+@media (max-width: 768px) {
+    .students-module .module-stats,
+    .students-module .stats-animated,
+    .students-module .stats-grid,
+    .students-module .stats-cards {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .students-module .stat-card-enhanced,
+    .students-module .stat-card {
+        padding: 0.875rem !important;
+        min-height: auto !important;
+    }
+    
+    .students-module .stat-card-enhanced .stat-icon,
+    .students-module .stat-card .stat-icon {
+        font-size: 1.25rem !important;
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .students-module .stat-card-enhanced .stat-value,
+    .students-module .stat-card .stat-value {
+        font-size: 1.125rem !important;
+    }
+    
+    .students-module .stat-card-enhanced .stat-label,
+    .students-module .stat-card .stat-label {
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .students-module .module-stats,
+    .students-module .stats-animated {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* FILTROS MOBILE */
+@media (max-width: 768px) {
+    .students-module .module-filters-premium,
+    .students-module .filters-section,
+    .students-module .students-filters {
+        padding: 1rem !important;
+        margin: 0 !important;
+    }
+    
+    .students-module .filter-row,
+    .students-module .filters-row,
+    .students-module .filter-group-container {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .students-module .filter-group,
+    .students-module .filter-item {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    
+    .students-module .filter-input,
+    .students-module .filter-select,
+    .students-module input[type="search"],
+    .students-module input[type="text"],
+    .students-module select {
+        width: 100% !important;
+        padding: 0.875rem 1rem !important;
+        font-size: 16px !important;
+        border-radius: 8px !important;
+    }
+    
+    .students-module .filter-actions,
+    .students-module .filter-buttons {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
+        margin-top: 0.75rem !important;
+    }
+}
+
+/* CARDS GRID MOBILE */
+@media (max-width: 768px) {
+    .students-module .cards-grid,
+    .students-module .students-cards-grid,
+    .students-module #cards-view .cards-container,
+    .students-module .students-cards {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.875rem !important;
+        padding: 1rem !important;
+    }
+    
+    .students-module .student-card,
+    .students-module .student-card-enhanced,
+    .students-module .data-card-premium {
+        padding: 1rem !important;
+        border-radius: 12px !important;
+        margin: 0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+    
+    .students-module .student-card .card-header,
+    .students-module .student-card-header {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.875rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .students-module .student-avatar,
+    .students-module .student-card .avatar,
+    .students-module .card-avatar {
+        width: 56px !important;
+        height: 56px !important;
+        min-width: 56px !important;
+        font-size: 1.25rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .students-module .student-avatar.large {
+        width: 56px !important;
+        height: 56px !important;
+    }
+    
+    .students-module .student-card .student-info,
+    .students-module .card-student-info {
+        flex: 1 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .students-module .student-card .student-name,
+    .students-module .student-name {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .students-module .student-card .student-email,
+    .students-module .student-email,
+    .students-module .student-contact {
+        font-size: 0.8rem !important;
+        color: #666 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    .students-module .student-card .badges,
+    .students-module .card-badges,
+    .students-module .student-badges {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.375rem !important;
+        margin: 0.625rem 0 !important;
+    }
+    
+    .students-module .student-card .badge,
+    .students-module .badge {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.5rem !important;
+    }
+    
+    .students-module .student-card .card-stats,
+    .students-module .card-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem !important;
+        padding: 0.625rem !important;
+        background: #f8f9fa !important;
+        border-radius: 8px !important;
+        margin: 0.625rem 0 !important;
+    }
+    
+    .students-module .card-stat-item {
+        text-align: center !important;
+    }
+    
+    .students-module .card-stat-value {
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+    }
+    
+    .students-module .card-stat-label {
+        font-size: 0.6rem !important;
+        text-transform: uppercase !important;
+    }
+    
+    .students-module .student-card .card-actions,
+    .students-module .card-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        margin-top: 0.75rem !important;
+        padding-top: 0.75rem !important;
+        border-top: 1px solid #eee !important;
+    }
+    
+    .students-module .card-actions .btn,
+    .students-module .card-actions button {
+        flex: 1 !important;
+        padding: 0.625rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        border-radius: 8px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .students-module .student-avatar,
+    .students-module .student-card .avatar {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+    }
+    
+    .students-module .card-actions .btn span,
+    .students-module .card-actions button span {
+        display: none !important;
+    }
+    
+    .students-module .card-actions .btn i,
+    .students-module .card-actions button i {
+        font-size: 1rem !important;
+    }
+}
+
+/* PAGINAÇÃO MOBILE */
+@media (max-width: 768px) {
+    .students-module .pagination-enhanced,
+    .students-module .pagination,
+    .students-module .table-pagination {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+        align-items: center !important;
+    }
+    
+    .students-module .pagination-info {
+        order: 2 !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .students-module .pagination-controls {
+        order: 1 !important;
+        display: flex !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+    
+    .students-module .pagination-controls button,
+    .students-module .pagination-btn {
+        min-width: 40px !important;
+        min-height: 40px !important;
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .students-module .pagination-quick-jump,
+    .students-module .pagination-per-page,
+    .students-module .pagination-goto {
+        display: none !important;
+    }
+}
+
+/* TABS MOBILE */
+@media (max-width: 768px) {
+    .students-module .tabs-navigation,
+    .students-module .tab-buttons,
+    .students-module .student-tabs {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        padding: 0 1rem !important;
+        gap: 0.25rem !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .students-module .tabs-navigation::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .students-module .tab-button,
+    .students-module .tab-btn {
+        white-space: nowrap !important;
+        padding: 0.625rem 0.875rem !important;
+        font-size: 0.8rem !important;
+        min-height: 40px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .students-module .tab-content,
+    .students-module .tab-panel {
+        padding: 1rem !important;
+    }
+}
+
+/* FORMS MOBILE */
+@media (max-width: 768px) {
+    .students-module .form-grid,
+    .students-module .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 0.875rem !important;
+    }
+    
+    .students-module .form-group input,
+    .students-module .form-group select,
+    .students-module .form-group textarea {
+        width: 100% !important;
+        padding: 0.875rem 1rem !important;
+        font-size: 16px !important;
+        border-radius: 8px !important;
+    }
+    
+    .students-module .form-actions,
+    .students-module .form-buttons {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        margin-top: 1.5rem !important;
+    }
+    
+    .students-module .form-actions button,
+    .students-module .form-buttons button {
+        width: 100% !important;
+        min-height: 48px !important;
+    }
+}
+
+/* EMPTY STATE MOBILE */
+@media (max-width: 768px) {
+    .students-module .empty-state,
+    .students-module .no-data-state {
+        padding: 2rem 1rem !important;
+    }
+    
+    .students-module .empty-state-icon {
+        font-size: 2.5rem !important;
+    }
+    
+    .students-module .empty-state-title {
+        font-size: 1.125rem !important;
+    }
+}
+
+/* TOUCH IMPROVEMENTS */
+@media (max-width: 768px) {
+    .students-module button,
+    .students-module .btn,
+    .students-module a.btn,
+    .students-module [role="button"] {
+        min-height: 44px !important;
+    }
+    
+    .students-module button:active,
+    .students-module .btn:active,
+    .students-module .student-card:active {
+        transform: scale(0.98) !important;
+        opacity: 0.9 !important;
+    }
+}
+
+/* LANDSCAPE MOBILE */
+@media (max-width: 768px) and (orientation: landscape) {
+    .students-module .cards-grid,
+    .students-module .students-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .students-module .module-stats,
+    .students-module .stats-animated {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+/* TABLET (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .students-module .cards-grid,
+    .students-module .students-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .students-module .student-avatar {
+        width: 70px !important;
+        height: 70px !important;
+    }
+}
+
 
 
 
