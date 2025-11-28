@@ -37,12 +37,16 @@ const AuthModule = {
   hasHandledPersistentSignIn: false,
 
   async init(container) {
-    this.container = container || document.body;
+    this.container = container || document.getElementById('auth-container') || document.body;
     await this.waitForSupabase();
     await this.initializeAPI();
-    this.renderLoginForm();
-    await this.checkSession();
+    
+    // IMPORTANTE: Primeiro verificar sessão, só renderizar login se necessário
+    const hasSession = await this.checkSession();
+    
+    // Só configurar listener depois de verificar sessão inicial
     this.setupAuthStateListener();
+    
     window.authModule = this;
     if (window.app) window.app.dispatchEvent('module:loaded', { name: 'auth' });
     return this;
@@ -77,7 +81,8 @@ const AuthModule = {
       
       if (error) {
         console.error('❌ Session error:', error);
-        return;
+        this.showLoginUI();
+        return false;
       }
       if (session) {
         console.log('✅ Valid session for:', session.user.email);
@@ -93,46 +98,59 @@ const AuthModule = {
           console.log('✅ Auth overlay hidden');
         }
         console.log('✅ Session válida - usuário autenticado');
+        return true;
       } else {
         console.log('⚠️ No session - showing login');
-        // Sem session - mostrar login
-        const authOverlay = document.getElementById('auth-overlay');
-        if (authOverlay) authOverlay.style.display = 'block';
-        this.renderLoginForm();
+        this.showLoginUI();
+        return false;
       }
-    } catch (e) { console.error('Session check error:', e); }
+    } catch (e) { 
+      console.error('Session check error:', e);
+      this.showLoginUI();
+      return false;
+    }
+  },
+
+  showLoginUI() {
+    const authOverlay = document.getElementById('auth-overlay');
+    if (authOverlay) {
+      authOverlay.style.display = 'block';
+      console.log('🔒 Auth overlay shown');
+    }
+    this.renderLoginForm();
   },
 
   setupAuthStateListener() {
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       console.log(`🔔 Auth event: ${event}`);
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        await this.syncUserWithBackend(session);
-        this.currentUser = session.user;
-        this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
-        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
-        
-        // Para SIGNED_IN, apenas esconder overlay - NÃO recarregar página
-        // O reload causa loop infinito de autenticação
-        if (event === 'SIGNED_IN') {
-          console.log('✅ SIGNED_IN detectado - atualizando UI');
+      // Tratar sessão válida (SIGNED_IN, TOKEN_REFRESHED, ou INITIAL_SESSION)
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        if (session) {
+          await this.syncUserWithBackend(session);
+          this.currentUser = session.user;
+          this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
+          document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
+          
+          // Esconder overlay de login
+          console.log('✅ Sessão válida detectada - escondendo overlay de login');
           const authOverlay = document.getElementById('auth-overlay');
-          if (authOverlay) authOverlay.style.display = 'none';
+          if (authOverlay) {
+            authOverlay.style.display = 'none';
+            console.log('✅ Auth overlay hidden');
+          } else {
+            console.warn('⚠️ auth-overlay element not found');
+          }
           
           // Se estiver na página de login, redirecionar para home
           if (window.location.pathname.includes('login')) {
+            console.log('🔄 Redirecionando de login para home...');
             window.location.href = '/';
             return;
           }
           
           // Marcar como já processado para evitar loops
           this.hasHandledPersistentSignIn = true;
-        }
-        
-        // TOKEN_REFRESHED é normal e silencioso
-        if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 Token refreshed silently');
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('🚪 SIGNED_OUT detectado');
