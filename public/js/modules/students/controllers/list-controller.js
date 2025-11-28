@@ -55,35 +55,32 @@ export class StudentsListController {
     renderHTML() {
         this.container.innerHTML = `
             <div class="module-isolated-container students-premium" data-module="students">
-                <!-- Header Premium com Guidelines.MD + Gradient -->
+                <!-- Header Premium - Mobile Optimized -->
                 <div class="module-header-premium students-header-gradient">
                     <div class="header-content">
                         <div class="header-left">
-                            <h1 class="page-title animated-title">
-                                <span class="icon-bounce">👥</span>
-                                <span>Estudantes</span>
+                            <h1 class="page-title">
+                                <i class="fas fa-users"></i>
+                                Estudantes
                             </h1>
                             <nav class="breadcrumb">
-                                <i class="fas fa-home"></i> Home 
-                                <i class="fas fa-chevron-right"></i> 
-                                <span class="breadcrumb-current">Estudantes</span>
+                                <a href="#/dashboard"><i class="fas fa-home"></i></a>
+                                <i class="fas fa-chevron-right"></i>
+                                <span>Estudantes</span>
                             </nav>
                         </div>
                         <div class="header-actions">
-                            <button id="toggle-view-btn" class="btn-form btn-icon" title="Alternar visualização">
-                                <i class="fas fa-th"></i>
-                            </button>
-                            <button id="create-student-btn" class="btn-form btn-primary-form btn-pulse">
+                            <button id="create-student-btn" class="btn-form btn-primary-form">
                                 <i class="fas fa-plus"></i>
-                                Novo Estudante
+                                <span class="btn-text">Novo</span>
                             </button>
                             <button id="import-students-btn" class="btn-form btn-secondary-form">
                                 <i class="fas fa-upload"></i>
-                                Importar
+                                <span class="btn-text">Importar</span>
                             </button>
-                            <button id="export-students-btn" class="btn-form btn-success-form">
+                            <button id="export-students-btn" class="btn-form btn-secondary-form">
                                 <i class="fas fa-download"></i>
-                                Exportar
+                                <span class="btn-text">Exportar</span>
                             </button>
                             <button id="refresh-students-btn" class="btn-form btn-icon" title="Atualizar">
                                 <i class="fas fa-sync-alt"></i>
@@ -96,50 +93,42 @@ export class StudentsListController {
                 <div class="module-stats stats-animated">
                     <div class="stat-card-enhanced stat-gradient-primary" style="animation-delay: 0.1s">
                         <div class="stat-icon-wrapper">
-                            <div class="stat-icon">📊</div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value counter" id="total-students" data-target="0">0</div>
-                            <div class="stat-label">Total de Estudantes</div>
-                            <div class="stat-trend">
-                                <i class="fas fa-arrow-up"></i> 100% do cadastro
-                            </div>
+                            <div class="stat-label">Total</div>
+                            <div class="stat-trend"></div>
                         </div>
                     </div>
                     <div class="stat-card-enhanced stat-gradient-success" style="animation-delay: 0.2s">
                         <div class="stat-icon-wrapper">
-                            <div class="stat-icon">✅</div>
+                            <div class="stat-icon"><i class="fas fa-user-check"></i></div>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value counter" id="active-students" data-target="0">0</div>
-                            <div class="stat-label">Ativos</div>
-                            <div class="stat-trend" id="active-percentage">
-                                <i class="fas fa-check-circle"></i> Calculando...
-                            </div>
+                            <div class="stat-label">Matriculados</div>
+                            <div class="stat-trend" id="active-percentage"></div>
                         </div>
                     </div>
-                    <div class="stat-card-enhanced stat-gradient-info" style="animation-delay: 0.3s">
+                    <div class="stat-card-enhanced stat-gradient-warning" style="animation-delay: 0.3s">
                         <div class="stat-icon-wrapper">
-                            <div class="stat-icon">💳</div>
+                            <div class="stat-icon"><i class="fas fa-user-clock"></i></div>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value counter" id="with-subs" data-target="0">0</div>
-                            <div class="stat-label">Com Assinatura</div>
-                            <div class="stat-trend" id="subs-percentage">
-                                <i class="fas fa-credit-card"></i> Calculando...
-                            </div>
+                            <div class="stat-label">Sem Matrícula</div>
+                            <div class="stat-trend" id="subs-percentage"></div>
                         </div>
                     </div>
-                    <div class="stat-card-enhanced stat-gradient-warning" style="animation-delay: 0.4s">
+                    <div class="stat-card-enhanced stat-gradient-info" style="animation-delay: 0.4s">
                         <div class="stat-icon-wrapper">
-                            <div class="stat-icon">🔍</div>
+                            <div class="stat-icon"><i class="fas fa-filter"></i></div>
                         </div>
                         <div class="stat-content">
                             <div class="stat-value counter" id="filtered-students" data-target="0">0</div>
                             <div class="stat-label">Filtrados</div>
-                            <div class="stat-trend">
-                                <i class="fas fa-filter"></i> Resultados da busca
-                            </div>
+                            <div class="stat-trend"></div>
                         </div>
                     </div>
                 </div>
@@ -536,27 +525,31 @@ export class StudentsListController {
 
     updateStats() {
         const total = this.students.length;
-        const active = this.students.filter(s => s.isActive).length;
-        const withSubs = this.students.filter(s => (s._count?.subscriptions || 0) > 0).length;
+        // Ativos = com matrícula/assinatura ativa
+        const withSubs = this.students.filter(s => (s._count?.subscriptions || s.totalSubscriptions || 0) > 0).length;
+        // Inativos = sem matrícula ou isActive = false
+        const inactive = this.students.filter(s => !s.isActive || (s._count?.subscriptions || s.totalSubscriptions || 0) === 0).length;
+        const filtered = this.getFiltered().length;
         
         // Calculate percentages
-        const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
-        const subsPercentage = total > 0 ? Math.round((withSubs / total) * 100) : 0;
+        const activePercentage = total > 0 ? Math.round((withSubs / total) * 100) : 0;
+        const inactivePercentage = total > 0 ? Math.round((inactive / total) * 100) : 0;
         
         // Animate counters
-        this.animateCounter('total-students', 0, total, 1000);
-        this.animateCounter('active-students', 0, active, 1000);
-        this.animateCounter('with-subs', 0, withSubs, 1000);
+        this.animateCounter('total-students', 0, total, 800);
+        this.animateCounter('active-students', 0, withSubs, 800);
+        this.animateCounter('with-subs', 0, inactive, 800);
+        this.animateCounter('filtered-students', 0, filtered, 800);
         
         // Update percentage trends
         const activeTrend = this.container?.querySelector('#active-percentage');
         if (activeTrend) {
-            activeTrend.innerHTML = `<i class="fas fa-check-circle"></i> ${activePercentage}% do total`;
+            activeTrend.innerHTML = `<i class="fas fa-check-circle"></i> ${activePercentage}% matriculados`;
         }
         
         const subsTrend = this.container?.querySelector('#subs-percentage');
         if (subsTrend) {
-            subsTrend.innerHTML = `<i class="fas fa-credit-card"></i> ${subsPercentage}% com plano`;
+            subsTrend.innerHTML = `<i class="fas fa-user-slash"></i> ${inactivePercentage}% sem plano`;
         }
     }
 

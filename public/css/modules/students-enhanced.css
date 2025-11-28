@@ -3929,144 +3929,191 @@ details[open] .collapsible-header::after {
     
     .view-toggle,
     [data-view-toggle],
-    .btn-toggle-view {
+    .btn-toggle-view,
+    #toggle-view-btn {
         display: none !important;
     }
 }
 
-/* HEADER MOBILE */
+/* HEADER MOBILE - Compact */
 @media (max-width: 768px) {
-    .students-module .module-header,
-    .students-module .module-header-premium {
-        padding: 1rem !important;
-        flex-direction: column !important;
-        gap: 1rem !important;
-        align-items: stretch !important;
+    .students-module .module-header-premium,
+    .students-premium .module-header-premium {
+        padding: 0.75rem 1rem !important;
     }
     
-    .students-module .module-header h1,
-    .students-module .module-header-premium h1 {
-        font-size: 1.25rem !important;
-        margin-bottom: 0.5rem !important;
+    .students-module .header-content,
+    .students-premium .header-content {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .students-module .header-left,
+    .students-premium .header-left {
+        text-align: center;
+    }
+    
+    .students-module .page-title,
+    .students-premium .page-title {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .students-module .breadcrumb,
+    .students-premium .breadcrumb {
+        font-size: 0.7rem !important;
+        justify-content: center;
+        margin-top: 0.25rem;
     }
     
     .students-module .header-actions,
-    .students-module .action-group-horizontal {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
+    .students-premium .header-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
         gap: 0.5rem !important;
-        width: 100% !important;
+        justify-content: center !important;
     }
     
-    .students-module .header-actions .btn,
-    .students-module .header-actions button,
     .students-module .header-actions .btn-form,
-    .students-module .action-group-horizontal .btn-form {
-        width: 100% !important;
-        justify-content: center !important;
-        padding: 0.75rem 0.5rem !important;
-        font-size: 0.8rem !important;
-        min-height: 44px !important;
+    .students-premium .header-actions .btn-form {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.75rem !important;
+        flex: 0 0 auto !important;
     }
-}
-
-@media (max-width: 480px) {
-    .students-module .header-actions .btn span:not(.sr-only),
-    .students-module .header-actions button span,
-    .students-module .action-group-horizontal .btn-form span {
+    
+    .students-module .header-actions .btn-text,
+    .students-premium .header-actions .btn-text {
         display: none !important;
     }
     
-    .students-module .header-actions .btn i,
-    .students-module .header-actions button i,
-    .students-module .action-group-horizontal .btn-form i {
-        margin: 0 !important;
-        font-size: 1.1rem !important;
+    .students-module .header-actions .btn-icon,
+    .students-premium .header-actions .btn-icon {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
     }
 }
 
-/* STATS CARDS MOBILE */
+/* STATS CARDS MOBILE - Horizontal Compact */
 @media (max-width: 768px) {
     .students-module .module-stats,
-    .students-module .stats-animated,
-    .students-module .stats-grid,
-    .students-module .stats-cards {
+    .students-premium .module-stats,
+    .stats-animated {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem !important;
         padding: 0.5rem 1rem !important;
+        margin: 0 !important;
     }
     
     .students-module .stat-card-enhanced,
-    .students-module .stat-card {
-        padding: 0.875rem !important;
+    .students-premium .stat-card-enhanced {
+        padding: 0.5rem !important;
         min-height: auto !important;
+        flex-direction: column !important;
+        text-align: center !important;
     }
     
-    .students-module .stat-card-enhanced .stat-icon,
-    .students-module .stat-card .stat-icon {
+    .students-module .stat-icon-wrapper,
+    .students-premium .stat-icon-wrapper {
+        display: none !important;
+    }
+    
+    .students-module .stat-content,
+    .students-premium .stat-content {
+        width: 100% !important;
+    }
+    
+    .students-module .stat-value,
+    .students-premium .stat-value {
         font-size: 1.25rem !important;
-        width: 36px !important;
-        height: 36px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
     }
     
-    .students-module .stat-card-enhanced .stat-value,
-    .students-module .stat-card .stat-value {
-        font-size: 1.125rem !important;
+    .students-module .stat-label,
+    .students-premium .stat-label {
+        font-size: 0.6rem !important;
+        text-transform: uppercase !important;
+        margin-top: 0.15rem !important;
+        line-height: 1.2 !important;
     }
     
-    .students-module .stat-card-enhanced .stat-label,
-    .students-module .stat-card .stat-label {
-        font-size: 0.7rem !important;
+    .students-module .stat-trend,
+    .students-premium .stat-trend {
+        display: none !important;
     }
 }
 
 @media (max-width: 400px) {
     .students-module .module-stats,
-    .students-module .stats-animated {
-        grid-template-columns: 1fr !important;
+    .stats-animated {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
 
-/* FILTROS MOBILE */
+/* FILTERS MOBILE - Collapsible & Compact */
 @media (max-width: 768px) {
     .students-module .module-filters-premium,
-    .students-module .filters-section,
-    .students-module .students-filters {
-        padding: 1rem !important;
-        margin: 0 !important;
+    .students-premium .module-filters-premium,
+    .filters-enhanced {
+        padding: 0.75rem 1rem !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .students-module .filters-header,
+    .students-premium .filters-header {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .students-module .filters-title,
+    .students-premium .filters-title {
+        font-size: 0.85rem !important;
     }
     
     .students-module .filter-row,
-    .students-module .filters-row,
-    .students-module .filter-group-container {
+    .students-premium .filter-row,
+    #filters-content {
+        display: flex !important;
         flex-direction: column !important;
-        gap: 0.75rem !important;
+        gap: 0.5rem !important;
     }
     
     .students-module .filter-group,
-    .students-module .filter-item {
+    .students-premium .filter-group {
         width: 100% !important;
-        min-width: 0 !important;
+    }
+    
+    .students-module .filter-label,
+    .students-premium .filter-label {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.25rem !important;
     }
     
     .students-module .filter-input,
     .students-module .filter-select,
-    .students-module input[type="search"],
-    .students-module input[type="text"],
-    .students-module select {
-        width: 100% !important;
-        padding: 0.875rem 1rem !important;
-        font-size: 16px !important;
-        border-radius: 8px !important;
+    .students-premium .filter-input,
+    .students-premium .filter-select {
+        padding: 0.6rem 0.75rem !important;
+        font-size: 14px !important;
     }
     
     .students-module .filter-actions,
-    .students-module .filter-buttons {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
+    .students-premium .filter-actions {
+        display: flex !important;
         gap: 0.5rem !important;
-        margin-top: 0.75rem !important;
+        margin-top: 0.5rem !important;
+    }
+    
+    .students-module .filter-actions .btn-form,
+    .students-premium .filter-actions .btn-form {
+        flex: 1 !important;
+        padding: 0.5rem !important;
+        font-size: 0.75rem !important;
     }
 }
 
