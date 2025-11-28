@@ -71,17 +71,30 @@ const AuthModule = {
 
   async checkSession() {
     try {
+      console.log('🔍 Checking session...');
       const { data: { session }, error } = await supabaseClient.auth.getSession();
-      if (error) return;
+      console.log('🔍 Session result:', session ? 'Found' : 'None', error ? `Error: ${error.message}` : '');
+      
+      if (error) {
+        console.error('❌ Session error:', error);
+        return;
+      }
       if (session) {
+        console.log('✅ Valid session for:', session.user.email);
         await this.syncUserWithBackend(session);
         this.currentUser = session.user;
         this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
+        this.hasHandledPersistentSignIn = true;
+        
         // Session válida - esconder overlay de login
         const authOverlay = document.getElementById('auth-overlay');
-        if (authOverlay) authOverlay.style.display = 'none';
+        if (authOverlay) {
+          authOverlay.style.display = 'none';
+          console.log('✅ Auth overlay hidden');
+        }
         console.log('✅ Session válida - usuário autenticado');
       } else {
+        console.log('⚠️ No session - showing login');
         // Sem session - mostrar login
         const authOverlay = document.getElementById('auth-overlay');
         if (authOverlay) authOverlay.style.display = 'block';
@@ -92,51 +105,54 @@ const AuthModule = {
 
   setupAuthStateListener() {
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      console.log(`🔔 Auth event: ${event}`);
+      
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         await this.syncUserWithBackend(session);
         this.currentUser = session.user;
         this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
         document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
-        // Após login, recarregar página para mostrar dashboard com menu lateral
+        
+        // Para SIGNED_IN, apenas esconder overlay - NÃO recarregar página
+        // O reload causa loop infinito de autenticação
         if (event === 'SIGNED_IN') {
-          try {
-            if (sessionStorage.getItem(SIGNIN_RELOAD_FLAG)) {
-              sessionStorage.removeItem(SIGNIN_RELOAD_FLAG);
-              console.log('✅ Login detectado após reload anterior - mantendo sessão ativa sem novo refresh');
-              this.hasHandledPersistentSignIn = true;
-            } else {
-              if (this.hasHandledPersistentSignIn) {
-                console.log('ℹ️ Evento SIGNED_IN ignorado (sessão já estabilizada)');
-                return;
-              }
-              console.log('✅ Login realizado - recarregando dashboard');
-              sessionStorage.setItem(SIGNIN_RELOAD_FLAG, '1');
-              window.location.reload();
-            }
-          } catch (storageError) {
-            console.warn('⚠️ Falha ao gerenciar flag de reload pós-login:', storageError);
-            window.location.reload();
+          console.log('✅ SIGNED_IN detectado - atualizando UI');
+          const authOverlay = document.getElementById('auth-overlay');
+          if (authOverlay) authOverlay.style.display = 'none';
+          
+          // Se estiver na página de login, redirecionar para home
+          if (window.location.pathname.includes('login')) {
+            window.location.href = '/';
+            return;
           }
+          
+          // Marcar como já processado para evitar loops
+          this.hasHandledPersistentSignIn = true;
+        }
+        
+        // TOKEN_REFRESHED é normal e silencioso
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed silently');
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log('🚪 SIGNED_OUT detectado');
         this.currentUser = null;
         this.currentOrganization = null;
-        ['token', 'organizationId', 'userId', 'userRole'].forEach(k => localStorage.removeItem(k));
+        this.hasHandledPersistentSignIn = false;
+        
+        // Limpar localStorage
+        ['token', 'organizationId', 'activeOrganizationId', 'userId', 'userEmail', 'userRole'].forEach(k => localStorage.removeItem(k));
+        
         document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
-        // Após logout, recarregar página para mostrar login
-        try {
-          if (sessionStorage.getItem(SIGNOUT_RELOAD_FLAG)) {
-            sessionStorage.removeItem(SIGNOUT_RELOAD_FLAG);
-            console.log('✅ Logout processado após reload - aguardando nova autenticação');
-            this.hasHandledPersistentSignIn = false;
-          } else {
-            console.log('✅ Logout realizado - recarregando para login');
-            sessionStorage.setItem(SIGNOUT_RELOAD_FLAG, '1');
-            window.location.reload();
-          }
-        } catch (storageError) {
-          console.warn('⚠️ Falha ao gerenciar flag de reload pós-logout:', storageError);
-          window.location.reload();
+        
+        // Mostrar overlay de login
+        const authOverlay = document.getElementById('auth-overlay');
+        if (authOverlay) {
+          authOverlay.style.display = 'block';
+          this.renderLoginForm();
+        } else {
+          // Se não tem overlay, redirecionar para login
+          window.location.href = '/login.html';
         }
       }
     });
