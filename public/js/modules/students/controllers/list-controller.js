@@ -45,6 +45,7 @@ export class StudentsListController {
         targetContainer.setAttribute('data-module', 'students');
         targetContainer.setAttribute('data-active', 'true');
         targetContainer.classList.add('module-active');
+        targetContainer.classList.add('students-module');
 
         this.renderHTML();
         this.bindEvents(targetContainer);
