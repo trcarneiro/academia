@@ -207,7 +207,7 @@
     background: var(--color-background);
 }
 
-/* Dark Mode Support */
+/* Dark Mode Support - APENAS quando explicitamente ativado */
 [data-theme="dark"] {
     --color-surface: var(--color-surface-dark);
     --color-background: var(--color-background-dark);
@@ -215,12 +215,8 @@
     --color-text: var(--color-text-dark);
 }
 
-/* Dark Mode Support (preferência do sistema) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-surface: var(--color-surface-dark);
-        --color-background: var(--color-background-dark);
-        --color-border: var(--color-border-dark);
-        --color-text: var(--color-text-dark);
-    }
-}
+/* 
+ * Dark Mode automático DESABILITADO
+ * O app sempre usa tema claro por padrão
+ * Para ativar dark mode, adicione data-theme="dark" ao <html>
+ */

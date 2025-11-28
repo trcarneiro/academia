@@ -525,31 +525,31 @@ export class StudentsListController {
 
     updateStats() {
         const total = this.students.length;
-        // Ativos = com matrícula/assinatura ativa
-        const withSubs = this.students.filter(s => (s._count?.subscriptions || s.totalSubscriptions || 0) > 0).length;
-        // Inativos = sem matrícula ou isActive = false
-        const inactive = this.students.filter(s => !s.isActive || (s._count?.subscriptions || s.totalSubscriptions || 0) === 0).length;
+        // Com Plano = tem pelo menos uma subscription cadastrada
+        const withPlan = this.students.filter(s => (s._count?.subscriptions || s.totalSubscriptions || 0) > 0).length;
+        // Sem Plano = não tem nenhuma subscription
+        const withoutPlan = total - withPlan;
         const filtered = this.getFiltered().length;
         
         // Calculate percentages
-        const activePercentage = total > 0 ? Math.round((withSubs / total) * 100) : 0;
-        const inactivePercentage = total > 0 ? Math.round((inactive / total) * 100) : 0;
+        const withPlanPercentage = total > 0 ? Math.round((withPlan / total) * 100) : 0;
+        const withoutPlanPercentage = total > 0 ? Math.round((withoutPlan / total) * 100) : 0;
         
         // Animate counters
         this.animateCounter('total-students', 0, total, 800);
-        this.animateCounter('active-students', 0, withSubs, 800);
-        this.animateCounter('with-subs', 0, inactive, 800);
+        this.animateCounter('active-students', 0, withPlan, 800);
+        this.animateCounter('with-subs', 0, withoutPlan, 800);
         this.animateCounter('filtered-students', 0, filtered, 800);
         
         // Update percentage trends
         const activeTrend = this.container?.querySelector('#active-percentage');
         if (activeTrend) {
-            activeTrend.innerHTML = `<i class="fas fa-check-circle"></i> ${activePercentage}% matriculados`;
+            activeTrend.innerHTML = `<i class="fas fa-check-circle"></i> ${withPlanPercentage}% com plano`;
         }
         
         const subsTrend = this.container?.querySelector('#subs-percentage');
         if (subsTrend) {
-            subsTrend.innerHTML = `<i class="fas fa-user-slash"></i> ${inactivePercentage}% sem plano`;
+            subsTrend.innerHTML = `<i class="fas fa-user-slash"></i> ${withoutPlanPercentage}% sem plano`;
         }
     }
 
