@@ -916,6 +916,14 @@ export class StudentsListController {
     }
 
     // Helper methods for enhanced UI
+    getInitials(name) {
+        if (!name || name === 'Sem nome') return '?';
+        const parts = name.trim().split(' ').filter(Boolean);
+        if (parts.length === 0) return '?';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
     getBeltEmoji(belt) {
         const belts = {
             'WHITE': '⚪',
@@ -1067,9 +1075,11 @@ export class StudentsListController {
 
         cardsContainer.innerHTML = this.students.map((student, index) => {
             const user = student.user || {};
+            const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Sem nome';
+            const initials = this.getInitials(fullName);
             const belt = student.currentBelt || 'WHITE';
             const category = student.category || 'ADULT';
-            const status = student.status || 'ACTIVE';
+            const isActive = student.isActive !== false;
             const attendanceRate = this.calculateAttendanceRate(student);
             
             return `
@@ -1080,21 +1090,22 @@ export class StudentsListController {
                     
                     <!-- Card Header with Avatar -->
                     <div class="card-header-premium">
-                        <div class="student-avatar large">
-                            <img src="${user.avatar || '/images/default-avatar.png'}" 
-                                 alt="${user.name}"
-                                 onerror="this.src='/images/default-avatar.png'">
+                        <div class="student-avatar large ${user.avatarUrl ? '' : 'avatar-initials'}">
+                            ${user.avatarUrl 
+                                ? `<img src="${user.avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
+                                : `<span>${initials}</span>`
+                            }
                         </div>
                         <div class="student-status-badge">
-                            <span class="status-badge status-${status.toLowerCase()} pulse-animation">
-                                ${status === 'ACTIVE' ? '✅ Ativo' : '⏸️ Inativo'}
+                            <span class="status-badge status-${isActive ? 'active' : 'inactive'} pulse-animation">
+                                ${isActive ? '✅ ATIVO' : '⏸️ INATIVO'}
                             </span>
                         </div>
                     </div>
 
                     <!-- Card Body -->
                     <div class="card-body-premium">
-                        <h3 class="student-name-large">${user.name || 'Sem nome'}</h3>
+                        <h3 class="student-name-large">${fullName}</h3>
                         
                         <div class="student-meta-cards">
                             <div class="meta-badge">
