@@ -2836,6 +2836,64 @@
     }
 }
 
+/* BOTÃO DE CAPTURA OVERLAY - DENTRO DA CÂMERA */
+.capture-btn-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border: none;
+    cursor: pointer;
+    z-index: 100;
+    min-width: 200px;
+    min-height: 56px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.capture-btn-overlay:disabled {
+    opacity: 0.8;
+    cursor: wait;
+}
+
+.capture-btn-overlay.ready {
+    background: linear-gradient(135deg, #10b981, #059669);
+    animation: pulse-ready 1.5s ease-in-out infinite;
+}
+
+.capture-btn-overlay.searching {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.capture-btn-overlay.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.capture-btn-overlay i {
+    font-size: 1.25rem;
+}
+
+.capture-btn-overlay span {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@keyframes pulse-ready {
+    0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); }
+    50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 6px 30px rgba(16, 185, 129, 0.6); }
+}
+
+/* MOBILE - Esconder footer e instruções */
 @media (max-width: 768px) {
     .photo-capture-modal {
         background: #000;
@@ -2849,16 +2907,17 @@
         border-radius: 0;
         display: flex;
         flex-direction: column;
+        background: #000;
     }
     
     .modal-header-photo {
-        padding: 0.75rem 1rem;
+        padding: 0.5rem 1rem;
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         flex-shrink: 0;
     }
     
     .modal-header-photo h2 {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         color: white;
     }
     
@@ -2869,11 +2928,9 @@
     .btn-close-modal {
         color: white;
         background: rgba(255,255,255,0.2);
-    }
-    
-    .btn-close-modal:hover {
-        background: rgba(255,255,255,0.3);
-        color: white;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
     }
     
     .modal-body-photo {
@@ -2885,11 +2942,23 @@
         overflow: hidden;
     }
     
+    /* Esconder instruções em mobile */
+    .capture-instructions {
+        display: none !important;
+    }
+    
+    /* Esconder footer em mobile */
+    .modal-footer-photo.mobile-hidden {
+        display: none !important;
+    }
+    
     .camera-preview-container {
         flex: 1;
         min-height: 0;
         aspect-ratio: unset;
         border-radius: 0;
+        width: 100%;
+        height: 100%;
     }
     
     #photo-video {
@@ -2898,83 +2967,18 @@
         object-fit: cover;
     }
     
-    .face-feedback {
-        bottom: 10px;
-        padding: 0.6rem 1rem;
-        font-size: 0.8rem;
-        border-radius: 20px;
-        max-width: 90%;
-        text-align: center;
+    /* Botão de captura maior em mobile */
+    .capture-btn-overlay {
+        bottom: 30px;
+        padding: 1.25rem 2.5rem;
+        font-size: 1.1rem;
+        min-height: 64px;
+        min-width: 250px;
+        border-radius: 60px;
     }
     
-    .capture-instructions {
-        padding: 0.75rem 1rem;
-        border-radius: 0;
-        background: white;
-        flex-shrink: 0;
-        max-height: 30vh;
-        overflow-y: auto;
-    }
-    
-    .capture-instructions h3 {
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .capture-instructions ul li {
-        padding: 0.4rem 0;
-        font-size: 0.8rem;
-    }
-    
-    .modal-footer-photo {
-        padding: 0.75rem 1rem;
-        flex-direction: column;
-        gap: 0.5rem;
-        flex-shrink: 0;
-        background: white;
-        z-index: 100;
-        position: relative;
-    }
-    
-    .modal-footer-photo .btn-form {
-        width: 100%;
-        justify-content: center;
-        padding: 0.875rem;
-        font-size: 0.9rem;
-        min-height: 48px;
-        cursor: pointer;
-        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
-        touch-action: manipulation;
-    }
-    
-    .modal-footer-photo .btn-form:active {
-        transform: scale(0.98);
-        opacity: 0.9;
-    }
-    
-    .modal-footer-photo #capture-photo:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    .modal-footer-photo #capture-photo:not(:disabled) {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        border: none;
-    }
-    
-    .photo-preview {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .capture-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .capture-actions .btn-form {
-        width: 100%;
+    .capture-btn-overlay i {
+        font-size: 1.5rem;
     }
 }
 

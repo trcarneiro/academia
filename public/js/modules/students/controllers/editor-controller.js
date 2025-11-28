@@ -989,7 +989,7 @@ export class StudentEditorController {
         modal.innerHTML = `
             <div class="modal-content-photo">
                 <div class="modal-header-photo">
-                    <h2><i class="fas fa-camera"></i> Captura de Foto para Reconhecimento Facial</h2>
+                    <h2><i class="fas fa-camera"></i> Captura Facial</h2>
                     <button class="btn-close-modal" id="close-photo-modal">
                         <i class="fas fa-times"></i>
                     </button>
@@ -998,25 +998,15 @@ export class StudentEditorController {
                     <div class="camera-preview-container">
                         <video id="photo-video" autoplay playsinline></video>
                         <canvas id="photo-canvas" style="display: none;"></canvas>
-                        <div id="face-detection-feedback" class="face-feedback"></div>
-                    </div>
-                    <div class="capture-instructions">
-                        <h3><i class="fas fa-info-circle"></i> Instruções:</h3>
-                        <ul>
-                            <li>✅ Posicione o rosto centralizado na câmera</li>
-                            <li>✅ Mantenha boa iluminação no ambiente</li>
-                            <li>✅ Olhe diretamente para a câmera</li>
-                            <li>✅ Aguarde a detecção facial (✅ verde)</li>
-                            <li>❌ Evite óculos escuros ou bonés</li>
-                        </ul>
+                        <button id="capture-photo-main" class="capture-btn-overlay" disabled>
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Iniciando...</span>
+                        </button>
                     </div>
                 </div>
-                <div class="modal-footer-photo">
+                <div class="modal-footer-photo mobile-hidden">
                     <button class="btn-form btn-secondary-form" id="cancel-capture">
                         <i class="fas fa-times"></i> Cancelar
-                    </button>
-                    <button class="btn-form btn-primary-form" id="capture-photo" disabled>
-                        <i class="fas fa-camera"></i> Capturar Foto
                     </button>
                 </div>
             </div>
@@ -1027,50 +1017,47 @@ export class StudentEditorController {
         // Start camera and face detection
         this.startPhotoCamera();
         
-        // Event listeners - usando referência direta para garantir funcionamento
+        // Event listeners
         const closeBtn = modal.querySelector('#close-photo-modal');
         const cancelBtn = modal.querySelector('#cancel-capture');
-        const captureBtn = modal.querySelector('#capture-photo');
+        const captureBtn = modal.querySelector('#capture-photo-main');
         
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.closePhotoCaptureModal());
+            closeBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.closePhotoCaptureModal();
+            });
         }
         
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => this.closePhotoCaptureModal());
         }
         
+        // Botão principal de captura (overlay na câmera)
         if (captureBtn) {
-            captureBtn.addEventListener('click', (e) => {
+            const handleCapture = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('📸 Capture button clicked!');
                 if (!captureBtn.disabled) {
+                    console.log('📸 Capturing photo!');
                     this.captureStudentPhoto();
-                } else {
-                    console.warn('⚠️ Capture button is still disabled');
                 }
-            });
+            };
             
-            // Touch event for mobile
-            captureBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                console.log('📸 Capture button touched!');
-                if (!captureBtn.disabled) {
-                    this.captureStudentPhoto();
-                }
-            });
+            captureBtn.addEventListener('click', handleCapture);
+            captureBtn.addEventListener('touchend', handleCapture);
         }
     }
 
     async startPhotoCamera() {
         const video = document.getElementById('photo-video');
-        const feedback = document.getElementById('face-detection-feedback');
-        const captureBtn = document.getElementById('capture-photo');
+        const captureBtn = document.getElementById('capture-photo-main');
         
         try {
-            feedback.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando câmera...';
-            feedback.className = 'face-feedback loading';
+            // Update button state
+            captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Iniciando câmera...</span>';
+            captureBtn.disabled = true;
             
             // Request camera access
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -1093,29 +1080,26 @@ export class StudentEditorController {
                 };
             });
             
-            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Câmera iniciada! Aguarde detecção facial...';
-            feedback.className = 'face-feedback success';
-            
             // Start face detection (if face-api.js is available)
             if (window.faceapi) {
-                this.startFaceDetection(video, feedback, captureBtn);
+                this.startFaceDetection(video, captureBtn);
             } else {
-                // Fallback: just enable capture button after 2s
+                // Fallback: enable capture button after 1.5s
                 setTimeout(() => {
                     captureBtn.disabled = false;
-                    feedback.innerHTML = '<i class="fas fa-camera"></i> Pronto para capturar!';
-                    feedback.className = 'face-feedback ready';
-                }, 2000);
+                    captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
+                    captureBtn.classList.add('ready');
+                }, 1500);
             }
             
         } catch (error) {
             console.error('❌ Error starting camera:', error);
-            feedback.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro ao acessar câmera: ${error.message}`;
-            feedback.className = 'face-feedback error';
+            captureBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erro na câmera</span>';
+            captureBtn.classList.add('error');
         }
     }
 
-    async startFaceDetection(video, feedback, captureBtn) {
+    async startFaceDetection(video, captureBtn) {
         // Ensure face-api models are loaded
         try {
             const detectionInterval = setInterval(async () => {
@@ -1125,13 +1109,15 @@ export class StudentEditorController {
                     .withFaceDescriptor();
                 
                 if (detection) {
-                    feedback.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Rosto detectado! Pode capturar.';
-                    feedback.className = 'face-feedback detected';
+                    captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
+                    captureBtn.classList.remove('searching');
+                    captureBtn.classList.add('ready');
                     captureBtn.disabled = false;
                     this.currentFaceDescriptor = detection.descriptor;
                 } else {
-                    feedback.innerHTML = '<i class="fas fa-search"></i> Procurando rosto...';
-                    feedback.className = 'face-feedback searching';
+                    captureBtn.innerHTML = '<i class="fas fa-search"></i><span>Procurando rosto...</span>';
+                    captureBtn.classList.remove('ready');
+                    captureBtn.classList.add('searching');
                     captureBtn.disabled = true;
                 }
             }, 500);
@@ -1142,8 +1128,8 @@ export class StudentEditorController {
             console.error('❌ Face detection error:', error);
             // Fallback: enable capture anyway
             captureBtn.disabled = false;
-            feedback.innerHTML = '<i class="fas fa-camera"></i> Pronto para capturar!';
-            feedback.className = 'face-feedback ready';
+            captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
+            captureBtn.classList.add('ready');
         }
     }
 
