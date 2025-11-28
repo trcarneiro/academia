@@ -11,7 +11,7 @@ const updatePasswordSchema = z.object({
 });
 
 export default async function authRoutes(fastify: FastifyInstance) {
-  // Get user by email (for organization sync)
+  // Get user by email (for organization sync) - No auth required for initial sync
   fastify.get('/users/by-email', {
     schema: {
       // tags: ['Authentication'],
@@ -40,8 +40,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
           }
         }
       }
-    },
-    preHandler: [authenticateToken]
+    }
+    // NOTE: No authenticateToken - this endpoint is called during initial sync
+    // before the frontend has a backend JWT token
   }, AuthController.getUserByEmail);
 
   // Register
