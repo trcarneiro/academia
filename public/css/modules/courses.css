@@ -340,22 +340,5 @@
     }
 }
 
-/* AGENTS.md: Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .module-isolated-courses {
-        --courses-surface: #1e293b;
-        --courses-background: #0f172a;
-        --courses-text: #f1f5f9;
-        --courses-muted: #94a3b8;
-    }
-    
-    .data-card-premium.course-row {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-    
-    .empty-state-premium {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-}
+/* Dark mode disabled - app uses light theme only
+   See design-system/tokens.css for color definitions */

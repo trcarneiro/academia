@@ -316,7 +316,7 @@
 .instructors-isolated .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #DC2626;
+    color: var(--primary-color, #667eea);
     margin-bottom: 0.5rem;
 }
 
@@ -386,9 +386,9 @@
 
 .instructors-isolated .instructor-filter.active,
 .instructors-isolated .instructor-sort.active {
-    background: #DC2626;
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
     color: white;
-    border-color: #DC2626;
+    border-color: var(--primary-color, #667eea);
 }
 
 .instructors-isolated .search-group {
@@ -413,8 +413,8 @@
 
 .instructors-isolated .search-input:focus {
     outline: none;
-    border-color: #DC2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 /* Data Cards */
@@ -472,7 +472,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #DC2626, #B91C1C);
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
 }
 
 .instructors-isolated .instructor-card.active::before {
@@ -501,7 +501,7 @@
     height: 80px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid rgba(220, 38, 38, 0.3);
+    border: 3px solid rgba(102, 126, 234, 0.3);
     flex-shrink: 0;
 }
 
@@ -526,7 +526,7 @@
 }
 
 .instructors-isolated .instructor-title {
-    color: #DC2626;
+    color: var(--primary-color, #667eea);
     font-size: 0.875rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
@@ -724,8 +724,8 @@
 }
 
 .instructors-isolated .specialties-count {
-    background: rgba(220, 38, 38, 0.2);
-    color: #DC2626;
+    background: rgba(102, 126, 234, 0.2);
+    color: var(--primary-color, #667eea);
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -739,13 +739,13 @@
 }
 
 .instructors-isolated .specialty-tag {
-    background: rgba(220, 38, 38, 0.1);
-    color: #DC2626;
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color, #667eea);
     padding: 0.25rem 0.75rem;
     border-radius: 16px;
     font-size: 0.75rem;
     font-weight: 500;
-    border: 1px solid rgba(220, 38, 38, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 /* Instructor Schedule */
@@ -908,12 +908,13 @@
 }
 
 .instructors-isolated .btn-primary {
-    background: #DC2626;
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
     color: white;
 }
 
 .instructors-isolated .btn-primary:hover {
-    background: #B91C1C;
+    background: linear-gradient(135deg, #7c8ff0 0%, #8a5bb3 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .instructors-isolated .btn-secondary {
@@ -1779,17 +1780,17 @@
 
 /* Accessibility */
 .instructors-isolated .instructor-card:focus-visible {
-    outline: 2px solid #DC2626;
+    outline: 2px solid var(--primary-color, #667eea);
     outline-offset: 2px;
 }
 
 .instructors-isolated .btn:focus-visible {
-    outline: 2px solid #DC2626;
+    outline: 2px solid var(--primary-color, #667eea);
     outline-offset: 2px;
 }
 
 .instructors-isolated .search-input:focus-visible {
-    outline: 2px solid #DC2626;
+    outline: 2px solid var(--primary-color, #667eea);
     outline-offset: 2px;
 }
 

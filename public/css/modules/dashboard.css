@@ -7,27 +7,40 @@
     width: 100%;
     margin: 0;
     padding: 0;
+    --primary-color: var(--primary-color, #667eea);
+    --secondary-color: var(--secondary-color, #764ba2);
+    --gradient-primary: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    --color-surface: var(--color-surface, #ffffff);
+    --color-background: var(--color-background, #f8fafc);
+    --color-border: var(--color-border, #e2e8f0);
+    --color-text: var(--color-text, #1f2937);
+    --color-text-muted: var(--color-text-muted, #6b7280);
 }
 
 /* Dashboard Header */
 .dashboard-isolated .dashboard-header {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard-isolated .dashboard-header h2 {
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1.75rem;
     margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .dashboard-isolated .dashboard-actions {
@@ -66,30 +79,31 @@
 }
 
 .dashboard-isolated .metric-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 1.5rem;
     transition: all 0.3s ease;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard-isolated .metric-card:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-background);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
 .dashboard-isolated .metric-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--color-info);
+    color: var(--primary-color, #667eea);
     margin-bottom: 0.5rem;
     line-height: 1;
 }
 
 .dashboard-isolated .metric-label {
-    color: var(--color-border);
+    color: var(--color-text);
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.75rem;
@@ -121,20 +135,21 @@
 
 /* Smart Cards */
 .dashboard-isolated .smart-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard-isolated .smart-card:hover {
-    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-isolated .smart-card h3 {
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1.25rem;
     margin-bottom: 1rem;
     display: flex;
@@ -147,8 +162,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
     line-height: 1.4;
 }
 
@@ -168,11 +183,11 @@
 
 .dashboard-isolated .smart-card .activity-title {
     font-weight: 600;
-    color: var(--color-background);
+    color: var(--color-text);
 }
 
 .dashboard-isolated .smart-card .activity-subtitle {
-    color: var(--color-text-light);
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -191,14 +206,15 @@
 }
 
 .dashboard-isolated .chart-container {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard-isolated .chart-container h3 {
-    color: var(--color-background);
+    color: var(--color-text);
     font-size: 1.125rem;
     margin-bottom: 1rem;
     display: flex;
@@ -208,13 +224,13 @@
 
 .dashboard-isolated .chart-placeholder {
     height: 200px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px dashed rgba(255, 255, 255, 0.2);
+    background: var(--color-background);
+    border: 1px dashed var(--color-border);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-light);
+    color: var(--color-text-muted);
     font-size: 0.875rem;
 }
 
@@ -227,8 +243,8 @@
 }
 
 .dashboard-isolated .quick-action {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 1rem;
     display: flex;
@@ -237,13 +253,15 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
-    color: var(--color-border);
+    color: var(--color-text);
+    min-height: 44px;
 }
 
 .dashboard-isolated .quick-action:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--color-background);
+    background: var(--color-background);
+    color: var(--primary-color);
     transform: translateY(-1px);
+    border-color: var(--primary-color);
 }
 
 .dashboard-isolated .quick-action-icon {
@@ -253,9 +271,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(102, 126, 234, 0.1);
     border-radius: 8px;
-    color: var(--color-info);
+    color: var(--primary-color, #667eea);
 }
 
 .dashboard-isolated .quick-action-content {
@@ -269,7 +287,7 @@
 
 .dashboard-isolated .quick-action-subtitle {
     font-size: 0.75rem;
-    color: var(--color-text-light);
+    color: var(--color-text-muted);
 }
 
 /* Status Indicators */
@@ -313,7 +331,7 @@
 
 /* Loading States */
 .dashboard-isolated .loading-skeleton {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+    background: linear-gradient(90deg, var(--color-border) 25%, var(--color-background) 50%, var(--color-border) 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
     border-radius: 4px;
@@ -332,7 +350,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(248, 250, 252, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -343,8 +361,8 @@
 .dashboard-isolated .loading-spinner {
     width: 2rem;
     height: 2rem;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top: 2px solid var(--color-info);
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--primary-color, #667eea);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -449,22 +467,7 @@
     }
 }
 
-/* Theme Support */
-.theme-light .dashboard-isolated .metric-card,
-.theme-light .dashboard-isolated .smart-card,
-.theme-light .dashboard-isolated .chart-container {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
-.theme-light .dashboard-isolated .metric-label,
-.theme-light .dashboard-isolated .smart-card .activity-item {
-    color: #374151;
-}
-
-.theme-light .dashboard-isolated .smart-card .activity-title {
-    color: var(--color-text);
-}
+/* Light theme is now the default - no overrides needed */
 
 /* Accessibility */
 .dashboard-isolated .metric-card:focus-visible {

@@ -360,19 +360,17 @@
     flex-wrap: wrap;
 }
 
-/* ============================= MODALS ============================= */
-.modal-overlay {
+/* ============================= FULLSCREEN EDITOR (REPLACES MODALS) ============================= */
+.module-isolated-agents-fullscreen {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--color-background, #f8fafc);
     z-index: 10000;
-    padding: 20px;
+    overflow-y: auto;
+    padding: 2rem;
     animation: fadeIn 0.2s ease;
 }
 
@@ -381,16 +379,24 @@
     to { opacity: 1; }
 }
 
-.modal-dialog {
+.module-isolated-agents-editor {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
     width: 100%;
-    max-height: 90vh;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     animation: slideUp 0.3s ease;
+}
+
+.module-isolated-agents-editor-lg {
+    max-width: 1000px;
+}
+
+.module-isolated-agents-editor-xl {
+    max-width: 1400px;
 }
 
 @keyframes slideUp {
@@ -404,64 +410,62 @@
     }
 }
 
-.modal-dialog.modal-lg {
-    max-width: 800px;
-}
-
-.modal-dialog.modal-xl {
-    max-width: 1200px;
-}
-
-.modal-header {
+.module-isolated-agents-editor-header {
     padding: 20px 24px;
     border-bottom: 1px solid var(--border-color, #e1e4e8);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px 12px 0 0;
+    color: white;
 }
 
-.modal-header h3 {
+.module-isolated-agents-editor-header h3 {
     margin: 0;
     font-size: 20px;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 10px;
+    color: white;
 }
 
-.modal-close {
-    background: none;
+.module-isolated-agents-editor-close {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     font-size: 28px;
-    color: var(--text-secondary, #666);
+    color: white;
     cursor: pointer;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 8px;
     transition: all 0.2s ease;
 }
 
-.modal-close:hover {
-    background: var(--background-light, #f8f9fa);
-    color: var(--text-primary, #1a1a1a);
+.module-isolated-agents-editor-close:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
-.modal-body {
+.module-isolated-agents-editor-body {
     padding: 24px;
     overflow-y: auto;
     flex: 1;
 }
 
-.modal-footer {
+.module-isolated-agents-editor-footer {
     padding: 16px 24px;
     border-top: 1px solid var(--border-color, #e1e4e8);
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+    background: var(--background-light, #f8f9fa);
+    border-radius: 0 0 12px 12px;
 }
 
 /* ============================= MODAL CONTENT ============================= */
@@ -913,96 +917,29 @@
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* ============================= MCP EXECUTION MODAL ============================= */
+/* ============================= MCP EXECUTION FULLSCREEN ============================= */
 
-/* Modal overlay */
-#mcp-execution-modal.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.3s ease;
+/* MCP execution fullscreen editor */
+#mcp-execution-fullscreen.module-isolated-agents-fullscreen {
+    background: var(--color-background, #f8fafc);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+#mcp-execution-fullscreen .module-isolated-agents-editor {
+    max-width: 900px;
 }
 
-/* Modal dialog */
-#mcp-execution-modal .modal-dialog {
-    background: white;
-    border-radius: 12px;
-    max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Modal header com gradiente */
-#mcp-execution-modal .modal-header.bg-gradient-primary {
+/* Header with gradient */
+#mcp-execution-fullscreen .module-isolated-agents-editor-header.bg-gradient-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 20px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
-#mcp-execution-modal .modal-header h3 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
+#mcp-execution-fullscreen .module-isolated-agents-editor-header h3 {
     color: white;
 }
 
-#mcp-execution-modal .modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 24px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#mcp-execution-modal .modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* Modal body */
-#mcp-execution-modal .modal-body {
-    padding: 24px;
-    max-height: calc(90vh - 180px);
-    overflow-y: auto;
-}
-
-/* Alert dentro do modal */
-#mcp-execution-modal .alert-success {
+/* Alert inside editor */
+#mcp-execution-fullscreen .alert-success {
     background: #d1fae5;
     color: #065f46;
     padding: 12px 16px;
@@ -1011,7 +948,7 @@
 }
 
 /* Code blocks */
-#mcp-execution-modal .code-block {
+#mcp-execution-fullscreen .code-block {
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
@@ -1025,7 +962,7 @@
 }
 
 /* Badges */
-#mcp-execution-modal .badge {
+#mcp-execution-fullscreen .badge {
     display: inline-block;
     padding: 4px 12px;
     border-radius: 12px;
@@ -1033,47 +970,20 @@
     font-weight: 500;
 }
 
-#mcp-execution-modal .badge-primary {
+#mcp-execution-fullscreen .badge-primary {
     background: #ddd6fe;
     color: #5b21b6;
 }
 
-/* Modal footer */
-#mcp-execution-modal .modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid #e5e7eb;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-/* Utility classes */
-.mb-3 {
-    margin-bottom: 16px;
-}
-
-.d-flex {
-    display: flex;
-}
-
-.gap-2 {
-    gap: 8px;
-}
-
-.text-muted {
-    color: #6b7280;
-}
-
-/* Responsive modal */
+/* Responsive */
 @media (max-width: 768px) {
-    #mcp-execution-modal .modal-dialog {
-        width: 95%;
-        max-height: 95vh;
+    #mcp-execution-fullscreen {
+        padding: 1rem;
     }
     
-    #mcp-execution-modal .modal-header,
-    #mcp-execution-modal .modal-body,
-    #mcp-execution-modal .modal-footer {
+    #mcp-execution-fullscreen .module-isolated-agents-editor-header,
+    #mcp-execution-fullscreen .module-isolated-agents-editor-body,
+    #mcp-execution-fullscreen .module-isolated-agents-editor-footer {
         padding: 16px;
     }
 }
