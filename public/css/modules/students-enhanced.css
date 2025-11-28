@@ -4061,26 +4061,27 @@ details[open] .collapsible-header::after {
     .students-module .module-filters-premium,
     .students-premium .module-filters-premium,
     .filters-enhanced {
-        padding: 0.75rem 1rem !important;
-        margin: 0.5rem 0 !important;
+        padding: 0.5rem !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
     }
     
     .students-module .filters-header,
     .students-premium .filters-header {
-        margin-bottom: 0.5rem !important;
-    }
-    
-    .students-module .filters-title,
-    .students-premium .filters-title {
-        font-size: 0.85rem !important;
+        display: none !important;
     }
     
     .students-module .filter-row,
     .students-premium .filter-row,
     #filters-content {
-        display: flex !important;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 0.5rem !important;
+    }
+    
+    /* Busca ocupa linha inteira */
+    .students-module .filter-group:first-child {
+        grid-column: 1 / -1 !important;
     }
     
     .students-module .filter-group,
@@ -4090,23 +4091,24 @@ details[open] .collapsible-header::after {
     
     .students-module .filter-label,
     .students-premium .filter-label {
-        font-size: 0.7rem !important;
-        margin-bottom: 0.25rem !important;
+        display: none !important;
     }
     
     .students-module .filter-input,
     .students-module .filter-select,
     .students-premium .filter-input,
     .students-premium .filter-select {
-        padding: 0.6rem 0.75rem !important;
-        font-size: 14px !important;
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 6px !important;
     }
     
+    /* Botões de ação lado a lado */
     .students-module .filter-actions,
     .students-premium .filter-actions {
+        grid-column: 1 / -1 !important;
         display: flex !important;
         gap: 0.5rem !important;
-        margin-top: 0.5rem !important;
     }
     
     .students-module .filter-actions .btn-form,
@@ -4114,28 +4116,62 @@ details[open] .collapsible-header::after {
         flex: 1 !important;
         padding: 0.5rem !important;
         font-size: 0.75rem !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Esconder texto longo nos botões */
+    .students-module .filter-actions .btn-form i + span,
+    .students-premium .filter-actions .btn-form span:not(:first-child) {
+        display: none !important;
     }
 }
 
-/* CARDS GRID MOBILE */
+/* CARDS GRID MOBILE - FULL WIDTH */
 @media (max-width: 768px) {
+    /* Container principal ocupa tela toda */
+    .students-module,
+    .students-premium {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Cards view container */
+    .students-module #cards-view,
+    .students-module .cards-view,
+    .students-premium #cards-view {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
     .students-module .cards-grid,
     .students-module .students-cards-grid,
     .students-module #cards-view .cards-container,
     .students-module .students-cards {
         display: grid !important;
         grid-template-columns: 1fr !important;
-        gap: 0.875rem !important;
-        padding: 1rem !important;
+        gap: 0.75rem !important;
+        padding: 0 !important;
+        width: 100% !important;
     }
     
+    /* Student card - FULL WIDTH */
     .students-module .student-card,
     .students-module .student-card-enhanced,
     .students-module .data-card-premium {
+        width: 100% !important;
+        max-width: 100% !important;
         padding: 1rem !important;
         border-radius: 12px !important;
         margin: 0 !important;
+        box-sizing: border-box !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        background: #fff !important;
     }
     
     .students-module .student-card .card-header,
@@ -4226,6 +4262,91 @@ details[open] .collapsible-header::after {
     .students-module .card-stat-label {
         font-size: 0.6rem !important;
         text-transform: uppercase !important;
+    }
+    
+    /* Card Header Premium - Mobile */
+    .students-module .card-header-premium {
+        padding: 1rem !important;
+        border-radius: 12px 12px 0 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+    
+    .students-module .card-header-premium .student-avatar {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .students-module .student-status-badge {
+        position: static !important;
+    }
+    
+    .students-module .status-badge {
+        font-size: 0.65rem !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+    
+    /* Card Body Premium - Mobile */
+    .students-module .card-body-premium {
+        padding: 1rem !important;
+    }
+    
+    .students-module .student-name-large {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        margin: 0 0 0.5rem !important;
+        text-align: center !important;
+    }
+    
+    .students-module .student-meta-cards {
+        display: flex !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .students-module .meta-badge {
+        font-size: 0.75rem !important;
+    }
+    
+    .students-module .contact-info-card {
+        margin: 0.75rem 0 !important;
+        word-break: break-all !important;
+    }
+    
+    .students-module .contact-item {
+        font-size: 0.8rem !important;
+    }
+    
+    .students-module .stats-mini-card {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem !important;
+        background: #f8f9fa !important;
+        border-radius: 8px !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .students-module .stats-mini-card .stat-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 0.25rem !important;
+    }
+    
+    .students-module .stats-mini-card .stat-label {
+        font-size: 0.65rem !important;
+        text-transform: uppercase !important;
+        color: #666 !important;
+    }
+    
+    .students-module .stats-mini-card .stat-value {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
     }
     
     .students-module .student-card .card-actions,
