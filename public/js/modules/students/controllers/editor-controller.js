@@ -1027,10 +1027,40 @@ export class StudentEditorController {
         // Start camera and face detection
         this.startPhotoCamera();
         
-        // Event listeners
-        modal.querySelector('#close-photo-modal')?.addEventListener('click', () => this.closePhotoCaptureModal());
-        modal.querySelector('#cancel-capture')?.addEventListener('click', () => this.closePhotoCaptureModal());
-        modal.querySelector('#capture-photo')?.addEventListener('click', () => this.captureStudentPhoto());
+        // Event listeners - usando referência direta para garantir funcionamento
+        const closeBtn = modal.querySelector('#close-photo-modal');
+        const cancelBtn = modal.querySelector('#cancel-capture');
+        const captureBtn = modal.querySelector('#capture-photo');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closePhotoCaptureModal());
+        }
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.closePhotoCaptureModal());
+        }
+        
+        if (captureBtn) {
+            captureBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📸 Capture button clicked!');
+                if (!captureBtn.disabled) {
+                    this.captureStudentPhoto();
+                } else {
+                    console.warn('⚠️ Capture button is still disabled');
+                }
+            });
+            
+            // Touch event for mobile
+            captureBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                console.log('📸 Capture button touched!');
+                if (!captureBtn.disabled) {
+                    this.captureStudentPhoto();
+                }
+            });
+        }
     }
 
     async startPhotoCamera() {
