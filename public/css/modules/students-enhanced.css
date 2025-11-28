@@ -2832,45 +2832,119 @@
     }
     
     .camera-preview-container {
-        min-height: 400px;
+        min-height: 300px;
     }
 }
 
 @media (max-width: 768px) {
+    .photo-capture-modal {
+        background: #000;
+    }
+    
     .modal-content-photo {
         width: 100%;
         max-width: 100%;
-        height: 100vh;
-        max-height: 100vh;
+        height: 100%;
+        max-height: 100%;
         border-radius: 0;
+        display: flex;
+        flex-direction: column;
     }
     
     .modal-header-photo {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        flex-shrink: 0;
     }
     
     .modal-header-photo h2 {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
+        color: white;
+    }
+    
+    .modal-header-photo h2 i {
+        color: white;
+    }
+    
+    .btn-close-modal {
+        color: white;
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .btn-close-modal:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
     }
     
     .modal-body-photo {
-        padding: 1rem;
-        gap: 1rem;
+        padding: 0;
+        gap: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .camera-preview-container {
+        flex: 1;
+        min-height: 0;
+        aspect-ratio: unset;
+        border-radius: 0;
+    }
+    
+    #photo-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .face-feedback {
+        bottom: 10px;
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        border-radius: 20px;
+        max-width: 90%;
+        text-align: center;
+    }
+    
+    .capture-instructions {
+        padding: 0.75rem 1rem;
+        border-radius: 0;
+        background: white;
+        flex-shrink: 0;
+        max-height: 30vh;
+        overflow-y: auto;
+    }
+    
+    .capture-instructions h3 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .capture-instructions ul li {
+        padding: 0.4rem 0;
+        font-size: 0.8rem;
     }
     
     .modal-footer-photo {
-        padding: 1rem;
-        flex-direction: column-reverse;
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        background: white;
     }
     
     .modal-footer-photo .btn-form {
         width: 100%;
         justify-content: center;
+        padding: 0.875rem;
+        font-size: 0.9rem;
+        min-height: 48px;
     }
     
     .photo-preview {
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
     }
     
     .capture-actions {
