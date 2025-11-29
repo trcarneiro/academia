@@ -103,19 +103,25 @@ export class BiometricService {
       // Check if student exists
       const student = await prisma.student.findUnique({
         where: { id: studentId },
-        select: { id: true, organizationId: true }
+        select: { id: true, organizationId: true, userId: true }
       });
 
       if (!student) {
         throw new Error(`Student with ID ${studentId} not found`);
       }
 
+      // Check if photoUrl is a base64 data URL
+      const isBase64 = photoUrl.startsWith('data:image');
+      const photoBase64 = isBase64 ? photoUrl : null;
+      const finalPhotoUrl = isBase64 ? `biometric://${studentId}` : photoUrl;
+
       // Update or create biometric data
       const biometricData = await prisma.biometricData.upsert({
         where: { studentId },
         update: {
           embedding,
-          photoUrl,
+          photoUrl: finalPhotoUrl,
+          photoBase64,
           qualityScore,
           lastUpdatedAt: new Date(),
           isActive: true
@@ -123,7 +129,8 @@ export class BiometricService {
         create: {
           studentId,
           embedding,
-          photoUrl,
+          photoUrl: finalPhotoUrl,
+          photoBase64,
           qualityScore,
           enrollmentMethod: 'AUTO',
           isActive: true
@@ -137,9 +144,19 @@ export class BiometricService {
         }
       });
 
+      // Also update user's avatarUrl if we have base64 photo
+      if (student.userId && photoBase64) {
+        await prisma.user.update({
+          where: { id: student.userId },
+          data: { avatarUrl: photoBase64 }
+        });
+        logger.info(`Avatar updated for user ${student.userId}`);
+      }
+
       logger.info(`Face embedding saved for student ${studentId}`, {
         biometricId: biometricData.id,
-        qualityScore: biometricData.qualityScore
+        qualityScore: biometricData.qualityScore,
+        hasBase64: !!photoBase64
       });
 
       return biometricData;

@@ -801,17 +801,32 @@ export class StudentEditorController {
         if (!this.capturedPhoto) return;
         
         try {
-            const formData = new FormData();
-            formData.append('photo', this.capturedPhoto.blob, 'student-photo.jpg');
+            // The backend expects JSON with: embedding (array), photoUrl (string), qualityScore (number)
+            // We need to send the face descriptor and the photo as dataURL
             
-            if (this.capturedPhoto.descriptor) {
-                formData.append('descriptor', JSON.stringify(Array.from(this.capturedPhoto.descriptor)));
+            if (!this.capturedPhoto.descriptor) {
+                console.warn('⚠️ No face descriptor available, skipping biometric upload');
+                this.showMessage('⚠️ Foto salva apenas como avatar (sem dados biométricos)', 'warning');
+                return;
             }
             
-            const response = await fetch(`/api/biometric/register/${studentId}`, {
+            const payload = {
+                embedding: Array.from(this.capturedPhoto.descriptor),
+                photoUrl: this.capturedPhoto.dataUrl, // Base64 data URL
+                qualityScore: 85 // Default quality score
+            };
+            
+            console.log('📸 Uploading biometric data...', {
+                studentId,
+                embeddingLength: payload.embedding.length,
+                photoUrlLength: payload.photoUrl?.length
+            });
+            
+            const response = await fetch(`/api/biometric/students/${studentId}/face-embedding`, {
                 method: 'POST',
-                body: formData,
+                body: JSON.stringify(payload),
                 headers: {
+                    'Content-Type': 'application/json',
                     'x-organization-id': window.academyApp?.organizationId || localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
                 }
             });
