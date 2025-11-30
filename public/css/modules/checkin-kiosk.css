@@ -4006,3 +4006,1011 @@
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
+/* ============================================================================
+   MOBILE RESPONSIVENESS FIXES - 29/11/2025
+   Comprehensive mobile-first responsive design improvements
+   ============================================================================ */
+
+/* ===== SMALL MOBILE (max-width: 480px) - Priority Fixes ===== */
+@media (max-width: 480px) {
+    /* ----- CAMERA VIEW FIXES ----- */
+    .camera-section {
+        gap: 1rem;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+    }
+    
+    .camera-container {
+        aspect-ratio: 1 / 1;
+        max-height: 50vh;
+        border-width: 2px;
+    }
+    
+    .camera-column {
+        gap: 1rem;
+    }
+    
+    .face-outline {
+        width: 75%;
+        height: 75%;
+        max-width: 140px;
+        max-height: 180px;
+    }
+    
+    .face-status {
+        font-size: 1rem;
+        padding: 0.75rem;
+        bottom: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .face-status p {
+        font-size: 0.95rem;
+    }
+    
+    .detection-stats {
+        gap: 0.5rem;
+        padding: 0;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+    }
+    
+    .quality-badge,
+    .match-badge {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    /* ----- MANUAL SEARCH FIXES ----- */
+    .manual-search-card {
+        padding: 1rem;
+    }
+    
+    .search-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .search-header p {
+        font-size: 0.85rem;
+    }
+    
+    .search-box-tablet {
+        gap: 0.5rem;
+    }
+    
+    .search-input-tablet {
+        padding: 0.875rem;
+        font-size: 1rem;
+    }
+    
+    .btn-search-tablet {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .search-tips {
+        padding: 0.75rem;
+    }
+    
+    .search-tips p {
+        font-size: 0.9rem;
+    }
+    
+    .search-tips li {
+        font-size: 0.85rem;
+        padding: 0.35rem 0;
+    }
+    
+    /* ----- AUTOCOMPLETE DROPDOWN FIXES ----- */
+    .autocomplete-dropdown {
+        max-height: 60vh;
+        border-width: 2px;
+    }
+    
+    .autocomplete-item {
+        padding: 1rem;
+        min-height: 60px;
+        gap: 1rem;
+    }
+    
+    .autocomplete-item .student-name {
+        font-size: 1.1rem;
+    }
+    
+    .autocomplete-item .student-detail {
+        font-size: 0.95rem;
+    }
+    
+    /* ----- STUDENT SELECTION LIST FIXES ----- */
+    .student-list {
+        grid-template-columns: 1fr;
+        padding: 0.75rem;
+        gap: 0.75rem;
+        max-height: calc(100vh - 160px);
+    }
+    
+    .student-option {
+        padding: 1rem 1.25rem;
+        min-height: 64px;
+    }
+    
+    .student-option .student-name {
+        font-size: 1.15rem;
+    }
+    
+    .student-option .student-matric {
+        font-size: 0.9rem;
+    }
+    
+    /* ----- DASHBOARD HEADER FIXES ----- */
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+    
+    .student-photo-large {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+    
+    .avatar-placeholder {
+        font-size: 2rem;
+    }
+    
+    .student-info-large {
+        text-align: center;
+    }
+    
+    .student-name-huge {
+        font-size: clamp(1.4rem, 5vw, 2rem);
+        word-break: break-word;
+        line-height: 1.2;
+    }
+    
+    .student-meta-row {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .student-id-badge,
+    .student-phone {
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .btn-cancel-top {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        order: 1;
+        margin-top: 0.5rem;
+        justify-content: center;
+    }
+    
+    /* ----- STATS ROW FIXES ----- */
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stats-row .stat-card {
+        padding: 0.75rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.35rem;
+    }
+    
+    .stats-row .stat-icon {
+        font-size: 1.75rem;
+        width: auto;
+        height: auto;
+    }
+    
+    .stats-row .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .stats-row .stat-value-small {
+        font-size: 1rem;
+    }
+    
+    .stats-row .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .stats-row .stat-hint {
+        font-size: 0.7rem;
+    }
+    
+    /* ----- COURSE PROGRESS SECTION ----- */
+    .course-progress-section {
+        padding: 1.25rem;
+    }
+    
+    .course-progress-section .section-title {
+        font-size: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .course-name {
+        font-size: 1.15rem;
+    }
+    
+    .progress-stats {
+        font-size: 0.9rem;
+    }
+    
+    .progress-bar-container {
+        height: 24px;
+    }
+    
+    .graduation-badge {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    /* ----- CLASSES SECTION FIXES ----- */
+    .classes-section {
+        padding: 1.25rem;
+    }
+    
+    .classes-section .section-title {
+        font-size: 1.25rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .title-hint {
+        font-size: 0.9rem;
+        text-align: left;
+    }
+    
+    .classes-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .classes-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .class-card {
+        padding: 1rem;
+    }
+    
+    .class-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .class-time {
+        font-size: 1.1rem;
+    }
+    
+    .class-status-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .class-name {
+        font-size: 1rem;
+    }
+    
+    .class-details {
+        gap: 0.35rem;
+    }
+    
+    .class-instructor,
+    .class-room,
+    .class-slots {
+        font-size: 0.85rem;
+    }
+    
+    .btn-checkin-turma {
+        padding: 0.875rem;
+        font-size: 1rem;
+    }
+    
+    /* ----- UPCOMING CLASSES ----- */
+    .upcoming-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .upcoming-card {
+        padding: 0.875rem;
+    }
+    
+    .upcoming-time {
+        font-size: 1rem;
+    }
+    
+    .upcoming-name {
+        font-size: 0.95rem;
+    }
+    
+    .upcoming-countdown {
+        font-size: 0.85rem;
+    }
+    
+    /* ----- COURSE SELECTION (Basic View) ----- */
+    .courses-grid-large {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .course-card-large {
+        padding: 1.25rem;
+        gap: 1rem;
+        min-height: auto;
+    }
+    
+    .course-number {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+    
+    .course-name-large {
+        font-size: 1.15rem;
+    }
+    
+    .course-time,
+    .course-instructor {
+        font-size: 0.9rem;
+    }
+    
+    .course-check {
+        width: 36px;
+        height: 36px;
+        font-size: 1.5rem;
+    }
+    
+    /* ----- CONFIRM BUTTON FIXES ----- */
+    .dashboard-footer {
+        padding: 1rem;
+    }
+    
+    .btn-confirm-huge {
+        padding: 1.25rem 1.5rem;
+        font-size: 1.25rem;
+    }
+    
+    .btn-confirm-huge .icon {
+        font-size: 1.75rem;
+    }
+    
+    /* ----- REACTIVATION SCREEN FIXES ----- */
+    .reactivation-screen {
+        min-height: 100dvh;
+        padding: 1rem;
+    }
+    
+    .reactivation-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .reactivation-header h2 {
+        font-size: 1.75rem;
+    }
+    
+    .reactivation-content {
+        padding: 1.5rem;
+        width: 100%;
+    }
+    
+    .reactivation-message {
+        font-size: 1.2rem;
+    }
+    
+    .reactivation-submessage {
+        font-size: 1rem;
+    }
+    
+    .reactivation-benefits {
+        padding: 1.25rem;
+    }
+    
+    .reactivation-benefits h3 {
+        font-size: 1.1rem;
+    }
+    
+    .reactivation-benefits li {
+        font-size: 1rem;
+        padding: 0.4rem 0;
+    }
+    
+    .reactivation-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-reactivate,
+    .btn-back {
+        width: 100%;
+        flex: none;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    /* ----- PLANS GRID FIXES ----- */
+    .plans-title {
+        font-size: 1.25rem;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .plan-card {
+        padding: 1.5rem;
+    }
+    
+    .plan-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+    }
+    
+    .plan-name {
+        font-size: 1.2rem;
+        margin-top: 0.75rem;
+    }
+    
+    .price-value {
+        font-size: 1.75rem;
+    }
+    
+    .price-period {
+        font-size: 0.9rem;
+    }
+    
+    .plan-description {
+        font-size: 0.9rem;
+    }
+    
+    .plan-classes {
+        font-size: 0.95rem;
+    }
+    
+    .btn-select-plan {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+    
+    /* ----- PIX PAYMENT SCREEN FIXES ----- */
+    .pix-payment-screen {
+        padding: 0;
+    }
+    
+    .pix-title {
+        font-size: 1.4rem;
+    }
+    
+    .pix-plan {
+        font-size: 1rem;
+    }
+    
+    .pix-qr-container {
+        padding: 1rem;
+    }
+    
+    .pix-qr-image {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+    }
+    
+    .pix-no-qr {
+        width: 100%;
+        max-width: 200px;
+        height: 200px;
+        font-size: 0.9rem;
+    }
+    
+    .pix-copypaste {
+        margin-bottom: 1.5rem;
+    }
+    
+    .pix-label {
+        font-size: 0.9rem;
+    }
+    
+    .pix-code-container {
+        flex-direction: column;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+    
+    .pix-code-input {
+        padding: 0.75rem;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+    
+    .btn-copy-pix {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+    
+    .pix-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pix-help {
+        font-size: 0.85rem;
+    }
+    
+    /* ----- SUCCESS/ERROR SCREENS ----- */
+    .success-container,
+    .error-container {
+        padding: 1rem;
+    }
+    
+    .success-card,
+    .error-card {
+        padding: 1.5rem;
+    }
+    
+    .success-icon .icon-checkmark,
+    .success-checkmark {
+        font-size: 3.5rem;
+    }
+    
+    .success-details .student-name {
+        font-size: 1.4rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    
+    .success-details .course-name {
+        font-size: 1.1rem;
+    }
+    
+    .success-details .timestamp {
+        font-size: 0.95rem;
+    }
+    
+    .reset-message {
+        font-size: 0.9rem;
+    }
+    
+    #countdown {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    /* ----- PAYMENT STATUS SCREENS ----- */
+    .local-payment-screen,
+    .payment-error-screen,
+    .no-plans-screen,
+    .payment-success-screen,
+    .payment-timeout-screen {
+        padding: 1rem;
+    }
+    
+    .success-icon,
+    .error-icon,
+    .info-icon,
+    .timeout-icon {
+        font-size: 3rem;
+    }
+    
+    .local-payment-info {
+        padding: 1.25rem;
+    }
+    
+    .local-payment-info p {
+        font-size: 1rem;
+    }
+    
+    .payment-id {
+        font-size: 0.85rem !important;
+    }
+    
+    .error-message {
+        font-size: 1rem;
+    }
+    
+    .local-actions,
+    .error-actions,
+    .fallback-actions,
+    .timeout-actions,
+    .success-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn-confirm {
+        width: 100%;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    /* ----- SCHEDULE SECTION ----- */
+    .schedule-section {
+        padding: 1.25rem;
+    }
+    
+    .schedule-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .schedule-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .schedule-header .current-time {
+        font-size: 1.4rem;
+    }
+    
+    .available-classes {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .available-classes .class-card {
+        padding: 1rem;
+    }
+    
+    .available-classes .time-badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+    }
+    
+    .available-classes .countdown {
+        font-size: 0.75rem;
+    }
+    
+    .available-classes .class-info h4 {
+        font-size: 1.05rem;
+    }
+    
+    .available-classes .class-instructor,
+    .available-classes .class-capacity {
+        font-size: 0.85rem;
+    }
+    
+    .available-classes .class-status {
+        font-size: 0.85rem;
+    }
+    
+    /* ----- HISTORY SECTION ----- */
+    .checkins-history {
+        padding: 1rem;
+    }
+    
+    .history-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .checkin-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+    
+    .history-list {
+        grid-template-columns: 1fr;
+        max-height: 200px;
+        gap: 0.5rem;
+    }
+    
+    /* ----- TIMEOUT PROGRESS BAR ----- */
+    .timeout-progress-bar {
+        height: 8px;
+    }
+    
+    /* ----- EMPTY STATES ----- */
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+    
+    .empty-state i,
+    .empty-icon {
+        font-size: 2.5rem;
+    }
+    
+    .empty-state h3,
+    .empty-text {
+        font-size: 1.1rem;
+    }
+    
+    .empty-state p,
+    .empty-hint {
+        font-size: 0.9rem;
+    }
+    
+    /* ----- LOADING STATES ----- */
+    .loading-screen p {
+        font-size: 1rem;
+    }
+    
+    .loading-spinner {
+        font-size: 3rem;
+    }
+    
+    .spinner-large {
+        width: 48px;
+        height: 48px;
+    }
+    
+    /* ----- MODAL ADJUSTMENTS ----- */
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+        margin: 0.5rem;
+    }
+    
+    .modal-header {
+        padding: 1.25rem;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .modal-body {
+        padding: 1.25rem;
+    }
+    
+    .modal-body p {
+        font-size: 1rem;
+    }
+    
+    .modal-actions {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+    
+    /* ----- KIOSK HEADER ----- */
+    .kiosk-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .header-content {
+        gap: 0.5rem;
+    }
+    
+    .logo-section i {
+        font-size: 1.75rem;
+    }
+    
+    .logo-section h1 {
+        font-size: 1.25rem;
+    }
+    
+    .current-time {
+        font-size: 1.1rem;
+    }
+    
+    /* ----- MODULE HEADER ----- */
+    .module-header-premium h1 {
+        font-size: 1.3rem;
+    }
+    
+    .module-header-premium p {
+        font-size: 0.9rem;
+    }
+    
+    /* ----- NO CAMERA MESSAGE ----- */
+    .no-camera-message {
+        padding: 2rem 1rem;
+        min-height: 200px;
+    }
+    
+    .no-camera-message i {
+        font-size: 2.5rem;
+    }
+    
+    .no-camera-message h3 {
+        font-size: 1.1rem;
+    }
+    
+    .no-camera-message p {
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== TABLET PORTRAIT (max-width: 768px) - Intermediate Fixes ===== */
+@media (min-width: 481px) and (max-width: 768px) {
+    .camera-section {
+        gap: 1.5rem;
+        padding: 1.25rem;
+    }
+    
+    .camera-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.25rem;
+    }
+    
+    .student-photo-large {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .student-name-huge {
+        font-size: 1.8rem;
+    }
+    
+    .btn-cancel-top {
+        position: relative;
+        width: auto;
+        margin: 0 auto;
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .classes-grid,
+    .plans-grid,
+    .courses-grid-large {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .reactivation-actions {
+        flex-direction: row;
+    }
+    
+    .pix-code-container {
+        flex-direction: row;
+    }
+}
+
+/* ===== TOUCH TARGET IMPROVEMENTS ===== */
+@media (hover: none) and (pointer: coarse) {
+    /* Ensure all interactive elements have minimum 44x44px touch targets */
+    .btn-primary,
+    .btn-secondary,
+    .btn-search-tablet,
+    .btn-checkin-turma,
+    .btn-select-plan,
+    .btn-confirm,
+    .btn-confirm-huge,
+    .btn-reactivate,
+    .btn-back,
+    .btn-cancel,
+    .btn-cancel-top,
+    .btn-copy-pix,
+    .autocomplete-item,
+    .student-option,
+    .course-card-large,
+    .class-card.can-checkin {
+        min-height: 44px;
+    }
+    
+    /* Increase spacing for touch */
+    .autocomplete-item {
+        padding: 1rem 1.25rem;
+    }
+    
+    .student-option {
+        padding: 1rem 1.25rem;
+    }
+    
+    /* Disable hover effects on touch devices */
+    .course-card-large:hover,
+    .class-card:hover,
+    .student-option:hover,
+    .autocomplete-item:hover {
+        transform: none;
+    }
+    
+    /* Add active states for touch feedback */
+    .course-card-large:active,
+    .class-card.can-checkin:active,
+    .student-option:active,
+    .autocomplete-item:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* ===== SAFE AREA INSETS (iPhone notch/home indicator) ===== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .checkin-dashboard,
+    .checkin-dashboard-v2,
+    .reactivation-screen {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+    
+    .dashboard-footer {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+    
+    .kiosk-header {
+        padding-top: calc(0.75rem + env(safe-area-inset-top));
+    }
+}
+
+/* ===== REDUCED MOTION PREFERENCES ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .fade-in {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .success-checkmark {
+        animation: none;
+    }
+    
+    .available-pulse,
+    .pulse-warning,
+    .pulse-success {
+        animation: none;
+    }
+}
+
+/* ===== HIGH CONTRAST MODE SUPPORT ===== */
+@media (prefers-contrast: high) {
+    :root {
+        --kiosk-border: #333;
+        --kiosk-text-muted: #444;
+    }
+    
+    .btn-primary,
+    .btn-confirm,
+    .btn-confirm-huge,
+    .btn-reactivate,
+    .btn-checkin-turma {
+        border: 2px solid #000;
+    }
+    
+    .class-card,
+    .student-option,
+    .course-card-large,
+    .plan-card {
+        border-width: 3px;
+    }
+}
+

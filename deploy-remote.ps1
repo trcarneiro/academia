@@ -79,7 +79,7 @@ if (-not $SkipBuild) {
         exit 1
     }
 } else {
-    Write-Warning "Build ignorado (--SkipBuild)"
+    Write-Warning "Build ignorado (-SkipBuild)"
 }
 
 # 2. TESTES
@@ -95,7 +95,7 @@ if (-not $SkipTests) {
         if ($continue -ne 's') { exit 1 }
     }
 } else {
-    Write-Warning "Testes ignorados (--SkipTests)"
+    Write-Warning "Testes ignorados (-SkipTests)"
 }
 
 # 3. CRIAR ARQUIVO DE EXCLUSÃO
