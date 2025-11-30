@@ -50,6 +50,10 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
               subscriptions: true,
             },
           },
+          subscriptions: {
+            where: { status: 'ACTIVE' },
+            select: { id: true }
+          }
         },
         orderBy: [
           { user: { firstName: 'asc' } }, // ✅ Ordenar por nome
@@ -62,9 +66,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       const studentsWithStats = students.map(student => {
         const totalAttendances = student._count.attendances;
         const totalSubscriptions = student._count.subscriptions;
+        const hasActiveSubscription = student.subscriptions.length > 0;
         
         return {
           ...student,
+          isActive: hasActiveSubscription, // Override isActive based on active subscription
           totalAttendances,
           totalSubscriptions,
           stats: {
@@ -127,9 +133,16 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Check for active subscription to determine active status
+      const hasActiveSubscription = student.subscriptions.some(sub => sub.status === 'ACTIVE');
+      const studentWithActiveStatus = {
+          ...student,
+          isActive: hasActiveSubscription
+      };
+
       return reply.send({
         success: true,
-        data: student
+        data: studentWithActiveStatus
       });
     } catch (error) {
       logger.error('Error fetching student:', error);

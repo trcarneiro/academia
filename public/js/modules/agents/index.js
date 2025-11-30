@@ -99,6 +99,25 @@ if (typeof window.AgentsModule !== 'undefined') {
         
         async loadAgents() {
             try {
+                // 🛡️ GUARD: Ensure organization context is available
+                let orgId = localStorage.getItem('activeOrganizationId') || localStorage.getItem('organizationId');
+                let attempts = 0;
+                
+                // Retry for up to 2 seconds if context is missing (race condition fix)
+                while (!orgId && attempts < 10) {
+                    console.log(`⏳ [Agents] Waiting for organization context... (${attempts + 1}/10)`);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    orgId = localStorage.getItem('activeOrganizationId') || localStorage.getItem('organizationId');
+                    attempts++;
+                }
+
+                if (!orgId) {
+                    console.warn('⚠️ [Agents] No organization ID found after waiting. Skipping load.');
+                    this.agents = [];
+                    // Don't throw error, just show empty state to avoid 400 Bad Request
+                    return;
+                }
+
                 const response = await this.moduleAPI.request('/api/agents/orchestrator/list');
                 if (response.success) {
                     this.agents = response.data || [];

@@ -992,6 +992,8 @@ export class StudentsListController {
      * Wait for view elements to be ready with retry logic
      */
     waitForViewElements(retries = 5, delay = 100) {
+        if (!this.container) return;
+
         const tableView = this.container.querySelector('#table-view');
         const cardsView = this.container.querySelector('#cards-view');
 
@@ -1008,6 +1010,8 @@ export class StudentsListController {
      * Update view display based on current mode
      */
     updateViewDisplay() {
+        if (!this.container) return;
+
         const tableView = this.container.querySelector('#table-view');
         const cardsView = this.container.querySelector('#cards-view');
 
@@ -1031,7 +1035,7 @@ export class StudentsListController {
      * Update toggle button icon and tooltip
      */
     updateViewToggleButton(btn) {
-        const toggleBtn = btn || this.container.querySelector('#toggle-view-btn');
+        const toggleBtn = btn || (this.container ? this.container.querySelector('#toggle-view-btn') : null);
         if (!toggleBtn) return;
 
         if (this.viewMode === 'cards') {

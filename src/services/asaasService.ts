@@ -93,7 +93,7 @@ export class AsaasService {
       : 'https://www.asaas.com/api/v3';
   }
 
-  private async makeRequest<T>(
+  async makeRequest<T>(
     endpoint: string, 
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any

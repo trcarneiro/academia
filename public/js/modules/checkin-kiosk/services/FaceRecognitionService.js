@@ -4,12 +4,25 @@
  * Handles: Face detection, embedding extraction, matching against database
  */
 
+// Cache configuration
+const EMBEDDINGS_CACHE_TTL = 60000; // 60 seconds cache for embeddings
+const EMPTY_CACHE_TTL = 300000;     // 5 minutes cache for empty results (avoid hammering server)
+const MIN_REQUEST_INTERVAL = 1000;  // Minimum 1 second between API calls
+
 class FaceRecognitionService {
     constructor() {
         this.isReady = false;
         this.modelsReady = false;
         // Use CDN models path instead of local (faster + reliable)
         this.modelsPath = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+        
+        // Embeddings cache to avoid repeated API calls
+        this._embeddingsCache = null;
+        this._embeddingsCacheTime = 0;
+        this._embeddingsRequestInProgress = null; // Track in-flight requests
+        this._lastRequestTime = 0;
+        this._emptyResultCached = false; // Track if we got empty results
+        this._emptyResultTime = 0;
     }
 
     /**
@@ -43,6 +56,20 @@ class FaceRecognitionService {
         } catch (error) {
             console.error('❌ Error loading face-api models:', error);
             throw new Error(`Face-api initialization failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Pre-load embeddings cache for faster first match
+     * Call this during initialization
+     * @param {Object} moduleAPI - API client
+     */
+    async preloadEmbeddings(moduleAPI) {
+        try {
+            console.log('📥 Pre-loading face embeddings...');
+            await this._fetchEmbeddings(moduleAPI);
+        } catch (error) {
+            console.warn('⚠️ Could not preload embeddings:', error.message);
         }
     }
 
@@ -82,28 +109,28 @@ class FaceRecognitionService {
      * Find matching student by face descriptor
      * @param {Float32Array} faceDescriptor - Face embedding vector
      * @param {Object} moduleAPI - API client
-     * @param {number} threshold - Similarity threshold (0-1, default 0.65)
+     * @param {number} threshold - Similarity threshold (0-1, default 0.60)
      * @returns {Object|null} Match object with studentId, name, similarity, photoUrl
      */
-    async findMatch(faceDescriptor, moduleAPI, threshold = 0.65) {
+    async findMatch(faceDescriptor, moduleAPI, threshold = 0.60) {
         try {
-            console.log('🔍 Searching for matching face...');
+            // 1. Get embeddings (with caching and request deduplication)
+            const embeddings = await this._getEmbeddingsWithCache(moduleAPI);
 
-            // 1. Fetch all embeddings from database
-            const response = await moduleAPI.request('/api/biometric/students/embeddings', {
-                method: 'GET',
-            });
-
-            if (!response.success || !response.data || response.data.length === 0) {
-                console.warn('No embeddings found in database');
+            if (!embeddings || embeddings.length === 0) {
+                // Only log occasionally to avoid console spam
+                if (!this._lastNoEmbeddingsLog || Date.now() - this._lastNoEmbeddingsLog > 5000) {
+                    console.warn('⚠️ No embeddings found in database');
+                    this._lastNoEmbeddingsLog = Date.now();
+                }
                 return null;
             }
 
-            // 2. Compare with all embeddings
+            // 2. Compare with all embeddings (local operation, fast)
             let bestMatch = null;
             let bestDistance = Infinity;
 
-            for (const embed of response.data) {
+            for (const embed of embeddings) {
                 try {
                     // Convert embedding array back to Float32Array
                     const embeddingVector = new Float32Array(embed.embedding);
@@ -119,7 +146,7 @@ class FaceRecognitionService {
                         bestMatch = embed;
                     }
                 } catch (err) {
-                    console.warn('Error comparing embedding:', err);
+                    // Silent fail for individual embedding comparison
                     continue;
                 }
             }
@@ -128,11 +155,10 @@ class FaceRecognitionService {
             // Distance is in range 0-128, convert to similarity 0-1
             const similarity = Math.max(0, 1 - (bestDistance / 128));
 
-            console.log(`🎯 Best match: ${bestMatch?.name} (similarity: ${similarity.toFixed(2)})`);
-
             if (similarity >= threshold) {
+                console.log(`🎯 Match: ${bestMatch?.name} (${Math.round(similarity * 100)}%)`);
                 return {
-                    studentId: bestMatch.id,
+                    studentId: bestMatch.studentId, // Use studentId from API response
                     name: bestMatch.name,
                     similarity: Math.round(similarity * 100),
                     photoUrl: bestMatch.facePhotoUrl,
@@ -140,12 +166,116 @@ class FaceRecognitionService {
                 };
             }
 
-            console.warn(`❌ No match found above threshold (${threshold})`);
+            // No match - silent return (reduces console noise)
             return null;
         } catch (error) {
             console.error('Error finding match:', error);
             throw error;
         }
+    }
+
+    /**
+     * Get embeddings with caching and request deduplication
+     * Prevents multiple concurrent API calls for the same data
+     * @param {Object} moduleAPI - API client
+     * @returns {Array|null} Cached or fresh embeddings data
+     * @private
+     */
+    async _getEmbeddingsWithCache(moduleAPI) {
+        const now = Date.now();
+
+        // Return cached data if still valid
+        if (this._embeddingsCache && (now - this._embeddingsCacheTime) < EMBEDDINGS_CACHE_TTL) {
+            return this._embeddingsCache;
+        }
+
+        // If we know embeddings are empty, don't keep hitting the server
+        if (this._emptyResultCached && (now - this._emptyResultTime) < EMPTY_CACHE_TTL) {
+            return []; // Return empty, no need to fetch again
+        }
+
+        // If a request is already in progress, wait for it instead of making a new one
+        if (this._embeddingsRequestInProgress) {
+            return this._embeddingsRequestInProgress;
+        }
+
+        // Throttle requests - minimum interval between API calls
+        if ((now - this._lastRequestTime) < MIN_REQUEST_INTERVAL) {
+            return this._embeddingsCache || []; // Return stale cache or empty
+        }
+
+        // Make the request and track it
+        this._lastRequestTime = now;
+        this._embeddingsRequestInProgress = this._fetchEmbeddings(moduleAPI);
+
+        try {
+            const result = await this._embeddingsRequestInProgress;
+            return result;
+        } finally {
+            this._embeddingsRequestInProgress = null;
+        }
+    }
+
+    /**
+     * Fetch embeddings from API
+     * @param {Object} moduleAPI - API client
+     * @returns {Array|null} Embeddings data
+     * @private
+     */
+    async _fetchEmbeddings(moduleAPI) {
+        try {
+            console.log('🔍 Fetching face embeddings from server...');
+
+            // Use extended timeout for embeddings (can be large payload)
+            const response = await moduleAPI.request('/api/biometric/students/embeddings', {
+                method: 'GET',
+                timeout: 30000, // 30 seconds - embeddings can be large
+                retries: 1,    // Only 1 retry to avoid cascade
+            });
+
+            if (!response.success || !response.data) {
+                // Mark as empty result to avoid hammering server
+                this._emptyResultCached = true;
+                this._emptyResultTime = Date.now();
+                console.warn('⚠️ No face embeddings registered. Face recognition disabled until students register their faces.');
+                return [];
+            }
+
+            // Check if result is empty
+            if (response.data.length === 0) {
+                this._emptyResultCached = true;
+                this._emptyResultTime = Date.now();
+                console.warn('⚠️ No face embeddings registered. Face recognition disabled until students register their faces.');
+                return [];
+            }
+
+            // Cache the successful response
+            this._embeddingsCache = response.data;
+            this._embeddingsCacheTime = Date.now();
+            this._emptyResultCached = false; // Clear empty flag
+
+            console.log(`✅ Cached ${response.data.length} embeddings`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching embeddings:', error);
+            // On error, set empty cache to avoid hammering a broken endpoint
+            this._emptyResultCached = true;
+            this._emptyResultTime = Date.now();
+            // Return stale cache on error if available
+            return this._embeddingsCache || [];
+        }
+    }
+
+    /**
+     * Force refresh the embeddings cache
+     * Call this after a new student face is registered
+     */
+    invalidateCache() {
+        this._embeddingsCache = null;
+        this._embeddingsCacheTime = 0;
+        this._emptyResultCached = false;
+        this._emptyResultTime = 0;
+        console.log('🔄 Embeddings cache invalidated');
     }
 
     /**

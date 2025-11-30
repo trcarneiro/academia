@@ -5,39 +5,23 @@
  */
 
 class ConfirmationView {
-    constructor(container, callbacks = {}) {
+    constructor(container, moduleAPI, callbacks = {}) {
         this.container = container;
-        this.onConfirm = callbacks.onConfirm || (() => {});
-        this.onReject = callbacks.onReject || (() => {});
+        this.moduleAPI = moduleAPI;
         
-        // Initialize API client for new features
-        this.courseProgressAPI = null;
-        this.turmasAPI = null;
-        this.initializeAPIs();
-    }
-
-    /**
-     * Initialize API clients
-     */
-    async initializeAPIs() {
-        // Wait for API client to be available
-        await this.waitForAPIClient();
-        this.courseProgressAPI = window.createModuleAPI('CheckinProgress');
-        this.turmasAPI = window.createModuleAPI('CheckinTurmas');
-    }
-
-    /**
-     * Wait for API client to load
-     */
-    async waitForAPIClient() {
-        let attempts = 0;
-        while (!window.createModuleAPI && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
-        if (!window.createModuleAPI) {
-            console.error('❌ API Client não carregou');
-        }
+        // Wrap callbacks to handle timeout cleanup
+        this.onConfirm = (...args) => {
+            this.stopTimeout();
+            if (callbacks.onConfirm) callbacks.onConfirm(...args);
+        };
+        this.onReject = (...args) => {
+            this.stopTimeout();
+            if (callbacks.onReject) callbacks.onReject(...args);
+        };
+        
+        // Timeout configuration
+        this.timeoutTimer = null;
+        this.TIMEOUT_MS = 30000; // 30s auto-close
     }
 
     /**
@@ -76,9 +60,10 @@ class ConfirmationView {
      */
     async fetchCourseProgress(studentId) {
         try {
-            const response = await fetch(`/api/students/${studentId}/course-progress`);
-            const data = await response.json();
-            return data.success ? data.data : null;
+            const response = await this.moduleAPI.request(`/api/students/${studentId}/course-progress`, {
+                method: 'GET'
+            });
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('❌ Error fetching course progress:', error);
             return null;
@@ -91,16 +76,18 @@ class ConfirmationView {
     async fetchAvailableTurmas(organizationId, studentId) {
         try {
             console.log('🔍 [ConfirmationView] Fetching turmas:', { organizationId, studentId });
-            const response = await fetch(`/api/turmas/available-now?organizationId=${organizationId}&studentId=${studentId}`);
-            const data = await response.json();
-            console.log('📦 [ConfirmationView] Turmas response:', data);
-            console.log('📊 [ConfirmationView] Data structure:', {
-                success: data.success,
-                hasData: !!data.data,
-                openNow: data.data?.openNow?.length || 0,
-                upcoming: data.data?.upcoming?.length || 0
+            const response = await this.moduleAPI.request(`/api/turmas/available-now?organizationId=${organizationId}&studentId=${studentId}`, {
+                method: 'GET'
             });
-            return data.success ? data.data : null;
+            
+            console.log('📦 [ConfirmationView] Turmas response:', response);
+            console.log('📊 [ConfirmationView] Data structure:', {
+                success: response.success,
+                hasData: !!response.data,
+                openNow: response.data?.openNow?.length || 0,
+                upcoming: response.data?.upcoming?.length || 0
+            });
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('❌ Error fetching turmas:', error);
             return null;
@@ -112,7 +99,7 @@ class ConfirmationView {
      */
     showLoadingState(student) {
         this.container.innerHTML = `
-            <div class="checkin-dashboard loading">
+            <div class="checkin-dashboard loading fade-in">
                 <div class="dashboard-header">
                     <div class="student-photo-large">
                         ${student.user?.avatarUrl 
@@ -139,8 +126,12 @@ class ConfirmationView {
      * Render reactivation screen for inactive students
      */
     renderReactivationScreen(student) {
+        // Store student for later use
+        this.currentStudent = student;
+        this.reactivationState = 'initial'; // initial, selecting, payment, success
+        
         this.container.innerHTML = `
-            <div class="reactivation-screen">
+            <div class="reactivation-screen fade-in">
                 <div class="reactivation-header">
                     <div class="student-photo-large">
                         ${student.user?.avatarUrl 
@@ -170,7 +161,7 @@ class ConfirmationView {
                     </div>
                     
                     <div class="reactivation-actions">
-                        <button class="btn-reactivate">
+                        <button class="btn-reactivate" id="btn-show-plans">
                             <span class="icon">💳</span>
                             <span class="text">Reativar Meu Plano</span>
                         </button>
@@ -184,11 +175,504 @@ class ConfirmationView {
         `;
 
         // Setup events
-        this.container.querySelector('.btn-reactivate')?.addEventListener('click', () => {
-            alert('Funcionalidade de reativação será implementada. Procure a recepção.');
+        this.container.querySelector('#btn-show-plans')?.addEventListener('click', () => {
+            this.showPlanSelection(student);
         });
         
         this.container.querySelector('#reject-btn')?.addEventListener('click', () => {
+            this.onReject();
+        });
+
+        this.startTimeout();
+    }
+
+    /**
+     * Show plan selection screen
+     */
+    async showPlanSelection(student) {
+        this.stopTimeout(); // Pausar timeout durante seleção
+        this.reactivationState = 'selecting';
+        
+        // Show loading
+        const content = this.container.querySelector('.reactivation-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="loading-plans">
+                    <div class="spinner-large"></div>
+                    <p>Carregando planos disponíveis...</p>
+                </div>
+            `;
+        }
+
+        try {
+            // Fetch available plans
+            const response = await fetch('/api/billing-plans');
+            if (!response.ok) throw new Error('Erro ao carregar planos');
+            
+            const result = await response.json();
+            const plans = (result.data || result || []).filter(p => p.isActive !== false);
+
+            if (plans.length === 0) {
+                this.showNoPlansFallback();
+                return;
+            }
+
+            this.renderPlanCards(student, plans);
+        } catch (error) {
+            console.error('❌ Erro ao carregar planos:', error);
+            this.showNoPlansFallback();
+        }
+    }
+
+    /**
+     * Render plan selection cards
+     */
+    renderPlanCards(student, plans) {
+        const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+        const getBillingLabel = (type) => {
+            const labels = { 'MONTHLY': '/mês', 'QUARTERLY': '/trimestre', 'SEMIANNUALLY': '/semestre', 'YEARLY': '/ano', 'LIFETIME': ' único' };
+            return labels[type] || '';
+        };
+
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <h3 class="plans-title">📋 Escolha seu plano:</h3>
+            <div class="plans-grid">
+                ${plans.map((plan, idx) => `
+                    <div class="plan-card ${idx === 0 ? 'plan-recommended' : ''}" data-plan-id="${plan.id}">
+                        ${idx === 0 ? '<span class="plan-badge">⭐ Recomendado</span>' : ''}
+                        <h4 class="plan-name">${plan.name}</h4>
+                        <div class="plan-price">
+                            <span class="price-value">${formatPrice(Number(plan.price))}</span>
+                            <span class="price-period">${getBillingLabel(plan.billingType)}</span>
+                        </div>
+                        ${plan.description ? `<p class="plan-description">${plan.description}</p>` : ''}
+                        ${plan.classesPerWeek ? `<p class="plan-classes">📚 ${plan.classesPerWeek}x por semana</p>` : ''}
+                        <button class="btn-select-plan" data-plan-id="${plan.id}">
+                            Selecionar
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="plans-actions">
+                <button id="btn-back-initial" class="btn-back">
+                    <span class="icon">←</span>
+                    <span class="text">Voltar</span>
+                </button>
+            </div>
+        `;
+
+        // Setup plan selection events
+        content.querySelectorAll('.btn-select-plan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const planId = e.target.dataset.planId;
+                const plan = plans.find(p => p.id === planId);
+                this.processReactivation(student, plan);
+            });
+        });
+
+        // Back button
+        content.querySelector('#btn-back-initial')?.addEventListener('click', () => {
+            this.renderReactivationScreen(student);
+        });
+    }
+
+    /**
+     * Process reactivation and show payment
+     */
+    async processReactivation(student, plan) {
+        this.reactivationState = 'payment';
+        
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        // Show processing
+        content.innerHTML = `
+            <div class="processing-payment">
+                <div class="spinner-large"></div>
+                <h3>Gerando pagamento PIX...</h3>
+                <p>Aguarde um momento</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/api/subscriptions/reactivate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    studentId: student.id, 
+                    planId: plan.id 
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erro ao processar');
+            }
+
+            const result = await response.json();
+            const data = result.data || result;
+
+            // Check if PIX was generated
+            if (data.pix?.qrCode || data.pix?.copyPaste) {
+                this.showPixPayment(student, plan, data);
+            } else if (data.invoiceUrl) {
+                this.showInvoiceLink(student, plan, data);
+            } else {
+                this.showLocalPayment(student, plan, data);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao processar reativação:', error);
+            this.showPaymentError(student, error.message);
+        }
+    }
+
+    /**
+     * Show PIX QR Code payment screen
+     */
+    showPixPayment(student, plan, paymentData) {
+        const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+        
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="pix-payment-screen">
+                <h3 class="pix-title">💳 Pagamento via PIX</h3>
+                <p class="pix-plan">Plano: <strong>${plan.name}</strong> - ${formatPrice(Number(plan.price))}</p>
+                
+                <div class="pix-qr-container">
+                    ${paymentData.pix.qrCode 
+                        ? `<img src="data:image/png;base64,${paymentData.pix.qrCode}" alt="QR Code PIX" class="pix-qr-image" />`
+                        : '<div class="pix-no-qr">QR Code não disponível</div>'
+                    }
+                </div>
+                
+                ${paymentData.pix.copyPaste ? `
+                    <div class="pix-copypaste">
+                        <p class="pix-label">Ou copie o código:</p>
+                        <div class="pix-code-container">
+                            <input type="text" readonly value="${paymentData.pix.copyPaste}" class="pix-code-input" id="pix-code" />
+                            <button class="btn-copy-pix" id="btn-copy-pix">📋 Copiar</button>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div class="pix-status">
+                    <div class="status-indicator waiting">
+                        <span class="spinner-small"></span>
+                        <span>Aguardando pagamento...</span>
+                    </div>
+                </div>
+                
+                <div class="pix-actions">
+                    <button id="btn-back-plans" class="btn-back">
+                        <span class="icon">←</span>
+                        <span class="text">Escolher outro plano</span>
+                    </button>
+                    <button id="btn-cancel-payment" class="btn-cancel">
+                        <span class="icon">✖</span>
+                        <span class="text">Cancelar</span>
+                    </button>
+                </div>
+                
+                <p class="pix-help">Escaneie o QR Code com o app do seu banco ou copie o código PIX</p>
+            </div>
+        `;
+
+        // Copy PIX code
+        content.querySelector('#btn-copy-pix')?.addEventListener('click', () => {
+            const input = content.querySelector('#pix-code');
+            if (input) {
+                input.select();
+                document.execCommand('copy');
+                const btn = content.querySelector('#btn-copy-pix');
+                if (btn) {
+                    btn.textContent = '✅ Copiado!';
+                    setTimeout(() => btn.textContent = '📋 Copiar', 2000);
+                }
+            }
+        });
+
+        // Back to plans
+        content.querySelector('#btn-back-plans')?.addEventListener('click', () => {
+            this.stopPaymentPolling();
+            this.showPlanSelection(student);
+        });
+
+        // Cancel
+        content.querySelector('#btn-cancel-payment')?.addEventListener('click', () => {
+            this.stopPaymentPolling();
+            this.onReject();
+        });
+
+        // Start polling for payment confirmation
+        if (paymentData.subscriptionId) {
+            this.startPaymentPolling(paymentData.subscriptionId, student);
+        }
+    }
+
+    /**
+     * Show invoice link (when PIX QR not available)
+     */
+    showInvoiceLink(student, plan, paymentData) {
+        const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+        
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="invoice-payment-screen">
+                <h3>📄 Link de Pagamento</h3>
+                <p>Plano: <strong>${plan.name}</strong> - ${formatPrice(Number(plan.price))}</p>
+                
+                <div class="invoice-link-container">
+                    <p>Acesse o link abaixo para realizar o pagamento:</p>
+                    <a href="${paymentData.invoiceUrl}" target="_blank" class="btn-invoice-link">
+                        🔗 Abrir página de pagamento
+                    </a>
+                </div>
+                
+                <div class="pix-actions">
+                    <button id="btn-back-plans" class="btn-back">
+                        <span class="icon">←</span>
+                        <span class="text">Escolher outro plano</span>
+                    </button>
+                    <button id="btn-cancel-payment" class="btn-cancel">
+                        <span class="icon">✖</span>
+                        <span class="text">Cancelar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Events
+        content.querySelector('#btn-back-plans')?.addEventListener('click', () => {
+            this.showPlanSelection(student);
+        });
+
+        content.querySelector('#btn-cancel-payment')?.addEventListener('click', () => {
+            this.onReject();
+        });
+    }
+
+    /**
+     * Show local payment message (when Asaas not configured)
+     */
+    showLocalPayment(student, plan, paymentData) {
+        const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+        
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="local-payment-screen">
+                <div class="success-icon">✅</div>
+                <h3>Solicitação Registrada!</h3>
+                <p>Plano: <strong>${plan.name}</strong> - ${formatPrice(Number(plan.price))}</p>
+                
+                <div class="local-payment-info">
+                    <p>📍 Dirija-se à recepção para efetuar o pagamento</p>
+                    <p class="payment-id">Protocolo: ${paymentData.subscriptionId?.substring(0, 8) || 'N/A'}</p>
+                </div>
+                
+                <div class="local-actions">
+                    <button id="btn-done" class="btn-confirm">
+                        <span class="icon">✓</span>
+                        <span class="text">Entendido</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        content.querySelector('#btn-done')?.addEventListener('click', () => {
+            this.onReject();
+        });
+
+        // Auto close after 10 seconds
+        setTimeout(() => this.onReject(), 10000);
+    }
+
+    /**
+     * Show payment error
+     */
+    showPaymentError(student, errorMessage) {
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="payment-error-screen">
+                <div class="error-icon">❌</div>
+                <h3>Ops! Algo deu errado</h3>
+                <p class="error-message">${errorMessage}</p>
+                
+                <div class="error-actions">
+                    <button id="btn-retry" class="btn-reactivate">
+                        <span class="icon">🔄</span>
+                        <span class="text">Tentar Novamente</span>
+                    </button>
+                    <button id="btn-cancel" class="btn-back">
+                        <span class="icon">←</span>
+                        <span class="text">Voltar</span>
+                    </button>
+                </div>
+                
+                <p class="error-help">Se o problema persistir, procure a recepção</p>
+            </div>
+        `;
+
+        content.querySelector('#btn-retry')?.addEventListener('click', () => {
+            this.showPlanSelection(student);
+        });
+
+        content.querySelector('#btn-cancel')?.addEventListener('click', () => {
+            this.onReject();
+        });
+    }
+
+    /**
+     * Show fallback when no plans available
+     */
+    showNoPlansFallback() {
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="no-plans-screen">
+                <div class="info-icon">ℹ️</div>
+                <h3>Nenhum plano disponível</h3>
+                <p>Por favor, procure a recepção para reativar seu plano.</p>
+                
+                <div class="fallback-actions">
+                    <button id="btn-back" class="btn-back">
+                        <span class="icon">←</span>
+                        <span class="text">Voltar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        content.querySelector('#btn-back')?.addEventListener('click', () => {
+            this.onReject();
+        });
+    }
+
+    /**
+     * Start polling to check payment status
+     */
+    startPaymentPolling(subscriptionId, student) {
+        const startTime = Date.now();
+        const maxTime = 5 * 60 * 1000; // 5 minutos
+
+        this.paymentPollingInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/subscriptions/${subscriptionId}`);
+                if (!response.ok) return;
+                
+                const result = await response.json();
+                const subscription = result.data || result;
+
+                if (subscription.status === 'ACTIVE') {
+                    this.stopPaymentPolling();
+                    this.showPaymentSuccess(student);
+                    return;
+                }
+
+                // Timeout check
+                if (Date.now() - startTime > maxTime) {
+                    this.stopPaymentPolling();
+                    this.showPaymentTimeout();
+                }
+            } catch (error) {
+                console.warn('⚠️ Erro no polling:', error);
+            }
+        }, 5000); // Check every 5 seconds
+    }
+
+    /**
+     * Stop payment polling
+     */
+    stopPaymentPolling() {
+        if (this.paymentPollingInterval) {
+            clearInterval(this.paymentPollingInterval);
+            this.paymentPollingInterval = null;
+        }
+    }
+
+    /**
+     * Show payment success screen
+     */
+    showPaymentSuccess(student) {
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="payment-success-screen">
+                <div class="success-animation">
+                    <div class="success-checkmark">✅</div>
+                </div>
+                <h3>Pagamento Confirmado!</h3>
+                <p>Seu plano foi reativado com sucesso!</p>
+                <p class="success-message">Bem-vindo de volta, <strong>${student.user?.firstName}</strong>! 🥋</p>
+                
+                <div class="success-actions">
+                    <button id="btn-checkin-now" class="btn-confirm">
+                        <span class="icon">✓</span>
+                        <span class="text">Fazer Check-in Agora</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        content.querySelector('#btn-checkin-now')?.addEventListener('click', () => {
+            // Re-render with updated subscription status
+            student.subscriptions = [{ status: 'ACTIVE' }];
+            this.render(student, []);
+        });
+
+        // Auto-proceed after 5 seconds
+        setTimeout(() => {
+            student.subscriptions = [{ status: 'ACTIVE' }];
+            this.render(student, []);
+        }, 5000);
+    }
+
+    /**
+     * Show payment timeout screen
+     */
+    showPaymentTimeout() {
+        const content = this.container.querySelector('.reactivation-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="payment-timeout-screen">
+                <div class="timeout-icon">⏰</div>
+                <h3>Tempo Esgotado</h3>
+                <p>Não detectamos o pagamento ainda.</p>
+                <p class="timeout-help">Se você já pagou, aguarde alguns minutos e tente novamente.</p>
+                
+                <div class="timeout-actions">
+                    <button id="btn-retry" class="btn-reactivate">
+                        <span class="icon">🔄</span>
+                        <span class="text">Verificar Novamente</span>
+                    </button>
+                    <button id="btn-cancel" class="btn-back">
+                        <span class="icon">←</span>
+                        <span class="text">Voltar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        content.querySelector('#btn-retry')?.addEventListener('click', () => {
+            if (this.currentStudent) {
+                this.showPlanSelection(this.currentStudent);
+            }
+        });
+
+        content.querySelector('#btn-cancel')?.addEventListener('click', () => {
             this.onReject();
         });
     }
@@ -215,24 +699,24 @@ class ConfirmationView {
         }
 
         this.container.innerHTML = `
-            <div class="checkin-dashboard-v2">
+            <div class="checkin-dashboard-v2 fade-in">
                 <!-- Header with Student Info + Matricula -->
                 <div class="dashboard-header">
                     <div class="student-photo-large">
                         ${student.user?.avatarUrl 
                             ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+                            : `<div class="avatar-placeholder" aria-hidden="true">${(student.user?.firstName || '?')[0]}</div>`
                         }
                     </div>
                     <div class="student-info-large">
                         <h1 class="student-name-huge">${student.user?.firstName || ''} ${student.user?.lastName || ''}</h1>
                         <div class="student-meta-row">
-                            <span class="student-id-badge">📋 ${student.registrationNumber ? `Matrícula: ${student.registrationNumber}` : `ID: ${student.id.substring(0, 8)}`}</span>
-                            ${student.user?.phone ? `<span class="student-phone">📞 ${student.user.phone}</span>` : ''}
+                            <span class="student-id-badge" aria-label="Student ID">📋 ${student.registrationNumber ? `Matrícula: ${student.registrationNumber}` : `ID: ${student.id.substring(0, 8)}`}</span>
+                            ${student.user?.phone ? `<span class="student-phone" aria-label="Phone number">📞 ${student.user.phone}</span>` : ''}
                         </div>
                     </div>
-                    <button id="reject-btn" class="btn-cancel-top">
-                        <span class="icon">✖</span>
+                    <button id="reject-btn" class="btn-cancel-top" aria-label="Cancel check-in">
+                        <span class="icon" aria-hidden="true">✖</span>
                         <span class="text">Cancelar</span>
                     </button>
                 </div>
@@ -294,8 +778,8 @@ class ConfirmationView {
                                 </p>
                             </div>
                             <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: ${progressData.percentage}%">
-                                    <span class="progress-label">${progressData.percentage}%</span>
+                                <div class="progress-bar" style="width: ${progressData.percentage}%" role="progressbar" aria-valuenow="${progressData.percentage}" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress">
+                                    <span class="progress-label" aria-hidden="true">${progressData.percentage}%</span>
                                 </div>
                             </div>
                             
@@ -338,8 +822,8 @@ class ConfirmationView {
                                             <div class="class-room">📍 ${turma.room}</div>
                                             <div class="class-slots">👥 ${turma.availableSlots}/${turma.maxStudents} vagas</div>
                                         </div>
-                                        <button class="btn-checkin-turma" data-turma-id="${turma.id}" data-lesson-id="${turma.lessonId}" data-course-id="${turma.courseId}">
-                                            <span class="icon">✅</span>
+                                        <button class="btn-checkin-turma" data-turma-id="${turma.id}" data-lesson-id="${turma.lessonId}" data-course-id="${turma.courseId}" aria-label="Check-in to ${turma.name}">
+                                            <span class="icon" aria-hidden="true">✅</span>
                                             <span class="text">FAZER CHECK-IN</span>
                                         </button>
                                     </div>
@@ -374,6 +858,7 @@ class ConfirmationView {
         `;
 
         this.setupEventsV2();
+        this.startTimeout();
     }
 
     /**
@@ -425,7 +910,7 @@ class ConfirmationView {
             .join('');
 
         this.container.innerHTML = `
-            <div class="checkin-dashboard">
+            <div class="checkin-dashboard fade-in">
                 <!-- Header with Student Info -->
                 <div class="dashboard-header">
                     <div class="student-photo-large">
@@ -518,6 +1003,7 @@ class ConfirmationView {
         `;
 
         this.setupEvents();
+        this.startTimeout();
     }
 
     /**
@@ -528,35 +1014,35 @@ class ConfirmationView {
             const isCompleted = student.attendances?.some(att => att.courseId === course.id);
             
             return `
-                <div class="course-card ${isCompleted ? 'completed' : ''}">
+                <div class="course-card ${isCompleted ? 'completed' : ''}" role="button" tabindex="0" aria-label="Select course ${course.name}">
                     <h4>${course.name}</h4>
                     <p>${course.description || ''}</p>
                     <div class="course-progress">
                         <div class="progress-label">${course.level}</div>
                     </div>
-                    <div class="course-check">✓</div>
+                    <div class="course-check" aria-hidden="true">✓</div>
                 </div>
             `;
         }).join('');
 
         this.container.innerHTML = `
-            <div class="checkin-dashboard">
+            <div class="checkin-dashboard fade-in">
                 <div class="dashboard-header">
                     <div class="student-photo-large">
                         ${student.user?.avatarUrl 
                             ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+                            : `<div class="avatar-placeholder" aria-hidden="true">${(student.user?.firstName || '?')[0]}</div>`
                         }
                     </div>
                     <div class="student-info-large">
                         <h1 class="student-name-huge">${student.user?.firstName || ''} ${student.user?.lastName || ''}</h1>
                         <div class="student-meta-row">
-                            <span class="student-id-badge">📋 ${student.registrationNumber ? `Matrícula: ${student.registrationNumber}` : `ID: ${student.id.substring(0, 8)}`}</span>
-                            ${student.user?.phone ? `<span class="student-phone">📞 ${student.user.phone}</span>` : ''}
+                            <span class="student-id-badge" aria-label="Student ID">📋 ${student.registrationNumber ? `Matrícula: ${student.registrationNumber}` : `ID: ${student.id.substring(0, 8)}`}</span>
+                            ${student.user?.phone ? `<span class="student-phone" aria-label="Phone number">📞 ${student.user.phone}</span>` : ''}
                         </div>
                     </div>
-                    <button id="reject-btn" class="btn-cancel-top">
-                        <span class="icon">✖</span>
+                    <button id="reject-btn" class="btn-cancel-top" aria-label="Cancel check-in">
+                        <span class="icon" aria-hidden="true">✖</span>
                         <span class="text">Cancelar</span>
                     </button>
                 </div>
@@ -586,6 +1072,7 @@ class ConfirmationView {
         `;
 
         this.setupEvents(courses);
+        this.startTimeout();
     }
 
     /**
@@ -693,6 +1180,50 @@ class ConfirmationView {
             el.style.pointerEvents = 'auto';
             el.style.opacity = '1';
         });
+    }
+
+    /**
+     * Start auto-close timer
+     */
+    startTimeout() {
+        this.stopTimeout();
+        
+        // Add visual progress bar if dashboard exists
+        const dashboard = this.container.querySelector('.checkin-dashboard-v2, .checkin-dashboard');
+        if (dashboard) {
+            // Remove existing if any
+            const existing = dashboard.querySelector('.timeout-progress-bar');
+            if (existing) existing.remove();
+
+            const progressBar = document.createElement('div');
+            progressBar.className = 'timeout-progress-bar';
+            progressBar.innerHTML = '<div class="timeout-progress-fill"></div>';
+            dashboard.appendChild(progressBar);
+            
+            // Animate width
+            setTimeout(() => {
+                const fill = progressBar.querySelector('.timeout-progress-fill');
+                if (fill) {
+                    fill.style.transition = `width ${this.TIMEOUT_MS}ms linear`;
+                    fill.style.width = '0%';
+                }
+            }, 100);
+        }
+
+        this.timeoutTimer = setTimeout(() => {
+            console.log('⏱️ [ConfirmationView] Timeout - auto rejecting');
+            this.onReject();
+        }, this.TIMEOUT_MS);
+    }
+
+    /**
+     * Stop auto-close timer
+     */
+    stopTimeout() {
+        if (this.timeoutTimer) {
+            clearTimeout(this.timeoutTimer);
+            this.timeoutTimer = null;
+        }
     }
 }
 

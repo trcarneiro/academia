@@ -414,6 +414,8 @@ export class BiometricController {
       }
 
       // Query all students with biometric data
+      // Note: Optimized to NOT include avatarUrl (can be huge base64)
+      // The kiosk only needs embedding for matching + name for display
       const students = await prisma.student.findMany({
         where: {
           organizationId,
@@ -427,13 +429,14 @@ export class BiometricController {
           biometricData: {
             select: {
               embedding: true,
+              photoUrl: true, // Smaller face photo for display
             },
           },
           user: {
             select: {
               firstName: true,
               lastName: true,
-              avatarUrl: true,
+              // avatarUrl excluded - too large, not needed for matching
             },
           },
         },
@@ -446,7 +449,7 @@ export class BiometricController {
           studentId: student.id,
           name: `${student.user.firstName} ${student.user.lastName}`,
           registrationNumber: student.registrationNumber,
-          avatar: student.user.avatarUrl,
+          facePhotoUrl: student.biometricData!.photoUrl || null, // Map to facePhotoUrl for frontend
           embedding: student.biometricData!.embedding as number[], // Cast to number[]
         }));
 

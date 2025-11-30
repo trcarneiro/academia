@@ -2915,6 +2915,473 @@
     background: #d1d5db;
 }
 
+/* ============================================================================
+   REACTIVATION FLOW - Plan Selection, PIX Payment, Status Screens
+   ============================================================================ */
+
+/* Loading Plans */
+.loading-plans {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1.5rem;
+}
+
+.loading-plans p {
+    font-size: 1.2rem;
+    color: var(--kiosk-text-muted);
+}
+
+.spinner-large {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--kiosk-border);
+    border-top: 4px solid var(--kiosk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--kiosk-border);
+    border-top: 2px solid var(--kiosk-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+/* Plans Selection */
+.plans-title {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--kiosk-text);
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.plan-card {
+    background: white;
+    border: 2px solid var(--kiosk-border);
+    border-radius: var(--kiosk-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    transition: var(--kiosk-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--kiosk-shadow-lg);
+    border-color: var(--kiosk-primary);
+}
+
+.plan-recommended {
+    border: 3px solid var(--kiosk-primary);
+    background: linear-gradient(to bottom, rgba(102, 126, 234, 0.05), white);
+}
+
+.plan-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--kiosk-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 0 var(--kiosk-radius-lg) 0 var(--kiosk-radius);
+}
+
+.plan-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.plan-price {
+    margin-bottom: 1rem;
+}
+
+.price-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--kiosk-primary);
+}
+
+.price-period {
+    font-size: 1rem;
+    color: var(--kiosk-text-muted);
+}
+
+.plan-description {
+    font-size: 0.95rem;
+    color: var(--kiosk-text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.plan-classes {
+    font-size: 1rem;
+    color: var(--kiosk-text);
+    margin-bottom: 1.5rem;
+}
+
+.btn-select-plan {
+    width: 100%;
+    background: var(--kiosk-gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+}
+
+.btn-select-plan:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.plans-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* Processing Payment */
+.processing-payment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1.5rem;
+}
+
+.processing-payment h3 {
+    font-size: 1.5rem;
+    color: var(--kiosk-text);
+}
+
+.processing-payment p {
+    font-size: 1.1rem;
+    color: var(--kiosk-text-muted);
+}
+
+/* PIX Payment Screen */
+.pix-payment-screen {
+    text-align: center;
+}
+
+.pix-title {
+    font-size: 1.8rem;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.pix-plan {
+    font-size: 1.1rem;
+    color: var(--kiosk-text-muted);
+    margin-bottom: 2rem;
+}
+
+.pix-qr-container {
+    background: white;
+    border: 2px dashed var(--kiosk-border);
+    border-radius: var(--kiosk-radius-lg);
+    padding: 2rem;
+    display: inline-block;
+    margin-bottom: 2rem;
+}
+
+.pix-qr-image {
+    width: 250px;
+    height: 250px;
+    display: block;
+}
+
+.pix-no-qr {
+    width: 250px;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    color: var(--kiosk-text-muted);
+    font-size: 1rem;
+}
+
+.pix-copypaste {
+    margin-bottom: 2rem;
+}
+
+.pix-label {
+    font-size: 1rem;
+    color: var(--kiosk-text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.pix-code-container {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.pix-code-input {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid var(--kiosk-border);
+    border-radius: var(--kiosk-radius);
+    font-size: 0.85rem;
+    font-family: monospace;
+    background: #f9fafb;
+}
+
+.btn-copy-pix {
+    background: var(--kiosk-primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    white-space: nowrap;
+}
+
+.btn-copy-pix:hover {
+    background: var(--kiosk-secondary);
+}
+
+.pix-status {
+    margin: 2rem 0;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.status-indicator.waiting {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    color: #f57c00;
+}
+
+.status-indicator.success {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #2e7d32;
+}
+
+.pix-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-cancel {
+    background: var(--kiosk-error);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+    background: #c41c1c;
+}
+
+.pix-help {
+    font-size: 0.95rem;
+    color: var(--kiosk-text-muted);
+    margin-top: 2rem;
+}
+
+/* Invoice Link Screen */
+.invoice-payment-screen {
+    text-align: center;
+}
+
+.invoice-link-container {
+    margin: 2rem 0;
+}
+
+.btn-invoice-link {
+    display: inline-block;
+    background: var(--kiosk-gradient);
+    color: white;
+    padding: 1.5rem 3rem;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--kiosk-transition);
+}
+
+.btn-invoice-link:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+/* Local Payment Screen */
+.local-payment-screen {
+    text-align: center;
+    padding: 2rem;
+}
+
+.success-icon, .error-icon, .info-icon, .timeout-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.local-payment-info {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    padding: 2rem;
+    border-radius: var(--kiosk-radius);
+    margin: 2rem 0;
+}
+
+.local-payment-info p {
+    font-size: 1.2rem;
+    color: var(--kiosk-text);
+    margin: 0.5rem 0;
+}
+
+.payment-id {
+    font-family: monospace;
+    font-size: 1rem !important;
+    color: var(--kiosk-text-muted) !important;
+}
+
+.local-actions, .error-actions, .fallback-actions, .timeout-actions, .success-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-confirm {
+    background: var(--kiosk-success);
+    color: white;
+    padding: 1.5rem 3rem;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-confirm:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0, 208, 132, 0.4);
+}
+
+/* Error Screen */
+.payment-error-screen {
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: var(--kiosk-error);
+    margin: 1rem 0 2rem 0;
+    padding: 1rem;
+    background: #fef2f2;
+    border-radius: var(--kiosk-radius);
+}
+
+.error-help {
+    font-size: 0.95rem;
+    color: var(--kiosk-text-muted);
+    margin-top: 2rem;
+}
+
+/* No Plans Screen */
+.no-plans-screen {
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Success Screen */
+.payment-success-screen {
+    text-align: center;
+    padding: 2rem;
+}
+
+.success-animation {
+    margin-bottom: 1.5rem;
+}
+
+.success-checkmark {
+    font-size: 5rem;
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-message {
+    font-size: 1.3rem;
+    color: var(--kiosk-success);
+    margin-top: 1rem;
+}
+
+/* Timeout Screen */
+.payment-timeout-screen {
+    text-align: center;
+    padding: 2rem;
+}
+
+.timeout-help {
+    font-size: 1rem;
+    color: var(--kiosk-text-muted);
+    margin: 1rem 0 2rem 0;
+}
+
 /* Course Progress Section */
 .course-progress-section {
     background: white;
@@ -3432,5 +3899,110 @@
         gap: 0.5rem;
         text-align: center;
     }
+}
+
+
+/* ===== TIMEOUT PROGRESS BAR ===== */
+.timeout-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+}
+
+.timeout-progress-fill {
+    height: 100%;
+    background: var(--kiosk-warning);
+    width: 100%;
+    transform-origin: left;
+}
+
+/* ===== UI TRANSITIONS ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.checkin-dashboard, .checkin-dashboard-v2, .camera-section, .success-view, .success-container, .reactivation-screen {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ============================================================================
+   ACCESSIBILITY & FOCUS STATES
+   ============================================================================ */
+
+/* Focus indicators for interactive elements */
+:focus-visible {
+    outline: 3px solid var(--kiosk-primary);
+    outline-offset: 2px;
+}
+
+/* Specific focus styles for cards */
+.course-card-large:focus-visible,
+.class-card:focus-visible,
+.student-option:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.5);
+    border-color: var(--kiosk-primary);
+    transform: translateY(-2px);
+}
+
+/* Student Selection List Styles (Missing previously) */
+.student-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.student-option {
+    background: white;
+    border: 2px solid var(--kiosk-border);
+    border-radius: var(--kiosk-radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+}
+
+.student-option:hover {
+    border-color: var(--kiosk-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--kiosk-shadow);
+}
+
+.student-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kiosk-text);
+    margin-bottom: 0.5rem;
+}
+
+.student-matric {
+    font-size: 0.9rem;
+    color: var(--kiosk-text-muted);
+}
+
+/* Button focus states */
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-confirm-huge:focus-visible,
+.btn-cancel-top:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.5);
+}
+
+/* Input focus states */
+.search-input:focus-visible {
+    outline: none;
+    border-color: var(--kiosk-primary);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 

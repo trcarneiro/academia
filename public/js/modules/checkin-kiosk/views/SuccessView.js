@@ -26,9 +26,9 @@ class SuccessView {
                 <h1>🎉 CHECK-IN REGISTRADO COM SUCESSO!</h1>
             </div>
 
-            <div class="success-container">
+            <div class="success-container fade-in" role="status" aria-live="polite">
                 <div class="success-card">
-                    <div class="success-icon">
+                    <div class="success-icon" aria-hidden="true">
                         <div class="icon-checkmark">✅</div>
                     </div>
 
@@ -41,10 +41,10 @@ class SuccessView {
                     </div>
 
                     <div class="success-action">
-                        <p class="reset-message">
+                        <p class="reset-message" aria-live="off">
                             ⏱️ Voltando ao repouso em <span id="countdown">${autoResetSeconds}</span>s
                         </p>
-                        <button id="reset-btn" class="btn-primary">
+                        <button id="reset-btn" class="btn-primary" aria-label="Start new check-in">
                             Iniciar Novo Check-in
                         </button>
                     </div>
@@ -92,11 +92,11 @@ class SuccessView {
                 <h1>❌ ERRO AO REGISTRAR CHECK-IN</h1>
             </div>
 
-            <div class="error-container">
+            <div class="error-container" role="alert" aria-live="assertive">
                 <div class="error-card">
-                    <div class="error-icon">❌</div>
+                    <div class="error-icon" aria-hidden="true">❌</div>
                     <p class="error-message">${errorData.message || 'Ocorreu um erro inesperado'}</p>
-                    <button id="retry-btn" class="btn-primary">
+                    <button id="retry-btn" class="btn-primary" aria-label="Try again">
                         Tentar Novamente
                     </button>
                 </div>

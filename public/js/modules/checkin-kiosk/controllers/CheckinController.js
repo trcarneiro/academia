@@ -4,6 +4,8 @@
  * Manages: Camera, Face detection, Confirmation, Attendance
  */
 
+const MATCH_THRESHOLD = 0.60;
+
 class CheckinController {
     constructor(container, moduleAPI) {
         this.container = container;
@@ -37,26 +39,30 @@ class CheckinController {
             // 1. Load face-api models
             await this.faceService.init();
 
-            // 2. Load students cache for autocomplete (PRIORITY!)
+            // 2. Pre-load face embeddings cache (reduces first-match latency)
+            console.log('📥 Pre-loading face embeddings...');
+            await this.faceService.preloadEmbeddings(this.moduleAPI);
+
+            // 3. Load students cache for autocomplete (PRIORITY!)
             console.log('📥 Pre-loading students for instant search...');
             await this.biometricService.loadStudentsCache();
 
-            // 3. Setup camera view
-            this.cameraView = new CameraView(this.container, {
+            // 4. Setup camera view
+            this.cameraView = new CameraView(this.container, this.moduleAPI, {
                 onManualSearch: (query) => this.handleManualSearch(query),
                 onAutocomplete: (query) => this.handleAutocomplete(query),
                 onStudentSelect: (student) => this.showConfirmation(student), // NOVO: vai direto para dashboard
             });
 
-            // 4. Render camera view
+            // 5. Render camera view
             this.renderCameraView();
 
-            // 5. Get video element and start camera
+            // 6. Get video element and start camera
             const videoElement = this.container.querySelector('#checkin-video');
             try {
                 await this.cameraService.startCamera(videoElement);
                 
-                // 6. Start face detection loop (only if camera is available)
+                // 7. Start face detection loop (only if camera is available)
                 this.startDetection();
                 console.log('✅ Camera started, face detection active');
             } catch (cameraError) {
@@ -67,8 +73,8 @@ class CheckinController {
                 const cameraSection = this.container.querySelector('.camera-section');
                 if (cameraSection) {
                     cameraSection.innerHTML = `
-                        <div class="no-camera-message">
-                            <i class="fas fa-video-slash" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+                        <div class="no-camera-message" role="alert">
+                            <i class="fas fa-video-slash" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;" aria-hidden="true"></i>
                             <h3 style="color: #64748b; margin-bottom: 0.5rem;">Câmera não disponível</h3>
                             <p style="color: #94a3b8;">Use a busca manual abaixo para fazer check-in</p>
                         </div>
@@ -76,7 +82,7 @@ class CheckinController {
                 }
             }
 
-            // 7. Load and display today's history (always do this)
+            // 8. Load and display today's history (always do this)
             await this.loadAndDisplayHistory();
 
             console.log('✅ CheckinController initialized');
@@ -159,7 +165,8 @@ class CheckinController {
             }
 
             // 4. Try to find matching student
-            const match = await this.faceService.findMatch(face.descriptor, this.moduleAPI, 0.65);
+            // Lowered threshold to 0.60 to match backend service default and accept "FAIR" matches
+            const match = await this.faceService.findMatch(face.descriptor, this.moduleAPI, MATCH_THRESHOLD);
 
             if (match && (!this.currentMatch || match.studentId !== this.currentMatch.studentId)) {
                 // 5. New match found!
@@ -214,7 +221,7 @@ class CheckinController {
             const courses = coursesResponse.success ? coursesResponse.data : [];
 
             // 3. Render confirmation view with REAL data
-            this.confirmationView = new ConfirmationView(this.container, {
+            this.confirmationView = new ConfirmationView(this.container, this.moduleAPI, {
                 onConfirm: (courseId, additionalData) => {
                     // additionalData pode conter { turmaId }
                     this.completeCheckin(match.studentId, courseId, additionalData);
@@ -363,7 +370,7 @@ class CheckinController {
         const listHTML = students
             .map(
                 (s) => `
-            <div class="student-option" data-student-id="${s.id}">
+            <div class="student-option" data-student-id="${s.id}" role="button" tabindex="0" aria-label="Select ${s.name}">
                 <div class="student-name">${s.name}</div>
                 <div class="student-matric">📋 ${s.matricula || s.id}</div>
             </div>
@@ -375,25 +382,36 @@ class CheckinController {
             <div class="module-header-premium">
                 <h1>👥 SELECIONE O ALUNO</h1>
             </div>
-            <div class="student-list">
+            <div class="student-list" role="list">
                 ${listHTML}
             </div>
-            <button class="btn-secondary" onclick="window.CheckinKiosk.controller.cancel()">
+            <button class="btn-secondary" onclick="window.CheckinKiosk.controller.cancel()" aria-label="Cancel selection">
                 Cancelar
             </button>
         `;
 
         // Add click listeners
         students.forEach((s) => {
-            this.container.querySelector(`[data-student-id="${s.id}"]`)?.addEventListener('click', async () => {
-                const match = {
-                    studentId: s.id,
-                    name: s.name,
-                    similarity: 100,
-                    photoUrl: s.facePhotoUrl,
-                };
-                await this.showConfirmation(match);
-            });
+            const option = this.container.querySelector(`[data-student-id="${s.id}"]`);
+            if (option) {
+                option.addEventListener('click', async () => {
+                    const match = {
+                        studentId: s.id,
+                        name: s.name,
+                        similarity: 100,
+                        photoUrl: s.facePhotoUrl,
+                    };
+                    await this.showConfirmation(match);
+                });
+                
+                // Add keyboard support
+                option.addEventListener('keydown', async (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        option.click();
+                    }
+                });
+            }
         });
     }
 

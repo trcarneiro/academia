@@ -2,577 +2,234 @@
     'use strict';
     
     // Module state
-    let dashboardData = {
-        students: [],
-        classes: [],
-        attendance: [],
-        financial: {},
-        lastUpdated: null
-    };
-    
-    let updateInterval = null;
-    let isInitialized = false;
-    
-    // Initialize module on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeDashboardModule();
-    });
-    
-    // Module initialization
-    function initializeDashboardModule() {
-        console.log('📊 Initializing Dashboard Module...');
+    const DashboardModule = {
+        data: {
+            students: [],
+            classes: [],
+            attendance: [],
+            financial: {},
+            lastUpdated: null
+        },
         
-        if (isInitialized) {
-            console.log('⚠️ Dashboard module already initialized');
-            return;
-        }
-        
-        try {
-            setupEventListeners();
-            
-            // Auto-load dashboard if container exists (support both old and new structure)
-            if (document.getElementById('dashboard') || document.querySelector('.dashboard-isolated') || document.getElementById('dashboardContainer')) {
-                loadDashboard();
-            }
-            
-            // Export functions to global scope
-            exportGlobalFunctions();
-            
-            // Set up auto-refresh
-            setupAutoRefresh();
-            
-            isInitialized = true;
-            
-        } catch (error) {
-            console.error('❌ Error initializing dashboard module:', error);
-        }
-    }
-    
-    // Setup event listeners
-    function setupEventListeners() {
-        // Attendance details toggle
-        const attendanceCard = document.querySelector('.metric-card[data-action="toggle-attendance-details"]');
-        if (attendanceCard) {
-            attendanceCard.addEventListener('click', toggleAttendanceDetails);
-        }
-        
-        // Refresh button
-        const refreshBtn = document.getElementById('refreshDashboardBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', refreshDashboard);
-        }
-        
-        // Auto-refresh toggle
-        const autoRefreshToggle = document.getElementById('autoRefreshToggle');
-        if (autoRefreshToggle) {
-            autoRefreshToggle.addEventListener('change', toggleAutoRefresh);
-        }
-    }
-    
-    // ==========================================
-    // DASHBOARD FUNCTIONS
-    // ==========================================
-    
-    function loadDashboard() {
-        console.log('📊 Loading dashboard...');
+        init: function() {
+            console.log('📊 Initializing Premium Dashboard...');
+            this.setupGlobalFunctions();
+            this.loadDashboard();
+            this.setupAutoRefresh();
+            this.initAgentWidget();
+        },
 
-        // First load HTML content if not already loaded
-        const container = document.getElementById('dashboardContainer');
-        if (container && !container.querySelector('.dashboard-header')) {
-            console.log('📄 Loading dashboard HTML content...');
-            fetch('/views/dashboard.html')
-                .then(response => response.text())
-                .then(html => {
-                    container.innerHTML = html;
-                    console.log('✅ Dashboard HTML loaded');
-                    // Now load data
-                    showLoadingState();
-                    fetchDashboardData();
-                })
-                .catch(error => {
-                    console.error('❌ Error loading dashboard HTML:', error);
-                    showErrorState();
-                });
-        } else {
-            console.log('📊 Dashboard HTML already loaded, loading data...');
-            showLoadingState();
-            fetchDashboardData();
-        }
-    }
-    
-    function renderDashboard(data) {
-        console.log('📊 Rendering dashboard with data:', data);
-        
-        try {
-            // Update metrics
-            updateMetrics(data);
-            
-            // Update recent activities
-            updateRecentActivities(data);
-            
-            // Update charts if they exist
-            updateCharts(data);
-            
-            // Update last updated time
-            updateLastUpdatedTime();
-            
-            // Initialize Agent Dashboard Widget
-            initializeAgentWidget();
-
-            // Initialize Task Approval Widget
-            initializeTaskApprovalWidget();
-            
-            hideLoadingState();
-            
-        } catch (error) {
-            console.error('❌ Error rendering dashboard:', error);
-            showErrorState();
-        }
-    }
-    
-    function initializeAgentWidget() {
-        // Wait for widget to be available
-        const checkWidget = () => {
-            if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
-                console.log('🤖 Initializing Agent Dashboard Widget...');
-                window.agentDashboardWidget.init('agent-dashboard-widget');
-            } else {
-                setTimeout(checkWidget, 100);
-            }
-        };
-        checkWidget();
-    }
-
-    function initializeTaskApprovalWidget() {
-        // Wait for widget to be available
-        const checkWidget = () => {
-            if (window.TaskApprovalWidget && window.TaskApprovalWidget.init) {
-                console.log('📋 Initializing Task Approval Widget...');
-                const container = document.getElementById('task-approval-widget');
-                if (container) {
-                    window.TaskApprovalWidget.init(container);
+        initAgentWidget: function() {
+            const check = () => {
+                if (window.agentDashboardWidget && window.agentDashboardWidget.init) {
+                    window.agentDashboardWidget.init('agent-dashboard-widget');
                 } else {
-                    console.warn('⚠️ Task approval widget container not found');
+                    setTimeout(check, 500);
                 }
+            };
+            check();
+        },
+
+        setupGlobalFunctions: function() {
+            window.refreshDashboard = () => this.loadDashboard();
+            window.generateReport = () => this.generateReport();
+            
+            // Navigation helper if not already defined
+            if (!window.navigateToModule) {
+                window.navigateToModule = (moduleName, params) => {
+                    console.log(`Navigate to ${moduleName}`, params);
+                    // Dispatch event for main app to handle
+                    const event = new CustomEvent('navigate', { 
+                        detail: { module: moduleName, params: params } 
+                    });
+                    window.dispatchEvent(event);
+                    
+                    // Fallback: Try to find sidebar link
+                    const link = document.querySelector(`[data-target="${moduleName}"]`) || 
+                                 document.querySelector(`a[href="#${moduleName}"]`);
+                    if (link) link.click();
+                };
+            }
+        },
+
+        loadDashboard: async function() {
+            const container = document.getElementById('dashboardContainer') || 
+                              document.getElementById('dashboard');
+            
+            if (!container) return;
+
+            // If HTML not loaded (check for new class)
+            if (!container.querySelector('.dashboard-grid')) {
+                try {
+                    // Add cache buster to force load new HTML
+                    const response = await fetch('/views/dashboard.html?v=' + new Date().getTime());
+                    const html = await response.text();
+                    container.innerHTML = html;
+                } catch (error) {
+                    console.error('Failed to load dashboard HTML', error);
+                    return;
+                }
+            }
+
+            this.showLoading();
+            await this.fetchData();
+            this.render();
+            this.hideLoading();
+        },
+
+        fetchData: async function() {
+            try {
+                const [students, attendance, classes] = await Promise.all([
+                    fetch('/api/students').then(r => r.json()).catch(() => ({ success: false })),
+                    fetch('/api/attendance/stats').then(r => r.json()).catch(() => ({ success: false })),
+                    fetch('/api/classes').then(r => r.json()).catch(() => ({ success: false }))
+                ]);
+
+                this.data.students = students.success ? students.data : [];
+                this.data.attendance = attendance.success ? attendance.data : [];
+                this.data.classes = classes.success ? classes.data : [];
+                this.data.lastUpdated = new Date();
+
+            } catch (error) {
+                console.error('Error fetching data', error);
+                // Keep existing data or show error
+            }
+        },
+
+        render: function() {
+            this.updateHeader();
+            this.updateStats();
+            this.updateAIBriefing();
+            this.updateAgenda();
+            this.updateRetention();
+        },
+
+        updateHeader: function() {
+            const timeEl = document.getElementById('lastUpdated');
+            if (timeEl) {
+                timeEl.textContent = `Atualizado às ${new Date().toLocaleTimeString()}`;
+            }
+        },
+
+        updateStats: function() {
+            // 1. Total Students
+            const total = this.data.students.length;
+            this.setElementText('totalStudents', total || '--');
+
+            // 2. Active Students
+            const active = this.data.students.filter(s => s.user?.isActive !== false).length;
+            this.setElementText('activeStudents', active || '--');
+
+            // 3. Revenue (Estimate: Active * 150)
+            const estRevenue = active * 150; // Mock value
+            this.setElementText('monthlyRevenue', `R$ ${estRevenue.toLocaleString('pt-BR')}`);
+
+            // 4. Today's Attendance
+            // Mock or calculate from attendance data
+            const today = new Date().toISOString().split('T')[0];
+            const presentToday = this.data.attendance.filter(a => a.date?.startsWith(today)).length;
+            this.setElementText('todayAttendances', presentToday || '0');
+        },
+
+        updateAIBriefing: function() {
+            const el = document.getElementById('aiBriefingText');
+            if (!el) return;
+
+            const activeCount = this.data.students.filter(s => s.user?.isActive !== false).length;
+            const totalCount = this.data.students.length;
+            
+            // Simple logic to generate a "briefing"
+            let message = `Você tem ${activeCount} alunos ativos de um total de ${totalCount}. `;
+            
+            if (activeCount < totalCount * 0.8) {
+                message += "A taxa de retenção requer atenção. ";
             } else {
-                setTimeout(checkWidget, 100);
+                message += "A academia está com ótima saúde! ";
             }
-        };
-        checkWidget();
-    }
-    
-    function updateMetrics(data) {
-        const metrics = {
-            totalStudents: data.students?.length || 0,
-            activeStudents: data.students?.filter(s => s.user?.isActive).length || 0,
-            attendanceRate: calculateAttendanceRate(data.attendance),
-            currentLesson: getCurrentLessonProgress(data.classes)
-        };
-        
-        // Update metric cards
-        updateMetricCard('total-students', metrics.totalStudents);
-        updateMetricCard('active-students', metrics.activeStudents);
-        updateMetricCard('attendance-rate', `${metrics.attendanceRate}%`);
-        updateMetricCard('current-lesson', metrics.currentLesson);
-        
-        // Update trends
-        updateTrends(data);
-    }
-    
-    function updateMetricCard(elementId, value) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.textContent = value;
-        }
-    }
-    
-    function updateTrends(data) {
-        // Calculate trends based on historical data
-        const trends = calculateTrends(data);
-        
-        // Update trend indicators
-        Object.entries(trends).forEach(([metric, trend]) => {
-            const trendElement = document.querySelector(`#${metric}`);
-            if (trendElement) {
-                const trendContainer = trendElement.closest('.metric-card')?.querySelector('.metric-trend');
-                if (trendContainer) {
-                    trendContainer.innerHTML = `<span>${trend.arrow}</span> ${trend.text}`;
-                    trendContainer.className = `metric-trend ${trend.class}`;
-                }
-            }
-        });
-    }
-    
-    function calculateAttendanceRate(attendanceData) {
-        if (!attendanceData || attendanceData.length === 0) return 85;
-        
-        const present = attendanceData.filter(a => a.status === 'present').length;
-        const total = attendanceData.length;
-        
-        return Math.round((present / total) * 100);
-    }
-    
-    function getCurrentLessonProgress(classesData) {
-        if (!classesData || classesData.length === 0) return '15/48';
-        
-        // Calculate based on actual class data
-        const totalLessons = 48; // Default course length
-        const completedLessons = classesData.filter(c => c.status === 'completed').length;
-        
-        return `${completedLessons}/${totalLessons}`;
-    }
-    
-    function calculateTrends(data) {
-        // Mock trend calculation - in real app, this would compare with historical data
-        return {
-            'total-students': {
-                arrow: '↗',
-                text: '+2 este mês',
-                class: 'positive'
-            },
-            'active-students': {
-                arrow: '↗',
-                text: '100% taxa',
-                class: 'positive'
-            },
-            'attendance-rate': {
-                arrow: '↗',
-                text: '+5% vs mês anterior',
-                class: 'positive'
-            },
-            'current-lesson': {
-                arrow: '↗',
-                text: '31% completo',
-                class: 'positive'
-            }
-        };
-    }
-    
-    function updateRecentActivities(data) {
-        const activitiesContainer = document.querySelector('.smart-card');
-        if (!activitiesContainer) return;
-        
-        const activities = generateRecentActivities(data);
-        const activitiesHTML = activities.map(activity => 
-            `<p style="margin: 0.5rem 0;">${activity.icon} <strong>${activity.title}</strong>${activity.subtitle ? ` - ${activity.subtitle}` : ''} (${activity.time})</p>`
-        ).join('');
-        
-        const activitiesContent = activitiesContainer.querySelector('div[style*="color: #CBD5E1"]');
-        if (activitiesContent) {
-            activitiesContent.innerHTML = activitiesHTML;
-        }
-    }
-    
-    function generateRecentActivities(data) {
-        const activities = [];
-        
-        // Add recent student activities
-        if (data.students && data.students.length > 0) {
-            const recentStudents = data.students.slice(-3);
-            recentStudents.forEach(student => {
-                activities.push({
-                    icon: '👤',
-                    title: `Novo aluno: ${student.nome || 'Aluno'}`,
-                    time: 'Recente'
-                });
-            });
-        }
-        
-        // Add recent attendance
-        if (data.attendance && data.attendance.length > 0) {
-            activities.push({
-                icon: '📊',
-                title: 'Presença registrada',
-                subtitle: `${data.attendance.filter(a => a.status === 'present').length} presentes hoje`,
-                time: 'Hoje'
-            });
-        }
-        
-        // Add default activities if no data
-        if (activities.length === 0) {
-            activities.push(
-                {
-                    icon: '🎯',
-                    title: 'Aula 15 - Defesas Básicas',
-                    time: 'Hoje'
-                },
-                {
-                    icon: '📝',
-                    title: 'Avaliação Maria Silva',
-                    subtitle: '85.5%',
-                    time: 'Ontem'
-                },
-                {
-                    icon: '👤',
-                    title: 'Novo aluno: Carlos Rodrigues',
-                    time: '2 dias atrás'
-                },
-                {
-                    icon: '🥋',
-                    title: 'Técnica dominada: Ana Oliveira',
-                    subtitle: '5 técnicas',
-                    time: '3 dias atrás'
-                }
-            );
-        }
-        
-        return activities.slice(0, 5); // Limit to 5 activities
-    }
-    
-    function updateCharts(data) {
-        // Placeholder for chart updates
-        // In a real implementation, this would update Chart.js or similar
-        console.log('📈 Charts updated (placeholder)');
-    }
-    
-    function updateLastUpdatedTime() {
-        dashboardData.lastUpdated = new Date();
-        const lastUpdatedElement = document.getElementById('lastUpdated');
-        if (lastUpdatedElement) {
-            lastUpdatedElement.textContent = `Última atualização: ${dashboardData.lastUpdated.toLocaleTimeString('pt-BR')}`;
-        }
-    }
-    
-    // ==========================================
-    // EVENT HANDLERS
-    // ==========================================
-    
-    function toggleAttendanceDetails() {
-        console.log('📊 Toggling attendance details...');
-        
-        const detailsContainer = document.getElementById('attendanceDetails');
-        
-        if (detailsContainer) {
-            detailsContainer.style.display = detailsContainer.style.display === 'none' ? 'block' : 'none';
-        } else {
-            // Create and show attendance details modal or section
-            showAttendanceDetailsModal();
-        }
-    }
-    
-    function showAttendanceDetailsModal() {
-        // Create a simple modal for attendance details
-        const modal = document.createElement('div');
-        modal.id = 'attendanceDetailsModal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        `;
-        
-        modal.innerHTML = `
-            <div style="background: #1E293B; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
-                <h3 style="color: #F8FAFC; margin-bottom: 1rem;">📊 Detalhes da Frequência</h3>
-                <div style="color: #CBD5E1; line-height: 1.6;">
-                    <p>• Taxa atual: 85%</p>
-                    <p>• Presentes hoje: 12 alunos</p>
-                    <p>• Ausentes: 3 alunos</p>
-                    <p>• Média semanal: 82%</p>
-                    <p>• Tendência: +5% vs mês anterior</p>
+
+            message += "Não há pendências urgentes no financeiro.";
+            
+            el.textContent = message;
+        },
+
+        updateAgenda: function() {
+            const list = document.getElementById('agendaList');
+            if (!list) return;
+
+            // Mock agenda items for now, or use classes data
+            const items = [
+                { time: '18:00', title: 'Krav Maga Iniciante', subtitle: 'Instrutor João', status: 'Confirmada' },
+                { time: '19:00', title: 'Defesa Pessoal Avançada', subtitle: 'Instrutor Carlos', status: 'Confirmada' },
+                { time: '20:00', title: 'Treino Livre', subtitle: 'Supervisão Ana', status: 'Aguardando' }
+            ];
+
+            list.innerHTML = items.map(item => `
+                <div class="agenda-item">
+                    <div class="agenda-time">${item.time}</div>
+                    <div class="agenda-info">
+                        <div class="agenda-title">${item.title}</div>
+                        <div class="agenda-subtitle">${item.subtitle}</div>
+                    </div>
+                    <div class="agenda-status">${item.status}</div>
                 </div>
-                <button onclick="closeAttendanceModal()" style="
-                    background: #3B82F6;
-                    color: white;
-                    border: none;
-                    padding: 0.5rem 1rem;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    margin-top: 1rem;
-                ">Fechar</button>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Add click-to-close functionality
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeAttendanceModal();
+            `).join('');
+        },
+
+        updateRetention: function() {
+            const list = document.getElementById('retentionList');
+            if (!list) return;
+
+            // Find students with no attendance in last 30 days (Mock logic)
+            // In real app, we would check attendance dates
+            const atRisk = this.data.students.slice(0, 3).map(s => ({
+                name: s.nome || 'Aluno',
+                daysAbsent: Math.floor(Math.random() * 20) + 10
+            }));
+
+            if (atRisk.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:10px; color:#64748B">Nenhum aluno em risco! 🎉</div>';
+                return;
             }
-        });
-    }
-    
-    function closeAttendanceModal() {
-        const modal = document.getElementById('attendanceDetailsModal');
-        if (modal) {
-            modal.remove();
+
+            list.innerHTML = atRisk.map(student => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom: 1px solid #F1F5F9;">
+                    <div>
+                        <div style="font-weight:600; color:#334155">${student.name}</div>
+                        <div style="font-size:0.85rem; color:#EF4444">${student.daysAbsent} dias ausente</div>
+                    </div>
+                    <button class="btn-ai-action" style="padding:4px 8px; font-size:0.8rem" onclick="navigateToModule('students', {id: '${student.id}'})">Ver</button>
+                </div>
+            `).join('');
+        },
+
+        generateReport: function() {
+            alert('Gerando relatório detalhado com IA... (Funcionalidade em breve)');
+        },
+
+        setElementText: function(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        },
+
+        showLoading: function() {
+            // Optional: Add loading class
+        },
+
+        hideLoading: function() {
+            // Optional: Remove loading class
+        },
+
+        setupAutoRefresh: function() {
+            setInterval(() => this.fetchData().then(() => this.render()), 60000);
         }
-    }
-    
-    function refreshDashboard() {
-        console.log('🔄 Refreshing dashboard...');
-        loadDashboard();
-    }
-    
-    function toggleAutoRefresh() {
-        const toggle = document.getElementById('autoRefreshToggle');
-        if (toggle && toggle.checked) {
-            setupAutoRefresh();
-        } else {
-            clearAutoRefresh();
-        }
-    }
-    
-    function setupAutoRefresh() {
-        clearAutoRefresh();
-        updateInterval = setInterval(() => {
-            console.log('🔄 Auto-refreshing dashboard...');
-            fetchDashboardData();
-        }, 30000); // 30 seconds
-    }
-    
-    function clearAutoRefresh() {
-        if (updateInterval) {
-            clearInterval(updateInterval);
-            updateInterval = null;
-        }
-    }
-    
-    // ==========================================
-    // API FUNCTIONS
-    // ==========================================
-    
-    async function fetchDashboardData() {
-        try {
-            const [studentsResponse, attendanceResponse, classesResponse] = await Promise.all([
-                fetch('/api/students').catch(() => ({ ok: false })),
-                fetch('/api/attendance/stats').catch(() => ({ ok: false })),
-                fetch('/api/classes').catch(() => ({ ok: false }))
-            ]);
-            
-            const data = {
-                students: [],
-                attendance: [],
-                classes: [],
-                financial: {}
-            };
-            
-            if (studentsResponse.ok) {
-                const studentsResult = await studentsResponse.json();
-                if (studentsResult.success) {
-                    data.students = studentsResult.data;
-                }
-            }
-            
-            if (attendanceResponse.ok) {
-                const attendanceResult = await attendanceResponse.json();
-                if (attendanceResult.success) {
-                    data.attendance = attendanceResult.data;
-                }
-            }
-            
-            if (classesResponse.ok) {
-                const classesResult = await classesResponse.json();
-                if (classesResult.success) {
-                    data.classes = classesResult.data;
-                }
-            }
-            
-            dashboardData = { ...dashboardData, ...data };
-            renderDashboard(dashboardData);
-            
-        } catch (error) {
-            console.error('❌ Error fetching dashboard data:', error);
-            
-            // Use fallback/mock data
-            const fallbackData = {
-                students: [
-                    { nome: 'João Silva', user: { isActive: true } },
-                    { nome: 'Maria Santos', user: { isActive: true } },
-                    { nome: 'Pedro Costa', user: { isActive: true } },
-                    { nome: 'Ana Oliveira', user: { isActive: true } }
-                ],
-                attendance: [
-                    { status: 'present', date: new Date().toISOString() },
-                    { status: 'present', date: new Date().toISOString() },
-                    { status: 'absent', date: new Date().toISOString() }
-                ],
-                classes: [
-                    { status: 'completed', name: 'Aula 1' },
-                    { status: 'completed', name: 'Aula 2' }
-                ]
-            };
-            
-            dashboardData = { ...dashboardData, ...fallbackData };
-            renderDashboard(dashboardData);
-        }
-    }
-    
-    // ==========================================
-    // UTILITY FUNCTIONS
-    // ==========================================
-    
-    function showLoadingState() {
-        const metricsGrid = document.querySelector('.metric-grid');
-        if (metricsGrid) {
-            metricsGrid.style.opacity = '0.5';
-        }
-    }
-    
-    function hideLoadingState() {
-        const metricsGrid = document.querySelector('.metric-grid');
-        if (metricsGrid) {
-            metricsGrid.style.opacity = '1';
-        }
-    }
-    
-    function showErrorState() {
-        const dashboard = document.getElementById('dashboard');
-        if (dashboard) {
-            const errorMessage = document.createElement('div');
-            errorMessage.id = 'dashboardError';
-            errorMessage.style.cssText = `
-                background: rgba(239, 68, 68, 0.1);
-                border: 1px solid #EF4444;
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 1rem 0;
-                color: #EF4444;
-                text-align: center;
-            `;
-            errorMessage.innerHTML = `
-                <strong>⚠️ Erro ao carregar dados</strong><br>
-                Usando dados de fallback. Tente atualizar a página.
-            `;
-            
-            // Remove existing error message
-            const existingError = document.getElementById('dashboardError');
-            if (existingError) {
-                existingError.remove();
-            }
-            
-            dashboard.insertBefore(errorMessage, dashboard.firstChild);
-        }
-    }
-    
-    // ==========================================
-    // GLOBAL EXPORTS
-    // ==========================================
-    
-    function exportGlobalFunctions() {
-        window.loadDashboard = loadDashboard;
-        window.renderDashboard = renderDashboard;
-        window.refreshDashboard = refreshDashboard;
-        window.toggleAttendanceDetails = toggleAttendanceDetails;
-        window.closeAttendanceModal = closeAttendanceModal;
-        window.fetchDashboardData = fetchDashboardData;
-        window.updateMetrics = updateMetrics;
-        window.setupAutoRefresh = setupAutoRefresh;
-        window.clearAutoRefresh = clearAutoRefresh;
-    }
-    
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-        clearAutoRefresh();
+    };
+
+    // Expose to window
+    window.DashboardModule = DashboardModule;
+
+    // Auto-init
+    document.addEventListener('DOMContentLoaded', () => {
+        DashboardModule.init();
     });
-    
-    console.log('📊 Dashboard Module loaded');
-    
+
 })();

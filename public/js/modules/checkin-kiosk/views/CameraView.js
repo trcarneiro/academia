@@ -4,8 +4,9 @@
  */
 
 class CameraView {
-    constructor(container, callbacks = {}) {
+    constructor(container, moduleAPI, callbacks = {}) {
         this.container = container;
+        this.moduleAPI = moduleAPI;
         this.onManualSearch = callbacks.onManualSearch || (() => {});
         this.onFaceDetected = callbacks.onFaceDetected || (() => {});
         this.onAutocomplete = callbacks.onAutocomplete || null;
@@ -22,7 +23,7 @@ class CameraView {
                 <p>Posicione seu rosto para identificação automática</p>
             </div>
 
-            <div class="camera-section">
+            <div class="camera-section fade-in">
                 <!-- Coluna Esquerda: Câmera + Stats -->
                 <div class="camera-column">
                     <div class="camera-container">
@@ -32,9 +33,10 @@ class CameraView {
                             autoplay 
                             playsinline 
                             muted
+                            aria-label="Camera feed for face detection"
                         ></video>
 
-                        <div class="face-detection-overlay">
+                        <div class="face-detection-overlay" aria-hidden="true">
                             <svg class="face-outline" viewBox="0 0 200 250">
                                 <defs>
                                     <mask id="face-mask">
@@ -51,7 +53,7 @@ class CameraView {
                                 <rect x="10" y="10" width="180" height="230" rx="20" fill="none" stroke="#667eea" stroke-width="3" />
                             </svg>
 
-                            <div id="face-status" class="face-status">
+                            <div id="face-status" class="face-status" role="status" aria-live="polite">
                                 <div class="status-spinner"></div>
                                 <p>📍 Detectando rosto...</p>
                             </div>
@@ -61,11 +63,11 @@ class CameraView {
                     <div class="detection-stats">
                         <div class="stat-card">
                             <span class="stat-label">Qualidade:</span>
-                            <span id="quality-indicator" class="quality-badge quality-poor">---</span>
+                            <span id="quality-indicator" class="quality-badge quality-poor" aria-label="Detection quality">---</span>
                         </div>
                         <div class="stat-card">
                             <span class="stat-label">Status:</span>
-                            <span id="match-status" class="match-badge match-waiting">Aguardando...</span>
+                            <span id="match-status" class="match-badge match-waiting" aria-label="Match status">Aguardando...</span>
                         </div>
                     </div>
                 </div>
@@ -85,9 +87,10 @@ class CameraView {
                                 placeholder="Digite matrícula, CPF ou nome..."
                                 class="search-input-tablet"
                                 autocomplete="off"
+                                aria-label="Search student by name, CPF or ID"
                             />
-                            <button class="btn-search-tablet">
-                                <span class="icon">🔍</span>
+                            <button class="btn-search-tablet" aria-label="Search">
+                                <span class="icon" aria-hidden="true">🔍</span>
                                 <span class="text">Buscar Aluno</span>
                             </button>
                         </div>
@@ -212,8 +215,13 @@ class CameraView {
             console.log('📡 Fetching turmas for org:', organizationId, 'day:', dayOfWeek);
 
             // Fetch turmas from API
-            const response = await fetch(`/api/turmas?organizationId=${organizationId}`);
-            const data = await response.json();
+            const response = await this.moduleAPI.request(`/api/turmas?organizationId=${organizationId}`, {
+                method: 'GET'
+            });
+            
+            // moduleAPI returns { success: true, data: [...] }
+            // We need to handle if response is the data object itself or the wrapper
+            const data = response; 
 
             console.log('📦 API Response:', {
                 success: data.success,
@@ -516,6 +524,7 @@ class CameraView {
             if (!dropdown) {
                 dropdown = document.createElement('div');
                 dropdown.className = 'autocomplete-dropdown';
+                dropdown.setAttribute('role', 'listbox');
                 searchBox.appendChild(dropdown);
                 console.log('✅ Autocomplete dropdown created and attached');
             }
@@ -529,7 +538,12 @@ class CameraView {
 
             // Mostrar até 10 resultados (aumentado de 5 para 10)
             dropdown.innerHTML = sortedResults.slice(0, 10).map(student => `
-                <div class="autocomplete-item" data-student-id="${student.id}" data-student-name="${student.name || student.firstName + ' ' + student.lastName}">
+                <div class="autocomplete-item" 
+                     data-student-id="${student.id}" 
+                     data-student-name="${student.name || student.firstName + ' ' + student.lastName}"
+                     role="option"
+                     tabindex="0"
+                     aria-label="Select ${student.name || student.firstName + ' ' + student.lastName}">
                     <span class="student-name">${student.name || student.firstName + ' ' + student.lastName}</span>
                     <span class="student-detail">${student.matricula || student.cpf || 'Sem matrícula'}</span>
                 </div>
@@ -540,7 +554,7 @@ class CameraView {
 
             // Add click listeners to items - IR DIRETO PARA DASHBOARD
             dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-                item.addEventListener('click', () => {
+                const selectItem = () => {
                     const studentId = item.dataset.studentId;
                     const studentName = item.dataset.studentName;
                     
@@ -551,6 +565,16 @@ class CameraView {
                     // IR DIRETO PARA DASHBOARD (sem passar pela lista)
                     if (this.onStudentSelect) {
                         this.onStudentSelect({ studentId, name: studentName });
+                    }
+                };
+
+                item.addEventListener('click', selectItem);
+                
+                // Add keyboard support
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectItem();
                     }
                 });
             });

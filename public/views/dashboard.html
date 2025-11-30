@@ -1,162 +1,142 @@
-<style>
-    /* Dashboard Sections - Espaçamento para widgets */
-    .dashboard-section {
-        margin: 24px 0;
-        min-height: 60px;
-    }
-    
-    /* Garantir que widgets sejam visíveis */
-    #agent-dashboard-widget,
-    #task-approval-widget {
-        display: block !important;
-        width: 100%;
-    }
-</style>
+<link rel="stylesheet" href="/css/modules/dashboard-premium.css">
 
 <div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <h1 class="dashboard-title">📊 Dashboard Geral</h1>
+    <!-- Header -->
+    <div class="dashboard-grid">
+        <div class="dashboard-header-section">
+            <div class="dashboard-title">
+                <h1>Dashboard Geral</h1>
+                <p id="lastUpdated">Atualizado agora</p>
+            </div>
             <div class="header-actions">
-                <button id="refreshDashboard" class="btn btn-primary">
+                <button id="refreshDashboardBtn" class="btn-ai-action">
                     🔄 Atualizar
                 </button>
-                <span class="last-updated" id="lastUpdated">
-                    Carregando...
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navigation Menu -->
-    <div class="dashboard-nav">
-        <div class="nav-items">
-            <button class="nav-item active" data-action="navigateToModule" data-args='["dashboard"]'>
-                📊 Dashboard
-            </button>
-            <button class="nav-item" data-action="navigateToModule" data-args='["students"]'>
-                👥 Alunos
-            </button>
-            <button class="nav-item" data-action="navigateToModule" data-args='["courses"]'>
-                📚 Cursos
-            </button>
-            <button class="nav-item" data-action="navigateToModule" data-args='["attendance"]'>
-                📅 Frequência
-            </button>
-            <button class="nav-item" data-action="navigateToModule" data-args='["financial"]'>
-                💰 Financeiro
-            </button>
-            <!-- Forçado: Organizations sempre visível -->
-            <button class="nav-item" id="nav-organizations" data-action="navigateToModule" data-args='["organizations"]' style="display:block !important;">
-                🏢 Organizações
-            </button>
-        </div>
-    </div>
-
-    <!-- Metrics Overview -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon">👥</div>
-            <div class="metric-content">
-                <div class="metric-value" id="totalStudents">--</div>
-                <div class="metric-label">Total de Alunos</div>
-                <div class="metric-change" id="studentsChange">...</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon">✅</div>
-            <div class="metric-content">
-                <div class="metric-value" id="activeStudents">--</div>
-                <div class="metric-label">Alunos Ativos</div>
-                <div class="metric-change" id="activeChange">...</div>
+        <!-- AI Briefing Widget -->
+        <div class="widget-ai-briefing" id="aiBriefingWidget">
+            <div class="ai-avatar">🤖</div>
+            <div class="ai-content">
+                <h3>Bom dia!</h3>
+                <p id="aiBriefingText">Analisando dados da academia para gerar seu resumo diário...</p>
+                <div class="ai-actions">
+                    <button class="btn-ai-action" onclick="window.agentDashboardWidget.toggle()">💬 Conversar com Agente</button>
+                    <button class="btn-ai-action" onclick="generateReport()">📊 Ver Relatório Completo</button>
+                </div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon">📚</div>
-            <div class="metric-content">
-                <div class="metric-value" id="totalCourses">--</div>
-                <div class="metric-label">Cursos Disponíveis</div>
-                <div class="metric-change" id="coursesChange">...</div>
+        <!-- Stats Grid -->
+        <div class="widget-stats">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue">👥</div>
+                    <span class="stat-trend trend-up">↗ +2 este mês</span>
+                </div>
+                <div class="stat-value" id="totalStudents">--</div>
+                <div class="stat-label">Total de Alunos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green">✅</div>
+                    <span class="stat-trend trend-up">↗ 98% ativos</span>
+                </div>
+                <div class="stat-value" id="activeStudents">--</div>
+                <div class="stat-label">Alunos Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon purple">💰</div>
+                    <span class="stat-trend trend-up">↗ R$ --</span>
+                </div>
+                <div class="stat-value" id="monthlyRevenue">R$ --</div>
+                <div class="stat-label">Receita Mensal (Est.)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange">📅</div>
+                    <span class="stat-trend trend-up">↗ -- hoje</span>
+                </div>
+                <div class="stat-value" id="todayAttendances">--</div>
+                <div class="stat-label">Presenças Hoje</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon">📅</div>
-            <div class="metric-content">
-                <div class="metric-value" id="todayAttendances">--</div>
-                <div class="metric-label">Presenças Hoje</div>
-                <div class="metric-change" id="attendanceChange">...</div>
+        <!-- Main Content -->
+        <div class="widget-main">
+            <!-- Agenda / Upcoming Classes -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>📅 Próximas Aulas</h3>
+                    <button class="btn-ai-action" onclick="navigateToModule('agenda')">Ver Agenda</button>
+                </div>
+                <div class="agenda-list" id="agendaList">
+                    <div class="agenda-item">
+                        <div class="agenda-time">--:--</div>
+                        <div class="agenda-info">
+                            <div class="agenda-title">Carregando...</div>
+                            <div class="agenda-subtitle">--</div>
+                        </div>
+                        <div class="agenda-status">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Overview (Placeholder for Chart) -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>💰 Fluxo de Caixa (Últimos 30 dias)</h3>
+                    <button class="btn-ai-action" onclick="navigateToModule('financial')">Detalhes</button>
+                </div>
+                <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #F8FAFC; border-radius: 8px; color: #94A3B8;">
+                    Gráfico Financeiro (Em Breve)
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Agent Dashboard Widget -->
-    <div id="agent-dashboard-widget" class="dashboard-section">
-        <!-- Widget will be loaded by JavaScript -->
-    </div>
-
-    <!-- Task Approval Widget -->
-    <div id="task-approval-widget" class="dashboard-section">
-        <!-- Widget will be loaded by JavaScript -->
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h3>⚡ Ações Rápidas</h3>
-        <div class="actions-grid">
-            <button class="action-btn" data-action="navigateToModule" data-args='["students"]' data-action="new-student">
-                <span class="action-icon">👤</span>
-                <span class="action-text">Novo Aluno</span>
-            </button>
-            <button class="action-btn" data-action="navigateToModule" data-args='["attendance"]' data-action="register-attendance">
-                <span class="action-icon">✅</span>
-                <span class="action-text">Registrar Presença</span>
-            </button>
-            <button class="action-btn" data-action="navigateToModule" data-args='["financial"]' data-action="new-payment">
-                <span class="action-icon">💳</span>
-                <span class="action-text">Novo Pagamento</span>
-            </button>
-            <button class="action-btn" data-action="navigateToModule" data-args='["reporting"]' data-action="reports">
-                <span class="action-icon">📊</span>
-                <span class="action-text">Relatórios</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="recent-activity">
-        <h3>📈 Atividade Recente</h3>
-        <div id="activityList" class="activity-list">
-            <!-- Activity items will be loaded by JavaScript -->
-            <div class="activity-loading">
-                <div class="loading-spinner"></div>
-                <span>Carregando atividades...</span>
+        <!-- Sidebar -->
+        <div class="widget-sidebar">
+            <!-- Quick Actions -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>⚡ Ações Rápidas</h3>
+                </div>
+                <div class="actions-grid">
+                    <div class="action-card" onclick="navigateToModule('students', { action: 'new' })">
+                        <span class="action-card-icon">👤</span>
+                        <span class="action-card-text">Novo Aluno</span>
+                    </div>
+                    <div class="action-card" onclick="navigateToModule('attendance')">
+                        <span class="action-card-icon">✅</span>
+                        <span class="action-card-text">Presença</span>
+                    </div>
+                    <div class="action-card" onclick="navigateToModule('financial', { action: 'new' })">
+                        <span class="action-card-icon">💳</span>
+                        <span class="action-card-text">Receber</span>
+                    </div>
+                    <div class="action-card" onclick="navigateToModule('turmas')">
+                        <span class="action-card-icon">📅</span>
+                        <span class="action-card-text">Turmas</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- System Status -->
-    <div class="system-status">
-        <h3>🔧 Status do Sistema</h3>
-        <div class="status-grid">
-            <div class="status-item">
-                <span class="status-indicator" id="apiStatus">🔴</span>
-                <span class="status-label">API Status</span>
-                <span class="status-value" id="apiStatusText">Verificando...</span>
+            <!-- Retention Alert -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3>⚠️ Risco de Evasão</h3>
+                </div>
+                <div class="retention-list" id="retentionList">
+                    <div style="text-align: center; color: #64748B; padding: 12px;">
+                        Analisando frequência...
+                    </div>
+                </div>
             </div>
-            <div class="status-item">
-                <span class="status-indicator" id="dbStatus">🔴</span>
-                <span class="status-label">Database</span>
-                <span class="status-value" id="dbStatusText">Verificando...</span>
-            </div>
-            <div class="status-item">
-                <span class="status-indicator" id="moduleStatus">🔴</span>
-                <span class="status-label">Módulos</span>
-                <span class="status-value" id="moduleStatusText">Verificando...</span>
-            </div>
+            
+            <!-- Agent Widget Container (Hidden but functional) -->
+            <div id="agent-dashboard-widget" style="display: none;"></div>
         </div>
     </div>
 </div>

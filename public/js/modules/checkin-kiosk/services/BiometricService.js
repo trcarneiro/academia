@@ -225,27 +225,7 @@ class BiometricService {
         }
     }
 
-    /**
-     * Get student details (name, photo, plans)
-     * @param {string} studentId - Student ID
-     * @returns {Promise<Object>} Student data
-     */
-    async getStudentDetails(studentId) {
-        try {
-            const response = await this.moduleAPI.request(`/api/students/${studentId}`, {
-                method: 'GET',
-            });
 
-            if (response.success && response.data) {
-                return response.data;
-            }
-
-            throw new Error('Student not found');
-        } catch (error) {
-            console.error('Error fetching student details:', error);
-            throw error;
-        }
-    }
 
     /**
      * Calculate biometric confidence score

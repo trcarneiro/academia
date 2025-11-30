@@ -216,4 +216,193 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
       return ResponseHelper.error(reply, error);
     }
   });
+
+  // ==========================================
+  // POST /api/subscriptions/reactivate - Gerar link de pagamento para reativação
+  // ==========================================
+  fastify.post('/reactivate', async (request, reply) => {
+    try {
+      const { studentId, planId } = request.body as { studentId: string; planId: string };
+      const organizationId = getOrganizationId(request);
+      
+      if (!studentId || !planId) {
+        return ResponseHelper.badRequest(reply, 'studentId e planId são obrigatórios');
+      }
+
+      // Buscar aluno com dados do usuário
+      const student = await prisma.student.findFirst({
+        where: { id: studentId, organizationId },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+              cpf: true
+            }
+          },
+          asaasCustomer: true
+        }
+      });
+
+      if (!student) {
+        return ResponseHelper.notFound(reply, 'Aluno não encontrado');
+      }
+
+      // Buscar plano selecionado
+      const plan = await prisma.billingPlan.findFirst({
+        where: { id: planId, organizationId, isActive: true }
+      });
+
+      if (!plan) {
+        return ResponseHelper.notFound(reply, 'Plano não encontrado');
+      }
+
+      // Verificar se Asaas está configurado
+      const asaasApiKey = process.env.ASAAS_API_KEY;
+      const isSandbox = process.env.ASAAS_SANDBOX !== 'false';
+
+      if (!asaasApiKey) {
+        // Modo sem Asaas - criar subscription pendente localmente
+        const subscription = await prisma.studentSubscription.create({
+          data: {
+            studentId,
+            planId,
+            organizationId,
+            status: 'PENDING',
+            startDate: new Date(),
+            currentPrice: plan.price,
+            billingType: plan.billingType,
+            paymentMethod: 'PIX'
+          },
+          include: { plan: true }
+        });
+
+        return ResponseHelper.success(reply, {
+          subscriptionId: subscription.id,
+          plan: {
+            name: plan.name,
+            price: Number(plan.price)
+          },
+          paymentMethod: 'LOCAL',
+          message: 'Procure a recepção para efetuar o pagamento'
+        }, 'Solicitação de reativação criada');
+      }
+
+      // Modo com Asaas - gerar cobrança PIX
+      const { AsaasService } = await import('@/services/asaasService');
+      const asaasService = new AsaasService(asaasApiKey, isSandbox);
+
+      // Verificar/Criar customer no Asaas
+      let asaasCustomer = student.asaasCustomer;
+      
+      if (!asaasCustomer) {
+        // Criar customer no Asaas
+        const cpf = student.user.cpf?.replace(/\D/g, '') || '';
+        if (cpf.length < 11) {
+          return ResponseHelper.badRequest(reply, 'CPF do aluno não cadastrado. Procure a recepção.');
+        }
+
+        const asaasCustomerData = {
+          name: `${student.user.firstName} ${student.user.lastName || ''}`.trim(),
+          cpfCnpj: cpf,
+          email: student.user.email || undefined,
+          phone: student.user.phone?.replace(/\D/g, '') || undefined
+        };
+
+        const createdCustomer = await asaasService.createCustomer(asaasCustomerData);
+        
+        asaasCustomer = await prisma.asaasCustomer.create({
+          data: {
+            studentId: student.id,
+            organizationId,
+            asaasId: createdCustomer.id,
+            name: asaasCustomerData.name,
+            cpfCnpj: cpf,
+            email: student.user.email
+          }
+        });
+      }
+
+      // Criar cobrança PIX no Asaas
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3); // Vencimento em 3 dias
+
+      const paymentData = {
+        customer: asaasCustomer.asaasId,
+        billingType: 'PIX' as const,
+        value: Number(plan.price),
+        dueDate: dueDate.toISOString().split('T')[0],
+        description: `Reativação - ${plan.name} - ${student.user.firstName}`,
+        externalReference: `reactivation_${studentId}_${Date.now()}`
+      };
+
+      const asaasPayment = await asaasService.createPayment(paymentData);
+
+      // Buscar QR Code PIX
+      let pixQrCode = null;
+      let pixCopyPaste = null;
+      
+      try {
+        const pixData = await asaasService.makeRequest<any>(`/payments/${asaasPayment.id}/pixQrCode`);
+        pixQrCode = pixData.encodedImage;
+        pixCopyPaste = pixData.payload;
+      } catch (err) {
+        console.warn('Não foi possível obter QR Code PIX:', err);
+      }
+
+      // Criar subscription pendente
+      const subscription = await prisma.studentSubscription.create({
+        data: {
+          studentId,
+          planId,
+          organizationId,
+          asaasCustomerId: asaasCustomer.id,
+          status: 'PENDING',
+          startDate: new Date(),
+          currentPrice: plan.price,
+          billingType: plan.billingType,
+          paymentMethod: 'PIX'
+        }
+      });
+
+      // Criar registro de pagamento
+      await prisma.payment.create({
+        data: {
+          organizationId,
+          studentId,
+          subscriptionId: subscription.id,
+          asaasCustomerId: asaasCustomer.id,
+          amount: plan.price,
+          description: paymentData.description,
+          dueDate,
+          status: 'PENDING',
+          asaasPaymentId: asaasPayment.id,
+          asaasChargeUrl: (asaasPayment as any).invoiceUrl || undefined,
+          pixCode: pixCopyPaste || undefined
+        }
+      });
+
+      return ResponseHelper.success(reply, {
+        subscriptionId: subscription.id,
+        paymentId: asaasPayment.id,
+        plan: {
+          name: plan.name,
+          price: Number(plan.price)
+        },
+        pix: {
+          qrCode: pixQrCode,
+          copyPaste: pixCopyPaste,
+          expiresAt: dueDate.toISOString()
+        },
+        invoiceUrl: (asaasPayment as any).invoiceUrl,
+        paymentMethod: 'PIX'
+      }, 'Pagamento PIX gerado com sucesso');
+
+    } catch (error) {
+      console.error('Erro ao criar reativação:', error);
+      return ResponseHelper.error(reply, error);
+    }
+  });
 }

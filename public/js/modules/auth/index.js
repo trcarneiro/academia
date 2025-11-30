@@ -36,6 +36,15 @@ const AuthModule = {
   authAPI: null,
   hasHandledPersistentSignIn: false,
 
+  // ApiClient compatibility methods
+  getToken() {
+    return this.currentUser?.token || localStorage.getItem('authToken') || localStorage.getItem('token');
+  },
+
+  getUserId() {
+    return this.currentUser?.id || localStorage.getItem('currentUserId') || localStorage.getItem('userId');
+  },
+
   async init(container) {
     this.container = container || document.getElementById('auth-container') || document.body;
     await this.waitForSupabase();
@@ -88,6 +97,9 @@ const AuthModule = {
         console.log('✅ Valid session for:', session.user.email);
         await this.syncUserWithBackend(session);
         this.currentUser = session.user;
+        // Attach token for ApiClient compatibility
+        this.currentUser.token = session.access_token;
+        
         this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
         this.hasHandledPersistentSignIn = true;
         
@@ -129,6 +141,9 @@ const AuthModule = {
         if (session) {
           await this.syncUserWithBackend(session);
           this.currentUser = session.user;
+          // Attach token for ApiClient compatibility
+          this.currentUser.token = session.access_token;
+          
           this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
           document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
           
@@ -159,7 +174,7 @@ const AuthModule = {
         this.hasHandledPersistentSignIn = false;
         
         // Limpar localStorage
-        ['token', 'organizationId', 'activeOrganizationId', 'userId', 'userEmail', 'userRole'].forEach(k => localStorage.removeItem(k));
+        ['token', 'authToken', 'organizationId', 'activeOrganizationId', 'userId', 'currentUserId', 'userEmail', 'userRole'].forEach(k => localStorage.removeItem(k));
         
         document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
         
@@ -196,10 +211,16 @@ const AuthModule = {
         }
       }
       
-      localStorage.setItem('token', session.access_token);
+      // Update storage with keys compatible with ApiClient
+      localStorage.setItem('token', session.access_token); // Legacy
+      localStorage.setItem('authToken', session.access_token); // ApiClient compatible
+      
       localStorage.setItem('organizationId', orgId);
       localStorage.setItem('activeOrganizationId', orgId);
-      localStorage.setItem('userId', user.id);
+      
+      localStorage.setItem('userId', user.id); // Legacy
+      localStorage.setItem('currentUserId', user.id); // ApiClient compatible
+      
       localStorage.setItem('userEmail', user.email);
       console.log(`✅ User synced: ${user.email} → Org: ${orgId.substring(0, 8)}...`);
     } catch (e) { console.error('Sync error:', e); }
@@ -207,7 +228,11 @@ const AuthModule = {
 
   async fetchOrganizationFromBackend(email, token) {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/users/by-email?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${BACKEND_URL}/api/auth/users/by-email?email=${encodeURIComponent(email)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) return (await res.json()).data?.organizationId;
     } catch (e) { console.error('Fetch org error:', e); }
     return null;

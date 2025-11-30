@@ -9,6 +9,7 @@ export class StudentEditorController {
         this.current = null;
         this.currentStudentId = null;
         this.formChanged = false;
+        this.modelsLoaded = false;
     }
 
     async render(targetContainer, studentId = null) {
@@ -800,6 +801,13 @@ export class StudentEditorController {
     async uploadBiometricPhoto(studentId) {
         if (!this.capturedPhoto) return;
         
+        // Safety check for studentId
+        if (!studentId) {
+            console.error('❌ Cannot upload biometric photo: studentId is missing');
+            this.showMessage('Erro interno: ID do estudante não encontrado. Tente salvar novamente.', 'error');
+            return;
+        }
+
         try {
             // The backend expects JSON with: embedding (array), photoUrl (string), qualityScore (number)
             // We need to send the face descriptor and the photo as dataURL
@@ -822,6 +830,7 @@ export class StudentEditorController {
                 photoUrlLength: payload.photoUrl?.length
             });
             
+            // Ensure URL matches backend route: POST /api/biometric/students/:studentId/face-embedding
             const response = await fetch(`/api/biometric/students/${studentId}/face-embedding`, {
                 method: 'POST',
                 body: JSON.stringify(payload),
@@ -1074,6 +1083,24 @@ export class StudentEditorController {
             captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Iniciando câmera...</span>';
             captureBtn.disabled = true;
             
+            // Load models if needed
+            if (window.faceapi && !this.modelsLoaded) {
+                const modelsPath = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+                console.log('📦 Loading face-api models...');
+                try {
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(modelsPath),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(modelsPath),
+                        faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath)
+                    ]);
+                    this.modelsLoaded = true;
+                    console.log('✅ Face-api models loaded');
+                } catch (modelError) {
+                    console.error('❌ Error loading models:', modelError);
+                    // Continue without models (fallback to simple photo capture)
+                }
+            }
+
             // Request camera access
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
@@ -1116,24 +1143,38 @@ export class StudentEditorController {
 
     async startFaceDetection(video, captureBtn) {
         // Ensure face-api models are loaded
+        if (!window.faceapi || !this.modelsLoaded) {
+            console.warn('⚠️ Face-api not ready, skipping detection');
+            captureBtn.disabled = false;
+            captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR (Sem Biometria)</span>';
+            return;
+        }
+
         try {
             const detectionInterval = setInterval(async () => {
-                const detection = await window.faceapi
-                    .detectSingleFace(video, new window.faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-                
-                if (detection) {
-                    captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
-                    captureBtn.classList.remove('searching');
-                    captureBtn.classList.add('ready');
-                    captureBtn.disabled = false;
-                    this.currentFaceDescriptor = detection.descriptor;
-                } else {
-                    captureBtn.innerHTML = '<i class="fas fa-search"></i><span>Procurando rosto...</span>';
-                    captureBtn.classList.remove('ready');
-                    captureBtn.classList.add('searching');
-                    captureBtn.disabled = true;
+                if (!video.paused && !video.ended) {
+                    try {
+                        const detection = await window.faceapi
+                            .detectSingleFace(video, new window.faceapi.TinyFaceDetectorOptions())
+                            .withFaceLandmarks()
+                            .withFaceDescriptor();
+                        
+                        if (detection) {
+                            captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
+                            captureBtn.classList.remove('searching');
+                            captureBtn.classList.add('ready');
+                            captureBtn.disabled = false;
+                            this.currentFaceDescriptor = detection.descriptor;
+                        } else {
+                            captureBtn.innerHTML = '<i class="fas fa-search"></i><span>Procurando rosto...</span>';
+                            captureBtn.classList.remove('ready');
+                            captureBtn.classList.add('searching');
+                            captureBtn.disabled = true;
+                            this.currentFaceDescriptor = null;
+                        }
+                    } catch (err) {
+                        // Silent error during detection loop
+                    }
                 }
             }, 500);
             
