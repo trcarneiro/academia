@@ -1404,20 +1404,39 @@ class ImportControllerEnhanced {
         const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
         const btnClean = this.container.querySelector('#btn-clean-duplicates');
 
+        console.log('🔧 [Asaas] Configurando botões:', {
+            btnTest: !!btnTest,
+            btnFetch: !!btnFetch,
+            btnImportAll: !!btnImportAll,
+            btnClean: !!btnClean
+        });
+
         if (btnTest) {
-            btnTest.addEventListener('click', () => this.testAsaasConnection());
+            btnTest.addEventListener('click', () => {
+                console.log('🔌 [Asaas] Botão testar conexão clicado');
+                this.testAsaasConnection();
+            });
         }
 
         if (btnFetch) {
-            btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
+            btnFetch.addEventListener('click', () => {
+                console.log('🔄 [Asaas] Botão buscar clientes clicado');
+                this.fetchAsaasCustomers();
+            });
         }
 
         if (btnImportAll) {
-            btnImportAll.addEventListener('click', () => this.importAllAsaas());
+            btnImportAll.addEventListener('click', () => {
+                console.log('📥 [Asaas] Botão importar todos clicado');
+                this.importAllAsaas();
+            });
         }
 
         if (btnClean) {
-            btnClean.addEventListener('click', () => this.cleanDuplicates());
+            btnClean.addEventListener('click', () => {
+                console.log('🧹 [Asaas] Botão limpar duplicatas clicado');
+                this.cleanDuplicates();
+            });
         }
 
         // Configurar filtros
@@ -1560,36 +1579,43 @@ class ImportControllerEnhanced {
             return;
         }
 
-        const html = this.asaasCustomers.map(customer => `
-            <div class="customer-card-asaas ${customer.isImported ? 'imported' : ''}" data-email="${customer.email || ''}">
-                <div class="customer-info">
-                    <div class="customer-name">
-                        ${customer.name || 'Nome não informado'}
-                        ${customer.isImported ? '<span class="badge-imported">✅ Importado</span>' : ''}
+        const html = this.asaasCustomers.map(customer => {
+            const hasEmail = !!customer.email;
+            const emailBadge = hasEmail 
+                ? '' 
+                : '<span class="badge-no-email" title="Email será gerado automaticamente">⚠️ Sem email</span>';
+            
+            return `
+                <div class="customer-card-asaas ${customer.isImported ? 'imported' : ''} ${!hasEmail ? 'no-email' : ''}" data-email="${customer.email || ''}">
+                    <div class="customer-info">
+                        <div class="customer-name">
+                            ${customer.name || 'Nome não informado'}
+                            ${customer.isImported ? '<span class="badge-imported">✅ Importado</span>' : ''}
+                            ${!customer.isImported ? emailBadge : ''}
+                        </div>
+                        <div class="customer-email">
+                            📧 ${customer.email || '<em style="color:#999">Email será gerado automaticamente</em>'}
+                        </div>
+                        <div class="customer-details">
+                            <span>📱 ${customer.mobilePhone || customer.phone || 'N/A'}</span>
+                            <span>📄 ${customer.cpfCnpj || 'N/A'}</span>
+                            <span>🆔 ${customer.id}</span>
+                        </div>
                     </div>
-                    <div class="customer-email">
-                        📧 ${customer.email || 'Email não informado'}
-                    </div>
-                    <div class="customer-details">
-                        <span>📱 ${customer.phone || 'N/A'}</span>
-                        <span>📄 ${customer.cpfCnpj || 'N/A'}</span>
-                        <span>🆔 ${customer.id}</span>
+                    <div class="customer-actions">
+                        ${!customer.isImported ? `
+                            <button 
+                                class="btn-import-single" 
+                                onclick="window.import.controller.importSingleAsaas('${customer.id}')">
+                                📥 Importar
+                            </button>
+                        ` : `
+                            <span class="text-success">✓ Já está no sistema</span>
+                        `}
                     </div>
                 </div>
-                <div class="customer-actions">
-                    ${!customer.isImported ? `
-                        <button 
-                            class="btn-import-single" 
-                            onclick="window.import.controller.importSingleAsaas('${customer.id}')"
-                            ${!customer.email ? 'disabled title="Email não informado"' : ''}>
-                            📥 Importar
-                        </button>
-                    ` : `
-                        <span class="text-success">✓ Já está no sistema</span>
-                    `}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         container.innerHTML = html;
     }
@@ -1670,11 +1696,44 @@ class ImportControllerEnhanced {
      */
     async importAllAsaas() {
         try {
-            const pending = this.asaasCustomers.filter(c => !c.isImported && c.email);
+            console.log('🚀 [Asaas] Iniciando importAllAsaas...');
+            console.log('🔍 [Asaas] Total de clientes carregados:', this.asaasCustomers?.length || 0);
             
-            if (pending.length === 0) {
+            // Buscar todos os pendentes (com ou sem email)
+            const allPending = this.asaasCustomers.filter(c => !c.isImported);
+            const withEmail = allPending.filter(c => c.email);
+            const withoutEmail = allPending.filter(c => !c.email);
+            
+            console.log('📋 [Asaas] Clientes pendentes:', {
+                total: allPending.length,
+                comEmail: withEmail.length,
+                semEmail: withoutEmail.length
+            });
+            
+            if (allPending.length === 0) {
                 this.addLog('warning', 'Não há clientes pendentes para importar');
+                alert('Todos os clientes já foram importados!');
                 return;
+            }
+
+            // Perguntar se quer importar apenas com email ou todos
+            let pending = allPending;
+            if (withoutEmail.length > 0) {
+                const choice = confirm(
+                    `📊 Clientes encontrados:\n` +
+                    `• ${withEmail.length} com email\n` +
+                    `• ${withoutEmail.length} sem email\n\n` +
+                    `Clique OK para importar TODOS (${allPending.length})\n` +
+                    `Clique Cancelar para importar apenas os ${withEmail.length} com email`
+                );
+                
+                if (!choice) {
+                    pending = withEmail;
+                    if (pending.length === 0) {
+                        alert('Nenhum cliente com email para importar.');
+                        return;
+                    }
+                }
             }
 
             const confirmed = confirm(`Importar ${pending.length} clientes do Asaas?\n\nApós a importação, duplicatas serão automaticamente removidas.`);

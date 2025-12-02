@@ -280,6 +280,20 @@
     font-weight: 600;
 }
 
+.badge-no-email {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.customer-card-asaas.no-email {
+    border-left: 3px solid #f59e0b;
+}
+
 .customer-email {
     color: #718096;
     font-size: 14px;
