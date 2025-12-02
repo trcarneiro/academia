@@ -66,6 +66,7 @@ import agendaRoutes from '@/routes/agenda';
 import settingsRoutes from '@/routes/settings';
 import crmRoutes from '@/routes/crm';
 import googleAdsRoutes from '@/routes/googleAds';
+import marketingRoutes from '@/routes/marketing';
 import devAuthRoutes from '@/routes/dev-auth';
 import packagesRoutes from '@/routes/packages-simple';
 import subscriptionsRoutes from '@/routes/subscriptions';
@@ -73,6 +74,8 @@ import graduationRoutes from '@/routes/graduation';
 import creditsRoutes from '@/routes/credits';
 import biometricRoutes from '@/routes/biometric';
 import jobsRoutes from '@/routes/jobs';
+import healthRoutes from '@/routes/health';
+import portalRoutes from '@/routes/portal';
 const frequencyRoutes = require('./routes/frequency');
 
 export const buildApp = async () => {
@@ -157,10 +160,8 @@ export const buildApp = async () => {
     }
   });
 
-  server.get('/health', async () => {
-    try { await prisma.$queryRaw`SELECT 1`; return { status: 'healthy', timestamp: new Date().toISOString(), database: 'connected' }; }
-    catch { throw new Error('Database connection failed'); }
-  });
+  // Health check endpoints (registered before tenant middleware)
+  await server.register(normalizePlugin(healthRoutes, 'healthRoutes'));
 
   // Root route only when not in serverless (handled by serverless.ts in Vercel)
   if (!isServerless) {
@@ -212,6 +213,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(settingsRoutes, 'settingsRoutes'), { prefix: '/api/settings' } as any);
   await server.register(normalizePlugin(crmRoutes, 'crmRoutes'), { prefix: '/api/crm' } as any);
   await server.register(normalizePlugin(googleAdsRoutes, 'googleAdsRoutes'), { prefix: '/api/google-ads' } as any);
+  await server.register(normalizePlugin(marketingRoutes, 'marketingRoutes'), { prefix: '/api/marketing' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
   
   const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
@@ -222,6 +224,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(creditsRoutes, 'creditsRoutes'), { prefix: '/api/credits' } as any);
   await server.register(normalizePlugin(biometricRoutes, 'biometricRoutes'), { prefix: '/api/biometric' } as any);
   await server.register(normalizePlugin(jobsRoutes, 'jobsRoutes'), { prefix: '/api/jobs' } as any);
+  await server.register(normalizePlugin(portalRoutes, 'portalRoutes'), { prefix: '/api/portal' } as any);
 
   server.setErrorHandler(errorHandler);
 

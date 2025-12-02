@@ -73,6 +73,7 @@ model Organization {
 
   agentTasks               AgentTask[]               @relation("OrgToAgentTask")
   agentInsights            AgentInsight[]            @relation("OrgToInsight")
+  landingPages             LandingPage[]
 
   @@map("organizations")
 }
@@ -464,6 +465,8 @@ model Student {
   progressions                  StudentProgression[]
   subscriptions                 StudentSubscription[]
   turmaInterests                TurmaInterest[]           @relation("StudentTurmaInterests")
+  sessions                      StudentSession[]          @relation("StudentSessions")
+  portalNotifications           StudentNotification[]     @relation("StudentNotifications")
   financialResponsible          FinancialResponsible?       @relation(fields: [financialResponsibleId], references: [id])
   financialResponsibleStudent   Student?                    @relation("FinancialDependents", fields: [financialResponsibleStudentId], references: [id])
   financialDependents           Student[]                   @relation("FinancialDependents")
@@ -3012,10 +3015,233 @@ model AgentInsight {
   @@map("agent_insights")
 }
 
+// ============================================================================
+// LANDING PAGE BUILDER - Marketing Module
+// ============================================================================
 
+model LandingPage {
+  id              String   @id @default(uuid())
+  organizationId  String
+  
+  // Identificação
+  name            String              // "Site SmartDefence Principal"
+  slug            String              // "smartdefence" (único por org)
+  
+  // SEO
+  title           String              // <title> tag
+  description     String?             // Meta description
+  keywords        String[]            @default([])
+  
+  // Configurações visuais
+  theme           Json?               // { primaryColor, secondaryColor, font, logo }
+  faviconUrl      String?
+  ogImageUrl      String?             // Open Graph image
+  
+  // Conteúdo - Gerado pelo Agente de Marketing
+  htmlContent     String?             @db.Text  // HTML completo da página
+  cssContent      String?             @db.Text  // CSS customizado
+  jsContent       String?             @db.Text  // JS customizado (analytics)
+  
+  // Estrutura de seções (para regeneração)
+  sections        Json?               // Array de seções configuradas
+  
+  // Integrações
+  googleAnalyticsId   String?
+  facebookPixelId     String?
+  googleAdsConversionId String?
+  whatsappNumber      String?
+  
+  // Status
+  status          LandingPageStatus   @default(DRAFT)
+  publishedAt     DateTime?
+  lastGeneratedAt DateTime?           // Última vez que IA gerou conteúdo
+  lastGeneratedBy String?             // ID do agente que gerou
+  
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  // Relations
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  forms           LandingForm[]
+  pageViews       LandingPageView[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@index([status])
+  @@map("landing_pages")
+}
 
+enum LandingPageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
+model LandingForm {
+  id              String   @id @default(uuid())
+  landingPageId   String
+  
+  // Identificação
+  name            String              // "Formulário Principal"
+  position        String              @default("hero") // hero, footer, popup
+  
+  // Configuração
+  fields          Json                // Array de campos: [{name, type, required, placeholder}]
+  submitButtonText String            @default("Quero Começar!")
+  successMessage  String             @default("Obrigado! Entraremos em contato em breve.")
+  
+  // Integração com CRM
+  autoCreateLead  Boolean            @default(true)
+  leadSource      String             @default("LANDING_PAGE")
+  leadTemperature String             @default("HOT") // COLD, WARM, HOT
+  assignToUserId  String?            // Auto-assign a vendedor
+  tags            String[]           @default([])
+  
+  // Stats
+  submissions     Int                @default(0)
+  conversions     Int                @default(0)
+  
+  // Timestamps
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  // Relations
+  landingPage     LandingPage        @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+  
+  @@index([landingPageId])
+  @@map("landing_forms")
+}
 
+model LandingPageView {
+  id              String   @id @default(uuid())
+  landingPageId   String
+  
+  // Dados da visita
+  sessionId       String
+  userAgent       String?
+  ipAddress       String?
+  referrer        String?
+  
+  // UTM Tracking
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmContent      String?
+  utmTerm         String?
+  
+  // Comportamento
+  timeOnPage      Int?                // Segundos
+  scrollDepth     Int?                // Porcentagem
+  
+  // Timestamps
+  visitedAt       DateTime            @default(now())
+  
+  // Relations
+  landingPage     LandingPage         @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+  
+  @@index([landingPageId, visitedAt])
+  @@index([sessionId])
+  @@map("landing_page_views")
+}
+
+// ============================================================================
+// PORTAL DO ALUNO - Student Self-Service Module
+// ============================================================================
+
+/// Sessões de autenticação do Portal do Aluno
+/// Suporta Magic Link (código 6 dígitos via WhatsApp) e JWT
+model StudentSession {
+  id          String    @id @default(uuid())
+  studentId   String
+  
+  // Tokens
+  token       String    @unique          // JWT token
+  magicCode   String?                    // Código 6 dígitos para Magic Link
+  codeExpires DateTime?                  // Expiração do código (5 min)
+  
+  // Device info
+  userAgent   String?
+  ipAddress   String?
+  deviceType  String?                    // mobile, desktop, tablet
+  
+  // Status
+  expiresAt   DateTime                   // Expiração do JWT (7 dias)
+  isActive    Boolean   @default(true)
+  revokedAt   DateTime?
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime  @default(now())
+  
+  // Relations
+  student     Student   @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId])
+  @@index([token])
+  @@index([magicCode])
+  @@index([expiresAt])
+  @@map("student_sessions")
+}
+
+/// Notificações do Portal do Aluno
+/// Tipos: PAYMENT, CLASS, ACHIEVEMENT, SYSTEM, REMINDER
+model StudentNotification {
+  id          String    @id @default(uuid())
+  studentId   String
+  
+  // Conteúdo
+  type        StudentNotificationType
+  title       String
+  message     String
+  link        String?                    // Deep link para ação
+  icon        String?                    // Ícone customizado
+  
+  // Status
+  read        Boolean   @default(false)
+  readAt      DateTime?
+  dismissed   Boolean   @default(false)
+  
+  // Prioridade
+  priority    NotificationPriority @default(NORMAL)
+  
+  // Metadados
+  metadata    Json?                      // Dados adicionais (paymentId, classId, etc)
+  expiresAt   DateTime?                  // Notificações temporárias
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  student     Student   @relation("StudentNotifications", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId, read])
+  @@index([studentId, type])
+  @@index([createdAt])
+  @@map("student_notifications")
+}
+
+enum StudentNotificationType {
+  PAYMENT_DUE           // Pagamento próximo do vencimento
+  PAYMENT_OVERDUE       // Pagamento vencido
+  PAYMENT_CONFIRMED     // Pagamento confirmado
+  CLASS_REMINDER        // Lembrete de aula
+  CLASS_CANCELLED       // Aula cancelada
+  CLASS_RESCHEDULED     // Aula reagendada
+  ACHIEVEMENT_UNLOCKED  // Conquista desbloqueada
+  LEVEL_UP              // Subiu de nível
+  BELT_PROMOTION        // Promovido de faixa
+  SYSTEM                // Mensagem do sistema
+  WELCOME               // Boas-vindas
+  REMINDER              // Lembrete genérico
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
 
 
 

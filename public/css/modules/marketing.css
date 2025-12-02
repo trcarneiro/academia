@@ -1,0 +1,575 @@
+/**
+ * Marketing Module CSS
+ * Styles for Marketing dashboard and Landing Pages management
+ */
+
+/* ============================================================================
+   MODULE LAYOUT
+   ============================================================================ */
+
+.module-isolated-marketing {
+    padding: 0;
+}
+
+.module-isolated-marketing .stats-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.module-isolated-marketing .marketing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .module-isolated-marketing .marketing-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   TABS
+   ============================================================================ */
+
+.marketing-tabs {
+    margin-bottom: 1.5rem;
+}
+
+.marketing-tabs .tabs-header {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-tertiary, #f5f5f5);
+    border-radius: 8px;
+}
+
+.marketing-tabs .tab-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.marketing-tabs .tab-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color, #667eea);
+}
+
+.marketing-tabs .tab-btn.active {
+    background: var(--primary-color, #667eea);
+    color: white;
+}
+
+/* ============================================================================
+   LANDING PAGES LIST
+   ============================================================================ */
+
+.landing-pages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.landing-page-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.landing-page-item:hover {
+    background: var(--bg-tertiary, #f3f4f6);
+    transform: translateX(4px);
+}
+
+.landing-page-item .page-status {
+    font-size: 0.75rem;
+}
+
+.landing-page-item .page-info {
+    flex: 1;
+}
+
+.landing-page-item .page-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.landing-page-item .page-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.landing-page-item .page-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* ============================================================================
+   LANDING PAGES GRID
+   ============================================================================ */
+
+.landing-pages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.landing-page-card {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.landing-page-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.landing-page-card .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.landing-page-card .card-body h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.landing-page-card .page-url {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--primary-color, #667eea);
+    margin: 0 0 0.5rem 0;
+}
+
+.landing-page-card .page-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.landing-page-card .card-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    margin: 1rem 0;
+}
+
+.landing-page-card .card-stats .stat {
+    text-align: center;
+}
+
+.landing-page-card .card-stats .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color, #667eea);
+}
+
+.landing-page-card .card-stats .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.landing-page-card .card-footer {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ============================================================================
+   STATUS BADGES
+   ============================================================================ */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.published {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.status-badge.draft {
+    background: rgba(234, 179, 8, 0.1);
+    color: #ca8a04;
+}
+
+.status-badge.archived {
+    background: rgba(107, 114, 128, 0.1);
+    color: #4b5563;
+}
+
+/* ============================================================================
+   AGENT INTEGRATION
+   ============================================================================ */
+
+.agent-integration {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.agent-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.agent-avatar {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agent-details h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+}
+
+.agent-details p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.agent-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.agent-prompts {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.agent-prompts h5 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.prompt-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.prompt-chip {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.prompt-chip:hover {
+    background: rgba(102, 126, 234, 0.15);
+    color: var(--primary-color, #667eea);
+}
+
+/* ============================================================================
+   INFO BANNER
+   ============================================================================ */
+
+.info-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    margin-bottom: 1.5rem;
+}
+
+.info-banner .banner-icon {
+    font-size: 2rem;
+}
+
+.info-banner .banner-content {
+    flex: 1;
+}
+
+.info-banner h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--primary-color, #667eea);
+}
+
+.info-banner p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
+   LANDING DETAIL
+   ============================================================================ */
+
+.landing-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .landing-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.info-item label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.info-item span {
+    color: var(--text-primary);
+}
+
+.page-url-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: monospace;
+    color: var(--primary-color, #667eea);
+}
+
+.stats-grid-small {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+
+.stats-grid-small .stat-item .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color, #667eea);
+}
+
+.stats-grid-small .stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
+   PREVIEW FRAME
+   ============================================================================ */
+
+.preview-frame-container {
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.preview-frame {
+    width: 100%;
+    height: 600px;
+    border: none;
+    background: white;
+}
+
+.empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-preview .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   EMPTY STATES
+   ============================================================================ */
+
+.empty-state-large {
+    text-align: center;
+    padding: 3rem;
+    grid-column: 1 / -1;
+}
+
+.empty-state-large .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-large h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.empty-state-large p {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-secondary);
+}
+
+.empty-state-large .empty-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* ============================================================================
+   COMING SOON
+   ============================================================================ */
+
+.coming-soon {
+    text-align: center;
+    padding: 3rem;
+}
+
+.coming-soon .coming-soon-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.coming-soon h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-color, #667eea);
+}
+
+.coming-soon p {
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.btn-action-premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-action-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-action-primary {
+    background: var(--primary-color, #667eea);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-action-primary:hover {
+    background: var(--primary-dark, #5a6fd6);
+}
+
+.btn-action-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color, #e5e7eb);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-action-secondary:hover {
+    background: var(--bg-secondary, #f9fafb);
+    border-color: var(--primary-color, #667eea);
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: var(--bg-secondary, #f3f4f6);
+    color: var(--primary-color, #667eea);
+}
+
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}

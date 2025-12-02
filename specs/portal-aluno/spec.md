@@ -1,25 +1,22 @@
 # Especificação: Portal do Aluno (Self-Service)
 
 **Versão**: 1.2  
-**Data**: 29/11/2025  
-**Status**: 🟡 BLOQUEADO - Aguardando API Key Asaas  
+**Data**: 30/11/2025  
+**Status**: 🟢 PRONTO PARA IMPLEMENTAÇÃO  
 **Prioridade**: 🔥 ALTA - Core Business
 
 ---
 
-## ⚠️ BLOQUEADOR: API Key Asaas Inválida
+## ✅ Integração Asaas VALIDADA (30/11/2025)
 
-**Status da Validação**: Ver `specs/portal-aluno/ASAAS_VALIDATION.md`
+| Métrica | Valor |
+|---------|-------|
+| Clientes | 293 |
+| Cobranças | 1.320 |
+| Saldo | R$ 303,76 |
+| Ambiente | PRODUÇÃO |
 
-A API Key do Asaas está retornando erro `invalid_access_token`. 
-
-**Ação Necessária**:
-1. Acessar [app.asaas.com](https://app.asaas.com) > Configurações > API
-2. Verificar/regenerar a API Key
-3. Atualizar `.env` com a nova chave
-4. Rodar `node test-asaas-validation.mjs` para confirmar
-
-**Código Pronto**: A implementação do AsaasService está completa e funcionando. Apenas a credencial precisa ser validada.
+**Código Pronto**: `AsaasService` completo com customers, payments, subscriptions, webhooks.
 
 ---
 
@@ -109,11 +106,12 @@ Antes de começar, verificar:
 
 | Dependência | Status | Ação Necessária |
 |-------------|--------|-----------------|
-| Asaas criar cobrança | 🟡 Testar | Validar endpoint de criação |
-| Webhook Asaas | 🔴 Implementar | Receber confirmação de pagamento |
+| Asaas criar cobrança | ✅ Validado | API Key funcional (30/11/2025) |
+| Webhook Asaas | 🟡 Testar E2E | Validar + testar fluxo completo |
 | Turmas com vagas | 🟡 Verificar | Campo `maxStudents` no modelo |
-| Planos/Preços | 🟡 Definir | Cadastrar no sistema |
+| Planos/Preços | 🔴 Definir | Cadastrar no sistema (T000) |
 | Conteúdo Curso | 🔴 Criar | Vídeos, técnicas (Fase 3) |
+| WhatsApp (Z-API) | 🟢 OPCIONAL | Pode iniciar sem - usar email/tela |
 
 ---
 
@@ -1337,7 +1335,230 @@ src/
 
 ---
 
+## 🔧 DECISÕES TÉCNICAS (P0 RESOLVIDOS)
+
+> Seção adicionada em 01/12/2025 para resolver gaps críticos identificados no checklist.
+
+### CHK001: Magic Link - Código Expirado
+
+**Problema**: O que acontece quando código Magic Link expira (5 min)?
+
+**Decisão**:
+- Frontend mostra contador regressivo: `"Código expira em: 4:32"`
+- Quando expira: botão "Reenviar código" aparece
+- Usuário pode solicitar novo código (rate limit: 3 por minuto)
+- Código antigo é invalidado automaticamente
+- UI: Toast "Código expirado. Solicite um novo."
+
+### CHK002: Rate Limiting - Valores Concretos
+
+**Problema**: Rate limiting não especificado com valores concretos.
+
+**Decisão**:
+| Endpoint | Limite | Janela | Bloqueio |
+|----------|--------|--------|----------|
+| `/auth/register` | 3 req | 1 min | 5 min |
+| `/auth/login` | 5 req | 1 min | 15 min |
+| `/auth/magic-link/request` | 3 req | 1 min | 10 min |
+| `/payments/create` | 5 req | 5 min | 30 min |
+
+- Resposta ao atingir limite: `429 Too Many Requests`
+- Header: `Retry-After: <segundos>`
+- Frontend: "Muitas tentativas. Aguarde X minutos."
+
+### CHK003: Invalidação de Sessões
+
+**Problema**: Comportamento não definido para sessões antigas.
+
+**Decisão**:
+- **NÃO invalidar automaticamente** sessões antigas
+- Permitir múltiplos dispositivos simultâneos
+- Listar sessões ativas em `/portal/perfil/seguranca`
+- Botão "Encerrar sessão" em cada dispositivo
+- Notificação push quando novo login: "Novo acesso detectado em iPhone"
+- Limite máximo: 5 sessões ativas (remove a mais antiga)
+
+### CHK004: Requisitos de Senha
+
+**Problema**: "Mínimo 6 caracteres" é insuficiente.
+
+**Decisão (atualizada)**:
+- Mínimo 8 caracteres
+- Pelo menos 1 letra maiúscula
+- Pelo menos 1 número
+- Validação em tempo real no frontend
+- Medidor de força: Fraca/Média/Forte
+- Mensagem: "Senha deve ter 8+ caracteres, 1 maiúscula e 1 número"
+
+```typescript
+// Regex de validação
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+```
+
+### CHK005: Email Único por Organização
+
+**Problema**: Email é `@unique` globalmente, mas sistema é multi-tenant.
+
+**Decisão**:
+- Alterar para `@@unique([email, organizationId])`
+- Mesmo email pode existir em organizações diferentes
+- Migração Prisma necessária
+- Validação no registro verifica apenas dentro da organização
+
+```prisma
+model User {
+  email          String?
+  organizationId String
+  // ...
+  @@unique([email, organizationId])
+}
+```
+
+### CHK006: Magic Link vs Senha
+
+**Problema**: Conflito entre Magic Link "sem senha" e campo senha obrigatório.
+
+**Decisão**:
+- Senha é **OPCIONAL** no cadastro inicial
+- Se aluno cadastra sem senha: só pode usar Magic Link
+- Se quiser adicionar senha depois: `/perfil/seguranca → Criar senha`
+- Campo `password` no modelo é nullable (`String?`)
+- Login tradicional só funciona se senha existir
+- Fluxo recomendado Fase 0: Magic Link only (mais simples)
+
+```typescript
+// Login verifica se tem senha
+if (!user.password) {
+  return { error: 'Use Magic Link para acessar. Você não tem senha configurada.' };
+}
+```
+
+### CHK007: Webhook Asaas - Validação de Assinatura
+
+**Problema**: Webhook sem verificação de assinatura.
+
+**Decisão**:
+- Implementar validação HMAC-SHA256
+- Token configurado em `ASAAS_WEBHOOK_TOKEN` (env)
+- Header esperado: `asaas-access-token`
+- Rejeitar requisições sem token válido (401)
+- Log de tentativas inválidas para auditoria
+
+```typescript
+function validateWebhookSignature(req: FastifyRequest): boolean {
+  const token = req.headers['asaas-access-token'];
+  return token === process.env.ASAAS_WEBHOOK_TOKEN;
+}
+```
+
+### CHK008: Fallback Asaas - Erro/Timeout
+
+**Problema**: Comportamento indefinido quando Asaas falha.
+
+**Decisão**:
+1. **Retry automático**: 3 tentativas com backoff exponencial (1s, 2s, 4s)
+2. **Se todas falharem**: Salvar cobrança com status `PENDING_CREATION`
+3. **Job de retry**: Cron a cada 5 min reprocessa pendentes
+4. **UI**: Mostrar "Gerando PIX..." com spinner
+5. **Após 30s**: "Erro temporário. Clique para tentar novamente."
+6. **Cadastro NÃO falha**: Aluno é cadastrado, cobrança fica pendente
+
+```typescript
+// Status especial para retry
+status: 'PENDING_CREATION' // Não foi criado no Asaas ainda
+```
+
+### CHK010: Expiração do QR Code PIX
+
+**Problema**: Tempo de expiração do PIX não definido.
+
+**Decisão**:
+- Expiração: **30 minutos**
+- Contador regressivo no frontend
+- Botão "Gerar novo PIX" quando expira
+- Cobrança antiga é cancelada automaticamente
+- Limite: 3 PIX por cobrança (evita spam)
+
+### CHK012: CPF já existe no Asaas
+
+**Problema**: O que fazer se CPF já cadastrado por outra organização?
+
+**Decisão**:
+- Asaas permite duplicatas de CPF (customer por account)
+- Cada organização tem sua conta Asaas
+- Não há conflito - cada org tem seu customer
+- Se mesmo CPF na MESMA org: reutiliza customer existente
+- Buscar por CPF antes de criar: `GET /customers?cpfCnpj=xxx`
+
+### CHK015: Endpoints - Consistência de Paths
+
+**Problema**: Spec usa `/api/portal/register`, implementação usa `/api/portal/auth/register`.
+
+**Decisão**:
+- Usar `/api/portal/auth/*` para todos endpoints de autenticação
+- Padrão consistente com outras partes do sistema
+- Atualizar spec para refletir implementação atual
+
+```
+POST /api/portal/auth/register
+POST /api/portal/auth/login
+POST /api/portal/auth/magic-link/request
+POST /api/portal/auth/magic-link/verify
+POST /api/portal/auth/verify-token
+POST /api/portal/auth/logout
+```
+
+### CHK019: OrganizationId no Cadastro
+
+**Problema**: Na Fase 0 (cadastro), aluno não tem token. Como identificar organização?
+
+**Decisão**:
+- Opção 1: **Query param** - `/portal?org=smart-defence`
+- Opção 2: **Subdomínio** - `smartdefence.portal.academia.com`
+- Opção 3: **Slug no path** - `/portal/smart-defence/register`
+
+**Escolhida**: Query param (mais simples para Fase 0)
+- Link de venda: `academia.com/portal?org=ff5ee00e-d8a3-4291-9428-d28b852fb472`
+- Frontend extrai `org` da URL e envia no body
+- Fallback: organização padrão do sistema (para testes)
+
+---
+
+## 📋 FORMATO DE RESPOSTA PADRÃO
+
+Todas as respostas da API seguem este formato:
+
+```typescript
+// Sucesso
+{
+  success: true,
+  data: { ... },
+  message?: string
+}
+
+// Erro
+{
+  success: false,
+  error: string,        // Mensagem amigável para usuário
+  errorCode?: string,   // Código para frontend tratar
+  details?: object      // Detalhes técnicos (só em dev)
+}
+```
+
+**Códigos de Erro Padronizados**:
+| Código | Significado |
+|--------|-------------|
+| `VALIDATION_ERROR` | Dados inválidos no request |
+| `NOT_FOUND` | Recurso não encontrado |
+| `UNAUTHORIZED` | Token inválido ou ausente |
+| `FORBIDDEN` | Sem permissão |
+| `RATE_LIMITED` | Muitas requisições |
+| `ASAAS_ERROR` | Erro na integração Asaas |
+| `INTERNAL_ERROR` | Erro interno do servidor |
+
+---
+
 **Autor**: GitHub Copilot  
-**Data**: 29/11/2025  
-**Versão**: 1.1
-**Status**: 🟢 Aguardando aprovação
+**Data**: 29/11/2025 (atualizado 01/12/2025)  
+**Versão**: 1.2
+**Status**: 🟢 EM IMPLEMENTAÇÃO

@@ -350,6 +350,10 @@ class SPARouter {
                 css: 'css/modules/crm.css',
                 js: 'js/modules/crm/index.js'
             },
+            'marketing': {
+                css: 'css/modules/marketing.css',
+                js: 'js/modules/marketing/index.js'
+            },
             'settings': {
                 css: 'css/modules/settings.css',
                 js: 'js/modules/settings.js'
@@ -2506,6 +2510,71 @@ router.registerRoute('crm', async () => {
     // Update header
     document.querySelector('.module-header h1').textContent = 'CRM & Leads';
     document.querySelector('.breadcrumb').textContent = 'Home / CRM & Leads';
+});
+
+// Marketing Module Route
+router.registerRoute('marketing', async () => {
+    console.log('📣 Inicializando módulo de Marketing...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) {
+        console.error('❌ Container module-container não encontrado');
+        return;
+    }
+    
+    // Clear container first
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando Marketing...</p>
+        </div>
+    `;
+
+    try {
+        // Load module assets
+        router.loadModuleAssets('marketing');
+        
+        // Wait for Marketing module to be available
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds (100 * 100ms)
+        
+        while (!window.marketing && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.marketing) {
+            // Set container
+            window.marketing.container = container;
+            
+            // Initialize Marketing module
+            await window.marketing.init();
+            
+            console.log('✅ Módulo de Marketing inicializado com sucesso');
+        } else {
+            throw new Error('Módulo de Marketing não foi carregado após 10 segundos');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao inicializar módulo de Marketing:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h3>Erro no Marketing</h3>
+                <p>Falha ao carregar o módulo de Marketing: ${error.message}</p>
+                <button onclick="router.navigateTo('marketing')" class="btn btn-primary">
+                    🔄 Tentar Novamente
+                </button>
+                <button onclick="router.navigateTo('dashboard')" class="btn btn-secondary">
+                    🏠 Voltar ao Dashboard
+                </button>
+            </div>
+        `;
+    }
+    
+    // Update header
+    document.querySelector('.module-header h1').textContent = 'Marketing & Landing Pages';
+    document.querySelector('.breadcrumb').textContent = 'Home / Marketing';
 });
 
 // (Legacy) Hybrid Agenda: fully archived; see earlier route redirecting to 'agenda'

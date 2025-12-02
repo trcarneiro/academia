@@ -741,6 +741,84 @@ class ModuleAPIHelper {
 }
 
 // ==============================================
+// DATABASE ERROR HANDLING
+// ==============================================
+
+/**
+ * Database error codes and user-friendly messages
+ * @see dev/DATABASE_ERROR_HANDLING.md
+ */
+const DATABASE_ERRORS = {
+    'P2024': {
+        userMessage: 'Sistema sobrecarregado. Aguarde alguns segundos e tente novamente.',
+        technicalMessage: 'Connection pool timeout',
+        retryable: true,
+        retryDelay: 5000,
+        maxRetries: 3
+    },
+    'P2002': {
+        userMessage: 'Este registro já existe no sistema.',
+        technicalMessage: 'Unique constraint violation',
+        retryable: false
+    },
+    'P2025': {
+        userMessage: 'Registro não encontrado.',
+        technicalMessage: 'Record not found',
+        retryable: false
+    },
+    'SERVICE_UNAVAILABLE': {
+        userMessage: 'Banco de dados temporariamente indisponível. Tente novamente em 30 segundos.',
+        technicalMessage: 'Database service unavailable',
+        retryable: true,
+        retryDelay: 30000,
+        maxRetries: 2
+    },
+    'CONNECTION_REFUSED': {
+        userMessage: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+        technicalMessage: 'Connection refused',
+        retryable: true,
+        retryDelay: 10000,
+        maxRetries: 3
+    },
+    'TIMEOUT': {
+        userMessage: 'A operação demorou muito. Tente novamente.',
+        technicalMessage: 'Request timeout',
+        retryable: true,
+        retryDelay: 3000,
+        maxRetries: 2
+    }
+};
+
+/**
+ * Parse database error from response
+ */
+function parseDatabaseError(error) {
+    const message = error?.message || error?.toString() || '';
+    
+    // Check for Prisma error codes
+    const prismaMatch = message.match(/P\d{4}/);
+    if (prismaMatch) {
+        const code = prismaMatch[0];
+        return { code, ...DATABASE_ERRORS[code] };
+    }
+    
+    // Check for connection errors
+    if (message.includes('503') || message.includes('Service Unavailable')) {
+        return { code: 'SERVICE_UNAVAILABLE', ...DATABASE_ERRORS['SERVICE_UNAVAILABLE'] };
+    }
+    
+    if (message.includes('ECONNREFUSED') || message.includes('Connection refused')) {
+        return { code: 'CONNECTION_REFUSED', ...DATABASE_ERRORS['CONNECTION_REFUSED'] };
+    }
+    
+    if (message.includes('timeout') || message.includes('Timeout')) {
+        return { code: 'TIMEOUT', ...DATABASE_ERRORS['TIMEOUT'] };
+    }
+    
+    return null;
+}
+
+// ==============================================
 // API ERROR CLASS
 // ==============================================
 
@@ -750,6 +828,9 @@ class ApiError extends Error {
         this.name = 'ApiError';
         this.status = status;
         this.url = url;
+        
+        // Parse database-specific error info
+        this.dbError = parseDatabaseError({ message, status });
     }
 
     get isClientError() {
@@ -762,6 +843,31 @@ class ApiError extends Error {
 
     get isNetworkError() {
         return this.status === 0;
+    }
+
+    get isDatabaseError() {
+        return this.dbError !== null;
+    }
+
+    get isRetryable() {
+        return this.dbError?.retryable || this.status >= 500 || this.status === 408 || this.status === 429;
+    }
+
+    get userMessage() {
+        if (this.dbError?.userMessage) {
+            return this.dbError.userMessage;
+        }
+        if (this.status === 404) {
+            return 'Recurso não encontrado.';
+        }
+        if (this.status >= 500) {
+            return 'Erro no servidor. Tente novamente em alguns instantes.';
+        }
+        return this.message;
+    }
+
+    get retryDelay() {
+        return this.dbError?.retryDelay || 3000;
     }
 
     toString() {

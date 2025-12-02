@@ -1,0 +1,14 @@
+[
+  {
+    "test": "health",
+    "error": "fetch failed"
+  },
+  {
+    "test": "register-get",
+    "error": "fetch failed"
+  },
+  {
+    "test": "register-post",
+    "error": "fetch failed"
+  }
+]

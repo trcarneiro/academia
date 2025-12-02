@@ -38,6 +38,12 @@ export class TurmasController {
 
     async showList(filters = {}) {
         try {
+            // Re-initialize container to ensure we have fresh DOM reference
+            this.initializeContainer();
+            if (!this.container) {
+                throw new Error('Container #module-container não encontrado');
+            }
+            
             this.clearCurrentView();
             
             const view = new TurmasListView(this.service, this);

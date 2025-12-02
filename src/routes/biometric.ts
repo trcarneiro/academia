@@ -14,6 +14,16 @@ import { logger } from '@/utils/logger';
  */
 export default async function biometricRoutes(fastify: FastifyInstance) {
   /**
+   * 🆕 GET /api/biometric/students/embeddings
+   * Get all student face embeddings for matching (Kiosk endpoint)
+   * NOTE: MUST be registered BEFORE /students/:studentId to avoid route conflict
+   */
+  fastify.get(
+    '/students/embeddings',
+    biometricController.getAllEmbeddings.bind(biometricController)
+  );
+
+  /**
    * POST /api/biometric/students/:studentId/face-embedding
    * Save or update face embedding for a student
    */
@@ -21,7 +31,6 @@ export default async function biometricRoutes(fastify: FastifyInstance) {
     '/students/:studentId/face-embedding',
     biometricController.saveFaceEmbedding.bind(biometricController)
   );
-
 
   /**
    * GET /api/biometric/students/:studentId
@@ -75,15 +84,6 @@ export default async function biometricRoutes(fastify: FastifyInstance) {
   fastify.get<{ Params: { studentId: string } }>(
     '/check-rate-limit/:studentId',
     biometricController.checkRateLimit.bind(biometricController)
-  );
-
-  /**
-   * 🆕 GET /api/biometric/students/embeddings
-   * Get all student face embeddings for matching (Kiosk endpoint)
-   */
-  fastify.get(
-    '/students/embeddings',
-    biometricController.getAllEmbeddings.bind(biometricController)
   );
 
   logger.info('Biometric routes registered successfully (8 endpoints)');

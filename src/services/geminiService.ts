@@ -3,10 +3,8 @@
  * Clean implementation with model fallback and safe defaults
  */
 
-import { config } from 'dotenv';
+import 'dotenv/config'; // Must be first to ensure env vars are loaded
 import { GoogleGenerativeAI, GenerativeModel, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-
-config();
 
 // Safety settings to prevent overly aggressive blocking
 const SAFETY_SETTINGS = [
@@ -16,8 +14,12 @@ const SAFETY_SETTINGS = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
 ];
 
-// Quickstart: the SDK only needs a valid API key; accept common env var names
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+// Dynamic getter for API key to support lazy initialization
+function getApiKey(): string {
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+}
+
+// Use getter instead of constant to pick up env vars correctly
 const ENV_MODEL = process.env.GEMINI_MODEL || process.env.RAG_MODEL || '';
 
 // Ordered list of model candidates (deduped)
@@ -41,18 +43,25 @@ let model: GenerativeModel | null = null;
 let currentModelName: string | null = null;
 
 export function initializeGemini(): boolean {
-  if (!GEMINI_API_KEY) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     console.warn('[Gemini] GEMINI_API_KEY ausente — modo fallback ativo');
     return false;
   }
   try {
-    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    console.log('[Gemini] SDK inicializado');
+    genAI = new GoogleGenerativeAI(apiKey);
+    console.log('[Gemini] SDK inicializado com chave:', apiKey.substring(0, 10) + '...');
     return true;
   } catch (err) {
     console.error('[Gemini] Falha ao inicializar SDK:', err);
     return false;
   }
+}
+
+// Lazy initialization - call this before using genAI
+function ensureGeminiInitialized(): boolean {
+  if (genAI) return true;
+  return initializeGemini();
 }
 
 function isNotFoundModelError(err: unknown): boolean {
@@ -61,7 +70,10 @@ function isNotFoundModelError(err: unknown): boolean {
 }
 
 async function ensureModel(): Promise<void> {
-  if (!genAI) throw new Error('Gemini indisponível: configure GEMINI_API_KEY');
+  // Lazy initialize if not done
+  if (!genAI && !ensureGeminiInitialized()) {
+    throw new Error('Gemini indisponível: configure GEMINI_API_KEY');
+  }
   if (model) return;
 
   let lastErr: unknown = null;
@@ -90,6 +102,8 @@ async function ensureModel(): Promise<void> {
 
 export class GeminiService {
   static isAvailable(): boolean {
+    // Lazy check - try to initialize if not done
+    if (!genAI) ensureGeminiInitialized();
     return Boolean(genAI);
   }
 
@@ -126,7 +140,8 @@ export class GeminiService {
       return '{"mock": "response"}';
     }
 
-    if (!GEMINI_API_KEY || !genAI) {
+    // Lazy initialization - try to initialize if not already done
+    if (!genAI && !ensureGeminiInitialized()) {
       // Soft fallback when API key missing
       return '[Fallback AI] Configure GEMINI_API_KEY para respostas reais. Prompt recebido: ' + prompt.slice(0, 200);
     }

@@ -293,10 +293,18 @@ export class TurmasListView {
     }
 
     renderGrid(turmas) {
+        // Debug: check container state
+        if (!this.container) {
+            console.error('❌ [TurmasListView.renderGrid] this.container is null/undefined');
+            return;
+        }
+        
         const grid = this.container.querySelector('#turmasGrid');
 
         if (!grid) {
             console.error('❌ Elemento #turmasGrid não encontrado no container');
+            console.debug('🔍 Container HTML preview:', this.container.innerHTML?.substring(0, 500));
+            console.debug('🔍 Container children:', this.container.children?.length);
             return;
         }
 

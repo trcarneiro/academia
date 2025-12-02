@@ -1,8 +1,11 @@
-﻿import { prisma } from '@/utils/database';
+﻿import 'dotenv/config'; // Must be first to load env vars before singleton instantiation
+import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { agentService } from './AgentService';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { AIAgent, AgentConversation } from '@prisma/client';
+import { DatabaseTool } from './mcp/databaseTool';
+import { ReportTool } from './mcp/reportTool';
 
 interface ExecutionContext {
   userId?: string;
@@ -134,6 +137,7 @@ class AgentExecutorService {
 
   /**
    * Prepara contexto MCP Tools executando ferramentas autorizadas
+   * INTEGRADO com DatabaseTool e ReportTool reais
    */
   private async prepareMCPContext(
     mcpTools: string[],
@@ -143,21 +147,106 @@ class AgentExecutorService {
       return { context: '', toolsUsed: [] };
     }
 
+    // Precisamos do organizationId do contexto
+    const organizationId = context.metadata?.organizationId;
+    if (!organizationId) {
+      logger.warn('No organizationId in context, MCP tools may have limited data');
+    }
+
     try {
-      // TODO: Integrar com MCP Server existente (src/mcp_server.ts)
-      // Por enquanto, retorna contexto mockado
-      
       const toolsUsed: string[] = [];
       const contextParts: string[] = [];
 
-      // Exemplo de execuÃ§Ã£o de ferramentas (implementar quando MCP estiver pronto)
       for (const toolName of mcpTools) {
-        // const result = await mcpServer.executeTool(toolName, context);
-        // contextParts.push(`Tool ${toolName} result: ${JSON.stringify(result)}`);
-        // toolsUsed.push(toolName);
-        
         toolsUsed.push(toolName);
-        contextParts.push(`[MCP Tool: ${toolName} - Tool execution results will be loaded here]`);
+        
+        switch (toolName.toLowerCase()) {
+          case 'database': {
+            // Execute key queries to provide context
+            const queries = ['attendance_rate', 'popular_plans', 'overdue_payments', 'inactive_students'];
+            const results: Record<string, any> = {};
+            
+            for (const queryName of queries) {
+              if (organizationId) {
+                const result = await DatabaseTool.executeQuery(queryName, organizationId, {});
+                if (result.success) {
+                  results[queryName] = result.data;
+                }
+              }
+            }
+            
+            // Also get summary stats
+            const [studentsCount, turmasCount, coursesCount, leadsCount, subscriptionsCount] = await Promise.all([
+              prisma.student.count({ where: organizationId ? { organizationId } : {} }),
+              prisma.turma.count({ where: organizationId ? { organizationId } : {} }),
+              prisma.course.count({ where: organizationId ? { organizationId } : {} }),
+              prisma.lead.count({ where: organizationId ? { organizationId } : {} }),
+              prisma.studentSubscription.count({ where: organizationId ? { organizationId } : {} })
+            ]);
+            
+            contextParts.push(`=== DATABASE TOOL RESULTS ===
+📊 Resumo da Academia:
+- Total de Alunos: ${studentsCount}
+- Total de Turmas: ${turmasCount}
+- Total de Cursos: ${coursesCount}
+- Total de Leads: ${leadsCount}
+- Assinaturas Ativas: ${subscriptionsCount}
+
+📈 Taxa de Frequência: ${JSON.stringify(results.attendance_rate || 'N/A')}
+
+💰 Pagamentos Atrasados: ${Array.isArray(results.overdue_payments) ? results.overdue_payments.length : 0} pendente(s)
+${Array.isArray(results.overdue_payments) && results.overdue_payments.length > 0 
+  ? results.overdue_payments.slice(0, 5).map((p: any) => 
+      `  - ${p.student?.user?.firstName || 'N/A'} ${p.student?.user?.lastName || ''}: R$ ${p.amount || 0}`
+    ).join('\n')
+  : '  (Nenhum pagamento atrasado)'}
+
+😴 Alunos Inativos (>30 dias): ${Array.isArray(results.inactive_students) ? results.inactive_students.length : 0}
+${Array.isArray(results.inactive_students) && results.inactive_students.length > 0
+  ? results.inactive_students.slice(0, 5).map((s: any) => 
+      `  - ${s.user?.firstName || 'N/A'} ${s.user?.lastName || ''} (${s.user?.email || 'sem email'})`
+    ).join('\n')
+  : '  (Nenhum aluno inativo)'}
+
+📦 Planos Mais Populares:
+${Array.isArray(results.popular_plans) && results.popular_plans.length > 0
+  ? results.popular_plans.slice(0, 5).map((p: any) => 
+      `  - ${p.name}: ${p._count?.subscriptions || 0} assinaturas`
+    ).join('\n')
+  : '  (Nenhum plano encontrado)'}`);
+            break;
+          }
+          
+          case 'reports': {
+            // List available report types
+            contextParts.push(`=== REPORTS TOOL ===
+📋 Relatórios Disponíveis:
+- overdue_payments: Pagamentos Atrasados
+- inactive_students: Alunos Inativos
+- new_students: Novos Alunos
+- attendance_summary: Resumo de Frequência
+- popular_plans: Planos Mais Vendidos
+- unconverted_leads: Leads Não Convertidos
+
+Use: "Gerar relatório de [tipo] em [formato: JSON/CSV/PDF]"`);
+            break;
+          }
+          
+          case 'notifications': {
+            contextParts.push(`=== NOTIFICATIONS TOOL ===
+📧 Ações de Notificação Disponíveis:
+- Enviar email para aluno/grupo
+- Enviar WhatsApp (requer integração)
+- Criar lembrete interno
+- Agendar notificação futura
+
+Use: "Notificar [destinatário] sobre [assunto]"`);
+            break;
+          }
+          
+          default:
+            contextParts.push(`[MCP Tool: ${toolName} - Ferramenta disponível mas sem dados carregados]`);
+        }
       }
 
       return {
@@ -166,7 +255,8 @@ class AgentExecutorService {
       };
 
     } catch (error: any) {
-      logger.error('Error preparing MCP context:', error);
+      logger.error('Error preparing MCP context:', error.message);
+      logger.error('Stack:', error.stack);
       return { context: '', toolsUsed: [] };
     }
   }
@@ -310,34 +400,30 @@ class AgentExecutorService {
       };
 
     } catch (error: any) {
-      // Log completo do erro para debug
-      logger.error('❌ ===== GEMINI API ERROR =====');
-      logger.error('Error Type:', error?.constructor?.name);
-      logger.error('Error Message:', error?.message);
-      logger.error('Error Code:', error?.code);
-      logger.error('Error Status:', error?.status || error?.statusCode);
-      logger.error('Error Status Text:', error?.statusText);
-      logger.error('Model:', agent.model || 'gemini-2.0-flash-exp');
-      logger.error('Agent ID:', agent.id);
-      logger.error('Agent Name:', agent.name);
-      logger.error('Prompt Length:', prompt.length);
+      // Log completo do erro para debug (usando console.log para ver valores)
+      console.error('❌ ===== GEMINI API ERROR =====');
+      console.error('Error Type:', error?.constructor?.name);
+      console.error('Error Message:', error?.message);
+      console.error('Error Code:', error?.code);
+      console.error('Error Status:', error?.status || error?.statusCode);
+      console.error('Error Status Text:', error?.statusText);
+      console.error('Model:', agent.model || 'gemini-2.0-flash-exp');
+      console.error('Agent ID:', agent.id);
+      console.error('Agent Name:', agent.name);
+      console.error('Prompt Length:', prompt.length);
       
       // Log do stack trace completo
       if (error?.stack) {
-        logger.error('Stack Trace:', error.stack);
+        console.error('Stack Trace:', error.stack);
       }
       
       // Log de propriedades adicionais do erro
-      logger.error('Error Object Keys:', Object.keys(error || {}));
-      logger.error('Full Error Object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      logger.error('===============================');
+      console.error('Error Object Keys:', Object.keys(error || {}));
+      console.error('Full Error:', error);
+      console.error('===============================');
       
-      // Fallback para mock em caso de erro
-      return {
-        content: this.generateMockResponse(agent, prompt),
-        mcpToolsUsed: [],
-        tokensUsed: 0
-      };
+      // Re-throw para não silenciar o erro
+      throw error;
     }
   }
 

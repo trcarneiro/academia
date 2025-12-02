@@ -47,6 +47,12 @@ O módulo **Instructors** (`/public/js/modules/instructors/index.js`) é a refer
 └── [outros arquivos removidos]
 ```
 
+> **📏 Nota sobre Linhas de Código:**
+> - **400-600 linhas**: Range ideal para módulos single-file (ótima manutenibilidade)
+> - **<600 linhas**: Limite máximo recomendado para single-file
+> - **>600 linhas**: Considere migrar para multi-file (Activities pattern)
+> - **Como medir**: Conte apenas linhas de lógica (excluindo comentários e templates HTML longos)
+
 ### ✅ Anatomia do index.js (Single-file)
 ```javascript
 // 1. Prevenção de re-declaração
