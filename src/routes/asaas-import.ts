@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
-// Simple Asaas API integration
+// Simple Asaas API integration - busca TODOS os clientes com paginação
 async function fetchAsaasCustomers() {
   const apiKey = process.env.ASAAS_API_KEY;
   const baseUrl = process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3';
@@ -10,20 +10,53 @@ async function fetchAsaasCustomers() {
   }
 
   try {
-    const response = await fetch(`${baseUrl}/customers?limit=100`, {
-      method: 'GET',
-      headers: {
-        'access_token': apiKey,
-        'Content-Type': 'application/json',
-      },
-    });
+    const allCustomers: any[] = [];
+    let offset = 0;
+    const limit = 100;
+    let hasMore = true;
+    
+    console.log('[Asaas] Iniciando busca de todos os clientes...');
+    
+    while (hasMore) {
+      const response = await fetch(`${baseUrl}/customers?limit=${limit}&offset=${offset}`, {
+        method: 'GET',
+        headers: {
+          'access_token': apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Asaas API error: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Asaas API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.data && data.data.length > 0) {
+        allCustomers.push(...data.data);
+        console.log(`[Asaas] Carregados ${allCustomers.length} clientes (offset: ${offset})`);
+      }
+      
+      hasMore = data.hasMore === true;
+      offset += limit;
+      
+      // Segurança: limite máximo de 10 páginas (1000 clientes)
+      if (offset >= 1000) {
+        console.log('[Asaas] Limite de 1000 clientes atingido');
+        break;
+      }
     }
-
-    const data = await response.json();
-    return data;
+    
+    console.log(`[Asaas] Total de clientes carregados: ${allCustomers.length}`);
+    
+    return {
+      object: 'list',
+      hasMore: false,
+      totalCount: allCustomers.length,
+      limit: allCustomers.length,
+      offset: 0,
+      data: allCustomers
+    };
   } catch (error) {
     console.error('Error fetching Asaas customers:', error);
     throw error;
