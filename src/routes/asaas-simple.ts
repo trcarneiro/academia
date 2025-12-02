@@ -82,7 +82,7 @@ export default async function asaasSimpleRoutes(
     }
   });
 
-  // Get customers from Asaas API (with fallback to mock)
+  // Get customers from Asaas API (with pagination to fetch ALL customers)
   fastify.get('/customers', async (request, reply) => {
     try {
       // Get API key from environment
@@ -100,17 +100,62 @@ export default async function asaasSimpleRoutes(
       
       const asaasService = new AsaasService(apiKey, isSandbox);
       
-      // Get query parameters for pagination
-      const { limit = 100, offset = 0 } = request.query as { limit?: number; offset?: number };
+      // Query param to control pagination behavior
+      const { fetchAll = 'true' } = request.query as { fetchAll?: string };
+      const shouldFetchAll = fetchAll !== 'false';
       
       try {
-        // Try to fetch real customers from Asaas
-        const customers = await asaasService.listCustomers({ limit, offset });
+        // Fetch ALL customers with pagination (up to 1000)
+        const allCustomers: any[] = [];
+        let offset = 0;
+        const limit = 100; // Asaas max per page
+        let hasMore = true;
+        let totalCount = 0;
+        const maxPages = 10; // Safety limit (1000 customers max)
+        let pagesFetched = 0;
+        
+        console.log('📥 Fetching all Asaas customers with pagination...');
+        
+        while (hasMore && pagesFetched < maxPages && shouldFetchAll) {
+          const page = await asaasService.listCustomers({ limit, offset });
+          const items = page.data || [];
+          
+          console.log(`📄 Page ${pagesFetched + 1}: fetched ${items.length} customers (offset: ${offset})`);
+          
+          allCustomers.push(...items);
+          totalCount = page.totalCount || allCustomers.length;
+          hasMore = page.hasMore || false;
+          offset += items.length;
+          pagesFetched++;
+          
+          // Break if no more items
+          if (items.length === 0) break;
+        }
+        
+        // If not fetching all, just return single page
+        if (!shouldFetchAll) {
+          const { limit: queryLimit = 100, offset: queryOffset = 0 } = request.query as { limit?: number; offset?: number };
+          const customers = await asaasService.listCustomers({ limit: queryLimit, offset: queryOffset });
+          return {
+            success: true,
+            data: customers,
+            message: `${customers.totalCount || 0} customers found from Asaas (single page)`
+          };
+        }
+        
+        console.log(`✅ Total customers fetched: ${allCustomers.length} from ${pagesFetched} pages`);
         
         return {
           success: true,
-          data: customers,
-          message: `${customers.totalCount || 0} customers found from Asaas`
+          data: {
+            object: 'list',
+            hasMore: false, // We fetched everything
+            totalCount: totalCount,
+            limit: allCustomers.length,
+            offset: 0,
+            data: allCustomers
+          },
+          message: `${allCustomers.length} customers found from Asaas (${pagesFetched} pages)`
         };
       } catch (asaasError: any) {
         // If Asaas API fails (401, invalid key, etc.), return mock data
