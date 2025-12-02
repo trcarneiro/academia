@@ -253,17 +253,13 @@ body {
     letter-spacing: -0.025em;
 }
 
+/* Breadcrumb oculto - removido por decisão de design */
 .breadcrumb {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: none !important;
 }
 
 .breadcrumb::before {
-    content: 'ðŸ“';
-    font-size: 0.875rem;
+    display: none;
 }
 
 .stats-cards {
