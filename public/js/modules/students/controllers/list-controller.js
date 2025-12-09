@@ -669,7 +669,7 @@ export class StudentsListController {
                         <td class="col-student">
                             <div class="student-info-card">
                                 <div class="student-avatar">
-                                    <img src="${s?.user?.profilePicture || '/images/avatar-placeholder.png'}" 
+                                    <img src="${s?.user?.avatarUrl || '/images/avatar-placeholder.png'}" 
                                          alt="${name}" 
                                          onerror="this.src='/images/avatar-placeholder.png'">
                                 </div>

@@ -165,17 +165,39 @@ export class StudentEditorController {
                                 <div class="biometric-capture-container">
                                     <div class="capture-preview-area">
                                         <div id="photo-preview" class="photo-preview ${s?.biometricData?.photoUrl ? 'has-photo' : ''}">
-                                            ${s?.biometricData?.photoUrl ? `
-                                                <img src="${s.biometricData.photoUrl}" alt="Foto do aluno" class="captured-photo">
-                                                <div class="photo-status">
-                                                    <span class="status-badge success">✅ Cadastrado</span>
-                                                </div>
-                                            ` : `
-                                                <div class="no-photo-placeholder">
-                                                    <i class="fas fa-user-circle"></i>
-                                                    <p>Nenhuma foto cadastrada</p>
-                                                </div>
-                                            `}
+                                            ${(() => {
+                                                const bioUrl = s?.biometricData?.photoUrl;
+                                                const isBioUri = bioUrl && bioUrl.startsWith('biometric://');
+                                                const avatarUrl = s?.user?.avatarUrl;
+                                                
+                                                if (isBioUri && !avatarUrl) {
+                                                    return `
+                                                        <div class="no-photo-placeholder biometric-active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                                                            <i class="fas fa-fingerprint" style="font-size: 3rem; color: var(--success-color); margin-bottom: 10px;"></i>
+                                                            <p style="font-weight: 600; margin: 0;">Biometria Ativa</p>
+                                                            <p style="font-size: 0.8rem; opacity: 0.8; margin: 5px 0 0 0;">Foto no dispositivo</p>
+                                                            <div class="photo-status" style="margin-top: 10px;">
+                                                                <span class="status-badge success">✅ Cadastrado</span>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                                                } else if (bioUrl || avatarUrl) {
+                                                    const url = isBioUri ? avatarUrl : bioUrl;
+                                                    return `
+                                                        <img src="${url}" alt="Foto do aluno" class="captured-photo">
+                                                        <div class="photo-status">
+                                                            <span class="status-badge success">✅ Cadastrado</span>
+                                                        </div>
+                                                    `;
+                                                } else {
+                                                    return `
+                                                        <div class="no-photo-placeholder">
+                                                            <i class="fas fa-user-circle"></i>
+                                                            <p>Nenhuma foto cadastrada</p>
+                                                        </div>
+                                                    `;
+                                                }
+                                            })()}
                                         </div>
                                         <div class="capture-actions">
                                             <button type="button" id="btn-capture-photo" class="btn-form btn-primary-form">
