@@ -73,10 +73,13 @@ async function renderStudentsList(container) {
     `;
     
     try {
-        // Buscar dados
+        // Buscar dados - organizationId obtido automaticamente do localStorage ou sessionStorage
+        const orgId = localStorage.getItem('activeOrganizationId') || 
+                      sessionStorage.getItem('activeOrganizationId') || 
+                      window.currentOrganizationId;
         const response = await fetch('/api/students', {
             headers: {
-                'x-organization-id': '452c0b35-1822-4890-851e-922356c812fb'
+                'x-organization-id': orgId || ''
             }
         });
         

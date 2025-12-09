@@ -41,6 +41,9 @@ Cada funcionalidade MUST residir em módulo isolado que não vaza para outros.
 - **Global registration**: Módulos MUST registrar-se em `AcademyApp.loadModules()`
 - **Event-driven**: Usar `window.app.dispatchEvent()` para comunicação inter-módulo
 
+**Exceptions**:
+- **Standalone Apps**: Aplicações independentes (como Portal do Aluno) PODEM residir em `/public/[app-name]/`, desde que mantenham isolamento total do Admin e sigam os princípios de API Client.
+
 **Architecture choice**:
 - **Single-file** (80% dos casos): CRUD simples, 400-600 linhas. Template: `/public/js/modules/instructors/`
 - **Multi-file** (20% dos casos): Workflows complexos, 600+ linhas. Template: `/public/js/modules/activities/`

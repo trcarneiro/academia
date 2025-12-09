@@ -386,6 +386,8 @@ class CheckinKiosk {
      * Start clock
      */
     startClock() {
+        if (this.clockInterval) clearInterval(this.clockInterval);
+
         const updateClock = () => {
             const now = new Date();
             const timeString = now.toLocaleTimeString('pt-BR', {
@@ -400,11 +402,25 @@ class CheckinKiosk {
                 day: 'numeric'
             });
             
-            this.elements.currentTime.textContent = `${timeString} - ${dateString}`;
+            if (this.elements.currentTime) {
+                this.elements.currentTime.textContent = `${timeString} - ${dateString}`;
+            }
         };
 
         updateClock();
-        setInterval(updateClock, 1000);
+        this.clockInterval = setInterval(updateClock, 1000);
+    }
+
+    /**
+     * Destroy instance and cleanup
+     */
+    destroy() {
+        if (this.clockInterval) {
+            clearInterval(this.clockInterval);
+            this.clockInterval = null;
+        }
+        this.initialized = false;
+        console.log('🛑 Check-in Kiosk destroyed');
     }
 
     /**
@@ -1292,6 +1308,11 @@ class CheckinKiosk {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
+    // Cleanup previous instance if exists
+    if (window.checkinKiosk && typeof window.checkinKiosk.destroy === 'function') {
+        window.checkinKiosk.destroy();
+    }
+    
     window.checkinKiosk = new CheckinKiosk();
     await window.checkinKiosk.init();
 });

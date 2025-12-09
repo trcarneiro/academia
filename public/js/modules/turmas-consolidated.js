@@ -1108,12 +1108,15 @@
                 delete turmaData.classType;
             }
             
-            // Add organizationId - get from editing turma or default
+            // Add organizationId - get from editing turma or user context
             if (moduleState.editingTurma && moduleState.editingTurma.organizationId) {
                 turmaData.organizationId = moduleState.editingTurma.organizationId;
             } else {
-                // Fallback to first available organization (Academia Demo)
-                turmaData.organizationId = 'a55ad715-2eb0-493c-996c-bb0f60bacec9';
+                // Get from user context (localStorage, sessionStorage, or window)
+                turmaData.organizationId = localStorage.getItem('activeOrganizationId') 
+                    || sessionStorage.getItem('activeOrganizationId')
+                    || window.currentOrganizationId
+                    || window.currentUser?.organizationId;
             }
             
             // Ensure schedule has correct format for backend

@@ -93,7 +93,7 @@ public/
 │   └── portal/
 │       ├── app.js                   # Inicialização
 │       ├── router.js                # Hash router
-│       ├── api.js                   # API client (extends shared)
+│       ├── api.js                   # API client (MUST follow Core Principle III: normalization, caching)
 │       ├── auth.js                  # JWT + Magic Link
 │       │
 │       ├── pages/
@@ -256,6 +256,64 @@ model Payment {
   paidAt          DateTime?
 }
 ```
+
+---
+
+## 💰 MODELO DE PREÇOS
+
+### Estratégia de Precificação
+
+Os preços são dinâmicos e carregados da tabela `BillingPlan`. NÃO devem ser hardcoded no frontend.
+
+```typescript
+// API retorna planos disponíveis
+GET /api/portal/plans
+Response: {
+  success: true,
+  data: [
+    { id: 'uuid', name: 'Ilimitado Anual', price: 229.90, interval: 'MONTHLY', duration: 12 },
+    { id: 'uuid', name: 'Ilimitado Mensal', price: 269.90, interval: 'MONTHLY', duration: 1 }
+  ]
+}
+```
+
+### Regras de Negócio
+
+- Planos são cadastrados via Admin (não pelo portal)
+- Aluno escolhe plano na landing page
+- Preço é confirmado no checkout via API (nunca do frontend)
+- Valores de mockup nos specs são ILUSTRATIVOS
+
+---
+
+## 🎬 ESTRATÉGIA DE VÍDEOS (Cursos)
+
+### Hospedagem Recomendada
+
+| Opção | Prós | Contras | Custo |
+|-------|------|---------|-------|
+| **Cloudflare R2 + Stream** | CDN global, baixo custo, integração fácil | Requer setup inicial | ~$0.015/GB |
+| YouTube Unlisted | Gratuito, player pronto | Menos controle, ads | Grátis |
+| Bunny.net | Streaming otimizado | Custo por view | ~$0.005/GB |
+
+**Decisão**: Cloudflare R2 para armazenamento + Stream para delivery (ou YouTube unlisted para MVP).
+
+### Modelo de Dados
+
+```prisma
+model Technique {
+  id          String  @id @default(uuid())
+  // ...
+  videoUrl    String? // URL do vídeo (CDN ou YouTube)
+  videoType   String? // 'cloudflare' | 'youtube' | 'bunny'
+  thumbnailUrl String?
+}
+```
+
+### Implementação Faseada
+
+1. **MVP (Fase 3)**: Links YouTube unlisted - sem custo
+2. **V2**: Migrar para Cloudflare R2 quando volume justificar
 
 ---
 
@@ -506,7 +564,7 @@ self.addEventListener('fetch', (event) => {
 
 **Frontend**
 - [ ] Página de faturas
-- [ ] Modal de pagamento
+- [ ] Tela de pagamento (Full-screen)
 - [ ] Calendário de aulas
 - [ ] Agendamento de reposição
 

@@ -267,16 +267,18 @@
             const course = coursesData.data[0];
             
             // Create sample turma with correct schema
+            // Get dynamic IDs from user context
+            const orgId = localStorage.getItem('activeOrganizationId') || window.currentUser?.organizationId;
+            
             const turmaData = {
                 name: `Turma ${course.name} - ${new Date().toLocaleDateString('pt-BR')}`,
                 courseId: course.id,
-                type: 'COLLECTIVE', // Changed to match Prisma enum
+                type: 'COLLECTIVE',
                 startDate: new Date().toISOString(),
                 endDate: new Date(Date.now() + (60 * 24 * 60 * 60 * 1000)).toISOString(),
                 maxStudents: 20,
-                instructorId: 'ba8a4a0b-4445-4d17-8808-4d1cfcfee6ce', // Use real organization ID
-                organizationId: 'a55ad715-2eb0-493c-996c-bb0f60bacec9', // Use real organization ID
-                unitId: 'ba8a4a0b-4445-4d17-8808-4d1cfcfee6ce', // Use real organization ID as fallback
+                // instructorId and unitId should be selected by user, not hardcoded
+                organizationId: orgId,
                 schedule: {
                     daysOfWeek: [1, 3, 5], // Monday, Wednesday, Friday
                     time: '19:00',

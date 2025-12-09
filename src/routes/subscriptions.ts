@@ -12,6 +12,32 @@ function getOrganizationId(request: any): string {
 }
 
 /**
+ * Helper: Desativar todas as assinaturas ativas de um aluno
+ * Garante que cada aluno tenha apenas UMA assinatura ativa
+ */
+async function deactivateOtherSubscriptions(studentId: string, exceptSubscriptionId?: string): Promise<number> {
+  const whereClause: any = {
+    studentId,
+    status: 'ACTIVE'
+  };
+  
+  if (exceptSubscriptionId) {
+    whereClause.id = { not: exceptSubscriptionId };
+  }
+  
+  const result = await prisma.studentSubscription.updateMany({
+    where: whereClause,
+    data: { status: 'INACTIVE', isActive: false }
+  });
+  
+  if (result.count > 0) {
+    console.log(`⚠️ ${result.count} assinatura(s) anterior(es) desativada(s) automaticamente para aluno ${studentId}`);
+  }
+  
+  return result.count;
+}
+
+/**
  * 📅 Subscriptions Routes - API de Assinaturas dos Alunos
  */
 export default async function subscriptionsRoutes(fastify: FastifyInstance) {
@@ -107,6 +133,108 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // POST /api/subscriptions - Criar nova assinatura
+  fastify.post('/', {
+    schema: {
+      description: 'Create new subscription for student',
+      tags: ['Subscriptions'],
+      body: {
+        type: 'object',
+        required: ['studentId', 'planId'],
+        properties: {
+          studentId: { type: 'string', format: 'uuid' },
+          planId: { type: 'string' },
+          startDate: { type: 'string', format: 'date' },
+          status: { type: 'string', enum: ['ACTIVE', 'PENDING', 'INACTIVE'] }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { studentId, planId, startDate, status = 'ACTIVE' } = request.body as { 
+        studentId: string; 
+        planId: string;
+        startDate?: string;
+        status?: string;
+      };
+      const organizationId = getOrganizationId(request);
+      
+      console.log(`📝 POST /api/subscriptions - studentId: ${studentId}, planId: ${planId}`);
+      
+      // Verificar se aluno existe
+      const student = await prisma.student.findFirst({
+        where: { id: studentId, organizationId }
+      });
+      
+      if (!student) {
+        return ResponseHelper.notFound(reply, 'Aluno não encontrado');
+      }
+      
+      // Verificar se plano existe
+      const plan = await prisma.billingPlan.findFirst({
+        where: { id: planId, organizationId, isActive: true }
+      });
+      
+      if (!plan) {
+        return ResponseHelper.notFound(reply, 'Plano não encontrado');
+      }
+      
+      // Desativar assinaturas ativas anteriores (cada aluno só pode ter UMA ativa)
+      if (status === 'ACTIVE') {
+        await deactivateOtherSubscriptions(studentId);
+      }
+      
+      // Criar assinatura
+      const subscription = await prisma.studentSubscription.create({
+        data: {
+          studentId,
+          planId,
+          organizationId,
+          status: status as any,
+          startDate: startDate ? new Date(startDate) : new Date(),
+          currentPrice: plan.price,
+          billingType: plan.billingType
+        },
+        include: {
+          plan: {
+            select: {
+              name: true,
+              price: true,
+              billingType: true
+            }
+          },
+          student: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      // Ativar o aluno se a assinatura for ACTIVE
+      if (status === 'ACTIVE') {
+        await prisma.student.update({
+          where: { id: studentId },
+          data: { isActive: true }
+        });
+        console.log(`✅ Aluno ${studentId} ativado`);
+      }
+      
+      console.log(`✅ Assinatura criada: ${subscription.id}`);
+      return ResponseHelper.success(reply, subscription, 'Assinatura criada com sucesso');
+      
+    } catch (error) {
+      console.error('❌ Erro ao criar assinatura:', error);
+      return ResponseHelper.error(reply, error);
+    }
+  });
+
   // PATCH /api/subscriptions/:id - Editar assinatura
   fastify.patch('/:id', async (request, reply) => {
     try {
@@ -120,18 +248,9 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
         return ResponseHelper.notFound(reply, 'Assinatura não encontrada');
       }
       
-      // Se for ativar, garantir que não há outra ativa para o mesmo aluno
+      // Se for ativar, desativar outras assinaturas ativas do mesmo aluno
       if (status === 'ACTIVE') {
-        const otherActive = await prisma.studentSubscription.findFirst({
-          where: {
-            studentId: subscription.studentId,
-            status: 'ACTIVE',
-            id: { not: id }
-          }
-        });
-        if (otherActive) {
-          return ResponseHelper.badRequest(reply, 'Já existe outra assinatura ativa para este aluno');
-        }
+        await deactivateOtherSubscriptions(subscription.studentId, id);
       }
       
       // Atualizar assinatura
@@ -185,7 +304,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
       }
       
       // Verificar se há checkins/frequências
-      const attendances = await prisma.studentAttendance.count({
+      const attendances = await prisma.attendance.count({
         where: {
           studentId: subscription.studentId
         }
@@ -273,8 +392,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
             status: 'PENDING',
             startDate: new Date(),
             currentPrice: plan.price,
-            billingType: plan.billingType,
-            paymentMethod: 'PIX'
+            billingType: plan.billingType
           },
           include: { plan: true }
         });
@@ -362,8 +480,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           status: 'PENDING',
           startDate: new Date(),
           currentPrice: plan.price,
-          billingType: plan.billingType,
-          paymentMethod: 'PIX'
+          billingType: plan.billingType
         }
       });
 

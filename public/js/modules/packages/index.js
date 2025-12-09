@@ -94,12 +94,9 @@ class PackagesModule {
         if (!window.apiClient || !window.createModuleAPI) {
             await this.waitForAPIClient();
         }
-        // Criar módulo API helper com headers padrão para organização
-        this.apiHelper = window.createModuleAPI('Packages', {
-            defaultHeaders: {
-                'x-organization-id': '452c0b35-1822-4890-851e-922356c812fb' // ID da organização padrão (Academia Demo)
-            }
-        });
+        // Criar módulo API helper - organizationId é obtido automaticamente do api-client.js
+        // via localStorage.getItem('activeOrganizationId') ou window.currentOrganizationId
+        this.apiHelper = window.createModuleAPI('Packages');
         // manter alias para compatibilidade
         this.api = this.apiHelper;
         console.log('✅ Packages API helper inicializado');

@@ -1,0 +1,16 @@
+{
+  "name": "Portal do Aluno - Krav Maga",
+  "short_name": "Krav Maga",
+  "description": "Seu portal de aluno da academia",
+  "start_url": "/portal/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/images/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

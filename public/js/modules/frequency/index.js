@@ -288,8 +288,13 @@ window.initFrequencyModule = async (container) => {
         
         // Inicializar o controller com container
         const frequencyContainer = container.querySelector('#frequency-container');
+        
+        // Garantir que moduleAPI existe
+        const api = frequencyModule.moduleAPI || window.moduleAPI || window.createModuleAPI?.('Frequency');
+        console.log('📊 [FrequencyModule] Passing API to controller:', api);
+        
         if (frequencyModule.controller && frequencyContainer) {
-            await frequencyModule.controller.initialize(frequencyContainer, frequencyModule.moduleAPI);
+            await frequencyModule.controller.initialize(frequencyContainer, api);
         } else {
             console.error('❌ Controller or container not available');
         }

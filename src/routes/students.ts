@@ -113,6 +113,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
               user: true
             }
           },
+          biometricData: true, // Include biometric data for photo
           subscriptions: {
             include: {
               plan: true
@@ -1718,6 +1719,237 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to check duplicates'
+      });
+    }
+  });
+
+  // DELETE student by ID
+  fastify.delete('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+      
+      // Check if student exists
+      const student = await prisma.student.findUnique({
+        where: { id },
+        include: { user: true }
+      });
+
+      if (!student) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Aluno não encontrado'
+        });
+      }
+
+      // Delete in transaction - student and related user
+      await prisma.$transaction(async (tx) => {
+        // Delete student enrollments first
+        await tx.courseEnrollment.deleteMany({
+          where: { studentId: id }
+        });
+        
+        // Delete student subscriptions
+        await tx.studentSubscription.deleteMany({
+          where: { studentId: id }
+        });
+        
+        // Delete student attendances
+        await tx.attendance.deleteMany({
+          where: { studentId: id }
+        });
+        
+        // Delete turma associations
+        await tx.turmaStudent.deleteMany({
+          where: { studentId: id }
+        });
+        
+        // Delete the student
+        await tx.student.delete({
+          where: { id }
+        });
+
+        // Optionally delete the user if no longer needed
+        // Note: User might be linked to other roles, so we just delete the student
+      });
+
+      logger.info(`Student deleted: ${id}`);
+
+      return reply.send({
+        success: true,
+        message: 'Aluno deletado com sucesso'
+      });
+    } catch (error) {
+      logger.error('Error deleting student:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Falha ao deletar aluno'
+      });
+    }
+  });
+
+  // =========================================================================
+  // FINANCIAL RESPONSIBLE BILLING MANAGEMENT
+  // =========================================================================
+
+  // GET /api/students/financial-responsibles/:id/billing-summary
+  // Returns all dependents, their subscriptions, and total billing for a financial responsible
+  fastify.get('/financial-responsibles/:id/billing-summary', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
+      const { id } = request.params as { id: string };
+
+      // Get the financial responsible with their linked students
+      const responsible = await prisma.financialResponsible.findFirst({
+        where: { 
+          id, 
+          organizationId 
+        }
+      });
+
+      if (!responsible) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Responsável financeiro não encontrado'
+        });
+      }
+
+      // Find all students linked to this financial responsible
+      const students = await prisma.student.findMany({
+        where: {
+          organizationId,
+          financialResponsibleId: id
+        },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          subscriptions: {
+            where: {
+              status: 'ACTIVE'
+            },
+            include: {
+              plan: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  billingType: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Calculate totals
+      let totalMonthlyAmount = 0;
+      const dependentsSummary = students.map(student => {
+        const studentName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
+        const activeSubscriptions = student.subscriptions.map(sub => {
+          const price = parseFloat(sub.currentPrice?.toString() || sub.plan?.price?.toString() || '0');
+          totalMonthlyAmount += price;
+          return {
+            subscriptionId: sub.id,
+            planId: sub.plan?.id,
+            planName: sub.plan?.name || 'Plano',
+            price,
+            billingType: sub.plan?.billingType || 'MONTHLY',
+            startDate: sub.startDate
+          };
+        });
+
+        return {
+          studentId: student.id,
+          studentName,
+          email: student.user?.email,
+          isActive: student.isActive,
+          subscriptions: activeSubscriptions,
+          subtotal: activeSubscriptions.reduce((sum, s) => sum + s.price, 0)
+        };
+      });
+
+      return reply.send({
+        success: true,
+        data: {
+          responsible: {
+            id: responsible.id,
+            name: responsible.name,
+            email: responsible.email,
+            phone: responsible.phone,
+            cpfCnpj: responsible.cpfCnpj,
+            consolidateBilling: responsible.consolidateBilling
+          },
+          dependents: dependentsSummary,
+          totalDependents: students.length,
+          totalActiveSubscriptions: dependentsSummary.reduce((sum, d) => sum + d.subscriptions.length, 0),
+          totalMonthlyAmount
+        }
+      });
+    } catch (error) {
+      logger.error('Error fetching billing summary:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Falha ao buscar resumo de cobrança'
+      });
+    }
+  });
+
+  // PATCH /api/students/financial-responsibles/:id - Update financial responsible settings
+  fastify.patch('/financial-responsibles/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
+      const { id } = request.params as { id: string };
+      const body = request.body as { 
+        name?: string; 
+        email?: string; 
+        phone?: string;
+        consolidateBilling?: boolean;
+      };
+
+      // Check if exists
+      const existing = await prisma.financialResponsible.findFirst({
+        where: { id, organizationId }
+      });
+
+      if (!existing) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Responsável financeiro não encontrado'
+        });
+      }
+
+      // Build update data - only include provided fields
+      const updateData: Record<string, unknown> = {};
+      if (body.name !== undefined) updateData.name = body.name;
+      if (body.email !== undefined) updateData.email = body.email;
+      if (body.phone !== undefined) updateData.phone = body.phone;
+      if (body.consolidateBilling !== undefined) updateData.consolidateBilling = body.consolidateBilling;
+
+      const updated = await prisma.financialResponsible.update({
+        where: { id },
+        data: updateData
+      });
+
+      return reply.send({
+        success: true,
+        data: updated,
+        message: 'Responsável financeiro atualizado com sucesso'
+      });
+    } catch (error) {
+      logger.error('Error updating financial responsible:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Falha ao atualizar responsável financeiro'
       });
     }
   });

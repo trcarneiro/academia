@@ -1,0 +1,176 @@
+/**
+ * Permissions Styles
+ * Estilos para elementos de controle de permissão
+ */
+
+/* Elementos desabilitados por falta de permissão */
+.permission-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    position: relative;
+}
+
+.permission-disabled::after {
+    content: '🔒';
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    font-size: 12px;
+}
+
+/* Container de acesso negado */
+.permission-denied-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    margin: 20px;
+}
+
+.permission-denied-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+.permission-denied-container h3 {
+    color: #495057;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.permission-denied-container p {
+    color: #6c757d;
+    font-size: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.permission-denied-hint {
+    margin-top: 16px !important;
+    font-size: 0.875rem !important;
+    color: #868e96 !important;
+}
+
+/* Badge de permissão */
+.permission-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.permission-badge--admin {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.permission-badge--manager {
+    background: #4dabf7;
+    color: white;
+}
+
+.permission-badge--instructor {
+    background: #51cf66;
+    color: white;
+}
+
+.permission-badge--student {
+    background: #fcc419;
+    color: #212529;
+}
+
+.permission-badge--restricted {
+    background: #ff6b6b;
+    color: white;
+}
+
+/* Tooltip de permissão */
+[data-permission-tooltip] {
+    position: relative;
+}
+
+[data-permission-tooltip]:hover::before {
+    content: attr(data-permission-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: #212529;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    z-index: 1000;
+    margin-bottom: 6px;
+}
+
+[data-permission-tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #212529;
+    z-index: 1000;
+}
+
+/* Animação de transição para elementos escondidos */
+[data-permission] {
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Indicador visual de role no header */
+.role-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.role-indicator__icon {
+    font-size: 1rem;
+}
+
+.role-indicator--super-admin {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+    color: #764ba2;
+}
+
+.role-indicator--admin {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+}
+
+.role-indicator--manager {
+    background: rgba(77, 171, 247, 0.15);
+    color: #1c7ed6;
+}
+
+.role-indicator--instructor {
+    background: rgba(81, 207, 102, 0.15);
+    color: #2f9e44;
+}
+
+.role-indicator--student {
+    background: rgba(252, 196, 25, 0.15);
+    color: #e67700;
+}

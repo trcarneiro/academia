@@ -68,8 +68,8 @@ const MarketingModule = {
     async loadInitialData() {
         try {
             const [landingRes, statsRes] = await Promise.all([
-                this.moduleAPI.request('/api/landing-pages'),
-                this.moduleAPI.request('/api/landing-pages/stats')
+                this.moduleAPI.request('/api/marketing/landing-pages'),
+                this.moduleAPI.request('/api/marketing/analytics/summary').catch(() => ({ data: null }))
             ]);
             
             this.landingPages = landingRes?.data || [];
@@ -422,7 +422,7 @@ const MarketingModule = {
         `;
         
         try {
-            const res = await this.moduleAPI.request(`/api/landing-pages/${this.currentLandingPageId}`);
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${this.currentLandingPageId}`);
             const page = res.data;
             
             this.container.innerHTML = `
@@ -639,7 +639,7 @@ const MarketingModule = {
         const slug = this.slugify(name);
         
         try {
-            const res = await this.moduleAPI.request('/api/landing-pages', {
+            const res = await this.moduleAPI.request('/api/marketing/landing-pages', {
                 method: 'POST',
                 body: JSON.stringify({
                     name,
@@ -692,8 +692,9 @@ const MarketingModule = {
         if (!confirm('Publicar esta landing page? Ela ficará acessível publicamente.')) return;
         
         try {
-            const res = await this.moduleAPI.request(`/api/landing-pages/${id}/publish`, {
-                method: 'POST'
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'PUBLISHED' })
             });
             
             if (res.success) {
@@ -710,8 +711,9 @@ const MarketingModule = {
         if (!confirm('Despublicar esta landing page?')) return;
         
         try {
-            const res = await this.moduleAPI.request(`/api/landing-pages/${id}/unpublish`, {
-                method: 'POST'
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'DRAFT' })
             });
             
             if (res.success) {

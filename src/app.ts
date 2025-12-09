@@ -67,6 +67,7 @@ import settingsRoutes from '@/routes/settings';
 import crmRoutes from '@/routes/crm';
 import googleAdsRoutes from '@/routes/googleAds';
 import marketingRoutes from '@/routes/marketing';
+import landingPublicRoutes from '@/routes/landing-public';
 import devAuthRoutes from '@/routes/dev-auth';
 import packagesRoutes from '@/routes/packages-simple';
 import subscriptionsRoutes from '@/routes/subscriptions';
@@ -76,6 +77,7 @@ import biometricRoutes from '@/routes/biometric';
 import jobsRoutes from '@/routes/jobs';
 import healthRoutes from '@/routes/health';
 import portalRoutes from '@/routes/portal';
+import permissionsRoutes from '@/routes/permissions';
 const frequencyRoutes = require('./routes/frequency');
 
 export const buildApp = async () => {
@@ -214,6 +216,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(crmRoutes, 'crmRoutes'), { prefix: '/api/crm' } as any);
   await server.register(normalizePlugin(googleAdsRoutes, 'googleAdsRoutes'), { prefix: '/api/google-ads' } as any);
   await server.register(normalizePlugin(marketingRoutes, 'marketingRoutes'), { prefix: '/api/marketing' } as any);
+  await server.register(normalizePlugin(landingPublicRoutes, 'landingPublicRoutes'), { prefix: '/lp' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
   
   const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
@@ -225,6 +228,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(biometricRoutes, 'biometricRoutes'), { prefix: '/api/biometric' } as any);
   await server.register(normalizePlugin(jobsRoutes, 'jobsRoutes'), { prefix: '/api/jobs' } as any);
   await server.register(normalizePlugin(portalRoutes, 'portalRoutes'), { prefix: '/api/portal' } as any);
+  await server.register(normalizePlugin(permissionsRoutes, 'permissionsRoutes'), { prefix: '/api/auth' } as any);
 
   server.setErrorHandler(errorHandler);
 

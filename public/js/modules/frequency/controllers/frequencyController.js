@@ -20,13 +20,29 @@ export class FrequencyController {
     }
 
     /**
+     * Get API client with robust fallback - Padrão de Excelência
+     */
+    getAPI() {
+        if (this.api) return this.api;
+        if (window.moduleAPI) return window.moduleAPI;
+        if (window.createModuleAPI) {
+            this.api = window.createModuleAPI('Frequency');
+            return this.api;
+        }
+        throw new Error('API client não disponível');
+    }
+
+    /**
      * Initialize controller with container
      */
     async initialize(container, api) {
         console.log('📊 [FrequencyController] Initializing...');
         
         this.container = container;
-        this.api = api;
+        
+        // Garantir API client com fallback robusto
+        this.api = api || window.moduleAPI || (window.createModuleAPI ? window.createModuleAPI('Frequency') : null);
+        console.log('[FrequencyController] API client:', this.api ? 'Disponivel' : 'Ausente');
         
         try {
             await this.setupMainStructure();
@@ -304,8 +320,9 @@ export class FrequencyController {
      */
     async searchStudents(query) {
         try {
-            // Buscar alunos via API
-            const response = await window.moduleAPI.request('/api/attendance/students/all', {
+            const api = this.getAPI();
+
+            const response = await api.request('/api/attendance/students/all', {
                 method: 'GET'
             });
 
@@ -389,8 +406,9 @@ export class FrequencyController {
         try {
             const sessionSelect = this.container.querySelector('#session-select');
             
-            // Buscar aulas disponíveis para o aluno via API
-            const response = await window.moduleAPI.request(`/api/attendance/classes/available?studentId=${studentId}`, {
+            const api = this.getAPI();
+
+            const response = await api.request(`/api/attendance/classes/available?studentId=${studentId}`, {
                 method: 'GET'
             });
 
@@ -498,8 +516,9 @@ export class FrequencyController {
      */
     async loadTodayStats() {
         try {
-            // Buscar estatísticas do dia via API
-            const response = await window.moduleAPI.request('/api/frequency/dashboard-stats', {
+            const api = this.getAPI();
+
+            const response = await api.request('/api/frequency/dashboard-stats', {
                 method: 'GET'
             });
 
@@ -534,8 +553,9 @@ export class FrequencyController {
         if (!container) return;
         
         try {
-            // Buscar check-ins recentes via API
-            const response = await window.moduleAPI.request('/api/attendance/history?limit=10&sortBy=checkInTime&sortOrder=desc', {
+            const api = this.getAPI();
+
+            const response = await api.request('/api/attendance/history?limit=10&sortBy=checkInTime&sortOrder=desc', {
                 method: 'GET'
             });
 
@@ -631,3 +651,5 @@ export class FrequencyController {
         }
     }
 }
+
+// TEST WRITE

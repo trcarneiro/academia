@@ -197,6 +197,12 @@ export class TurmasEditorController {
      * Extract and process form data
      */
     extractFormData(formData) {
+        // Get organizationId from user context
+        const orgId = localStorage.getItem('activeOrganizationId') 
+            || sessionStorage.getItem('activeOrganizationId')
+            || window.currentOrganizationId
+            || window.currentUser?.organizationId;
+        
         const data = {
             name: formData.get('name'),
             courseId: formData.get('courseId'),
@@ -206,7 +212,7 @@ export class TurmasEditorController {
             endDate: formData.get('endDate') || null,
             maxStudents: parseInt(formData.get('maxStudents')) || 20,
             unitId: formData.get('unitId'),
-            organizationId: 'a55ad715-2eb0-493c-996c-bb0f60bacec9', // Default organization
+            organizationId: orgId,
             schedule: {
                 daysOfWeek: this.getSelectedDaysOfWeek(formData),
                 time: formData.get('time') || '19:00',

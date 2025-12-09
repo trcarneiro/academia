@@ -944,8 +944,12 @@ const CrmModule = {
         if (!confirm('Deseja converter este lead em aluno?')) return;
 
         try {
-            // Get current user ID (assuming default user)
-            const userId = 'de5b9ba7-a5a2-4155-9277-35de0ec53fa1'; // TODO: Get from auth
+            // Get current user ID from auth context
+            const userId = window.currentUser?.id;
+            if (!userId) {
+                this.showNotification('Usuário não autenticado', 'error');
+                return;
+            }
 
             const response = await this.moduleAPI.request(`/api/crm/leads/${leadId}/convert`, {
                 method: 'POST',
@@ -969,7 +973,7 @@ const CrmModule = {
         if (!title) return;
 
         const description = prompt('Descrição (opcional):');
-        const userId = 'de5b9ba7-a5a2-4155-9277-35de0ec53fa1'; // TODO: Get from auth
+        const userId = window.currentUser?.id;
 
         try {
             const response = await this.moduleAPI.request(`/api/crm/leads/${leadId}/activities`, {
@@ -996,7 +1000,7 @@ const CrmModule = {
         const content = prompt('Anotação:');
         if (!content) return;
 
-        const userId = 'de5b9ba7-a5a2-4155-9277-35de0ec53fa1'; // TODO: Get from auth
+        const userId = window.currentUser?.id;
 
         try {
             const response = await this.moduleAPI.request(`/api/crm/leads/${leadId}/notes`, {
@@ -1229,7 +1233,7 @@ const CrmModule = {
 
     async moveLeadToStage(leadId, newStage) {
         try {
-            const userId = 'de5b9ba7-a5a2-4155-9277-35de0ec53fa1'; // TODO: Get from auth
+            const userId = window.currentUser?.id;
 
             const response = await this.moduleAPI.request(`/api/crm/leads/${leadId}/move`, {
                 method: 'POST',
@@ -2224,7 +2228,8 @@ const CrmModule = {
 
             // Use fetch directly for multipart/form-data (browser handles Content-Type with boundary)
             const organizationId = localStorage.getItem('activeOrganizationId') || 
-                                  'a55ad715-2eb0-493c-996c-bb0f60bacec9'; // Fallback
+                                  sessionStorage.getItem('activeOrganizationId') ||
+                                  window.currentOrganizationId;
             
             const response = await fetch('/api/google-ads/import-csv', {
                 method: 'POST',

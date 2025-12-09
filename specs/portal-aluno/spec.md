@@ -9,14 +9,17 @@
 
 ## ✅ Integração Asaas VALIDADA (30/11/2025)
 
-| Métrica | Valor |
-|---------|-------|
-| Clientes | 293 |
-| Cobranças | 1.320 |
-| Saldo | R$ 303,76 |
-| Ambiente | PRODUÇÃO |
+| Métrica | Valor | Nota |
+|---------|-------|------|
+| Clientes Asaas | 293 | Total na API Asaas |
+| Clientes Sincronizados | 18 | Alunos ativos no sistema local |
+| Cobranças | 1.320 | Total histórico |
+| Saldo | R$ 303,76 | Conta Asaas |
+| Ambiente | PRODUÇÃO | |
 
 **Código Pronto**: `AsaasService` completo com customers, payments, subscriptions, webhooks.
+
+> ⚠️ **Nota**: Após sincronização (06/12/2025), 18 assinaturas reais foram mantidas. Dados fake foram removidos.
 
 ---
 
@@ -275,7 +278,7 @@ Hoje, cada novo aluno gera trabalho administrativo:
 
 Para facilitar acesso via WhatsApp:
 - Aluno clica no link
-- Recebe código por SMS/WhatsApp
+- Recebe código por SMS/WhatsApp (ou Email como fallback se Z-API não configurado)
 - Digita código e entra (sem senha)
 
 ---
@@ -298,6 +301,10 @@ Para facilitar acesso via WhatsApp:
 ├────────────────┼────────────────┼────────────────┼──────────────┤
 │ Segunda, 19h   │ ✅ Em dia      │ 85%            │ 12/48        │
 │ Defesa Pessoal │ Vence: 05/Dez  │ este mês       │ técnicas     │
+
+**Lógica Próxima Aula**:
+- Buscar próxima aula na agenda do aluno (baseado em turmas matriculadas).
+- Se não houver, exibir "Nenhuma aula agendada".
 │ Prof. João     │                │                │              │
 │ [Ver Agenda]   │ [Ver Faturas]  │ [Ver Histórico]│ [Ver Curso]  │
 └────────────────┴────────────────┴────────────────┴──────────────┘

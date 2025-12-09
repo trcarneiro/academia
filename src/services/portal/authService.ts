@@ -9,15 +9,15 @@
  * - JWT com refresh
  */
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/utils/database';
+import { appConfig } from '@/config';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
-
-const prisma = new PrismaClient();
+import QRCode from 'qrcode';
 
 // Configurações
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_SECRET = appConfig.jwt.secret;
 const JWT_EXPIRES_IN = '7d';
 const MAGIC_CODE_EXPIRES_MINUTES = 5;
 const SALT_ROUNDS = 10;
@@ -546,4 +546,40 @@ async function createSession(data: {
       isActive: true,
     },
   });
+}
+
+/**
+ * Gera um QR Code para acesso ao Totem
+ * O QR Code contém um token JWT de curta duração (5 min)
+ */
+export async function generateAccessQrCode(studentId: string, organizationId: string): Promise<string> {
+  // 1. Gerar token de acesso curto
+  const accessToken = jwt.sign(
+    { 
+      sub: studentId,
+      orgId: organizationId,
+      type: 'access_token',
+      timestamp: Date.now()
+    },
+    JWT_SECRET,
+    { expiresIn: '5m' }
+  );
+
+  // 2. Gerar QR Code
+  try {
+    const qrCodeDataUrl = await QRCode.toDataURL(accessToken, {
+      errorCorrectionLevel: 'H',
+      margin: 1,
+      width: 300,
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    });
+    
+    return qrCodeDataUrl;
+  } catch (error) {
+    console.error('Erro ao gerar QR Code:', error);
+    throw new Error('Falha ao gerar QR Code de acesso');
+  }
 }

@@ -105,10 +105,10 @@ export class TurmasListView {
                             <select id="filterStatus" class="form-select-premium">
                                 <option value="">Todos os Status</option>
                                 <option value="SCHEDULED">Agendado</option>
-                                <option value="IN_PROGRESS">Em Andamento</option>
+                                <option value="ACTIVE">Em Andamento</option>
                                 <option value="COMPLETED">Concluído</option>
                                 <option value="CANCELLED">Cancelado</option>
-                                <option value="SUSPENDED">Suspenso</option>
+                                <option value="RESCHEDULED">Reagendado</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -333,8 +333,8 @@ export class TurmasListView {
         const timeRange = `${startTime} - ${endTime}`;
         
         // Status class
-        const statusClass = turma.status === 'ATIVADO' ? 'status-active' : 
-                           turma.status === 'AGENDADO' ? 'status-scheduled' : 'status-inactive';
+        const statusClass = turma.status === 'ACTIVE' ? 'status-active' : 
+                           turma.status === 'SCHEDULED' ? 'status-scheduled' : 'status-inactive';
         
         // Instructor name
         const instructorName = turma.instructor 
@@ -538,7 +538,7 @@ export class TurmasListView {
     updateStats(turmas) {
         const stats = {
             total: turmas.length,
-            inProgress: turmas.filter(t => t.status === 'IN_PROGRESS').length,
+            inProgress: turmas.filter(t => t.status === 'ACTIVE').length,      // ACTIVE = Em Andamento
             scheduled: turmas.filter(t => t.status === 'SCHEDULED').length,
             completed: turmas.filter(t => t.status === 'COMPLETED').length
         };

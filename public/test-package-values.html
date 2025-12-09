@@ -1,100 +1,650 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Test Package Update Values</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Valores de Pacote | Academia Krav Maga</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
-        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        pre { background: #e9ecef; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; font-size: 12px; }
-        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
-        .form-group { margin: 10px 0; }
-        input, select { width: 200px; padding: 5px; margin: 5px 0; }
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-subtle: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Header Premium */
+        .page-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .card-header-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .form-input[readonly] {
+            background: var(--gradient-subtle);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .form-input-group {
+            position: relative;
+        }
+
+        .form-input-prefix {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-input-group .form-input {
+            padding-left: 2.5rem;
+        }
+
+        /* Input Row for mobile */
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
+        /* Result Panel */
+        .result-panel {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-panel pre {
+            color: #e2e8f0;
+            font-size: 0.75rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+
+        .result-panel .json-key {
+            color: #93c5fd;
+        }
+
+        .result-panel .json-string {
+            color: #86efac;
+        }
+
+        .result-panel .json-number {
+            color: #fcd34d;
+        }
+
+        .result-panel .json-boolean {
+            color: #f472b6;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Total Highlight */
+        .total-highlight {
+            background: var(--gradient-subtle);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .total-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .total-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Accordion */
+        .accordion-toggle {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .accordion-toggle:hover {
+            background: var(--bg-primary);
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 0 1rem 1rem;
+        }
+
+        .accordion-content.open {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .page-header {
+                padding: 2rem 1.5rem;
+            }
+
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success-color);
+        }
+
+        .toast.error {
+            background: var(--error-color);
+        }
     </style>
 </head>
 <body>
+    <!-- Header Premium -->
+    <header class="page-header">
+        <div class="header-content">
+            <h1 class="header-title">🔧 Teste de Valores</h1>
+            <p class="header-subtitle">Ferramenta de teste para atualização de pacotes</p>
+        </div>
+    </header>
+
     <div class="container">
-        <h1>🔧 Test Package Update Values</h1>
-        
-        <div class="section">
-            <h3>Current Package Data</h3>
-            <button onclick="getCurrentData()">📋 Get Current Data</button>
-            <pre id="current-data"></pre>
+        <!-- Card: Dados Atuais -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    📋 Dados Atuais
+                </span>
+                <span id="data-status" class="status-badge warning">Aguardando</span>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-secondary" onclick="getCurrentData()">
+                    🔄 Carregar Dados
+                </button>
+                
+                <button class="accordion-toggle" onclick="toggleAccordion('current-data-panel')">
+                    <span>Ver JSON Completo</span>
+                    <span>▼</span>
+                </button>
+                <div id="current-data-panel" class="accordion-content">
+                    <div class="result-panel">
+                        <pre id="current-data">Clique em "Carregar Dados" para ver os dados atuais</pre>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="section">
-            <h3>Test Update</h3>
-            <div class="form-group">
-                <label>Nome:</label>
-                <input type="text" id="name" value="Pacote 4 Créditos Teste">
+
+        <!-- Card: Editar Pacote -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    ✏️ Editar Pacote
+                </span>
             </div>
-            <div class="form-group">
-                <label>Quantidade de Créditos:</label>
-                <input type="number" id="maxClasses" value="4">
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Nome do Pacote</label>
+                    <input type="text" id="name" class="form-input" value="Pacote 4 Créditos Teste" placeholder="Nome do pacote">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tipo de Cobrança</label>
+                    <select id="billingType" class="form-select">
+                        <option value="MONTHLY">💳 Créditos (MONTHLY)</option>
+                        <option value="RECURRING">🔄 Assinatura (RECURRING)</option>
+                    </select>
+                </div>
+
+                <div class="input-row">
+                    <div class="form-group">
+                        <label class="form-label">Créditos</label>
+                        <input type="number" id="maxClasses" class="form-input" value="4" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Valor/Aula</label>
+                        <div class="form-input-group">
+                            <span class="form-input-prefix">R$</span>
+                            <input type="number" id="pricePerClass" class="form-input" value="30.00" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Highlight -->
+                <div class="total-highlight">
+                    <div class="total-label">Valor Total do Pacote</div>
+                    <div class="total-value" id="totalDisplay">R$ 120,00</div>
+                    <input type="hidden" id="totalPrice" value="120.00">
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="calculateTotal()">
+                        🔢 Calcular
+                    </button>
+                    <button class="btn btn-primary" onclick="updatePackage()">
+                        💾 Salvar
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Valor por Aula:</label>
-                <input type="number" id="pricePerClass" value="30.00" step="0.01">
-            </div>
-            <div class="form-group">
-                <label>Valor Total (será calculado):</label>
-                <input type="number" id="totalPrice" value="120.00" step="0.01" readonly>
-            </div>
-            <div class="form-group">
-                <label>Tipo:</label>
-                <select id="billingType">
-                    <option value="MONTHLY">MONTHLY (Créditos)</option>
-                    <option value="RECURRING">RECURRING (Assinatura)</option>
-                </select>
-            </div>
-            
-            <button onclick="calculateTotal()">🔢 Calculate Total</button>
-            <button onclick="updatePackage()">💾 Update Package</button>
-            <pre id="update-result"></pre>
         </div>
-        
-        <div class="section">
-            <h3>Verify Changes</h3>
-            <button onclick="verifyChanges()">🔍 Verify Changes</button>
-            <pre id="verify-result"></pre>
+
+        <!-- Card: Resultado da Atualização -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-header-title">
+                    📤 Resultado
+                </span>
+                <span id="update-status" class="status-badge warning">Aguardando</span>
+            </div>
+            <div class="card-body">
+                <div class="result-panel">
+                    <pre id="update-result">Os resultados da atualização aparecerão aqui</pre>
+                </div>
+                
+                <button class="btn btn-success" onclick="verifyChanges()" style="margin-top: 1rem;">
+                    ✅ Verificar Alterações
+                </button>
+            </div>
         </div>
+
+        <!-- Card: Verificação -->
+        <div class="card" id="verify-card" style="display: none;">
+            <div class="card-header">
+                <span class="card-header-title">
+                    🔍 Verificação
+                </span>
+                <span id="verify-status" class="status-badge success">Verificado</span>
+            </div>
+            <div class="card-body">
+                <div class="result-panel">
+                    <pre id="verify-result"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <span id="toast-message"></span>
     </div>
 
     <script>
         const packageId = '7f753d68-e466-4a87-aa27-87ad9baa5dbd';
         
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        // Syntax highlight JSON
+        function syntaxHighlight(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, null, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // Toggle accordion
+        function toggleAccordion(id) {
+            const panel = document.getElementById(id);
+            panel.classList.toggle('open');
+        }
+        
         function calculateTotal() {
-            const quantity = Number(document.getElementById('maxClasses').value);
-            const pricePerClass = Number(document.getElementById('pricePerClass').value);
+            const quantity = Number(document.getElementById('maxClasses').value) || 0;
+            const pricePerClass = Number(document.getElementById('pricePerClass').value) || 0;
             const total = quantity * pricePerClass;
+            
             document.getElementById('totalPrice').value = total.toFixed(2);
+            document.getElementById('totalDisplay').textContent = formatCurrency(total);
+            
+            showToast(`Total calculado: ${formatCurrency(total)}`);
         }
         
         async function getCurrentData() {
+            const statusBadge = document.getElementById('data-status');
+            statusBadge.className = 'status-badge warning';
+            statusBadge.textContent = 'Carregando...';
+            
             try {
                 const response = await fetch(`/api/billing-plans/${packageId}`);
                 const data = await response.json();
-                document.getElementById('current-data').textContent = JSON.stringify(data, null, 2);
+                
+                document.getElementById('current-data').innerHTML = syntaxHighlight(data);
+                document.getElementById('current-data-panel').classList.add('open');
                 
                 if (data.success && data.data) {
                     const plan = data.data;
                     document.getElementById('name').value = plan.name || '';
                     document.getElementById('maxClasses').value = plan.maxClasses || '';
                     document.getElementById('billingType').value = plan.billingType || 'MONTHLY';
-                    // Calculate price per class if we have both price and maxClasses
+                    
                     if (plan.price && plan.maxClasses) {
                         const pricePerClass = Number(plan.price) / Number(plan.maxClasses);
                         document.getElementById('pricePerClass').value = pricePerClass.toFixed(2);
                         document.getElementById('totalPrice').value = Number(plan.price).toFixed(2);
+                        document.getElementById('totalDisplay').textContent = formatCurrency(plan.price);
                     }
+                    
+                    statusBadge.className = 'status-badge success';
+                    statusBadge.textContent = 'Carregado';
+                    showToast('Dados carregados com sucesso!');
+                } else {
+                    statusBadge.className = 'status-badge error';
+                    statusBadge.textContent = 'Erro';
                 }
             } catch (error) {
-                document.getElementById('current-data').textContent = `Error: ${error.message}`;
+                document.getElementById('current-data').textContent = `Erro: ${error.message}`;
+                statusBadge.className = 'status-badge error';
+                statusBadge.textContent = 'Erro';
+                showToast('Erro ao carregar dados', 'error');
             }
         }
         
         async function updatePackage() {
+            const statusBadge = document.getElementById('update-status');
+            statusBadge.className = 'status-badge warning';
+            statusBadge.textContent = 'Enviando...';
+            
             const updateData = {
                 name: document.getElementById('name').value,
                 description: "Teste de atualização de valores",
@@ -117,35 +667,70 @@
                 
                 const result = await response.json();
                 
-                const output = `Status: ${response.status}\n\nSent Data:\n${JSON.stringify(updateData, null, 2)}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
-                document.getElementById('update-result').textContent = output;
+                const output = {
+                    status: response.status,
+                    sentData: updateData,
+                    response: result
+                };
+                
+                document.getElementById('update-result').innerHTML = syntaxHighlight(output);
+                
+                if (result.success) {
+                    statusBadge.className = 'status-badge success';
+                    statusBadge.textContent = 'Sucesso';
+                    showToast('Pacote atualizado com sucesso!');
+                } else {
+                    statusBadge.className = 'status-badge error';
+                    statusBadge.textContent = 'Erro';
+                    showToast(result.message || 'Erro ao atualizar', 'error');
+                }
                 
                 console.log('📤 Update sent:', updateData);
                 console.log('📥 Update response:', result);
                 
             } catch (error) {
-                document.getElementById('update-result').textContent = `Error: ${error.message}`;
+                document.getElementById('update-result').textContent = `Erro: ${error.message}`;
+                statusBadge.className = 'status-badge error';
+                statusBadge.textContent = 'Erro';
+                showToast('Erro ao atualizar pacote', 'error');
                 console.error('❌ Update error:', error);
             }
         }
         
         async function verifyChanges() {
+            const verifyCard = document.getElementById('verify-card');
+            const statusBadge = document.getElementById('verify-status');
+            
+            verifyCard.style.display = 'block';
+            statusBadge.className = 'status-badge warning';
+            statusBadge.textContent = 'Verificando...';
+            
             try {
-                // Wait a moment for the update to process
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 const response = await fetch(`/api/billing-plans/${packageId}`);
                 const data = await response.json();
                 
-                const output = `Verification Status: ${response.status}\n\nCurrent Data After Update:\n${JSON.stringify(data, null, 2)}`;
-                document.getElementById('verify-result').textContent = output;
+                document.getElementById('verify-result').innerHTML = syntaxHighlight(data);
+                
+                if (data.success) {
+                    statusBadge.className = 'status-badge success';
+                    statusBadge.textContent = 'Verificado';
+                    showToast('Verificação concluída!');
+                } else {
+                    statusBadge.className = 'status-badge error';
+                    statusBadge.textContent = 'Erro';
+                }
                 
                 if (data.success && data.data) {
                     console.log('🔍 Current values after update:', data.data);
                 }
                 
             } catch (error) {
-                document.getElementById('verify-result').textContent = `Error: ${error.message}`;
+                document.getElementById('verify-result').textContent = `Erro: ${error.message}`;
+                statusBadge.className = 'status-badge error';
+                statusBadge.textContent = 'Erro';
+                showToast('Erro na verificação', 'error');
             }
         }
         

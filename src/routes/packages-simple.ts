@@ -244,6 +244,53 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
       return ResponseHelper.error(reply, error);
     }
   });
+
+  // DELETE /api/packages/:id - Excluir/desativar pacote
+  fastify.delete('/:id', async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const organizationId = resolveOrganizationId(request);
+
+      // Verificar se pacote existe
+      const existingPackage = await prisma.billingPlan.findFirst({
+        where: { id, organizationId },
+        include: {
+          _count: {
+            select: {
+              subscriptions: true
+            }
+          }
+        }
+      });
+
+      if (!existingPackage) {
+        return ResponseHelper.notFound(reply, 'Pacote não encontrado');
+      }
+
+      // Verificar se tem assinaturas ativas
+      const hasActiveSubscriptions = existingPackage._count.subscriptions > 0;
+
+      if (hasActiveSubscriptions) {
+        // Soft delete - apenas desativar
+        const deactivatedPackage = await prisma.billingPlan.update({
+          where: { id },
+          data: { isActive: false }
+        });
+
+        return ResponseHelper.success(reply, deactivatedPackage, 'Pacote desativado com sucesso (possui assinaturas ativas)');
+      } else {
+        // Hard delete - remover completamente
+        await prisma.billingPlan.delete({
+          where: { id }
+        });
+
+        return ResponseHelper.success(reply, null, 'Pacote excluído com sucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao deletar pacote:', error);
+      return ResponseHelper.error(reply, error);
+    }
+  });
 }
 
 export {

@@ -137,116 +137,60 @@ async function main() {
   console.log(`✅ ${tatame2.name}\n`);
 
   // ===== 5. PLANOS ADULTOS =====
-  console.log('💰 Criando planos adultos...');
+  console.log('💰 Criando plano único...');
   
-  let planoAdultoAnualIlimitado = await prisma.billingPlan.findFirst({
+  let planoIlimitado = await prisma.billingPlan.findFirst({
     where: {
       organizationId: organization.id,
-      name: 'Adulto - Anual Ilimitado'
+      name: 'Plano Ilimitado'
     }
   });
 
-  if (!planoAdultoAnualIlimitado) {
-    planoAdultoAnualIlimitado = await prisma.billingPlan.create({
+  if (!planoIlimitado) {
+    planoIlimitado = await prisma.billingPlan.create({
       data: {
         organizationId: organization.id,
-        name: 'Adulto - Anual Ilimitado',
-        description: 'Acesso ilimitado a todas as modalidades (Krav Maga, Jiu-Jitsu, Boxe, Defesa Pessoal) - Melhor custo-benefício',
-        price: 229.90,
+        name: 'Plano Ilimitado',
+        description: 'Acesso total a todas as modalidades e horários.',
+        price: 250.00,
         billingType: 'MONTHLY',
         isActive: true,
+        isUnlimitedAccess: true,
+        accessAllModalities: true,
         features: JSON.stringify([
-          'Todas as modalidades ilimitadas',
-          'Horários flexíveis',
-          'Melhor custo-benefício',
-          'Compromisso de 12 meses'
+          'Acesso ilimitado a todas as modalidades',
+          'Horários livres',
+          'Sem taxa de matrícula',
+          'Cancele quando quiser'
         ])
+      }
+    });
+  } else {
+    // Ensure price is correct
+    await prisma.billingPlan.update({
+      where: { id: planoIlimitado.id },
+      data: { 
+        price: 250.00,
+        isActive: true,
+        isUnlimitedAccess: true,
+        accessAllModalities: true
       }
     });
   }
 
-  let planoAdultoMensalIlimitado = await prisma.billingPlan.findFirst({
+  console.log(`✅ ${planoIlimitado.name} - R$ ${planoIlimitado.price}/mês\n`);
+
+  // Deactivate other plans if they exist (cleanup)
+  await prisma.billingPlan.updateMany({
     where: {
       organizationId: organization.id,
-      name: 'Adulto - Mensal Ilimitado'
-    }
+      id: { not: planoIlimitado.id },
+      isActive: true
+    },
+    data: { isActive: false }
   });
 
-  if (!planoAdultoMensalIlimitado) {
-    planoAdultoMensalIlimitado = await prisma.billingPlan.create({
-      data: {
-        organizationId: organization.id,
-        name: 'Adulto - Mensal Ilimitado',
-        description: 'Acesso ilimitado a todas as modalidades sem fidelidade',
-        price: 269.90,
-        billingType: 'MONTHLY',
-        isActive: true,
-        features: JSON.stringify([
-          'Todas as modalidades ilimitadas',
-          'Sem fidelidade',
-          'Cancele quando quiser',
-          'Horários flexíveis'
-        ])
-      }
-    });
-  }
 
-  console.log(`✅ ${planoAdultoAnualIlimitado.name} - R$ ${planoAdultoAnualIlimitado.price}/mês`);
-  console.log(`✅ ${planoAdultoMensalIlimitado.name} - R$ ${planoAdultoMensalIlimitado.price}/mês\n`);
-
-  // ===== 6. PLANOS KIDS =====
-  console.log('🧒 Criando planos kids...');
-  
-  const planosKids = [
-    {
-      name: 'Kids - Anual Ilimitado',
-      description: 'Krav Maga + Jiu-Jitsu integrados para crianças - Acesso ilimitado',
-      price: 249.90,
-      features: ['Krav Maga + Jiu-Jitsu', 'Todas as aulas ilimitadas', 'Desenvolvimento integral', 'Compromisso de 12 meses']
-    },
-    {
-      name: 'Kids - Anual 2x Semana',
-      description: 'Krav Maga + Jiu-Jitsu integrados - 2 aulas por semana',
-      price: 199.90,
-      features: ['Krav Maga + Jiu-Jitsu', '2 aulas por semana', 'Horários fixos', 'Compromisso de 12 meses']
-    },
-    {
-      name: 'Kids - Mensal Ilimitado',
-      description: 'Krav Maga + Jiu-Jitsu integrados - Sem fidelidade',
-      price: 299.90,
-      features: ['Krav Maga + Jiu-Jitsu', 'Todas as aulas ilimitadas', 'Sem fidelidade', 'Horários flexíveis']
-    },
-    {
-      name: 'Kids - Mensal 2x Semana',
-      description: 'Krav Maga + Jiu-Jitsu integrados - 2 aulas por semana sem fidelidade',
-      price: 229.90,
-      features: ['Krav Maga + Jiu-Jitsu', '2 aulas por semana', 'Sem fidelidade', 'Horários fixos']
-    }
-  ];
-
-  for (const plano of planosKids) {
-    let planoExiste = await prisma.billingPlan.findFirst({
-      where: {
-        organizationId: organization.id,
-        name: plano.name
-      }
-    });
-
-    if (!planoExiste) {
-      planoExiste = await prisma.billingPlan.create({
-        data: {
-          organizationId: organization.id,
-          name: plano.name,
-          description: plano.description,
-          price: plano.price,
-          billingType: 'MONTHLY',
-          isActive: true,
-          features: JSON.stringify(plano.features)
-        }
-      });
-    }
-    console.log(`✅ ${planoExiste.name} - R$ ${planoExiste.price}/mês`);
-  }
 
   // ===== 7. CRIAR CURSOS BÁSICOS =====
   console.log('\n📚 Criando cursos básicos...');

@@ -222,8 +222,8 @@ class ModularSystem {
         // Load JS
         let jsPath = `/js/modules/${moduleName}.js`;
         if (moduleName === 'student-editor') {
-            // Correct path for student editor within students module folder
-            jsPath = '/js/modules/students/student-editor/student-editor.js';
+            // Use the main students module which includes the editor
+            jsPath = '/js/modules/students/index.js';
         }
 
         if (!document.querySelector(`script[src="${jsPath}"]`)) {

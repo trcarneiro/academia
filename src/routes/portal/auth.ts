@@ -53,12 +53,26 @@ interface VerifyTokenBody {
   token: string;
 }
 
+// Rate limit config for auth endpoints (more restrictive than global)
+const authRateLimitConfig = {
+  max: 10,           // 10 requests
+  timeWindow: '1 minute'
+};
+
+const loginRateLimitConfig = {
+  max: 5,            // 5 login attempts
+  timeWindow: '5 minutes'
+};
+
 export default async function portalAuthRoutes(fastify: FastifyInstance) {
   /**
    * POST /register
    * Cadastro de novo aluno no portal
    */
   fastify.post('/register', {
+    config: {
+      rateLimit: authRateLimitConfig  // T064: Rate limiting for auth
+    },
     schema: {
       body: {
         type: 'object',

@@ -357,10 +357,10 @@ export class TurmasService {
     getStatusText(status) {
         const statusMap = {
             'SCHEDULED': 'Agendado',
-            'IN_PROGRESS': 'Em Andamento',
+            'ACTIVE': 'Em Andamento',
             'COMPLETED': 'Concluído',
             'CANCELLED': 'Cancelado',
-            'SUSPENDED': 'Suspenso'
+            'RESCHEDULED': 'Reagendado'
         };
         return statusMap[status] || status;
     }

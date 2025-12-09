@@ -164,9 +164,9 @@ export class StudentEditorController {
                                 </h3>
                                 <div class="biometric-capture-container">
                                     <div class="capture-preview-area">
-                                        <div id="photo-preview" class="photo-preview ${s?.biometric?.faceDescriptor ? 'has-photo' : ''}">
-                                            ${s?.biometric?.photoUrl ? `
-                                                <img src="${s.biometric.photoUrl}" alt="Foto do aluno" class="captured-photo">
+                                        <div id="photo-preview" class="photo-preview ${s?.biometricData?.photoUrl ? 'has-photo' : ''}">
+                                            ${s?.biometricData?.photoUrl ? `
+                                                <img src="${s.biometricData.photoUrl}" alt="Foto do aluno" class="captured-photo">
                                                 <div class="photo-status">
                                                     <span class="status-badge success">✅ Cadastrado</span>
                                                 </div>
@@ -180,9 +180,9 @@ export class StudentEditorController {
                                         <div class="capture-actions">
                                             <button type="button" id="btn-capture-photo" class="btn-form btn-primary-form">
                                                 <i class="fas fa-camera"></i>
-                                                ${s?.biometric?.photoUrl ? 'Atualizar Foto' : 'Capturar Foto'}
+                                                ${s?.biometricData?.photoUrl ? 'Atualizar Foto' : 'Capturar Foto'}
                                             </button>
-                                            ${s?.biometric?.photoUrl ? `
+                                            ${s?.biometricData?.photoUrl ? `
                                                 <button type="button" id="btn-remove-photo" class="btn-form btn-danger-form">
                                                     <i class="fas fa-trash"></i>
                                                     Remover Foto
@@ -1517,7 +1517,7 @@ export class StudentEditorController {
                             <div class="responsible-info" style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
                                 <div class="info-badge">
                                     <i class="fas fa-user-graduate" style="color: #28a745;"></i>
-                                    <strong>👤 Outro Aluno: ${student.financialResponsibleStudent.user?.name || 'Sem nome'}</strong>
+                                    <strong>👤 Outro Aluno: ${[student.financialResponsibleStudent.user?.firstName, student.financialResponsibleStudent.user?.lastName].filter(Boolean).join(' ') || 'Sem nome'}</strong>
                                 </div>
                                 <div class="info-detail">
                                     <span class="label">Email:</span>
@@ -1643,7 +1643,7 @@ export class StudentEditorController {
 
                             <div class="dependents-list">
                                 ${(dependentsData.dependents || []).map(dep => {
-                                    const userName = dep?.user?.name || 'Nome não disponível';
+                                    const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
                                         return sum + (sub?.plan?.price || 0);
@@ -2409,7 +2409,7 @@ export class StudentEditorController {
                                 <div class="responsible-info info-badge-success">
                                     <i class="fas fa-user-graduate"></i>
                                     <div class="responsible-details">
-                                        <strong>👤 Outro Aluno: ${studentFull.financialResponsibleStudent.user?.name || 'Sem nome'}</strong>
+                                        <strong>👤 Outro Aluno: ${[studentFull.financialResponsibleStudent.user?.firstName, studentFull.financialResponsibleStudent.user?.lastName].filter(Boolean).join(' ') || 'Sem nome'}</strong>
                                         <div class="text-muted">${studentFull.financialResponsibleStudent.user?.email || 'Não informado'}</div>
                                     </div>
                                 </div>
@@ -2598,7 +2598,7 @@ export class StudentEditorController {
 
                             <div class="dependents-list">
                                 ${(dependentsData.dependents || []).map(dep => {
-                                    const userName = dep?.user?.name || 'Nome não disponível';
+                                    const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
                                         return sum + (sub?.plan?.price || 0);
@@ -4221,7 +4221,6 @@ window.cancelSubscription = async function(subscriptionId) {
         const response = await fetch(`/api/subscriptions/${subscriptionId}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             }
         });
