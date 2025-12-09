@@ -669,9 +669,16 @@ export class StudentsListController {
                         <td class="col-student">
                             <div class="student-info-card">
                                 <div class="student-avatar">
-                                    <img src="${s?.user?.avatarUrl || '/images/avatar-placeholder.png'}" 
-                                         alt="${name}" 
-                                         onerror="this.src='/images/avatar-placeholder.png'">
+                                    ${s?.user?.avatarUrl ? 
+                                        `<img src="${s.user.avatarUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">` :
+                                        (s?.biometricData?.photoUrl ? 
+                                            (String(s.biometricData.photoUrl).startsWith('biometric://') ?
+                                                `<div class="avatar-placeholder biometric-active" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:1.2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>` :
+                                                `<img src="${s.biometricData.photoUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`
+                                            ) :
+                                            `<img src="/images/avatar-placeholder.png" alt="${name}">`
+                                        )
+                                    }
                                 </div>
                                 <div class="student-details">
                                     <div class="student-name">${name}</div>
@@ -1094,10 +1101,16 @@ export class StudentsListController {
                     
                     <!-- Card Header with Avatar -->
                     <div class="card-header-premium">
-                        <div class="student-avatar large ${user.avatarUrl ? '' : 'avatar-initials'}">
+                        <div class="student-avatar large ${user.avatarUrl ? '' : (student.biometricData?.photoUrl ? (String(student.biometricData.photoUrl).startsWith('biometric://') ? 'biometric-mode' : '') : 'avatar-initials')}">
                             ${user.avatarUrl 
                                 ? `<img src="${user.avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
-                                : `<span>${initials}</span>`
+                                : (student.biometricData?.photoUrl 
+                                    ? (String(student.biometricData.photoUrl).startsWith('biometric://')
+                                        ? `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`
+                                        : `<img src="${student.biometricData.photoUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
+                                    )
+                                    : `<span>${initials}</span>`
+                                )
                             }
                         </div>
                         <div class="student-status-badge">

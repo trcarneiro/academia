@@ -44,6 +44,9 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         where,
         include: {
           user: true, // Essential for displaying name/email
+          biometricData: {
+            select: { photoUrl: true }
+          },
           _count: {
             select: {
               attendances: true,
