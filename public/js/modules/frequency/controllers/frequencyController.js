@@ -251,7 +251,10 @@ export class FrequencyController {
                                         <option value="">Selecione aluno...</option>
                                     </select>
                                 </div>
-                                <button type="submit" class="btn-primary full-width" disabled>Registrar Presença</button>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary full-width" disabled>Registrar Presença</button>
+                                    <button type="button" id="clear-form" class="btn-secondary full-width" style="margin-top: 8px;">Limpar</button>
+                                </div>
                             </form>
                         </div>
                     </div>
