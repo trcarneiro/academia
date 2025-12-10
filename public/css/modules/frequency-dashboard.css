@@ -487,3 +487,58 @@
     font-size: 16px;
   }
 }
+
+/* ========================================
+   QUICK ACTIONS GRID (NEW)
+   ======================================== */
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.class-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+    background: #fff;
+}
+
+.class-card:hover {
+    background: #f8f9fa;
+    border-color: #ddd;
+    transform: translateX(4px);
+}
+
+.class-info h4 {
+    margin: 0 0 4px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.class-meta {
+    font-size: 0.9em;
+    color: #666;
+    display: flex;
+    gap: 12px;
+}
+
+.badge-today {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    backdrop-filter: blur(4px);
+}
+
+.mt-4 {
+    margin-top: 24px;
+}

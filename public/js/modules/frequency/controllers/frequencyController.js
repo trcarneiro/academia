@@ -25,10 +25,11 @@ export class FrequencyController {
     getAPI() {
         if (this.api) return this.api;
         if (window.moduleAPI) return window.moduleAPI;
-        if (window.createModuleAPI) {
+        if (typeof window.createModuleAPI === 'function') {
             this.api = window.createModuleAPI('Frequency');
             return this.api;
         }
+        console.error('❌ API Client critical failure');
         throw new Error('API client não disponível');
     }
 
@@ -41,7 +42,7 @@ export class FrequencyController {
         this.container = container;
         
         // Garantir API client com fallback robusto
-        this.api = api || window.moduleAPI || (window.createModuleAPI ? window.createModuleAPI('Frequency') : null);
+        this.api = api || window.moduleAPI || (typeof window.createModuleAPI === 'function' ? window.createModuleAPI('Frequency') : null);
         console.log('[FrequencyController] API client:', this.api ? 'Disponivel' : 'Ausente');
         
         try {
@@ -189,35 +190,34 @@ export class FrequencyController {
         
         contentArea.innerHTML = `
             <div class="checkin-view">
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card-enhanced">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="today-checkins">0</div>
-                            <div class="stat-label">Check-ins Hoje</div>
+                <!-- Quick Actions Grid -->
+                <div class="quick-actions-grid">
+                    <!-- Today's Classes -->
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h3>📅 Aulas de Hoje</h3>
+                            <span class="badge-today">${new Date().toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div class="card-content" id="today-classes-list">
+                            <div class="loading-skeleton">Carregando aulas...</div>
                         </div>
                     </div>
-                    <div class="stat-card-enhanced">
-                        <div class="stat-icon">⏰</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="active-sessions">0</div>
-                            <div class="stat-label">Sessões Ativas</div>
+
+                    <!-- Recent Classes -->
+                    <div class="data-card-premium">
+                        <div class="card-header">
+                            <h3>⏮️ Aulas Anteriores</h3>
                         </div>
-                    </div>
-                    <div class="stat-card-enhanced">
-                        <div class="stat-icon">📈</div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="attendance-rate">0%</div>
-                            <div class="stat-label">Taxa de Presença</div>
+                        <div class="card-content" id="recent-classes-list">
+                            <div class="loading-skeleton">Carregando histórico...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Checkin Form -->
-                <div class="data-card-premium">
+                <!-- Individual Check-in (Existing) -->
+                <div class="data-card-premium mt-4">
                     <div class="card-header">
-                        <h3>Registrar Presença</h3>
+                        <h3>👤 Check-in Individual</h3>
                     </div>
                     <div class="card-content">
                         <form id="checkin-form" class="checkin-form">
@@ -255,29 +255,15 @@ export class FrequencyController {
                         </form>
                     </div>
                 </div>
-
-                <!-- Recent Check-ins -->
-                <div class="data-card-premium">
-                    <div class="card-header">
-                        <h3>Check-ins Recentes</h3>
-                        <button class="btn-link" id="refresh-recent">
-                            <i>🔄</i> Atualizar
-                        </button>
-                    </div>
-                    <div class="card-content">
-                        <div class="recent-checkins" id="recent-checkins">
-                            <!-- Dynamic content -->
-                        </div>
-                    </div>
-                </div>
             </div>
         `;
 
         // Setup form interactions
         this.setupCheckinForm();
         
-        // Load initial data
-        await this.loadCheckinData();
+        // Load data
+        this.loadTodayClasses();
+        this.loadRecentClasses();
     }
 
     /**
@@ -649,6 +635,114 @@ export class FrequencyController {
         } else {
             console.log(`[${type.toUpperCase()}] ${message}`);
         }
+    }
+
+    /**
+     * Load today's classes
+     */
+    async loadTodayClasses() {
+        const container = this.container.querySelector('#today-classes-list');
+        if (!container) return;
+
+        try {
+            const api = this.getAPI();
+            const response = await api.request('/api/turmas');
+            
+            if (!response.success) throw new Error('Erro ao carregar turmas');
+
+            const today = new Date().getDay(); // 0-6
+            const classes = response.data.filter(t => t.dayOfWeek === today);
+
+            if (classes.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhuma aula hoje</div>';
+                return;
+            }
+
+            container.innerHTML = classes.map(c => this.renderClassCard(c, 'today')).join('');
+            
+            // Add event listeners
+            container.querySelectorAll('.btn-checkin').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const turmaId = e.target.closest('.btn-checkin').dataset.id;
+                    this.openClassCheckin(turmaId);
+                });
+            });
+
+        } catch (error) {
+            console.error('Error loading today classes:', error);
+            container.innerHTML = '<div class="error-state">Erro ao carregar aulas</div>';
+        }
+    }
+
+    /**
+     * Load recent classes (yesterday)
+     */
+    async loadRecentClasses() {
+        const container = this.container.querySelector('#recent-classes-list');
+        if (!container) return;
+
+        try {
+            const api = this.getAPI();
+            const response = await api.request('/api/turmas');
+            
+            if (!response.success) throw new Error('Erro ao carregar turmas');
+
+            const today = new Date().getDay();
+            const yesterday = (today + 6) % 7;
+            const classes = response.data.filter(t => t.dayOfWeek === yesterday);
+
+            if (classes.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhuma aula ontem</div>';
+                return;
+            }
+
+            container.innerHTML = classes.map(c => this.renderClassCard(c, 'recent')).join('');
+            
+             // Add event listeners
+            container.querySelectorAll('.btn-checkin').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const turmaId = e.target.closest('.btn-checkin').dataset.id;
+                    this.openClassCheckin(turmaId);
+                });
+            });
+
+        } catch (error) {
+            console.error('Error loading recent classes:', error);
+            container.innerHTML = '<div class="error-state">Erro ao carregar histórico</div>';
+        }
+    }
+
+    /**
+     * Render class card HTML
+     */
+    renderClassCard(turma, type) {
+        const time = `${turma.startTime} - ${turma.endTime}`;
+        const btnText = type === 'today' ? 'Realizar Chamada' : 'Ver/Editar';
+        const btnClass = type === 'today' ? 'btn-primary' : 'btn-secondary';
+        const instructorName = turma.instructor?.user?.firstName || 'Instrutor';
+        
+        return `
+            <div class="class-card">
+                <div class="class-info">
+                    <h4>${turma.name}</h4>
+                    <div class="class-meta">
+                        <span>⏰ ${time}</span>
+                        <span>🥋 ${instructorName}</span>
+                    </div>
+                </div>
+                <button class="btn ${btnClass} btn-sm btn-checkin" data-id="${turma.id}">
+                    ${btnText}
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Open class checkin (Placeholder for now)
+     */
+    openClassCheckin(turmaId) {
+        this.showToast(`Abrindo chamada para turma ${turmaId}...`, 'info');
+        // TODO: Implement modal or navigation to class checkin
     }
 }
 
