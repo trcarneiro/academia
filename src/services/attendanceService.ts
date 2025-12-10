@@ -1580,6 +1580,10 @@ export class AttendanceService {
               avatarUrl: true,
             },
           },
+          subscriptions: {
+            where: { status: 'ACTIVE' },
+            select: { id: true, status: true, plan: { select: { name: true } } }
+          }
         },
         orderBy: [
           {
@@ -1601,6 +1605,8 @@ export class AttendanceService {
         lastName: student.user.lastName,
         email: student.user.email,
         avatar: student.user.avatarUrl,
+        hasActivePlan: student.subscriptions && student.subscriptions.length > 0,
+        activePlanName: student.subscriptions?.[0]?.plan?.name || null,
         // Pre-computed search strings for faster client-side filtering
         searchString: [
           student.registrationNumber || '',

@@ -375,7 +375,7 @@ export class TurmasListView {
                     </div>
                     <div class="info-row">
                         <span class="info-icon">�</span>
-                        <span class="info-text">${turma.students?.length || 0} / ${turma.maxStudents || 20} alunos</span>
+                        <span class="info-text">${turma._count?.students || 0} / ${turma.maxStudents || 20} alunos</span>
                     </div>
                 </div>
                 

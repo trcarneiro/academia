@@ -1033,16 +1033,17 @@ export class FrequencyController {
 
             const students = response.data.filter(s => 
                 (s.name.toLowerCase().includes(query.toLowerCase()) || 
-                 s.registrationNumber?.includes(query))
+                 s.registrationNumber?.includes(query)) &&
+                s.hasActivePlan // Only eligible students (Active Plan)
             );
 
             if (students.length === 0) {
-                container.innerHTML = '<div class="search-item">Nenhum aluno encontrado</div>';
+                container.innerHTML = '<div class="search-item">Nenhum aluno habilitado encontrado</div>';
             } else {
                 container.innerHTML = students.slice(0, 5).map(s => `
                     <div class="search-item" data-id="${s.id}" data-json='${JSON.stringify(s).replace(/'/g, "&#39;")}'>
                         <div class="name">${s.name}</div>
-                        <div class="meta">${s.graduationLevel || '-'}</div>
+                        <div class="meta">${s.activePlanName || s.graduationLevel || 'Plano Ativo'}</div>
                     </div>
                 `).join('');
             }

@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
+import StudentCourseService from '@/services/studentCourseService';
 
 /**
  * Helper: Extract organizationId from request or use fallback
@@ -224,6 +225,15 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           data: { isActive: true }
         });
         console.log(`✅ Aluno ${studentId} ativado`);
+
+        // Trigger course activation logic
+        try {
+          await StudentCourseService.activateStudentCourses(studentId, organizationId);
+          console.log(`✅ Cursos ativados automaticamente para aluno ${studentId}`);
+        } catch (err) {
+          console.error(`⚠️ Erro ao ativar cursos automaticamente:`, err);
+          // Non-blocking error
+        }
       }
       
       console.log(`✅ Assinatura criada: ${subscription.id}`);

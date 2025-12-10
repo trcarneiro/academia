@@ -90,20 +90,9 @@ export class TurmasService {
         instructor: true,
         organization: true,
         unit: true,
-        courses: {
-          include: {
-            course: true
-          }
-        },
-        students: {
-          include: {
-            student: true
-          }
-        },
-        interests: true,
-        lessons: {
-          orderBy: {
-            scheduledDate: 'asc'
+        _count: {
+          select: {
+            students: true
           }
         }
       },

@@ -57,8 +57,15 @@ export class StudentCourseService {
                 };
             }
 
+            // Check if student has graduations (to force enrollment for beginners)
+            const student = await prisma.student.findUnique({
+                where: { id: studentId },
+                include: { graduations: true }
+            });
+            const hasGraduation = student?.graduations && student.graduations.length > 0;
+
             // 2. Coletar todos os cursos únicos dos planos ativos
-            const coursesToActivate = new Set<string>();
+            const coursesToActivate = new Map<string, { name: string, type: 'primary' | 'additional', isBaseCourse: boolean }>();
             const subscriptionDetails: SubscriptionDetail[] = [];
 
             for (const subscription of activeSubscriptions) {
@@ -70,7 +77,11 @@ export class StudentCourseService {
 
                 // Curso principal do plano
                 if (subscription.plan.course) {
-                    coursesToActivate.add(subscription.plan.course.id);
+                    coursesToActivate.set(subscription.plan.course.id, {
+                        name: subscription.plan.course.name,
+                        type: 'primary',
+                        isBaseCourse: subscription.plan.course.isBaseCourse
+                    });
                     subDetail.courses.push({
                         id: subscription.plan.course.id,
                         name: subscription.plan.course.name,
@@ -80,7 +91,11 @@ export class StudentCourseService {
 
                 // Cursos adicionais do plano
                 for (const planCourse of subscription.plan.planCourses) {
-                    coursesToActivate.add(planCourse.course.id);
+                    coursesToActivate.set(planCourse.course.id, {
+                        name: planCourse.course.name,
+                        type: 'additional',
+                        isBaseCourse: planCourse.course.isBaseCourse
+                    });
                     subDetail.courses.push({
                         id: planCourse.course.id,
                         name: planCourse.course.name,
@@ -95,7 +110,7 @@ export class StudentCourseService {
             const existingStudentCourses = await prisma.studentCourse.findMany({
                 where: {
                     studentId,
-                    courseId: { in: Array.from(coursesToActivate) },
+                    courseId: { in: Array.from(coursesToActivate.keys()) },
                     status: 'ACTIVE'
                 }
             });
@@ -105,15 +120,18 @@ export class StudentCourseService {
             );
 
             // 4. Buscar classes disponíveis para cada curso que não está ativo
-            const newCoursesToActivate = Array.from(coursesToActivate).filter(
+            const newCoursesToActivateIds = Array.from(coursesToActivate.keys()).filter(
                 courseId => !existingCourseIds.has(courseId)
             );
 
             const activatedCourses = [];
 
-            if (newCoursesToActivate.length > 0) {
+            if (newCoursesToActivateIds.length > 0) {
                 // Para cada curso, buscar uma classe ativa
-                for (const courseId of newCoursesToActivate) {
+                for (const courseId of newCoursesToActivateIds) {
+                    const courseInfo = coursesToActivate.get(courseId);
+                    const isBaseCourse = courseInfo?.isBaseCourse ?? false;
+
                     const availableClass = await prisma.class.findFirst({
                         where: {
                             courseId,
@@ -129,6 +147,31 @@ export class StudentCourseService {
                                 studentId,
                                 courseId,
                                 classId: availableClass.id,
+                                status: 'ACTIVE',
+                                startDate: new Date()
+                            },
+                            include: {
+                                course: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        description: true
+                                    }
+                                }
+                            }
+                        });
+
+                        activatedCourses.push(studentCourse.course);
+                    } else if (!hasGraduation && isBaseCourse) {
+                        // Force enrollment for beginners ONLY if it is a Base Course
+                        // "O aluno que não tivert nenhuma graduação deve estar matriculado em todo curso base incluso nos planos"
+                        console.log(`⚠️ Forcing enrollment for beginner student ${studentId} in base course ${courseId}`);
+                        
+                        const studentCourse = await prisma.studentCourse.create({
+                            data: {
+                                studentId,
+                                courseId,
+                                classId: null, // Explicitly null
                                 status: 'ACTIVE',
                                 startDate: new Date()
                             },
@@ -278,15 +321,20 @@ export class StudentCourseService {
             // 4. Identificar IDs dos cursos matriculados
             const enrolledCourseIds = new Set(studentCourses.map(sc => sc.courseId));
 
-            // 5. Extrair course IDs do plano (duas fontes: planCourses E features.courseIds)
+            // 5. Extrair course IDs do plano (três fontes: courseId principal, planCourses E features.courseIds)
             let planCourseIds: string[] = [];
             
-            // 5a. Buscar em planCourses (tabela intermediária)
+            // 5a. Buscar curso principal do plano
+            if (activeSubscription?.plan?.courseId) {
+                planCourseIds.push(activeSubscription.plan.courseId);
+            }
+
+            // 5b. Buscar em planCourses (tabela intermediária)
             if (activeSubscription?.plan?.planCourses) {
                 planCourseIds.push(...activeSubscription.plan.planCourses.map(pc => pc.courseId));
             }
             
-            // 5b. Buscar em features.courseIds (campo JSON) - NOVO!
+            // 5c. Buscar em features.courseIds (campo JSON) - NOVO!
             if (activeSubscription?.plan?.features) {
                 const features = activeSubscription.plan.features as any;
                 if (features.courseIds && Array.isArray(features.courseIds)) {

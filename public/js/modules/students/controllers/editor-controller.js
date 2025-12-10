@@ -126,7 +126,7 @@ export class StudentEditorController {
 
                 <!-- Student Detail Tabs System -->
                 <div class="student-tabs-container data-card-premium">
-                    <div class="tabs-header module-filters-premium">
+                    <div class="tabs-header">
                         <button class="tab-button active" data-tab="dados">
                             <i class="fas fa-user"></i>
                             ${isEdit ? 'Dados Pessoais' : '1. Dados Pessoais'}
