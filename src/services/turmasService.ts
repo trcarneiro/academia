@@ -134,7 +134,15 @@ export class TurmasService {
         unit: true,
         students: {
           include: {
-            student: true
+            student: {
+              include: {
+                subscriptions: {
+                  where: { isActive: true },
+                  take: 1,
+                  orderBy: { createdAt: 'desc' }
+                }
+              }
+            }
           }
         },
         interests: {
