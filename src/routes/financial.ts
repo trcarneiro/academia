@@ -19,7 +19,7 @@ const createPlanSchema = z.object({
 
 const createSubscriptionSchema = z.object({
   studentId: z.string().uuid(),
-  planId: z.string().uuid(),
+  planId: z.string(),
   startDate: z.string().datetime().optional(),
   customPrice: z.number().positive().optional()
 });
@@ -257,7 +257,7 @@ export default async function financialRoutes(
         required: ['studentId', 'planId'],
         properties: {
           studentId: { type: 'string', format: 'uuid' },
-          planId: { type: 'string', format: 'uuid' },
+          planId: { type: 'string' },
           startDate: { type: 'string', format: 'date-time' },
           customPrice: { type: 'number' }
         }
