@@ -220,36 +220,35 @@ class CoursesController {
         
         // Render in grid view (default)
         const gridContainer = document.getElementById('coursesGrid');
-        console.log('📦 gridContainer:', gridContainer);
-        console.log('📦 gridContainer display:', gridContainer?.style?.display);
-        console.log('📦 gridContainer offsetHeight:', gridContainer?.offsetHeight);
         
         if (gridContainer) {
             console.log('📦 Rendering grid view');
             gridContainer.innerHTML = courses.map(course => `
-                <div class="data-card-premium course-card" data-course-id="${course.id}" data-course-name="${this.escapeHtml(course.name)}" style="cursor: pointer;">
-                    <div class="course-header">
-                        <h3 class="course-name">${course.name}</h3>
-                        <span class="course-status ${course.isActive ? 'active' : 'inactive'}">
-                            ${course.isActive ? '✅ Ativo' : '⏸️ Inativo'}
+                <div class="course-card" data-course-id="${course.id}" data-course-name="${this.escapeHtml(course.name)}" onclick="window.coursesController.navigateToCourseDetails('${course.id}')">
+                    <div class="course-image">
+                        <img src="${course.imageUrl || '/assets/images/course-placeholder.jpg'}" alt="${this.escapeHtml(course.name)}" onerror="this.src='https://placehold.co/600x400?text=Curso'">
+                        <span class="course-badge ${course.isActive ? 'badge-active' : 'badge-inactive'}">
+                            ${course.isActive ? 'Ativo' : 'Inativo'}
                         </span>
                     </div>
-                    <p class="course-description">${course.description || 'Sem descrição'}</p>
-                    <div class="course-meta">
-                        <span class="meta-item">📅 ${course.duration || 'N/A'}</span>
-                        <span class="meta-item">📚 ${course.totalLessons || 0} aulas</span>
-                        <span class="meta-item">🎯 ${course.level || 'N/A'}</span>
-                    </div>
-                    <div class="course-actions">
-                        <button class="btn btn-sm btn-primary" onclick="window.coursesController.navigateToCourseDetails('${course.id}')">
-                            👁️ Ver
-                        </button>
-                        <button class="btn btn-sm btn-secondary" onclick="window.coursesController.navigateToCourseForm('${course.id}')">
-                            ✏️ Editar
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); window.coursesController.deleteCourseFromCard(this)">
-                            🗑️ Excluir
-                        </button>
+                    <div class="course-content">
+                        <h3 class="course-title">${course.name}</h3>
+                        <p class="course-description">${course.description || 'Sem descrição disponível.'}</p>
+                        
+                        <div class="course-meta">
+                            <span>📅 ${course.duration || 'N/A'}</span>
+                            <span>📚 ${course.totalLessons || 0} aulas</span>
+                            <span>🎯 ${course.level || 'Geral'}</span>
+                        </div>
+
+                        <div class="course-actions" style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm);">
+                            <button class="btn-premium-primary" onclick="event.stopPropagation(); window.coursesController.navigateToCourseForm('${course.id}')" style="flex: 1; justify-content: center;">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn-premium-primary" onclick="event.stopPropagation(); window.coursesController.deleteCourseFromCard(this)" style="flex: 1; justify-content: center; color: #ef4444; background: #fef2f2;">
+                                🗑️ Excluir
+                            </button>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -263,17 +262,17 @@ class CoursesController {
         if (tableBody) {
             tableBody.innerHTML = courses.map(course => `
                 <div class="table-row" data-course-id="${course.id}" data-course-name="${this.escapeHtml(course.name)}">
-                    <div class="table-cell">${course.name}</div>
-                    <div class="table-cell">${course.level || 'N/A'}</div>
+                    <div class="table-cell">
+                        <div style="font-weight: 600;">${course.name}</div>
+                        <div style="font-size: 0.8em; color: var(--color-text-muted);">${course.level || 'Geral'}</div>
+                    </div>
+                    <div class="table-cell">${course.duration || '-'}</div>
                     <div class="table-cell">
                         <span class="badge ${course.isActive ? 'badge-success' : 'badge-secondary'}">
                             ${course.isActive ? 'Ativo' : 'Inativo'}
                         </span>
                     </div>
-                    <div class="table-cell">
-                        <button class="btn btn-sm btn-primary" onclick="window.coursesController.navigateToCourseDetails('${course.id}')">
-                            👁️
-                        </button>
+                    <div class="table-cell" style="display: flex; gap: 8px;">
                         <button class="btn btn-sm btn-secondary" onclick="window.coursesController.navigateToCourseForm('${course.id}')">
                             ✏️
                         </button>
@@ -318,11 +317,11 @@ class CoursesController {
 
         // AGENTS.md: Premium empty state
         container.innerHTML = `
-            <div class="empty-state-premium">
+            <div class="empty-state">
                 <div class="empty-icon">📚</div>
                 <h3>Nenhum curso encontrado</h3>
                 <p>Comece criando seu primeiro curso</p>
-                <button class="btn btn-primary" data-action="openNewCourseForm">
+                <button class="btn-premium-primary" data-action="openNewCourseForm">
                     ➕ Criar Primeiro Curso
                 </button>
             </div>
