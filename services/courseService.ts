@@ -9,6 +9,7 @@ export interface CourseData {
   level: CourseLevel | null;
   duration: number;
   isActive: boolean;
+  isBaseCourse?: boolean;
   organizationId: string;
   martialArtId: string;
   classesPerWeek?: number;
@@ -21,6 +22,7 @@ export interface UpdateCourseData {
   level?: CourseLevel | null | undefined;
   duration?: number | null | undefined;
   isActive?: boolean | null | undefined;
+  isBaseCourse?: boolean | null | undefined;
   organizationId?: string;
   martialArtId?: string;
 }
@@ -38,6 +40,8 @@ const mapCourseToViewModel = (course: Course) => ({
   duration: `${course.duration} semanas`,
   category: course.level,
   isActive: course.isActive,
+  isBaseCourse: course.isBaseCourse,
+  martialArtId: course.martialArtId,
   createdAt: course.createdAt,
   updatedAt: course.updatedAt,
 });

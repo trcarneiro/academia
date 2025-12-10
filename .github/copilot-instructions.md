@@ -35,7 +35,7 @@ window.app.handleError(error, { module: 'myModule', context: 'action-name' });
 **📁 Multi-file (ONLY for complex features)**:
 - Multiple views, complex workflows, 600+ lines logic
 - **Template**: `/public/js/modules/activities/` (MVC pattern with controllers/services/views)
-- **Gold Standard**: `/public/js/modules/students/` (1470 lines, advanced multi-tab interface)
+- **Gold Standard**: `/public/js/modules/activities/` (Best example of clean MVC architecture)
 
 
 ### 3. API Client Pattern (NON-NEGOTIABLE)
@@ -375,8 +375,8 @@ Check `AUDIT_REPORT.md` for current compliance status:
 - **26% legacy**: Frequency, Import, AI, Course Editor, Techniques
 
 **Reference modules** (copy these):
-1. **Single-file**: `/public/js/modules/instructors/` (745 lines, CRUD template)
-2. **Multi-file**: `/public/js/modules/activities/` (MVC template)
+1. **Gold Standard**: `/public/js/modules/activities/` (MVC template, best architecture)
+2. **Single-file**: `/public/js/modules/instructors/` (Legacy CRUD template, needs update)
 3. **Advanced**: `/public/js/modules/students/` (1470 lines, multi-tab interface)
 
 ## Key Documentation Files

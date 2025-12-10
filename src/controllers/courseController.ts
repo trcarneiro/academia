@@ -11,6 +11,8 @@ const createCourseSchema = z.object({
   level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'MASTER']),
   duration: z.number().int().positive('A duração deve ser um número positivo'),
   isActive: z.boolean().default(true),
+  isBaseCourse: z.boolean().optional(),
+  martialArtId: z.string().optional(),
   // Extended fields for complex course structure
   objectives: z.array(z.string()).optional(),
   generalObjectives: z.array(z.string()).optional(),
@@ -138,7 +140,7 @@ export const courseController = {
         return reply.status(409).send({ success: false, error: 'Já existe um curso com este nome' });
       }
 
-      const martialArtId = await resolveMartialArtId(organizationId, (request.body as any)?.martialArt);
+      const martialArtId = input.martialArtId || await resolveMartialArtId(organizationId, (request.body as any)?.martialArt);
 
       const courseData: CourseData = {
         ...input,

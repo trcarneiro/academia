@@ -37,6 +37,9 @@ window.initializeCourseEditorModule = async function() {
         // Setup tab navigation
         setupTabs();
 
+        // Load martial arts
+        await loadMartialArts();
+
         // Load course data if editing
         if (currentCourseId) {
             await loadCourse(currentCourseId);
@@ -178,6 +181,37 @@ function switchTab(tabName) {
 }
 
 /**
+ * Load available martial arts
+ */
+async function loadMartialArts() {
+    try {
+        const select = document.getElementById('courseMartialArt');
+        if (!select) return;
+
+        try {
+            // Try to fetch from API
+            const response = await moduleAPI.api.request('GET', '/api/martial-arts');
+            if (response.success && response.data && response.data.length > 0) {
+                select.innerHTML = '<option value="">Selecione a modalidade</option>';
+                response.data.forEach(art => {
+                    const option = document.createElement('option');
+                    option.value = art.id;
+                    option.textContent = art.name;
+                    select.appendChild(option);
+                });
+            } else {
+                 // If no martial arts found, maybe add a default or leave it to backend to create
+                 console.log('No martial arts found via API');
+            }
+        } catch (e) {
+            console.warn('Could not load martial arts from API', e);
+        }
+    } catch (error) {
+        console.error('Error loading martial arts:', error);
+    }
+}
+
+/**
  * Load course data for editing
  */
 async function loadCourse(courseId) {
@@ -224,6 +258,10 @@ function populateCourseForm(course) {
     
     if (document.getElementById('courseCategory')) {
         document.getElementById('courseCategory').value = course.category || 'ADULT';
+    }
+
+    if (document.getElementById('courseMartialArt')) {
+        document.getElementById('courseMartialArt').value = course.martialArtId || '';
     }
     
     if (document.getElementById('courseDuration')) {
@@ -1092,6 +1130,7 @@ function collectFormData() {
         name: document.getElementById('courseName')?.value?.trim() || '',
         level: document.getElementById('courseLevel')?.value || '',
         category: document.getElementById('courseCategory')?.value || 'ADULT',
+        martialArtId: document.getElementById('courseMartialArt')?.value || null,
         duration: parseInt(document.getElementById('courseDuration')?.value) || 0,
         classesPerWeek: parseInt(document.getElementById('courseClassesPerWeek')?.value) || 2,
         totalClasses: parseInt(document.getElementById('courseTotalClasses')?.value) || 0,
