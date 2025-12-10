@@ -728,31 +728,31 @@ export class ActivitiesListController {
                 <td class="col-select">
                     <input type="checkbox" class="activity-checkbox" value="${activity.id}" data-activity-id="${activity.id}">
                 </td>
-                <td>
+                <td class="col-activity">
                     <div class="activity-info">
                         <strong class="activity-title">${activity?.title || activity?.name || activity?.description?.substring(0, 50) || 'Atividade sem nome'}</strong>
                         <div class="activity-description">${activity?.description || 'Sem descrição'}</div>
                     </div>
                 </td>
-                <td>
+                <td class="col-type">
                     <span class="status-badge status-${activity.type?.toLowerCase() || 'default'}">
                         ${this.getTypeLabel(activity.type)}
                     </span>
                 </td>
-                <td>
+                <td class="col-difficulty">
                     <div class="difficulty-display">
                         ${this.renderDifficulty(activity.difficulty || 1)}
                     </div>
                 </td>
-                <td>
+                <td class="col-duration">
                     <span class="duration-display">${activity.duration || 5} min</span>
                 </td>
-                <td>
+                <td class="col-equipment">
                     <div class="equipment-list">
                         ${this.renderEquipment(activity.equipment)}
                     </div>
                 </td>
-                <td>
+                <td class="col-actions">
                     <div class="action-buttons">
                         <button class="btn-form btn-small btn-primary-form" 
                                 onclick="window.openActivityEditor('${activity.id}')" 

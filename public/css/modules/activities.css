@@ -180,6 +180,12 @@
   width: 100%;
   border-collapse: collapse;
   background: var(--color-surface);
+  table-layout: fixed;
+  display: table !important;
+}
+
+.data-card-premium .data-table tr {
+  display: table-row !important;
 }
 
 .data-card-premium .data-table th {
@@ -190,6 +196,7 @@
   font-weight: 600;
   border: none;
   font-size: 0.875rem;
+  display: table-cell !important;
 }
 
 .data-card-premium .data-table th i {
@@ -200,7 +207,8 @@
 .data-card-premium .data-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
+  vertical-align: middle !important;
+  display: table-cell !important;
 }
 
 .data-card-premium .data-table tr:hover td {
@@ -1052,6 +1060,52 @@
   accent-color: #3b82f6;
   cursor: pointer;
   border-radius: 4px;
+}
+
+/* Table Column Widths & Layout Fixes */
+.col-activity {
+  width: 40%;
+  min-width: 300px;
+}
+
+.col-type {
+  width: 140px;
+  white-space: nowrap;
+}
+
+.col-difficulty {
+  width: 140px;
+  white-space: nowrap;
+}
+
+.col-duration {
+  width: 120px;
+  white-space: nowrap;
+}
+
+.col-equipment {
+  width: 200px;
+  min-width: 150px;
+}
+
+.col-actions {
+  width: 120px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Fix vertical alignment - Moved to main table definition */
+
+
+/* Activity Description Truncation */
+.activity-info .activity-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3em; /* Fallback */
+  line-height: 1.5;
 }
 
 .activity-checkbox {

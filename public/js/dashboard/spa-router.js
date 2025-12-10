@@ -222,6 +222,22 @@ class SPARouter {
         }
     }
 
+    /**
+     * Safely update global header if it exists
+     */
+    updateGlobalHeader(title, breadcrumbText) {
+        const headerTitle = document.querySelector('.module-header h1');
+        const breadcrumb = document.querySelector('.breadcrumb');
+        
+        if (headerTitle) {
+            headerTitle.textContent = title;
+        }
+        
+        if (breadcrumb && breadcrumbText) {
+            breadcrumb.textContent = breadcrumbText;
+        }
+    }
+
     loadModuleAssets(module) {
         // Always ensure shared utils first
         this.loadJS('js/shared/utils/feedback.js');
@@ -632,8 +648,7 @@ router.registerRoute('student-editor', () => {
     const studentId = hashParts[1] || null;
     
     // Update header
-    document.querySelector('.module-header h1').textContent = studentId ? 'Editar Estudante' : 'Novo Estudante';
-    document.querySelector('.breadcrumb').textContent = 'Home / Estudantes / Editor';
+    router.updateGlobalHeader(studentId ? 'Editar Estudante' : 'Novo Estudante', 'Home / Estudantes / Editor');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -706,8 +721,7 @@ router.registerRoute('package-editor', () => {
     const packageId = hashParts[1] || null;
     
     // Update header
-    document.querySelector('.module-header h1').textContent = packageId ? 'Editar Pacote' : 'Novo Pacote';
-    document.querySelector('.breadcrumb').textContent = 'Home / Pacotes / Editor';
+    router.updateGlobalHeader(packageId ? 'Editar Pacote' : 'Novo Pacote', 'Home / Pacotes / Editor');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -797,8 +811,7 @@ router.registerRoute('courses', () => {
             router.loadModuleAssets('courses');
         });
     
-    document.querySelector('.module-header h1').textContent = 'Cursos';
-    document.querySelector('.breadcrumb').textContent = 'Home / Cursos';
+    router.updateGlobalHeader('Cursos', 'Home / Cursos');
 });
 
 router.registerRoute('techniques', () => {
@@ -810,8 +823,7 @@ router.registerRoute('techniques', () => {
             router.loadModuleAssets('techniques');
         });
     
-    document.querySelector('.module-header h1').textContent = 'Técnicas';
-    document.querySelector('.breadcrumb').textContent = 'Home / Técnicas';
+    router.updateGlobalHeader('Técnicas', 'Home / Técnicas');
 });
 
 router.registerRoute('activities', async () => {
@@ -819,8 +831,7 @@ router.registerRoute('activities', async () => {
     
     try {
         // Update header
-        document.querySelector('.module-header h1').textContent = 'Atividades';
-        document.querySelector('.breadcrumb').textContent = 'Home / Atividades';
+        router.updateGlobalHeader('Atividades', 'Home / Atividades');
         
         // Get target container
         const container = document.getElementById('module-container');
@@ -917,8 +928,7 @@ router.registerRoute('activity-editor', () => {
     }
 
     // Atualizar header/breadcrumb
-    document.querySelector('.module-header h1').textContent = activityId ? 'Editar Atividade' : 'Nova Atividade';
-    document.querySelector('.breadcrumb').textContent = 'Home / Atividades / Editor';
+    router.updateGlobalHeader(activityId ? 'Editar Atividade' : 'Nova Atividade', 'Home / Atividades / Editor');
 
     const container = document.getElementById('module-container');
 
@@ -1033,8 +1043,7 @@ router.registerRoute('lesson-plans', () => {
     }, 1000);
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Planos de Aula';
-    document.querySelector('.breadcrumb').textContent = 'Home / Planos de Aula';
+    router.updateGlobalHeader('Planos de Aula', 'Home / Planos de Aula');
 });
 
 // FIX: Restaurar rota 'plan-editor' para o editor de cobrança
@@ -1046,8 +1055,7 @@ router.registerRoute('plan-editor', () => {
     const billingPlanId = parts[1] && parts[1] !== 'plan-editor' ? decodeURIComponent(parts[1]) : null;
 
     // Atualizar header/breadcrumb
-    document.querySelector('.module-header h1').textContent = billingPlanId ? 'Editar Plano (Cobrança)' : 'Novo Plano (Cobrança)';
-    document.querySelector('.breadcrumb').textContent = 'Home / Cobrança / Editor';
+    router.updateGlobalHeader(billingPlanId ? 'Editar Plano (Cobrança)' : 'Novo Plano (Cobrança)', 'Home / Cobrança / Editor');
 
     const container = document.getElementById('module-container');
 
@@ -1098,8 +1106,7 @@ router.registerRoute('lesson-plan-editor', () => {
     const planId = parts[1] && parts[1] !== 'lesson-plan-editor' ? decodeURIComponent(parts[1]) : null;
 
     // Atualizar header/breadcrumb
-    document.querySelector('.module-header h1').textContent = planId ? 'Editar Plano de Aula' : 'Novo Plano de Aula';
-    document.querySelector('.breadcrumb').textContent = 'Home / Planos de Aula / Editor';
+    router.updateGlobalHeader(planId ? 'Editar Plano de Aula' : 'Novo Plano de Aula', 'Home / Planos de Aula / Editor');
 
     const container = document.getElementById('module-container');
     container.innerHTML = '<div id="lessonPlansContainer" class="lesson-plans-container"></div>';
@@ -1155,8 +1162,7 @@ router.registerRoute('course-editor', () => {
     const courseId = hashParts[1] || null;
     
     // Update header
-    document.querySelector('.module-header h1').textContent = courseId ? 'Editar Curso' : 'Novo Curso';
-    document.querySelector('.breadcrumb').textContent = 'Home / Cursos / Editor';
+    router.updateGlobalHeader(courseId ? 'Editar Curso' : 'Novo Curso', 'Home / Cursos / Editor');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -1205,8 +1211,7 @@ router.registerRoute('course-editor', () => {
 
 router.registerRoute('ai', () => {
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Inteligência Artificial';
-    document.querySelector('.breadcrumb').textContent = 'Home / Cursos / IA';
+    router.updateGlobalHeader('Inteligência Artificial', 'Home / Cursos / IA');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -1240,8 +1245,7 @@ router.registerRoute('agents', () => {
     console.log('🤖 Carregando módulo de Agentes...');
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Agentes Inteligentes';
-    document.querySelector('.breadcrumb').textContent = 'Home / Agentes';
+    router.updateGlobalHeader('Agentes Inteligentes', 'Home / Agentes');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -1292,8 +1296,7 @@ router.registerRoute('agent-activity', () => {
     console.log('🤖 Carregando módulo de Atividade de Agentes...');
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Atividade de Agentes';
-    document.querySelector('.breadcrumb').textContent = 'Home / Atividade de Agentes';
+    router.updateGlobalHeader('Atividade de Agentes', 'Home / Atividade de Agentes');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -1395,8 +1398,7 @@ router.registerRoute('ai-monitor', () => {
     console.log('🤖 Carregando módulo AI Monitor...');
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'AI Monitor';
-    document.querySelector('.breadcrumb').textContent = 'Home / IA / AI Monitor';
+    router.updateGlobalHeader('AI Monitor', 'Home / IA / AI Monitor');
     
     // Get target container
     const container = document.getElementById('module-container');
@@ -1461,8 +1463,7 @@ router.registerRoute('turmas', () => {
     console.log('🔍 turmasController.showList:', typeof window.turmasController?.showList);
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Gestão de Turmas';
-    document.querySelector('.breadcrumb').textContent = 'Home / Turmas';
+    router.updateGlobalHeader('Gestão de Turmas', 'Home / Turmas');
     
     // Load turmas module assets and initialize the proper listing module
     const moduleContainer = document.getElementById('module-container');
@@ -1541,8 +1542,7 @@ router.registerRoute('turma-editor', () => {
     console.log('📝 Carregando editor de turma...');
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Editor de Turma';
-    document.querySelector('.breadcrumb').textContent = 'Home / Turmas / Editor';
+    router.updateGlobalHeader('Editor de Turma', 'Home / Turmas / Editor');
     
     const moduleContainer = document.getElementById('module-container');
     
@@ -1664,8 +1664,7 @@ router.registerRoute('turma-editor', () => {
         });
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Editor de Turma';
-    document.querySelector('.breadcrumb').textContent = 'Home / Turmas / Editor';
+    router.updateGlobalHeader('Editor de Turma', 'Home / Turmas / Editor');
 });
 
 // Organizations Module Routes
@@ -1673,11 +1672,8 @@ router.registerRoute('organizations', async () => {
     console.log('🏫 Carregando módulo de Organizações...');
     
     try {
-        // Update header
-        document.querySelector('.module-header h1').textContent = 'Gestão de Organizações';
-        document.querySelector('.breadcrumb').textContent = 'Home / Organizações';
-        
-        // Get target container
+    // Update header
+    router.updateGlobalHeader('Gestão de Organizações', 'Home / Organizações');        // Get target container
         const container = document.getElementById('module-container');
         
         // Check if module is available
@@ -1749,11 +1745,8 @@ router.registerRoute('units', async () => {
     console.log('🏢 Carregando módulo de Unidades...');
     
     try {
-        // Update header
-        document.querySelector('.module-header h1').textContent = 'Gestão de Unidades';
-        document.querySelector('.breadcrumb').textContent = 'Home / Unidades';
-        
-        // Get target container and ensure clean state per AGENTS.md modular isolation
+    // Update header
+    router.updateGlobalHeader('Gestão de Unidades', 'Home / Unidades');        // Get target container and ensure clean state per AGENTS.md modular isolation
         const container = document.getElementById('module-container');
         if (container) {
             // Clean only when not already hosting instructors content to avoid wiping fresh render
@@ -1834,8 +1827,7 @@ router.registerRoute('unit-editor', () => {
     const unitId = hashParts[1] || null;
     
     // Update header
-    document.querySelector('.module-header h1').textContent = unitId ? 'Editar Unidade' : 'Nova Unidade';
-    document.querySelector('.breadcrumb').textContent = 'Home / Unidades / Editor';
+    router.updateGlobalHeader(unitId ? 'Editar Unidade' : 'Nova Unidade', 'Home / Unidades / Editor');
     
     // Load unit editor HTML
     fetch('views/modules/units/unit-editor.html')
@@ -1905,11 +1897,8 @@ router.registerRoute('instructors', async () => {
     console.log('👨‍🏫 Carregando módulo de Instrutores...');
     
     try {
-        // Update header
-        document.querySelector('.module-header h1').textContent = 'Gestão de Instrutores';
-        document.querySelector('.breadcrumb').textContent = 'Home / Instrutores';
-        
-        // Get target container and ensure clean state per AGENTS.md modular isolation
+    // Update header
+    router.updateGlobalHeader('Gestão de Instrutores', 'Home / Instrutores');        // Get target container and ensure clean state per AGENTS.md modular isolation
         const container = document.getElementById('module-container');
         if (container) {
             // Aggressive container cleaning to ensure modular isolation
@@ -2028,8 +2017,7 @@ router.registerRoute('checkin-kiosk', async () => {
     }
 
     // Update header
-    document.querySelector('.module-header h1').textContent = '📸 Check-in Kiosk';
-    document.querySelector('.breadcrumb').textContent = 'Home / Check-in Kiosk';
+    router.updateGlobalHeader('📸 Check-in Kiosk', 'Home / Check-in Kiosk');
 
     // Clear container
     container.innerHTML = '<div class="loading-spinner"><p>⏳ Carregando módulo...</p></div>';
@@ -2267,8 +2255,7 @@ router.registerRoute('agenda', async () => {
     }
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Agenda';
-    document.querySelector('.breadcrumb').textContent = 'Home / Agenda';
+    router.updateGlobalHeader('Agenda', 'Home / Agenda');
 });
 
 // Frequency Module Route
@@ -2340,10 +2327,7 @@ router.registerRoute('frequency', async () => {
     }
     
     // Update header
-    const headerH1 = document.querySelector('.module-header h1');
-    const breadcrumb = document.querySelector('.breadcrumb');
-    if (headerH1) headerH1.textContent = 'Gestão de Frequência';
-    if (breadcrumb) breadcrumb.textContent = 'Home / Frequência';
+    router.updateGlobalHeader('Gestão de Frequência', 'Home / Frequência');
 });
 
 // Graduation Module Route
@@ -2441,10 +2425,7 @@ router.registerRoute('graduation', async () => {
     }
     
     // Update header
-    const headerH1 = document.querySelector('.module-header h1');
-    const breadcrumb = document.querySelector('.breadcrumb');
-    if (headerH1) headerH1.textContent = 'Gestão de Graduação';
-    if (breadcrumb) breadcrumb.textContent = 'Home / Graduação';
+    router.updateGlobalHeader('Gestão de Graduação', 'Home / Graduação');
 });
 
 // CRM Module Route
@@ -2508,8 +2489,7 @@ router.registerRoute('crm', async () => {
     }
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'CRM & Leads';
-    document.querySelector('.breadcrumb').textContent = 'Home / CRM & Leads';
+    router.updateGlobalHeader('CRM & Leads', 'Home / CRM & Leads');
 });
 
 // Marketing Module Route
@@ -2573,8 +2553,7 @@ router.registerRoute('marketing', async () => {
     }
     
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Marketing & Landing Pages';
-    document.querySelector('.breadcrumb').textContent = 'Home / Marketing';
+    router.updateGlobalHeader('Marketing & Landing Pages', 'Home / Marketing');
 });
 
 // (Legacy) Hybrid Agenda: fully archived; see earlier route redirecting to 'agenda'
@@ -2584,8 +2563,7 @@ router.registerRoute('settings', async () => {
     console.log('⚙️ Carregando módulo de Configurações...');
 
     // Update header
-    document.querySelector('.module-header h1').textContent = 'Configurações';
-    document.querySelector('.breadcrumb').textContent = 'Home / Configurações';
+    router.updateGlobalHeader('Configurações', 'Home / Configurações');
 
     const container = document.getElementById('module-container');
     if (!container) return;
