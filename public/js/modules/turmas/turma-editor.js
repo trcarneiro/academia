@@ -150,7 +150,7 @@ function setupTabsAndCoursesUI() {
             addCourseBtn.disabled = true;
             setTimeout(() => { addCourseBtn.disabled = false; }, 5000);
             console.warn('[TurmaEditor] openCoursePicker not available after wait, using fallback');
-            showAddCourseModal();
+            showAddCourseDialog();
         }
     });
 
@@ -235,15 +235,15 @@ function renderSelectedCoursesArea() {
     }));
 }
 
-function showAddCourseModal() {
-    console.log('[TurmaEditor] showAddCourseModal fallback called - use openCoursePicker when available');
+function showAddCourseDialog() {
+    console.log('[TurmaEditor] showAddCourseDialog fallback called - use openCoursePicker when available');
 }
 
-function closeCoursesModal() {
-    const modal = document.getElementById('courses-modal');
-    if (!modal) return;
-    modal.innerHTML = '';
-    modal.style.display = 'none';
+function closeCoursesDialog() {
+    const dialog = document.getElementById('courses-dialog');
+    if (!dialog) return;
+    dialog.innerHTML = '';
+    dialog.style.display = 'none';
 }
 
 function selectCourse(courseId) {
@@ -252,7 +252,7 @@ function selectCourse(courseId) {
         turmaEditorState.selectedCourseIds.push(courseId);
     }
     renderSelectedCoursesArea();
-    closeCoursesModal();
+    closeCoursesDialog();
 }
 
 function removeSelectedCourse(courseId) {

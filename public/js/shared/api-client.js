@@ -735,7 +735,17 @@ class ModuleAPIHelper {
      */
     async request(url, options = {}) {
         const method = options.method || 'GET';
-        const data = options.body ? JSON.parse(options.body) : null;
+        let data = options.body || null;
+
+        // Fix: Handle both object and string bodies
+        if (data && typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                // Not JSON, keep as string
+            }
+        }
+
         return this.api.request(method, url, data, options);
     }
 }

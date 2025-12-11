@@ -1,0 +1,23 @@
+openapi: 3.0.0
+info:
+  title: Courses API
+  version: 1.0.0
+paths:
+  /api/courses:
+    get:
+      summary: List courses
+      parameters:
+        - name: organizationId
+          in: query
+          required: true
+          schema:
+            type: string
+    post:
+      summary: Create course
+  /api/courses/{id}:
+    get:
+      summary: Get course details
+    put:
+      summary: Update course
+    delete:
+      summary: Delete course

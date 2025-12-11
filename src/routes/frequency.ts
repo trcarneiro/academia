@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FrequencyStatsService } from '@/services/frequencyStatsService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
+import { z } from 'zod';
 
 interface FrequencyQuery {
   organizationId?: string;
@@ -233,6 +234,137 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
             error instanceof Error
               ? error.message
               : 'Erro ao buscar histórico de aulas',
+        });
+      }
+    }
+  );
+
+  /**
+   * POST /api/frequency/checkin
+   * Registrar presença em uma turma (cria aula se não existir)
+   */
+  fastify.post(
+    '/checkin',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          studentId: string;
+          turmaId: string;
+          type: string;
+          timestamp: string;
+        };
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const { studentId, turmaId, timestamp } = request.body;
+        const date = new Date(timestamp);
+        
+        // 1. Buscar ou criar aula (TurmaLesson) para hoje
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        let lesson = await prisma.turmaLesson.findFirst({
+          where: {
+            turmaId,
+            scheduledDate: {
+              gte: startOfDay,
+              lte: endOfDay
+            }
+          }
+        });
+
+        if (!lesson) {
+          const turma = await prisma.turma.findUnique({
+            where: { id: turmaId }
+          });
+
+          if (!turma) {
+            return reply.code(404).send({ success: false, message: 'Turma não encontrada' });
+          }
+
+          // Calcular próximo número de aula
+          const lastLesson = await prisma.turmaLesson.findFirst({
+            where: { turmaId },
+            orderBy: { lessonNumber: 'desc' }
+          });
+          const nextLessonNumber = (lastLesson?.lessonNumber || 0) + 1;
+
+          // Criar nova aula
+          lesson = await prisma.turmaLesson.create({
+            data: {
+              turmaId,
+              scheduledDate: date,
+              status: 'COMPLETED',
+              title: `Aula de ${date.toLocaleDateString('pt-BR')}`,
+              duration: 60,
+              lessonNumber: nextLessonNumber
+            }
+          });
+        }
+
+        // 2. Garantir que o aluno está matriculado na turma (TurmaStudent)
+        let turmaStudent = await prisma.turmaStudent.findUnique({
+          where: {
+            turmaId_studentId: {
+              turmaId,
+              studentId
+            }
+          }
+        });
+
+        if (!turmaStudent) {
+          // Matricular aluno automaticamente (como ativo)
+          turmaStudent = await prisma.turmaStudent.create({
+            data: {
+              turmaId,
+              studentId,
+              status: 'ACTIVE',
+              isActive: true
+            }
+          });
+        }
+
+        // 3. Registrar presença (TurmaAttendance)
+        const existingAttendance = await prisma.turmaAttendance.findUnique({
+          where: {
+            turmaLessonId_studentId: {
+              turmaLessonId: lesson.id,
+              studentId
+            }
+          }
+        });
+
+        if (existingAttendance) {
+           if (!existingAttendance.present) {
+             await prisma.turmaAttendance.update({
+               where: { id: existingAttendance.id },
+               data: { present: true, checkedAt: new Date() }
+             });
+           }
+           return reply.send({ success: true, message: 'Presença atualizada' });
+        }
+
+        await prisma.turmaAttendance.create({
+          data: {
+            turmaId,
+            turmaLessonId: lesson.id,
+            turmaStudentId: turmaStudent.id,
+            studentId,
+            present: true,
+            checkedAt: new Date()
+          }
+        });
+
+        return reply.send({ success: true, message: 'Presença registrada com sucesso' });
+
+      } catch (error) {
+        logger.error('Error submitting attendance:', error);
+        return reply.code(500).send({
+          success: false,
+          message: error instanceof Error ? error.message : 'Erro ao registrar presença'
         });
       }
     }

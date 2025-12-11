@@ -636,17 +636,17 @@ async function openTechniquesModal(lessonId, lessonNumber, lessonName) {
         const linkedTechniques = linkedResponse.success ? linkedResponse.data : [];
         const linkedIds = new Set(linkedTechniques.map(t => t.id));
         
-        // Create modal HTML
+        // Create selector dialog HTML
         const modalHTML = `
-            <div class="modal-overlay" id="techniquesModal">
-                <div class="modal-container technique-selector-modal">
-                    <div class="modal-header">
+            <div class="selector-overlay" id="techniquesSelector">
+                <div class="selector-container technique-selector-dialog">
+                    <div class="selector-header">
                         <h2>🥋 Adicionar Técnicas</h2>
-                        <p class="modal-subtitle">${lessonName} - Aula ${lessonNumber}</p>
-                        <button class="modal-close" onclick="closeTechniquesModal()">✕</button>
+                        <p class="selector-subtitle">${lessonName} - Aula ${lessonNumber}</p>
+                        <button class="selector-close" onclick="closeTechniquesModal()">✕</button>
                     </div>
                     
-                    <div class="modal-body">
+                    <div class="selector-body">
                         <div class="technique-search-box">
                             <input type="text" id="techniqueSearchInput" placeholder="🔍 Buscar técnicas..." />
                         </div>
@@ -695,7 +695,7 @@ async function openTechniquesModal(lessonId, lessonNumber, lessonName) {
                         </div>
                     </div>
                     
-                    <div class="modal-footer">
+                    <div class="selector-footer">
                         <button class="btn btn-secondary" onclick="closeTechniquesModal()">Cancelar</button>
                         <button class="btn btn-primary" onclick="saveLessonTechniques('${lessonId}')">
                             Adicionar Técnicas Selecionadas
@@ -829,7 +829,7 @@ async function saveLessonTechniques(lessonId) {
  * Close techniques modal
  */
 function closeTechniquesModal() {
-    const modal = document.getElementById('techniquesModal');
+    const modal = document.getElementById('techniquesSelector');
     if (modal) {
         modal.remove();
     }

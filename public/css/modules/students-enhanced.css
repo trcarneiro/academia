@@ -1132,10 +1132,10 @@
 }
 
 /* ==========================================================================
-   MODAL - Add Plan
+   DIALOG - Add Plan
    ========================================================================== */
 
-.modal-overlay {
+.selector-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -1158,7 +1158,7 @@
     }
 }
 
-.modal-content {
+.selector-container {
     background: white;
     border-radius: 12px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -1180,7 +1180,7 @@
     }
 }
 
-.modal-header {
+.selector-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1188,7 +1188,7 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-.modal-header h3 {
+.selector-header h3 {
     margin: 0;
     font-size: 1.25rem;
     color: #1f2937;
@@ -1197,7 +1197,7 @@
     gap: 0.5rem;
 }
 
-.modal-close {
+.selector-close {
     background: none;
     border: none;
     color: #6b7280;
@@ -1207,12 +1207,12 @@
     transition: all 0.2s;
 }
 
-.modal-close:hover {
+.selector-close:hover {
     background: #f3f4f6;
     color: #1f2937;
 }
 
-.modal-body {
+.selector-body {
     padding: 1.5rem;
 }
 
@@ -1243,7 +1243,7 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.modal-actions {
+.selector-actions {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
@@ -2238,11 +2238,11 @@
 }
 
 /* ==========================================================================
-   MODAL - EDIT SUBSCRIPTION
+   DIALOG - EDIT SUBSCRIPTION
    ========================================================================== */
 
-/* Modal Overlay */
-.modal-overlay {
+/* Selector Overlay */
+.selector-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -2261,8 +2261,8 @@
     to { opacity: 1; }
 }
 
-/* Modal Content */
-.modal-content {
+/* Selector Content */
+.selector-container {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -2284,8 +2284,8 @@
     }
 }
 
-/* Modal Header */
-.modal-header {
+/* Selector Header */
+.selector-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2294,7 +2294,7 @@
     gap: 1rem;
 }
 
-.modal-header h3 {
+.selector-header h3 {
     margin: 0;
     color: var(--primary-color);
     font-size: 1.25rem;
@@ -2303,7 +2303,7 @@
     gap: 0.5rem;
 }
 
-.modal-close {
+.selector-close {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -2319,13 +2319,13 @@
     transition: all 0.2s ease;
 }
 
-.modal-close:hover {
+.selector-close:hover {
     background: var(--color-border);
     color: var(--color-text-primary);
 }
 
-/* Modal Body */
-.modal-body {
+/* Selector Body */
+.selector-body {
     padding: 1.5rem;
 }
 
@@ -2401,8 +2401,8 @@
     font-size: 0.8125rem;
 }
 
-/* Modal Footer */
-.modal-footer {
+/* Selector Footer */
+.selector-footer {
     display: flex;
     gap: 0.75rem;
     justify-content: flex-end;
@@ -2411,7 +2411,7 @@
     background: var(--color-bg-secondary);
 }
 
-.modal-footer .btn {
+.selector-footer .btn {
     padding: 0.75rem 1.5rem;
     border: none;
     border-radius: 6px;
@@ -2445,39 +2445,39 @@
     color: var(--color-text-primary);
 }
 
-/* Responsive Modal */
+/* Responsive Selector */
 @media (max-width: 768px) {
-    .modal-content {
+    .selector-container {
         width: 95%;
         max-height: 95vh;
     }
     
-    .modal-header {
+    .selector-header {
         padding: 1rem;
         flex-direction: column;
         align-items: flex-start;
     }
     
-    .modal-header h3 {
+    .selector-header h3 {
         font-size: 1.1rem;
     }
     
-    .modal-close {
+    .selector-close {
         align-self: flex-end;
         margin-top: -2.5rem;
     }
     
-    .modal-body {
+    .selector-body {
         padding: 1rem;
     }
     
-    .modal-footer {
+    .selector-footer {
         padding: 1rem;
         flex-direction: column-reverse;
         gap: 0.5rem;
     }
     
-    .modal-footer .btn {
+    .selector-footer .btn {
         width: 100%;
         justify-content: center;
     }
@@ -2487,21 +2487,21 @@
     }
 }
 
-/* Modal Scrollbar Styling */
-.modal-content::-webkit-scrollbar {
+/* Selector Scrollbar Styling */
+.selector-container::-webkit-scrollbar {
     width: 6px;
 }
 
-.modal-content::-webkit-scrollbar-track {
+.selector-container::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.modal-content::-webkit-scrollbar-thumb {
+.selector-container::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 3px;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
+.selector-container::-webkit-scrollbar-thumb:hover {
     background: var(--color-text-secondary);
 }
 
@@ -2645,7 +2645,7 @@
     to { opacity: 1; }
 }
 
-.modal-content-photo {
+.selector-container.photo-capture-dialog {
     background: var(--color-surface);
     border-radius: 16px;
     width: 90%;
@@ -2656,7 +2656,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
-.modal-header-photo {
+.selector-container.photo-capture-dialog .selector-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2665,19 +2665,21 @@
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
 }
 
-.modal-header-photo h2 {
+.selector-container.photo-capture-dialog .selector-header h2 {
     font-size: 1.5rem;
     color: var(--color-text-primary);
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin: 0;
 }
 
-.modal-header-photo h2 i {
+.selector-container.photo-capture-dialog .selector-header h2 i {
     color: var(--primary-color);
 }
 
-.btn-close-modal {
+/* Override generic selector-close for photo dialog if needed, or just use generic */
+.selector-container.photo-capture-dialog .selector-close {
     background: transparent;
     border: none;
     font-size: 1.5rem;
@@ -2692,12 +2694,12 @@
     transition: all 0.2s ease;
 }
 
-.btn-close-modal:hover {
+.selector-container.photo-capture-dialog .selector-close:hover {
     background: var(--color-bg-tertiary);
     color: var(--color-text-primary);
 }
 
-.modal-body-photo {
+.selector-body.photo-capture-body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 2rem;

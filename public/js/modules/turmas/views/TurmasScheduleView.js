@@ -151,19 +151,19 @@ export class TurmasScheduleView {
                     </div>
                 </div>
 
-                <!-- Modal de confirmação -->
-                <div id="confirmModal" class="modal-overlay" style="display: none;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3 id="modalTitle">Confirmar Ação</h3>
-                            <button id="closeModal" class="btn-close">×</button>
+                <!-- Dialog de confirmação -->
+                <div id="confirmDialog" class="selector-overlay" style="display: none;">
+                    <div class="selector-container">
+                        <div class="selector-header">
+                            <h3 id="dialogTitle">Confirmar Ação</h3>
+                            <button id="closeDialog" class="selector-close">×</button>
                         </div>
-                        <div class="modal-body">
-                            <p id="modalMessage">Tem certeza que deseja realizar esta ação?</p>
+                        <div class="selector-body">
+                            <p id="dialogMessage">Tem certeza que deseja realizar esta ação?</p>
                         </div>
-                        <div class="modal-footer">
-                            <button id="modalCancel" class="btn-secondary">Cancelar</button>
-                            <button id="modalConfirm" class="btn-primary">Confirmar</button>
+                        <div class="selector-footer">
+                            <button id="dialogCancel" class="btn-secondary">Cancelar</button>
+                            <button id="dialogConfirm" class="btn-primary">Confirmar</button>
                         </div>
                     </div>
                 </div>
@@ -227,7 +227,7 @@ export class TurmasScheduleView {
 
         if (regenerateBtn) {
             regenerateBtn.addEventListener('click', () => {
-                this.showConfirmModal(
+                this.showConfirmDialog(
                     'Regenerar Cronograma',
                     'Isso irá recriar todo o cronograma baseado no curso. Aulas já ministradas não serão afetadas. Deseja continuar?',
                     () => this.regenerateSchedule()
@@ -241,16 +241,16 @@ export class TurmasScheduleView {
             });
         }
 
-        // Modal
-        const closeModal = this.container.querySelector('#closeModal');
-        const modalCancel = this.container.querySelector('#modalCancel');
+        // Dialog
+        const closeDialog = this.container.querySelector('#closeDialog');
+        const dialogCancel = this.container.querySelector('#dialogCancel');
         
-        if (closeModal) {
-            closeModal.addEventListener('click', () => this.hideModal());
+        if (closeDialog) {
+            closeDialog.addEventListener('click', () => this.hideDialog());
         }
         
-        if (modalCancel) {
-            modalCancel.addEventListener('click', () => this.hideModal());
+        if (dialogCancel) {
+            dialogCancel.addEventListener('click', () => this.hideDialog());
         }
 
         // Detalhes da aula
@@ -542,7 +542,7 @@ export class TurmasScheduleView {
     }
 
     async cancelLesson(lessonId) {
-        this.showConfirmModal(
+        this.showConfirmDialog(
             'Cancelar Aula',
             'Tem certeza que deseja cancelar esta aula? Esta ação pode ser desfeita.',
             async () => {
@@ -713,11 +713,11 @@ export class TurmasScheduleView {
         }
     }
 
-    showConfirmModal(title, message, onConfirm) {
-        const modal = this.container.querySelector('#confirmModal');
-        const titleElement = modal.querySelector('#modalTitle');
-        const messageElement = modal.querySelector('#modalMessage');
-        const confirmBtn = modal.querySelector('#modalConfirm');
+    showConfirmDialog(title, message, onConfirm) {
+        const dialog = this.container.querySelector('#confirmDialog');
+        const titleElement = dialog.querySelector('#dialogTitle');
+        const messageElement = dialog.querySelector('#dialogMessage');
+        const confirmBtn = dialog.querySelector('#dialogConfirm');
         
         titleElement.textContent = title;
         messageElement.textContent = message;
@@ -727,17 +727,17 @@ export class TurmasScheduleView {
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
         
         newConfirmBtn.addEventListener('click', () => {
-            this.hideModal();
+            this.hideDialog();
             onConfirm();
         });
         
-        modal.style.display = 'flex';
+        dialog.style.display = 'flex';
     }
 
-    hideModal() {
-        const modal = this.container.querySelector('#confirmModal');
-        if (modal) {
-            modal.style.display = 'none';
+    hideDialog() {
+        const dialog = this.container.querySelector('#confirmDialog');
+        if (dialog) {
+            dialog.style.display = 'none';
         }
     }
 

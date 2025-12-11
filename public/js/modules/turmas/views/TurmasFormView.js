@@ -372,7 +372,7 @@ export class TurmasFormView {
 
         // Botão de adicionar curso
         const addCourseBtn = this.container.querySelector('#addCourseBtn');
-        addCourseBtn?.addEventListener('click', () => this.showAddCourseModal());
+        addCourseBtn?.addEventListener('click', () => this.showAddCourseDialog());
 
         // Abas do formulário (Geral / Cursos)
         const tabButtons = this.container.querySelectorAll('.form-tabs-nav .tab-button');
@@ -759,7 +759,7 @@ export class TurmasFormView {
         `).join('');
     }
 
-    async showAddCourseModal() {
+    async showAddCourseDialog() {
         const availableCourses = this.availableCourses.filter(course => 
             !this.selectedCourses.some(selected => selected.id === course.id)
         );
@@ -769,14 +769,14 @@ export class TurmasFormView {
             return;
         }
 
-        const modalHtml = `
-            <div class="modal-overlay" id="addCourseModal">
-                <div class="modal-content">
-                    <div class="modal-header">
+        const dialogHtml = `
+            <div class="selector-overlay" id="addCourseDialog">
+                <div class="selector-container">
+                    <div class="selector-header">
                         <h3>Adicionar Curso à Turma</h3>
-                        <button class="modal-close" onclick="window.turmaFormView.closeModal()">&times;</button>
+                        <button class="selector-close" onclick="window.turmaFormView.closeDialog()">&times;</button>
                     </div>
-                    <div class="modal-body">
+                    <div class="selector-body">
                         <div class="courses-selection">
                             ${availableCourses.map(course => `
                                 <div class="course-option" onclick="window.turmaFormView.selectCourse('${course.id}')">
@@ -791,7 +791,7 @@ export class TurmasFormView {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.body.insertAdjacentHTML('beforeend', dialogHtml);
     }
 
     async selectCourse(courseId) {
@@ -799,7 +799,7 @@ export class TurmasFormView {
         if (course) {
             this.selectedCourses.push(course);
             this.renderSelectedCourses();
-            this.closeModal();
+            this.closeDialog();
         }
     }
 
@@ -808,10 +808,10 @@ export class TurmasFormView {
         this.renderSelectedCourses();
     }
 
-    closeModal() {
-        const modal = document.getElementById('addCourseModal');
-        if (modal) {
-            modal.remove();
+    closeDialog() {
+        const dialog = document.getElementById('addCourseDialog');
+        if (dialog) {
+            dialog.remove();
         }
     }
 

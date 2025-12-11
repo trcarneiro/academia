@@ -124,14 +124,14 @@ export class TurmasStudentsView {
                     </div>
                 </div>
 
-                <!-- Modal para adicionar/editar aluno -->
-                <div id="studentModal" class="modal-overlay" style="display: none;">
-                    <div class="modal-content modal-large">
-                        <div class="modal-header">
-                            <h3 id="modalTitle">Adicionar Aluno</h3>
-                            <button id="closeModal" class="btn-close">×</button>
+                <!-- Dialog para adicionar/editar aluno -->
+                <div id="studentDialog" class="selector-overlay" style="display: none;">
+                    <div class="selector-container">
+                        <div class="selector-header">
+                            <h3 id="dialogTitle">Adicionar Aluno</h3>
+                            <button id="closeDialog" class="selector-close">×</button>
                         </div>
-                        <div class="modal-body">
+                        <div class="selector-body">
                             <div class="student-selection">
                                 <div class="form-group">
                                     <label for="studentSelect">Selecionar Aluno</label>
@@ -160,9 +160,9 @@ export class TurmasStudentsView {
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button id="modalCancel" class="btn-secondary">Cancelar</button>
-                            <button id="modalSave" class="btn-primary">
+                        <div class="selector-footer">
+                            <button id="dialogCancel" class="btn-secondary">Cancelar</button>
+                            <button id="dialogSave" class="btn-primary">
                                 <span id="saveText">Adicionar</span>
                                 <div id="saveLoading" class="btn-loading" style="display: none;"></div>
                             </button>
@@ -170,17 +170,17 @@ export class TurmasStudentsView {
                     </div>
                 </div>
 
-                <!-- Modal de confirmação -->
-                <div id="confirmModal" class="modal-overlay" style="display: none;">
-                    <div class="modal-content">
-                        <div class="modal-header">
+                <!-- Dialog de confirmação -->
+                <div id="confirmDialog" class="selector-overlay" style="display: none;">
+                    <div class="selector-container">
+                        <div class="selector-header">
                             <h3 id="confirmTitle">Confirmar Ação</h3>
-                            <button id="closeConfirmModal" class="btn-close">×</button>
+                            <button id="closeConfirmDialog" class="selector-close">×</button>
                         </div>
-                        <div class="modal-body">
+                        <div class="selector-body">
                             <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
                         </div>
-                        <div class="modal-footer">
+                        <div class="selector-footer">
                             <button id="confirmCancel" class="btn-secondary">Cancelar</button>
                             <button id="confirmOk" class="btn-danger">Confirmar</button>
                         </div>
@@ -222,7 +222,7 @@ export class TurmasStudentsView {
         const exportBtn = this.container.querySelector('#exportStudents');
 
         if (addBtn) {
-            addBtn.addEventListener('click', () => this.showAddStudentModal());
+            addBtn.addEventListener('click', () => this.showAddStudentDialog());
         }
 
         if (importBtn) {
@@ -233,52 +233,52 @@ export class TurmasStudentsView {
             exportBtn.addEventListener('click', () => this.exportStudents());
         }
 
-        // Modal eventos
-        this.setupModalEvents();
+        // Dialog eventos
+        this.setupDialogEvents();
     }
 
-    setupModalEvents() {
-        // Modal principal
-        const modal = this.container.querySelector('#studentModal');
-        const closeModal = this.container.querySelector('#closeModal');
-        const modalCancel = this.container.querySelector('#modalCancel');
-        const modalSave = this.container.querySelector('#modalSave');
+    setupDialogEvents() {
+        // Dialog principal
+        const dialog = this.container.querySelector('#studentDialog');
+        const closeDialog = this.container.querySelector('#closeDialog');
+        const dialogCancel = this.container.querySelector('#dialogCancel');
+        const dialogSave = this.container.querySelector('#dialogSave');
 
-        if (closeModal) {
-            closeModal.addEventListener('click', () => this.hideModal());
+        if (closeDialog) {
+            closeDialog.addEventListener('click', () => this.hideDialog());
         }
 
-        if (modalCancel) {
-            modalCancel.addEventListener('click', () => this.hideModal());
+        if (dialogCancel) {
+            dialogCancel.addEventListener('click', () => this.hideDialog());
         }
 
-        if (modalSave) {
-            modalSave.addEventListener('click', () => this.saveStudent());
+        if (dialogSave) {
+            dialogSave.addEventListener('click', () => this.saveStudent());
         }
 
-        // Modal de confirmação
-        const confirmModal = this.container.querySelector('#confirmModal');
-        const closeConfirmModal = this.container.querySelector('#closeConfirmModal');
+        // Dialog de confirmação
+        const confirmDialog = this.container.querySelector('#confirmDialog');
+        const closeConfirmDialog = this.container.querySelector('#closeConfirmDialog');
         const confirmCancel = this.container.querySelector('#confirmCancel');
 
-        if (closeConfirmModal) {
-            closeConfirmModal.addEventListener('click', () => this.hideConfirmModal());
+        if (closeConfirmDialog) {
+            closeConfirmDialog.addEventListener('click', () => this.hideConfirmDialog());
         }
 
         if (confirmCancel) {
-            confirmCancel.addEventListener('click', () => this.hideConfirmModal());
+            confirmCancel.addEventListener('click', () => this.hideConfirmDialog());
         }
 
-        // Fechar modal clicando fora
-        modal?.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.hideModal();
+        // Fechar dialog clicando fora
+        dialog?.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                this.hideDialog();
             }
         });
 
-        confirmModal?.addEventListener('click', (e) => {
-            if (e.target === confirmModal) {
-                this.hideConfirmModal();
+        confirmDialog?.addEventListener('click', (e) => {
+            if (e.target === confirmDialog) {
+                this.hideConfirmDialog();
             }
         });
     }
@@ -459,9 +459,9 @@ export class TurmasStudentsView {
         `;
     }
 
-    showAddStudentModal() {
-        const modal = this.container.querySelector('#studentModal');
-        const title = this.container.querySelector('#modalTitle');
+    showAddStudentDialog() {
+        const dialog = this.container.querySelector('#studentDialog');
+        const title = this.container.querySelector('#dialogTitle');
         const saveText = this.container.querySelector('#saveText');
         
         // Resetar formulário
@@ -473,7 +473,7 @@ export class TurmasStudentsView {
         title.textContent = 'Adicionar Aluno';
         saveText.textContent = 'Adicionar';
         
-        modal.style.display = 'flex';
+        dialog.style.display = 'flex';
         
         // Focar no select
         setTimeout(() => {
@@ -511,7 +511,7 @@ export class TurmasStudentsView {
             });
             
             this.showSuccess('Aluno adicionado com sucesso');
-            this.hideModal();
+            this.hideDialog();
             this.loadData(); // Recarregar dados
             
         } catch (error) {
@@ -526,7 +526,7 @@ export class TurmasStudentsView {
         const student = this.students.find(s => (s.student?.id || s.id) === studentId);
         const studentName = student?.student?.name || student?.name || 'aluno';
         
-        this.showConfirmModal(
+        this.showConfirmDialog(
             'Remover Aluno',
             `Tem certeza que deseja remover ${studentName} desta turma? Esta ação não pode ser desfeita.`,
             async () => {
@@ -589,21 +589,21 @@ export class TurmasStudentsView {
     }
 
     // Métodos de UI auxiliares
-    showModal() {
-        const modal = this.container.querySelector('#studentModal');
-        if (modal) modal.style.display = 'flex';
+    showDialog() {
+        const dialog = this.container.querySelector('#studentDialog');
+        if (dialog) dialog.style.display = 'flex';
     }
 
-    hideModal() {
-        const modal = this.container.querySelector('#studentModal');
-        if (modal) modal.style.display = 'none';
+    hideDialog() {
+        const dialog = this.container.querySelector('#studentDialog');
+        if (dialog) dialog.style.display = 'none';
     }
 
-    showConfirmModal(title, message, onConfirm) {
-        const modal = this.container.querySelector('#confirmModal');
-        const titleElement = modal.querySelector('#confirmTitle');
-        const messageElement = modal.querySelector('#confirmMessage');
-        const confirmBtn = modal.querySelector('#confirmOk');
+    showConfirmDialog(title, message, onConfirm) {
+        const dialog = this.container.querySelector('#confirmDialog');
+        const titleElement = dialog.querySelector('#confirmTitle');
+        const messageElement = dialog.querySelector('#confirmMessage');
+        const confirmBtn = dialog.querySelector('#confirmOk');
         
         titleElement.textContent = title;
         messageElement.textContent = message;
@@ -613,16 +613,16 @@ export class TurmasStudentsView {
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
         
         newConfirmBtn.addEventListener('click', () => {
-            this.hideConfirmModal();
+            this.hideConfirmDialog();
             onConfirm();
         });
         
-        modal.style.display = 'flex';
+        dialog.style.display = 'flex';
     }
 
-    hideConfirmModal() {
-        const modal = this.container.querySelector('#confirmModal');
-        if (modal) modal.style.display = 'none';
+    hideConfirmDialog() {
+        const dialog = this.container.querySelector('#confirmDialog');
+        if (dialog) dialog.style.display = 'none';
     }
 
     showLoading() {
@@ -643,7 +643,7 @@ export class TurmasStudentsView {
     showSaveLoading() {
         const saveText = this.container.querySelector('#saveText');
         const saveLoading = this.container.querySelector('#saveLoading');
-        const saveBtn = this.container.querySelector('#modalSave');
+        const saveBtn = this.container.querySelector('#dialogSave');
         
         if (saveText) saveText.style.display = 'none';
         if (saveLoading) saveLoading.style.display = 'inline-block';
@@ -653,7 +653,7 @@ export class TurmasStudentsView {
     hideSaveLoading() {
         const saveText = this.container.querySelector('#saveText');
         const saveLoading = this.container.querySelector('#saveLoading');
-        const saveBtn = this.container.querySelector('#modalSave');
+        const saveBtn = this.container.querySelector('#dialogSave');
         
         if (saveText) saveText.style.display = 'inline';
         if (saveLoading) saveLoading.style.display = 'none';
