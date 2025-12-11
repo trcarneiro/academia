@@ -1,0 +1,14 @@
+﻿node_modules/
+.git/
+dist-simple/
+logs/
+backups/
+backup/
+tests/
+.env.local
+.env.backup
+*.log
+*.md
+.github/
+.vscode/
+coverage/

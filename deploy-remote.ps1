@@ -191,16 +191,24 @@ if (-not $DryRun) {
     # Usando rsync via WSL se disponível, senão usa pscp
     $hasWsl = Get-Command wsl -ErrorAction SilentlyContinue
     
-    if ($hasWsl) {
+    # Forçando uso do pscp (PuTTY) para evitar problemas de senha com rsync/WSL
+    # Se quiser usar rsync, configure chaves SSH ou instale sshpass no WSL
+    $useRsync = $false # $hasWsl
+    
+    if ($useRsync) {
         Write-Host "  Usando rsync (WSL)..." -ForegroundColor DarkGray
         
-        $wslPath = wsl wslpath -a (Get-Location).Path
+        $wslPath = (wsl wslpath -a (Get-Location).Path).Trim()
         
-        wsl rsync -avz --delete `
-            --exclude-from=".deploy-exclude.txt" `
-            -e "ssh -p $REMOTE_PORT" `
-            "$wslPath/" `
-            "$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/"
+        # Usando bash -c para garantir que as aspas do comando SSH sejam preservadas
+        # e evitando problemas de interpretação de argumentos entre PowerShell e WSL
+        $rsyncCmd = "rsync -avz --delete --exclude-from='.deploy-exclude.txt' -e 'ssh -p $REMOTE_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' '$wslPath/' '$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/'"
+        
+        wsl bash -c $rsyncCmd
+        
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha na sincronização via rsync (Exit Code: $LASTEXITCODE)"
+        }
     } else {
         Write-Host "  Usando pscp (PuTTY)..." -ForegroundColor DarkGray
         
@@ -236,11 +244,18 @@ Write-Step "Gerando Prisma Client..."
 Invoke-RemoteCommand "cd $REMOTE_PATH && npx prisma generate"
 Write-Success "Prisma Client gerado"
 
-# 10. EXECUTAR MIGRATIONS
-Write-Step "Executando migrations do banco de dados..."
+# 10. EXECUTAR MIGRATIONS (LOCALMENTE)
+Write-Step "Executando migrations do banco de dados (Local)..."
 
-Invoke-RemoteCommand "cd $REMOTE_PATH && npx prisma db push --skip-generate"
-Write-Success "Migrations aplicadas"
+try {
+    # Executar localmente para evitar problemas de IPv6 no servidor
+    Write-Host "  -> Executando: npx prisma db push --skip-generate" -ForegroundColor DarkGray
+    npx prisma db push --skip-generate
+    Write-Success "Migrations aplicadas com sucesso (Local)"
+} catch {
+    Write-Error "Falha ao aplicar migrations localmente: $_"
+    exit 1
+}
 
 # 11. REINICIAR SERVIÇO
 Write-Step "Reiniciando serviço..."
