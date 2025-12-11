@@ -10,10 +10,10 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Cores para output
-function Write-Step { param($msg) Write-Host "`n🔷 $msg" -ForegroundColor Cyan }
-function Write-Success { param($msg) Write-Host "✅ $msg" -ForegroundColor Green }
-function Write-Error { param($msg) Write-Host "❌ $msg" -ForegroundColor Red }
-function Write-Warning { param($msg) Write-Host "⚠️  $msg" -ForegroundColor Yellow }
+function Write-Step { param($msg) Write-Host "`n[STEP] $msg" -ForegroundColor Cyan }
+function Write-Success { param($msg) Write-Host "[OK] $msg" -ForegroundColor Green }
+function Write-Error { param($msg) Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Write-Warning { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yellow }
 
 # Carregar variáveis do .env
 function Load-EnvFile {
@@ -25,14 +25,19 @@ function Load-EnvFile {
     }
     
     $envVars = @{}
-    Get-Content ".env" | ForEach-Object {
-        if ($_ -match '^\s*([^#][^=]+)=(.+)$') {
+    $lines = Get-Content ".env" -Encoding UTF8
+    
+    foreach ($line in $lines) {
+        if ($line -match '^\s*([^#=]+)=(.*)$') {
             $key = $matches[1].Trim()
-            $value = $matches[2].Trim().Trim('"')
-            $envVars[$key] = $value
+            $value = $matches[2].Trim().Trim('"').Trim("'")
+            if ($key) {
+                $envVars[$key] = $value
+            }
         }
     }
     
+    Write-Host "  Encontradas $($envVars.Count) variáveis." -ForegroundColor DarkGray
     return $envVars
 }
 
@@ -45,9 +50,14 @@ $REMOTE_PATH = $env['REMOTE_SERVER_PATH']
 $REMOTE_PORT = $env['REMOTE_SERVER_PORT']
 $REMOTE_PASSWORD = $env['REMOTE_SERVER_PASSWORD']
 
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
-Write-Host "🚀 Deploy Academia Krav Maga v2.0" -ForegroundColor Magenta
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+if ([string]::IsNullOrWhiteSpace($REMOTE_IP)) {
+    Write-Error "REMOTE_SERVER_IP nao encontrado no .env"
+    exit 1
+}
+
+Write-Host "----------------------------------------" -ForegroundColor Magenta
+Write-Host "Deploy Academia Krav Maga v2.0" -ForegroundColor Magenta
+Write-Host "----------------------------------------" -ForegroundColor Magenta
 Write-Host "📍 Servidor: $REMOTE_USER@$REMOTE_IP"
 Write-Host "📂 Destino: $REMOTE_PATH"
 Write-Host ""
@@ -119,7 +129,7 @@ tests/
 coverage/
 "@ | Out-File -FilePath $excludeFile -Encoding UTF8
 
-Write-Success "Lista de exclusão criada"
+Write-Success "Lista de exclusao criada"
 
 # 4. FUNÇÃO PARA EXECUTAR COMANDOS SSH
 function Invoke-RemoteCommand {
@@ -134,11 +144,23 @@ function Invoke-RemoteCommand {
     }
     
     if (-not $Silent) {
-        Write-Host "  → Executando: $Command" -ForegroundColor DarkGray
+        Write-Host "  -> Executando: $Command" -ForegroundColor DarkGray
     }
     
+    if ([string]::IsNullOrWhiteSpace($REMOTE_IP)) {
+        throw "REMOTE_SERVER_IP nao definido no .env"
+    }
+
     $password = $REMOTE_PASSWORD
-    echo y | plink -batch -pw $password -P $REMOTE_PORT "$REMOTE_USER@$REMOTE_IP" $Command
+    $plinkCmd = "plink"
+    $args = @("-batch", "-pw", $password, "-P", $REMOTE_PORT, "$REMOTE_USER@$REMOTE_IP", $Command)
+    
+    # Executar plink e capturar saída
+    $process = Start-Process -FilePath $plinkCmd -ArgumentList $args -NoNewWindow -PassThru -Wait
+    
+    if ($process.ExitCode -ne 0) {
+        throw "Erro ao executar comando remoto (Exit Code: $($process.ExitCode))"
+    }
 }
 
 # 5. VERIFICAR CONEXÃO
@@ -178,7 +200,7 @@ if (-not $DryRun) {
             --exclude-from=".deploy-exclude.txt" `
             -e "ssh -p $REMOTE_PORT" `
             "$wslPath/" `
-            "$REMOTE_USER@$REMOTE_IP:$REMOTE_PATH/"
+            "$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/"
     } else {
         Write-Host "  Usando pscp (PuTTY)..." -ForegroundColor DarkGray
         
@@ -193,7 +215,7 @@ if (-not $DryRun) {
         )
         
         foreach ($file in $filesToUpload) {
-            pscp -batch -pw $REMOTE_PASSWORD -P $REMOTE_PORT -r $file "$REMOTE_USER@$REMOTE_IP:$REMOTE_PATH/"
+            pscp -batch -pw $REMOTE_PASSWORD -P $REMOTE_PORT -r $file "$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/"
         }
     }
     
@@ -260,16 +282,16 @@ Invoke-RemoteCommand "cd $REMOTE_PATH && (pm2 logs academia --lines 10 --nostrea
 
 # RESUMO
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host "✅ DEPLOY CONCLUÍDO COM SUCESSO!" -ForegroundColor Green
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+Write-Host "----------------------------------------" -ForegroundColor Green
+Write-Host "DEPLOY CONCLUIDO COM SUCESSO!" -ForegroundColor Green
+Write-Host "----------------------------------------" -ForegroundColor Green
 Write-Host ""
-Write-Host "📍 URL: http://$REMOTE_IP:3000"
-Write-Host "🔍 Logs: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 logs academia'"
-Write-Host "🔄 Restart: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 restart academia'"
+Write-Host "URL: http://$REMOTE_IP:3000"
+Write-Host "Logs: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 logs academia'"
+Write-Host "Restart: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 restart academia'"
 Write-Host ""
 
 # Limpar arquivo temporário
 Remove-Item $excludeFile -ErrorAction SilentlyContinue
 
-Write-Host "🎉 Deploy finalizado em $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Magenta
+Write-Host "Deploy finalizado em $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Magenta
