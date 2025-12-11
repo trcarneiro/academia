@@ -29,6 +29,7 @@ import classRoutes from '@/routes/class';
 import analyticsRoutes from '@/routes/analytics';
 import { pedagogicalRoutes } from '@/routes/pedagogical';
 import { coursesRoutes } from '@/routes/courses';
+import { martialArtsRoutes } from '@/routes/martialArts';
 import progressRoutes from '@/routes/progress';
 import financialResponsibleRoutes from '@/routes/financialResponsible';
 import financialRoutes from '@/routes/financial';
@@ -178,6 +179,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(analyticsRoutes, 'analyticsRoutes'), { prefix: '/api/analytics' } as any);
   await server.register(normalizePlugin(pedagogicalRoutes, 'pedagogicalRoutes'));
   await server.register(normalizePlugin(coursesRoutes, 'coursesRoutes'), { prefix: '/api/courses' } as any);
+  await server.register(normalizePlugin(martialArtsRoutes, 'martialArtsRoutes'), { prefix: '/api/martial-arts' } as any);
   await server.register(normalizePlugin(progressRoutes, 'progressRoutes'), { prefix: '/api' } as any);
   await server.register(normalizePlugin(financialResponsibleRoutes, 'financialResponsibleRoutes'), { prefix: '/api/financial-responsible' } as any);
   await server.register(normalizePlugin(financialRoutes, 'financialRoutes'), { prefix: '/api/financial' } as any);

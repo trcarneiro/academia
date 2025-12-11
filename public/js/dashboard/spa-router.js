@@ -283,11 +283,11 @@ class SPARouter {
                 js: 'js/modules/lesson-plans/index.js'
             },
             'courses': {
-                css: 'css/modules/courses/courses.css',
+                css: 'css/modules/courses.css',
                 js: 'js/modules/courses/index.js'
             },
             'course-editor': {
-                css: 'css/modules/courses/course-editor.css',
+                css: 'css/modules/courses.css',
                 js: 'js/modules/courses/controllers/courseEditorController.js'
             },
             'ai': {

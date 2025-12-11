@@ -1133,7 +1133,8 @@ export class FrequencyController {
             await Promise.all(promises);
             
             this.showToast('Chamada realizada com sucesso!', 'success');
-            this.loadCheckinView();
+            // Manter na tela para permitir adicionar mais alunos
+            // this.loadCheckinView();
 
         } catch (error) {
             console.error('Error submitting attendance:', error);

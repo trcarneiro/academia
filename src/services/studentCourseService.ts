@@ -66,6 +66,27 @@ export class StudentCourseService {
 
             // 2. Coletar todos os cursos únicos dos planos ativos
             const coursesToActivate = new Map<string, { name: string, type: 'primary' | 'additional', isBaseCourse: boolean }>();
+
+            // [FIX] Se o aluno não tiver graduação, incluir TODOS os cursos base da organização
+            // Isso garante que alunos iniciantes sejam matriculados no curso base mesmo que o plano não esteja explicitamente vinculado
+            if (!hasGraduation) {
+                const baseCourses = await prisma.course.findMany({
+                    where: {
+                        organizationId,
+                        isBaseCourse: true,
+                        isActive: true
+                    }
+                });
+
+                for (const baseCourse of baseCourses) {
+                    coursesToActivate.set(baseCourse.id, {
+                        name: baseCourse.name,
+                        type: 'primary',
+                        isBaseCourse: true
+                    });
+                }
+            }
+
             const subscriptionDetails: SubscriptionDetail[] = [];
 
             for (const subscription of activeSubscriptions) {

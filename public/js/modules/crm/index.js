@@ -74,7 +74,16 @@ const CrmModule = {
         // Adicionar método request() compatível com a API antiga
         this.moduleAPI.request = async (url, options = {}) => {
             const method = (options.method || 'GET').toUpperCase();
-            const body = options.body ? JSON.parse(options.body) : undefined;
+            let body = options.body;
+            
+            // Fix: Handle both object and string bodies
+            if (body && typeof body === 'string') {
+                try {
+                    body = JSON.parse(body);
+                } catch (e) {
+                    // Not JSON, keep as string
+                }
+            }
             
             switch (method) {
                 case 'GET':

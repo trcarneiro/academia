@@ -435,7 +435,7 @@ export class StudentsListController {
 
         // Import/Export buttons
         const importBtn = container.querySelector('#import-students-btn');
-        if (importBtn) importBtn.addEventListener('click', () => this.showImportModal());
+        if (importBtn) importBtn.addEventListener('click', () => this.showImportDialog());
 
         const exportBtn = container.querySelector('#export-students-btn');
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportStudents());
@@ -867,8 +867,8 @@ export class StudentsListController {
         this.editStudent(studentId);
     }
 
-    showImportModal() {
-        // Simple placeholder - could be enhanced with proper modal
+    showImportDialog() {
+        // Simple placeholder - could be enhanced with proper dialog
         const csvFile = prompt('Cole o conteúdo CSV aqui ou implemente upload de arquivo:');
         if (csvFile) {
             console.log('📥 Import CSV:', csvFile.substring(0, 100) + '...');

@@ -1,189 +1,88 @@
-// Courses Service - AGENTS.md v2.0 Compliant
-// API-First service for course management
-
-class CoursesService {
+/**
+ * Courses Service
+ * Handles all API interactions for the Courses module
+ * Follows the API Client pattern from AGENTS.md
+ */
+export class CoursesService {
     constructor() {
-        this.api = null;
-        this.cache = new Map();
-        this.init();
+        this.moduleAPI = null;
     }
 
+    /**
+     * Initialize the API client
+     * Must be called before any other methods
+     */
     async init() {
-        // AGENTS.md: Use centralized API client
-        this.api = window.createModuleAPI('Courses');
-        if (!this.api) {
-            throw new Error('API Client not available - check AcademyApp initialization');
-        }
+        await this.waitForAPIClient();
+        this.moduleAPI = window.createModuleAPI('Courses');
     }
 
     /**
-     * Get all courses - AGENTS.md fetchWithStates pattern
+     * Wait for the global API client to be available
      */
-    async getCourses(options = {}) {
-        const {
-            targetElement,
-            onSuccess,
-            onEmpty,
-            onError,
-            useCache = true
-        } = options;
-
-        // Check cache first
-        if (useCache && this.cache.has('courses')) {
-            const cached = this.cache.get('courses');
-            if (Date.now() - cached.timestamp < 5 * 60 * 1000) { // 5 min cache
-                if (onSuccess) onSuccess(cached.data);
-                return cached.data;
-            }
-        }
-
-        return this.api.fetchWithStates('/api/courses', {
-            targetElement,
-            onSuccess: (data) => {
-                // Cache result
-                this.cache.set('courses', {
-                    data,
-                    timestamp: Date.now()
-                });
-                if (onSuccess) onSuccess(data);
-            },
-            onEmpty,
-            onError
+    waitForAPIClient() {
+        return new Promise((resolve) => {
+            if (window.createModuleAPI) return resolve();
+            const check = setInterval(() => {
+                if (window.createModuleAPI) {
+                    clearInterval(check);
+                    resolve();
+                }
+            }, 50);
         });
     }
 
     /**
-     * Get course by ID
+     * Fetch all courses with automatic UI state management
+     * @param {Object} options - Options for fetchWithStates (loadingElement, onSuccess, etc.)
      */
-    async getCourseById(id, options = {}) {
-        const {
-            targetElement,
-            onSuccess,
-            onError
-        } = options;
-
-        return this.api.fetchWithStates(`/api/courses/${id}`, {
-            targetElement,
-            onSuccess,
-            onError
-        });
+    async getAll(options) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.fetchWithStates('/api/courses', options);
     }
 
     /**
-     * Create new course
+     * Get a single course by ID
+     * @param {string} id 
      */
-    async createCourse(courseData, options = {}) {
-        const {
-            targetElement,
-            onSuccess,
-            onError
-        } = options;
+    async getById(id) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(\/api/courses/\\);
+    }
 
-        // Clear cache
-        this.cache.delete('courses');
-
-        return this.api.request('/api/courses', {
+    /**
+     * Create a new course
+     * @param {Object} data 
+     */
+    async create(data) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request('/api/courses', {
             method: 'POST',
-            body: JSON.stringify(courseData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(response => {
-            if (onSuccess) onSuccess(response);
-            return response;
-        }).catch(error => {
-            if (onError) onError(error);
-            throw error;
+            body: JSON.stringify(data)
         });
     }
 
     /**
-     * Update course
+     * Update an existing course
+     * @param {string} id 
+     * @param {Object} data 
      */
-    async updateCourse(id, courseData, options = {}) {
-        const {
-            targetElement,
-            onSuccess,
-            onError
-        } = options;
-
-        // Clear cache
-        this.cache.delete('courses');
-
-        return this.api.request(`/api/courses/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(courseData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(response => {
-            if (onSuccess) onSuccess(response);
-            return response;
-        }).catch(error => {
-            if (onError) onError(error);
-            throw error;
+    async update(id, data) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(\/api/courses/\\, {
+            method: 'PUT',
+            body: JSON.stringify(data)
         });
     }
 
     /**
-     * Delete course
+     * Delete a course
+     * @param {string} id 
      */
-    async deleteCourse(id, options = {}) {
-        const {
-            onSuccess,
-            onError
-        } = options;
-
-        // Clear cache
-        this.cache.delete('courses');
-
-        return this.api.request(`/api/courses/${id}`, {
+    async delete(id) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(\/api/courses/\\, {
             method: 'DELETE'
-        }).then(response => {
-            if (onSuccess) onSuccess(response);
-            return response;
-        }).catch(error => {
-            if (onError) onError(error);
-            throw error;
         });
-    }
-
-    /**
-     * Import course from file
-     */
-    async importCourse(formData, options = {}) {
-        const {
-            targetElement,
-            onSuccess,
-            onError
-        } = options;
-
-        // Clear cache
-        this.cache.delete('courses');
-
-        return this.api.request('/api/courses/import', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (onSuccess) onSuccess(response);
-            return response;
-        }).catch(error => {
-            if (onError) onError(error);
-            throw error;
-        });
-    }
-
-    /**
-     * Clear cache
-     */
-    clearCache() {
-        this.cache.clear();
     }
 }
-
-// Export singleton instance
-const coursesService = new CoursesService();
-export default coursesService;
-
-// Make available globally for other modules
-window.coursesService = coursesService;

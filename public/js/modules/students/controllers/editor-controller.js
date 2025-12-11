@@ -743,7 +743,7 @@ export class StudentEditorController {
         const btnRemovePhoto = this.container.querySelector('#btn-remove-photo');
         
         if (btnCapturePhoto) {
-            btnCapturePhoto.addEventListener('click', () => this.openPhotoCaptureModal());
+            btnCapturePhoto.addEventListener('click', () => this.openPhotoCaptureDialog());
         }
         
         if (btnRemovePhoto) {
@@ -1027,20 +1027,18 @@ export class StudentEditorController {
     // BIOMETRIC PHOTO CAPTURE - Reconhecimento Facial
     // =========================================================================
 
-    openPhotoCaptureModal() {
-        // Create full-screen modal for photo capture
-        const modal = document.createElement('div');
-        modal.id = 'photo-capture-modal';
-        modal.className = 'photo-capture-modal';
-        modal.innerHTML = `
-            <div class="modal-content-photo">
-                <div class="modal-header-photo">
+    openPhotoCaptureDialog() {
+        // Create full-screen dialog for photo capture
+        const dialog = document.createElement('div');
+        dialog.id = 'photo-capture-dialog';
+        dialog.className = 'selector-overlay';
+        dialog.innerHTML = `
+            <div class="selector-container photo-capture-dialog">
+                <div class="selector-header">
                     <h2><i class="fas fa-camera"></i> Captura Facial</h2>
-                    <button class="btn-close-modal" id="close-photo-modal">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button class="selector-close" id="close-photo-dialog">✕</button>
                 </div>
-                <div class="modal-body-photo">
+                <div class="selector-body photo-capture-body">
                     <div class="camera-preview-container">
                         <video id="photo-video" autoplay playsinline></video>
                         <canvas id="photo-canvas" style="display: none;"></canvas>
@@ -1050,34 +1048,34 @@ export class StudentEditorController {
                         </button>
                     </div>
                 </div>
-                <div class="modal-footer-photo mobile-hidden">
-                    <button class="btn-form btn-secondary-form" id="cancel-capture">
+                <div class="selector-footer mobile-hidden">
+                    <button class="btn-premium-secondary" id="cancel-capture">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
                 </div>
             </div>
         `;
         
-        document.body.appendChild(modal);
+        document.body.appendChild(dialog);
         
         // Start camera and face detection
         this.startPhotoCamera();
         
         // Event listeners
-        const closeBtn = modal.querySelector('#close-photo-modal');
-        const cancelBtn = modal.querySelector('#cancel-capture');
-        const captureBtn = modal.querySelector('#capture-photo-main');
+        const closeBtn = dialog.querySelector('#close-photo-dialog');
+        const cancelBtn = dialog.querySelector('#cancel-capture');
+        const captureBtn = dialog.querySelector('#capture-photo-main');
         
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closePhotoCaptureModal());
+            closeBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
             closeBtn.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                this.closePhotoCaptureModal();
+                this.closePhotoCaptureDialog();
             });
         }
         
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => this.closePhotoCaptureModal());
+            cancelBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
         }
         
         // Botão principal de captura (overlay na câmera)
@@ -1238,8 +1236,8 @@ export class StudentEditorController {
                 hasDescriptor: !!this.currentFaceDescriptor
             });
             
-            // Close modal and update preview
-            this.closePhotoCaptureModal();
+            // Close dialog and update preview
+            this.closePhotoCaptureDialog();
             this.updatePhotoPreview();
             
             // Show success message
@@ -1248,7 +1246,7 @@ export class StudentEditorController {
         }, 'image/jpeg', 0.9);
     }
 
-    closePhotoCaptureModal() {
+    closePhotoCaptureDialog() {
         // Stop camera stream
         if (this.currentStream) {
             this.currentStream.getTracks().forEach(track => track.stop());
@@ -1261,10 +1259,10 @@ export class StudentEditorController {
             this.detectionInterval = null;
         }
         
-        // Remove modal
-        const modal = document.getElementById('photo-capture-modal');
-        if (modal) {
-            modal.remove();
+        // Remove dialog
+        const dialog = document.getElementById('photo-capture-dialog');
+        if (dialog) {
+            dialog.remove();
         }
     }
 
@@ -3568,7 +3566,7 @@ window.subscribeToPackage = function(studentId, planId, planName = 'Plano', plan
     }
 
     const numericPrice = Number(planPrice);
-    window.openSubscriptionModal({
+    window.openSubscriptionDialog({
         mode: 'create',
         studentId,
         planId,
@@ -3579,7 +3577,7 @@ window.subscribeToPackage = function(studentId, planId, planName = 'Plano', plan
     });
 };
 
-window.openSubscriptionModal = function(options = {}) {
+window.openSubscriptionDialog = function(options = {}) {
     const {
         mode = 'create',
         studentId = '',
@@ -3605,83 +3603,85 @@ window.openSubscriptionModal = function(options = {}) {
         return `${year}-${month}-${day}`;
     };
 
-    window.closeSubscriptionModal();
+    window.closeSubscriptionDialog();
 
     const overlay = document.createElement('div');
-    overlay.id = 'subscription-pricing-modal';
-    overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; padding: 2rem; z-index: 11000;';
+    overlay.id = 'subscription-pricing-dialog';
+    overlay.className = 'selector-overlay';
     overlay.innerHTML = `
-        <div class="data-card-premium" style="width: min(560px, 100%); max-height: 88vh; overflow-y: auto; border-radius: 22px; padding: 0; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);">
-            <div class="module-header-premium" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: 1.8rem 1.8rem 1.6rem; border-top-left-radius: 22px; border-top-right-radius: 22px;">
-                <div>
-                    <p style="margin: 0; color: rgba(255,255,255,0.78); font-size: 0.95rem;">
+        <div class="selector-container" style="max-width: 560px;">
+            <div class="selector-header">
+                <h3 style="margin: 0; display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-size: 0.85rem; color: #6b7280; font-weight: normal; margin-bottom: 0.25rem;">
                         ${isEditMode ? 'Ajustar cobrança da assinatura' : 'Confirmar assinatura do plano'}
-                    </p>
-                    <h2 data-role="plan-title" style="margin: 0; color: #ffffff; font-size: 1.4rem;"></h2>
-                </div>
-                <button type="button" data-role="close-modal" style="background: transparent; border: none; color: rgba(255,255,255,0.85); font-size: 1.35rem; cursor: pointer;">
+                    </span>
+                    <span data-role="plan-title" style="color: var(--primary-color);"></span>
+                </h3>
+                <button type="button" class="selector-close" data-role="close-dialog">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="subscription-pricing-form" style="padding: 1.75rem 1.85rem 1.6rem; display: flex; flex-direction: column; gap: 1.25rem;">
-                <input type="hidden" data-role="final-price-value" value="0">
-                <input type="hidden" data-role="mode" value="${isEditMode ? 'edit' : 'create'}">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(102, 126, 234, 0.12);">
-                        <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor original</span>
-                        <strong data-role="original-price" style="display: block; margin-top: 0.45rem; font-size: 1.4rem; color: #1f2937;">R$ 0,00</strong>
+            <div class="selector-body">
+                <form id="subscription-pricing-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <input type="hidden" data-role="final-price-value" value="0">
+                    <input type="hidden" data-role="mode" value="${isEditMode ? 'edit' : 'create'}">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(102, 126, 234, 0.12);">
+                            <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor original</span>
+                            <strong data-role="original-price" style="display: block; margin-top: 0.45rem; font-size: 1.4rem; color: #1f2937;">R$ 0,00</strong>
+                        </div>
+                        <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(118, 75, 162, 0.12);">
+                            <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor final</span>
+                            <strong data-role="final-price" style="display: block; margin-top: 0.45rem; font-size: 1.55rem; color: #1f2937;">R$ 0,00</strong>
+                        </div>
                     </div>
-                    <div class="stat-card-enhanced" style="padding: 1rem; border-radius: 14px; background: rgba(118, 75, 162, 0.12);">
-                        <span style="display: block; font-size: 0.8rem; color: #475569; font-weight: 600; text-transform: uppercase;">Valor final</span>
-                        <strong data-role="final-price" style="display: block; margin-top: 0.45rem; font-size: 1.55rem; color: #1f2937;">R$ 0,00</strong>
-                    </div>
-                </div>
-                <div>
-                    <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Personalização do valor</label>
-                    <select data-role="discount-type" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
-                        <option value="none">Manter valor padrão</option>
-                        <option value="percentage">Aplicar desconto percentual</option>
-                        <option value="fixed">Definir valor final (R$)</option>
-                    </select>
-                </div>
-                <div data-role="discount-group" style="display: none;">
-                    <label data-role="discount-label" style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;"></label>
-                    <input type="number" step="0.01" min="0" data-role="discount-value" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;" placeholder="0">
-                    <small data-role="discount-hint" style="display: block; margin-top: 0.4rem; color: #64748b;"></small>
-                </div>
-                <div data-role="price-preview" style="display: none; background: rgba(102, 126, 234, 0.08); border: 1px dashed rgba(102, 126, 234, 0.4); padding: 1rem; border-radius: 12px;">
-                    <span data-role="discount-info" style="color: #059669; font-weight: 600;"></span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     <div>
-                        <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Data de início</label>
-                        <input type="date" data-role="start-date" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                        <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Personalização do valor</label>
+                        <select data-role="discount-type" class="form-control">
+                            <option value="none">Manter valor padrão</option>
+                            <option value="percentage">Aplicar desconto percentual</option>
+                            <option value="fixed">Definir valor final (R$)</option>
+                        </select>
+                    </div>
+                    <div data-role="discount-group" style="display: none;">
+                        <label data-role="discount-label" style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;"></label>
+                        <input type="number" step="0.01" min="0" data-role="discount-value" class="form-control" placeholder="0">
+                        <small data-role="discount-hint" style="display: block; margin-top: 0.4rem; color: #64748b;"></small>
+                    </div>
+                    <div data-role="price-preview" style="display: none; background: rgba(102, 126, 234, 0.08); border: 1px dashed rgba(102, 126, 234, 0.4); padding: 1rem; border-radius: 12px;">
+                        <span data-role="discount-info" style="color: #059669; font-weight: 600;"></span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Data de início</label>
+                            <input type="date" data-role="start-date" class="form-control">
+                        </div>
+                        ${isEditMode ? `
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Próximo vencimento</label>
+                                <input type="date" data-role="next-due-date" class="form-control">
+                            </div>
+                        ` : ''}
                     </div>
                     ${isEditMode ? `
                         <div>
-                            <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Próximo vencimento</label>
-                            <input type="date" data-role="next-due-date" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Status da assinatura</label>
+                            <select data-role="status" class="form-control">
+                                <option value="ACTIVE" ${status === 'ACTIVE' ? 'selected' : ''}>🟢 Ativo</option>
+                                <option value="PAUSED" ${status === 'PAUSED' ? 'selected' : ''}>🟡 Pausado</option>
+                                <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>🔴 Cancelado</option>
+                            </select>
                         </div>
                     ` : ''}
-                </div>
-                ${isEditMode ? `
-                    <div>
-                        <label style="display: block; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Status da assinatura</label>
-                        <select data-role="status" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 12px; font-size: 1rem;">
-                            <option value="ACTIVE" ${status === 'ACTIVE' ? 'selected' : ''}>🟢 Ativo</option>
-                            <option value="PAUSED" ${status === 'PAUSED' ? 'selected' : ''}>🟡 Pausado</option>
-                            <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>🔴 Cancelado</option>
-                        </select>
+                    <div class="selector-footer" style="margin-top: 1rem; padding: 0; border: none; background: transparent;">
+                        <button type="button" data-role="close-dialog" class="btn btn-secondary" style="flex: 1;">Cancelar</button>
+                        <button type="submit" data-role="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fas fa-check"></i>
+                            ${isEditMode ? 'Salvar alterações' : 'Confirmar assinatura'}
+                        </button>
                     </div>
-                ` : ''}
-                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-                    <button type="button" data-role="close-modal" class="btn-form btn-secondary-form" style="flex: 1;">Cancelar</button>
-                    <button type="submit" data-role="submit" class="btn-form btn-primary-form" style="flex: 1;">
-                        <i class="fas fa-check"></i>
-                        ${isEditMode ? 'Salvar alterações' : 'Confirmar assinatura'}
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     `;
 
@@ -3818,13 +3818,13 @@ window.openSubscriptionModal = function(options = {}) {
     discountTypeField.addEventListener('change', () => handleDiscountTypeChange());
     discountValueField.addEventListener('input', updatePreview);
 
-    overlay.querySelectorAll('[data-role="close-modal"]').forEach((button) => {
-        button.addEventListener('click', () => window.closeSubscriptionModal());
+    overlay.querySelectorAll('[data-role="close-dialog"]').forEach((button) => {
+        button.addEventListener('click', () => window.closeSubscriptionDialog());
     });
 
     overlay.addEventListener('click', (event) => {
         if (event.target === overlay) {
-            window.closeSubscriptionModal();
+            window.closeSubscriptionDialog();
         }
     });
 
@@ -3840,10 +3840,10 @@ window.openSubscriptionModal = function(options = {}) {
     updatePreview();
 };
 
-window.closeSubscriptionModal = function() {
-    const modal = document.getElementById('subscription-pricing-modal');
-    if (modal) {
-        modal.remove();
+window.closeSubscriptionDialog = function() {
+    const dialog = document.getElementById('subscription-pricing-dialog');
+    if (dialog) {
+        dialog.remove();
     }
 };
 
@@ -3973,7 +3973,7 @@ window.submitSubscriptionForm = async function(event) {
             'success'
         );
 
-        window.closeSubscriptionModal();
+        window.closeSubscriptionDialog();
         shouldRestoreButton = false;
 
         if (window.studentEditor && typeof window.studentEditor.renderFinancialTab === 'function') {
@@ -4012,7 +4012,7 @@ window.viewSubscriptionDetails = function(subscriptionData) {
         return;
     }
 
-    window.openSubscriptionModal({
+    window.openSubscriptionDialog({
         mode: 'edit',
         subscriptionId: subscriptionData.id,
         studentId: subscriptionData.studentId,
@@ -4124,10 +4124,9 @@ window.openPackageSelector = async function(studentId) {
             return;
         }
 
-        // Show plans in a modal or inline section
-        // For now, let's create a simple modal
-        const modalHTML = `
-            <div class="modal-overlay" id="package-selector-modal" style="
+        // Show plans in a dialog
+        const dialogHTML = `
+            <div class="selector-overlay" id="package-selector-dialog" style="
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -4139,7 +4138,7 @@ window.openPackageSelector = async function(studentId) {
                 justify-content: center;
                 z-index: 9999;
             ">
-                <div class="modal-content" style="
+                <div class="selector-container" style="
                     background: white;
                     padding: 2rem;
                     border-radius: 8px;
@@ -4150,7 +4149,7 @@ window.openPackageSelector = async function(studentId) {
                 ">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h2>Selecionar Plano para ${student.user.firstName} ${student.user.lastName}</h2>
-                        <button onclick="document.getElementById('package-selector-modal').remove()" style="
+                        <button onclick="document.getElementById('package-selector-dialog').remove()" style="
                             background: none;
                             border: none;
                             font-size: 2rem;
@@ -4194,7 +4193,7 @@ window.openPackageSelector = async function(studentId) {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
     } catch (error) {
         console.error('❌ [openPackageSelector] Error:', error);
@@ -4217,8 +4216,8 @@ window.createSubscription = async function(studentId, planId) {
         });
 
         if (response.success) {
-            // Close modal
-            document.getElementById('package-selector-modal')?.remove();
+            // Close dialog
+            document.getElementById('package-selector-dialog')?.remove();
             
             // Show success message
             window.app?.showToast?.('Assinatura criada com sucesso!', 'success');

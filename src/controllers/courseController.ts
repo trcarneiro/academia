@@ -12,7 +12,7 @@ const createCourseSchema = z.object({
   duration: z.number().int().positive('A duração deve ser um número positivo'),
   isActive: z.boolean().default(true),
   isBaseCourse: z.boolean().optional(),
-  martialArtId: z.string().optional(),
+  martialArtId: z.string().nullable().optional(),
   // Extended fields for complex course structure
   objectives: z.array(z.string()).optional(),
   generalObjectives: z.array(z.string()).optional(),

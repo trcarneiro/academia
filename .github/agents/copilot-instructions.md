@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-10
 
 ## Active Technologies
 - [if applicable, e.g., PostgreSQL, CoreData, files or N/A] (master)
+- TypeScript 5.x (Backend), Vanilla JS (Frontend) + Fastify, Prisma, Zod (001-ux-standardization)
 
 - [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION] (master)
 
@@ -24,6 +25,7 @@ cd src; pytest; ruff check .
 [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]: Follow standard conventions
 
 ## Recent Changes
+- 001-ux-standardization: Added TypeScript 5.x (Backend), Vanilla JS (Frontend) + Fastify, Prisma, Zod
 - master: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
 - master: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
