@@ -1008,7 +1008,7 @@ export class FrequencyController {
             }
 
             debounceTimer = setTimeout(async () => {
-                await this.searchStudentsForAttendance(query, resultsContainer);
+                await this.searchStudentsForAttendance(query, resultsContainer, turmaId);
             }, 300);
         });
 
@@ -1023,7 +1023,7 @@ export class FrequencyController {
     /**
      * Search students for attendance
      */
-    async searchStudentsForAttendance(query, container) {
+    async searchStudentsForAttendance(query, container, turmaId) {
         try {
             const api = this.getAPI();
             // Reusing the endpoint that returns all students
@@ -1060,7 +1060,7 @@ export class FrequencyController {
                         user: { firstName: studentData.name.split(' ')[0], lastName: studentData.name.split(' ').slice(1).join(' ') },
                         graduationLevel: studentData.graduationLevel
                     };
-                    this.addStudentToAttendanceList(student);
+                    this.addStudentToAttendanceList(student, turmaId);
                     container.style.display = 'none';
                     this.container.querySelector('#add-student-input').value = '';
                 });
@@ -1074,7 +1074,7 @@ export class FrequencyController {
     /**
      * Add student to attendance list
      */
-    addStudentToAttendanceList(student) {
+    async addStudentToAttendanceList(student, turmaId) {
         const list = this.container.querySelector('#attendance-list');
         
         // Check duplicates
@@ -1096,7 +1096,34 @@ export class FrequencyController {
         const currentCount = parseInt(countBadge.textContent) || 0;
         countBadge.textContent = `${currentCount + 1} alunos`;
 
-        this.showToast('Aluno adicionado à chamada', 'success');
+        // Automatic Check-in
+        if (turmaId) {
+            try {
+                await this.registerSingleCheckin(student.id, turmaId);
+                this.showToast('Aluno adicionado e presença confirmada!', 'success');
+            } catch (error) {
+                console.error('Auto check-in error:', error);
+                this.showToast('Aluno adicionado, mas erro ao confirmar presença', 'warning');
+            }
+        } else {
+            this.showToast('Aluno adicionado à chamada', 'success');
+        }
+    }
+
+    /**
+     * Register single checkin
+     */
+    async registerSingleCheckin(studentId, turmaId) {
+        const api = this.getAPI();
+        return api.request('/api/frequency/checkin', {
+            method: 'POST',
+            body: {
+                studentId,
+                turmaId,
+                type: 'CLASS',
+                timestamp: new Date().toISOString()
+            }
+        });
     }
 
     /**
