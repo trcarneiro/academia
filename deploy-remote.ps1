@@ -261,9 +261,15 @@ try {
 Write-Step "Reiniciando serviço..."
 
 # Verifica se está usando PM2 ou systemd
-$pm2Status = Invoke-RemoteCommand "which pm2" -Silent
+$pm2Installed = $false
+try {
+    Invoke-RemoteCommand "which pm2" -Silent
+    $pm2Installed = $true
+} catch {
+    $pm2Installed = $false
+}
 
-if ($pm2Status) {
+if ($pm2Installed) {
     Write-Host "  Usando PM2..." -ForegroundColor DarkGray
     Invoke-RemoteCommand "cd $REMOTE_PATH && pm2 restart academia || pm2 start ecosystem.config.js"
     Invoke-RemoteCommand "pm2 save"
@@ -280,7 +286,7 @@ Write-Step "Verificando status do serviço..."
 Start-Sleep -Seconds 3
 
 try {
-    $response = Invoke-WebRequest -Uri "http://$REMOTE_IP:3000/health" -TimeoutSec 5
+    $response = Invoke-WebRequest -Uri "http://${REMOTE_IP}:3000/health" -TimeoutSec 5
     
     if ($response.StatusCode -eq 200) {
         Write-Success "Aplicação respondendo corretamente!"
@@ -301,7 +307,7 @@ Write-Host "----------------------------------------" -ForegroundColor Green
 Write-Host "DEPLOY CONCLUIDO COM SUCESSO!" -ForegroundColor Green
 Write-Host "----------------------------------------" -ForegroundColor Green
 Write-Host ""
-Write-Host "URL: http://$REMOTE_IP:3000"
+Write-Host "URL: http://${REMOTE_IP}:3000"
 Write-Host "Logs: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 logs academia'"
 Write-Host "Restart: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 restart academia'"
 Write-Host ""
