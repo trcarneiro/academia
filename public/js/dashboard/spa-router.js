@@ -288,6 +288,14 @@ class SPARouter {
                 css: 'css/modules/lesson-plans.css',
                 js: 'js/modules/lesson-plans/index.js'
             },
+            'lesson-details': {
+                css: 'css/modules/lesson-details.css',
+                js: 'js/modules/lesson-details/index.js'
+            },
+            'class-dashboard': {
+                css: 'css/modules/class-dashboard.css',
+                js: 'js/modules/class-dashboard/index.js'
+            },
             'courses': {
                 css: 'css/modules/courses.css',
                 js: 'js/modules/courses/index.js'

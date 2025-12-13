@@ -38,8 +38,15 @@ const ClassDashboardModule = {
         // 4. Register Global Access
         window.classDashboard = this;
         
+        // Check hash for ID
+        const hash = window.location.hash;
+        let lessonId = 'current';
+        if (hash.includes('class-dashboard/')) {
+            lessonId = hash.split('class-dashboard/')[1];
+        }
+
         // 5. Load Data & Setup State
-        await this.loadClassData();
+        await this.loadClassData(lessonId);
 
         // 6. Render Skeleton
         this.render();
@@ -54,9 +61,9 @@ const ClassDashboardModule = {
         }
     },
 
-    async loadClassData() {
+    async loadClassData(lessonId = 'current') {
         // Fetch data from service
-        this.lessonData = await this.service.getLessonData('current');
+        this.lessonData = await this.service.getLessonData(lessonId);
         
         // Process phases into linear timeline
         const phases = [];
@@ -350,54 +357,6 @@ const ClassDashboardModule = {
     destroy() {
         if (this.clockInterval) clearInterval(this.clockInterval);
         if (this.classTimerInterval) clearInterval(this.classTimerInterval);
-    }
-};
-
-export default ClassDashboardModule;
-                                <div class="student-badges">
-                                    <span class="badge badge-injury">Knee</span>
-                                </div>
-                            </div>
-                            <div class="student-card">
-                                <span class="student-name">Maria Santos</span>
-                                <div class="student-badges">
-                                    <span class="badge badge-new">New</span>
-                                </div>
-                            </div>
-                            <div class="student-card">
-                                <span class="student-name">Pedro Costa</span>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        `;
-    },
-
-    startClock() {
-        const clockEl = document.getElementById('dashboard-clock');
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        
-        this.timerInterval = setInterval(() => {
-            if (clockEl) {
-                const now = new Date();
-                clockEl.textContent = now.toLocaleTimeString();
-            }
-        }, 1000);
-    },
-
-    toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            this.container.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable fullscreen: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    },
-
-    destroy() {
-        if (this.timerInterval) clearInterval(this.timerInterval);
     }
 };
 

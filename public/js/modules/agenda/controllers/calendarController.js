@@ -595,19 +595,15 @@ class CalendarController {
             if (window.router?.navigateTo) window.router.navigateTo('turma-editor');
             return;
         }
-        if (type === 'TURMA' && id?.startsWith('turma-')) {
-            // Parse virtual turma class id: turma-{turmaId}-YYYY-MM-DD
-            const match = id.match(/^turma-(.+)-\d{4}-\d{2}-\d{2}$/);
-            const turmaId = match ? match[1] : null;
-            if (turmaId) {
-                const route = `turma-editor/${turmaId}`;
-                window.location.hash = `#${route}`;
-                if (window.router?.navigateTo) window.router.navigateTo('turma-editor');
-                return;
-            }
-        }
-        return this.viewClassDetails(id);
+        
+        // For TURMA and CLASS, go to lesson-details
+        // This handles both virtual IDs (turma-...) and regular IDs
+        const route = `lesson-details/${id}`;
+        window.location.hash = `#${route}`;
+        if (window.router?.navigateTo) window.router.navigateTo('lesson-details');
     }
+    
+    // Legacy method kept for reference or direct calls
     async viewClassDetails(classId) {
         console.log(`📅 Viewing details for class ${classId}`);
         
