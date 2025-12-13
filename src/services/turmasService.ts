@@ -125,6 +125,7 @@ export class TurmasService {
           include: {
             student: {
               include: {
+                user: true,
                 subscriptions: {
                   where: { isActive: true },
                   take: 1,

@@ -15,6 +15,12 @@ export class StudentEditorController {
     async render(targetContainer, studentId = null) {
         this.container = targetContainer;
         this.currentStudentId = studentId;
+        
+        // Reset current student data for new student
+        if (!studentId) {
+            this.current = {};
+        }
+
         try {
             if (studentId) {
                 await this.loadStudent(studentId);
@@ -811,7 +817,8 @@ export class StudentEditorController {
         } catch (err) {
             console.error('❌ Save error:', err);
             window.app?.handleError?.(err, 'students:save');
-            this.showMessage('Erro ao salvar estudante. Tente novamente.', 'error');
+            const errorMessage = err.message || 'Erro ao salvar estudante. Tente novamente.';
+            this.showMessage(errorMessage, 'error');
         } finally {
             if (saveBtn) {
                 saveBtn.disabled = false;
@@ -1517,6 +1524,9 @@ export class StudentEditorController {
                 const dependentsRes = await this.api.request(`/api/students/${studentId}/financial-dependents`);
                 if (dependentsRes && dependentsRes.success && dependentsRes.data) {
                     dependentsData = dependentsRes.data;
+                    // Ensure totalAmount is a number
+                    dependentsData.totalAmount = parseFloat(dependentsData.totalAmount) || 0;
+                    dependentsData.totalDependents = parseInt(dependentsData.totalDependents) || 0;
                 }
             } catch (depError) {
                 console.warn('Could not load dependents (non-critical):', depError);
@@ -1658,7 +1668,7 @@ export class StudentEditorController {
                             </h4>
 
                             <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-                                <strong>💰 Total Consolidado: R$ ${dependentsData.totalAmount.toFixed(2)}</strong>
+                                <strong>💰 Total Consolidado: R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</strong>
                             </div>
 
                             <div class="dependents-list">
@@ -1666,7 +1676,8 @@ export class StudentEditorController {
                                     const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        return sum + (sub?.plan?.price || 0);
+                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                                        return sum + price;
                                     }, 0);
                                     
                                     return `
@@ -2229,7 +2240,7 @@ export class StudentEditorController {
         try {
             console.log('➖ Removing enrollment:', enrollmentId);
             
-            const confirmed = confirm('Deseja remover este curso paralelo? Esta ação não pode ser desfeita.');
+            const confirmed = confirm('⚠️ ATENÇÃO: Deseja remover esta matrícula?\n\nIsso apagará todo o progresso, histórico de aulas e graduações associadas a este curso.\n\nEsta ação NÃO pode ser desfeita.');
             if (!confirmed) return;
 
             await this.api.request(`/api/students/${studentId}/enrollments/${enrollmentId}`, {
@@ -2244,6 +2255,30 @@ export class StudentEditorController {
         } catch (error) {
             console.error('Error removing course:', error);
             this.showMessage('Erro ao remover curso. Tente novamente.', 'error');
+        }
+    }
+
+    async toggleEnrollmentStatus(studentId, enrollmentId, newStatus) {
+        try {
+            console.log(`🔄 Changing enrollment ${enrollmentId} status to ${newStatus}`);
+            
+            const actionName = newStatus === 'ACTIVE' ? 'ativar' : 'inativar';
+            const confirmed = confirm(`Deseja ${actionName} esta matrícula?`);
+            if (!confirmed) return;
+
+            await this.api.request(`/api/students/${studentId}/enrollments/${enrollmentId}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            this.showMessage(`Matrícula ${newStatus === 'ACTIVE' ? 'ativada' : 'inativada'} com sucesso!`, 'success');
+            
+            // Reload courses tab
+            await this.renderCoursesTab(studentId);
+
+        } catch (error) {
+            console.error('Error updating enrollment status:', error);
+            this.showMessage('Erro ao atualizar status da matrícula. Tente novamente.', 'error');
         }
     }
 
@@ -2281,16 +2316,43 @@ export class StudentEditorController {
             } else {
                 enrolledContainer.innerHTML = enrollments.map(enrollment => {
                     const course = enrollment.course || {};
+                    const isActive = enrollment.status === 'ACTIVE';
+                    
                     return `
-                        <div class="course-item data-card-premium">
+                        <div class="course-item data-card-premium" style="border-left: 4px solid ${isActive ? '#28a745' : '#6c757d'};">
                             <div class="course-header">
                                 <h5>${course.name || 'Sem nome'}</h5>
-                                <span class="badge badge-success">Matriculado</span>
+                                <span class="badge ${isActive ? 'badge-success' : 'badge-secondary'}">${isActive ? 'Matriculado' : 'Inativo'}</span>
                             </div>
                             ${course.description ? `<p class="course-description">${course.description}</p>` : ''}
-                            <div class="course-meta">
-                                <span class="badge badge-info">${enrollment.status || 'ACTIVE'}</span>
-                                ${enrollment.enrolledAt ? `<small>Matrícula: ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                                <div class="course-meta" style="margin-top: 0;">
+                                    <span class="badge badge-info">${enrollment.status || 'ACTIVE'}</span>
+                                    ${enrollment.enrolledAt ? `<small>Matrícula: ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                                </div>
+
+                                <div class="course-actions" style="display: flex; gap: 0.5rem;">
+                                    ${isActive ? `
+                                        <button class="btn-action btn-warning btn-sm" 
+                                            onclick="window.studentEditor.toggleEnrollmentStatus('${studentId}', '${enrollment.id}', 'SUSPENDED')"
+                                            title="Inativar matrícula (mantém histórico)">
+                                            <i class="fas fa-pause"></i> Inativar
+                                        </button>
+                                    ` : `
+                                        <button class="btn-action btn-success btn-sm" 
+                                            onclick="window.studentEditor.toggleEnrollmentStatus('${studentId}', '${enrollment.id}', 'ACTIVE')"
+                                            title="Reativar matrícula">
+                                            <i class="fas fa-play"></i> Ativar
+                                        </button>
+                                    `}
+                                    
+                                    <button class="btn-action btn-danger btn-sm" 
+                                        onclick="window.studentEditor.removeCourse('${studentId}', '${enrollment.id}')"
+                                        title="Apagar matrícula e todo progresso">
+                                        <i class="fas fa-trash"></i> Apagar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2369,10 +2431,17 @@ export class StudentEditorController {
                 });
                 
             const responsibles = responsiblesRes.data || [];
-            const dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
+            
+            // Ensure dependentsData has correct types
+            let dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
+            if (dependentsData) {
+                dependentsData.totalAmount = parseFloat(dependentsData.totalAmount) || 0;
+                dependentsData.totalDependents = parseInt(dependentsData.totalDependents) || 0;
+                dependentsData.dependents = Array.isArray(dependentsData.dependents) ? dependentsData.dependents : [];
+            }
 
             const activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
-            const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
             const pendingPayments = payments.filter(p => p.status === 'PENDING').length;
 
             panel.innerHTML = `
@@ -2576,7 +2645,7 @@ export class StudentEditorController {
                                                     </div>
                                                     <div class="detail-row">
                                                         <span class="detail-label">Valor:</span>
-                                                        <span class="detail-value price">R$ ${(parseFloat(sub.plan?.price) || 0).toFixed(2)}/mês</span>
+                                                        <span class="detail-value price">R$ ${(parseFloat(sub.price ?? sub.plan?.price) || 0).toFixed(2)}/mês</span>
                                                     </div>
                                                 </div>
                                                 <div class="subscription-actions">
@@ -2605,14 +2674,14 @@ export class StudentEditorController {
                             <i class="fas fa-users"></i>
                             Dependentes Financeiros
                             <span class="badge-count">${dependentsData.totalDependents}</span>
-                            <span class="badge-price">R$ ${dependentsData.totalAmount.toFixed(2)}</span>
+                            <span class="badge-price">R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</span>
                         </summary>
                         <div class="collapsible-content">
                             <div class="info-callout info-callout-primary">
                                 <i class="fas fa-info-circle"></i>
                                 <div>
                                     <strong>Cobrança Consolidada</strong>
-                                    <p>A fatura mensal será gerada com o valor total de <strong>R$ ${dependentsData.totalAmount.toFixed(2)}</strong> incluindo todos os dependentes abaixo.</p>
+                                    <p>A fatura mensal será gerada com o valor total de <strong>R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</strong> incluindo todos os dependentes abaixo.</p>
                                 </div>
                             </div>
 
@@ -2621,7 +2690,8 @@ export class StudentEditorController {
                                     const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        return sum + (sub?.plan?.price || 0);
+                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                                        return sum + price;
                                     }, 0);
                                     
                                     return `
@@ -2732,7 +2802,7 @@ export class StudentEditorController {
                                                 <tr>
                                                     <td>${new Date(payment.createdAt).toLocaleDateString('pt-BR')}</td>
                                                     <td>${payment.description || 'Pagamento'}</td>
-                                                    <td class="payment-amount">R$ ${payment.amount?.toFixed(2) || '0.00'}</td>
+                                                    <td class="payment-amount">R$ ${(parseFloat(payment.amount) || 0).toFixed(2)}</td>
                                                     <td>
                                                         <span class="payment-status status-${(payment.status || 'pending').toLowerCase()}">
                                                             ${payment.status || 'PENDING'}

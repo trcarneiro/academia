@@ -633,6 +633,59 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Update enrollment status
+  fastify.patch('/:id/enrollments/:enrollmentId/status', async (request: FastifyRequest<{ 
+    Params: { id: string, enrollmentId: string },
+    Body: { status: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id: studentId, enrollmentId } = request.params;
+      const { status } = request.body;
+
+      // Validate status against enum
+      const validStatuses = ['ACTIVE', 'COMPLETED', 'DROPPED', 'SUSPENDED', 'TRANSFERRED'];
+      if (!validStatuses.includes(status)) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Invalid status'
+        });
+      }
+
+      // Verify enrollment exists and belongs to the student
+      const enrollment = await prisma.courseEnrollment.findFirst({
+        where: {
+          id: enrollmentId,
+          studentId: studentId
+        }
+      });
+
+      if (!enrollment) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Enrollment not found'
+        });
+      }
+
+      // Update the enrollment
+      await prisma.courseEnrollment.update({
+        where: { id: enrollmentId },
+        data: { status: status as any }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Enrollment status updated successfully'
+      });
+
+    } catch (error) {
+      logger.error('Error updating student enrollment status:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to update student enrollment status'
+      });
+    }
+  });
+
   // Delete student enrollment
   fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{ 
     Params: { id: string, enrollmentId: string }
