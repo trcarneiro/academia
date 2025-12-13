@@ -112,6 +112,14 @@ export class TurmasListView {
                             </select>
                         </div>
                         <div class="filter-group">
+                            <label for="filterIsActive">🔔 Ativação</label>
+                            <select id="filterIsActive" class="form-select-premium">
+                                <option value="">Todas</option>
+                                <option value="true">Ativas</option>
+                                <option value="false">Inativas (Propostas)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <label for="filterType">🎯 Tipo</label>
                             <select id="filterType" class="form-select-premium">
                                 <option value="">Todos os Tipos</option>
@@ -235,10 +243,12 @@ export class TurmasListView {
         const filterSearch = this.container.querySelector('#filterSearch');
         const filterStatus = this.container.querySelector('#filterStatus');
         const filterType = this.container.querySelector('#filterType');
+        const filterIsActive = this.container.querySelector('#filterIsActive');
 
         filterSearch?.addEventListener('input', this.debounce(() => this.applyFilters(), 500));
         filterStatus?.addEventListener('change', () => this.applyFilters());
         filterType?.addEventListener('change', () => this.applyFilters());
+        filterIsActive?.addEventListener('change', () => this.applyFilters());
 
         // View toggles
         const btnViewGrid = this.container.querySelector('#btnViewGrid');
@@ -583,11 +593,13 @@ export class TurmasListView {
         const search = this.container.querySelector('#filterSearch').value.trim();
         const status = this.container.querySelector('#filterStatus').value;
         const type = this.container.querySelector('#filterType').value;
+        const isActive = this.container.querySelector('#filterIsActive').value;
 
         this.currentFilters = {
             ...(search && { search }),
             ...(status && { status }),
-            ...(type && { type })
+            ...(type && { type }),
+            ...(isActive && { isActive })
         };
 
         this.loadData();
@@ -597,6 +609,7 @@ export class TurmasListView {
         this.container.querySelector('#filterSearch').value = '';
         this.container.querySelector('#filterStatus').value = '';
         this.container.querySelector('#filterType').value = '';
+        this.container.querySelector('#filterIsActive').value = '';
         
         this.currentFilters = {};
         this.loadData();

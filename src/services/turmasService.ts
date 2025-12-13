@@ -50,6 +50,7 @@ export interface ReportFilters {
   type?: string;
   startDate?: string;
   endDate?: string;
+  isActive?: boolean;
 }
 
 export class TurmasService {
@@ -82,6 +83,7 @@ export class TurmasService {
     if (filters.unitId) where.unitId = filters.unitId;
     if (filters.status) where.status = filters.status;
     if (filters.type) where.type = filters.type;
+    if (filters.isActive !== undefined) where.isActive = filters.isActive;
 
     return await prisma.turma.findMany({
       where,
@@ -92,7 +94,8 @@ export class TurmasService {
         unit: true,
         _count: {
           select: {
-            students: true
+            students: true,
+            interests: true
           }
         }
       },

@@ -79,6 +79,7 @@ import jobsRoutes from '@/routes/jobs';
 import healthRoutes from '@/routes/health';
 import portalRoutes from '@/routes/portal';
 import permissionsRoutes from '@/routes/permissions';
+import horariosSugeridosRoutes from '@/routes/horarios-sugeridos';
 const frequencyRoutes = require('./routes/frequency');
 
 export const buildApp = async () => {
@@ -204,6 +205,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(agentInsightsRoutes, 'agentInsightsRoutes'), { prefix: '/api/agent-insights' } as any);
   await server.register(normalizePlugin(curriculumAgentRoutes, 'curriculumAgentRoutes'), { prefix: '/api/agents/curriculum' } as any);
   await server.register(normalizePlugin(turmasRoutes, 'turmasRoutes'), { prefix: '/api' } as any);
+  await server.register(normalizePlugin(horariosSugeridosRoutes, 'horariosSugeridosRoutes'), { prefix: '/api/horarios-sugeridos' } as any);
   await server.register(normalizePlugin(testRoutes, 'testRoutes'), { prefix: '/api' } as any);
   await server.register(normalizePlugin(usersRoutes, 'usersRoutes'), { prefix: '/api/users' } as any);
   await server.register(normalizePlugin(activityExecutionsRoutes, 'activityExecutionsRoutes'), { prefix: '/api/lesson-activity-executions' } as any);

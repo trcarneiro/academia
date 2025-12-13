@@ -16,7 +16,8 @@ const CoursesModule = {
         this.loadCSS();
 
         // 3. Find Container
-        this.container = document.getElementById('content-area') || 
+        this.container = document.getElementById('module-container') || 
+                         document.getElementById('content-area') || 
                          document.getElementById('app-content') ||
                          document.getElementById('main-content');
                          
@@ -29,7 +30,16 @@ const CoursesModule = {
         window.coursesModule = this;
         
         // 5. Initial Navigation
-        this.navigate('list');
+        // Check if we have an ID in the hash (e.g. #courses/edit/123)
+        const hash = window.location.hash;
+        if (hash.includes('/edit/')) {
+            const id = hash.split('/edit/')[1];
+            this.navigate('editor', { id });
+        } else if (hash.includes('/new')) {
+            this.navigate('editor', { id: null });
+        } else {
+            this.navigate('list');
+        }
 
         // 6. Dispatch Event
         if (window.app?.dispatchEvent) {
@@ -88,5 +98,9 @@ export default CoursesModule;
 
 if (typeof window !== 'undefined') {
     window.CoursesModule = CoursesModule;
+    // Auto-init if container exists (First Load)
+    if (document.getElementById('module-container')) {
+        CoursesModule.init();
+    }
 }
 

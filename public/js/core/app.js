@@ -11,8 +11,35 @@ class AcademyApp {
   async init() {
     console.log('🚀 Initializing AcademyApp...');
     this.initializeOrganizationContext();
+    await this.loadSystemVersion();
     await this.loadModules();
     console.log('✅ AcademyApp initialized');
+  }
+
+  async loadSystemVersion() {
+    try {
+      const response = await fetch('/version');
+      const data = await response.json();
+      
+      if (data.success) {
+        const versionEl = document.getElementById('systemVersion');
+        if (versionEl) {
+          versionEl.querySelector('.version-number').textContent = `v${data.version}`;
+          versionEl.querySelector('.environment-badge').textContent = data.environment.toUpperCase();
+          
+          // Color coding for environment
+          if (data.environment === 'production') {
+             versionEl.querySelector('.environment-badge').style.color = '#28a745'; // Green
+          } else {
+             versionEl.querySelector('.environment-badge').style.color = '#ffc107'; // Yellow/Orange
+          }
+        }
+        this.config.version = data.version;
+        console.log(`ℹ️ System Version: ${data.version} (${data.environment})`);
+      }
+    } catch (error) {
+      console.warn('Failed to load system version:', error);
+    }
   }
 
   initializeOrganizationContext() {
@@ -63,7 +90,7 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress'
+      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress', 'turmas-sugestoes'
     ];
 
     moduleList.forEach(moduleName => {

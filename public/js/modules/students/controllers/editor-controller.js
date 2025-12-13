@@ -10,6 +10,7 @@ export class StudentEditorController {
         this.currentStudentId = null;
         this.formChanged = false;
         this.modelsLoaded = false;
+        window.studentEditor = this; // Expose for onclick handlers
     }
 
     async render(targetContainer, studentId = null) {
@@ -2679,9 +2680,32 @@ export class StudentEditorController {
                         <div class="collapsible-content">
                             <div class="info-callout info-callout-primary">
                                 <i class="fas fa-info-circle"></i>
-                                <div>
-                                    <strong>Cobrança Consolidada</strong>
-                                    <p>A fatura mensal será gerada com o valor total de <strong>R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</strong> incluindo todos os dependentes abaixo.</p>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <strong>Cobrança Consolidada</strong>
+                                        <button class="btn-text-primary btn-sm" onclick="window.studentEditor.openDiscountModal('${dependentsData.discountValue || 0}', '${dependentsData.discountType || 'FIXED'}')">
+                                            <i class="fas fa-edit"></i> Editar Desconto
+                                        </button>
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>Subtotal:</span>
+                                            <span>R$ ${(parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0).toFixed(2)}</span>
+                                        </div>
+                                        ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
+                                        <div style="display: flex; justify-content: space-between; color: var(--success-color);">
+                                            <span>Desconto:</span>
+                                            <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
+                                        </div>
+                                        ` : ''}
+                                        <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold;">
+                                            <span>Total Final:</span>
+                                            <span>R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <p style="margin-top: 8px; font-size: 0.9em; opacity: 0.8;">
+                                        A fatura mensal será gerada com o valor total acima, incluindo todos os dependentes.
+                                    </p>
                                 </div>
                             </div>
 
@@ -3538,6 +3562,76 @@ export class StudentEditorController {
             'expert': 'Expert'
         };
         return labels[level] || 'Não avaliado';
+    }
+
+    async openDiscountModal(currentValue, currentType) {
+        if (typeof Swal === 'undefined') {
+            const newVal = prompt('Digite o valor do desconto:', currentValue);
+            if (newVal !== null) {
+                try {
+                    await this.api.request(`/api/students/${this.currentStudentId}/financial-dependents/discount`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            discountValue: parseFloat(newVal),
+                            discountType: 'FIXED'
+                        })
+                    });
+                    await this.renderFinancialTab(this.currentStudentId);
+                } catch (e) {
+                    alert('Erro ao salvar');
+                }
+            }
+            return;
+        }
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Desconto Consolidado',
+            html: `
+                <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                    <label>
+                        Tipo de Desconto:
+                        <select id="swal-discount-type" class="swal2-input" style="margin: 5px 0;">
+                            <option value="FIXED" ${currentType === 'FIXED' ? 'selected' : ''}>Valor Fixo (R$)</option>
+                            <option value="PERCENTAGE" ${currentType === 'PERCENTAGE' ? 'selected' : ''}>Porcentagem (%)</option>
+                        </select>
+                    </label>
+                    <label>
+                        Valor:
+                        <input id="swal-discount-value" type="number" step="0.01" class="swal2-input" style="margin: 5px 0;" value="${currentValue}">
+                    </label>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Salvar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return {
+                    discountType: document.getElementById('swal-discount-type').value,
+                    discountValue: document.getElementById('swal-discount-value').value
+                }
+            }
+        });
+
+        if (formValues) {
+            try {
+                await this.api.request(`/api/students/${this.currentStudentId}/financial-dependents/discount`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        discountValue: parseFloat(formValues.discountValue),
+                        discountType: formValues.discountType
+                    })
+                });
+                
+                // Reload to show changes
+                await this.renderFinancialTab(this.currentStudentId);
+                
+                Swal.fire('Sucesso', 'Desconto atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating discount:', error);
+                Swal.fire('Erro', 'Falha ao atualizar desconto', 'error');
+            }
+        }
     }
 }
 

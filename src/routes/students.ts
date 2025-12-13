@@ -1534,6 +1534,14 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     try {
       const { studentId } = request.params as { studentId: string };
 
+      const responsible = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: {
+          consolidatedDiscountValue: true,
+          consolidatedDiscountType: true
+        }
+      });
+
       const dependents = await prisma.student.findMany({
         where: {
           financialResponsibleStudentId: studentId
@@ -1569,13 +1577,31 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         }))
       );
 
+      const subTotal = consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0);
+      
+      let discount = 0;
+      if (responsible?.consolidatedDiscountValue) {
+        const value = Number(responsible.consolidatedDiscountValue);
+        if (responsible.consolidatedDiscountType === 'PERCENTAGE') {
+          discount = subTotal * (value / 100);
+        } else {
+          discount = value;
+        }
+      }
+
+      const totalAmount = Math.max(0, subTotal - discount);
+
       return reply.send({
         success: true,
         data: {
           dependents,
           consolidatedCharges,
           totalDependents: dependents.length,
-          totalAmount: consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0)
+          subTotal,
+          discount,
+          discountValue: responsible?.consolidatedDiscountValue || 0,
+          discountType: responsible?.consolidatedDiscountType || 'FIXED',
+          totalAmount
         }
       });
     } catch (error) {
@@ -1583,6 +1609,33 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch financial dependents'
+      });
+    }
+  });
+
+  // Update financial dependents discount
+  fastify.put('/:studentId/financial-dependents/discount', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { studentId } = request.params as { studentId: string };
+      const { discountValue, discountType } = request.body as { discountValue: number, discountType: string };
+
+      await prisma.student.update({
+        where: { id: studentId },
+        data: {
+          consolidatedDiscountValue: discountValue,
+          consolidatedDiscountType: discountType
+        }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Discount updated successfully'
+      });
+    } catch (error) {
+      logger.error('Error updating financial dependents discount:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to update discount'
       });
     }
   });

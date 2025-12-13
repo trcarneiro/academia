@@ -158,8 +158,14 @@ class SPARouter {
     navigateTo(module) {
         // ✅ PREVENT CONCURRENT NAVIGATION
         if (this.isNavigating) {
-            console.log(`⏸️ [Router] Already navigating, skipping ${module}`);
-            return;
+            // Auto-recover if stuck for more than 2 seconds
+            if (Date.now() - (this.lastNavigationTime || 0) > 2000) {
+                console.warn('⚠️ [Router] Navigation lock stuck, forcing unlock');
+                this.isNavigating = false;
+            } else {
+                console.log(`⏸️ [Router] Already navigating, skipping ${module}`);
+                return;
+            }
         }
 
         // ✅ PREVENT DUPLICATE NAVIGATION - mas permitir re-click após 1s
@@ -457,7 +463,8 @@ class SPARouter {
             url.includes('services/') || url.includes('controllers/') || 
             url.includes('components/') || url.includes('views/') ||
             url.includes('frequency/') || url.includes('agenda/') ||
-            url.includes('activities/') || url.includes('checkin-kiosk/')) {
+            url.includes('activities/') || url.includes('checkin-kiosk/') ||
+            url.includes('courses/') || url.includes('crm/') || url.includes('marketing/')) {
             script.type = 'module';
         } else {
             script.type = 'application/javascript';
@@ -809,6 +816,11 @@ router.registerRoute('courses', () => {
         .then(html => {
             document.getElementById('module-container').innerHTML = html;
             router.loadModuleAssets('courses');
+            
+            // Re-initialize if already loaded (Subsequent loads)
+            if (window.CoursesModule) {
+                window.CoursesModule.init();
+            }
         });
     
     router.updateGlobalHeader('Cursos', 'Home / Cursos');

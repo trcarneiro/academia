@@ -98,6 +98,17 @@ export async function renderDashboard(container) {
             </div>
         </div>
 
+        <!-- Turmas Quase Ativas -->
+        <div class="section" id="inactive-classes-section" style="display: none;">
+            <div class="section-header">
+                <h3>Turmas em Formação</h3>
+                <span class="badge-new" style="background: #FF9800; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">Novidade</span>
+            </div>
+            <div class="inactive-classes-list" id="inactive-classes-list" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
         <!-- Ranking Widget -->
         <div class="section">
             <div class="section-header">
@@ -112,6 +123,9 @@ export async function renderDashboard(container) {
         </div>
     `;
     container.appendChild(content);
+
+    // Fetch Inactive Classes
+    fetchInactiveClasses(content, user);
 
     // Access Modal (Hidden)
     const modal = document.createElement('div');
@@ -251,6 +265,100 @@ function stopQrTimer() {
     if (qrTimerInterval) {
         clearInterval(qrTimerInterval);
         qrTimerInterval = null;
+    }
+}
+
+async function fetchInactiveClasses(content, user) {
+    try {
+        const response = await api.request('GET', '/turmas?isActive=false');
+        if (response.success && response.data && response.data.length > 0) {
+            const inactiveClasses = response.data;
+            const list = content.querySelector('#inactive-classes-list');
+            const section = content.querySelector('#inactive-classes-section');
+            
+            section.style.display = 'block';
+            
+            list.innerHTML = inactiveClasses.map(turma => {
+                const interested = turma._count?.interests || 0;
+                const needed = turma.minimumStudents || 5;
+                const progress = Math.min(100, (interested / needed) * 100);
+                // Check if user is already interested
+                // Note: API should return if current user is interested, or we check locally if we have the list
+                // For now, assuming we might need to fetch interests or the API includes it.
+                // The list API includes _count.interests. It might not include the list of interests itself for privacy/performance.
+                // But for the user to know if they are interested, we need that info.
+                // Let's assume for now we don't know, or we need to fetch it.
+                // Or better, the API should return `isInterested` flag if user context is known.
+                // Since we are using `api.request`, it sends the token.
+                // But `TurmasService.list` doesn't check for specific user interest.
+                
+                // Workaround: We will handle the button state optimistically or just show "Tenho Interesse" and if they click and already are, handle the error or toggle.
+                // Ideally, we update the API to return `isInterested`.
+                
+                const isInterested = false; // Placeholder until API update
+
+                // Format schedule
+                const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                const dayNames = turma.schedule?.daysOfWeek?.map(d => days[d]).join(', ') || 'A definir';
+                const time = turma.schedule?.time || '--:--';
+
+                return `
+                    <div class="inactive-class-card" style="background: #fff; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #eee;">
+                        <div class="class-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h4 style="margin: 0; font-size: 1rem; color: #333;">${turma.name}</h4>
+                            <span class="status-badge" style="background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Faltam ${Math.max(0, needed - interested)}</span>
+                        </div>
+                        <div class="class-details" style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                <span>📅</span> <span>${dayNames} às ${time}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span>👨‍🏫</span> <span>${turma.instructor?.name || 'Instrutor a definir'}</span>
+                            </div>
+                        </div>
+                        <div class="interest-progress" style="margin-bottom: 12px;">
+                            <div class="progress-bar" style="height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 4px;">
+                                <div class="progress-fill" style="width: ${progress}%; height: 100%; background: #FF9800;"></div>
+                            </div>
+                            <span class="progress-text" style="font-size: 0.75rem; color: #888;">${interested}/${needed} interessados</span>
+                        </div>
+                        <button class="btn-interest" 
+                            onclick="window.handleInterest('${turma.id}')"
+                            style="width: 100%; padding: 8px; border: none; border-radius: 6px; background: #667eea; color: white; font-weight: 600; cursor: pointer;">
+                            ✋ Tenho Interesse
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Add global handler
+            window.handleInterest = async (turmaId) => {
+                try {
+                    // We need studentId. User object should have it.
+                    if (!user || !user.studentId) {
+                        alert('Erro: Perfil de aluno não encontrado.');
+                        return;
+                    }
+                    
+                    const res = await api.request('POST', `/turmas/${turmaId}/interest`, { studentId: user.studentId });
+                    if (res.success) {
+                        alert('Interesse registrado com sucesso! Você será notificado quando a turma for ativada.');
+                        fetchInactiveClasses(content, user);
+                    } else {
+                        // If already interested, maybe we want to remove?
+                        // The API returns the interest object if exists.
+                        // If we want to toggle, we need to know state.
+                        // For now, let's assume it just registers.
+                        alert('Interesse registrado!');
+                    }
+                } catch (e) {
+                    console.error('Error handling interest', e);
+                    alert('Erro ao processar solicitação');
+                }
+            };
+        }
+    } catch (e) {
+        console.error('Failed to fetch inactive classes', e);
     }
 }
 

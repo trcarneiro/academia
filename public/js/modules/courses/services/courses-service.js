@@ -47,7 +47,7 @@ export class CoursesService {
      */
     async getById(id) {
         if (!this.moduleAPI) await this.init();
-        return this.moduleAPI.request(\/api/courses/\\);
+        return this.moduleAPI.request(`/api/courses/${id}`);
     }
 
     /**
@@ -69,7 +69,7 @@ export class CoursesService {
      */
     async update(id, data) {
         if (!this.moduleAPI) await this.init();
-        return this.moduleAPI.request(\/api/courses/\\, {
+        return this.moduleAPI.request(`/api/courses/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
         });
@@ -81,7 +81,7 @@ export class CoursesService {
      */
     async delete(id) {
         if (!this.moduleAPI) await this.init();
-        return this.moduleAPI.request(\/api/courses/\\, {
+        return this.moduleAPI.request(`/api/courses/${id}`, {
             method: 'DELETE'
         });
     }

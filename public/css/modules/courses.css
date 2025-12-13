@@ -375,3 +375,97 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==================== EDITOR VIEW EXTENSIONS ==================== */
+
+/* Tabs Navigation */
+.module-isolated-courses .editor-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1px;
+}
+
+.module-isolated-courses .tab-btn {
+    background: none;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.module-isolated-courses .tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.module-isolated-courses .tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Tab Content */
+.module-isolated-courses .tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.module-isolated-courses .tab-content.active {
+    display: block;
+}
+
+/* Dynamic Lists & Cards */
+.module-isolated-courses .card-premium {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: all var(--transition-fast);
+}
+
+.module-isolated-courses .card-premium:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Graduation Specifics */
+.module-isolated-courses .degrees-section {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Lesson Items */
+.module-isolated-courses .lesson-header {
+    user-select: none;
+}
+
+.module-isolated-courses .lesson-body.hidden {
+    display: none;
+}
+
+/* Utility Buttons */
+.module-isolated-courses .btn-sm {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+.module-isolated-courses .btn-danger {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.module-isolated-courses .btn-danger:hover {
+    background-color: #fecaca;
+}
+
+.module-isolated-courses .mt-2 { margin-top: var(--spacing-md); }
+.module-isolated-courses .mb-2 { margin-bottom: var(--spacing-md); }
