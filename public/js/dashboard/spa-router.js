@@ -472,7 +472,8 @@ class SPARouter {
             url.includes('components/') || url.includes('views/') ||
             url.includes('frequency/') || url.includes('agenda/') ||
             url.includes('activities/') || url.includes('checkin-kiosk/') ||
-            url.includes('courses/') || url.includes('crm/') || url.includes('marketing/')) {
+            url.includes('courses/') || url.includes('crm/') || url.includes('marketing/') ||
+            url.includes('class-dashboard/')) {
             script.type = 'module';
         } else {
             script.type = 'application/javascript';
@@ -1142,7 +1143,8 @@ router.registerRoute('lesson-plan-editor', () => {
                 setTimeout(() => {
                     const targetContainer = document.getElementById('lessonPlansContainer') || container;
                     if (typeof window.openLessonPlanEditor === 'function') {
-                        window.openLessonPlanEditor(planId, targetContainer);
+                        // FIX: Argument order is (container, id)
+                        window.openLessonPlanEditor(targetContainer, planId);
                     } else if (window.lessonPlansModule?.openEditor) {
                         window.lessonPlansModule.openEditor(planId, targetContainer);
                     } else {
@@ -2276,6 +2278,110 @@ router.registerRoute('agenda', async () => {
     
     // Update header
     router.updateGlobalHeader('Agenda', 'Home / Agenda');
+});
+
+// Lesson Details Route
+router.registerRoute('lesson-details', async () => {
+    console.log('📝 Inicializando detalhes da aula...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) return;
+    
+    const hash = window.location.hash.slice(1);
+    const parts = hash.split('/');
+    const lessonId = parts[1];
+    
+    if (!lessonId) {
+        console.error('❌ ID da aula não fornecido');
+        router.navigateTo('agenda');
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando detalhes da aula...</p>
+        </div>
+    `;
+
+    try {
+        router.loadModuleAssets('lesson-details');
+        
+        let attempts = 0;
+        while (!window.LessonDetailsModule && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.LessonDetailsModule) {
+            window.LessonDetailsModule.container = container;
+            await window.LessonDetailsModule.init(lessonId);
+            console.log('✅ Detalhes da aula inicializados');
+        } else {
+            throw new Error('Módulo de detalhes da aula não carregou');
+        }
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <h3>Erro ao carregar aula</h3>
+                <p>${error.message}</p>
+                <button onclick="router.navigateTo('agenda')" class="btn btn-primary">Voltar</button>
+            </div>
+        `;
+    }
+});
+
+// Class Dashboard Route
+router.registerRoute('class-dashboard', async () => {
+    console.log('🖥️ Inicializando painel da aula...');
+    
+    const container = document.getElementById('module-container');
+    if (!container) return;
+    
+    const hash = window.location.hash.slice(1);
+    const parts = hash.split('/');
+    const classId = parts[1];
+    
+    if (!classId) {
+        console.error('❌ ID da turma não fornecido');
+        router.navigateTo('agenda');
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Carregando painel da aula...</p>
+        </div>
+    `;
+
+    try {
+        router.loadModuleAssets('class-dashboard');
+        
+        let attempts = 0;
+        while (!window.classDashboard && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.classDashboard) {
+            window.classDashboard.container = container;
+            await window.classDashboard.init(classId);
+            console.log('✅ Painel da aula inicializado');
+        } else {
+            throw new Error('Módulo de painel da aula não carregou');
+        }
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        container.innerHTML = `
+            <div class="error-state">
+                <h3>Erro ao carregar painel</h3>
+                <p>${error.message}</p>
+                <button onclick="router.navigateTo('agenda')" class="btn btn-primary">Voltar</button>
+            </div>
+        `;
+    }
 });
 
 // Frequency Module Route

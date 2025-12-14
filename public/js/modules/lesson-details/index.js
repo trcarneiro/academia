@@ -285,8 +285,8 @@ if (typeof window.LessonDetailsModule !== 'undefined') {
         },
 
         editPlan(planId) {
-            // Navigate to plan editor
-            window.location.hash = `#plan-editor/${planId}`;
+            // Navigate to lesson plan editor
+            window.location.hash = `#lesson-plan-editor/${planId}`;
         },
 
         assignPlan() {
@@ -297,7 +297,8 @@ if (typeof window.LessonDetailsModule !== 'undefined') {
         manageAttendance() {
             // Navigate to attendance module or open modal
             // Assuming we have an attendance module
-            window.location.hash = `#attendance/${this.lessonId}`;
+            // window.location.hash = `#attendance/${this.lessonId}`;
+            alert('Gerenciamento de presença em breve.');
         }
     };
 

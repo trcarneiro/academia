@@ -29,7 +29,41 @@ export class DashboardService {
      * @param {string} lessonId 
      */
     async getLessonData(lessonId) {
-        // Mock data for now, will connect to real API later
+        try {
+            if (lessonId && lessonId !== 'current') {
+                // Try to fetch real data from API
+                const response = await this.moduleAPI.request(`/api/agenda/class/${lessonId}`);
+                if (response.success && response.data) {
+                    const lesson = response.data;
+                    const plan = lesson.lessonPlan || {};
+                    
+                    return {
+                        title: lesson.title || "Aula sem título",
+                        instructor: lesson.instructor?.name || "Instrutor",
+                        phases: {
+                            warmup: {
+                                duration: plan.warmup?.duration || 15,
+                                exercises: plan.warmup?.description ? [plan.warmup.description] : ["Aquecimento Geral"]
+                            },
+                            technique: {
+                                duration: plan.technique?.duration || 40,
+                                primary: plan.technique?.description || "Técnica do dia",
+                                secondary: ""
+                            },
+                            cooldown: {
+                                duration: plan.cooldown?.duration || 5,
+                                exercises: plan.cooldown?.description ? [plan.cooldown.description] : ["Alongamento"]
+                            }
+                        },
+                        students: lesson.attendances || []
+                    };
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to fetch lesson data, using mock:', error);
+        }
+
+        // Mock data fallback
         return {
             title: "Defesa Pessoal - Nível 1",
             instructor: "Mestre Kobi",
@@ -48,6 +82,10 @@ export class DashboardService {
                     exercises: ["Alongamento", "Respiração"]
                 }
             },
+            students: []
+        };
+    }
+}
             students: [
                 { name: "João Silva", status: "injury", note: "Joelho direito" },
                 { name: "Maria Santos", status: "new", note: "Primeira aula" },

@@ -16,7 +16,7 @@ const ClassDashboardModule = {
         phases: [] // { id, name, durationSeconds, startSeconds, endSeconds, content }
     },
     
-    async init() {
+    async init(lessonId = null) {
         console.log('📺 Initializing Class Dashboard (TV Mode)');
         
         // 1. Initialize Service
@@ -38,11 +38,14 @@ const ClassDashboardModule = {
         // 4. Register Global Access
         window.classDashboard = this;
         
-        // Check hash for ID
-        const hash = window.location.hash;
-        let lessonId = 'current';
-        if (hash.includes('class-dashboard/')) {
-            lessonId = hash.split('class-dashboard/')[1];
+        // Check hash for ID if not provided
+        if (!lessonId) {
+            const hash = window.location.hash;
+            if (hash.includes('class-dashboard/')) {
+                lessonId = hash.split('class-dashboard/')[1];
+            } else {
+                lessonId = 'current';
+            }
         }
 
         // 5. Load Data & Setup State
@@ -360,4 +363,5 @@ const ClassDashboardModule = {
     }
 };
 
+window.classDashboard = ClassDashboardModule;
 export default ClassDashboardModule;
