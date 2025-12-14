@@ -17,6 +17,7 @@
 - [x] T007 Create `public/js/modules/courses/views/editor-view.js` implementing the Premium Editor UI (Tabs, Form, Techniques)
 - [x] T008 Integrate `editor-view.js` into `index.js` router
 - [x] T009 Implement "Techniques" tab management in `editor-view.js` (US3)
+- [ ] T014 Implement "Lesson Plans" tab management in `editor-view.js` (FR-006)
 - [x] T010 Verify Editor View saving, loading, and tab switching
 
 ## Phase 4: Cleanup & Polish

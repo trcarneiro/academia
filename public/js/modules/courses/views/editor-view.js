@@ -40,6 +40,7 @@ export class EditorView {
                         <button class="tab-btn" data-tab="categories">Categories</button>
                         <button class="tab-btn" data-tab="syllabus">Syllabus</button>
                         <button class="tab-btn" data-tab="techniques">Techniques</button>
+                        <button class="tab-btn" data-tab="lesson-plans">Lesson Plans</button>
                     </div>
 
                     <div id="tab-general" class="tab-content active">
@@ -56,6 +57,9 @@ export class EditorView {
                     </div>
                     <div id="tab-techniques" class="tab-content">
                         ${this.renderTechniquesTab()}
+                    </div>
+                    <div id="tab-lesson-plans" class="tab-content">
+                        ${this.renderLessonPlansTab()}
                     </div>
                 </div>
             </div>
