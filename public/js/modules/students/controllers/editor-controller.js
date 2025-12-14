@@ -2725,7 +2725,11 @@ export class StudentEditorController {
                                                 </div>
                                                 ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
                                                 <div style="display: flex; justify-content: space-between; color: var(--success-color);">
-                                                    <span>Desconto (Dependentes):</span>
+                                                    <span>
+                                                        ${dependentsData.discountType === 'PERCENTAGE' ? `Desconto (${dependentsData.discountValue}%)` : 
+                                                          dependentsData.discountType === 'FIXED_PRICE' ? 'Ajuste para Valor Fixo' : 
+                                                          'Desconto Fixo'}
+                                                    </span>
                                                     <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
                                                 </div>
                                                 ` : ''}
@@ -3623,14 +3627,15 @@ export class StudentEditorController {
                 <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
                     <label>
                         Tipo de Desconto:
-                        <select id="swal-discount-type" class="swal2-input" style="margin: 5px 0;">
-                            <option value="FIXED" ${currentType === 'FIXED' ? 'selected' : ''}>Valor Fixo (R$)</option>
-                            <option value="PERCENTAGE" ${currentType === 'PERCENTAGE' ? 'selected' : ''}>Porcentagem (%)</option>
+                        <select id="swal-discount-type" class="swal2-select" style="margin: 5px 0; width: 100%; display: block;">
+                            <option value="FIXED_PRICE" ${currentType === 'FIXED_PRICE' ? 'selected' : ''}>Valor Final Fixo (R$)</option>
+                            <option value="FIXED" ${currentType === 'FIXED' ? 'selected' : ''}>Desconto Fixo (R$)</option>
+                            <option value="PERCENTAGE" ${currentType === 'PERCENTAGE' ? 'selected' : ''}>Desconto Percentual (%)</option>
                         </select>
                     </label>
                     <label>
                         Valor:
-                        <input id="swal-discount-value" type="number" step="0.01" class="swal2-input" style="margin: 5px 0;" value="${currentValue}">
+                        <input id="swal-discount-value" type="number" step="0.01" class="swal2-input" style="margin: 5px 0; width: 100%; box-sizing: border-box;" value="${currentValue}">
                     </label>
                 </div>
             `,

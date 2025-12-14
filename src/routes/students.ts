@@ -1538,7 +1538,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         where: { id: studentId },
         select: {
           consolidatedDiscountValue: true,
-          consolidatedDiscountType: true
+          consolidatedDiscountType: true,
+          subscriptions: {
+            where: { isActive: true },
+            include: { plan: true }
+          }
         }
       });
 
@@ -1578,12 +1582,19 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       );
 
       const subTotal = consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0);
+      const responsibleTotal = responsible?.subscriptions.reduce((sum, sub) => sum + Number(sub.price ?? sub.plan?.price ?? 0), 0) || 0;
       
       let discount = 0;
       if (responsible?.consolidatedDiscountValue) {
         const value = Number(responsible.consolidatedDiscountValue);
         if (responsible.consolidatedDiscountType === 'PERCENTAGE') {
           discount = subTotal * (value / 100);
+        } else if (responsible.consolidatedDiscountType === 'FIXED_PRICE') {
+          // Discount needed to reach the target value for the WHOLE family (Responsible + Dependents)
+          // Target = value
+          // Current Total = subTotal + responsibleTotal
+          // Discount = Current Total - Target
+          discount = Math.max(0, (subTotal + responsibleTotal) - value);
         } else {
           discount = value;
         }
