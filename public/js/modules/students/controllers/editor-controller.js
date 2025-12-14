@@ -1534,6 +1534,17 @@ export class StudentEditorController {
                 // Continuar mesmo se falhar - não é crítico
             }
 
+            // Carregar assinaturas para calcular total do responsável
+            let activeSubscriptions = [];
+            try {
+                const subsRes = await this.api.request(`/api/students/${studentId}/subscriptions`);
+                if (subsRes && subsRes.data) {
+                    activeSubscriptions = subsRes.data.filter(s => s.status === 'ACTIVE');
+                }
+            } catch (e) {
+                console.warn('Could not load subscriptions for responsible total:', e);
+            }
+
             // Renderizar conteúdo
             container.innerHTML = `
                 <div class="data-card-premium">
@@ -1669,7 +1680,14 @@ export class StudentEditorController {
                             </h4>
 
                             <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-                                <strong>💰 Total Consolidado: R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</strong>
+                                ${(() => {
+                                    const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                                    const grandTotal = (parseFloat(dependentsData.totalAmount) || 0) + responsibleTotal;
+                                    return `
+                                        <strong>💰 Total Consolidado: R$ ${grandTotal.toFixed(2)}</strong>
+                                        ${responsibleTotal > 0 ? `<div style="font-size: 0.85em; margin-top: 4px; color: #666;">(Incluindo R$ ${responsibleTotal.toFixed(2)} do responsável)</div>` : ''}
+                                    `;
+                                })()}
                             </div>
 
                             <div class="dependents-list">
@@ -2688,23 +2706,38 @@ export class StudentEditorController {
                                         </button>
                                     </div>
                                     <div style="margin-top: 8px;">
-                                        <div style="display: flex; justify-content: space-between;">
-                                            <span>Subtotal:</span>
-                                            <span>R$ ${(parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0).toFixed(2)}</span>
-                                        </div>
-                                        ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
-                                        <div style="display: flex; justify-content: space-between; color: var(--success-color);">
-                                            <span>Desconto:</span>
-                                            <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
-                                        </div>
-                                        ` : ''}
-                                        <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold;">
-                                            <span>Total Final:</span>
-                                            <span>R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</span>
-                                        </div>
+                                        ${(() => {
+                                            const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                                            const depSubTotal = parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0;
+                                            const depTotal = parseFloat(dependentsData.totalAmount) || 0;
+                                            const grandTotal = depTotal + responsibleTotal;
+                                            
+                                            return `
+                                                ${responsibleTotal > 0 ? `
+                                                <div style="display: flex; justify-content: space-between; color: var(--primary-color); margin-bottom: 4px;">
+                                                    <span>Assinatura do Responsável:</span>
+                                                    <span>R$ ${responsibleTotal.toFixed(2)}</span>
+                                                </div>
+                                                ` : ''}
+                                                <div style="display: flex; justify-content: space-between;">
+                                                    <span>Subtotal Dependentes:</span>
+                                                    <span>R$ ${depSubTotal.toFixed(2)}</span>
+                                                </div>
+                                                ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
+                                                <div style="display: flex; justify-content: space-between; color: var(--success-color);">
+                                                    <span>Desconto (Dependentes):</span>
+                                                    <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
+                                                </div>
+                                                ` : ''}
+                                                <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold;">
+                                                    <span>Total Final:</span>
+                                                    <span>R$ ${grandTotal.toFixed(2)}</span>
+                                                </div>
+                                            `;
+                                        })()}
                                     </div>
                                     <p style="margin-top: 8px; font-size: 0.9em; opacity: 0.8;">
-                                        A fatura mensal será gerada com o valor total acima, incluindo todos os dependentes.
+                                        A fatura mensal será gerada com o valor total acima, incluindo todos os dependentes e a assinatura do responsável.
                                     </p>
                                 </div>
                             </div>
