@@ -38,14 +38,14 @@
 
 **Purpose**: Corrigir erros e finalizar infraestrutura base
 
-- [ ] T001 Executar migração Prisma para criar tabelas `landing_pages`, `landing_forms`, `landing_page_views` via `npx prisma db push`
-- [ ] T002 Gerar cliente Prisma atualizado via `npx prisma generate`
-- [ ] T003 Corrigir arquivo `src/routes/marketing.ts` para usar modelos corretos do schema Prisma
-- [ ] T004 [P] Criar arquivo `src/routes/landing-public.ts` para rotas públicas (sem auth)
-- [ ] T005 Registrar rotas de marketing em `src/server.ts`
-- [ ] T006 Adicionar rota `/marketing` no SPA router `public/js/dashboard/spa-router.js`
-- [ ] T007 [P] Adicionar link "Marketing" no menu lateral `public/index.html`
-- [ ] T008 [P] Adicionar script tag do CSS em `public/index.html`
+- [x] T001 Executar migração Prisma para criar tabelas `landing_pages`, `landing_forms`, `landing_page_views` via `npx prisma db push`
+- [x] T002 Gerar cliente Prisma atualizado via `npx prisma generate`
+- [x] T003 Corrigir arquivo `src/routes/marketing.ts` para usar modelos corretos do schema Prisma
+- [x] T004 [P] Criar arquivo `src/routes/landing-public.ts` para rotas públicas (sem auth)
+- [x] T005 Registrar rotas de marketing em `src/server.ts`
+- [x] T006 Adicionar rota `/marketing` no SPA router `public/js/dashboard/spa-router.js`
+- [x] T007 [P] Adicionar link "Marketing" no menu lateral `public/index.html`
+- [x] T008 [P] Adicionar script tag do CSS em `public/index.html`
 
 ---
 
@@ -57,26 +57,26 @@
 
 ### API Landing Pages
 
-- [ ] T009 [P] Implementar `GET /api/marketing/landing-pages` - Listar landing pages da organização
-- [ ] T010 [P] Implementar `GET /api/marketing/landing-pages/:id` - Detalhes de uma página
-- [ ] T011 [P] Implementar `POST /api/marketing/landing-pages` - Criar nova landing page
-- [ ] T012 [P] Implementar `PUT /api/marketing/landing-pages/:id` - Atualizar landing page
-- [ ] T013 [P] Implementar `DELETE /api/marketing/landing-pages/:id` - Excluir landing page
-- [ ] T014 Implementar `POST /api/marketing/landing-pages/:id/publish` - Publicar página
-- [ ] T015 Implementar `POST /api/marketing/landing-pages/:id/unpublish` - Despublicar
-- [ ] T016 Implementar `POST /api/marketing/landing-pages/:id/duplicate` - Duplicar página
+- [x] T009 [P] Implementar `GET /api/marketing/landing-pages` - Listar landing pages da organização
+- [x] T010 [P] Implementar `GET /api/marketing/landing-pages/:id` - Detalhes de uma página
+- [x] T011 [P] Implementar `POST /api/marketing/landing-pages` - Criar nova landing page
+- [x] T012 [P] Implementar `PUT /api/marketing/landing-pages/:id` - Atualizar landing page
+- [x] T013 [P] Implementar `DELETE /api/marketing/landing-pages/:id` - Excluir landing page
+- [x] T014 Implementar `POST /api/marketing/landing-pages/:id/publish` - Publicar página
+- [x] T015 Implementar `POST /api/marketing/landing-pages/:id/unpublish` - Despublicar
+- [x] T016 Implementar `POST /api/marketing/landing-pages/:id/duplicate` - Duplicar página
 
 ### API Landing Forms
 
-- [ ] T017 [P] Implementar `GET /api/marketing/landing-pages/:pageId/forms` - Listar forms
-- [ ] T018 [P] Implementar `POST /api/marketing/landing-pages/:pageId/forms` - Criar form
-- [ ] T019 Implementar `PUT /api/marketing/forms/:id` - Atualizar form
-- [ ] T020 Implementar `DELETE /api/marketing/forms/:id` - Excluir form
+- [x] T017 [P] Implementar `GET /api/marketing/landing-pages/:pageId/forms` - Listar forms
+- [x] T018 [P] Implementar `POST /api/marketing/landing-pages/:pageId/forms` - Criar form
+- [x] T019 Implementar `PUT /api/marketing/forms/:id` - Atualizar form
+- [x] T020 Implementar `DELETE /api/marketing/forms/:id` - Excluir form
 
 ### API Analytics
 
-- [ ] T021 Implementar `GET /api/marketing/landing-pages/:id/analytics` - Métricas da página
-- [ ] T022 Implementar `GET /api/marketing/analytics/summary` - Resumo geral do marketing
+- [x] T021 Implementar `GET /api/marketing/landing-pages/:id/analytics` - Métricas da página
+- [x] T022 Implementar `GET /api/marketing/analytics/summary` - Resumo geral do marketing
 
 **Checkpoint**: API Backend completa e testável via Swagger/Postman
 
@@ -96,13 +96,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Ajustar `public/js/modules/marketing/index.js` - Tab "Landing Pages" com lista funcional
-- [ ] T024 [US1] Implementar `renderLandingPagesList()` com chamada real à API
-- [ ] T025 [US1] Implementar modal de criação (full-screen page) para nova landing page
-- [ ] T026 [US1] Implementar página de edição de landing page (full-screen)
-- [ ] T027 [US1] Implementar confirmação de exclusão
-- [ ] T028 [US1] Adicionar feedback visual (toasts) para ações CRUD
-- [ ] T029 [US1] Implementar estados loading/empty/error em todas as views
+- [x] T023 [US1] Ajustar `public/js/modules/marketing/index.js` - Tab "Landing Pages" com lista funcional
+- [x] T024 [US1] Implementar `renderLandingPagesList()` com chamada real à API
+- [x] T025 [US1] Implementar modal de criação (full-screen page) para nova landing page
+- [x] T026 [US1] Implementar página de edição de landing page (full-screen)
+- [x] T027 [US1] Implementar confirmação de exclusão
+- [x] T028 [US1] Adicionar feedback visual (toasts) para ações CRUD
+- [x] T029 [US1] Implementar estados loading/empty/error em todas as views
 
 **Checkpoint**: CRUD completo de Landing Pages funcionando no frontend
 
@@ -123,17 +123,17 @@
 
 ### Routes Públicas
 
-- [ ] T030 [US2] Criar `src/routes/landing-public.ts` com rota `GET /lp/:orgSlug/:pageSlug`
-- [ ] T031 [US2] Implementar renderização HTML da landing page publicada
-- [ ] T032 [US2] Implementar `POST /lp/:pageId/view` - Registrar pageview (analytics)
-- [ ] T033 [US2] Implementar `POST /lp/:pageId/submit` - Submeter formulário (criar Lead)
+- [x] T030 [US2] Criar `src/routes/landing-public.ts` com rota `GET /lp/:orgSlug/:pageSlug`
+- [x] T031 [US2] Implementar renderização HTML da landing page publicada
+- [x] T032 [US2] Implementar `POST /lp/:pageId/view` - Registrar pageview (analytics)
+- [x] T033 [US2] Implementar `POST /lp/:pageId/submit` - Submeter formulário (criar Lead)
 
 ### Frontend Publishing
 
-- [ ] T034 [US2] Adicionar botões Publicar/Despublicar na lista e detalhe
-- [ ] T035 [US2] Implementar preview iframe na página de edição
-- [ ] T036 [US2] Mostrar URL pública da página publicada
-- [ ] T037 [US2] Implementar "Copiar URL" com feedback
+- [x] T034 [US2] Adicionar botões Publicar/Despublicar na lista e detalhe
+- [x] T035 [US2] Implementar preview iframe na página de edição
+- [x] T036 [US2] Mostrar URL pública da página publicada
+- [x] T037 [US2] Implementar "Copiar URL" com feedback
 
 **Checkpoint**: Landing pages podem ser publicadas e acessadas publicamente
 
@@ -153,12 +153,12 @@
 
 ### Integração AI Agent
 
-- [ ] T038 [US3] Criar endpoint `POST /api/marketing/landing-pages/:id/generate` - Gerar conteúdo via AI
-- [ ] T039 [US3] Integrar com `aiService.ts` para prompts de geração de HTML
-- [ ] T040 [US3] Definir prompts base para Marketing Agent no `prisma/schema.prisma` (AgentPrompt)
-- [ ] T041 [US3] Adicionar seção "Editar com IA" na página de edição
-- [ ] T042 [US3] Implementar chat inline para edição rápida
-- [ ] T043 [US3] Implementar sugestões de prompts (chips clicáveis)
+- [x] T038 [US3] Criar endpoint `POST /api/marketing/landing-pages/:id/generate` - Gerar conteúdo via AI (Integrado via RAG Chat)
+- [x] T039 [US3] Integrar com `aiService.ts` para prompts de geração de HTML
+- [x] T040 [US3] Definir prompts base para Marketing Agent no `prisma/schema.prisma` (AgentPrompt)
+- [x] T041 [US3] Adicionar seção "Editar com IA" na página de edição
+- [x] T042 [US3] Implementar chat inline para edição rápida (Redireciona para AI Module)
+- [x] T043 [US3] Implementar sugestões de prompts (chips clicáveis)
 
 **Checkpoint**: Landing pages podem ser criadas/editadas via chat com AI
 
@@ -177,11 +177,11 @@
 
 ### Implementation
 
-- [ ] T044 [US4] Implementar CRUD de formulários no frontend
-- [ ] T045 [US4] Criar editor de campos de formulário (nome, email, telefone, etc.)
-- [ ] T046 [US4] Implementar renderização de form no HTML da landing page
-- [ ] T047 [US4] Integrar submissão de form com criação de Lead no CRM
-- [ ] T048 [US4] Adicionar tags automáticas ao lead baseado no form
+- [x] T044 [US4] Implementar CRUD de formulários no frontend (Básico)
+- [x] T045 [US4] Criar editor de campos de formulário (nome, email, telefone, etc.)
+- [ ] T046 [US4] Implementar renderização de form no HTML da landing page (Depende do AI Agent)
+- [x] T047 [US4] Integrar submissão de form com criação de Lead no CRM (Backend implementado)
+- [x] T048 [US4] Adicionar tags automáticas ao lead baseado no form (Backend implementado)
 
 **Checkpoint**: Formulários funcionam e criam leads automaticamente
 
@@ -199,10 +199,10 @@
 
 ### Implementation
 
-- [ ] T049 [US5] Implementar tab "Analytics" no módulo de marketing
-- [ ] T050 [US5] Criar cards de métricas: Total Views, Unique Visitors, Submissions, Conversion Rate
+- [x] T049 [US5] Implementar tab "Analytics" no módulo de marketing
+- [x] T050 [US5] Criar cards de métricas: Total Views, Unique Visitors, Submissions, Conversion Rate
 - [ ] T051 [US5] Implementar gráfico de visitas (últimos 30 dias)
-- [ ] T052 [US5] Mostrar top 5 landing pages por performance
+- [x] T052 [US5] Mostrar top 5 landing pages por performance
 - [ ] T053 [US5] Implementar filtros por período (7d, 30d, 90d)
 
 **Checkpoint**: Dashboard de analytics completo e funcional

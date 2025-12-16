@@ -10,11 +10,18 @@ export class StudentEditorController {
         this.currentStudentId = null;
         this.formChanged = false;
         this.modelsLoaded = false;
+        window.studentEditor = this; // Expose for onclick handlers
     }
 
     async render(targetContainer, studentId = null) {
         this.container = targetContainer;
         this.currentStudentId = studentId;
+        
+        // Reset current student data for new student
+        if (!studentId) {
+            this.current = {};
+        }
+
         try {
             if (studentId) {
                 await this.loadStudent(studentId);
@@ -811,7 +818,8 @@ export class StudentEditorController {
         } catch (err) {
             console.error('❌ Save error:', err);
             window.app?.handleError?.(err, 'students:save');
-            this.showMessage('Erro ao salvar estudante. Tente novamente.', 'error');
+            const errorMessage = err.message || 'Erro ao salvar estudante. Tente novamente.';
+            this.showMessage(errorMessage, 'error');
         } finally {
             if (saveBtn) {
                 saveBtn.disabled = false;
@@ -1517,10 +1525,24 @@ export class StudentEditorController {
                 const dependentsRes = await this.api.request(`/api/students/${studentId}/financial-dependents`);
                 if (dependentsRes && dependentsRes.success && dependentsRes.data) {
                     dependentsData = dependentsRes.data;
+                    // Ensure totalAmount is a number
+                    dependentsData.totalAmount = parseFloat(dependentsData.totalAmount) || 0;
+                    dependentsData.totalDependents = parseInt(dependentsData.totalDependents) || 0;
                 }
             } catch (depError) {
                 console.warn('Could not load dependents (non-critical):', depError);
                 // Continuar mesmo se falhar - não é crítico
+            }
+
+            // Carregar assinaturas para calcular total do responsável
+            let activeSubscriptions = [];
+            try {
+                const subsRes = await this.api.request(`/api/students/${studentId}/subscriptions`);
+                if (subsRes && subsRes.data) {
+                    activeSubscriptions = subsRes.data.filter(s => s.status === 'ACTIVE');
+                }
+            } catch (e) {
+                console.warn('Could not load subscriptions for responsible total:', e);
             }
 
             // Renderizar conteúdo
@@ -1658,7 +1680,14 @@ export class StudentEditorController {
                             </h4>
 
                             <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-                                <strong>💰 Total Consolidado: R$ ${dependentsData.totalAmount.toFixed(2)}</strong>
+                                ${(() => {
+                                    const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                                    const grandTotal = (parseFloat(dependentsData.totalAmount) || 0) + responsibleTotal;
+                                    return `
+                                        <strong>💰 Total Consolidado: R$ ${grandTotal.toFixed(2)}</strong>
+                                        ${responsibleTotal > 0 ? `<div style="font-size: 0.85em; margin-top: 4px; color: #666;">(Incluindo R$ ${responsibleTotal.toFixed(2)} do responsável)</div>` : ''}
+                                    `;
+                                })()}
                             </div>
 
                             <div class="dependents-list">
@@ -1666,7 +1695,8 @@ export class StudentEditorController {
                                     const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        return sum + (sub?.plan?.price || 0);
+                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                                        return sum + price;
                                     }, 0);
                                     
                                     return `
@@ -2229,7 +2259,7 @@ export class StudentEditorController {
         try {
             console.log('➖ Removing enrollment:', enrollmentId);
             
-            const confirmed = confirm('Deseja remover este curso paralelo? Esta ação não pode ser desfeita.');
+            const confirmed = confirm('⚠️ ATENÇÃO: Deseja remover esta matrícula?\n\nIsso apagará todo o progresso, histórico de aulas e graduações associadas a este curso.\n\nEsta ação NÃO pode ser desfeita.');
             if (!confirmed) return;
 
             await this.api.request(`/api/students/${studentId}/enrollments/${enrollmentId}`, {
@@ -2244,6 +2274,30 @@ export class StudentEditorController {
         } catch (error) {
             console.error('Error removing course:', error);
             this.showMessage('Erro ao remover curso. Tente novamente.', 'error');
+        }
+    }
+
+    async toggleEnrollmentStatus(studentId, enrollmentId, newStatus) {
+        try {
+            console.log(`🔄 Changing enrollment ${enrollmentId} status to ${newStatus}`);
+            
+            const actionName = newStatus === 'ACTIVE' ? 'ativar' : 'inativar';
+            const confirmed = confirm(`Deseja ${actionName} esta matrícula?`);
+            if (!confirmed) return;
+
+            await this.api.request(`/api/students/${studentId}/enrollments/${enrollmentId}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            this.showMessage(`Matrícula ${newStatus === 'ACTIVE' ? 'ativada' : 'inativada'} com sucesso!`, 'success');
+            
+            // Reload courses tab
+            await this.renderCoursesTab(studentId);
+
+        } catch (error) {
+            console.error('Error updating enrollment status:', error);
+            this.showMessage('Erro ao atualizar status da matrícula. Tente novamente.', 'error');
         }
     }
 
@@ -2281,16 +2335,43 @@ export class StudentEditorController {
             } else {
                 enrolledContainer.innerHTML = enrollments.map(enrollment => {
                     const course = enrollment.course || {};
+                    const isActive = enrollment.status === 'ACTIVE';
+                    
                     return `
-                        <div class="course-item data-card-premium">
+                        <div class="course-item data-card-premium" style="border-left: 4px solid ${isActive ? '#28a745' : '#6c757d'};">
                             <div class="course-header">
                                 <h5>${course.name || 'Sem nome'}</h5>
-                                <span class="badge badge-success">Matriculado</span>
+                                <span class="badge ${isActive ? 'badge-success' : 'badge-secondary'}">${isActive ? 'Matriculado' : 'Inativo'}</span>
                             </div>
                             ${course.description ? `<p class="course-description">${course.description}</p>` : ''}
-                            <div class="course-meta">
-                                <span class="badge badge-info">${enrollment.status || 'ACTIVE'}</span>
-                                ${enrollment.enrolledAt ? `<small>Matrícula: ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                                <div class="course-meta" style="margin-top: 0;">
+                                    <span class="badge badge-info">${enrollment.status || 'ACTIVE'}</span>
+                                    ${enrollment.enrolledAt ? `<small>Matrícula: ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}</small>` : ''}
+                                </div>
+
+                                <div class="course-actions" style="display: flex; gap: 0.5rem;">
+                                    ${isActive ? `
+                                        <button class="btn-action btn-warning btn-sm" 
+                                            onclick="window.studentEditor.toggleEnrollmentStatus('${studentId}', '${enrollment.id}', 'SUSPENDED')"
+                                            title="Inativar matrícula (mantém histórico)">
+                                            <i class="fas fa-pause"></i> Inativar
+                                        </button>
+                                    ` : `
+                                        <button class="btn-action btn-success btn-sm" 
+                                            onclick="window.studentEditor.toggleEnrollmentStatus('${studentId}', '${enrollment.id}', 'ACTIVE')"
+                                            title="Reativar matrícula">
+                                            <i class="fas fa-play"></i> Ativar
+                                        </button>
+                                    `}
+                                    
+                                    <button class="btn-action btn-danger btn-sm" 
+                                        onclick="window.studentEditor.removeCourse('${studentId}', '${enrollment.id}')"
+                                        title="Apagar matrícula e todo progresso">
+                                        <i class="fas fa-trash"></i> Apagar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -2369,10 +2450,17 @@ export class StudentEditorController {
                 });
                 
             const responsibles = responsiblesRes.data || [];
-            const dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
+            
+            // Ensure dependentsData has correct types
+            let dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
+            if (dependentsData) {
+                dependentsData.totalAmount = parseFloat(dependentsData.totalAmount) || 0;
+                dependentsData.totalDependents = parseInt(dependentsData.totalDependents) || 0;
+                dependentsData.dependents = Array.isArray(dependentsData.dependents) ? dependentsData.dependents : [];
+            }
 
             const activeSubscriptions = subscriptions.filter(s => s.status === 'ACTIVE');
-            const totalPaid = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalPaid = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
             const pendingPayments = payments.filter(p => p.status === 'PENDING').length;
 
             panel.innerHTML = `
@@ -2576,7 +2664,7 @@ export class StudentEditorController {
                                                     </div>
                                                     <div class="detail-row">
                                                         <span class="detail-label">Valor:</span>
-                                                        <span class="detail-value price">R$ ${(parseFloat(sub.plan?.price) || 0).toFixed(2)}/mês</span>
+                                                        <span class="detail-value price">R$ ${(parseFloat(sub.price ?? sub.plan?.price) || 0).toFixed(2)}/mês</span>
                                                     </div>
                                                 </div>
                                                 <div class="subscription-actions">
@@ -2605,14 +2693,56 @@ export class StudentEditorController {
                             <i class="fas fa-users"></i>
                             Dependentes Financeiros
                             <span class="badge-count">${dependentsData.totalDependents}</span>
-                            <span class="badge-price">R$ ${dependentsData.totalAmount.toFixed(2)}</span>
+                            <span class="badge-price">R$ ${(parseFloat(dependentsData.totalAmount) || 0).toFixed(2)}</span>
                         </summary>
                         <div class="collapsible-content">
                             <div class="info-callout info-callout-primary">
                                 <i class="fas fa-info-circle"></i>
-                                <div>
-                                    <strong>Cobrança Consolidada</strong>
-                                    <p>A fatura mensal será gerada com o valor total de <strong>R$ ${dependentsData.totalAmount.toFixed(2)}</strong> incluindo todos os dependentes abaixo.</p>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <strong>Cobrança Consolidada</strong>
+                                        <button class="btn-text-primary btn-sm" onclick="window.studentEditor.openDiscountModal('${dependentsData.discountValue || 0}', '${dependentsData.discountType || 'FIXED'}')">
+                                            <i class="fas fa-edit"></i> Editar Desconto
+                                        </button>
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        ${(() => {
+                                            const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                                            const depSubTotal = parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0;
+                                            const depTotal = parseFloat(dependentsData.totalAmount) || 0;
+                                            const grandTotal = depTotal + responsibleTotal;
+                                            
+                                            return `
+                                                ${responsibleTotal > 0 ? `
+                                                <div style="display: flex; justify-content: space-between; color: var(--primary-color); margin-bottom: 4px;">
+                                                    <span>Assinatura do Responsável:</span>
+                                                    <span>R$ ${responsibleTotal.toFixed(2)}</span>
+                                                </div>
+                                                ` : ''}
+                                                <div style="display: flex; justify-content: space-between;">
+                                                    <span>Subtotal Dependentes:</span>
+                                                    <span>R$ ${depSubTotal.toFixed(2)}</span>
+                                                </div>
+                                                ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
+                                                <div style="display: flex; justify-content: space-between; color: var(--success-color);">
+                                                    <span>
+                                                        ${dependentsData.discountType === 'PERCENTAGE' ? `Desconto (${dependentsData.discountValue}%)` : 
+                                                          dependentsData.discountType === 'FIXED_PRICE' ? 'Ajuste para Valor Fixo' : 
+                                                          'Desconto Fixo'}
+                                                    </span>
+                                                    <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
+                                                </div>
+                                                ` : ''}
+                                                <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,0.1); font-weight: bold;">
+                                                    <span>Total Final:</span>
+                                                    <span>R$ ${grandTotal.toFixed(2)}</span>
+                                                </div>
+                                            `;
+                                        })()}
+                                    </div>
+                                    <p style="margin-top: 8px; font-size: 0.9em; opacity: 0.8;">
+                                        A fatura mensal será gerada com o valor total acima, incluindo todos os dependentes e a assinatura do responsável.
+                                    </p>
                                 </div>
                             </div>
 
@@ -2621,7 +2751,8 @@ export class StudentEditorController {
                                     const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
                                     const subsLength = (dep?.subscriptions || []).length;
                                     const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        return sum + (sub?.plan?.price || 0);
+                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                                        return sum + price;
                                     }, 0);
                                     
                                     return `
@@ -2732,7 +2863,7 @@ export class StudentEditorController {
                                                 <tr>
                                                     <td>${new Date(payment.createdAt).toLocaleDateString('pt-BR')}</td>
                                                     <td>${payment.description || 'Pagamento'}</td>
-                                                    <td class="payment-amount">R$ ${payment.amount?.toFixed(2) || '0.00'}</td>
+                                                    <td class="payment-amount">R$ ${(parseFloat(payment.amount) || 0).toFixed(2)}</td>
                                                     <td>
                                                         <span class="payment-status status-${(payment.status || 'pending').toLowerCase()}">
                                                             ${payment.status || 'PENDING'}
@@ -3468,6 +3599,77 @@ export class StudentEditorController {
             'expert': 'Expert'
         };
         return labels[level] || 'Não avaliado';
+    }
+
+    async openDiscountModal(currentValue, currentType) {
+        if (typeof Swal === 'undefined') {
+            const newVal = prompt('Digite o valor do desconto:', currentValue);
+            if (newVal !== null) {
+                try {
+                    await this.api.request(`/api/students/${this.currentStudentId}/financial-dependents/discount`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            discountValue: parseFloat(newVal),
+                            discountType: 'FIXED'
+                        })
+                    });
+                    await this.renderFinancialTab(this.currentStudentId);
+                } catch (e) {
+                    alert('Erro ao salvar');
+                }
+            }
+            return;
+        }
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Desconto Consolidado',
+            html: `
+                <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+                    <label>
+                        Tipo de Desconto:
+                        <select id="swal-discount-type" class="swal2-select" style="margin: 5px 0; width: 100%; display: block;">
+                            <option value="FIXED_PRICE" ${currentType === 'FIXED_PRICE' ? 'selected' : ''}>Valor Final Fixo (R$)</option>
+                            <option value="FIXED" ${currentType === 'FIXED' ? 'selected' : ''}>Desconto Fixo (R$)</option>
+                            <option value="PERCENTAGE" ${currentType === 'PERCENTAGE' ? 'selected' : ''}>Desconto Percentual (%)</option>
+                        </select>
+                    </label>
+                    <label>
+                        Valor:
+                        <input id="swal-discount-value" type="number" step="0.01" class="swal2-input" style="margin: 5px 0; width: 100%; box-sizing: border-box;" value="${currentValue}">
+                    </label>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Salvar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                return {
+                    discountType: document.getElementById('swal-discount-type').value,
+                    discountValue: document.getElementById('swal-discount-value').value
+                }
+            }
+        });
+
+        if (formValues) {
+            try {
+                await this.api.request(`/api/students/${this.currentStudentId}/financial-dependents/discount`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        discountValue: parseFloat(formValues.discountValue),
+                        discountType: formValues.discountType
+                    })
+                });
+                
+                // Reload to show changes
+                await this.renderFinancialTab(this.currentStudentId);
+                
+                Swal.fire('Sucesso', 'Desconto atualizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error updating discount:', error);
+                Swal.fire('Erro', 'Falha ao atualizar desconto', 'error');
+            }
+        }
     }
 }
 

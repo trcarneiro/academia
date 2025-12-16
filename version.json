@@ -1,5 +1,19 @@
 [
   {
+    "id": 1765885729556,
+    "timestamp": "2025-12-16T11:48:49.556Z",
+    "version": "1.0.2",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
+    "id": 1765885515205,
+    "timestamp": "2025-12-16T11:45:15.205Z",
+    "version": "1.0.1",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
     "id": 1752724800000,
     "timestamp": "2025-07-15T12:00:00.000Z",
     "description": "Reestruturação completa seguindo claude.md - Arquitetura Three Pillars implementada com módulos ES6 simplificados",

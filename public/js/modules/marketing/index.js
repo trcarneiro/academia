@@ -271,6 +271,9 @@ const MarketingModule = {
                     <button class="btn-icon" onclick="event.stopPropagation(); marketing.previewPage('${page.id}')" title="Preview">
                         <i class="fas fa-eye"></i>
                     </button>
+                    <button class="btn-icon" onclick="event.stopPropagation(); marketing.duplicatePage('${page.id}')" title="Duplicar">
+                        <i class="fas fa-copy"></i>
+                    </button>
                     <button class="btn-icon" onclick="event.stopPropagation(); marketing.editWithAgent('${page.id}')" title="Editar com IA">
                         <i class="fas fa-robot"></i>
                     </button>
@@ -361,6 +364,12 @@ const MarketingModule = {
                         <button class="btn-icon" onclick="event.stopPropagation(); marketing.copyPageUrl('${page.slug}')" title="Copiar URL">
                             <i class="fas fa-link"></i>
                         </button>
+                        <button class="btn-icon" onclick="event.stopPropagation(); marketing.duplicatePage('${page.id}')" title="Duplicar">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn-icon" onclick="event.stopPropagation(); marketing.deletePage('${page.id}')" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
                 
@@ -424,6 +433,7 @@ const MarketingModule = {
         try {
             const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${this.currentLandingPageId}`);
             const page = res.data;
+            this.currentLandingPageData = page; // Store for form editing
             
             this.container.innerHTML = `
                 <div class="module-isolated-marketing">
@@ -446,6 +456,12 @@ const MarketingModule = {
                                 </button>
                                 <button class="btn-action-secondary" onclick="marketing.previewPage('${page.id}')">
                                     <i class="fas fa-eye"></i> Preview
+                                </button>
+                                <button class="btn-action-secondary" onclick="marketing.duplicatePage('${page.id}')">
+                                    <i class="fas fa-copy"></i> Duplicar
+                                </button>
+                                <button class="btn-action-danger" onclick="marketing.deletePage('${page.id}')">
+                                    <i class="fas fa-trash"></i> Excluir
                                 </button>
                                 <button class="btn-action-primary" onclick="marketing.editWithAgent('${page.id}')">
                                     <i class="fas fa-robot"></i> Editar com IA
@@ -496,6 +512,30 @@ const MarketingModule = {
                                     <label>Última Geração IA</label>
                                     <span>${page.lastGeneratedAt ? this.formatDateTime(page.lastGeneratedAt) : 'Nunca'}</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Forms Section -->
+                        <div class="data-card-premium">
+                            <div class="card-header">
+                                <h3><i class="fas fa-wpforms"></i> Formulários</h3>
+                                <button class="btn-action-secondary btn-sm" onclick="marketing.createForm('${page.id}')">
+                                    <i class="fas fa-plus"></i> Novo Form
+                                </button>
+                            </div>
+                            <div class="forms-list">
+                                ${page.forms && page.forms.length ? page.forms.map(form => `
+                                    <div class="list-item-row">
+                                        <div class="item-info">
+                                            <strong>${form.name}</strong>
+                                            <small>${form.submissions || 0} envios • ${form.conversions || 0} leads</small>
+                                        </div>
+                                        <div class="item-actions">
+                                            <button class="btn-icon" onclick="marketing.editForm('${form.id}')"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon" onclick="marketing.deleteForm('${form.id}')"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="empty-text">Nenhum formulário configurado</p>'}
                             </div>
                         </div>
 
@@ -592,7 +632,41 @@ const MarketingModule = {
         `;
     },
     
+    async loadAnalytics(startDate = null, endDate = null) {
+        try {
+            let url = '/api/marketing/analytics/summary';
+            const params = [];
+            if (startDate) params.push(`startDate=${startDate}`);
+            if (endDate) params.push(`endDate=${endDate}`);
+            
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            const response = await this.moduleAPI.request(url);
+            if (response.success) {
+                this.stats = response.data;
+                this.render(); // Re-render with new data
+            }
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+            window.app.handleError(error, { module: 'marketing', context: 'loadAnalytics' });
+        }
+    },
+
+    applyAnalyticsFilter() {
+        const startDate = document.getElementById('analytics-start').value;
+        const endDate = document.getElementById('analytics-end').value;
+        this.loadAnalytics(startDate, endDate);
+    },
+
     renderAnalytics() {
+        const stats = this.stats || { totalViews: 0, totalSubmissions: 0, totalConversions: 0, conversionRate: 0, topPages: [], chartData: [] };
+        
+        // Default dates for inputs (last 30 days)
+        const today = new Date().toISOString().split('T')[0];
+        const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
         this.container.innerHTML = `
             <div class="module-isolated-marketing">
                 <div class="module-header-premium">
@@ -609,18 +683,298 @@ const MarketingModule = {
                             <button class="btn-action-secondary" onclick="marketing.navigateTo('dashboard')">
                                 <i class="fas fa-arrow-left"></i> Voltar
                             </button>
+                            <button class="btn-action-primary" onclick="marketing.loadInitialData().then(() => marketing.render())">
+                                <i class="fas fa-sync"></i> Atualizar
+                            </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="coming-soon data-card-premium">
-                    <div class="coming-soon-icon">📊</div>
-                    <h2>Em Breve</h2>
-                    <p>Analytics detalhado de landing pages e campanhas.</p>
-                    <p>Por enquanto, visualize métricas básicas em cada landing page.</p>
+                <!-- Filter Bar -->
+                <div class="module-filters-premium" style="margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-end; background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.875rem; color: #666;">Data Inicial</label>
+                        <input type="date" id="analytics-start" class="form-control" value="${lastMonth}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.875rem; color: #666;">Data Final</label>
+                        <input type="date" id="analytics-end" class="form-control" value="${today}" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <button class="btn-action-primary" onclick="marketing.applyAnalyticsFilter()">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+                
+                <!-- Overview Cards -->
+                <div class="stats-grid-premium">
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${this.formatNumber(stats.totalViews)}</div>
+                            <div class="stat-label">Total Visualizações</div>
+                        </div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${this.formatNumber(stats.totalSubmissions)}</div>
+                            <div class="stat-label">Envios de Formulário</div>
+                        </div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${this.formatNumber(stats.totalConversions)}</div>
+                            <div class="stat-label">Leads Convertidos</div>
+                        </div>
+                    </div>
+                    <div class="stat-card-enhanced">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.conversionRate}%</div>
+                            <div class="stat-label">Taxa de Conversão</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="data-card-premium" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-area"></i> Visitas (Últimos 30 dias)</h3>
+                    </div>
+                    <div class="chart-container" style="width: 100%; overflow-x: auto;">
+                        ${this.renderChart(stats.chartData)}
+                    </div>
+                </div>
+
+                <!-- Top Pages -->
+                <div class="data-card-premium" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-trophy"></i> Páginas Mais Acessadas</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Página</th>
+                                    <th>Visualizações</th>
+                                    <th>Conversões</th>
+                                    <th>Taxa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${stats.topPages && stats.topPages.length ? stats.topPages.map(page => `
+                                    <tr>
+                                        <td>${page.name}</td>
+                                        <td>${this.formatNumber(page.views)}</td>
+                                        <td>${this.formatNumber(page.conversions)}</td>
+                                        <td>${page.views > 0 ? ((page.conversions / page.views) * 100).toFixed(1) : 0}%</td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="4" class="text-center">Nenhum dado disponível</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `;
+    },
+
+    renderChart(data) {
+        if (!data || data.length === 0) return '<div class="empty-chart" style="padding: 40px; text-align: center; color: #666;">Sem dados para exibir</div>';
+
+        const height = 300;
+        const width = 800;
+        const padding = 40;
+        
+        const maxVal = Math.max(...data.map(d => d.count)) || 1;
+        
+        const points = data.map((d, i) => {
+            const x = padding + (i * (width - 2 * padding) / (data.length - 1 || 1));
+            const y = height - padding - (d.count * (height - 2 * padding) / maxVal);
+            return `${x},${y}`;
+        }).join(' ');
+
+        const step = Math.ceil(data.length / 7);
+        const labels = data.filter((_, i) => i % step === 0).map((d, i) => {
+            const x = padding + (data.indexOf(d) * (width - 2 * padding) / (data.length - 1 || 1));
+            const date = new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            return `<text x="${x}" y="${height - 10}" text-anchor="middle" font-size="12" fill="#666">${date}</text>`;
+        }).join('');
+
+        return `
+            <svg viewBox="0 0 ${width} ${height}" class="analytics-chart" style="width: 100%; height: auto; max-height: 400px;">
+                <defs>
+                    <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="var(--primary-color, #667eea)" stop-opacity="0.5"/>
+                        <stop offset="100%" stop-color="var(--primary-color, #667eea)" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                
+                <!-- Grid lines -->
+                <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="#eee" stroke-width="1"/>
+                <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#eee" stroke-width="1"/>
+                
+                <!-- Area -->
+                <polygon points="${padding},${height - padding} ${points} ${width - padding},${height - padding}" fill="url(#gradient)"/>
+                
+                <!-- Line -->
+                <polyline points="${points}" fill="none" stroke="var(--primary-color, #667eea)" stroke-width="2"/>
+                
+                <!-- Points -->
+                ${data.map((d, i) => {
+                    const x = padding + (i * (width - 2 * padding) / (data.length - 1 || 1));
+                    const y = height - padding - (d.count * (height - 2 * padding) / maxVal);
+                    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--primary-color, #667eea)" />`;
+                }).join('')}
+                
+                <!-- Labels -->
+                ${labels}
+            </svg>
+        `;
+    },
+
+    // =========================================================================
+    // FORM EDITOR
+    // =========================================================================
+
+    async editForm(formId) {
+        const form = this.currentLandingPageData?.forms?.find(f => f.id === formId);
+        if (!form) {
+            this.showNotification('Formulário não encontrado', 'error');
+            return;
+        }
+
+        // Create modal HTML
+        const modalHtml = `
+            <div class="modal-overlay" id="form-editor-modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3>Editar Formulário: ${form.name}</h3>
+                        <button class="btn-icon" onclick="document.getElementById('form-editor-modal').remove()"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Nome do Formulário</label>
+                                <input type="text" id="edit-form-name" value="${form.name}" class="form-control">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Botão de Envio</label>
+                                <input type="text" id="edit-form-button" value="${form.submitButtonText || 'Enviar'}" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensagem de Sucesso</label>
+                            <input type="text" id="edit-form-success" value="${form.successMessage || 'Obrigado!'}" class="form-control">
+                        </div>
+                        
+                        <div class="fields-editor" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>Campos do Formulário</h4>
+                                <button class="btn-action-secondary btn-sm" onclick="marketing.addFormField()">
+                                    <i class="fas fa-plus"></i> Adicionar Campo
+                                </button>
+                            </div>
+                            <div id="fields-list" class="fields-list">
+                                ${form.fields.map((field, index) => this.renderFieldEditorItem(field, index)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-action-secondary" onclick="document.getElementById('form-editor-modal').remove()">Cancelar</button>
+                        <button class="btn-action-primary" onclick="marketing.saveForm('${form.id}')">Salvar Alterações</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        const existingModal = document.getElementById('form-editor-modal');
+        if (existingModal) existingModal.remove();
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    renderFieldEditorItem(field, index) {
+        return `
+            <div class="field-item data-card-premium" style="margin-bottom: 10px; padding: 15px;" data-index="${index}">
+                <div class="field-row" style="display: flex; gap: 10px; align-items: center;">
+                    <div style="flex: 2;">
+                        <label style="font-size: 12px; color: #666;">Label</label>
+                        <input type="text" class="field-label form-control" value="${field.label}" placeholder="Ex: Seu Nome">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; color: #666;">Tipo</label>
+                        <select class="field-type form-control">
+                            <option value="text" ${field.type === 'text' ? 'selected' : ''}>Texto</option>
+                            <option value="email" ${field.type === 'email' ? 'selected' : ''}>Email</option>
+                            <option value="tel" ${field.type === 'tel' ? 'selected' : ''}>Telefone</option>
+                            <option value="textarea" ${field.type === 'textarea' ? 'selected' : ''}>Área de Texto</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; padding-top: 20px;">
+                        <label class="checkbox-label" style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" class="field-required" ${field.required ? 'checked' : ''}> Obrigatório
+                        </label>
+                    </div>
+                    <div style="padding-top: 20px;">
+                        <button class="btn-icon text-danger" onclick="this.closest('.field-item').remove()" title="Remover campo">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    addFormField() {
+        const list = document.getElementById('fields-list');
+        const index = list.children.length;
+        list.insertAdjacentHTML('beforeend', this.renderFieldEditorItem({ label: '', type: 'text', required: false }, index));
+    },
+
+    async saveForm(formId) {
+        const name = document.getElementById('edit-form-name').value;
+        const submitButtonText = document.getElementById('edit-form-button').value;
+        const successMessage = document.getElementById('edit-form-success').value;
+        
+        const fields = Array.from(document.querySelectorAll('.field-item')).map(item => ({
+            name: item.querySelector('.field-label').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "_"),
+            label: item.querySelector('.field-label').value,
+            type: item.querySelector('.field-type').value,
+            required: item.querySelector('.field-required').checked
+        }));
+
+        if (!name) {
+            this.showNotification('Nome do formulário é obrigatório', 'error');
+            return;
+        }
+
+        if (fields.length === 0) {
+            this.showNotification('Adicione pelo menos um campo', 'error');
+            return;
+        }
+
+        try {
+            const res = await this.moduleAPI.request(`/api/marketing/forms/${formId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name,
+                    submitButtonText,
+                    successMessage,
+                    fields
+                })
+            });
+
+            if (res.success) {
+                this.showNotification('Formulário atualizado com sucesso!', 'success');
+                document.getElementById('form-editor-modal').remove();
+                this.renderLandingDetail(); // Reload to show changes
+            }
+        } catch (error) {
+            console.error('Error saving form:', error);
+            this.showNotification('Erro ao salvar formulário', 'error');
+        }
     },
     
     // =========================================================================
@@ -692,9 +1046,8 @@ const MarketingModule = {
         if (!confirm('Publicar esta landing page? Ela ficará acessível publicamente.')) return;
         
         try {
-            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: 'PUBLISHED' })
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}/publish`, {
+                method: 'POST'
             });
             
             if (res.success) {
@@ -711,9 +1064,8 @@ const MarketingModule = {
         if (!confirm('Despublicar esta landing page?')) return;
         
         try {
-            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: 'DRAFT' })
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}/unpublish`, {
+                method: 'POST'
             });
             
             if (res.success) {
@@ -724,6 +1076,97 @@ const MarketingModule = {
         } catch (error) {
             this.showNotification('Erro ao despublicar', 'error');
         }
+    },
+
+    async duplicatePage(id) {
+        if (!confirm('Duplicar esta landing page?')) return;
+
+        try {
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}/duplicate`, {
+                method: 'POST'
+            });
+
+            if (res.success) {
+                this.showNotification('Landing page duplicada com sucesso!', 'success');
+                await this.loadInitialData();
+                this.render();
+            }
+        } catch (error) {
+            console.error('❌ Error duplicating page:', error);
+            this.showNotification('Erro ao duplicar landing page', 'error');
+        }
+    },
+
+    async deletePage(id) {
+        if (!confirm('Tem certeza que deseja excluir esta landing page? Esta ação não pode ser desfeita.')) return;
+
+        try {
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.success) {
+                this.showNotification('Landing page excluída com sucesso!', 'success');
+                await this.loadInitialData();
+                this.navigateTo('landing-pages');
+            }
+        } catch (error) {
+            console.error('❌ Error deleting page:', error);
+            this.showNotification('Erro ao excluir landing page', 'error');
+        }
+    },
+
+    // =========================================================================
+    // FORMS MANAGEMENT
+    // =========================================================================
+
+    async createForm(pageId) {
+        const name = prompt('Nome do Formulário:');
+        if (!name) return;
+        
+        try {
+            const res = await this.moduleAPI.request(`/api/marketing/landing-pages/${pageId}/forms`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    fields: [
+                        { name: 'name', label: 'Nome', type: 'text', required: true },
+                        { name: 'email', label: 'Email', type: 'email', required: true },
+                        { name: 'phone', label: 'Telefone', type: 'tel', required: true }
+                    ],
+                    submitButtonText: 'Enviar',
+                    successMessage: 'Obrigado! Entraremos em contato.'
+                })
+            });
+            
+            if (res.success) {
+                this.showNotification('Formulário criado!', 'success');
+                this.viewLandingPage(pageId); // Reload
+            }
+        } catch (error) {
+            this.showNotification('Erro ao criar formulário', 'error');
+        }
+    },
+
+    async deleteForm(id) {
+        if (!confirm('Excluir este formulário?')) return;
+        
+        try {
+            const res = await this.moduleAPI.request(`/api/marketing/forms/${id}`, {
+                method: 'DELETE'
+            });
+            
+            if (res.success) {
+                this.showNotification('Formulário excluído', 'success');
+                this.viewLandingPage(this.currentLandingPageId); // Reload
+            }
+        } catch (error) {
+            this.showNotification('Erro ao excluir formulário', 'error');
+        }
+    },
+
+    editForm(id) {
+        alert('Edição de formulário será implementada em breve. Use o Agente de Marketing para editar.');
     },
     
     // =========================================================================

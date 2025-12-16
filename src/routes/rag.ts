@@ -10,7 +10,7 @@ import { RAGService } from '@/services/ragService';
 // Schemas de validação
 const ChatMessageSchema = z.object({
     message: z.string().min(1).max(1000),
-    context: z.string().optional()
+    context: z.any().optional()
 });
 
 const GenerateContentSchema = z.object({

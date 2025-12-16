@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import { readFileSync } from 'fs';
+import path from 'path';
 
 /**
  * Health check routes for monitoring database and server status
@@ -197,7 +199,27 @@ export default async function healthRoutes(fastify: FastifyInstance) {
     });
   });
 
-  logger.info('✅ Health check routes registered (4 endpoints)');
+  // Get system version
+  fastify.get('/version', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const packageJsonPath = path.join(process.cwd(), 'package.json');
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      return reply.send({ 
+        success: true, 
+        version: packageJson.version,
+        environment: process.env.NODE_ENV || 'development'
+      });
+    } catch (error) {
+      logger.error('Error reading version:', error);
+      return reply.send({ 
+        success: false, 
+        version: 'unknown',
+        environment: 'unknown'
+      });
+    }
+  });
+
+  logger.info('✅ Health check routes registered (5 endpoints)');
 }
 
 /**

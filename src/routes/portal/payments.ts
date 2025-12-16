@@ -12,9 +12,10 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { paymentService } from '@/services/portal/paymentService';
-import { validateToken } from '@/services/portal/authService';
+import { portalAuthMiddleware } from '@/middlewares/portalAuth';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import { ResponseHelper } from '@/utils/response';
 
 // Type definitions
 interface CreateChargeBody {
@@ -34,48 +35,9 @@ interface ListChargesQuery {
   offset?: number;
 }
 
-// Middleware para autenticação do portal
-async function portalAuth(request: FastifyRequest, reply: FastifyReply) {
-  const authHeader = request.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return reply.code(401).send({
-      success: false,
-      error: 'Token não fornecido',
-      errorCode: 'UNAUTHORIZED',
-    });
-  }
-
-  const token = authHeader.substring(7);
-  const result = await validateToken(token);
-
-  if (!result.valid || !result.payload) {
-    return reply.code(401).send({
-      success: false,
-      error: result.error || 'Token inválido',
-      errorCode: 'UNAUTHORIZED',
-    });
-  }
-
-  // Adiciona dados do usuário ao request
-  (request as FastifyRequest & { student: StudentContext }).student = {
-    id: result.payload.sub,
-    email: result.payload.email,
-    name: result.payload.name,
-    organizationId: result.payload.orgId,
-  };
-}
-
-interface StudentContext {
-  id: string;
-  email: string;
-  name: string;
-  organizationId: string;
-}
-
 export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
   // Aplicar autenticação em todas as rotas
-  fastify.addHook('preHandler', portalAuth);
+  fastify.addHook('preHandler', portalAuthMiddleware);
 
   /**
    * POST /create
@@ -111,10 +73,15 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { subscriptionId, amount, dueDate, description } = request.body;
-      const student = (request as FastifyRequest & { student: StudentContext }).student;
+      const studentId = request.studentId;
+      const organizationId = request.organizationId;
+
+      if (!studentId || !organizationId) {
+        return ResponseHelper.error(reply, 'Dados de autenticação incompletos', 400);
+      }
 
       logger.info('Portal: Criando cobrança PIX', {
-        studentId: student.id,
+        studentId,
         subscriptionId,
         amount,
       });
@@ -124,7 +91,7 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
         const subscription = await prisma.studentSubscription.findFirst({
           where: {
             id: subscriptionId,
-            studentId: student.id,
+            studentId,
           },
         });
 
@@ -138,7 +105,7 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
       }
 
       const result = await paymentService.createCharge({
-        studentId: student.id,
+        studentId,
         subscriptionId,
         amount,
         dueDate: dueDate ? new Date(dueDate) : new Date(),
@@ -147,7 +114,7 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
 
       if (!result.success) {
         logger.warn('Portal: Erro ao criar cobrança', {
-          studentId: student.id,
+          studentId,
           error: result.error,
         });
 
@@ -158,7 +125,7 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
       }
 
       logger.info('Portal: Cobrança PIX criada', {
-        studentId: student.id,
+        studentId,
         paymentId: result.paymentId,
       });
 
@@ -190,9 +157,10 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const student = (request as FastifyRequest & { student: StudentContext }).student;
+      const studentId = request.studentId;
+      if (!studentId) return ResponseHelper.error(reply, 'Aluno não identificado', 400);
 
-      const payment = await paymentService.getPaymentById(id, student.id);
+      const payment = await paymentService.getPaymentById(id, studentId);
 
       if (!payment) {
         return reply.code(404).send({
@@ -247,8 +215,10 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
+      const studentId = request.studentId;
+      if (!studentId) return ResponseHelper.error(reply, 'Aluno não identificado', 400);
 
-      const result = await paymentService.getPaymentStatus(id);
+      const result = await paymentService.getPaymentStatus(id, studentId);
 
       if (!result.success) {
         return reply.code(404).send({
@@ -293,8 +263,10 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
+      const studentId = request.studentId;
+      if (!studentId) return ResponseHelper.error(reply, 'Aluno não identificado', 400);
 
-      const result = await paymentService.getPixQrCode(id);
+      const result = await paymentService.getPixQrCode(id, studentId);
 
       if (!result.success) {
         return reply.code(400).send({
@@ -341,9 +313,10 @@ export default async function portalPaymentsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { status, limit, offset } = request.query;
-      const student = (request as FastifyRequest & { student: StudentContext }).student;
+      const studentId = request.studentId;
+      if (!studentId) return ResponseHelper.error(reply, 'Aluno não identificado', 400);
 
-      const result = await paymentService.listPayments(student.id, {
+      const result = await paymentService.listPayments(studentId, {
         status,
         limit: limit || 10,
         offset: offset || 0,

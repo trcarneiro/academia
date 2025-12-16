@@ -10,10 +10,10 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Cores para output
-function Write-Step { param($msg) Write-Host "`n🔷 $msg" -ForegroundColor Cyan }
-function Write-Success { param($msg) Write-Host "✅ $msg" -ForegroundColor Green }
-function Write-Error { param($msg) Write-Host "❌ $msg" -ForegroundColor Red }
-function Write-Warning { param($msg) Write-Host "⚠️  $msg" -ForegroundColor Yellow }
+function Write-Step { param($msg) Write-Host "`n[STEP] $msg" -ForegroundColor Cyan }
+function Write-Success { param($msg) Write-Host "[OK] $msg" -ForegroundColor Green }
+function Write-Error { param($msg) Write-Host "[ERROR] $msg" -ForegroundColor Red }
+function Write-Warning { param($msg) Write-Host "[WARN] $msg" -ForegroundColor Yellow }
 
 # Carregar variáveis do .env
 function Load-EnvFile {
@@ -25,14 +25,19 @@ function Load-EnvFile {
     }
     
     $envVars = @{}
-    Get-Content ".env" | ForEach-Object {
-        if ($_ -match '^\s*([^#][^=]+)=(.+)$') {
+    $lines = Get-Content ".env" -Encoding UTF8
+    
+    foreach ($line in $lines) {
+        if ($line -match '^\s*([^#=]+)=(.*)$') {
             $key = $matches[1].Trim()
-            $value = $matches[2].Trim().Trim('"')
-            $envVars[$key] = $value
+            $value = $matches[2].Trim().Trim('"').Trim("'")
+            if ($key) {
+                $envVars[$key] = $value
+            }
         }
     }
     
+    Write-Host "  Encontradas $($envVars.Count) variáveis." -ForegroundColor DarkGray
     return $envVars
 }
 
@@ -45,9 +50,14 @@ $REMOTE_PATH = $env['REMOTE_SERVER_PATH']
 $REMOTE_PORT = $env['REMOTE_SERVER_PORT']
 $REMOTE_PASSWORD = $env['REMOTE_SERVER_PASSWORD']
 
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
-Write-Host "🚀 Deploy Academia Krav Maga v2.0" -ForegroundColor Magenta
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+if ([string]::IsNullOrWhiteSpace($REMOTE_IP)) {
+    Write-Error "REMOTE_SERVER_IP nao encontrado no .env"
+    exit 1
+}
+
+Write-Host "----------------------------------------" -ForegroundColor Magenta
+Write-Host "Deploy Academia Krav Maga v2.0" -ForegroundColor Magenta
+Write-Host "----------------------------------------" -ForegroundColor Magenta
 Write-Host "📍 Servidor: $REMOTE_USER@$REMOTE_IP"
 Write-Host "📂 Destino: $REMOTE_PATH"
 Write-Host ""
@@ -119,7 +129,7 @@ tests/
 coverage/
 "@ | Out-File -FilePath $excludeFile -Encoding UTF8
 
-Write-Success "Lista de exclusão criada"
+Write-Success "Lista de exclusao criada"
 
 # 4. FUNÇÃO PARA EXECUTAR COMANDOS SSH
 function Invoke-RemoteCommand {
@@ -134,11 +144,23 @@ function Invoke-RemoteCommand {
     }
     
     if (-not $Silent) {
-        Write-Host "  → Executando: $Command" -ForegroundColor DarkGray
+        Write-Host "  -> Executando: $Command" -ForegroundColor DarkGray
     }
     
+    if ([string]::IsNullOrWhiteSpace($REMOTE_IP)) {
+        throw "REMOTE_SERVER_IP nao definido no .env"
+    }
+
     $password = $REMOTE_PASSWORD
-    echo y | plink -batch -pw $password -P $REMOTE_PORT "$REMOTE_USER@$REMOTE_IP" $Command
+    $plinkCmd = "plink"
+    $args = @("-batch", "-pw", $password, "-P", $REMOTE_PORT, "$REMOTE_USER@$REMOTE_IP", $Command)
+    
+    # Executar plink e capturar saída
+    $process = Start-Process -FilePath $plinkCmd -ArgumentList $args -NoNewWindow -PassThru -Wait
+    
+    if ($process.ExitCode -ne 0) {
+        throw "Erro ao executar comando remoto (Exit Code: $($process.ExitCode))"
+    }
 }
 
 # 5. VERIFICAR CONEXÃO
@@ -169,16 +191,24 @@ if (-not $DryRun) {
     # Usando rsync via WSL se disponível, senão usa pscp
     $hasWsl = Get-Command wsl -ErrorAction SilentlyContinue
     
-    if ($hasWsl) {
+    # Forçando uso do pscp (PuTTY) para evitar problemas de senha com rsync/WSL
+    # Se quiser usar rsync, configure chaves SSH ou instale sshpass no WSL
+    $useRsync = $false # $hasWsl
+    
+    if ($useRsync) {
         Write-Host "  Usando rsync (WSL)..." -ForegroundColor DarkGray
         
-        $wslPath = wsl wslpath -a (Get-Location).Path
+        $wslPath = (wsl wslpath -a (Get-Location).Path).Trim()
         
-        wsl rsync -avz --delete `
-            --exclude-from=".deploy-exclude.txt" `
-            -e "ssh -p $REMOTE_PORT" `
-            "$wslPath/" `
-            "$REMOTE_USER@$REMOTE_IP:$REMOTE_PATH/"
+        # Usando bash -c para garantir que as aspas do comando SSH sejam preservadas
+        # e evitando problemas de interpretação de argumentos entre PowerShell e WSL
+        $rsyncCmd = "rsync -avz --delete --exclude-from='.deploy-exclude.txt' -e 'ssh -p $REMOTE_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' '$wslPath/' '$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/'"
+        
+        wsl bash -c $rsyncCmd
+        
+        if ($LASTEXITCODE -ne 0) {
+            throw "Falha na sincronização via rsync (Exit Code: $LASTEXITCODE)"
+        }
     } else {
         Write-Host "  Usando pscp (PuTTY)..." -ForegroundColor DarkGray
         
@@ -193,7 +223,7 @@ if (-not $DryRun) {
         )
         
         foreach ($file in $filesToUpload) {
-            pscp -batch -pw $REMOTE_PASSWORD -P $REMOTE_PORT -r $file "$REMOTE_USER@$REMOTE_IP:$REMOTE_PATH/"
+            pscp -batch -pw $REMOTE_PASSWORD -P $REMOTE_PORT -r $file "$REMOTE_USER@${REMOTE_IP}:$REMOTE_PATH/"
         }
     }
     
@@ -214,19 +244,32 @@ Write-Step "Gerando Prisma Client..."
 Invoke-RemoteCommand "cd $REMOTE_PATH && npx prisma generate"
 Write-Success "Prisma Client gerado"
 
-# 10. EXECUTAR MIGRATIONS
-Write-Step "Executando migrations do banco de dados..."
+# 10. EXECUTAR MIGRATIONS (LOCALMENTE)
+Write-Step "Executando migrations do banco de dados (Local)..."
 
-Invoke-RemoteCommand "cd $REMOTE_PATH && npx prisma db push --skip-generate"
-Write-Success "Migrations aplicadas"
+try {
+    # Executar localmente para evitar problemas de IPv6 no servidor
+    Write-Host "  -> Executando: npx prisma db push --skip-generate" -ForegroundColor DarkGray
+    npx prisma db push --skip-generate
+    Write-Success "Migrations aplicadas com sucesso (Local)"
+} catch {
+    Write-Error "Falha ao aplicar migrations localmente: $_"
+    exit 1
+}
 
 # 11. REINICIAR SERVIÇO
 Write-Step "Reiniciando serviço..."
 
 # Verifica se está usando PM2 ou systemd
-$pm2Status = Invoke-RemoteCommand "which pm2" -Silent
+$pm2Installed = $false
+try {
+    Invoke-RemoteCommand "which pm2" -Silent
+    $pm2Installed = $true
+} catch {
+    $pm2Installed = $false
+}
 
-if ($pm2Status) {
+if ($pm2Installed) {
     Write-Host "  Usando PM2..." -ForegroundColor DarkGray
     Invoke-RemoteCommand "cd $REMOTE_PATH && pm2 restart academia || pm2 start ecosystem.config.js"
     Invoke-RemoteCommand "pm2 save"
@@ -243,7 +286,7 @@ Write-Step "Verificando status do serviço..."
 Start-Sleep -Seconds 3
 
 try {
-    $response = Invoke-WebRequest -Uri "http://$REMOTE_IP:3000/health" -TimeoutSec 5
+    $response = Invoke-WebRequest -Uri "http://${REMOTE_IP}:3000/health" -TimeoutSec 5
     
     if ($response.StatusCode -eq 200) {
         Write-Success "Aplicação respondendo corretamente!"
@@ -260,16 +303,16 @@ Invoke-RemoteCommand "cd $REMOTE_PATH && (pm2 logs academia --lines 10 --nostrea
 
 # RESUMO
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-Write-Host "✅ DEPLOY CONCLUÍDO COM SUCESSO!" -ForegroundColor Green
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
+Write-Host "----------------------------------------" -ForegroundColor Green
+Write-Host "DEPLOY CONCLUIDO COM SUCESSO!" -ForegroundColor Green
+Write-Host "----------------------------------------" -ForegroundColor Green
 Write-Host ""
-Write-Host "📍 URL: http://$REMOTE_IP:3000"
-Write-Host "🔍 Logs: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 logs academia'"
-Write-Host "🔄 Restart: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 restart academia'"
+Write-Host "URL: http://${REMOTE_IP}:3000"
+Write-Host "Logs: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 logs academia'"
+Write-Host "Restart: ssh $REMOTE_USER@$REMOTE_IP -p $REMOTE_PORT 'pm2 restart academia'"
 Write-Host ""
 
 # Limpar arquivo temporário
 Remove-Item $excludeFile -ErrorAction SilentlyContinue
 
-Write-Host "🎉 Deploy finalizado em $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Magenta
+Write-Host "Deploy finalizado em $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Magenta

@@ -633,6 +633,59 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Update enrollment status
+  fastify.patch('/:id/enrollments/:enrollmentId/status', async (request: FastifyRequest<{ 
+    Params: { id: string, enrollmentId: string },
+    Body: { status: string }
+  }>, reply: FastifyReply) => {
+    try {
+      const { id: studentId, enrollmentId } = request.params;
+      const { status } = request.body;
+
+      // Validate status against enum
+      const validStatuses = ['ACTIVE', 'COMPLETED', 'DROPPED', 'SUSPENDED', 'TRANSFERRED'];
+      if (!validStatuses.includes(status)) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Invalid status'
+        });
+      }
+
+      // Verify enrollment exists and belongs to the student
+      const enrollment = await prisma.courseEnrollment.findFirst({
+        where: {
+          id: enrollmentId,
+          studentId: studentId
+        }
+      });
+
+      if (!enrollment) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Enrollment not found'
+        });
+      }
+
+      // Update the enrollment
+      await prisma.courseEnrollment.update({
+        where: { id: enrollmentId },
+        data: { status: status as any }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Enrollment status updated successfully'
+      });
+
+    } catch (error) {
+      logger.error('Error updating student enrollment status:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to update student enrollment status'
+      });
+    }
+  });
+
   // Delete student enrollment
   fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{ 
     Params: { id: string, enrollmentId: string }
@@ -1481,6 +1534,18 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     try {
       const { studentId } = request.params as { studentId: string };
 
+      const responsible = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: {
+          consolidatedDiscountValue: true,
+          consolidatedDiscountType: true,
+          subscriptions: {
+            where: { isActive: true },
+            include: { plan: true }
+          }
+        }
+      });
+
       const dependents = await prisma.student.findMany({
         where: {
           financialResponsibleStudentId: studentId
@@ -1516,13 +1581,38 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         }))
       );
 
+      const subTotal = consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0);
+      const responsibleTotal = responsible?.subscriptions.reduce((sum, sub) => sum + Number(sub.price ?? sub.plan?.price ?? 0), 0) || 0;
+      
+      let discount = 0;
+      if (responsible?.consolidatedDiscountValue) {
+        const value = Number(responsible.consolidatedDiscountValue);
+        if (responsible.consolidatedDiscountType === 'PERCENTAGE') {
+          discount = subTotal * (value / 100);
+        } else if (responsible.consolidatedDiscountType === 'FIXED_PRICE') {
+          // Discount needed to reach the target value for the WHOLE family (Responsible + Dependents)
+          // Target = value
+          // Current Total = subTotal + responsibleTotal
+          // Discount = Current Total - Target
+          discount = Math.max(0, (subTotal + responsibleTotal) - value);
+        } else {
+          discount = value;
+        }
+      }
+
+      const totalAmount = Math.max(0, subTotal - discount);
+
       return reply.send({
         success: true,
         data: {
           dependents,
           consolidatedCharges,
           totalDependents: dependents.length,
-          totalAmount: consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0)
+          subTotal,
+          discount,
+          discountValue: responsible?.consolidatedDiscountValue || 0,
+          discountType: responsible?.consolidatedDiscountType || 'FIXED',
+          totalAmount
         }
       });
     } catch (error) {
@@ -1530,6 +1620,33 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({
         success: false,
         message: 'Failed to fetch financial dependents'
+      });
+    }
+  });
+
+  // Update financial dependents discount
+  fastify.put('/:studentId/financial-dependents/discount', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { studentId } = request.params as { studentId: string };
+      const { discountValue, discountType } = request.body as { discountValue: number, discountType: string };
+
+      await prisma.student.update({
+        where: { id: studentId },
+        data: {
+          consolidatedDiscountValue: discountValue,
+          consolidatedDiscountType: discountType
+        }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Discount updated successfully'
+      });
+    } catch (error) {
+      logger.error('Error updating financial dependents discount:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Failed to update discount'
       });
     }
   });

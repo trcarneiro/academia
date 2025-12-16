@@ -54,6 +54,11 @@ export default async function portalDashboardRoutes(fastify: FastifyInstance) {
         return ResponseHelper.error(reply, 'Aluno não encontrado', 404);
       }
 
+      // Security check: Ensure student belongs to the authenticated organization
+      if (student.user.organizationId !== request.organizationId) {
+        return ResponseHelper.error(reply, 'Acesso negado', 403);
+      }
+
       // Calculate stats (mocked for now or simple logic)
       const stats = {
         nextClass: {

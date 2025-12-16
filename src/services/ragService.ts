@@ -456,14 +456,35 @@ export class RAGService {
             
             // 1. Buscar documentos relevantes
             const relevantDocs = await this.searchRelevantDocuments(message, context.userId);
-            const contextContent = relevantDocs.map(doc => doc.content).join('\n\n');
+            let contextContent = relevantDocs.map(doc => doc.content).join('\n\n');
+            
+            // Add marketing context if available
+            if (context.sessionData && context.sessionData.type === 'marketing') {
+                const marketingData = context.sessionData.data;
+                if (marketingData.currentPage) {
+                    contextContent += `\n\nCONTEXTO DA LANDING PAGE ATUAL:\n${JSON.stringify(marketingData.currentPage, null, 2)}`;
+                }
+                if (marketingData.mode === 'edit') {
+                    contextContent += `\n\nMODO DE EDIÇÃO: O usuário quer editar esta landing page. Gere o HTML atualizado.`;
+                }
+            }
             
             // 2. Usar Gemini para gerar resposta contextual
             let response: string;
+            let systemPrompt: string | undefined;
+
+            if (context.sessionData && context.sessionData.type === 'marketing') {
+                systemPrompt = `Você é um Agente de Marketing especializado em Landing Pages para academias de Krav Maga.
+                Seu objetivo é ajudar a criar, editar e otimizar landing pages.
+                Use o contexto fornecido para entender a página atual.
+                Se o usuário pedir para gerar HTML, gere apenas o código HTML dentro do body (sem tags html/head/body).
+                Seja persuasivo e focado em conversão.
+                IMPORTANTE: Para incluir o formulário de captura de leads, use EXATAMENTE o placeholder {{FORM_COMPONENT}} onde o formulário deve aparecer. Não crie tags <form> manualmente.`;
+            }
             
             if (await initializeGemini()) {
                 try {
-                    response = await GeminiService.generateRAGResponse(message, [contextContent]);
+                    response = await GeminiService.generateRAGResponse(message, [contextContent], { systemPrompt });
                 } catch (error) {
                     console.error('Erro ao usar Gemini, usando contexto real:', error);
                     response = await this.generateContextualResponse(message);

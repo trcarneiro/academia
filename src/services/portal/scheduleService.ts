@@ -88,7 +88,21 @@ export class ScheduleService {
     });
   }
   
-  async enroll(studentId: string, turmaId: string) {
+  async enroll(studentId: string, turmaId: string, organizationId: string) {
+      // Verify if turma belongs to organization
+      const turma = await prisma.turma.findUnique({
+          where: { id: turmaId },
+          select: { organizationId: true, maxStudents: true, _count: { select: { students: true } } }
+      });
+
+      if (!turma) throw new Error('Turma não encontrada');
+      if (turma.organizationId !== organizationId) throw new Error('Turma não pertence à organização do aluno');
+
+      // Check vacancies (T063)
+      if (turma._count.students >= turma.maxStudents) {
+          throw new Error('Turma lotada');
+      }
+
       // Check if already enrolled
       const existing = await prisma.turmaStudent.findUnique({
           where: {

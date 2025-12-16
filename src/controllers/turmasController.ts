@@ -67,13 +67,14 @@ export class TurmasController {
 
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { organizationId, unitId, status, type } = request.query as any;
+      const { organizationId, unitId, status, type, isActive } = request.query as any;
       
       const turmas = await this.turmasService.list({
         organizationId,
         unitId,
         status,
-        type
+        type,
+        isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined
       });
 
       return ResponseHelper.success(reply, turmas);

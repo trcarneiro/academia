@@ -24,6 +24,7 @@ const AIModule = {
     availableModels: ['gemini-2.5', 'gemini-2.0', 'gemini-1.5', 'claude', 'gpt'],
     currentModel: 'gemini',
     ragDocuments: [],
+    context: null,
     
     // =========================================================================
     // 1. INITIALIZATION
@@ -468,6 +469,22 @@ const AIModule = {
     // 9. CHAT FUNCTIONALITY
     // =========================================================================
     
+    setContext(type, data) {
+        console.log(`🤖 [AI Module] Setting context: ${type}`, data);
+        this.context = { type, data };
+        
+        // Visual feedback
+        window.app?.showToast?.(`Contexto definido: ${type}`, 'info');
+    },
+
+    addSystemMessage(text) {
+        const chatInput = this.container.querySelector('#ai-chat-input');
+        if (chatInput) {
+            chatInput.value = text;
+            chatInput.focus();
+        }
+    },
+
     async sendMessage() {
         const chatInput = this.container.querySelector('#ai-chat-input');
         const messagesContainer = this.container.querySelector('#ai-chat-messages');
@@ -507,7 +524,8 @@ const AIModule = {
                 body: JSON.stringify({
                     message: userMessage,
                     model: this.currentModel,
-                    chatHistory: this.currentChatThread.filter(m => !m.isLoading)
+                    chatHistory: this.currentChatThread.filter(m => !m.isLoading),
+                    context: this.context
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });

@@ -402,10 +402,22 @@ export class StudentsListController {
         if (refreshBtn) refreshBtn.addEventListener('click', () => this.loadData());
 
         const createBtn = container.querySelector('#create-student-btn');
-        if (createBtn) createBtn.addEventListener('click', () => {
-            location.hash = 'student-editor';
-            window.router?.navigateTo('student-editor');
-        });
+        if (createBtn) {
+            console.log('✅ [Students] Create button found, attaching event');
+            createBtn.addEventListener('click', () => {
+                console.log('🔵 [Students] Create button clicked');
+                if (window.router) {
+                    console.log('🚀 [Students] Navigating to student-editor. isNavigating:', window.router.isNavigating);
+                    window.router.navigateTo('student-editor');
+                } else {
+                    console.error('❌ [Students] window.router is not defined!');
+                    // Fallback
+                    window.location.hash = '#student-editor';
+                }
+            });
+        } else {
+            console.error('❌ [Students] Create button NOT found!');
+        }
 
         // Filter events
         const categoryFilter = container.querySelector('#filter-category');

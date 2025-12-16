@@ -680,7 +680,7 @@ export class FrequencyController {
             container.querySelectorAll('.btn-checkin').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const turmaId = e.target.closest('.btn-checkin').dataset.id;
-                    this.openClassCheckin(turmaId);
+                    this.openClassCheckin(turmaId, dateString);
                 });
             });
 
@@ -754,7 +754,11 @@ export class FrequencyController {
             container.querySelectorAll('.btn-checkin').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const turmaId = e.target.closest('.btn-checkin').dataset.id;
-                    this.openClassCheckin(turmaId);
+                    // Calculate yesterday's date string
+                    const date = new Date();
+                    date.setDate(date.getDate() - 1);
+                    const dateString = date.toISOString().split('T')[0];
+                    this.openClassCheckin(turmaId, dateString);
                 });
             });
 
@@ -835,8 +839,8 @@ export class FrequencyController {
     /**
      * Open class checkin
      */
-    async openClassCheckin(turmaId) {
-        console.log(`Opening checkin for class ${turmaId}`);
+    async openClassCheckin(turmaId, dateString) {
+        console.log(`Opening checkin for class ${turmaId} on ${dateString}`);
         
         const contentArea = this.container.querySelector('#frequency-content');
         
@@ -865,13 +869,13 @@ export class FrequencyController {
         });
 
         // Load class data
-        await this.loadClassStudents(turmaId);
+        await this.loadClassStudents(turmaId, dateString);
     }
 
     /**
      * Load students for class attendance
      */
-    async loadClassStudents(turmaId) {
+    async loadClassStudents(turmaId, dateString) {
         try {
             const api = this.getAPI();
             const classResponse = await api.request(`/api/turmas/${turmaId}`);
@@ -879,7 +883,31 @@ export class FrequencyController {
             if (!classResponse.success) throw new Error('Erro ao carregar turma');
             const turma = classResponse.data;
 
-            this.renderClassAttendanceList(turma, turma.enrollments || []);
+            // Load attendance for the specific date
+            let attendanceRecords = [];
+            if (dateString) {
+                // Construct ISO range for the selected date (in local time context)
+                // We want to capture any check-in that happened on that "calendar day"
+                const [year, month, day] = dateString.split('-').map(Number);
+                
+                // Start of day
+                const start = new Date(year, month - 1, day, 0, 0, 0);
+                // End of day
+                const end = new Date(year, month - 1, day, 23, 59, 59);
+                
+                const startDate = start.toISOString();
+                const endDate = end.toISOString();
+
+                const attendanceResponse = await api.request(`/api/turmas/${turmaId}/attendance?startDate=${startDate}&endDate=${endDate}`);
+                if (attendanceResponse.success) {
+                    attendanceRecords = attendanceResponse.data;
+                }
+            }
+
+            console.log('DEBUG: attendanceRecords:', attendanceRecords);
+            const studentsList = turma.students || turma.enrollments || [];
+            console.log('DEBUG: studentsList length:', studentsList.length);
+            this.renderClassAttendanceList(turma, studentsList, dateString, attendanceRecords);
 
         } catch (error) {
             console.error('Error loading class students:', error);
@@ -895,17 +923,36 @@ export class FrequencyController {
     /**
      * Render attendance list
      */
-    renderClassAttendanceList(turma, enrollments) {
+    renderClassAttendanceList(turma, enrollments, dateString, attendanceRecords = []) {
         const contentArea = this.container.querySelector('.class-attendance-view .data-card-premium');
         
+        // Format date for display
+        let displayDate = new Date().toLocaleDateString('pt-BR');
+        if (dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            displayDate = new Date(year, month - 1, day).toLocaleDateString('pt-BR');
+        }
+
+        // Create a set of present student IDs for faster lookup
+        const presentStudentIds = new Set(attendanceRecords
+            .filter(a => a.present)
+            .map(a => a.studentId));
+            
+        console.log('DEBUG: presentStudentIds:', [...presentStudentIds]);
+
         // Prepare initial list
-        const studentListHtml = enrollments.map(enrollment => this.renderStudentRow(enrollment.student)).join('');
+        const studentListHtml = enrollments.map(enrollment => {
+            const studentId = enrollment.student?.id;
+            const isPresent = presentStudentIds.has(studentId);
+            // console.log(`DEBUG: Student ${enrollment.student?.user?.firstName} (${studentId}) isPresent: ${isPresent}`);
+            return this.renderStudentRow(enrollment.student, false, isPresent);
+        }).join('');
 
         contentArea.innerHTML = `
             <div class="card-header-actions">
                 <div class="header-info">
                     <h3>${turma.name}</h3>
-                    <span class="badge-date">${new Date().toLocaleDateString('pt-BR')}</span>
+                    <span class="badge-date">${displayDate}</span>
                     <span class="badge-count" id="student-count">${enrollments.length} alunos</span>
                 </div>
                 
@@ -929,18 +976,18 @@ export class FrequencyController {
         `;
         
         // Setup search
-        this.setupAddStudentSearch(turma.id);
+        this.setupAddStudentSearch(turma.id, dateString);
 
         // Add confirm listener
         this.container.querySelector('#btn-confirm-attendance').addEventListener('click', () => {
-            this.submitClassAttendance(turma.id);
+            this.submitClassAttendance(turma.id, dateString);
         });
     }
 
     /**
      * Render single student row
      */
-    renderStudentRow(student, isExtra = false) {
+    renderStudentRow(student, isExtra = false, isPresent = false) {
         const user = student.user || {};
         const initials = user.firstName ? user.firstName[0] : '?';
         const extraClass = isExtra ? 'student-extra' : '';
@@ -968,6 +1015,8 @@ export class FrequencyController {
              }
         }
         
+        const isChecked = isExtra || isPresent ? 'checked' : '';
+        
         return `
             <div class="student-attendance-row ${extraClass}" data-student-id="${student.id}">
                 <div class="student-info">
@@ -982,7 +1031,7 @@ export class FrequencyController {
                 </div>
                 <div class="attendance-actions">
                     <label class="toggle-switch">
-                        <input type="checkbox" class="attendance-check" checked>
+                        <input type="checkbox" class="attendance-check" ${isChecked}>
                         <span class="slider round"></span>
                     </label>
                 </div>
@@ -993,7 +1042,7 @@ export class FrequencyController {
     /**
      * Setup add student search
      */
-    setupAddStudentSearch(turmaId) {
+    setupAddStudentSearch(turmaId, dateString) {
         const input = this.container.querySelector('#add-student-input');
         const resultsContainer = this.container.querySelector('#add-student-results');
         let debounceTimer;
@@ -1008,7 +1057,7 @@ export class FrequencyController {
             }
 
             debounceTimer = setTimeout(async () => {
-                await this.searchStudentsForAttendance(query, resultsContainer);
+                await this.searchStudentsForAttendance(query, resultsContainer, turmaId, dateString);
             }, 300);
         });
 
@@ -1023,7 +1072,7 @@ export class FrequencyController {
     /**
      * Search students for attendance
      */
-    async searchStudentsForAttendance(query, container) {
+    async searchStudentsForAttendance(query, container, turmaId, dateString) {
         try {
             const api = this.getAPI();
             // Reusing the endpoint that returns all students
@@ -1060,7 +1109,7 @@ export class FrequencyController {
                         user: { firstName: studentData.name.split(' ')[0], lastName: studentData.name.split(' ').slice(1).join(' ') },
                         graduationLevel: studentData.graduationLevel
                     };
-                    this.addStudentToAttendanceList(student);
+                    this.addStudentToAttendanceList(student, turmaId, dateString);
                     container.style.display = 'none';
                     this.container.querySelector('#add-student-input').value = '';
                 });
@@ -1074,7 +1123,7 @@ export class FrequencyController {
     /**
      * Add student to attendance list
      */
-    addStudentToAttendanceList(student) {
+    async addStudentToAttendanceList(student, turmaId, dateString) {
         const list = this.container.querySelector('#attendance-list');
         
         // Check duplicates
@@ -1096,13 +1145,50 @@ export class FrequencyController {
         const currentCount = parseInt(countBadge.textContent) || 0;
         countBadge.textContent = `${currentCount + 1} alunos`;
 
-        this.showToast('Aluno adicionado à chamada', 'success');
+        // Automatic Check-in
+        if (turmaId) {
+            try {
+                await this.registerSingleCheckin(student.id, turmaId, dateString);
+                this.showToast('Aluno adicionado e presença confirmada!', 'success');
+            } catch (error) {
+                console.error('Auto check-in error:', error);
+                this.showToast('Aluno adicionado, mas erro ao confirmar presença', 'warning');
+            }
+        } else {
+            this.showToast('Aluno adicionado à chamada', 'success');
+        }
+    }
+
+    /**
+     * Register single checkin
+     */
+    async registerSingleCheckin(studentId, turmaId, dateString) {
+        const api = this.getAPI();
+        
+        // Construct timestamp
+        let timestamp = new Date().toISOString();
+        if (dateString) {
+            const now = new Date();
+            const [year, month, day] = dateString.split('-').map(Number);
+            const checkinDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
+            timestamp = checkinDate.toISOString();
+        }
+
+        return api.request('/api/frequency/checkin', {
+            method: 'POST',
+            body: {
+                studentId,
+                turmaId,
+                type: 'CLASS',
+                timestamp: timestamp
+            }
+        });
     }
 
     /**
      * Submit class attendance
      */
-    async submitClassAttendance(turmaId) {
+    async submitClassAttendance(turmaId, dateString) {
         const checks = this.container.querySelectorAll('.attendance-check');
         const presentStudentIds = [];
         
@@ -1118,6 +1204,15 @@ export class FrequencyController {
         try {
             const api = this.getAPI();
             
+            // Construct timestamp
+            let timestamp = new Date().toISOString();
+            if (dateString) {
+                const now = new Date();
+                const [year, month, day] = dateString.split('-').map(Number);
+                const checkinDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
+                timestamp = checkinDate.toISOString();
+            }
+            
             const promises = presentStudentIds.map(studentId => {
                 return api.request('/api/frequency/checkin', {
                     method: 'POST',
@@ -1125,7 +1220,7 @@ export class FrequencyController {
                         studentId,
                         turmaId,
                         type: 'CLASS',
-                        timestamp: new Date().toISOString()
+                        timestamp: timestamp
                     }
                 });
             });

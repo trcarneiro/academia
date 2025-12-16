@@ -43,14 +43,10 @@ export default async function portalCoursesRoutes(fastify: FastifyInstance) {
 
   fastify.get('/ranking', async (request, reply) => {
     try {
-      const student = await prisma.student.findUnique({
-          where: { id: request.studentId },
-          select: { organizationId: true }
-      });
-      
-      if (!student) return ResponseHelper.error(reply, 'Aluno não encontrado', 404);
+      const organizationId = request.organizationId;
+      if (!organizationId) return ResponseHelper.error(reply, 'Organização não identificada', 400);
 
-      const result = await service.getRanking(student.organizationId);
+      const result = await service.getRanking(organizationId);
       
       // Find user's rank
       const userRank = result.ranking.find((r: any) => r.id === request.studentId);

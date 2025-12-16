@@ -68,6 +68,7 @@ model Organization {
   students                 Student[]
   techniqueLibraries       TechniqueLibrary[]
   turmas                   Turma[]
+  horarioSuggestions       HorarioSugerido[]
   units                    Unit[]
   users                    User[]
 
@@ -435,6 +436,11 @@ model Student {
   financialResponsibleId        String?
   registrationNumber            String?                     @unique
   financialResponsibleStudentId String?
+  
+  // Consolidated Billing Fields
+  consolidatedDiscountValue     Decimal?                    @default(0)
+  consolidatedDiscountType      String?                     @default("FIXED") // FIXED, PERCENTAGE
+
   agentConversations            AgentConversation[]
   asaasCustomer                 AsaasCustomer?
   // Portal Auth & Asaas
@@ -474,6 +480,8 @@ model Student {
   progressions                  StudentProgression[]
   subscriptions                 StudentSubscription[]
   turmaInterests                TurmaInterest[]           @relation("StudentTurmaInterests")
+  horarioSuggestions            HorarioSugerido[]
+  horarioSupports               HorarioSupporter[]        @relation("StudentHorarioSupporters")
   sessions                      StudentSession[]          @relation("StudentSessions")
   portalNotifications           StudentNotification[]     @relation("StudentNotifications")
   financialResponsible          FinancialResponsible?       @relation(fields: [financialResponsibleId], references: [id])
@@ -1177,10 +1185,12 @@ model BillingPlan {
   installmentInterestRate Decimal?              @db.Decimal(5, 2)
   isRecurring             Boolean               @default(false)
   recurringInterval       Int?
+  recurrencePeriod        RecurrencePeriod?
   accessAllModalities     Boolean               @default(false)
   allowFreeze             Boolean               @default(true)
   freezeMaxDays           Int                   @default(30)
   features                Json?
+  paymentDiscounts        Json?                 // Configuração de descontos por método de pagamento
   isActive                Boolean               @default(true)
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @default(now())
@@ -1209,8 +1219,55 @@ model BillingPlan {
   studentCourses          StudentCourse[]       @relation("BillingPlanStudentCourses")
   studentCredits          StudentCredit[]       @relation("BillingPlanCredits")
   subscriptions           StudentSubscription[] @relation("BillingPlanSubscriptions")
+  discounts               BillingPlanDiscount[]
 
   @@map("billing_plans")
+}
+
+model Discount {
+  id              String          @id @default(uuid())
+  organizationId  String
+  name            String
+  description     String?
+  type            DiscountType    @default(PERCENTAGE)
+  value           Decimal         @db.Decimal(10, 2)
+  triggerType     DiscountTrigger @default(MANUAL)
+  triggerValue    String?         // e.g. "PIX", "BLACKFRIDAY2025"
+  startDate       DateTime?
+  endDate         DateTime?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plans           BillingPlanDiscount[]
+
+  @@map("discounts")
+}
+
+model BillingPlanDiscount {
+  id              String      @id @default(uuid())
+  planId          String
+  discountId      String
+  createdAt       DateTime    @default(now())
+
+  plan            BillingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  discount        Discount    @relation(fields: [discountId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, discountId])
+  @@map("billing_plan_discounts")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DiscountTrigger {
+  MANUAL
+  PAYMENT_METHOD
+  COUPON
+  CAMPAIGN
 }
 
 model StudentSubscription {
@@ -1717,6 +1774,7 @@ model Turma {
   lessons                      TurmaLesson[]
   students                     TurmaStudent[]
   interests                    TurmaInterest[]   @relation("TurmaInterests")
+  createdFromSuggestion        HorarioSugerido[] @relation("CreatedFromSuggestion")
   course                       Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   instructor                   User              @relation(fields: [instructorId], references: [id])
   organization                 Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1738,6 +1796,52 @@ model TurmaInterest {
 
   @@unique([turmaId, studentId])
   @@map("turma_interests")
+}
+
+model HorarioSugerido {
+  id              String          @id @default(uuid())
+  studentId       String
+  organizationId  String
+  
+  // Dados da sugestão
+  dayOfWeek       Int             // 0-6 (domingo a sábado)
+  startTime       String          // "19:00"
+  endTime         String          // "20:30"
+  courseType      String?         // "DEFESA_PESSOAL", "COMBATE", etc.
+  level           String?         // "INICIANTE", "INTERMEDIARIO", "AVANCADO"
+  preferredUnit   String?         // ID da unidade preferida
+  notes           String?         // Observações do aluno
+  
+  // Controle
+  status          String          @default("PENDING") // PENDING, APPROVED, REJECTED, FULFILLED
+  votes           Int             @default(1)         // Outros alunos podem "votar"
+  createdAt       DateTime        @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?         // ID do admin que revisou
+  createdTurmaId  String?         // ID da turma criada (se aprovada)
+  
+  // Relações
+  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  supporters      HorarioSupporter[] @relation("HorarioSupporters")
+  createdTurma    Turma?          @relation("CreatedFromSuggestion", fields: [createdTurmaId], references: [id])
+  
+  @@index([organizationId, status])
+  @@index([dayOfWeek, startTime])
+  @@map("horarios_sugeridos")
+}
+
+model HorarioSupporter {
+  id              String          @id @default(uuid())
+  horarioId       String
+  studentId       String
+  createdAt       DateTime        @default(now())
+  
+  horario         HorarioSugerido @relation("HorarioSupporters", fields: [horarioId], references: [id], onDelete: Cascade)
+  student         Student         @relation("StudentHorarioSupporters", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([horarioId, studentId])
+  @@map("horario_supporters")
 }
 
 model TurmaLesson {
@@ -2684,6 +2788,7 @@ enum CertificateType {
 }
 
 enum BillingType {
+  WEEKLY
   MONTHLY
   QUARTERLY
   YEARLY
@@ -2691,6 +2796,12 @@ enum BillingType {
   CREDIT_CARD_INSTALLMENT
   RECURRING
   CREDITS
+}
+
+enum RecurrencePeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 enum SubscriptionStatus {

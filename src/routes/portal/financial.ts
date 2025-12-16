@@ -16,7 +16,10 @@ export default async function portalFinancialRoutes(fastify: FastifyInstance) {
 
     try {
       const payments = await prisma.payment.findMany({
-        where: { studentId },
+        where: { 
+          studentId,
+          organizationId: request.organizationId 
+        },
         orderBy: { dueDate: 'desc' },
         take: 20
       });

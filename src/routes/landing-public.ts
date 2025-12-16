@@ -16,6 +16,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import { cacheGet, cacheSet } from '@/utils/cache';
 
 // ============================================================================
 // Type Definitions
@@ -50,6 +51,38 @@ interface TrackViewBody {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Render form HTML from form definition
+ */
+function renderFormHtml(form: any): string {
+  const fields = (form.fields as Array<{name: string, label: string, type: string, required: boolean}>) || [];
+  
+  const fieldsHtml = fields.map(field => {
+    const requiredAttr = field.required ? 'required' : '';
+    const labelHtml = `<label for="${field.name}" style="display:block; margin-bottom:0.5rem; font-weight:500; color:#374151;">${field.label}${field.required ? ' *' : ''}</label>`;
+    
+    let inputHtml = '';
+    const inputStyle = "width:100%; padding:0.5rem 0.75rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-bottom:1rem; font-family:inherit; box-sizing: border-box;";
+    
+    if (field.type === 'textarea') {
+      inputHtml = `<textarea id="${field.name}" name="${field.name}" rows="3" style="${inputStyle}" ${requiredAttr}></textarea>`;
+    } else {
+      inputHtml = `<input type="${field.type}" id="${field.name}" name="${field.name}" style="${inputStyle}" ${requiredAttr}>`;
+    }
+    
+    return `<div>${labelHtml}${inputHtml}</div>`;
+  }).join('');
+
+  return `
+    <form data-lp-form="${form.id}" data-success-message="${form.successMessage}" class="lp-form" style="background:white; padding:1.5rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+      ${fieldsHtml}
+      <button type="submit" style="width:100%; padding:0.75rem 1rem; background-color:#2563eb; color:white; border:none; border-radius:0.375rem; font-weight:500; cursor:pointer; transition:background-color 0.2s;">
+        ${form.submitButtonText}
+      </button>
+    </form>
+  `;
+}
 
 /**
  * Generate complete HTML page from landing page data
@@ -213,6 +246,14 @@ function generateFullHtml(page: {
     </script>
   ` : '';
 
+  let htmlContent = page.htmlContent || '<div style="padding: 40px; text-align: center;"><h1>Página em construção</h1></div>';
+  
+  // Replace {{FORM_COMPONENT}} with the first available form
+  if (page.forms && page.forms.length > 0 && htmlContent.includes('{{FORM_COMPONENT}}')) {
+    const formHtml = renderFormHtml(page.forms[0]);
+    htmlContent = htmlContent.replace('{{FORM_COMPONENT}}', formHtml);
+  }
+
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -235,7 +276,7 @@ function generateFullHtml(page: {
   </style>
 </head>
 <body>
-  ${page.htmlContent || '<div style="padding: 40px; text-align: center;"><h1>Página em construção</h1></div>'}
+  ${htmlContent}
   ${whatsappWidget}
   ${trackingScripts}
   ${formScript}
@@ -259,6 +300,14 @@ export default async function landingPublicRoutes(fastify: FastifyInstance) {
       try {
         const { slug } = request.params;
 
+        // 1. Check cache
+        const cachedHtml = await cacheGet(`lp:${slug}`);
+        if (cachedHtml) {
+          reply.header('Content-Type', 'text/html; charset=utf-8');
+          reply.header('X-Cache', 'HIT');
+          return reply.send(cachedHtml);
+        }
+
         const landingPage = await prisma.landingPage.findFirst({
           where: { slug, status: 'PUBLISHED' },
           include: {
@@ -271,7 +320,8 @@ export default async function landingPublicRoutes(fastify: FastifyInstance) {
                 fields: true,
                 submitButtonText: true,
                 successMessage: true
-              }
+              },
+              orderBy: { position: 'asc' }
             }
           }
         });
@@ -297,6 +347,10 @@ export default async function landingPublicRoutes(fastify: FastifyInstance) {
           landingPage.organization.slug || 'default'
         );
 
+        // 2. Cache result (1 hour TTL)
+        await cacheSet(`lp:${slug}`, html, 3600);
+
+        reply.header('X-Cache', 'MISS');
         return reply.type('text/html').send(html);
       } catch (error) {
         logger.error('Error rendering landing page:', error);

@@ -19,6 +19,8 @@
     <title>Academia Dashboard</title>
     <!-- Supabase SDK (required for Auth Module) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SweetAlert2 (required for Modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Font Awesome 6.x - Professional Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- FORÇA RESET - Para garantir design minimalista -->
@@ -38,7 +40,6 @@
     <link rel="stylesheet" href="/css/shared/permissions.css">
     <!-- Module CSS -->
     <link rel="stylesheet" href="/css/modules/courses.css">
-    <link rel="stylesheet" href="/css/modules/course-editor-premium.css">
     <link rel="stylesheet" href="/css/modules/turmas.css">
     <link rel="stylesheet" href="/css/modules/turmas-clean.css">
     <link rel="stylesheet" href="/css/modules/turmas-courses.css">
@@ -66,6 +67,7 @@
     <link rel="stylesheet" href="/css/modules/agent-chat-fullscreen.css">
     <link rel="stylesheet" href="/css/modules/task-approval-widget.css">
     <link rel="stylesheet" href="/css/modules/agent-activity.css">
+    <link rel="stylesheet" href="/css/modules/marketing.css">
 </head>
 <body>
     <!-- Barra Superior Minimalista -->
@@ -99,6 +101,10 @@
         </div>
         
         <div class="user-actions">
+            <div class="system-version" id="systemVersion" title="Versão do Sistema" style="margin-right: 15px; font-size: 0.8rem; color: #666; display: flex; flex-direction: column; align-items: flex-end; cursor: help;">
+                <span class="version-number" style="font-weight: bold;">v...</span>
+                <span class="environment-badge" style="font-size: 0.7rem; opacity: 0.8;">...</span>
+            </div>
             <div class="notifications" title="Notificações"><i class="fas fa-bell"></i></div>
             <div class="user-profile" title="Perfil"><i class="fas fa-user"></i></div>
             <button id="logoutBtn" class="logout-btn" title="Sair"><i class="fas fa-sign-out-alt"></i> Sair</button>
@@ -275,6 +281,9 @@
 
     <!-- Packages Module (Comercial) -->
     <script type="module" src="/js/modules/packages/index.js"></script>
+
+    <!-- Discounts Module -->
+    <script type="module" src="/js/modules/discounts/index.js"></script>
 
     <!-- Dashboard Widgets -->
     <script src="/js/modules/dashboard/widgets/task-approval-widget.js"></script>

@@ -253,10 +253,15 @@ export const paymentService = {
   /**
    * Gets payment status from Asaas
    */
-  async getPaymentStatus(paymentId: string): Promise<PaymentStatusResult> {
+  async getPaymentStatus(paymentId: string, studentId?: string): Promise<PaymentStatusResult> {
     try {
-      const payment = await prisma.payment.findUnique({
-        where: { id: paymentId },
+      const where: any = { id: paymentId };
+      if (studentId) {
+        where.studentId = studentId;
+      }
+
+      const payment = await prisma.payment.findFirst({
+        where,
       });
 
       if (!payment) {
@@ -375,15 +380,20 @@ export const paymentService = {
   /**
    * Gets PIX QR code for a payment
    */
-  async getPixQrCode(paymentId: string): Promise<{
+  async getPixQrCode(paymentId: string, studentId?: string): Promise<{
     success: boolean;
     pixCode?: string;
     qrCodeImage?: string;
     error?: string;
   }> {
     try {
-      const payment = await prisma.payment.findUnique({
-        where: { id: paymentId },
+      const where: any = { id: paymentId };
+      if (studentId) {
+        where.studentId = studentId;
+      }
+
+      const payment = await prisma.payment.findFirst({
+        where,
       });
 
       if (!payment) {
