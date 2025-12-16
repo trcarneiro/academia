@@ -90,7 +90,7 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress', 'turmas-sugestoes'
+      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress', 'turmas-sugestoes', 'discounts'
     ];
 
     moduleList.forEach(moduleName => {

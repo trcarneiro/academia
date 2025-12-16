@@ -40,6 +40,7 @@ import activitiesRoutes from '@/routes/activities';
 import asaasSimpleRoutes from '@/routes/asaas-simple';
 import asaasIntegrationRoutes from '@/routes/asaas-integration';
 import billingPlanRoutes from '@/routes/billingPlans';
+import discountsRoutes from '@/routes/discounts';
 import techniqueRoutes from '@/routes/techniques';
 import { lessonPlansRoutes } from './routes/lessonPlans';
 import planCoursesRoutes from '@/routes/planCourses';

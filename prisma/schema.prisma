@@ -1219,8 +1219,55 @@ model BillingPlan {
   studentCourses          StudentCourse[]       @relation("BillingPlanStudentCourses")
   studentCredits          StudentCredit[]       @relation("BillingPlanCredits")
   subscriptions           StudentSubscription[] @relation("BillingPlanSubscriptions")
+  discounts               BillingPlanDiscount[]
 
   @@map("billing_plans")
+}
+
+model Discount {
+  id              String          @id @default(uuid())
+  organizationId  String
+  name            String
+  description     String?
+  type            DiscountType    @default(PERCENTAGE)
+  value           Decimal         @db.Decimal(10, 2)
+  triggerType     DiscountTrigger @default(MANUAL)
+  triggerValue    String?         // e.g. "PIX", "BLACKFRIDAY2025"
+  startDate       DateTime?
+  endDate         DateTime?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plans           BillingPlanDiscount[]
+
+  @@map("discounts")
+}
+
+model BillingPlanDiscount {
+  id              String      @id @default(uuid())
+  planId          String
+  discountId      String
+  createdAt       DateTime    @default(now())
+
+  plan            BillingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  discount        Discount    @relation(fields: [discountId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, discountId])
+  @@map("billing_plan_discounts")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DiscountTrigger {
+  MANUAL
+  PAYMENT_METHOD
+  COUPON
+  CAMPAIGN
 }
 
 model StudentSubscription {
