@@ -22,14 +22,10 @@ export default async function portalScheduleRoutes(fastify: FastifyInstance) {
   // Get available classes to join
   fastify.get('/available', async (request, reply) => {
     try {
-      const student = await prisma.student.findUnique({
-          where: { id: request.studentId },
-          select: { organizationId: true }
-      });
-      
-      if (!student) return ResponseHelper.error(reply, 'Aluno não encontrado', 404);
+      const organizationId = request.organizationId;
+      if (!organizationId) return ResponseHelper.error(reply, 'Organização não identificada', 400);
 
-      const classes = await service.listAvailableClasses(student.organizationId);
+      const classes = await service.listAvailableClasses(organizationId);
       return ResponseHelper.success(reply, classes);
     } catch (error) {
       console.error(error);
@@ -40,8 +36,12 @@ export default async function portalScheduleRoutes(fastify: FastifyInstance) {
   // Enroll in a class
   fastify.post('/enroll/:turmaId', async (request, reply) => {
     const { turmaId } = request.params as { turmaId: string };
+    const organizationId = request.organizationId;
+    
+    if (!organizationId) return ResponseHelper.error(reply, 'Organização não identificada', 400);
+
     try {
-      await service.enroll(request.studentId, turmaId);
+      await service.enroll(request.studentId, turmaId, organizationId);
       return ResponseHelper.success(reply, { message: 'Matrícula realizada com sucesso' });
     } catch (error) {
       console.error(error);

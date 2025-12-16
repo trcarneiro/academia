@@ -15,6 +15,16 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { Prisma, LandingPageStatus } from '@prisma/client';
+import { validateBody } from '@/middlewares/validation';
+import { cacheDel } from '@/utils/cache';
+import { 
+  createLandingPageSchema, 
+  updateLandingPageSchema, 
+  createFormSchema, 
+  updateFormSchema,
+  trackViewSchema,
+  trackEngagementSchema
+} from '@/schemas/marketing';
 
 // ============================================================================
 // Type Definitions
@@ -196,6 +206,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.post<{ Body: LandingPageBody }>(
     '/landing-pages',
+    { preHandler: validateBody(createLandingPageSchema) },
     async (request, reply) => {
       try {
         const { requireOrganizationId } = await import('@/utils/tenantHelpers');
@@ -260,7 +271,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           }
         });
 
-        logger.info(`Landing page created: ${landingPage.id}`);
+        logger.info({ landingPageId: landingPage.id, organizationId }, 'Landing page created');
 
         return reply.code(201).send({
           success: true,
@@ -268,7 +279,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           message: 'Landing page created successfully'
         });
       } catch (error) {
-        logger.error('Error creating landing page:', error);
+        logger.error({ error, organizationId: (request as any).user?.organizationId }, 'Error creating landing page');
         return reply.code(500).send({
           success: false,
           message: 'Failed to create landing page'
@@ -282,6 +293,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.put<{ Params: LandingPageParams; Body: Partial<LandingPageBody> }>(
     '/landing-pages/:id',
+    { preHandler: validateBody(updateLandingPageSchema) },
     async (request, reply) => {
       try {
         const { requireOrganizationId } = await import('@/utils/tenantHelpers');
@@ -356,7 +368,10 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           }
         });
 
-        logger.info(`Landing page updated: ${landingPage.id}`);
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ landingPageId: landingPage.id, organizationId }, 'Landing page updated');
 
         return reply.send({
           success: true,
@@ -364,7 +379,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           message: 'Landing page updated successfully'
         });
       } catch (error) {
-        logger.error('Error updating landing page:', error);
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error updating landing page');
         return reply.code(500).send({
           success: false,
           message: 'Failed to update landing page'
@@ -401,17 +416,210 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           where: { id }
         });
 
-        logger.info(`Landing page deleted: ${id}`);
+        logger.info({ landingPageId: id, organizationId }, 'Landing page deleted');
 
         return reply.send({
           success: true,
           message: 'Landing page deleted successfully'
         });
       } catch (error) {
-        logger.error('Error deleting landing page:', error);
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error deleting landing page');
         return reply.code(500).send({
           success: false,
           message: 'Failed to delete landing page'
+        });
+      }
+    }
+  );
+
+  // ------------------------------------------
+  // POST /landing-pages/:id/publish - Publish landing page
+  // ------------------------------------------
+  fastify.post<{ Params: LandingPageParams }>(
+    '/landing-pages/:id/publish',
+    async (request, reply) => {
+      try {
+        const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+        const organizationId = requireOrganizationId(request, reply);
+        if (!organizationId) return;
+
+        const { id } = request.params;
+
+        const existing = await prisma.landingPage.findFirst({
+          where: { id, organizationId }
+        });
+
+        if (!existing) {
+          return reply.code(404).send({
+            success: false,
+            message: 'Landing page not found'
+          });
+        }
+
+        const landingPage = await prisma.landingPage.update({
+          where: { id },
+          data: {
+            status: 'PUBLISHED',
+            publishedAt: new Date()
+          }
+        });
+
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ landingPageId: id, organizationId }, 'Landing page published');
+
+        return reply.send({
+          success: true,
+          data: landingPage,
+          message: 'Landing page published successfully'
+        });
+      } catch (error) {
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error publishing landing page');
+        return reply.code(500).send({
+          success: false,
+          message: 'Failed to publish landing page'
+        });
+      }
+    }
+  );
+
+  // ------------------------------------------
+  // POST /landing-pages/:id/unpublish - Unpublish landing page
+  // ------------------------------------------
+  fastify.post<{ Params: LandingPageParams }>(
+    '/landing-pages/:id/unpublish',
+    async (request, reply) => {
+      try {
+        const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+        const organizationId = requireOrganizationId(request, reply);
+        if (!organizationId) return;
+
+        const { id } = request.params;
+
+        const existing = await prisma.landingPage.findFirst({
+          where: { id, organizationId }
+        });
+
+        if (!existing) {
+          return reply.code(404).send({
+            success: false,
+            message: 'Landing page not found'
+          });
+        }
+
+        const landingPage = await prisma.landingPage.update({
+          where: { id },
+          data: {
+            status: 'DRAFT',
+            publishedAt: null
+          }
+        });
+
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ landingPageId: id, organizationId }, 'Landing page unpublished');
+
+        return reply.send({
+          success: true,
+          data: landingPage,
+          message: 'Landing page unpublished successfully'
+        });
+      } catch (error) {
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error unpublishing landing page');
+        return reply.code(500).send({
+          success: false,
+          message: 'Failed to unpublish landing page'
+        });
+      }
+    }
+  );
+
+  // ------------------------------------------
+  // POST /landing-pages/:id/duplicate - Duplicate landing page
+  // ------------------------------------------
+  fastify.post<{ Params: LandingPageParams }>(
+    '/landing-pages/:id/duplicate',
+    async (request, reply) => {
+      try {
+        const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+        const organizationId = requireOrganizationId(request, reply);
+        if (!organizationId) return;
+
+        const { id } = request.params;
+
+        const existing = await prisma.landingPage.findFirst({
+          where: { id, organizationId },
+          include: { forms: true }
+        });
+
+        if (!existing) {
+          return reply.code(404).send({
+            success: false,
+            message: 'Landing page not found'
+          });
+        }
+
+        // Generate new slug
+        let newSlug = `${existing.slug}-copy`;
+        let counter = 1;
+        while (await prisma.landingPage.findFirst({ where: { organizationId, slug: newSlug } })) {
+          newSlug = `${existing.slug}-copy-${counter}`;
+          counter++;
+        }
+
+        // Create duplicate
+        const duplicate = await prisma.landingPage.create({
+          data: {
+            organizationId,
+            name: `${existing.name} (Copy)`,
+            slug: newSlug,
+            title: existing.title,
+            description: existing.description,
+            keywords: existing.keywords,
+            theme: existing.theme ?? Prisma.JsonNull,
+            faviconUrl: existing.faviconUrl,
+            ogImageUrl: existing.ogImageUrl,
+            htmlContent: existing.htmlContent,
+            cssContent: existing.cssContent,
+            jsContent: existing.jsContent,
+            sections: existing.sections ?? Prisma.JsonNull,
+            googleAnalyticsId: existing.googleAnalyticsId,
+            facebookPixelId: existing.facebookPixelId,
+            googleAdsConversionId: existing.googleAdsConversionId,
+            whatsappNumber: existing.whatsappNumber,
+            status: 'DRAFT',
+            forms: {
+              create: existing.forms.map(form => ({
+                name: form.name,
+                position: form.position,
+                fields: form.fields ?? Prisma.JsonNull,
+                submitButtonText: form.submitButtonText,
+                successMessage: form.successMessage,
+                autoCreateLead: form.autoCreateLead,
+                leadSource: form.leadSource,
+                leadTemperature: form.leadTemperature,
+                assignToUserId: form.assignToUserId,
+                tags: form.tags
+              }))
+            }
+          },
+          include: { forms: true }
+        });
+
+        logger.info({ originalId: id, newId: duplicate.id, organizationId }, 'Landing page duplicated');
+
+        return reply.code(201).send({
+          success: true,
+          data: duplicate,
+          message: 'Landing page duplicated successfully'
+        });
+      } catch (error) {
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error duplicating landing page');
+        return reply.code(500).send({
+          success: false,
+          message: 'Failed to duplicate landing page'
         });
       }
     }
@@ -471,6 +679,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.post<{ Params: LandingPageParams; Body: FormBody }>(
     '/landing-pages/:id/forms',
+    { preHandler: validateBody(createFormSchema) },
     async (request, reply) => {
       try {
         const { requireOrganizationId } = await import('@/utils/tenantHelpers');
@@ -519,7 +728,10 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           }
         });
 
-        logger.info(`Form created: ${form.id} for landing page ${id}`);
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ formId: form.id, landingPageId: id, organizationId }, 'Form created');
 
         return reply.code(201).send({
           success: true,
@@ -527,7 +739,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           message: 'Form created successfully'
         });
       } catch (error) {
-        logger.error('Error creating form:', error);
+        logger.error({ error, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error creating form');
         return reply.code(500).send({
           success: false,
           message: 'Failed to create form'
@@ -541,6 +753,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.put<{ Params: FormParams; Body: Partial<FormBody> }>(
     '/landing-pages/:id/forms/:formId',
+    { preHandler: validateBody(updateFormSchema) },
     async (request, reply) => {
       try {
         const { requireOrganizationId } = await import('@/utils/tenantHelpers');
@@ -593,7 +806,10 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           data: updateData
         });
 
-        logger.info(`Form updated: ${formId}`);
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ formId, landingPageId: id, organizationId }, 'Form updated');
 
         return reply.send({
           success: true,
@@ -601,7 +817,7 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           message: 'Form updated successfully'
         });
       } catch (error) {
-        logger.error('Error updating form:', error);
+        logger.error({ error, formId: request.params.formId, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error updating form');
         return reply.code(500).send({
           success: false,
           message: 'Failed to update form'
@@ -650,14 +866,17 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
           where: { id: formId }
         });
 
-        logger.info(`Form deleted: ${formId}`);
+        // Invalidate cache
+        await cacheDel(`lp:${landingPage.slug}`);
+
+        logger.info({ formId, landingPageId: id, organizationId }, 'Form deleted');
 
         return reply.send({
           success: true,
           message: 'Form deleted successfully'
         });
       } catch (error) {
-        logger.error('Error deleting form:', error);
+        logger.error({ error, formId: request.params.formId, landingPageId: request.params.id, organizationId: (request as any).user?.organizationId }, 'Error deleting form');
         return reply.code(500).send({
           success: false,
           message: 'Failed to delete form'
@@ -767,6 +986,112 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // ------------------------------------------
+  // GET /analytics/summary - Get overall marketing summary
+  // ------------------------------------------
+  fastify.get<{ Querystring: AnalyticsQuery }>(
+    '/analytics/summary',
+    async (request, reply) => {
+      try {
+        const { requireOrganizationId } = await import('@/utils/tenantHelpers');
+        const organizationId = requireOrganizationId(request, reply);
+        if (!organizationId) return;
+
+        const { startDate, endDate } = request.query;
+
+        // Build date filter
+        const dateFilter: Prisma.LandingPageViewWhereInput = {
+          landingPage: { organizationId }
+        };
+        
+        if (startDate || endDate) {
+          dateFilter.visitedAt = {};
+          if (startDate) (dateFilter.visitedAt as Prisma.DateTimeFilter).gte = new Date(startDate);
+          if (endDate) (dateFilter.visitedAt as Prisma.DateTimeFilter).lte = new Date(endDate);
+        }
+
+        // Get all page views for organization
+        const pageViews = await prisma.landingPageView.findMany({
+          where: dateFilter,
+          include: {
+            landingPage: {
+              select: { name: true }
+            }
+          }
+        });
+
+        // Get all forms for organization
+        const forms = await prisma.landingForm.findMany({
+          where: {
+            landingPage: { organizationId }
+          }
+        });
+
+        // Calculate summary stats
+        const totalViews = pageViews.length;
+        const totalSubmissions = forms.reduce((sum, f) => sum + f.submissions, 0);
+        const totalConversions = forms.reduce((sum, f) => sum + f.conversions, 0);
+        const conversionRate = totalViews > 0 ? (totalConversions / totalViews) * 100 : 0;
+
+        // Calculate daily visits for chart
+        const dailyVisits: Record<string, number> = {};
+        
+        // If we have a date filter, use it. Otherwise default to last 30 days for the chart context
+        // But since pageViews contains data based on the filter, we just aggregate what we have.
+        // If no filter (all time), this might be long, so we might want to slice it in frontend or here.
+        // Let's aggregate all fetched data.
+        pageViews.forEach(view => {
+          const dateStr = view.visitedAt.toISOString().split('T')[0];
+          dailyVisits[dateStr] = (dailyVisits[dateStr] || 0) + 1;
+        });
+
+        const chartData = Object.entries(dailyVisits)
+          .map(([date, count]) => ({ date, count }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        // Top performing pages
+        const pageStats: Record<string, { views: number; conversions: number; name: string }> = {};
+        
+        pageViews.forEach(view => {
+          const pageId = view.landingPageId;
+          if (!pageStats[pageId]) {
+            pageStats[pageId] = { 
+              views: 0, 
+              conversions: 0, 
+              name: view.landingPage.name 
+            };
+          }
+          pageStats[pageId].views++;
+        });
+
+        // Add conversion data (approximate since we don't have conversion date in this simple query)
+        // For more accuracy we would need to query leads or form submissions with dates
+        
+        const topPages = Object.values(pageStats)
+          .sort((a, b) => b.views - a.views)
+          .slice(0, 5);
+
+        return reply.send({
+          success: true,
+          data: {
+            totalViews,
+            totalSubmissions,
+            totalConversions,
+            conversionRate: Math.round(conversionRate * 100) / 100,
+            topPages,
+            chartData
+          }
+        });
+      } catch (error) {
+        logger.error('Error fetching analytics summary:', error);
+        return reply.code(500).send({
+          success: false,
+          message: 'Failed to fetch analytics summary'
+        });
+      }
+    }
+  );
+
   // ============================================================================
   // Public Routes (for tracking - no auth required)
   // ============================================================================
@@ -776,6 +1101,15 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.post<{ Body: TrackViewBody }>(
     '/public/track-view',
+    { 
+      preHandler: validateBody(trackViewSchema),
+      config: {
+        rateLimit: {
+          max: 20,
+          timeWindow: '1 minute'
+        }
+      }
+    },
     async (request, reply) => {
       try {
         const {
@@ -840,6 +1174,15 @@ export default async function marketingRoutes(fastify: FastifyInstance) {
   // ------------------------------------------
   fastify.post<{ Body: TrackEngagementBody }>(
     '/public/track-engagement',
+    { 
+      preHandler: validateBody(trackEngagementSchema),
+      config: {
+        rateLimit: {
+          max: 20,
+          timeWindow: '1 minute'
+        }
+      }
+    },
     async (request, reply) => {
       try {
         const { sessionId, timeOnPage, scrollDepth } = request.body;

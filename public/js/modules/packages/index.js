@@ -677,6 +677,8 @@ class PackagesModule {
             MONTHLY: 'Mensal',
             YEARLY: 'Anual', 
             QUARTERLY: 'Trimestral',
+            WEEKLY: 'Semanal',
+            RECURRING: 'Recorrente',
             CREDITS: 'Créditos',
             CREDIT_CARD_INSTALLMENT: 'Parcelado'
         };
@@ -697,7 +699,7 @@ class PackagesModule {
 
     isSubscriptionBillingType(billingType) {
         const normalized = this.normalizeBillingType(billingType);
-        return ['MONTHLY', 'QUARTERLY', 'YEARLY', 'CREDIT_CARD_INSTALLMENT'].includes(normalized);
+        return ['MONTHLY', 'QUARTERLY', 'YEARLY', 'CREDIT_CARD_INSTALLMENT', 'RECURRING'].includes(normalized);
     }
 
     isCreditBillingType(billingType) {
@@ -852,11 +854,22 @@ class PackagesModule {
                             <label for="billingType">Tipo de Pacote *</label>
                             <select id="billingType" name="billingType" required onchange="window.packagesModule.togglePackageFields(this.value)">
                                 <option value="">Selecione o tipo</option>
-                                <option value="MONTHLY" ${this.isSubscriptionBillingType(packageData?.billingType) ? 'selected' : ''}>📅 Assinatura Recorrente</option>
+                                <option value="RECURRING" ${this.isSubscriptionBillingType(packageData?.billingType) && packageData?.billingType !== 'YEARLY' ? 'selected' : ''}>📅 Assinatura Recorrente</option>
+                                <option value="YEARLY" ${packageData?.billingType === 'YEARLY' ? 'selected' : ''}>💰 Pagamento Único (Anual/Semestral)</option>
                                 <option value="CREDITS" ${this.isCreditBillingType(packageData?.billingType) ? 'selected' : ''}>💳 Pacote de Créditos</option>
                             </select>
                             <small class="form-help">Defina como será cobrado este pacote</small>
                         </div>
+                    </div>
+
+                    <div class="form-group" id="recurrencePeriodGroup" style="display: none;">
+                        <label for="recurrencePeriod">Período de Recorrência *</label>
+                        <select id="recurrencePeriod" name="recurrencePeriod">
+                            <option value="MONTHLY" ${packageData?.recurrencePeriod === 'MONTHLY' ? 'selected' : ''}>Mensal</option>
+                            <option value="WEEKLY" ${packageData?.recurrencePeriod === 'WEEKLY' ? 'selected' : ''}>Semanal</option>
+                            <option value="YEARLY" ${packageData?.recurrencePeriod === 'YEARLY' ? 'selected' : ''}>Anual</option>
+                        </select>
+                        <small class="form-help">Frequência da cobrança recorrente</small>
                     </div>
                     
                     <div class="form-group">
@@ -871,11 +884,11 @@ class PackagesModule {
                         <h4 class="subsection-title">📅 Configurações de Assinatura</h4>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="subscriptionPrice">Valor da Assinatura (R$) *</label>
+                                <label for="subscriptionPrice">Valor (R$) *</label>
                                 <input type="number" id="subscriptionPrice" name="price" 
                                        value="${packageData?.price || ''}" step="0.01" min="0" 
                                        placeholder="149.90" aria-describedby="subscriptionPriceHelp">
-                                <small id="subscriptionPriceHelp" class="form-help">Valor cobrado por período de assinatura</small>
+                                <small id="subscriptionPriceHelp" class="form-help">Valor cobrado por período ou total</small>
                             </div>
                             <div class="form-group">
                                 <label for="classesPerWeek">Aulas por Semana *</label>
@@ -935,6 +948,35 @@ class PackagesModule {
                                        min="1" placeholder="90" 
                                        aria-describedby="validityHelp">
                                 <small id="validityHelp" class="form-help">Dias para usar os créditos após compra</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações de Descontos -->
+                    <div class="form-subsection discounts-section" id="discountsSection">
+                        <h4 class="subsection-title">💸 Descontos por Pagamento</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="discountCash">Dinheiro (%)</label>
+                                <input type="number" id="discountCash" name="discountCash" 
+                                       value="${packageData?.paymentDiscounts?.CASH || 0}" min="0" max="100" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="discountPix">PIX (%)</label>
+                                <input type="number" id="discountPix" name="discountPix" 
+                                       value="${packageData?.paymentDiscounts?.PIX || 0}" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="discountCreditCard">Cartão à Vista (%)</label>
+                                <input type="number" id="discountCreditCard" name="discountCreditCard" 
+                                       value="${packageData?.paymentDiscounts?.CREDIT_CARD || 0}" min="0" max="100" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="discountCreditCardInstallment">Cartão Parcelado (%)</label>
+                                <input type="number" id="discountCreditCardInstallment" name="discountCreditCardInstallment" 
+                                       value="${packageData?.paymentDiscounts?.CREDIT_CARD_INSTALLMENT || 0}" min="0" max="100" step="0.1">
                             </div>
                         </div>
                     </div>
@@ -1080,6 +1122,21 @@ class PackagesModule {
 
         this.togglePackageFields(normalizedType);
 
+        // Populate recurrence period
+        const recurrenceSelect = document.getElementById('recurrencePeriod');
+        if (recurrenceSelect && packageData?.recurrencePeriod) {
+            recurrenceSelect.value = packageData.recurrencePeriod;
+        }
+
+        // Populate discounts
+        if (packageData?.paymentDiscounts) {
+            const discounts = packageData.paymentDiscounts;
+            if (document.getElementById('discountCash')) document.getElementById('discountCash').value = discounts.CASH || 0;
+            if (document.getElementById('discountPix')) document.getElementById('discountPix').value = discounts.PIX || 0;
+            if (document.getElementById('discountCreditCard')) document.getElementById('discountCreditCard').value = discounts.CREDIT_CARD || 0;
+            if (document.getElementById('discountCreditCardInstallment')) document.getElementById('discountCreditCardInstallment').value = discounts.CREDIT_CARD_INSTALLMENT || 0;
+        }
+
         if (this.isSubscriptionBillingType(normalizedType)) {
             const subscriptionPriceInput = document.getElementById('subscriptionPrice');
             if (subscriptionPriceInput) {
@@ -1141,6 +1198,13 @@ class PackagesModule {
             name: formData.get('name'),
             description: formData.get('description'),
             billingType,
+            recurrencePeriod: formData.get('recurrencePeriod'),
+            paymentDiscounts: {
+                CASH: parseFloat(formData.get('discountCash')) || 0,
+                PIX: parseFloat(formData.get('discountPix')) || 0,
+                CREDIT_CARD: parseFloat(formData.get('discountCreditCard')) || 0,
+                CREDIT_CARD_INSTALLMENT: parseFloat(formData.get('discountCreditCardInstallment')) || 0
+            },
             hasPersonalTraining: formData.has('hasPersonalTraining'),
             hasNutrition: formData.has('hasNutrition'),
             isActive: formData.has('isActive'),
@@ -1726,10 +1790,18 @@ class PackagesModule {
         const normalizedType = this.normalizeBillingType(billingType);
         const subscriptionSection = document.getElementById('subscriptionSection');
         const creditsSection = document.getElementById('creditsSection');
+        const recurrencePeriodGroup = document.getElementById('recurrencePeriodGroup');
 
         if (this.isSubscriptionBillingType(normalizedType)) {
             if (subscriptionSection) subscriptionSection.style.display = 'block';
             if (creditsSection) creditsSection.style.display = 'none';
+            
+            // Show recurrence period only if explicitly RECURRING
+            if (recurrencePeriodGroup) {
+                recurrencePeriodGroup.style.display = (billingType === 'RECURRING') ? 'block' : 'none';
+                const recurrenceSelect = document.getElementById('recurrencePeriod');
+                if (recurrenceSelect) recurrenceSelect.required = (billingType === 'RECURRING');
+            }
             
             // Tornar campos de assinatura obrigatórios
             const subscriptionPrice = document.getElementById('subscriptionPrice');
@@ -1746,6 +1818,7 @@ class PackagesModule {
         } else if (this.isCreditBillingType(normalizedType)) {
             if (subscriptionSection) subscriptionSection.style.display = 'none';
             if (creditsSection) creditsSection.style.display = 'block';
+            if (recurrencePeriodGroup) recurrencePeriodGroup.style.display = 'none';
             
             // Tornar campos de crédito obrigatórios
             const creditQuantity = document.getElementById('creditQuantity');
@@ -1762,6 +1835,7 @@ class PackagesModule {
         } else {
             if (subscriptionSection) subscriptionSection.style.display = 'none';
             if (creditsSection) creditsSection.style.display = 'none';
+            if (recurrencePeriodGroup) recurrencePeriodGroup.style.display = 'none';
             
             // Remover todas as obrigatoriedades
             const fields = ['subscriptionPrice', 'classesPerWeek', 'creditQuantity', 'pricePerClass'];

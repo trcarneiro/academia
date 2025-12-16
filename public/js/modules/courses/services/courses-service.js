@@ -85,4 +85,89 @@ export class CoursesService {
             method: 'DELETE'
         });
     }
+
+    /**
+     * Get techniques associated with a course
+     * @param {string} courseId 
+     */
+    async getCourseTechniques(courseId) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/courses/${courseId}/techniques`);
+    }
+
+    /**
+     * Save techniques for a course
+     * @param {string} courseId 
+     * @param {Array} techniques - Array of technique objects
+     */
+    async saveCourseTechniques(courseId, techniques) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/courses/${courseId}/techniques`, {
+            method: 'POST',
+            body: JSON.stringify({
+                replace: true,
+                techniques: techniques.map((t, index) => ({
+                    id: t.technique?.id || t.id, // Handle both raw technique and courseTechnique structure
+                    orderIndex: index + 1,
+                    isRequired: true
+                }))
+            })
+        });
+    }
+
+    /**
+     * Search for techniques
+     * @param {string} query 
+     */
+    async searchTechniques(query) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/techniques/search?q=${encodeURIComponent(query)}`);
+    }
+
+    // --- Lesson Plans ---
+
+    /**
+     * Get lesson plans for a course
+     * @param {string} courseId 
+     */
+    async getLessonPlans(courseId) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/lesson-plans?courseId=${courseId}&pageSize=100`);
+    }
+
+    /**
+     * Create a lesson plan
+     * @param {Object} data 
+     */
+    async createLessonPlan(data) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request('/api/lesson-plans', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    /**
+     * Update a lesson plan
+     * @param {string} id 
+     * @param {Object} data 
+     */
+    async updateLessonPlan(id, data) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/lesson-plans/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    /**
+     * Delete a lesson plan
+     * @param {string} id 
+     */
+    async deleteLessonPlan(id) {
+        if (!this.moduleAPI) await this.init();
+        return this.moduleAPI.request(`/api/lesson-plans/${id}`, {
+            method: 'DELETE'
+        });
+    }
 }

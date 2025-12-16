@@ -95,10 +95,10 @@ egister\ endpoint
 
 ## Phase 9: Security & Compliance (Analysis Remediation)
 
-- [ ] T062 [SEC] Add organizationId filtering to all portal backend routes (Constitution VI compliance)
-- [ ] T063 [SEC] Verify Turma.maxStudents field exists and implement vacancy checking in booking flow
-- [ ] T064 [SEC] Implement rate limiting middleware for portal auth endpoints
-- [ ] T065 [INFRA] Define video hosting strategy for course techniques (Cloudflare R2 recommended)
+- [x] T062 [SEC] Add organizationId filtering to all portal backend routes (Constitution VI compliance)
+- [x] T063 [SEC] Verify Turma.maxStudents field exists and implement vacancy checking in booking flow
+- [x] T064 [SEC] Implement rate limiting middleware for portal auth endpoints
+- [x] T065 [INFRA] Define video hosting strategy for course techniques (Cloudflare R2 recommended)
 
 ## Dependencies
 

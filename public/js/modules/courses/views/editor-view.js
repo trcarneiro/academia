@@ -169,10 +169,18 @@ export class EditorView {
             <div class="form-section">
                 <h3>Techniques Database</h3>
                 <p class="text-muted">Manage techniques available for this course.</p>
+                
+                <div class="technique-search-container mb-3" style="position: relative;">
+                    <div class="input-group">
+                        <input type="text" id="tech-search-input" class="form-control" placeholder="Search technique to add...">
+                        <button id="btn-search-tech" class="btn-secondary">Search</button>
+                    </div>
+                    <div id="tech-search-results" class="dropdown-menu" style="display:none; position:absolute; width:100%; z-index:1000; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+                </div>
+
                 <div id="techniques-list">
                     <!-- Techniques rendered via JS -->
                 </div>
-                <button id="btn-add-technique" class="btn-secondary btn-sm mt-2">+ Add Technique</button>
             </div>
         `;
     }
@@ -188,6 +196,29 @@ export class EditorView {
                 if (!this.courseData.lessons) this.courseData.lessons = [];
                 if (!this.courseData.techniques) this.courseData.techniques = [];
                 if (!this.courseData.lessonPlans) this.courseData.lessonPlans = [];
+
+                // Load techniques
+                try {
+                    const techResponse = await this.service.getCourseTechniques(this.courseId);
+                    if (techResponse.success) {
+                        this.courseData.techniques = techResponse.data.map(ct => ({
+                            ...ct.technique,
+                            _association: { ...ct }
+                        }));
+                    }
+                } catch (err) {
+                    console.warn('Failed to load techniques:', err);
+                }
+
+                // Load lesson plans
+                try {
+                    const plansResponse = await this.service.getLessonPlans(this.courseId);
+                    if (plansResponse.success) {
+                        this.courseData.lessonPlans = plansResponse.data;
+                    }
+                } catch (err) {
+                    console.warn('Failed to load lesson plans:', err);
+                }
             }
         } catch (error) {
             console.error('Error loading course:', error);
@@ -336,10 +367,72 @@ export class EditorView {
 
     // --- Techniques Logic ---
     bindTechniquesEvents() {
-        this.container.querySelector('#btn-add-technique')?.addEventListener('click', () => {
-            this.courseData.techniques.push({ name: '', description: '' });
-            this.renderTechniquesList();
+        const searchInput = this.container.querySelector('#tech-search-input');
+        const searchBtn = this.container.querySelector('#btn-search-tech');
+        const resultsContainer = this.container.querySelector('#tech-search-results');
+
+        let debounceTimer;
+        searchInput?.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => this.handleTechniqueSearch(e.target.value), 300);
         });
+
+        searchBtn?.addEventListener('click', () => {
+            this.handleTechniqueSearch(searchInput.value);
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.technique-search-container')) {
+                if (resultsContainer) resultsContainer.style.display = 'none';
+            }
+        });
+    }
+
+    async handleTechniqueSearch(query) {
+        if (query.length < 2) return;
+        const resultsContainer = this.container.querySelector('#tech-search-results');
+        if (!resultsContainer) return;
+        
+        try {
+            const response = await this.service.searchTechniques(query);
+            if (response.success && response.data) {
+                const techniques = response.data.techniques || response.data; // Handle different response formats
+                
+                if (techniques.length === 0) {
+                    resultsContainer.innerHTML = '<div class="dropdown-item p-2">No techniques found</div>';
+                } else {
+                    resultsContainer.innerHTML = techniques.map(t => `
+                        <div class="dropdown-item p-2 tech-result-item" style="cursor:pointer; border-bottom:1px solid #eee;" data-id="${t.id}" data-name="${t.name}" data-difficulty="${t.difficulty || ''}">
+                            <strong>${t.name}</strong> <small class="text-muted">(${t.difficulty || 'N/A'})</small>
+                        </div>
+                    `).join('');
+                    
+                    resultsContainer.querySelectorAll('.tech-result-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            this.addTechnique({
+                                id: item.dataset.id,
+                                name: item.dataset.name,
+                                difficulty: item.dataset.difficulty
+                            });
+                            resultsContainer.style.display = 'none';
+                            this.container.querySelector('#tech-search-input').value = '';
+                        });
+                    });
+                }
+                resultsContainer.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+    }
+
+    addTechnique(technique) {
+        // Check duplicates
+        if (this.courseData.techniques.some(t => t.id === technique.id)) return;
+        
+        this.courseData.techniques.push(technique);
+        this.renderTechniquesList();
     }
 
     renderTechniquesList() {
@@ -348,16 +441,16 @@ export class EditorView {
 
         list.innerHTML = this.courseData.techniques.map((tech, index) => `
             <div class="technique-item card-premium mb-2">
-                <div class="form-grid">
-                    <input type="text" class="form-control tech-name" data-index="${index}" value="${tech.name}" placeholder="Technique Name">
-                    <input type="text" class="form-control tech-desc" data-index="${index}" value="${tech.description || ''}" placeholder="Description">
-                    <button class="btn-danger btn-sm btn-remove-tech" data-index="${index}">X</button>
+                <div class="form-grid" style="grid-template-columns: 1fr auto;">
+                    <div>
+                        <strong>${tech.name}</strong>
+                        ${tech.difficulty ? `<span class="badge badge-sm">${tech.difficulty}</span>` : ''}
+                    </div>
+                    <button class="btn-danger btn-sm btn-remove-tech" data-index="${index}">Remove</button>
                 </div>
             </div>
         `).join('');
 
-        list.querySelectorAll('.tech-name').forEach(el => el.addEventListener('input', e => this.courseData.techniques[e.target.dataset.index].name = e.target.value));
-        list.querySelectorAll('.tech-desc').forEach(el => el.addEventListener('input', e => this.courseData.techniques[e.target.dataset.index].description = e.target.value));
         list.querySelectorAll('.btn-remove-tech').forEach(el => el.addEventListener('click', e => {
             this.courseData.techniques.splice(e.target.dataset.index, 1);
             this.renderTechniquesList();
@@ -368,7 +461,7 @@ export class EditorView {
     renderLessonPlansTab() {
         return `
             <div class="form-section">
-                <h3>Lesson Plans</h3>
+                <h3>Lesson Plans (Weekly Schedule)</h3>
                 <p class="text-muted">Define structured lesson plans for each week/class.</p>
                 <div id="lesson-plans-list">
                     <!-- Lesson Plans rendered via JS -->
@@ -380,7 +473,13 @@ export class EditorView {
 
     bindLessonPlansEvents() {
         this.container.querySelector('#btn-add-lesson-plan')?.addEventListener('click', () => {
-            this.courseData.lessonPlans.push({ week: '', content: '' });
+            this.courseData.lessonPlans.push({ 
+                weekNumber: 1, 
+                lessonNumber: 1, 
+                title: '', 
+                description: '',
+                objectives: [] 
+            });
             this.renderLessonPlansList();
         });
     }
@@ -391,17 +490,41 @@ export class EditorView {
 
         list.innerHTML = this.courseData.lessonPlans.map((plan, index) => `
             <div class="lesson-plan-item card-premium mb-2">
-                <div class="form-grid">
-                    <input type="text" class="form-control plan-week" data-index="${index}" value="${plan.week}" placeholder="Week/Topic (e.g. Week 1)">
-                    <textarea class="form-control plan-content" data-index="${index}" placeholder="Content description">${plan.content || ''}</textarea>
-                    <button class="btn-danger btn-sm btn-remove-plan" data-index="${index}">Remove</button>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr 3fr auto;">
+                    <div class="form-group mb-0">
+                        <label class="small text-muted">Week</label>
+                        <input type="number" class="form-control plan-week" data-index="${index}" value="${plan.weekNumber || 1}" min="1">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small text-muted">Lesson #</label>
+                        <input type="number" class="form-control plan-lesson-num" data-index="${index}" value="${plan.lessonNumber || 1}" min="1">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small text-muted">Title</label>
+                        <input type="text" class="form-control plan-title" data-index="${index}" value="${plan.title || ''}" placeholder="e.g. Intro to Stance">
+                    </div>
+                    <div class="form-group mb-0" style="align-self: end;">
+                        <button class="btn-danger btn-sm btn-remove-plan" data-index="${index}">Remove</button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <input type="text" class="form-control plan-desc" data-index="${index}" value="${plan.description || ''}" placeholder="Description (optional)">
                 </div>
             </div>
         `).join('');
 
-        list.querySelectorAll('.plan-week').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].week = e.target.value));
-        list.querySelectorAll('.plan-content').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].content = e.target.value));
+        list.querySelectorAll('.plan-week').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].weekNumber = parseInt(e.target.value)));
+        list.querySelectorAll('.plan-lesson-num').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].lessonNumber = parseInt(e.target.value)));
+        list.querySelectorAll('.plan-title').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].title = e.target.value));
+        list.querySelectorAll('.plan-desc').forEach(el => el.addEventListener('input', e => this.courseData.lessonPlans[e.target.dataset.index].description = e.target.value));
+        
         list.querySelectorAll('.btn-remove-plan').forEach(el => el.addEventListener('click', e => {
+            const plan = this.courseData.lessonPlans[e.target.dataset.index];
+            if (plan.id) {
+                // Track for deletion if it exists in DB
+                if (!this.deletedLessonPlans) this.deletedLessonPlans = [];
+                this.deletedLessonPlans.push(plan.id);
+            }
             this.courseData.lessonPlans.splice(e.target.dataset.index, 1);
             this.renderLessonPlansList();
         }));
@@ -423,13 +546,59 @@ export class EditorView {
 
         try {
             let response;
+            let savedId = this.courseId;
+
             if (this.courseId) {
                 response = await this.service.update(this.courseId, this.courseData);
             } else {
                 response = await this.service.create(this.courseData);
+                if (response.success && response.data && response.data.id) {
+                    savedId = response.data.id;
+                }
             }
 
             if (response.success) {
+                // Save techniques
+                if (this.courseData.techniques && this.courseData.techniques.length > 0) {
+                    await this.service.saveCourseTechniques(savedId, this.courseData.techniques);
+                }
+
+                // Save Lesson Plans
+                if (this.courseData.lessonPlans && this.courseData.lessonPlans.length > 0) {
+                    for (const plan of this.courseData.lessonPlans) {
+                        const planData = {
+                            ...plan,
+                            courseId: savedId,
+                            // Ensure required fields
+                            weekNumber: parseInt(plan.weekNumber) || 1,
+                            lessonNumber: parseInt(plan.lessonNumber) || 1,
+                            title: plan.title || `Lesson ${plan.lessonNumber}`,
+                            duration: 60 // Default duration
+                        };
+                        
+                        try {
+                            if (plan.id) {
+                                await this.service.updateLessonPlan(plan.id, planData);
+                            } else {
+                                await this.service.createLessonPlan(planData);
+                            }
+                        } catch (err) {
+                            console.error('Failed to save lesson plan:', err);
+                        }
+                    }
+                }
+
+                // Delete removed lesson plans
+                if (this.deletedLessonPlans && this.deletedLessonPlans.length > 0) {
+                    for (const id of this.deletedLessonPlans) {
+                        try {
+                            await this.service.deleteLessonPlan(id);
+                        } catch (err) {
+                            console.error('Failed to delete lesson plan:', err);
+                        }
+                    }
+                }
+
                 window.coursesModule.navigate('list');
             } else {
                 throw new Error(response.message);

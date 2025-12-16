@@ -1185,10 +1185,12 @@ model BillingPlan {
   installmentInterestRate Decimal?              @db.Decimal(5, 2)
   isRecurring             Boolean               @default(false)
   recurringInterval       Int?
+  recurrencePeriod        RecurrencePeriod?
   accessAllModalities     Boolean               @default(false)
   allowFreeze             Boolean               @default(true)
   freezeMaxDays           Int                   @default(30)
   features                Json?
+  paymentDiscounts        Json?                 // Configuração de descontos por método de pagamento
   isActive                Boolean               @default(true)
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @default(now())
@@ -2739,6 +2741,7 @@ enum CertificateType {
 }
 
 enum BillingType {
+  WEEKLY
   MONTHLY
   QUARTERLY
   YEARLY
@@ -2746,6 +2749,12 @@ enum BillingType {
   CREDIT_CARD_INSTALLMENT
   RECURRING
   CREDITS
+}
+
+enum RecurrencePeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 enum SubscriptionStatus {

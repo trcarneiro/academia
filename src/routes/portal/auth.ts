@@ -143,6 +143,9 @@ export default async function portalAuthRoutes(fastify: FastifyInstance) {
    * Login com email e senha
    */
   fastify.post('/login', {
+    config: {
+      rateLimit: loginRateLimitConfig
+    },
     schema: {
       body: {
         type: 'object',
@@ -207,6 +210,9 @@ export default async function portalAuthRoutes(fastify: FastifyInstance) {
    * Solicita um magic code para login via WhatsApp
    */
   fastify.post('/magic-link/request', {
+    config: {
+      rateLimit: authRateLimitConfig
+    },
     schema: {
       body: {
         type: 'object',
@@ -270,6 +276,9 @@ export default async function portalAuthRoutes(fastify: FastifyInstance) {
    * Verifica o magic code e retorna token
    */
   fastify.post('/magic-link/verify', {
+    config: {
+      rateLimit: loginRateLimitConfig
+    },
     schema: {
       body: {
         type: 'object',
