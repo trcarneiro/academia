@@ -1,6 +1,6 @@
 {
     "name": "krav-maga-academy-backend",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "Sistema de gestão para academia de Krav Maga com IA integrada",
     "main": "dist/server.js",
     "scripts": {
@@ -17,6 +17,9 @@
         "kiosk:dev": "nodemon servers/kiosk-server.js",
         "clean:simulation": "node scripts/clean-simulation-data.js",
         "clean:simulation:confirm": "node scripts/clean-simulation-data.js --confirm",
+        "version:bump": "node scripts/bump-version.js",
+        "version:bump:minor": "node scripts/bump-version.js minor",
+        "version:bump:major": "node scripts/bump-version.js major",
         "asaas:import": "node scripts/asaas-import.js",
         "asaas:import:dry": "node scripts/asaas-import.js --dry-run",
         "asaas:import:limit": "node scripts/asaas-import.js --limit=10",
