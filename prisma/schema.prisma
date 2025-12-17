@@ -75,6 +75,8 @@ model Organization {
   agentTasks               AgentTask[]               @relation("OrgToAgentTask")
   agentInsights            AgentInsight[]            @relation("OrgToInsight")
   landingPages             LandingPage[]
+  jobs                     Job[]
+  discounts                Discount[]
 
   @@map("organizations")
 }
@@ -405,6 +407,9 @@ model User {
   
   // Permission System Relations
   permissionOverrides  UserPermissionOverride[]
+  createdJobs          Job[]               @relation("JobCreator")
+  jobApplications      JobApplication[]
+  reviewedApplications JobApplication[]    @relation("ApplicationReviewer")
 
   @@map("users")
 }
@@ -492,6 +497,7 @@ model Student {
   techniqueRecords              TechniqueRecord[]
   turmaAttendances              TurmaAttendance[]
   turmaStudents                 TurmaStudent[]
+  jobApplications               JobApplication[]
 
   @@map("students")
 }
@@ -601,6 +607,7 @@ model Unit {
   personalSessions PersonalTrainingSession[]
   trainingAreas    TrainingArea[]
   turmas           Turma[]
+  jobs             Job[]
   organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, name])
@@ -677,6 +684,7 @@ model Instructor {
   personalClasses        PersonalTrainingClass[]
   qualitativeAssessments QualitativeAssessment[]
   teacherEvaluations     TeacherEvaluation[]
+  jobApplications        JobApplication[]
 
   @@map("instructors")
 }
@@ -3444,3 +3452,99 @@ model StudentTechniqueProgress {
   @@unique([studentId, techniqueId])
   @@map("student_technique_progress")
 }
+
+
+model Job {
+  id               String           @id @default(uuid())
+  organizationId   String
+  title            String
+  description      String
+  requirements     String?
+  responsibilities String?
+  benefits         String?
+  type             JobType          @default(FULL_TIME)
+  level            JobLevel         @default(MID)
+  location         String?
+  remoteOption     Boolean          @default(false)
+  salary           String?
+  unitId           String?
+  department       String?
+  vacancies        Int              @default(1)
+  status           JobStatus        @default(DRAFT)
+  publishedAt      DateTime?
+  closedAt         DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdById      String?
+
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  unit             Unit?            @relation(fields: [unitId], references: [id])
+  createdBy        User?            @relation("JobCreator", fields: [createdById], references: [id])
+  applications     JobApplication[]
+
+  @@map("jobs")
+}
+
+model JobApplication {
+  id            String            @id @default(uuid())
+  jobId         String
+  userId        String
+  studentId     String?
+  instructorId  String?
+  coverLetter   String?
+  resume        String?
+  status        ApplicationStatus @default(PENDING)
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+  interviewDate DateTime?
+
+  job           Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  student       Student?          @relation(fields: [studentId], references: [id])
+  instructor    Instructor?       @relation(fields: [instructorId], references: [id])
+  reviewedBy    User?             @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+
+  @@unique([jobId, userId])
+  @@map("job_applications")
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+  VOLUNTEER
+}
+
+enum JobLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  MANAGER
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  CLOSED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  INTERVIEW_SCHEDULED
+  INTERVIEWED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+  HIRED
+}
+
