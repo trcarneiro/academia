@@ -552,7 +552,7 @@ export class AchievementService {
       where: {
         organizationId,
         isActive: true,
-        ...(options.category && { category: options.category }),
+        ...(options.category && { category: options.category as any }),
       },
       select: {
         id: true,

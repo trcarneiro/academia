@@ -93,14 +93,14 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
               where: { status: 'ACTIVE' },
               select: { id: true }
             },
-            creditPurchases: {
-              where: { isActive: true },
-              select: { id: true, creditsRemaining: true }
+            studentCredits: {
+              where: { status: 'ACTIVE' },
+              select: { id: true, creditsAvailable: true }
             },
             _count: {
               select: {
                 subscriptions: true,
-                creditPurchases: true
+                studentCredits: true
               }
             }
           },
@@ -118,8 +118,8 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
       const enrichedPackages = packages.map(pkg => ({
         ...pkg,
         activeSubscriptions: pkg.subscriptions?.length || 0,
-        activeCreditPurchases: pkg.creditPurchases?.length || 0,
-        totalCreditsRemaining: pkg.creditPurchases?.reduce((sum, cp) => sum + (cp.creditsRemaining || 0), 0) || 0
+        activeCreditPurchases: pkg.studentCredits?.length || 0,
+        totalCreditsRemaining: pkg.studentCredits?.reduce((sum, cp) => sum + (cp.creditsAvailable || 0), 0) || 0
       }));
       
       return ResponseHelper.success(reply, {
@@ -161,7 +161,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
               }
             }
           },
-          creditPurchases: {
+          studentCredits: {
             include: {
               student: {
                 include: { user: true }
@@ -171,7 +171,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
           _count: {
             select: {
               subscriptions: true,
-              creditPurchases: true
+              studentCredits: true
             }
           }
         }
@@ -211,11 +211,16 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
         return ResponseHelper.badRequest(reply, 'Apenas pacotes de crédito podem ter quantidade de créditos');
       }
       
+      // Map body to Prisma input
+      const { credits, ...rest } = body;
+      const data: any = {
+        ...rest,
+        organizationId,
+        creditQuantity: credits
+      };
+
       const packageData = await prisma.billingPlan.create({
-        data: {
-          ...body,
-          organizationId
-        }
+        data
       });
       
       return ResponseHelper.success(reply, packageData, 'Pacote criado com sucesso', 201);
@@ -251,16 +256,24 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
       }
       
       // Validações específicas de atualização
-      if (body.billingType === 'CREDITS' && !body.credits && !existingPackage.credits) {
+      if (body.billingType === 'CREDITS' && !body.credits && !existingPackage.creditQuantity) {
         return ResponseHelper.badRequest(reply, 'Pacotes de crédito devem ter quantidade de créditos definida');
       }
       
+      // Map body to Prisma input
+      const { credits, ...rest } = body;
+      const data: any = {
+        ...rest,
+        updatedAt: new Date()
+      };
+      
+      if (credits !== undefined) {
+        data.creditQuantity = credits;
+      }
+
       const updatedPackage = await prisma.billingPlan.update({
         where: { id },
-        data: {
-          ...body,
-          updatedAt: new Date()
-        }
+        data
       });
       
       return ResponseHelper.success(reply, updatedPackage, 'Pacote atualizado com sucesso');
@@ -291,7 +304,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
           _count: {
             select: {
               subscriptions: true,
-              creditPurchases: true
+              studentCredits: true
             }
           }
         }
@@ -302,7 +315,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
       }
       
       // Verificar se tem assinaturas ou créditos ativos
-      const hasActiveItems = existingPackage._count.subscriptions > 0 || existingPackage._count.creditPurchases > 0;
+      const hasActiveItems = existingPackage._count.subscriptions > 0 || existingPackage._count.studentCredits > 0;
       
       if (hasActiveItems) {
         // Soft delete - apenas desativar
@@ -338,7 +351,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     try {
-      const { organizationId } = request.user;
+      const { organizationId } = request.user as any;
       const { period } = request.query as { period: string };
       
       // Calcular data de início baseada no período
@@ -385,16 +398,16 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
           },
           _sum: { currentPrice: true }
         }),
-        prisma.creditPurchase.aggregate({
+        prisma.studentCredit.aggregate({
           where: {
             organizationId,
-            isActive: true,
-            purchaseDate: { gte: startDate }
+            status: 'ACTIVE',
+            purchasedAt: { gte: startDate }
           },
           _sum: {
-            creditsTotal: true,
-            creditsRemaining: true,
-            price: true
+            totalCredits: true,
+            creditsAvailable: true,
+            // price: true // StudentCredit doesn't have price
           }
         })
       ]);
@@ -410,11 +423,11 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
           revenue: totalRevenue._sum.currentPrice || 0
         },
         credits: {
-          sold: creditsData._sum.creditsTotal || 0,
-          remaining: creditsData._sum.creditsRemaining || 0,
-          revenue: creditsData._sum.price || 0
+          sold: creditsData._sum.totalCredits || 0,
+          remaining: creditsData._sum.creditsAvailable || 0,
+          revenue: 0 // creditsData._sum.price || 0
         },
-        totalRevenue: (totalRevenue._sum.currentPrice || 0) + (creditsData._sum.price || 0),
+        totalRevenue: (totalRevenue._sum.currentPrice || 0), // + (creditsData._sum.price || 0),
         period
       };
       
@@ -440,7 +453,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     try {
-      const { organizationId } = request.user;
+      const { organizationId } = request.user as any;
       const { id } = request.params as { id: string };
       const { studentId, customPrice, startDate } = request.body as any;
       
@@ -487,9 +500,9 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
       }
       
       // Buscar responsável financeiro do aluno
-      let payerId = studentId;
+      let financialResponsibleId = undefined;
       if (student.financialResponsibleId) {
-        payerId = student.financialResponsibleId;
+        financialResponsibleId = student.financialResponsibleId;
       }
       // Criar assinatura
       const subscription = await prisma.studentSubscription.create({
@@ -497,7 +510,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
           organizationId,
           studentId,
           planId: id,
-          payerId,
+          financialResponsibleId,
           currentPrice: customPrice || packageData.price,
           billingType: packageData.billingType,
           startDate: startDate ? new Date(startDate) : new Date(),
@@ -532,7 +545,7 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     try {
-      const { organizationId } = request.user;
+      const { organizationId } = request.user as any;
       const { id } = request.params as { id: string };
       const { studentId, creditsQuantity, customPrice, expirationDate } = request.body as any;
       
@@ -558,25 +571,25 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
         return ResponseHelper.notFound(reply, 'Aluno não encontrado');
       }
       
-      const finalCredits = creditsQuantity || packageData.credits || 1;
-      const finalPrice = customPrice || packageData.price;
+      const finalCredits = creditsQuantity || packageData.creditQuantity || 1;
+      // const finalPrice = customPrice || packageData.price;
       
       // Criar compra de créditos
-      const creditPurchase = await prisma.creditPurchase.create({
+      const creditPurchase = await prisma.studentCredit.create({
         data: {
           organizationId,
           studentId,
           planId: id,
-          creditsTotal: finalCredits,
-          creditsRemaining: finalCredits,
-          price: finalPrice,
-          purchaseDate: new Date(),
-          expirationDate: expirationDate ? new Date(expirationDate) : null,
-          isActive: true
+          totalCredits: finalCredits,
+          creditsAvailable: finalCredits,
+          creditType: 'CLASS', // Assuming default
+          // price: finalPrice, // No price in StudentCredit
+          purchasedAt: new Date(),
+          expiresAt: expirationDate ? new Date(expirationDate) : null,
+          status: 'ACTIVE'
         },
         include: {
-          student: { include: { user: true } },
-          plan: true
+          student: { include: { user: true } }
         }
       });
       

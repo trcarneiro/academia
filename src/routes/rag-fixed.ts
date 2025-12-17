@@ -55,7 +55,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 const stats = await RAGService.getRAGStats();
                 return ResponseHelper.success(reply, stats);
             } catch (error: any) {
-                fastify.log.error('Erro ao buscar estatísticas RAG:', error);
+                fastify.log.error({ err: error }, 'Erro ao buscar estatísticas RAG');
                 return ResponseHelper.error(reply, 'Erro interno do servidor', 500);
             }
         });
@@ -80,7 +80,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 
                 return ResponseHelper.success(reply, result);
             } catch (error: any) {
-                fastify.log.error('Erro na ingestão RAG:', error);
+                fastify.log.error({ err: error }, 'Erro na ingestão RAG:');
                 return ResponseHelper.error(reply, 'Erro ao processar documentos', 500);
             }
         });
@@ -94,7 +94,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 const documents = await RAGService.getDocuments({});
                 return ResponseHelper.success(reply, documents);
             } catch (error: any) {
-                fastify.log.error('Erro ao buscar documentos:', error);
+                fastify.log.error({ err: error }, 'Erro ao buscar documentos:');
                 return ResponseHelper.error(reply, 'Erro ao buscar documentos', 500);
             }
         });
@@ -111,7 +111,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 await RAGService.deleteDocument(documentId);
                 return ResponseHelper.success(reply, null, 'Documento removido');
             } catch (error: any) {
-                fastify.log.error('Erro ao remover documento:', error);
+                fastify.log.error({ err: error }, 'Erro ao remover documento:');
                 return ResponseHelper.error(reply, 'Erro ao remover documento', 500);
             }
         });
@@ -135,7 +135,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 if (error instanceof z.ZodError) {
                     return ResponseHelper.error(reply, 'Mensagem inválida', 400);
                 }
-                fastify.log.error('Erro no chat RAG:', error);
+                fastify.log.error({ err: error }, 'Erro no chat RAG:');
                 return ResponseHelper.error(reply, 'Erro ao processar mensagem', 500);
             }
         });
@@ -150,7 +150,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 const history = await RAGService.getChatHistory(1, query.conversationId);
                 return ResponseHelper.success(reply, history);
             } catch (error: any) {
-                fastify.log.error('Erro ao buscar histórico:', error);
+                fastify.log.error({ err: error }, 'Erro ao buscar histórico:');
                 return ResponseHelper.error(reply, 'Erro ao buscar histórico', 500);
             }
         });
@@ -174,7 +174,7 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 if (error instanceof z.ZodError) {
                     return ResponseHelper.error(reply, 'Parâmetros inválidos', 400);
                 }
-                fastify.log.error('Erro na geração de conteúdo:', error);
+                fastify.log.error({ err: error }, 'Erro na geração de conteúdo:');
                 return ResponseHelper.error(reply, 'Erro na geração de conteúdo', 500);
             }
         });
@@ -196,36 +196,8 @@ export async function ragRoutes(fastify: FastifyInstance) {
                 
                 return ResponseHelper.success(reply, results);
             } catch (error: any) {
-                fastify.log.error('Erro na busca semântica:', error);
+                fastify.log.error({ err: error }, 'Erro na busca semântica:');
                 return ResponseHelper.error(reply, 'Erro na busca', 500);
-            }
-        });
-
-        /**
-         * GET /api/rag/health
-         * Verifica status de saúde do sistema RAG
-         */
-        fastify.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
-            try {
-                const health = await RAGService.healthCheck();
-                return ResponseHelper.success(reply, health);
-            } catch (error: any) {
-                fastify.log.error('Erro no health check RAG:', error);
-                return ResponseHelper.error(reply, 'Erro no health check', 500);
-            }
-        });
-
-        /**
-         * POST /api/rag/reindex
-         * Reindexa todos os documentos
-         */
-        fastify.post('/reindex', async (_request: FastifyRequest, reply: FastifyReply) => {
-            try {
-                const result = await RAGService.reindexDocuments();
-                return ResponseHelper.success(reply, result);
-            } catch (error: any) {
-                fastify.log.error('Erro na reindexação:', error);
-                return ResponseHelper.error(reply, 'Erro na reindexação', 500);
             }
         });
     });

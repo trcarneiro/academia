@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { GraduationService } from '@/services/graduationService';
+import { GraduationService } from '@/services/gradService';
 import { logger } from '@/utils/logger';
 
 /**

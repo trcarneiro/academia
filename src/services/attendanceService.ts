@@ -270,7 +270,7 @@ export class AttendanceService {
 
       // âœ… AUTO-COMPLETAR ATIVIDADES SE CONFIGURADO
       try {
-        const { ActivityExecutionService } = await import('@/services/activityExecutionService');
+        const { ActivityExecutionService } = await import('@/services/activityExecService');
         const student_full = await prisma.student.findUnique({
           where: { id: studentId },
           select: { organizationId: true }

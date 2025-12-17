@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { GraduationService } from '@/services/graduationService';
+import { GraduationService } from '@/services/gradService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 

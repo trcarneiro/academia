@@ -141,7 +141,7 @@ export const EvaluationQuerySchema = z.object({
 });
 
 // Course Management Schemas
-export const CourseCreateSchema = z.object({
+const CourseCreateBaseSchema = z.object({
   martialArtId: z.string().uuid('Martial art ID must be a valid UUID'),
   name: z.string().min(1, 'Course name is required').max(255, 'Course name cannot exceed 255 characters'),
   description: z.string().max(1000, 'Description cannot exceed 1000 characters').optional(),
@@ -158,7 +158,9 @@ export const CourseCreateSchema = z.object({
   requirements: z.array(z.string().max(200)).max(20, 'Cannot have more than 20 requirements').default([]),
   imageUrl: z.string().url('Image URL must be valid').optional(),
   nextCourseId: z.string().uuid().optional(),
-}).refine(
+});
+
+export const CourseCreateSchema = CourseCreateBaseSchema.refine(
   (data) => !data.maxAge || data.maxAge >= data.minAge,
   {
     message: 'Maximum age must be greater than or equal to minimum age',
@@ -166,7 +168,7 @@ export const CourseCreateSchema = z.object({
   }
 );
 
-export const CourseUpdateSchema = CourseCreateSchema.omit({
+export const CourseUpdateSchema = CourseCreateBaseSchema.omit({
   martialArtId: true,
 }).partial();
 

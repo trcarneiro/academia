@@ -326,7 +326,7 @@ export class ProgressionService {
       generalActions.push('Aumentar frequência de treinos para pelo menos 80%');
     }
 
-    if (enrollment.currentStreak === 0) {
+    if (enrollment.student.currentStreak === 0) {
       generalActions.push('Estabelecer uma rotina de treinos consistente');
     }
 

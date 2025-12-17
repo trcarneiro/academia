@@ -47,6 +47,21 @@ echo "📦 Instalando dependências..."
 npm ci --production=false --silent
 echo "   ✅ Dependências instaladas"
 
+# 5.1 Verificar SWAP (Evitar erro de memória no build)
+echo ""
+echo "🧠 Verificando memória SWAP..."
+if [ $(free -m | grep Swap | awk '{print $2}') -eq 0 ]; then
+  echo "   ⚠️  Nenhum SWAP detectado. Criando SWAP de 2GB..."
+  fallocate -l 2G /swapfile
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+  echo "   ✅ SWAP criado e ativado"
+else
+  echo "   ✅ SWAP já existe: $(free -h | grep Swap | awk '{print $2}')"
+fi
+
 # 6. Gerar Prisma Client
 echo ""
 echo "🔧 Gerando Prisma Client..."

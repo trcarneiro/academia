@@ -9,6 +9,7 @@ import { ChallengeService } from '@/services/challengeService';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
 import { logger } from '@/utils/logger';
+import { StudentCategory } from '@prisma/client';
 
 // Validation schemas
 const CourseEnrollmentSchema = z.object({

@@ -10,6 +10,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { serverSupabase } from '@/utils/supabase';
+import { PermissionScope } from '@prisma/client';
 
 interface AuthUser {
   id: string;
@@ -75,7 +76,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/permissions', {
     schema: {
-      description: 'Retorna as permissões efetivas do usuário logado',
+      summary: 'Retorna as permissões efetivas do usuário logado',
       tags: ['Auth'],
       response: {
         200: {
@@ -252,7 +253,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/permissions/check', {
     schema: {
-      description: 'Verifica se usuário tem uma permissão específica',
+      summary: 'Verifica se usuário tem uma permissão específica',
       tags: ['Auth'],
       querystring: {
         type: 'object',
@@ -358,7 +359,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/admin/permissions', {
     schema: {
-      description: 'Lista todas as permissões disponíveis (admin only)',
+      summary: 'Lista todas as permissões disponíveis (admin only)',
       tags: ['Admin']
     }
   }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -411,7 +412,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/admin/permissions/roles/:role', {
     schema: {
-      description: 'Lista permissões de um role específico',
+      summary: 'Lista permissões de um role específico',
       tags: ['Admin'],
       params: {
         type: 'object',
@@ -472,7 +473,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.post('/admin/permissions/users/:userId/override', {
     schema: {
-      description: 'Adiciona ou atualiza override de permissão para usuário',
+      summary: 'Adiciona ou atualiza override de permissão para usuário',
       tags: ['Admin'],
       params: {
         type: 'object',
@@ -542,13 +543,13 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
         },
         update: {
           granted,
-          scope: scope || 'ALL'
+          scope: (scope as PermissionScope) || 'ALL'
         },
         create: {
           userId,
           permissionId,
           granted,
-          scope: scope || 'ALL'
+          scope: (scope as PermissionScope) || 'ALL'
         },
         include: { permission: true }
       });
@@ -584,7 +585,7 @@ export default async function permissionsRoutes(fastify: FastifyInstance) {
    */
   fastify.delete('/admin/permissions/users/:userId/override/:permissionId', {
     schema: {
-      description: 'Remove override de permissão de usuário',
+      summary: 'Remove override de permissão de usuário',
       tags: ['Admin'],
       params: {
         type: 'object',

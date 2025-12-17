@@ -328,14 +328,15 @@ export class GoogleAdsService {
 
             for (const campaign of campaigns) {
                 const campaignData = {
-                    googleCampaignId: campaign.campaign.id.toString(),
-                    name: campaign.campaign.name || 'Unnamed Campaign',
-                    status: campaign.campaign.status || 'UNKNOWN',
+                    campaignId: campaign.campaign.id.toString(),
+                    campaignName: campaign.campaign.name || 'Unnamed Campaign',
+                    campaignStatus: campaign.campaign.status || 'UNKNOWN',
                     impressions: Number(campaign.metrics?.impressions) || 0,
                     clicks: Number(campaign.metrics?.clicks) || 0,
                     cost: (Number(campaign.metrics?.cost_micros) || 0) / 1000000, // Convert from micros
                     conversions: Number(campaign.metrics?.conversions) || 0,
                     organizationId: this.organizationId,
+                    roi: 0
                 };
 
                 // Calculate ROI if we have cost and conversions
@@ -348,10 +349,7 @@ export class GoogleAdsService {
 
                 await prisma.googleAdsCampaign.upsert({
                     where: {
-                        organizationId_googleCampaignId: {
-                            organizationId: this.organizationId,
-                            googleCampaignId: campaignData.googleCampaignId,
-                        },
+                        campaignId: campaignData.campaignId,
                     },
                     update: campaignData,
                     create: campaignData,
@@ -402,7 +400,7 @@ export class GoogleAdsService {
                     '🔐 Missing Google Ads authorization.\n\n' +
                     '📋 Action required:\n' +
                     '1. Click "Conectar Google Ads" button above\n' +
-                    '2. Log in with your Google Ads account\n' +
+                    '2. Log in to Google Ads account\n' +
                     '3. Grant permissions when asked\n' +
                     '4. Wait for "Conectado" status before syncing'
                 );
@@ -475,34 +473,39 @@ export class GoogleAdsService {
                 AND segments.date DURING LAST_30_DAYS
             `);
 
+            const campaignRecord = await prisma.googleAdsCampaign.findUnique({
+                where: { campaignId: campaignId }
+            });
+            
+            if (!campaignRecord) {
+                logger.warn(`Campaign ${campaignId} not found in database, skipping ad groups sync`);
+                return 0;
+            }
+
             let syncedCount = 0;
 
             for (const adGroup of adGroups) {
                 await prisma.googleAdsAdGroup.upsert({
                     where: {
-                        organizationId_googleAdGroupId: {
-                            organizationId: this.organizationId,
-                            googleAdGroupId: adGroup.ad_group.id.toString(),
-                        },
+                        adGroupId: adGroup.ad_group.id.toString(),
                     },
                     update: {
-                        name: adGroup.ad_group.name || 'Unnamed Ad Group',
-                        status: adGroup.ad_group.status || 'UNKNOWN',
+                        adGroupName: adGroup.ad_group.name || 'Unnamed Ad Group',
+                        adGroupStatus: adGroup.ad_group.status || 'UNKNOWN',
                         impressions: Number(adGroup.metrics?.impressions) || 0,
                         clicks: Number(adGroup.metrics?.clicks) || 0,
                         cost: (Number(adGroup.metrics?.cost_micros) || 0) / 1000000,
                         conversions: Number(adGroup.metrics?.conversions) || 0,
                     },
                     create: {
-                        googleAdGroupId: adGroup.ad_group.id.toString(),
-                        googleCampaignId: campaignId,
-                        name: adGroup.ad_group.name || 'Unnamed Ad Group',
-                        status: adGroup.ad_group.status || 'UNKNOWN',
+                        adGroupId: adGroup.ad_group.id.toString(),
+                        campaignId: campaignRecord.id,
+                        adGroupName: adGroup.ad_group.name || 'Unnamed Ad Group',
+                        adGroupStatus: adGroup.ad_group.status || 'UNKNOWN',
                         impressions: Number(adGroup.metrics?.impressions) || 0,
                         clicks: Number(adGroup.metrics?.clicks) || 0,
                         cost: (Number(adGroup.metrics?.cost_micros) || 0) / 1000000,
                         conversions: Number(adGroup.metrics?.conversions) || 0,
-                        organizationId: this.organizationId,
                     },
                 });
 
@@ -544,7 +547,7 @@ export class GoogleAdsService {
                 throw new Error('Lead not found or missing GCLID');
             }
 
-            if (!lead.convertedAt) {
+            if (!lead.enrolledAt) {
                 throw new Error('Lead not converted yet');
             }
 
@@ -566,8 +569,8 @@ export class GoogleAdsService {
             const conversionData = {
                 gclid: lead.gclid,
                 conversion_action: settings.googleAdsConversionAction,
-                conversion_date_time: lead.convertedAt.toISOString().replace(/\.\d{3}Z$/, '+00:00'),
-                conversion_value: lead.actualValue || lead.estimatedValue || 0,
+                conversion_date_time: lead.enrolledAt.toISOString().replace(/\.\d{3}Z$/, '+00:00'),
+                conversion_value: lead.actualRevenue || lead.estimatedValue || 0,
                 currency_code: 'BRL',
             };
 
@@ -618,7 +621,7 @@ export class GoogleAdsService {
         const whereClause: any = {
             organizationId: this.organizationId,
             status: 'WON',
-            convertedAt: { not: null },
+            enrolledAt: { not: null },
         };
 
         if (campaignName) {
@@ -627,7 +630,7 @@ export class GoogleAdsService {
 
         const leads = await prisma.lead.findMany({
             where: whereClause,
-            select: { actualValue: true, estimatedValue: true },
+            select: { actualRevenue: true, estimatedValue: true },
         });
 
         if (leads.length === 0) {
@@ -635,7 +638,7 @@ export class GoogleAdsService {
         }
 
         const totalValue = leads.reduce((sum, lead) => {
-            return sum + (lead.actualValue || lead.estimatedValue || 0);
+            return sum + (lead.actualRevenue || lead.estimatedValue || 0);
         }, 0);
 
         return totalValue / leads.length;

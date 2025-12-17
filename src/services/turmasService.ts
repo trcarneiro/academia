@@ -31,6 +31,7 @@ export interface TurmaFilters {
   unitId?: string;
   status?: string;
   type?: string;
+  isActive?: boolean;
 }
 
 export interface AttendanceFilters {

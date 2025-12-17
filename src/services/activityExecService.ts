@@ -35,7 +35,7 @@ export class ActivityExecutionService {
       }
 
       // Validar que attendanceId e activityId pertencem ao mesmo turmaLessonId
-      await this.validateAttendanceActivity(data.attendanceId, data.activityId);
+      const attendance = await this.validateAttendanceActivity(data.attendanceId, data.activityId);
 
       // Upsert: criar ou atualizar
       const execution = await prisma.lessonActivityExecution.upsert({
@@ -57,6 +57,8 @@ export class ActivityExecutionService {
         create: {
           attendanceId: data.attendanceId,
           activityId: data.activityId,
+          studentId: attendance.studentId,
+          turmaLessonId: attendance.turmaLessonId,
           completed: data.completed,
           performanceRating: data.performanceRating,
           durationMinutes: data.actualDuration,
@@ -86,7 +88,7 @@ export class ActivityExecutionService {
   private static async validateAttendanceActivity(
     attendanceId: string, 
     activityId: string
-  ): Promise<void> {
+  ): Promise<any> {
     const attendance = await prisma.turmaAttendance.findUnique({
       where: { id: attendanceId },
       include: {
@@ -119,6 +121,8 @@ export class ActivityExecutionService {
         `Activity ${activityId} does not belong to lesson ${attendance.lesson.id}`
       );
     }
+
+    return attendance;
   }
 
   /**
@@ -284,6 +288,7 @@ export class ActivityExecutionService {
       completedActivities: number;
       completionRate: number;
       avgRating: number;
+      avgDuration: number;
     };
     trend: 'improving' | 'stable' | 'declining';
   }> {
@@ -492,6 +497,8 @@ export class ActivityExecutionService {
       const executions = attendance.lesson.lessonPlan.activityItems.map(activity => ({
         attendanceId: attendanceId,
         activityId: activity.id,
+        studentId: attendance.studentId,
+        turmaLessonId: attendance.turmaLessonId,
         completed: true,
         executedAt: new Date()
       }));
@@ -723,4 +730,3 @@ export class ActivityExecutionService {
     }
   }
 }
-

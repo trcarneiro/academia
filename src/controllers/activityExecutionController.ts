@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { ActivityExecutionService } from '@/services/activityExecutionService';
+import { ActivityExecutionService } from '@/services/activityExecService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 
