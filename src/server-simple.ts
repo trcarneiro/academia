@@ -591,7 +591,7 @@ const start = async (): Promise<void> => {
             billingType: true,
             isActive: true,
             features: true,
-            targetCategory: true,
+            category: true,
             classesPerWeek: true,
             hasPersonalTraining: true,
             hasNutrition: true,

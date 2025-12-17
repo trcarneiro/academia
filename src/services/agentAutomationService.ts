@@ -140,12 +140,12 @@ export class AgentAutomationService {
         { days: daysOverdue }
       );
 
-      if (!result.success || !result.data || result.data.length === 0) {
+      if (!result.success || !result.data || (result.data as any[]).length === 0) {
         logger.info('No overdue payments found');
         return { success: true, overdueCount: 0 };
       }
 
-      const overdueStudents = result.data;
+      const overdueStudents = result.data as any[];
       logger.info(`Found ${overdueStudents.length} students with overdue payments`);
 
       // Criar interação para dashboard

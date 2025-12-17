@@ -158,11 +158,6 @@ VocÃª tem acesso aos dados reais da academia via ferramentas MCP:
           lessonPlans: {
             orderBy: { lessonNumber: 'asc' }
           },
-          activityCategories: {
-            include: {
-              activities: true
-            }
-          },
           graduationLevels: true
         }
       });

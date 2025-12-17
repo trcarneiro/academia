@@ -1,6 +1,7 @@
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
-import type { 
+import { 
+  Prisma,
   LessonActivityExecution, 
   ActivityTrackingSettings,
   TurmaLesson,

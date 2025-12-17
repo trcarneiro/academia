@@ -50,7 +50,7 @@ export const getCourseData: MCPTool = {
           },
           lessonPlans: {
             include: {
-              activities: {
+              activityItems: {
                 include: {
                   technique: true
                 }
