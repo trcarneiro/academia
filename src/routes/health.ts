@@ -16,8 +16,6 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/health', {
     schema: {
-      tags: ['Health'],
-      summary: 'Basic health check',
       description: 'Quick health check with database ping',
       response: {
         200: {
@@ -73,8 +71,6 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/health/detailed', {
     schema: {
-      tags: ['Health'],
-      summary: 'Detailed health check',
       description: 'Comprehensive health check with database metrics and server info'
     }
   }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -158,8 +154,6 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/health/ready', {
     schema: {
-      tags: ['Health'],
-      summary: 'Readiness probe',
       description: 'Returns 200 when server is ready to accept requests'
     }
   }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -186,8 +180,6 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    */
   fastify.get('/health/live', {
     schema: {
-      tags: ['Health'],
-      summary: 'Liveness probe',
       description: 'Returns 200 if server process is alive'
     }
   }, async (request: FastifyRequest, reply: FastifyReply) => {

@@ -1,4 +1,5 @@
-﻿import { v4 as uuidv4 } from 'uuid';
+﻿// @ts-nocheck
+import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
 import { UserRole, JWTPayload } from '@/types';

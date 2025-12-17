@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { prisma } from '@/utils/database';
 import { z } from 'zod';

@@ -1,6 +1,6 @@
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
-import { Belt, Student, Graduation } from '@prisma/client';
+import { StudentGraduation } from '@prisma/client';
 
 export class GraduationService {
   /**
@@ -24,15 +24,12 @@ export class GraduationService {
         where: { id: studentId },
         include: {
           graduations: {
-            orderBy: { date: 'desc' },
+            orderBy: { approvedAt: 'desc' },
             take: 1
           },
-          attendances: {
+          turmaAttendances: {
             where: {
-              status: 'PRESENT',
-              date: {
-                gte: undefined // Será definido abaixo
-              }
+              present: true
             }
           }
         }
@@ -41,7 +38,7 @@ export class GraduationService {
       if (!student) throw new Error('Student not found');
 
       const currentBeltName = student.graduations?.[0]?.toBelt || 'WHITE';
-      const lastGraduationDate = student.graduations?.[0]?.date || student.createdAt;
+      const lastGraduationDate = student.graduations?.[0]?.approvedAt || student.createdAt;
 
       // Buscar próxima faixa na ordem
       const belts = ['WHITE', 'YELLOW', 'ORANGE', 'GREEN', 'BLUE', 'BROWN', 'BLACK'];
@@ -72,8 +69,8 @@ export class GraduationService {
       const attendedClasses = await prisma.turmaAttendance.count({
         where: {
           studentId,
-          status: 'PRESENT',
-          date: { gte: lastGraduationDate }
+          present: true,
+          createdAt: { gte: lastGraduationDate }
         }
       });
 
@@ -83,8 +80,8 @@ export class GraduationService {
       const technicalExam = await prisma.evaluation.findFirst({
         where: {
           studentId,
-          type: 'BELT_EXAM',
-          result: 'APPROVED',
+          type: 'GRADING',
+          passed: true,
           createdAt: { gte: lastGraduationDate }
         }
       });
@@ -145,29 +142,32 @@ export class GraduationService {
    */
   static async graduate(data: {
     studentId: string;
-    belt: string;
-    date: Date;
-    certificateNumber?: string;
-    examinerId?: string;
-    notes?: string;
-  }): Promise<Graduation> {
+    courseId: string;
+    fromBelt: string;
+    toBelt: string;
+    approvedBy: string;
+    certificateUrl?: string;
+    ceremonyNotes?: string;
+  }): Promise<StudentGraduation> {
     try {
       // Criar registro de graduação
-      const graduation = await prisma.graduation.create({
+      const graduation = await prisma.studentGraduation.create({
         data: {
           studentId: data.studentId,
-          toBelt: data.belt,
-          date: data.date,
-          certificateUrl: data.certificateNumber, // Usando campo existente
-          notes: data.notes,
-          // examinerId não existe no schema atual, colocar nas notas se necessário
+          courseId: data.courseId,
+          fromBelt: data.fromBelt,
+          toBelt: data.toBelt,
+          approvedBy: data.approvedBy,
+          certificateUrl: data.certificateUrl,
+          ceremonyNotes: data.ceremonyNotes,
+          finalAttendanceRate: 0,
+          finalQualityRating: 0,
+          totalRepetitions: 0,
+          totalLessonsCompleted: 0
         }
       });
 
-      // Atualizar faixa atual do aluno (se houvesse campo no student, mas agora é via relação)
-      // O sistema deve pegar a graduação mais recente para saber a faixa atual
-
-      logger.info(`Student ${data.studentId} graduated to ${data.belt}`);
+      logger.info(`Student ${data.studentId} graduated from ${data.fromBelt} to ${data.toBelt}`);
       
       return graduation;
     } catch (error) {

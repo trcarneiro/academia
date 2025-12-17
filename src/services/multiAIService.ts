@@ -74,8 +74,8 @@ export class MultiAIService {
       throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
+    const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+    return data.choices?.[0]?.message?.content || '';
   }
 
   static async executeAnalysis(request: AIAnalysisRequest): Promise<AIAnalysisResponse> {

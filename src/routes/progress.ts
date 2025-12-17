@@ -145,8 +145,7 @@ export default async function progressRoutes(fastify: FastifyInstance) {
               techniquesLearned: body.techniquesLearned,
               challengesCompleted: body.challengesCompleted,
               points: body.points,
-              reflections: body.reflections || body.notes || null,
-              completedAt: body.completed ? new Date() : null
+              reflections: body.reflections || body.notes || null
             },
             include: {
               student: {
@@ -170,8 +169,7 @@ export default async function progressRoutes(fastify: FastifyInstance) {
               techniquesLearned: body.techniquesLearned,
               challengesCompleted: body.challengesCompleted,
               points: body.points,
-              reflections: body.reflections || body.notes || null,
-              completedAt: body.completed ? new Date() : null
+              reflections: body.reflections || body.notes || null
             },
             include: {
               student: {
@@ -272,15 +270,17 @@ export default async function progressRoutes(fastify: FastifyInstance) {
         }
 
         // Calculate comprehensive statistics
+        const totalClasses = attendanceRecords.length;
+        const presentClasses = attendanceRecords.filter(a => a.present).length;
         const attendanceStats = {
-          totalClasses: attendanceRecords.length,
-          presentClasses: attendanceRecords.filter(a => a.present).length,
+          totalClasses,
+          presentClasses,
           lateArrivals: attendanceRecords.filter(a => a.arrived_late).length,
           earlyDepartures: attendanceRecords.filter(a => a.left_early).length,
+          attendanceRate: totalClasses > 0 
+            ? Math.round((presentClasses / totalClasses) * 100) 
+            : 0
         };
-        attendanceStats.attendanceRate = attendanceStats.totalClasses > 0 
-          ? Math.round((attendanceStats.presentClasses / attendanceStats.totalClasses) * 100) 
-          : 0;
 
         const progressStats = {
           totalLessonsWithProgress: progressRecords.length,

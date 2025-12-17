@@ -81,6 +81,7 @@ import healthRoutes from '@/routes/health';
 import portalRoutes from '@/routes/portal';
 import permissionsRoutes from '@/routes/permissions';
 import horariosSugeridosRoutes from '@/routes/horarios-sugeridos';
+import deploySessionsRoutes from '@/routes/ops/deploySessions';
 const frequencyRoutes = require('./routes/frequency');
 
 export const buildApp = async () => {

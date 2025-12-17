@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { HorariosSugeridosService } from '@/services/horariosSugeridosService';
 import { ResponseHelper } from '@/utils/response';

@@ -15,7 +15,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
   fastify.get('/users/by-email', {
     schema: {
       // tags: ['Authentication'],
-      summary: 'Get user organization by email',
+      description: 'Get user organization by email',
       querystring: {
         type: 'object',
         required: ['email'],

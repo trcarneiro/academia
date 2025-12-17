@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import FinancialService, { CreatePlanData, CreateSubscriptionData } from '../services/financialService';

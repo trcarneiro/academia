@@ -292,7 +292,7 @@ export class EvaluationService {
 
     // Find evaluation template for this lesson
     const evaluationTemplate = this.EVALUATION_SCHEDULES.KRAV_MAGA.find(
-      eval => eval.lessonNumber === lessonNumber
+      item => item.lessonNumber === lessonNumber
     );
 
     if (!evaluationTemplate) {

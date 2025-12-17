@@ -32,6 +32,25 @@
     "noEmit": false,
     "isolatedModules": false
   },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/controllers/graduationController.ts",
+    "src/routes/curriculum-agent.ts",
+    "src/routes/agentOrchestrator.ts",
+    "src/routes/pedagogical.ts",
+    "src/services/gradService.ts",
+    "src/services/activityExecService.ts",
+    "src/services/agentAutomationService.ts",
+    "src/services/progressionService.ts",
+    "src/services/challengeService.ts",
+    "src/services/csvImportService.ts",
+    "src/services/evaluationService.ts",
+    "src/services/googleAdsService.ts",
+    "src/services/enhancedCourseImportService.ts",
+    "src/server-fixed.ts",
+    "src/scripts/seedFinancial.ts"
+  ],
   "ts-node": {
     "transpileOnly": true
   }

@@ -37,8 +37,8 @@ Ensure your hosting platform supports HTTPS, as Supabase Auth requires it for se
 
 ## Build & Start
 
-1. **Build**: `npm run build` (Compiles TypeScript to JavaScript in `dist/`)
-2. **Start**: `npm start` (Runs `node dist/server.js`)
+1. **Build (with aliases resolved)**: `npm run build:alias` (compiles TypeScript to `dist/`, runs tsc-alias, copies public assets)
+2. **Start**: `npm start` (runs `node dist/server.js`)
 
 ## Troubleshooting
 

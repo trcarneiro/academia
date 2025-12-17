@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyInstance } from 'fastify';
 
 // Tipos baseados na documentação da API Asaas

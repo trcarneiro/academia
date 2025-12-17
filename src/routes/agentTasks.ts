@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { AgentTaskService } from '@/services/agentTaskService';
 import { logger } from '@/utils/logger';

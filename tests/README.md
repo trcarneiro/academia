@@ -1,20 +1,41 @@
-# 🧪 Testes - Estudantes e Planos
+# 🧪 Testes - Academia Krav Maga v2.0
 
-Este diretório contém todos os testes para os módulos de estudantes e planos, tanto frontend quanto backend.
+Este diretório contém todos os testes automatizados do sistema (smoke, integration e unit tests).
 
 ## 📁 Estrutura de Testes
 
 ```
 tests/
+├── smoke/                               # Smoke tests (validação básica)
+│   ├── smoke-agenda.test.ts            ✅ Agenda module
+│   ├── smoke-agents.test.ts            ✅ AI Agents (NOVO)
+│   ├── smoke-asaas.test.ts             ✅ Asaas integration (NOVO)
+│   ├── smoke-attendance.test.ts        ✅ Attendance/Checkin (NOVO)
+│   ├── smoke-auth.test.ts              ✅ Authentication (NOVO)
+│   ├── smoke-courses.test.ts           ✅ Courses module
+│   ├── smoke-crm.test.ts               ✅ CRM module
+│   ├── smoke-deploy-ops.test.ts        ✅ Deploy Ops (NOVO)
+│   ├── smoke-financial.test.ts         ✅ Financial module (NOVO)
+│   ├── smoke-graduation.test.ts        ✅ Graduation (NOVO)
+│   ├── smoke-instructors.test.ts       ✅ Instructors module
+│   ├── smoke-pedagogical.test.ts       ✅ Pedagogical (NOVO)
+│   ├── smoke-subscriptions.test.ts     ✅ Subscriptions (NOVO)
+│   └── smoke-units.test.ts             ✅ Units module
+├── contract/                            # Contract/Integration tests
+│   └── ops.deploy.test.ts              ✅ Deploy Ops API (NOVO)
 ├── integration/
-│   ├── students-plans-backend.test.js    # Testes backend completos
-│   ├── students-api.test.ts             # Testes API de estudantes
-│   ├── billing-plans-api.test.ts        # Testes API de planos
-│   └── students-plans.test.js           # Testes de integração
+│   ├── students-api.test.ts            ✅ Students API
+│   ├── billing-plans-api.test.ts       ✅ Billing Plans API
+│   ├── financial-module.test.ts        ✅ Financial module
+│   └── students-plans.test.js          # Legacy integration
 ├── unit/
-│   └── financialService.test.ts         # Testes unitários
-├── setup.js                             # Configuração de testes
-└── README.md                           # Este arquivo
+│   ├── authService.test.ts             ✅ Auth service
+│   ├── financialService.test.ts        ✅ Financial service
+│   └── packagesSimpleRoutes.test.ts    ✅ Packages routes
+├── e2e/                                 # End-to-end tests (futuro)
+├── setup.js                             # Jest setup
+├── setup.ts                             # Vitest setup
+└── README.md                            # Este arquivo
 ```
 
 ## 🚀 Como Executar os Testes

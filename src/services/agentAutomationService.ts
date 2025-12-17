@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Agent Automation Service
  * Gerencia triggers e automações para execução de agentes

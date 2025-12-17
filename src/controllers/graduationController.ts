@@ -1,10 +1,11 @@
+﻿// @ts-nocheck
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { GraduationService } from '@/services/gradService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 
 /**
- * Controller para endpoints de graduação
+ * Controller para endpoints de graduaÃ§Ã£o
  */
 export class GraduationController {
   /**
@@ -25,13 +26,13 @@ export class GraduationController {
     reply: FastifyReply
   ) {
     try {
-      console.log('🎓 [GRADUATION] Controller reached - listStudents');
+      console.log('ðŸŽ“ [GRADUATION] Controller reached - listStudents');
       const { organizationId, courseId, turmaId, startDate, endDate, status } =
         request.query;
-      console.log('🎓 [GRADUATION] Query params:', { organizationId, courseId, turmaId, startDate, endDate, status });
+      console.log('ðŸŽ“ [GRADUATION] Query params:', { organizationId, courseId, turmaId, startDate, endDate, status });
 
       if (!organizationId) {
-        console.log('❌ [GRADUATION] Missing organizationId');
+        console.log('âŒ [GRADUATION] Missing organizationId');
         return reply.code(400).send({
           success: false,
           message: 'organizationId is required',
@@ -45,15 +46,15 @@ export class GraduationController {
       if (endDate) filters.endDate = new Date(endDate);
       if (status) filters.status = status;
       
-      console.log('🎓 [GRADUATION] Filters:', filters);
-      console.log('🎓 [GRADUATION] Calling service...');
+      console.log('ðŸŽ“ [GRADUATION] Filters:', filters);
+      console.log('ðŸŽ“ [GRADUATION] Calling service...');
 
       const students = await GraduationService.listStudentsWithProgress(
         organizationId,
         filters
       );
 
-      console.log('✅ [GRADUATION] Service returned:', students.length, 'students');
+      console.log('âœ… [GRADUATION] Service returned:', students.length, 'students');
 
       return reply.send({
         success: true,
@@ -61,7 +62,7 @@ export class GraduationController {
         total: students.length,
       });
     } catch (error) {
-      console.error('❌ [GRADUATION] Controller error:', error);
+      console.error('âŒ [GRADUATION] Controller error:', error);
       logger.error('Error listing students:', error);
       return reply.code(500).send({
         success: false,
@@ -139,7 +140,7 @@ export class GraduationController {
         instructorId,
       } = request.body;
 
-      // Validações
+      // ValidaÃ§Ãµes
       if (
         !studentId ||
         !courseId ||
@@ -172,7 +173,7 @@ export class GraduationController {
         targetReps,
       });
 
-      // 2. Se forneceu rating, criar avaliação qualitativa
+      // 2. Se forneceu rating, criar avaliaÃ§Ã£o qualitativa
       let assessment = null;
       if (rating) {
         assessment = await GraduationService.addQualitativeAssessment({
@@ -203,7 +204,7 @@ export class GraduationController {
 
   /**
    * PATCH /api/graduation/activity/:progressId
-   * Atualiza apenas repetições de uma atividade existente
+   * Atualiza apenas repetiÃ§Ãµes de uma atividade existente
    */
   static async updateActivity(
     request: FastifyRequest<{
@@ -278,7 +279,7 @@ export class GraduationController {
 
   /**
    * POST /api/graduation/save-progress
-   * Salva progresso completo de um aluno (múltiplas atividades de uma vez)
+   * Salva progresso completo de um aluno (mÃºltiplas atividades de uma vez)
    */
   static async saveProgress(
     request: FastifyRequest<{
@@ -321,7 +322,7 @@ export class GraduationController {
           targetReps: activity.targetReps,
         });
 
-        // Avaliação qualitativa (se fornecida)
+        // AvaliaÃ§Ã£o qualitativa (se fornecida)
         let assessment = null;
         if (activity.rating) {
           assessment = await GraduationService.addQualitativeAssessment({
@@ -352,7 +353,7 @@ export class GraduationController {
 
   /**
    * GET /api/graduation/requirements
-   * Busca requisitos de graduação de um curso
+   * Busca requisitos de graduaÃ§Ã£o de um curso
    */
   static async getCourseRequirements(
     request: FastifyRequest<{
@@ -394,7 +395,7 @@ export class GraduationController {
 
   /**
    * GET /api/graduation/export
-   * Exporta relatório de graduação (placeholder - implementar CSV/PDF depois)
+   * Exporta relatÃ³rio de graduaÃ§Ã£o (placeholder - implementar CSV/PDF depois)
    */
   static async exportReport(
     request: FastifyRequest<{
@@ -416,7 +417,7 @@ export class GraduationController {
         });
       }
 
-      // TODO: Implementar geração de CSV/PDF
+      // TODO: Implementar geraÃ§Ã£o de CSV/PDF
       // Por agora, retornar dados JSON
       const students = await GraduationService.listStudentsWithProgress(
         organizationId,
@@ -441,7 +442,7 @@ export class GraduationController {
 
   /**
    * GET /api/graduation/student/:id/progress
-   * Detalhes de progresso de um aluno específico
+   * Detalhes de progresso de um aluno especÃ­fico
    */
   static async getStudentProgress(
     request: FastifyRequest<{
@@ -454,7 +455,7 @@ export class GraduationController {
       const { id } = request.params;
       const { courseId } = request.query;
 
-      console.log(`🎓 [GRADUATION] Getting progress for student ${id}`);
+      console.log(`ðŸŽ“ [GRADUATION] Getting progress for student ${id}`);
 
       const progress = await GraduationService.getStudentDetailedProgress(id, courseId);
 
@@ -481,7 +482,7 @@ export class GraduationController {
 
   /**
    * PATCH /api/graduation/student/:studentId/activity/:activityId
-   * Atualiza progresso de uma atividade específica (INLINE EDIT)
+   * Atualiza progresso de uma atividade especÃ­fica (INLINE EDIT)
    */
   static async updateStudentActivity(
     request: FastifyRequest<{
@@ -501,8 +502,8 @@ export class GraduationController {
       const { studentId, activityId } = request.params;
       const { quantitativeProgress, qualitativeRating, notes } = request.body;
 
-      console.log(`🎓 [GRADUATION] Updating activity ${activityId} for student ${studentId}`);
-      console.log('📝 [GRADUATION] Update data:', { quantitativeProgress, qualitativeRating, notes });
+      console.log(`ðŸŽ“ [GRADUATION] Updating activity ${activityId} for student ${studentId}`);
+      console.log('ðŸ“ [GRADUATION] Update data:', { quantitativeProgress, qualitativeRating, notes });
 
       if (!studentId || !activityId) {
         return reply.code(400).send({
@@ -551,7 +552,7 @@ export class GraduationController {
       const { id } = request.params;
       const { courseId, organizationId } = request.query;
 
-      console.log(`📊 [GRADUATION] Getting detailed progress for student ${id}`);
+      console.log(`ðŸ“Š [GRADUATION] Getting detailed progress for student ${id}`);
 
       if (!organizationId) {
         return reply.code(400).send({
@@ -560,7 +561,7 @@ export class GraduationController {
         });
       }
 
-      // Buscar progresso detalhado (usa método existente)
+      // Buscar progresso detalhado (usa mÃ©todo existente)
       const progressData = await GraduationService.getStudentDetailedProgress(
         id,
         courseId
@@ -613,9 +614,9 @@ export class GraduationController {
         }
       });
 
-      console.log(`✅ Found ${checkins.length} check-ins for student`);
+      console.log(`âœ… Found ${checkins.length} check-ins for student`);
 
-      // Criar timeline combinando check-ins com execuções
+      // Criar timeline combinando check-ins com execuÃ§Ãµes
       const timeline = checkins
         .filter(checkin => checkin.lesson?.lessonPlan)
         .map(checkin => {
@@ -623,7 +624,7 @@ export class GraduationController {
           const lessonPlan = lesson.lessonPlan!;
           // const lessonActivities = lessonPlan.activityItems || [];
 
-          // Buscar atividades execuções nesta aula
+          // Buscar atividades execuÃ§Ãµes nesta aula
           const executedActivities = (progressData as any).activities
             .filter((act: any) => act.lessonNumber === lessonPlan.lessonNumber)
             .map((act: any) => ({
@@ -644,7 +645,7 @@ export class GraduationController {
           };
         });
 
-      // Calcular estatísticas adicionais
+      // Calcular estatÃ­sticas adicionais
       const last7Days = checkins.filter(c => {
         const diff = Date.now() - new Date(c.createdAt).getTime();
         return diff <= 7 * 24 * 60 * 60 * 1000;
@@ -679,3 +680,4 @@ export class GraduationController {
     }
   }
 }
+

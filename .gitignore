@@ -69,7 +69,8 @@ tmp/
 temp/
 
 # Prisma
-prisma/migrations/
+# Keep migrations tracked; generated client stays untracked by default
+!prisma/migrations/
 
 # Docker
 .dockerignore

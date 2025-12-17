@@ -26,8 +26,7 @@ export default async function organizationsRoutes(
   // GET /api/organizations - List organizations
   fastify.get('/', {
     schema: {
-      description: 'List organizations',
-      tags: ['Organizations']
+      description: 'List organizations'
     }
   }, async (request, reply) => {
     try {

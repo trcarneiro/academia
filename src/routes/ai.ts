@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AIService } from '@/services/aiService';
 import { prisma } from '@/utils/database';

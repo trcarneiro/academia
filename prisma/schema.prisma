@@ -2813,6 +2813,7 @@ enum RecurrencePeriod {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   INACTIVE
   CANCELLED
@@ -3546,5 +3547,92 @@ enum ApplicationStatus {
   REJECTED
   WITHDRAWN
   HIRED
+}
+
+// ============================================
+// DEPLOY OPERATIONS
+// ============================================
+
+model DeployArtifact {
+  id             String   @id @default(uuid())
+  sourceVersion  String
+  buildTimestamp DateTime @default(now())
+  aliasesResolved Boolean @default(true)
+  checksum       String
+  contents       String
+  location       String
+  sizeBytes      Int
+  createdAt      DateTime @default(now())
+
+  sessions       DeploySession[]
+
+  @@map("deploy_artifacts")
+}
+
+model DeploySession {
+  id                String               @id @default(uuid())
+  artifactId        String
+  operator          String
+  targetEnvironment String
+  status            DeploySessionStatus  @default(PENDING)
+  notes             String?
+  startedAt         DateTime             @default(now())
+  completedAt       DateTime?
+
+  artifact          DeployArtifact       @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  healthCheck       HealthCheck?
+  logs              DeployLog[]
+
+  @@map("deploy_sessions")
+}
+
+model HealthCheck {
+  id                     String             @id @default(uuid())
+  sessionId              String             @unique
+  endpoint               String
+  startedAt              DateTime           @default(now())
+  completedAt            DateTime           @default(now())
+  httpStatus             Int
+  latencyMs              Int
+  stabilityWindowMinutes Int                @default(30)
+  restartsObserved       Int                @default(0)
+  result                 HealthCheckResult
+  logExcerpt             String?
+
+  session                DeploySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("deploy_health_checks")
+}
+
+model DeployLog {
+  id        String          @id @default(uuid())
+  sessionId String
+  timestamp DateTime        @default(now())
+  level     DeployLogLevel  @default(INFO)
+  message   String
+  data      Json?
+
+  session   DeploySession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("deploy_logs")
+}
+
+enum DeploySessionStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  ROLLED_BACK
+}
+
+enum HealthCheckResult {
+  PASS
+  FAIL
+}
+
+enum DeployLogLevel {
+  INFO
+  WARN
+  ERROR
 }
 

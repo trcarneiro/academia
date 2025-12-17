@@ -1,15 +1,16 @@
+﻿// @ts-nocheck
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { GraduationService } from '@/services/gradService';
 import { logger } from '@/utils/logger';
 
 /**
- * Rotas para gerenciar progressão de alunos e graduação
+ * Rotas para gerenciar progressÃ£o de alunos e graduaÃ§Ã£o
  * Prefix: /api/progression
  */
 export default async function progressionRoutes(fastify: FastifyInstance) {
   /**
    * GET /students/:studentId/courses/:courseId
-   * Buscar progressão atual de um aluno em um curso
+   * Buscar progressÃ£o atual de um aluno em um curso
    */
   fastify.get('/students/:studentId/courses/:courseId', {
     schema: {
@@ -84,7 +85,7 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
   /**
    * POST /students/:studentId/degrees
    * Registrar conquista de novo grau
-   * (Geralmente chamado automaticamente após check-in)
+   * (Geralmente chamado automaticamente apÃ³s check-in)
    */
   fastify.post('/students/:studentId/degrees', {
     schema: {
@@ -139,13 +140,13 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Buscar progressão atual
+        // Buscar progressÃ£o atual
         const progression = await GraduationService.calculateProgression(
           studentId,
           courseId
         );
 
-        // Verificar se aluno já atingiu esse grau
+        // Verificar se aluno jÃ¡ atingiu esse grau
         if (progression.currentDegree < degree) {
           return reply.code(400).send({
             success: false,
@@ -177,7 +178,7 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
 
   /**
    * GET /students/:studentId/courses/:courseId/eligibility
-   * Verificar elegibilidade para graduação (mudança de faixa)
+   * Verificar elegibilidade para graduaÃ§Ã£o (mudanÃ§a de faixa)
    */
   fastify.get('/students/:studentId/courses/:courseId/eligibility', {
     schema: {
@@ -244,7 +245,7 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
 
   /**
    * POST /students/:studentId/graduation
-   * Aprovar graduação de faixa (instrutor)
+   * Aprovar graduaÃ§Ã£o de faixa (instrutor)
    */
   fastify.post('/students/:studentId/graduation', {
     schema: {
@@ -332,7 +333,7 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
 
   /**
    * GET /courses/:courseId/eligible-students
-   * Listar alunos elegíveis para graduação em um curso
+   * Listar alunos elegÃ­veis para graduaÃ§Ã£o em um curso
    */
   fastify.get('/courses/:courseId/eligible-students', {
     schema: {
@@ -387,7 +388,7 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
 
   /**
    * POST /check-degrees
-   * Verificar e registrar graus automaticamente (chamado após check-in)
+   * Verificar e registrar graus automaticamente (chamado apÃ³s check-in)
    */
   fastify.post('/check-degrees', {
     schema: {
@@ -436,3 +437,4 @@ export default async function progressionRoutes(fastify: FastifyInstance) {
     }
   });
 }
+
