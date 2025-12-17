@@ -36,7 +36,7 @@ const reviewApplicationSchema = z.object({
 });
 
 interface AuthRequest extends FastifyRequest {
-  user?: {
+  user: {
     id: string;
     organizationId: string;
     role: string;
