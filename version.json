@@ -1,5 +1,15 @@
 [
   {
+    "id": 1734539000000,
+    "timestamp": "2025-12-18T15:30:00.000Z",
+    "version": "1.0.4",
+    "description": "Kiosk v3: Modo Kiosk Limpo - esconde elementos desnecessários",
+    "files": {
+      "checkin-kiosk.html": "Botão Modo Kiosk + handler JS + persistência localStorage",
+      "checkin-kiosk.css": "Estilos para kiosk-clean-mode (header compacto, busca ampliada)"
+    }
+  },
+  {
     "id": 1734537600000,
     "timestamp": "2025-12-18T15:00:00.000Z",
     "version": "1.0.3",

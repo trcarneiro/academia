@@ -134,13 +134,175 @@
     display: inline;
 }
 
+/* Kiosk Mode Button */
+.btn-kiosk-mode {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, #00d084 0%, #00a86b 100%);
+    color: white;
+    border: none;
+    border-radius: var(--kiosk-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--kiosk-transition);
+}
+
+.btn-kiosk-mode:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 208, 132, 0.4);
+}
+
+.btn-kiosk-mode i {
+    font-size: 1.25rem;
+}
+
+.btn-kiosk-mode .btn-text {
+    display: inline;
+}
+
+.btn-kiosk-mode.active {
+    background: linear-gradient(135deg, #e63946 0%, #c22836 100%);
+}
+
+.btn-kiosk-mode.active:hover {
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4);
+}
+
+/* ============================================================================
+   MODO KIOSK LIMPO - Esconde elementos desnecessários
+   ============================================================================ */
+
+body.kiosk-clean-mode .kiosk-header {
+    padding: 0.75rem 1.5rem;
+    background: var(--kiosk-gradient);
+}
+
+body.kiosk-clean-mode .logo-section h1 {
+    font-size: 1.5rem;
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+body.kiosk-clean-mode .logo-section i {
+    font-size: 1.75rem;
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+body.kiosk-clean-mode .current-time {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.kiosk-clean-mode .btn-fullscreen {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.kiosk-clean-mode .btn-kiosk-mode {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.kiosk-clean-mode .btn-kiosk-mode.active {
+    background: rgba(230, 57, 70, 0.8);
+}
+
+/* Esconde elementos no modo kiosk limpo */
+body.kiosk-clean-mode .quick-actions,
+body.kiosk-clean-mode .recommendations-section,
+body.kiosk-clean-mode .payments-summary,
+body.kiosk-clean-mode .activity-section,
+body.kiosk-clean-mode .upcoming-classes,
+body.kiosk-clean-mode .classes-section:last-of-type,
+body.kiosk-clean-mode .student-meta span:not(#student-name):not(#student-registration):not(#student-level) {
+    display: none !important;
+}
+
+/* Maximiza área de busca no modo kiosk */
+body.kiosk-clean-mode .lookup-form {
+    max-width: 800px;
+    padding: 2rem 3rem;
+}
+
+body.kiosk-clean-mode .welcome-section h2 {
+    font-size: 2.5rem;
+}
+
+body.kiosk-clean-mode .welcome-section p {
+    font-size: 1.25rem;
+}
+
+body.kiosk-clean-mode #registration-input {
+    font-size: 2rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+body.kiosk-clean-mode .input-hint {
+    display: none;
+}
+
+body.kiosk-clean-mode #lookup-btn {
+    font-size: 1.5rem;
+    padding: 1.25rem 2rem;
+}
+
+/* Stats simplificados no modo kiosk */
+body.kiosk-clean-mode .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+body.kiosk-clean-mode .stat-card-enhanced:nth-child(3) {
+    display: none;
+}
+
+/* Classes disponíveis em destaque */
+body.kiosk-clean-mode .classes-section:first-of-type {
+    margin-top: 1rem;
+}
+
+body.kiosk-clean-mode .classes-section:first-of-type h3 {
+    font-size: 1.5rem;
+}
+
+body.kiosk-clean-mode .class-card {
+    padding: 1.5rem;
+}
+
+body.kiosk-clean-mode .class-card .class-name {
+    font-size: 1.25rem;
+}
+
+body.kiosk-clean-mode .btn-checkin {
+    font-size: 1.25rem;
+    padding: 1rem 2rem;
+}
+
+/* Área de câmera/busca ajustada no modo kiosk */
+body.kiosk-clean-mode .camera-search-container {
+    gap: 1rem;
+}
+
+body.kiosk-clean-mode .search-section {
+    flex: 1;
+}
+
+body.kiosk-clean-mode .camera-section {
+    flex: 0 0 300px;
+}
+
 /* Hide text on small screens */
 @media (max-width: 768px) {
-    .btn-fullscreen .btn-text {
+    .btn-fullscreen .btn-text,
+    .btn-kiosk-mode .btn-text {
         display: none;
     }
     
-    .btn-fullscreen {
+    .btn-fullscreen,
+    .btn-kiosk-mode {
         padding: 0.75rem;
     }
 }

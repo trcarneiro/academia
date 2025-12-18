@@ -34,6 +34,10 @@
                         <h1>Academia Krav Maga</h1>
                     </div>
                     <div class="header-actions">
+                        <button id="kiosk-mode-btn" class="btn-kiosk-mode" title="Modo Kiosk - Tela Limpa">
+                            <i class="fas fa-tv" id="kiosk-mode-icon"></i>
+                            <span class="btn-text">Modo Kiosk</span>
+                        </button>
                         <button id="fullscreen-btn" class="btn-fullscreen" title="Tela Cheia (F11)">
                             <i class="fas fa-expand" id="fullscreen-icon"></i>
                             <span class="btn-text">Tela Cheia</span>
@@ -359,6 +363,56 @@
                 if (e.key === 'F11') {
                     e.preventDefault();
                     toggleFullscreen();
+                }
+            });
+        })();
+
+        // ============================================================
+        // KIOSK MODE (CLEAN MODE) HANDLER
+        // ============================================================
+        (function() {
+            const kioskModeBtn = document.getElementById('kiosk-mode-btn');
+            const kioskModeIcon = document.getElementById('kiosk-mode-icon');
+            
+            if (!kioskModeBtn) return;
+            
+            let isKioskMode = localStorage.getItem('kioskCleanMode') === 'true';
+            
+            function updateKioskModeButton() {
+                if (isKioskMode) {
+                    kioskModeIcon.className = 'fas fa-times';
+                    kioskModeBtn.querySelector('.btn-text').textContent = 'Sair Kiosk';
+                    kioskModeBtn.classList.add('active');
+                    kioskModeBtn.title = 'Sair do Modo Kiosk';
+                } else {
+                    kioskModeIcon.className = 'fas fa-tv';
+                    kioskModeBtn.querySelector('.btn-text').textContent = 'Modo Kiosk';
+                    kioskModeBtn.classList.remove('active');
+                    kioskModeBtn.title = 'Modo Kiosk - Tela Limpa';
+                }
+            }
+            
+            function toggleKioskMode() {
+                isKioskMode = !isKioskMode;
+                localStorage.setItem('kioskCleanMode', isKioskMode);
+                document.body.classList.toggle('kiosk-clean-mode', isKioskMode);
+                updateKioskModeButton();
+                console.log(`🖥️ Kiosk Clean Mode: ${isKioskMode ? 'ATIVADO' : 'DESATIVADO'}`);
+            }
+            
+            // Apply saved state on load
+            if (isKioskMode) {
+                document.body.classList.add('kiosk-clean-mode');
+            }
+            updateKioskModeButton();
+            
+            kioskModeBtn.addEventListener('click', toggleKioskMode);
+            
+            // K key shortcut for kiosk mode
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'k' && e.ctrlKey) {
+                    e.preventDefault();
+                    toggleKioskMode();
                 }
             });
         })();
