@@ -26,6 +26,7 @@ class ConfirmationView {
 
     /**
      * Render confirmation view - V2.0 SALES DASHBOARD
+     * AUTO CHECK-IN: Se só tem 1 turma disponível, faz check-in automático
      */
     async render(student, courses) {
         // CRITICAL: Validate active plan (business rule)
@@ -46,7 +47,21 @@ class ConfirmationView {
                 this.fetchAvailableTurmas(student.organizationId, student.id)
             ]);
 
-            // Render full dashboard
+            // ============================================================
+            // AUTO CHECK-IN: Se só tem 1 turma aberta agora, faz automático
+            // ============================================================
+            const openNowTurmas = turmasData?.openNow || [];
+            
+            if (openNowTurmas.length === 1) {
+                const turma = openNowTurmas[0];
+                console.log('🚀 AUTO CHECK-IN: Apenas 1 turma disponível -', turma.name);
+                
+                // Mostrar confirmação rápida antes de fazer check-in
+                this.showAutoCheckinConfirmation(student, turma, progressData);
+                return;
+            }
+            
+            // Se 0 ou 2+ turmas, mostrar dashboard completo para seleção
             this.renderFullDashboard(student, progressData, turmasData);
         } catch (error) {
             console.error('❌ Error fetching enhanced data:', error);
@@ -91,6 +106,126 @@ class ConfirmationView {
         } catch (error) {
             console.error('❌ Error fetching turmas:', error);
             return null;
+        }
+    }
+
+    /**
+     * Show auto check-in confirmation (when only 1 turma is available)
+     * Mostra confirmação rápida com countdown de 5 segundos
+     */
+    showAutoCheckinConfirmation(student, turma, progressData) {
+        const AUTO_CHECKIN_DELAY = 5; // segundos
+        let countdown = AUTO_CHECKIN_DELAY;
+        
+        this.container.innerHTML = `
+            <div class="auto-checkin-screen fade-in">
+                <!-- Header com foto do aluno -->
+                <div class="auto-checkin-header">
+                    <div class="student-photo-large">
+                        ${student.user?.avatarUrl 
+                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
+                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+                        }
+                    </div>
+                    <div class="student-greeting">
+                        <h1>Olá, ${student.user?.firstName || 'Aluno'}! 👋</h1>
+                        <p class="student-id">📋 ${student.registrationNumber || student.id.substring(0, 8)}</p>
+                    </div>
+                </div>
+
+                <!-- Turma única disponível -->
+                <div class="single-turma-card">
+                    <div class="turma-badge">🥋 Única turma disponível agora</div>
+                    <h2 class="turma-name">${turma.name}</h2>
+                    <div class="turma-details">
+                        <span class="turma-time">🕐 ${turma.startTime} - ${turma.endTime}</span>
+                        <span class="turma-instructor">👨‍🏫 ${turma.instructor}</span>
+                        <span class="turma-room">📍 ${turma.room || 'Sala principal'}</span>
+                    </div>
+                </div>
+
+                <!-- Countdown e ações -->
+                <div class="auto-checkin-actions">
+                    <div class="countdown-section">
+                        <p class="countdown-text">Check-in automático em</p>
+                        <div class="countdown-number" id="auto-countdown">${countdown}</div>
+                        <p class="countdown-hint">segundos</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="btn-confirm-now" class="btn-confirm-large">
+                            <i class="fas fa-check"></i>
+                            Confirmar Agora
+                        </button>
+                        <button id="btn-cancel-auto" class="btn-cancel-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress bar animada -->
+                <div class="auto-progress-bar">
+                    <div class="auto-progress-fill" style="animation: shrink ${AUTO_CHECKIN_DELAY}s linear forwards;"></div>
+                </div>
+            </div>
+        `;
+
+        // Store turma data for later
+        this.autoCheckinTurma = turma;
+        this.autoCheckinStudent = student;
+
+        // Setup countdown timer
+        const countdownEl = this.container.querySelector('#auto-countdown');
+        this.autoCheckinTimer = setInterval(() => {
+            countdown--;
+            if (countdownEl) {
+                countdownEl.textContent = countdown;
+            }
+            
+            if (countdown <= 0) {
+                this.executeAutoCheckin(turma);
+            }
+        }, 1000);
+
+        // Setup button events
+        this.container.querySelector('#btn-confirm-now')?.addEventListener('click', () => {
+            this.stopAutoCheckinTimer();
+            this.executeAutoCheckin(turma);
+        });
+
+        this.container.querySelector('#btn-cancel-auto')?.addEventListener('click', () => {
+            this.stopAutoCheckinTimer();
+            this.onReject();
+        });
+    }
+
+    /**
+     * Stop auto check-in timer
+     */
+    stopAutoCheckinTimer() {
+        if (this.autoCheckinTimer) {
+            clearInterval(this.autoCheckinTimer);
+            this.autoCheckinTimer = null;
+        }
+    }
+
+    /**
+     * Execute the auto check-in
+     */
+    executeAutoCheckin(turma) {
+        this.stopAutoCheckinTimer();
+        console.log('✅ Executing auto check-in for turma:', turma.name);
+        
+        // Call the onConfirm callback with turma data
+        if (turma.courseId && turma.lessonId) {
+            this.onConfirm(turma.courseId, { 
+                turmaId: turma.id, 
+                lessonId: turma.lessonId 
+            });
+        } else {
+            console.warn('⚠️ Turma missing courseId or lessonId, using fallback');
+            this.onConfirm(turma.courseId || turma.id, { turmaId: turma.id });
         }
     }
 

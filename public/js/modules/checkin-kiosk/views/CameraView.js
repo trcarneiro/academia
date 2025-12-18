@@ -15,93 +15,77 @@ class CameraView {
 
     /**
      * Render camera view
+     * LAYOUT KIOSK v2: Busca manual principal, câmera secundária/compacta
      */
     render() {
         this.container.innerHTML = `
             <div class="module-header-premium">
-                <h1>📸 CHECK-IN KIOSK</h1>
-                <p>Posicione seu rosto para identificação automática</p>
+                <h1>🥋 CHECK-IN KIOSK</h1>
+                <p>Digite seu nome ou matrícula para fazer check-in</p>
             </div>
 
-            <div class="camera-section fade-in">
-                <!-- Coluna Esquerda: Câmera + Stats -->
-                <div class="camera-column">
-                    <div class="camera-container">
-                        <video 
-                            id="checkin-video" 
-                            class="checkin-video" 
-                            autoplay 
-                            playsinline 
-                            muted
-                            aria-label="Camera feed for face detection"
-                        ></video>
-
-                        <div class="face-detection-overlay" aria-hidden="true">
-                            <svg class="face-outline" viewBox="0 0 200 250">
-                                <defs>
-                                    <mask id="face-mask">
-                                        <rect width="200" height="250" fill="white" />
-                                        <rect x="10" y="10" width="180" height="230" rx="20" fill="black" />
-                                    </mask>
-                                </defs>
-                                <rect 
-                                    width="200" 
-                                    height="250" 
-                                    fill="rgba(0,0,0,0.5)" 
-                                    mask="url(#face-mask)" 
-                                />
-                                <rect x="10" y="10" width="180" height="230" rx="20" fill="none" stroke="#667eea" stroke-width="3" />
-                            </svg>
-
-                            <div id="face-status" class="face-status" role="status" aria-live="polite">
-                                <div class="status-spinner"></div>
-                                <p>📍 Detectando rosto...</p>
-                            </div>
+            <div class="kiosk-main-section fade-in">
+                <!-- PRINCIPAL: Busca Manual (grande e centralizada) -->
+                <div class="search-primary-section">
+                    <div class="search-card-large">
+                        <div class="search-header-large">
+                            <i class="fas fa-search search-icon-large"></i>
+                            <h2>Buscar Aluno</h2>
                         </div>
-                    </div>
-
-                    <div class="detection-stats">
-                        <div class="stat-card">
-                            <span class="stat-label">Qualidade:</span>
-                            <span id="quality-indicator" class="quality-badge quality-poor" aria-label="Detection quality">---</span>
+                        
+                        <div class="search-box-large">
+                            <input
+                                type="text"
+                                id="manual-search"
+                                placeholder="Digite seu nome, matrícula ou CPF..."
+                                class="search-input-large"
+                                autocomplete="off"
+                                autofocus
+                                aria-label="Buscar aluno por nome, CPF ou matrícula"
+                            />
+                            <button class="btn-search-large" aria-label="Buscar">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
-                        <div class="stat-card">
-                            <span class="stat-label">Status:</span>
-                            <span id="match-status" class="match-badge match-waiting" aria-label="Match status">Aguardando...</span>
+
+                        <div class="search-hints">
+                            <span class="hint-item">📝 Nome</span>
+                            <span class="hint-item">🔢 Matrícula</span>
+                            <span class="hint-item">📋 CPF</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Coluna Direita: Busca Manual -->
-                <div class="manual-search-column">
-                    <div class="manual-search-card">
-                        <div class="search-header">
-                            <h3>💡 Busca Manual</h3>
-                            <p>Não conseguiu reconhecer? Busque por nome, CPF ou matrícula</p>
+                <!-- SECUNDÁRIO: Câmera compacta (opcional) -->
+                <div class="camera-secondary-section">
+                    <div class="camera-card-compact">
+                        <div class="camera-header-compact">
+                            <i class="fas fa-camera"></i>
+                            <span>Reconhecimento Facial</span>
+                            <span class="camera-badge">Opcional</span>
                         </div>
                         
-                        <div class="search-box-tablet">
-                            <input
-                                type="text"
-                                id="manual-search"
-                                placeholder="Digite matrícula, CPF ou nome..."
-                                class="search-input-tablet"
-                                autocomplete="off"
-                                aria-label="Search student by name, CPF or ID"
-                            />
-                            <button class="btn-search-tablet" aria-label="Search">
-                                <span class="icon" aria-hidden="true">🔍</span>
-                                <span class="text">Buscar Aluno</span>
-                            </button>
+                        <div class="camera-container-compact">
+                            <video 
+                                id="checkin-video" 
+                                class="checkin-video-compact" 
+                                autoplay 
+                                playsinline 
+                                muted
+                                aria-label="Camera feed for face detection"
+                            ></video>
+
+                            <div class="face-detection-overlay-compact" aria-hidden="true">
+                                <div id="face-status" class="face-status-compact" role="status" aria-live="polite">
+                                    <span class="status-dot"></span>
+                                    <span id="face-status-text">Detectando...</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="search-tips">
-                            <p><strong>Dicas de Busca:</strong></p>
-                            <ul>
-                                <li>📝 Digite ao menos 3 caracteres</li>
-                                <li>🔢 CPF: apenas números</li>
-                                <li>👤 Nome: primeiro ou sobrenome</li>
-                            </ul>
+                        <div class="detection-stats-compact">
+                            <span id="quality-indicator" class="quality-badge-compact quality-poor" aria-label="Detection quality">---</span>
+                            <span id="match-status" class="match-badge-compact" aria-label="Match status">Aguardando</span>
                         </div>
                     </div>
                 </div>
@@ -595,38 +579,60 @@ class CameraView {
     }
 
     /**
-     * Update detection status
+     * Update detection status - COMPATÍVEL com layout v2 (compacto)
      */
     updateDetectionStatus(face) {
+        // Try both old and new layout element IDs
         const statusEl = this.container.querySelector('#face-status');
+        const statusTextEl = this.container.querySelector('#face-status-text');
         const qualityEl = this.container.querySelector('#quality-indicator');
 
         // Safety check: elements may not exist if view changed
-        if (!statusEl || !qualityEl) {
+        if (!qualityEl) {
             // Silently return - view probably changed to confirmation/success
             return;
         }
 
         if (face) {
             const quality = Math.round(face.confidence * 100);
-            statusEl.innerHTML = `
-                <div class="status-pulse"></div>
-                <p>✅ Rosto detectado (${quality}%)</p>
-            `;
-            statusEl.classList.add('detected');
+            
+            // Layout v2 (compacto)
+            if (statusTextEl) {
+                statusTextEl.textContent = `Detectado ${quality}%`;
+                statusEl?.classList.add('detected');
+            }
+            // Layout v1 (antigo)
+            else if (statusEl) {
+                statusEl.innerHTML = `
+                    <div class="status-pulse"></div>
+                    <p>✅ Rosto detectado (${quality}%)</p>
+                `;
+                statusEl.classList.add('detected');
+            }
 
             qualityEl.textContent = `${quality}%`;
-            qualityEl.className = `quality-badge ${
-                quality > 80 ? 'quality-good' : quality > 60 ? 'quality-fair' : 'quality-poor'
-            }`;
+            qualityEl.className = qualityEl.className.includes('compact') 
+                ? `quality-badge-compact ${quality > 80 ? 'quality-good' : quality > 60 ? 'quality-fair' : 'quality-poor'}`
+                : `quality-badge ${quality > 80 ? 'quality-good' : quality > 60 ? 'quality-fair' : 'quality-poor'}`;
         } else {
-            statusEl.innerHTML = `
-                <div class="status-spinner"></div>
-                <p>📍 Detectando rosto...</p>
-            `;
-            statusEl.classList.remove('detected');
+            // Layout v2 (compacto)
+            if (statusTextEl) {
+                statusTextEl.textContent = 'Detectando...';
+                statusEl?.classList.remove('detected');
+            }
+            // Layout v1 (antigo)
+            else if (statusEl) {
+                statusEl.innerHTML = `
+                    <div class="status-spinner"></div>
+                    <p>📍 Detectando rosto...</p>
+                `;
+                statusEl.classList.remove('detected');
+            }
+            
             qualityEl.textContent = '---';
-            qualityEl.className = 'quality-badge quality-poor';
+            qualityEl.className = qualityEl.className.includes('compact') 
+                ? 'quality-badge-compact quality-poor'
+                : 'quality-badge quality-poor';
         }
     }
 

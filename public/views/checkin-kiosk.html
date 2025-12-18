@@ -33,8 +33,14 @@
                         <i class="fas fa-fist-raised"></i>
                         <h1>Academia Krav Maga</h1>
                     </div>
-                    <div class="current-time">
-                        <span id="current-time"></span>
+                    <div class="header-actions">
+                        <button id="fullscreen-btn" class="btn-fullscreen" title="Tela Cheia (F11)">
+                            <i class="fas fa-expand" id="fullscreen-icon"></i>
+                            <span class="btn-text">Tela Cheia</span>
+                        </button>
+                        <div class="current-time">
+                            <span id="current-time"></span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -295,7 +301,71 @@
     <script src="/js/modules/checkin-kiosk/index.js"></script>
 
     <script>
-        // Initialize Check-in Kiosk once page is loaded
+        // ============================================================
+        // FULLSCREEN CONTROL
+        // ============================================================
+        (function initFullscreen() {
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const fullscreenIcon = document.getElementById('fullscreen-icon');
+            
+            if (!fullscreenBtn) return;
+            
+            function updateFullscreenButton() {
+                const isFullscreen = document.fullscreenElement || 
+                                     document.webkitFullscreenElement || 
+                                     document.mozFullScreenElement;
+                if (fullscreenIcon) {
+                    fullscreenIcon.className = isFullscreen ? 'fas fa-compress' : 'fas fa-expand';
+                }
+                const btnText = fullscreenBtn.querySelector('.btn-text');
+                if (btnText) {
+                    btnText.textContent = isFullscreen ? 'Sair' : 'Tela Cheia';
+                }
+            }
+            
+            function toggleFullscreen() {
+                const elem = document.documentElement;
+                
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    // Enter fullscreen
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        elem.mozRequestFullScreen();
+                    }
+                } else {
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    }
+                }
+            }
+            
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            // Update button on fullscreen change
+            document.addEventListener('fullscreenchange', updateFullscreenButton);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+            document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+            
+            // F11 key support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            });
+        })();
+
+        // ============================================================
+        // INITIALIZE CHECK-IN KIOSK
+        // ============================================================
         (async function() {
             try {
                 // Ensure API client is available
