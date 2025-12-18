@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { build } from '../src/app';
+import { build } from '@/app';
 import { FastifyInstance } from 'fastify';
 
 describe('Deploy Operations - Smoke Tests', () => {
