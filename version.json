@@ -1,5 +1,17 @@
 [
   {
+    "id": 1734537600000,
+    "timestamp": "2025-12-18T15:00:00.000Z",
+    "version": "1.0.3",
+    "description": "Kiosk v2: fullscreen, busca principal, camera compacta, auto check-in",
+    "files": {
+      "checkin-kiosk.html": "Botão fullscreen + script toggle",
+      "checkin-kiosk.css": "Layout v2 com busca principal e camera compacta",
+      "CameraView.js": "Reorganização do layout, updateDetectionStatus compatível",
+      "ConfirmationView.js": "Auto check-in para turma única"
+    }
+  },
+  {
     "id": 1765885729556,
     "timestamp": "2025-12-16T11:48:49.556Z",
     "version": "1.0.2",
