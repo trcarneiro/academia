@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { curriculumAgentService } from '@/services/CurriculumAgentService';
+import { curriculumAgentService } from '../services/CurriculumAgentService';
 import { logger } from '@/utils/logger';
 import { z } from 'zod';
 
@@ -242,7 +242,7 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
     }
   }, async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { listMCPTools } = await import('@/services/curriculumMCPTools');
+      const { listMCPTools } = await import('../services/curriculumMCPTools');
       const tools = listMCPTools();
 
       return reply.code(200).send({
@@ -281,7 +281,7 @@ export default async function curriculumAgentRoutes(fastify: FastifyInstance) {
     try {
       const { toolName, params } = request.body as any;
       
-      const { executeMCPTool } = await import('@/services/curriculumMCPTools');
+      const { executeMCPTool } = await import('../services/curriculumMCPTools');
       const result = await executeMCPTool(toolName, params);
 
       return reply.code(200).send({

@@ -388,7 +388,7 @@ class CameraView {
      */
     setupEvents() {
         const searchInput = this.container.querySelector('#manual-search');
-        const searchBtn = this.container.querySelector('.btn-search-tablet') || this.container.querySelector('.search-btn');
+        const searchBtn = this.container.querySelector('.btn-search-large') || this.container.querySelector('.btn-search-tablet') || this.container.querySelector('.search-btn');
 
         console.log('🔧 Setting up search events:', {
             searchInput: !!searchInput,
@@ -458,7 +458,7 @@ class CameraView {
 
         // Hide autocomplete on click outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-box-tablet') && !e.target.closest('.search-box')) {
+            if (!e.target.closest('.search-box-large') && !e.target.closest('.search-box-tablet') && !e.target.closest('.search-box')) {
                 this.hideAutocomplete();
             }
         });
@@ -483,7 +483,10 @@ class CameraView {
             }
 
             // Find or create wrapper with position:relative
-            let searchBox = this.container.querySelector('.search-box-tablet');
+            let searchBox = this.container.querySelector('.search-box-large');
+            if (!searchBox) {
+                searchBox = this.container.querySelector('.search-box-tablet');
+            }
             if (!searchBox) {
                 searchBox = this.container.querySelector('.manual-search-card');
             }
@@ -491,6 +494,7 @@ class CameraView {
             if (!searchBox) {
                 console.error('❌ Search box container not found');
                 console.log('🔍 Available containers:', {
+                    searchBoxLarge: !!this.container.querySelector('.search-box-large'),
                     searchBoxTablet: !!this.container.querySelector('.search-box-tablet'),
                     manualSearchCard: !!this.container.querySelector('.manual-search-card'),
                     container: this.container

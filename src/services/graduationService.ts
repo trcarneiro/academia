@@ -22,7 +22,7 @@ export const GraduationService = {
       where: {
         organizationId,
         ...(options?.courseId && {
-          enrollment: {
+          enrollments: {
             some: { courseId: options.courseId }
           }
         })
@@ -38,7 +38,7 @@ export const GraduationService = {
             phone: true
           }
         },
-        enrollment: {
+        enrollments: {
           include: {
             course: true
           }
@@ -52,7 +52,7 @@ export const GraduationService = {
         completedActivities: 0,
         totalActivities: 0,
         completionRate: 0,
-        currentBelt: student.belt || 'WHITE',
+        currentBelt: 'WHITE',
         nextBelt: 'YELLOW',
         readyForGraduation: false
       }
@@ -136,7 +136,7 @@ export const GraduationService = {
     const course = await prisma.course.findFirst({
       where: { id: courseId, organizationId },
       include: {
-        activities: true
+        techniques: true
       }
     });
 
@@ -147,11 +147,11 @@ export const GraduationService = {
     return {
       courseId: course.id,
       courseName: course.name,
-      totalActivities: course.activities?.length || 0,
-      requiredActivities: Math.floor((course.activities?.length || 0) * 0.8),
+      totalActivities: course.techniques?.length || 0,
+      requiredActivities: Math.floor((course.techniques?.length || 0) * 0.8),
       minimumScore: 70,
       minimumAttendance: 75,
-      activities: course.activities || []
+      activities: course.techniques || []
     };
   },
 
@@ -171,12 +171,12 @@ export const GraduationService = {
             email: true
           }
         },
-        enrollment: {
+        enrollments: {
           where: { courseId },
           include: {
             course: {
               include: {
-                activities: true
+                techniques: true
               }
             }
           }
@@ -188,18 +188,21 @@ export const GraduationService = {
       return null;
     }
 
+    const enrollment = student.enrollments[0];
+    const techniques = enrollment?.course?.techniques || [];
+
     return {
       student: {
         id: student.id,
         name: `${student.user.firstName} ${student.user.lastName}`,
         email: student.user.email,
-        belt: student.belt || 'WHITE'
+        belt: 'WHITE'
       },
-      course: student.enrollment[0]?.course || null,
+      course: enrollment?.course || null,
       progress: {
         completedActivities: [],
-        pendingActivities: student.enrollment[0]?.course?.activities || [],
-        totalActivities: student.enrollment[0]?.course?.activities?.length || 0,
+        pendingActivities: techniques,
+        totalActivities: techniques.length,
         completionRate: 0
       },
       stats: {
@@ -236,6 +239,63 @@ export const GraduationService = {
       completedAt: data.completedAt || new Date(),
       updatedAt: new Date()
     };
+  },
+
+  /**
+   * Calculate student progression
+   */
+  async calculateProgression(studentId: string, courseId: string) {
+    logger.warn('GraduationService.calculateProgression called (stub implementation)');
+    return {
+      studentId,
+      courseId,
+      studentName: 'Stub Student',
+      courseName: 'Stub Course',
+      currentBelt: 'WHITE',
+      totalLessonsInCourse: 100,
+      completedLessons: 10,
+      progressPercentage: 10,
+      currentDegree: 0,
+      degreePercentage: 0,
+      nextDegree: 1,
+      lessonsForNextDegree: 10,
+      percentageForNextDegree: 50,
+      isEligibleForBeltChange: false,
+      eligibilityDetails: {},
+      degreeHistory: []
+    };
+  },
+
+  /**
+   * Record degree achievement
+   */
+  async recordDegreeAchievement(studentId: string, courseId: string, degree: number, progression: any) {
+    logger.warn('GraduationService.recordDegreeAchievement called (stub implementation)');
+    return { success: true };
+  },
+
+  /**
+   * Approve graduation
+   */
+  async approveGraduation(studentId: string, courseId: string, instructorId: string, data: { toBelt: string; ceremonyDate?: Date; ceremonyNotes?: string }) {
+    logger.warn('GraduationService.approveGraduation called (stub implementation)');
+    return { success: true };
+  },
+
+  /**
+   * Get eligible students
+   */
+  async getEligibleStudents(courseId: string) {
+    logger.warn('GraduationService.getEligibleStudents called (stub implementation)');
+    return [];
+  },
+
+  /**
+   * Check and record degrees
+   */
+  async checkAndRecordDegrees(studentId: string, courseId: string) {
+    logger.warn('GraduationService.checkAndRecordDegrees called (stub implementation)');
+    return { success: true };
   }
 };
 

@@ -1,6 +1,6 @@
 {
     "name": "krav-maga-academy-backend",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "description": "Sistema de gestão para academia de Krav Maga com IA integrada",
     "main": "dist/server.js",
     "scripts": {

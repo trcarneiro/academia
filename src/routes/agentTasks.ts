@@ -17,7 +17,8 @@ export default async function agentTasksRoutes(fastify: FastifyInstance) {
     organizationId?: string;
   } }>, reply: FastifyReply) => {
     try {
-      const organizationId = requireOrganizationId(request);
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
       const { approvalStatus, status, agentId, limit, offset } = request.query;
       
       const tasks = await taskService.listTasks({
@@ -87,7 +88,10 @@ export default async function agentTasksRoutes(fastify: FastifyInstance) {
   // Get task by ID
   fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
-      const task = await taskService.getTaskById(request.params.id);
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
+      const task = await taskService.getTaskById(request.params.id, organizationId);
       if (!task) {
         return reply.code(404).send({ success: false, message: 'Task not found' });
       }
@@ -100,8 +104,11 @@ export default async function agentTasksRoutes(fastify: FastifyInstance) {
   // Approve task
   fastify.post('/:id/approve', async (request: FastifyRequest<{ Params: { id: string }, Body: { userId: string } }>, reply: FastifyReply) => {
     try {
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
       const { userId } = request.body;
-      const task = await taskService.approveTask(request.params.id, userId);
+      const task = await taskService.approveTask(request.params.id, organizationId, userId);
       return reply.send({ success: true, data: task });
     } catch (error) {
       logger.error('Error approving task:', error);
@@ -112,8 +119,11 @@ export default async function agentTasksRoutes(fastify: FastifyInstance) {
   // Reject task
   fastify.post('/:id/reject', async (request: FastifyRequest<{ Params: { id: string }, Body: { userId: string, reason: string } }>, reply: FastifyReply) => {
     try {
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
+
       const { userId, reason } = request.body;
-      const task = await taskService.rejectTask(request.params.id, userId, reason);
+      const task = await taskService.rejectTask(request.params.id, organizationId, userId, reason);
       return reply.send({ success: true, data: task });
     } catch (error) {
       logger.error('Error rejecting task:', error);

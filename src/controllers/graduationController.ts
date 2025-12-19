@@ -1,6 +1,6 @@
 ﻿// @ts-nocheck
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { GraduationService } from '@/services/gradService';
+import { GraduationService } from '@/services/graduationService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 
