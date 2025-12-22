@@ -1,0 +1,577 @@
+/* Quick Enrollment Module - Mobile First PVD */
+:root {
+    --pvd-primary: #667eea;
+    --pvd-secondary: #764ba2;
+    --pvd-bg: #f8fafc;
+    --pvd-card-bg: #ffffff;
+    --pvd-text: #2d3748;
+    --pvd-input-bg: #edf2f7;
+    --pvd-input-border: #e2e8f0;
+    --pvd-success: #48bb78;
+}
+
+.pvd-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--pvd-text);
+    padding-bottom: 80px; /* Space for bottom bar */
+}
+
+.pvd-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.pvd-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--pvd-primary), var(--pvd-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.pvd-step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.pvd-step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--pvd-input-border);
+    z-index: 0;
+    transform: translateY(-50%);
+}
+
+.pvd-step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--pvd-input-bg);
+    border: 2px solid var(--pvd-input-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    z-index: 1;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pvd-step.active {
+    background: var(--pvd-primary);
+    border-color: var(--pvd-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.pvd-step.completed {
+    background: var(--pvd-success);
+    border-color: var(--pvd-success);
+    color: white;
+}
+
+.pvd-form-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.pvd-form-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pvd-input-group {
+    margin-bottom: 1.2rem;
+}
+
+.pvd-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.pvd-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--pvd-input-border);
+    background: var(--pvd-input-bg);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.pvd-input:focus {
+    outline: none;
+    border-color: var(--pvd-primary);
+    background: white;
+}
+
+.pvd-photo-capture {
+    width: 100%;
+    height: 200px;
+    background: var(--pvd-input-bg);
+    border: 2px dashed var(--pvd-input-border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.pvd-photo-capture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pvd-photo-capture.has-photo {
+    border-style: solid;
+    border-color: var(--pvd-primary);
+}
+
+.pvd-photo-icon {
+    font-size: 2rem;
+    color: var(--pvd-primary);
+    margin-bottom: 0.5rem;
+}
+
+.pvd-card-select {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.pvd-option-card {
+    background: white;
+    border: 2px solid var(--pvd-input-border);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pvd-option-card.selected {
+    border-color: var(--pvd-primary);
+    background: #ebf4ff;
+}
+
+.pvd-option-title {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.pvd-option-price {
+    color: var(--pvd-primary);
+    font-weight: 600;
+}
+
+.pvd-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    z-index: 100;
+}
+
+.pvd-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.pvd-btn:active {
+    transform: scale(0.98);
+}
+
+.pvd-btn-secondary {
+    background: var(--pvd-input-bg);
+    color: var(--pvd-text);
+}
+
+.pvd-btn-primary {
+    background: linear-gradient(135deg, var(--pvd-primary), var(--pvd-secondary));
+    color: white;
+}
+
+.pvd-summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--pvd-input-border);
+}
+
+.pvd-summary-label {
+    color: #718096;
+}
+
+.pvd-summary-value {
+    font-weight: 600;
+}
+
+/* Camera Modal */
+.pvd-camera-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+}
+
+.pvd-camera-modal.active {
+    display: flex;
+}
+
+.pvd-camera-view {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pvd-camera-controls {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    align-items: center;
+}
+
+.pvd-shutter-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: white;
+    border: 4px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+}
+
+.pvd-close-camera {
+    color: white;
+    font-size: 1.5rem;
+    background: rgba(255,255,255,0.2);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ============================================
+   TABS STYLING
+   ============================================ */
+
+.pvd-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--pvd-input-bg);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.pvd-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--pvd-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pvd-tab:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+.pvd-tab.active {
+    background: white;
+    color: var(--pvd-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.pvd-tab i {
+    font-size: 0.85rem;
+}
+
+.pvd-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.pvd-tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   SEARCH & STUDENT LIST
+   ============================================ */
+
+.pvd-search-section {
+    margin-bottom: 1rem;
+}
+
+.pvd-search-results {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+}
+
+.pvd-student-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border: 2px solid var(--pvd-input-border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pvd-student-card:hover {
+    border-color: var(--pvd-primary);
+    transform: translateX(4px);
+}
+
+.pvd-student-card:active {
+    transform: scale(0.98);
+}
+
+.pvd-student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pvd-primary), var(--pvd-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.pvd-student-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pvd-student-avatar span {
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.pvd-student-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pvd-student-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pvd-student-meta {
+    font-size: 0.8rem;
+    color: #718096;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pvd-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.pvd-status-badge.status-active {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.pvd-status-badge.status-inactive {
+    background: #fed7d7;
+    color: #742a2a;
+}
+
+.pvd-status-badge.status-suspended {
+    background: #feebc8;
+    color: #7b341e;
+}
+
+.pvd-status-badge.status-pending {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.pvd-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #718096;
+}
+
+.pvd-empty-state span {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   EDIT FORM
+   ============================================ */
+
+.pvd-edit-form {
+    animation: fadeIn 0.3s ease;
+}
+
+.pvd-selected-student-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--pvd-primary), var(--pvd-secondary));
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.pvd-selected-student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pvd-selected-student-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+    object-fit: cover;
+}
+
+.pvd-selected-student-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+}
+
+.pvd-selected-student-info .pvd-status-badge {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.pvd-btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.pvd-btn-icon:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.pvd-edit-section {
+    margin-bottom: 1.5rem;
+}
+
+.pvd-section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--pvd-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--pvd-input-border);
+}
+
+.pvd-textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 400px) {
+    .pvd-tab {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .pvd-tab i {
+        display: none;
+    }
+    
+    .pvd-student-meta {
+        font-size: 0.75rem;
+    }
+    
+    .pvd-status-badge {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+}
