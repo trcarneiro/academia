@@ -49,7 +49,7 @@ export class GraduationController {
       console.log('ðŸŽ“ [GRADUATION] Filters:', filters);
       console.log('ðŸŽ“ [GRADUATION] Calling service...');
 
-      const students = await GraduationService.listStudentsWithProgress(
+      const students = await (GraduationService as any).listStudentsWithProgress(
         organizationId,
         filters
       );
@@ -88,7 +88,7 @@ export class GraduationController {
       const { studentId } = request.params;
       const { courseId } = request.query;
 
-      const stats = await GraduationService.calculateStudentStats(
+      const stats = await (GraduationService as any).calculateStudentStats(
         studentId,
         courseId
       );
@@ -164,7 +164,7 @@ export class GraduationController {
       }
 
       // 1. Criar/atualizar progresso quantitativo
-      const progress = await GraduationService.upsertStudentProgress({
+      const progress = await (GraduationService as any).upsertStudentProgress({
         studentId,
         courseId,
         lessonNumber,
@@ -176,7 +176,7 @@ export class GraduationController {
       // 2. Se forneceu rating, criar avaliaÃ§Ã£o qualitativa
       let assessment = null;
       if (rating) {
-        assessment = await GraduationService.addQualitativeAssessment({
+        assessment = await (GraduationService as any).addQualitativeAssessment({
           studentProgressId: progress.id,
           instructorId,
           rating,
@@ -313,7 +313,7 @@ export class GraduationController {
 
       for (const activity of activities) {
         // Criar/atualizar progresso
-        const progress = await GraduationService.upsertStudentProgress({
+        const progress = await (GraduationService as any).upsertStudentProgress({
           studentId,
           courseId,
           lessonNumber: activity.lessonNumber,
@@ -325,7 +325,7 @@ export class GraduationController {
         // AvaliaÃ§Ã£o qualitativa (se fornecida)
         let assessment = null;
         if (activity.rating) {
-          assessment = await GraduationService.addQualitativeAssessment({
+          assessment = await (GraduationService as any).addQualitativeAssessment({
             studentProgressId: progress.id,
             instructorId,
             rating: activity.rating,
@@ -374,7 +374,7 @@ export class GraduationController {
         });
       }
 
-      const result = await GraduationService.getCourseRequirements(
+      const result = await (GraduationService as any).getCourseRequirements(
         courseId,
         beltLevel
       );
@@ -419,7 +419,7 @@ export class GraduationController {
 
       // TODO: Implementar geraÃ§Ã£o de CSV/PDF
       // Por agora, retornar dados JSON
-      const students = await GraduationService.listStudentsWithProgress(
+      const students = await (GraduationService as any).listStudentsWithProgress(
         organizationId,
         { courseId }
       );
@@ -457,7 +457,7 @@ export class GraduationController {
 
       console.log(`ðŸŽ“ [GRADUATION] Getting progress for student ${id}`);
 
-      const progress = await GraduationService.getStudentDetailedProgress(id, courseId);
+      const progress = await (GraduationService as any).getStudentDetailedProgress(id, courseId);
 
       if (!progress) {
         return reply.code(404).send({
@@ -512,7 +512,7 @@ export class GraduationController {
         });
       }
 
-      const updated = await GraduationService.updateStudentActivity(
+      const updated = await (GraduationService as any).updateStudentActivity(
         studentId,
         activityId,
         {
@@ -562,7 +562,7 @@ export class GraduationController {
       }
 
       // Buscar progresso detalhado (usa mÃ©todo existente)
-      const progressData = await GraduationService.getStudentDetailedProgress(
+      const progressData = await (GraduationService as any).getStudentDetailedProgress(
         id,
         courseId
       );

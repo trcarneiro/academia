@@ -26,7 +26,7 @@ export class HorariosSugeridosController {
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
       const data = CreateSuggestionSchema.parse(request.body);
-      const suggestion = await this.service.create(data);
+      const suggestion = await this.service.create(data as any);
       return ResponseHelper.success(reply, suggestion, 'Sugestão criada com sucesso');
     } catch (error) {
       if (error instanceof z.ZodError) {

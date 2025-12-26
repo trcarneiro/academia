@@ -654,6 +654,23 @@ router.registerRoute('students', async () => {
     });
 });
 
+router.registerRoute('quickEnrollment', async () => {
+    const moduleName = 'quickEnrollment';
+    return router.safeModuleInitialization(moduleName, async () => {
+        console.log('⚡ [Router] Loading Quick Enrollment...');
+        const container = document.getElementById('module-container');
+        
+        if (window.quickEnrollment && window.quickEnrollment.init) {
+            window.quickEnrollment.container = container;
+            await window.quickEnrollment.init();
+            return window.quickEnrollment;
+        } else {
+            console.error('Quick Enrollment module not found');
+            container.innerHTML = '<div class="error-state">Módulo não encontrado</div>';
+        }
+    });
+});
+
 router.registerRoute('student-editor', () => {
     // Carregar editor de aluno - usando o novo sistema
     console.log('📝 Carregando editor de estudante...');

@@ -1,0 +1,1051 @@
+/* ============================================================================
+   CORREÇÕES MOBILE CRÍTICAS - Check-in Kiosk
+   Aplicar em: /public/css/modules/checkin-kiosk.css
+   Data: 19/12/2025
+   ============================================================================ */
+
+/* ===== SUBSTITUIR MEDIA QUERIES EXISTENTES (max-width: 480px) ===== */
+
+/* ----- 1. CÂMERA MOBILE CORRIGIDA ----- */
+@media (max-width: 480px) {
+    /* Container de câmera otimizado */
+    .camera-section {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .camera-column {
+        gap: 1.25rem;
+    }
+    
+    .camera-container {
+        aspect-ratio: 3 / 4;              /* ✅ Proporção vertical ideal */
+        max-height: 65vh;                 /* ✅ Maior área útil */
+        max-width: 100%;
+        border-width: 2px;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    /* Overlay de detecção facial maior */
+    .face-outline {
+        width: 80%;
+        height: 80%;
+        max-width: 180px;                 /* ✅ Área ampliada */
+        max-height: 240px;
+    }
+    
+    /* Status da detecção mais legível */
+    .face-status {
+        font-size: 1.1rem;                /* ✅ Texto maior */
+        padding: 1rem 1.25rem;
+        bottom: 1rem;
+        left: 0.75rem;
+        right: 0.75rem;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .face-status p {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+    
+    /* Stats de detecção compactas */
+    .detection-stats {
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+    }
+    
+    .stat-card {
+        padding: 0.875rem;
+        flex-direction: row;              /* ✅ Horizontal economiza espaço */
+        align-items: center;
+        gap: 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        text-align: left;
+    }
+    
+    .quality-badge,
+    .match-badge {
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 16px;
+        white-space: nowrap;
+    }
+}
+
+/* ----- 2. BUSCA MANUAL MOBILE ----- */
+@media (max-width: 480px) {
+    .manual-search-card {
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+    
+    .search-header h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-header p {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    
+    .search-box-tablet {
+        gap: 0.75rem;
+    }
+    
+    .search-input-tablet {
+        padding: 1rem 1.25rem;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        border-width: 2px;
+    }
+    
+    .btn-search-tablet {
+        padding: 1rem 1.5rem;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+    
+    .search-tips {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .search-tips p {
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .search-tips li {
+        font-size: 0.9rem;
+        padding: 0.5rem 0;
+        line-height: 1.5;
+    }
+}
+
+/* ----- 3. AUTOCOMPLETE DROPDOWN MOBILE ----- */
+@media (max-width: 480px) {
+    .autocomplete-dropdown {
+        max-height: 50vh;                 /* ✅ Menos invasivo */
+        border-width: 3px;
+        border-radius: 16px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    }
+    
+    .autocomplete-item {
+        padding: 1.25rem 1rem;
+        min-height: 70px;                 /* ✅ Touch target adequado */
+        gap: 1rem;
+        border-bottom-width: 2px;
+    }
+    
+    .autocomplete-item:hover {
+        padding-left: 1.5rem;
+        transform: scale(1.01);
+    }
+    
+    .autocomplete-item .student-name {
+        font-size: 1.2rem;                /* ✅ Nome legível */
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: 0.01em;
+    }
+    
+    .autocomplete-item .student-detail {
+        font-size: 1rem;                  /* ✅ Matrícula legível */
+        font-weight: 500;
+        white-space: normal;              /* ✅ Quebra se necessário */
+        word-break: break-word;
+    }
+}
+
+/* ----- 4. LISTA DE SELEÇÃO DE ALUNOS ----- */
+@media (max-width: 480px) {
+    .student-list {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1rem;
+        max-height: calc(100vh - 180px);
+    }
+    
+    .student-option {
+        padding: 1.25rem 1.5rem;
+        min-height: 80px;                 /* ✅ Altura confortável */
+        border-width: 3px;
+        border-radius: 16px;
+        gap: 0.75rem;
+    }
+    
+    .student-option:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+    
+    .student-option .student-name {
+        font-size: 1.2rem;                /* ✅ Nome legível */
+        font-weight: 700;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+    
+    .student-option .student-matric {
+        font-size: 1rem;                  /* ✅ Matrícula legível */
+        font-weight: 500;
+    }
+}
+
+/* ----- 5. DASHBOARD HEADER MOBILE ----- */
+@media (max-width: 480px) {
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.25rem;
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .student-photo-large {
+        width: 100px;
+        height: 100px;
+        border-width: 4px;
+        margin: 0 auto;
+    }
+    
+    .avatar-placeholder {
+        font-size: 2.5rem;
+    }
+    
+    .student-info-large {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .student-name-huge {
+        font-size: clamp(1.5rem, 6vw, 2.25rem);
+        word-break: break-word;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .student-meta-row {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .student-id-badge,
+    .student-phone {
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .btn-cancel-top {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        order: 10;
+        margin-top: 1rem;
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        font-size: 1.05rem;
+        border-radius: 12px;
+    }
+}
+
+/* ----- 6. STATS ROW MOBILE (1 COLUNA) ----- */
+@media (max-width: 480px) {
+    .stats-row {
+        grid-template-columns: 1fr;       /* ✅ 1 coluna = mais espaço */
+        gap: 1rem;
+    }
+    
+    .stats-row .stat-card {
+        padding: 1.25rem;                 /* ✅ Padding generoso */
+        flex-direction: row;              /* ✅ Horizontal */
+        align-items: center;
+        gap: 1rem;
+        border-radius: 16px;
+        min-height: 80px;
+    }
+    
+    .stats-row .stat-icon {
+        font-size: 2.25rem;
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border-radius: 12px;
+    }
+    
+    .stats-row .stat-content {
+        flex: 1;
+        text-align: left;
+    }
+    
+    .stats-row .stat-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stats-row .stat-value {
+        font-size: 1.75rem;               /* ✅ Número grande e legível */
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+        line-height: 1;
+    }
+    
+    .stats-row .stat-value-small {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .stats-row .stat-hint {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+}
+
+/* ----- 7. CURSO PROGRESS SECTION ----- */
+@media (max-width: 480px) {
+    .course-progress-section {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .course-progress-section .section-title {
+        font-size: 1.35rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .course-name {
+        font-size: 1.25rem;
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+    }
+    
+    .progress-stats {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    
+    .progress-bar-container {
+        height: 28px;
+        border-radius: 14px;
+        margin: 1rem 0;
+    }
+    
+    .progress-label {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    
+    .graduation-badge {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        border-radius: 12px;
+        line-height: 1.4;
+    }
+}
+
+/* ----- 8. CLASSES SECTION MOBILE ----- */
+@media (max-width: 480px) {
+    .classes-section {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .classes-section .section-title {
+        font-size: 1.35rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .title-hint {
+        font-size: 0.95rem;
+        text-align: left;
+        line-height: 1.4;
+    }
+    
+    .classes-subtitle {
+        font-size: 1.15rem;
+        margin: 1.25rem 0 1rem 0;
+    }
+    
+    .classes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .class-card {
+        padding: 1.25rem;
+        border-width: 3px;
+        border-radius: 16px;
+        min-height: 120px;
+    }
+    
+    .class-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .class-time {
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+    
+    .class-status-badge {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .class-name {
+        font-size: 1.1rem;
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+    }
+    
+    .class-details {
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .class-instructor,
+    .class-room,
+    .class-slots {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .btn-checkin-turma {
+        padding: 1rem 1.5rem;
+        font-size: 1.05rem;
+        border-radius: 12px;
+        min-height: 52px;
+    }
+    
+    .btn-checkin-turma .icon {
+        font-size: 1.5rem;
+    }
+}
+
+/* ----- 9. UPCOMING CLASSES ----- */
+@media (max-width: 480px) {
+    .upcoming-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .upcoming-card {
+        padding: 1rem;
+        border-width: 2px;
+        border-radius: 16px;
+    }
+    
+    .upcoming-time {
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upcoming-name {
+        font-size: 1rem;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upcoming-countdown {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upcoming-instructor {
+        font-size: 0.85rem;
+    }
+}
+
+/* ----- 10. COURSE SELECTION (TURMAS) ----- */
+@media (max-width: 480px) {
+    .courses-grid-large {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .course-card-large {
+        padding: 1.5rem;                  /* ✅ Padding generoso */
+        gap: 1.25rem;
+        min-height: 120px;
+        border-width: 3px;
+        border-radius: 16px;
+    }
+    
+    .course-card-large:hover {
+        transform: translateY(-4px) scale(1.02);
+    }
+    
+    .course-number {
+        width: 70px;                      /* ✅ Tamanho adequado */
+        height: 70px;
+        font-size: 2.5rem;                /* ✅ Número legível */
+        flex-shrink: 0;
+        border-radius: 50%;
+    }
+    
+    .course-info {
+        flex: 1;
+        min-width: 0;                     /* Permite truncamento */
+    }
+    
+    .course-name-large {
+        font-size: 1.3rem;                /* ✅ Nome legível */
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+        word-break: break-word;
+    }
+    
+    .course-meta {
+        gap: 0.5rem;
+    }
+    
+    .course-time,
+    .course-instructor {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .course-check {
+        width: 40px;                      /* ✅ Checkbox visível */
+        height: 40px;
+        font-size: 1.75rem;
+        border-width: 3px;
+        flex-shrink: 0;
+    }
+}
+
+/* ----- 11. BOTÃO CONFIRMAR HUGE ----- */
+@media (max-width: 480px) {
+    .dashboard-footer {
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+    
+    .btn-confirm-huge {
+        padding: 1.5rem 2rem;
+        font-size: 1.35rem;
+        border-radius: 16px;
+        min-height: 60px;
+        letter-spacing: 0.03em;
+    }
+    
+    .btn-confirm-huge .icon {
+        font-size: 2rem;
+    }
+}
+
+/* ----- 12. REACTIVATION SCREEN ----- */
+@media (max-width: 480px) {
+    .reactivation-screen {
+        min-height: 100dvh;
+        padding: 1.25rem;
+    }
+    
+    .reactivation-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .reactivation-header h2 {
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+    
+    .reactivation-content {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .reactivation-message {
+        font-size: 1.3rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+    }
+    
+    .reactivation-submessage {
+        font-size: 1.05rem;
+        line-height: 1.5;
+        margin-bottom: 2rem;
+    }
+    
+    .reactivation-benefits {
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .reactivation-benefits h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .reactivation-benefits li {
+        font-size: 1.05rem;
+        padding: 0.75rem 0;
+        line-height: 1.5;
+    }
+    
+    .reactivation-actions {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-reactivate,
+    .btn-back {
+        width: 100%;
+        flex: none;
+        padding: 1.5rem 2rem;
+        font-size: 1.15rem;
+        border-radius: 12px;
+        min-height: 56px;
+    }
+}
+
+/* ----- 13. PLANS GRID ----- */
+@media (max-width: 480px) {
+    .plans-title {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        line-height: 1.3;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+    
+    .plan-card {
+        padding: 2rem 1.5rem;
+        border-width: 3px;
+        border-radius: 16px;
+    }
+    
+    .plan-badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0 16px 0 12px;
+    }
+    
+    .plan-name {
+        font-size: 1.3rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .price-value {
+        font-size: 2rem;
+        font-weight: 800;
+    }
+    
+    .price-period {
+        font-size: 0.95rem;
+    }
+    
+    .plan-description {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    
+    .plan-classes {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-select-plan {
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        min-height: 52px;
+    }
+}
+
+/* ----- 14. PIX PAYMENT SCREEN ----- */
+@media (max-width: 480px) {
+    .pix-payment-screen {
+        padding: 1.25rem;
+    }
+    
+    .pix-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .pix-plan {
+        font-size: 1.05rem;
+        margin-bottom: 2rem;
+        line-height: 1.4;
+    }
+    
+    .pix-qr-container {
+        padding: 1.25rem;
+        border-width: 3px;
+        border-radius: 16px;
+    }
+    
+    .pix-qr-image {
+        width: 100%;
+        max-width: 220px;
+        height: auto;
+    }
+    
+    .pix-no-qr {
+        width: 100%;
+        max-width: 220px;
+        height: 220px;
+        font-size: 0.95rem;
+    }
+    
+    .pix-copypaste {
+        margin-bottom: 2rem;
+    }
+    
+    .pix-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .pix-code-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        max-width: 100%;
+    }
+    
+    .pix-code-input {
+        padding: 0.875rem;
+        font-size: 0.8rem;
+        text-align: center;
+        border-radius: 12px;
+    }
+    
+    .btn-copy-pix {
+        padding: 0.875rem 1.25rem;
+        font-size: 1rem;
+        width: 100%;
+        border-radius: 12px;
+        min-height: 48px;
+    }
+    
+    .pix-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        min-height: 52px;
+    }
+    
+    .pix-help {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+}
+
+/* ----- 15. PAYMENT STATUS SCREENS ----- */
+@media (max-width: 480px) {
+    .local-payment-screen,
+    .payment-error-screen,
+    .no-plans-screen,
+    .payment-success-screen,
+    .payment-timeout-screen {
+        padding: 1.5rem;
+    }
+    
+    .success-icon,
+    .error-icon,
+    .info-icon,
+    .timeout-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .local-payment-info {
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin: 2rem 0;
+    }
+    
+    .local-payment-info p {
+        font-size: 1.05rem;
+        line-height: 1.5;
+        margin: 0.5rem 0;
+    }
+    
+    .payment-id {
+        font-size: 0.9rem !important;
+    }
+    
+    .error-message {
+        font-size: 1.05rem;
+        padding: 1.25rem;
+        border-radius: 16px;
+        line-height: 1.5;
+    }
+    
+    .local-actions,
+    .error-actions,
+    .fallback-actions,
+    .timeout-actions,
+    .success-actions {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-confirm {
+        width: 100%;
+        padding: 1.5rem 2rem;
+        font-size: 1.15rem;
+        border-radius: 12px;
+        min-height: 56px;
+    }
+}
+
+/* ----- 16. SCHEDULE SECTION ----- */
+@media (max-width: 480px) {
+    .schedule-section {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .schedule-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .schedule-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .schedule-header .current-time {
+        font-size: 1.5rem;
+        font-weight: 800;
+    }
+    
+    .available-classes {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .available-classes .class-card {
+        padding: 1.25rem;
+        border-width: 3px;
+        border-radius: 16px;
+    }
+    
+    .available-classes .time-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 16px;
+    }
+    
+    .available-classes .countdown {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .available-classes .class-info h4 {
+        font-size: 1.1rem;
+        line-height: 1.3;
+    }
+    
+    .available-classes .class-instructor,
+    .available-classes .class-capacity {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .available-classes .class-status {
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+}
+
+/* ----- 17. HISTORY SECTION ----- */
+@media (max-width: 480px) {
+    .checkins-history {
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+    
+    .history-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-header h3 {
+        font-size: 1.15rem;
+    }
+    
+    .checkin-badge {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .history-list {
+        grid-template-columns: 1fr;
+        max-height: 220px;
+        gap: 0.75rem;
+    }
+}
+
+/* ----- 18. EMPTY STATES ----- */
+@media (max-width: 480px) {
+    .empty-state {
+        padding: 3rem 1.5rem;
+    }
+    
+    .empty-state i,
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h3,
+    .empty-text {
+        font-size: 1.2rem;
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+    }
+    
+    .empty-state p,
+    .empty-hint {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+}
+
+/* ===== TOUCH TARGET IMPROVEMENTS (ALL DEVICES) ===== */
+@media (hover: none) and (pointer: coarse) {
+    /* Garantir 44x44px mínimo em touch devices */
+    .btn-primary,
+    .btn-secondary,
+    .btn-search-tablet,
+    .btn-checkin-turma,
+    .btn-select-plan,
+    .btn-confirm,
+    .btn-confirm-huge,
+    .btn-reactivate,
+    .btn-back,
+    .btn-cancel,
+    .btn-cancel-top,
+    .btn-copy-pix,
+    .autocomplete-item,
+    .student-option,
+    .course-card-large,
+    .class-card.can-checkin {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Aumentar padding para touch */
+    .autocomplete-item {
+        padding: 1.25rem;
+    }
+    
+    .student-option {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    /* Desabilitar hover em touch */
+    .course-card-large:hover,
+    .class-card:hover,
+    .student-option:hover,
+    .autocomplete-item:hover {
+        transform: none;
+    }
+    
+    /* Feedback visual em tap */
+    .course-card-large:active,
+    .class-card.can-checkin:active,
+    .student-option:active,
+    .autocomplete-item:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* ===== SAFE AREA INSETS (iOS) ===== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .checkin-dashboard,
+    .checkin-dashboard-v2,
+    .reactivation-screen {
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    }
+    
+    .dashboard-footer {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    }
+    
+    .kiosk-header {
+        padding-top: calc(0.75rem + env(safe-area-inset-top));
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+    .btn-primary,
+    .btn-confirm,
+    .btn-confirm-huge,
+    .btn-reactivate,
+    .btn-checkin-turma {
+        border: 3px solid #000;
+    }
+    
+    .class-card,
+    .student-option,
+    .course-card-large,
+    .plan-card {
+        border-width: 3px;
+    }
+}

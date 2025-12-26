@@ -58,27 +58,27 @@ class CheckinController {
             this.renderCameraView();
 
             // 6. Get video element and start camera
-            const videoElement = this.container.querySelector('#checkin-video');
+            const videoElement = this.container.querySelector('#qr-video');
             try {
+                if (!videoElement) throw new Error('Video element not found');
                 await this.cameraService.startCamera(videoElement);
                 
                 // 7. Start face detection loop (only if camera is available)
                 this.startDetection();
                 console.log('✅ Camera started, face detection active');
             } catch (cameraError) {
-                console.warn('⚠️ Camera not available, continuing with manual search only');
-                console.log('📝 Manual search is still functional');
+                console.warn('⚠️ Camera not available, switching to manual mode only');
                 
-                // Show friendly message instead of error
-                const cameraSection = this.container.querySelector('.camera-section');
-                if (cameraSection) {
-                    cameraSection.innerHTML = `
-                        <div class="no-camera-message" role="alert">
-                            <i class="fas fa-video-slash" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;" aria-hidden="true"></i>
-                            <h3 style="color: #64748b; margin-bottom: 0.5rem;">Câmera não disponível</h3>
-                            <p style="color: #94a3b8;">Use a busca manual abaixo para fazer check-in</p>
-                        </div>
-                    `;
+                // Add class to grid to trigger CSS changes
+                const grid = this.container.querySelector('.kiosk-grid-new');
+                if (grid) {
+                    grid.classList.add('no-camera');
+                }
+                
+                // Hide camera area
+                const cameraArea = this.container.querySelector('.camera-area');
+                if (cameraArea) {
+                    cameraArea.style.display = 'none';
                 }
             }
 

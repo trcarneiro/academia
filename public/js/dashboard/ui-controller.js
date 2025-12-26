@@ -9,10 +9,17 @@ class UIController {
     initMenuToggle() {
         const menuToggle = document.querySelector('.menu-toggle');
         const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
         
         if (menuToggle && sidebar) {
             menuToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('active');
+            });
+        }
+
+        if (overlay && sidebar) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
             });
         }
     }

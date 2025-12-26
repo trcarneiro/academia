@@ -121,6 +121,9 @@
                 <li data-module="students">
                     <i class="fas fa-users"></i> <span>Alunos</span>
                 </li>
+                <li data-module="quickEnrollment">
+                    <i class="fas fa-bolt"></i> <span>Matrícula Rápida</span>
+                </li>
                 <li data-module="crm">
                     <i class="fas fa-bullseye"></i> <span>CRM & Leads</span>
                 </li>
@@ -193,6 +196,8 @@
             </ul>
         </nav>
     </aside>
+    <div class="sidebar-overlay"></div>
+
 
     <!-- Área de Conteúdo -->
     <main class="content-area">
@@ -295,6 +300,12 @@
     <!-- <script type="module" src="js/modules/students/services/test-guide.js"></script> -->
 
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
+
+    <!-- Quick Enrollment Module -->
+    <script type="module" src="/js/modules/quick-enrollment/index.js?v=2"></script>
+
+    <!-- Pre-Enrollment Admin Module -->
+    <script type="module" src="/js/modules/pre-enrollment-admin/index.js?v=1"></script>
 
     <!-- Logout Handler -->
     <script>

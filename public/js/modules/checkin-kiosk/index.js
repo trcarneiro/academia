@@ -45,6 +45,9 @@ const CheckinKiosk = {
             // 2. Wait for API client
             await this.initializeAPI();
 
+            // 2.1 Load CSS
+            this.loadCSS();
+
             // 3. Initialize controller
             this.controller = new CheckinController(this.container, this.moduleAPI);
             await this.controller.init();
@@ -89,6 +92,13 @@ const CheckinKiosk = {
 
         this.moduleAPI = window.createModuleAPI('CheckinKiosk');
         console.log('✅ API client initialized');
+    },
+
+    loadCSS() {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/css/modules/checkin-kiosk-v3.css';
+        document.head.appendChild(link);
     },
 
     // ========================================================================

@@ -1039,12 +1039,17 @@ export class StudentEditorController {
         // Create full-screen dialog for photo capture
         const dialog = document.createElement('div');
         dialog.id = 'photo-capture-dialog';
-        dialog.className = 'selector-overlay';
+        dialog.className = 'selector-overlay photo-capture-dialog';
         dialog.innerHTML = `
-            <div class="selector-container photo-capture-dialog">
+            <div class="selector-container photo-capture-dialog-content">
                 <div class="selector-header">
                     <h2><i class="fas fa-camera"></i> Captura Facial</h2>
-                    <button class="selector-close" id="close-photo-dialog">✕</button>
+                    <div class="header-actions" style="display: flex; gap: 15px; align-items: center;">
+                        <button class="btn-icon" id="switch-camera" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="selector-close" id="close-photo-dialog">✕</button>
+                    </div>
                 </div>
                 <div class="selector-body photo-capture-body">
                     <div class="camera-preview-container">
@@ -1066,6 +1071,8 @@ export class StudentEditorController {
         
         document.body.appendChild(dialog);
         
+        this.currentFacingMode = 'user'; // Default
+        
         // Start camera and face detection
         this.startPhotoCamera();
         
@@ -1073,6 +1080,7 @@ export class StudentEditorController {
         const closeBtn = dialog.querySelector('#close-photo-dialog');
         const cancelBtn = dialog.querySelector('#cancel-capture');
         const captureBtn = dialog.querySelector('#capture-photo-main');
+        const switchBtn = dialog.querySelector('#switch-camera');
         
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
@@ -1084,6 +1092,17 @@ export class StudentEditorController {
         
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
+        }
+
+        if (switchBtn) {
+            switchBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.switchCamera();
+            });
+            switchBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.switchCamera();
+            });
         }
         
         // Botão principal de captura (overlay na câmera)
@@ -1100,6 +1119,18 @@ export class StudentEditorController {
             captureBtn.addEventListener('click', handleCapture);
             captureBtn.addEventListener('touchend', handleCapture);
         }
+    }
+
+    async switchCamera() {
+        this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
+        console.log('🔄 Switching camera to:', this.currentFacingMode);
+        
+        // Stop current stream
+        if (this.currentStream) {
+            this.currentStream.getTracks().forEach(track => track.stop());
+        }
+        
+        await this.startPhotoCamera();
     }
 
     async startPhotoCamera() {
@@ -1132,7 +1163,7 @@ export class StudentEditorController {
             // Request camera access
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                    facingMode: 'user',
+                    facingMode: this.currentFacingMode || 'user',
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
@@ -1141,6 +1172,13 @@ export class StudentEditorController {
             
             video.srcObject = stream;
             this.currentStream = stream;
+            
+            // Mirror effect only for user facing camera
+            if ((this.currentFacingMode || 'user') === 'user') {
+                video.style.transform = 'scaleX(-1)';
+            } else {
+                video.style.transform = 'none';
+            }
             
             // Wait for video to load
             await new Promise((resolve) => {

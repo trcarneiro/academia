@@ -81,6 +81,7 @@ import healthRoutes from '@/routes/health';
 import portalRoutes from '@/routes/portal';
 import permissionsRoutes from '@/routes/permissions';
 import horariosSugeridosRoutes from '@/routes/horarios-sugeridos';
+import preEnrollmentRoutes from '@/routes/pre-enrollment';
 import deploySessionsRoutes from '@/routes/ops/deploySessions';
 const frequencyRoutes = require('./routes/frequency');
 
@@ -235,6 +236,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(jobsRoutes, 'jobsRoutes'), { prefix: '/api/jobs' } as any);
   await server.register(normalizePlugin(portalRoutes, 'portalRoutes'), { prefix: '/api/portal' } as any);
   await server.register(normalizePlugin(permissionsRoutes, 'permissionsRoutes'), { prefix: '/api/auth' } as any);
+  await server.register(normalizePlugin(preEnrollmentRoutes, 'preEnrollmentRoutes'), { prefix: '/api/pre-enrollment' } as any);
 
   server.setErrorHandler(errorHandler);
 

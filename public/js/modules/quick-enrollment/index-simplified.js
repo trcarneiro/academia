@@ -459,11 +459,13 @@ const QuickEnrollment = {
             // 3. Matricular no curso se existir
             if (this.formData.course) {
                 const enrollmentPayload = {
-                    courseId: this.formData.course.id
+                    studentId: studentId,
+                    courseId: this.formData.course.id,
+                    startDate: new Date().toISOString()
                 };
 
                 console.log('📤 Enrolling in course...', enrollmentPayload);
-                const courseRes = await this.moduleAPI.request(`/api/students/${studentId}/courses`, {
+                const courseRes = await this.moduleAPI.request('/api/courses/enroll', {
                     method: 'POST',
                     body: JSON.stringify(enrollmentPayload)
                 });
@@ -508,8 +510,6 @@ const QuickEnrollment = {
     }
 };
 
-// Export with both names for compatibility
 window.QuickEnrollment = QuickEnrollment;
-window.quickEnrollment = QuickEnrollment;
 
 } // end if

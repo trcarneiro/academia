@@ -553,6 +553,121 @@
 }
 
 /* ============================================
+   INFO BOX & DIVIDERS
+   ============================================ */
+
+.pvd-info-box {
+    background: #ebf4ff;
+    border: 1px solid #bee3f8;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: #2b6cb0;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.pvd-info-box span {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.pvd-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    gap: 1rem;
+}
+
+.pvd-divider::before,
+.pvd-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--pvd-input-border);
+}
+
+.pvd-divider span {
+    font-size: 0.8rem;
+    color: #718096;
+    white-space: nowrap;
+}
+
+/* ============================================
+   FINANCIAL RESPONSIBLE SEARCH
+   ============================================ */
+
+.pvd-search-results-mini {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+.pvd-fin-card {
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--pvd-input-border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pvd-fin-card:hover {
+    border-color: var(--pvd-primary);
+    background: #f0f5ff;
+}
+
+.pvd-fin-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.pvd-fin-meta {
+    font-size: 0.75rem;
+    color: #718096;
+}
+
+.pvd-no-results {
+    text-align: center;
+    padding: 1rem;
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+.pvd-selected-fin {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #c6f6d5;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 0.5rem;
+}
+
+.pvd-selected-fin span {
+    font-weight: 600;
+    color: #22543d;
+}
+
+.pvd-btn-clear {
+    background: none;
+    border: none;
+    color: #22543d;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.pvd-btn-clear:hover {
+    background: rgba(0,0,0,0.1);
+}
+
+/* ============================================
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
@@ -575,3 +690,259 @@
         font-size: 0.65rem;
     }
 }
+
+/* ===== SIMPLIFIED FORM V3.0 ===== */
+
+.pvd-form-simplified {
+    background: var(--pvd-card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.pvd-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--pvd-input-border);
+}
+
+.pvd-section:last-child {
+    border-bottom: none;
+}
+
+.pvd-section h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    color: var(--pvd-text);
+}
+
+.pvd-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.pvd-section-header h2 {
+    margin: 0;
+}
+
+.pvd-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .pvd-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pvd-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.pvd-field label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--pvd-text);
+}
+
+.pvd-field label .optional {
+    color: #718096;
+    font-weight: 400;
+}
+
+.pvd-field input,
+.pvd-field select,
+.pvd-field textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--pvd-input-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--pvd-input-bg);
+    transition: all 0.2s;
+}
+
+.pvd-field input:focus,
+.pvd-field select:focus,
+.pvd-field textarea:focus {
+    outline: none;
+    border-color: var(--pvd-primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.pvd-field small {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #718096;
+}
+
+.pvd-btn-toggle {
+    padding: 0.5rem 1rem;
+    background: var(--pvd-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.pvd-btn-toggle:hover {
+    background: var(--pvd-secondary);
+    transform: translateY(-1px);
+}
+
+.pvd-btn-remove {
+    padding: 0.5rem 1rem;
+    background: #fc8181;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+.pvd-btn-remove:hover {
+    background: #f56565;
+}
+
+.pvd-financial-fields {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--pvd-input-border);
+}
+
+.pvd-info-box {
+    background: #ebf8ff;
+    border-left: 4px solid #4299e1;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #2c5282;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pvd-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.pvd-plan-card {
+    padding: 1rem;
+    background: var(--pvd-input-bg);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.pvd-plan-card:hover {
+    border-color: var(--pvd-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.pvd-plan-card.selected {
+    border-color: var(--pvd-primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+}
+
+.pvd-plan-card h3 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--pvd-text);
+}
+
+.pvd-plan-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pvd-primary);
+    margin-bottom: 0.5rem;
+}
+
+.pvd-plan-info {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.pvd-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--pvd-success);
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.pvd-selected-course {
+    margin-top: 0.5rem;
+}
+
+.pvd-course-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid var(--pvd-primary);
+    border-radius: 8px;
+    font-weight: 500;
+    color: var(--pvd-primary);
+}
+
+.pvd-actions {
+    padding: 1.5rem;
+}
+
+.pvd-btn-primary {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--pvd-primary), var(--pvd-secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.pvd-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.pvd-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pvd-btn-primary.success {
+    background: var(--pvd-success);
+}
+

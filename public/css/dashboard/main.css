@@ -360,21 +360,46 @@ body {
     }
     
     .top-bar {
-        padding: 0 16px;
+        padding: 0 12px;
+        justify-content: flex-start; /* Align items to start, use auto margins for spacing */
+        gap: 8px;
+    }
+
+    /* Force Menu Toggle Visibility & Position - FIRST ITEM */
+    .menu-toggle {
+        display: flex !important;
+        order: -1;
+        margin-right: 8px;
+        z-index: 10000;
+        position: relative;
+        min-width: 24px; /* Prevent crushing */
+    }
+    
+    .menu-toggle span {
+        background: var(--primary-color) !important; /* Ensure visibility */
     }
     
     .logo {
         font-size: 1.125rem;
-        margin-right: 16px;
+        margin-right: auto; /* Push subsequent items to the right */
+        order: 0;
+        white-space: nowrap;
+    }
+    
+    /* Control Org Selector Order */
+    .organization-selector {
+        order: 1;
+        margin: 0 !important; /* Reset margins from other files */
     }
     
     .search-bar {
-        max-width: 160px;
+        display: none; /* Hide search on mobile */
     }
     
     .user-actions {
         gap: 8px;
-        margin-left: 16px;
+        margin-left: 0;
+        order: 2;
     }
     
     .notifications, .user-profile {
@@ -385,20 +410,46 @@ body {
     
     .content-area {
         padding: 16px;
+        margin-left: 0 !important;
     }
     
     .module-header {
         padding: 16px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
     }
     
     .module-header h1 {
         font-size: 1.25rem;
+    }
+
+    .module-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .module-actions button {
+        flex: 1;
+        justify-content: center;
     }
     
     .stats-cards {
         grid-template-columns: 1fr;
         gap: 16px;
         margin-bottom: 24px;
+    }
+
+    /* Sidebar Mobile Behavior */
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
     }
 }
 

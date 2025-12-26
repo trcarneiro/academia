@@ -15,110 +15,90 @@ class CameraView {
 
     /**
      * Render camera view
-     * LAYOUT KIOSK v2: Busca manual principal, câmera secundária/compacta
+     * LAYOUT KIOSK v3: Grid Responsivo + Widgets + Toggle Fullscreen
      */
     render() {
         this.container.innerHTML = `
-            <div class="module-header-premium">
-                <h1>🥋 CHECK-IN KIOSK</h1>
-                <p>Digite seu nome ou matrícula para fazer check-in</p>
-            </div>
-
-            <div class="kiosk-main-section fade-in">
-                <!-- PRINCIPAL: Busca Manual (grande e centralizada) -->
-                <div class="search-primary-section">
-                    <div class="search-card-large">
-                        <div class="search-header-large">
-                            <i class="fas fa-search search-icon-large"></i>
-                            <h2>Buscar Aluno</h2>
-                        </div>
-                        
-                        <div class="search-box-large">
-                            <input
-                                type="text"
-                                id="manual-search"
-                                placeholder="Digite seu nome, matrícula ou CPF..."
-                                class="search-input-large"
-                                autocomplete="off"
-                                autofocus
-                                aria-label="Buscar aluno por nome, CPF ou matrícula"
-                            />
-                            <button class="btn-search-large" aria-label="Buscar">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-
-                        <div class="search-hints">
-                            <span class="hint-item">📝 Nome</span>
-                            <span class="hint-item">🔢 Matrícula</span>
-                            <span class="hint-item">📋 CPF</span>
-                        </div>
+            <div class="kiosk-container">
+                <!-- Header com Toggle -->
+                <div class="kiosk-header-actions">
+                    <div class="brand-area">
+                        <h1>🥋 Check-in Kiosk</h1>
+                        <p>Aproxime-se da câmera ou busque seu nome</p>
                     </div>
+                    <button id="btn-toggle-kiosk" class="btn-kiosk-toggle">
+                        <i class="fas fa-expand"></i> <span>Tela Cheia</span>
+                    </button>
                 </div>
 
-                <!-- SECUNDÁRIO: Câmera compacta (opcional) -->
-                <div class="camera-secondary-section">
-                    <div class="camera-card-compact">
-                        <div class="camera-header-compact">
-                            <i class="fas fa-camera"></i>
-                            <span>Reconhecimento Facial</span>
-                            <span class="camera-badge">Opcional</span>
-                        </div>
-                        
-                        <div class="camera-container-compact">
-                            <video 
-                                id="checkin-video" 
-                                class="checkin-video-compact" 
-                                autoplay 
-                                playsinline 
-                                muted
-                                aria-label="Camera feed for face detection"
-                            ></video>
-
-                            <div class="face-detection-overlay-compact" aria-hidden="true">
-                                <div id="face-status" class="face-status-compact" role="status" aria-live="polite">
+                <div class="kiosk-grid-new">
+                    <!-- AREA 1: Câmera (Esquerda) -->
+                    <div class="camera-area">
+                        <div class="camera-card-premium">
+                            <div class="camera-wrapper">
+                                <video 
+                                    id="qr-video" 
+                                    autoplay 
+                                    playsinline 
+                                    muted
+                                    aria-label="Camera feed for face detection"
+                                ></video>
+                                <div class="camera-overlay"></div>
+                                
+                                <div class="camera-status">
                                     <span class="status-dot"></span>
-                                    <span id="face-status-text">Detectando...</span>
+                                    <span id="face-status-text">Aguardando aluno...</span>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="detection-stats-compact">
-                            <span id="quality-indicator" class="quality-badge-compact quality-poor" aria-label="Detection quality">---</span>
-                            <span id="match-status" class="match-badge-compact" aria-label="Match status">Aguardando</span>
+                    <!-- AREA 2: Busca (Direita) -->
+                    <div class="search-area">
+                        <div class="search-card-premium">
+                            <div class="search-icon-large">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h2 style="margin: 0 0 0.5rem 0; color: #1e293b;">Buscar Aluno</h2>
+                            <p style="margin: 0 0 2rem 0; color: #64748b;">Digite nome, matrícula ou CPF</p>
+                            
+                            <div class="search-input-wrapper-large">
+                                <i class="fas fa-search search-icon-input"></i>
+                                <input
+                                    type="text"
+                                    id="manual-search"
+                                    placeholder="Digite aqui..."
+                                    class="kiosk-input-large"
+                                    autocomplete="off"
+                                    autofocus
+                                />
+                            </div>
+                            <p class="search-hint">Pressione ENTER para buscar</p>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="schedule-section">
-                <div class="schedule-header">
-                    <h3>📅 Turmas Disponíveis Hoje</h3>
-                    <span id="current-time" class="current-time"></span>
-                </div>
-                <div id="available-classes" class="available-classes">
-                    <div class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Carregando turmas...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="checkins-history">
-                <div class="history-header">
-                    <h3>📋 Check-ins de Hoje</h3>
-                    <span id="checkin-count" class="checkin-badge">0</span>
-                </div>
-                <div id="history-list" class="history-list">
-                    <div class="empty-state">
-                        <p>Nenhum check-in registrado ainda</p>
+                    <!-- AREA 3: Aulas (Embaixo) -->
+                    <div class="classes-area">
+                        <div class="classes-card-premium">
+                            <div class="classes-header">
+                                <h3><i class="fas fa-calendar-alt" style="color: var(--primary-color)"></i> Aulas de Hoje</h3>
+                                <div class="live-badge">
+                                    <span class="live-dot"></span>
+                                    Em Tempo Real
+                                </div>
+                            </div>
+                            <div id="available-classes" class="classes-grid">
+                                <p><i class="fas fa-spinner fa-spin"></i> Carregando aulas...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
-
-        this.setupEvents();
         
+        // Setup events after render
+        this.setupEvents();
+
         // Wait for DOM to be ready before loading classes
         setTimeout(() => {
             console.log('⏰ Iniciando carregamento de turmas...');
@@ -275,7 +255,7 @@ class CameraView {
     }
 
     /**
-     * Render classes with countdown
+     * Render classes with countdown - PREMIUM LAYOUT
      */
     renderClasses(classes, container) {
         const now = new Date();
@@ -297,47 +277,53 @@ class CameraView {
             
             const minutesUntilStart = startMinutes - currentMinutes;
             
-            let statusClass = '';
-            let statusText = '';
-            let countdown = '';
             let canCheckIn = false;
+            let statusText = '';
+            let statusColor = '#64748b';
 
             if (minutesUntilStart > 30) {
-                // More than 30 minutes before start
-                statusClass = 'status-upcoming';
-                statusText = '⏰ Em breve';
-                countdown = this.formatCountdown(minutesUntilStart);
+                statusText = `Abre em ${this.formatCountdown(minutesUntilStart)}`;
+                statusColor = '#f59e0b'; // Amber
             } else if (minutesUntilStart >= -15) {
-                // 30 minutes before to 15 minutes after start
-                statusClass = 'status-available';
-                statusText = '✅ Check-in disponível';
                 canCheckIn = true;
+                statusText = 'Check-in Aberto';
+                statusColor = '#22c55e'; // Green
             } else {
-                // More than 15 minutes after start
-                statusClass = 'status-closed';
-                statusText = '🔒 Encerrado';
+                statusText = 'Encerrado';
+                statusColor = '#ef4444'; // Red
             }
 
+            const instructorName = turma.instructor 
+                ? `${turma.instructor.firstName} ${turma.instructor.lastName}`
+                : 'Instrutor não definido';
+
             return `
-                <div class="class-card ${statusClass} ${canCheckIn ? 'can-checkin' : ''}">
-                    <div class="class-time">
-                        <span class="time-badge">${startTime} - ${endTime}</span>
-                        ${countdown ? `<span class="countdown">${countdown}</span>` : ''}
+                <div class="class-card-active" style="border-left: 4px solid ${statusColor}">
+                    <div class="class-time" style="color: ${statusColor}">
+                        ${startTime} - ${endTime}
                     </div>
-                    <div class="class-info">
-                        <h4>${turma.name || 'Turma sem nome'}</h4>
-                        <p class="class-instructor">👨‍🏫 ${turma.instructor?.firstName || 'Instrutor'} ${turma.instructor?.lastName || ''}</p>
-                        <p class="class-capacity">👥 ${turma.students?.length || 0}/${turma.maxStudents || 20} alunos</p>
+                    <div class="class-name">${turma.name || 'Turma sem nome'}</div>
+                    <div class="class-instructor">
+                        <i class="fas fa-user-ninja"></i> ${instructorName}
                     </div>
-                    <div class="class-status ${statusClass}">
-                        ${statusText}
+                    <div class="class-meta">
+                        <span class="student-count">
+                            <i class="fas fa-users"></i> ${turma.students?.length || 0}/${turma.maxStudents || 20}
+                        </span>
+                        ${canCheckIn 
+                            ? `<button class="btn-checkin-manual" onclick="window.app.navigateTo('/turmas/${turma.id}')">
+                                 <i class="fas fa-check"></i> Check-in
+                               </button>` 
+                            : `<span style="color: ${statusColor}; font-weight: 600; font-size: 0.85rem;">${statusText}</span>`
+                        }
                     </div>
                 </div>
             `;
         }).join('');
 
         // Update countdown every minute
-        setTimeout(() => {
+        if (this.classesUpdateInterval) clearInterval(this.classesUpdateInterval);
+        this.classesUpdateInterval = setTimeout(() => {
             this.renderClasses(classes, container);
         }, 60000); // 60 seconds
     }
@@ -387,6 +373,19 @@ class CameraView {
      * Setup event listeners - COM AUTOCOMPLETE DIRETO PARA DASHBOARD
      */
     setupEvents() {
+        // Evento do botão de Toggle Kiosk Mode
+        const btnToggle = document.getElementById('btn-toggle-kiosk');
+        if (btnToggle) {
+            btnToggle.addEventListener('click', () => this.toggleKioskMode());
+        }
+
+        // Atalho de teclado (F11 ou ESC para sair)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('kiosk-mode-active')) {
+                this.toggleKioskMode();
+            }
+        });
+
         const searchInput = this.container.querySelector('#manual-search');
         const searchBtn = this.container.querySelector('.btn-search-large') || this.container.querySelector('.btn-search-tablet') || this.container.querySelector('.search-btn');
 
@@ -462,6 +461,32 @@ class CameraView {
                 this.hideAutocomplete();
             }
         });
+    }
+
+    toggleKioskMode() {
+        const body = document.body;
+        const btn = document.getElementById('btn-toggle-kiosk');
+        const isKiosk = body.classList.toggle('kiosk-mode-active');
+
+        if (btn) {
+            if (isKiosk) {
+                btn.innerHTML = '<i class="fas fa-compress"></i> Sair do Modo Kiosk';
+                btn.classList.add('btn-danger');
+                
+                // Tenta colocar o navegador em fullscreen também
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => console.log(e));
+                }
+            } else {
+                btn.innerHTML = '<i class="fas fa-expand"></i> Modo Tela Cheia';
+                btn.classList.remove('btn-danger');
+                
+                // Sai do fullscreen do navegador
+                if (document.exitFullscreen && document.fullscreenElement) {
+                    document.exitFullscreen().catch(e => console.log(e));
+                }
+            }
+        }
     }
 
     /**
@@ -662,7 +687,7 @@ class CameraView {
      * Get video element
      */
     getVideoElement() {
-        return this.container.querySelector('#checkin-video');
+        return this.container.querySelector('#qr-video');
     }
 
     /**
@@ -766,7 +791,7 @@ class CameraView {
      * Disable camera area (during processing)
      */
     disable() {
-        const video = this.container.querySelector('#checkin-video');
+        const video = this.container.querySelector('#qr-video');
         if (video) video.style.opacity = '0.5';
         const btn = this.container.querySelector('.search-btn');
         if (btn) btn.disabled = true;
@@ -776,7 +801,7 @@ class CameraView {
      * Enable camera area
      */
     enable() {
-        const video = this.container.querySelector('#checkin-video');
+        const video = this.container.querySelector('#qr-video');
         if (video) video.style.opacity = '1';
         const btn = this.container.querySelector('.search-btn');
         if (btn) btn.disabled = false;

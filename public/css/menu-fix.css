@@ -96,3 +96,89 @@ button, a, .main-menu li {
     position: relative !important;
     z-index: 1 !important;
 }
+
+/* FIX: Mobile Menu Toggle Visibility */
+@media (max-width: 992px) {
+    .top-bar {
+        padding-left: 15px !important;
+        z-index: 1001 !important;
+    }
+
+    .menu-toggle {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        width: 24px !important;
+        height: 18px !important;
+        cursor: pointer !important;
+        z-index: 9999 !important; /* Super high z-index */
+        margin-right: 15px !important;
+    }
+
+    .menu-toggle span {
+        display: block !important;
+        height: 3px !important; /* Thicker for better visibility */
+        width: 100% !important;
+        background-color: #1E293B !important; /* Dark Slate - High Contrast */
+        border-radius: 3px !important;
+        margin-bottom: 4px; /* Ensure spacing */
+    }
+}
+
+/* NOVO: Garantir que o menu lateral apareça sobre o conteúdo no mobile */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed !important;
+        top: var(--topbar-height, 65px) !important;
+        left: 0 !important;
+        width: 260px !important;
+        height: calc(100vh - var(--topbar-height, 65px)) !important;
+        background: white !important;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.1) !important;
+        z-index: 2000 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease-in-out !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    /* Overlay para fechar o menu ao clicar fora */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1999;
+    }
+
+    .sidebar.active + .sidebar-overlay {
+        display: block;
+    }
+}
+
+/* Garantir que o botão de menu seja visível e clicável */
+.menu-toggle {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-around !important;
+    width: 30px !important;
+    height: 24px !important;
+    padding: 4px !important;
+    cursor: pointer !important;
+    z-index: 2001 !important;
+}
+
+.menu-toggle span {
+    background-color: #1E293B !important;
+    height: 3px !important;
+    width: 100% !important;
+    border-radius: 3px !important;
+}
+

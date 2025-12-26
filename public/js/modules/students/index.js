@@ -46,7 +46,8 @@ function loadModuleCSS() {
 	// Load premium CSS v2.0 for enhanced UX
 	const cssFiles = [
 		'/css/modules/students-enhanced.css',
-		'/css/modules/students-premium.css'
+		'/css/modules/students-premium.css',
+		'/css/modules/students-mobile-photo.css'
 	];
 	
 	cssFiles.forEach(href => {

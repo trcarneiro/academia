@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pré-Matrícula - Krav Maga Academy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .plan-banner {
+            background: rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .plan-banner h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .plan-banner .price {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .form-container {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group label .required {
+            color: #e53e3e;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Photo Capture Section */
+        .photo-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .photo-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            border: 4px solid #667eea;
+            overflow: hidden;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-preview .placeholder {
+            color: #a0aec0;
+            font-size: 4rem;
+        }
+
+        #videoPreview {
+            width: 100%;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .photo-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+            color: #2c5282;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-message i {
+            font-size: 4rem;
+            color: #48bb78;
+            margin-bottom: 1rem;
+        }
+
+        .success-message h2 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥋 Bem-vindo(a)!</h1>
+            <p>Complete seu cadastro para iniciar sua jornada</p>
+            
+            <div class="plan-banner" id="planBanner" style="display: none;">
+                <h2 id="planName">Plano Selecionado</h2>
+                <div class="price">R$ <span id="planPrice">0,00</span>/mês</div>
+            </div>
+        </div>
+
+        <!-- Formulário -->
+        <form id="preEnrollmentForm" class="form-container">
+            
+            <!-- Foto -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-camera"></i>
+                    Foto para Reconhecimento Facial
+                </div>
+                
+                <div class="photo-section">
+                    <div class="photo-preview">
+                        <div class="placeholder" id="photoPlaceholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <img id="photoPreview" style="display: none;">
+                    </div>
+
+                    <video id="videoPreview" autoplay playsinline></video>
+
+                    <div class="photo-buttons" id="photoButtons">
+                        <button type="button" class="btn btn-primary" id="captureBtn">
+                            <i class="fas fa-camera"></i> Capturar Foto
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="uploadBtn">
+                            <i class="fas fa-upload"></i> Enviar Arquivo
+                        </button>
+                    </div>
+
+                    <div class="photo-buttons hidden" id="cameraButtons">
+                        <button type="button" class="btn btn-success" id="takePictureBtn">
+                            <i class="fas fa-camera"></i> Tirar Foto
+                        </button>
+                        <button type="button" class="btn btn-danger" id="cancelCameraBtn">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+
+                    <input type="file" id="fileInput" accept="image/*">
+                    <input type="hidden" id="photoData" name="photoUrl">
+
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        A foto será usada para check-in automático via reconhecimento facial
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados Pessoais -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-user"></i>
+                    Dados Pessoais
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome <span class="required">*</span></label>
+                        <input type="text" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sobrenome <span class="required">*</span></label>
+                        <input type="text" name="lastName" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>CPF <span class="required">*</span></label>
+                        <input type="text" name="cpf" maxlength="14" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Nascimento</label>
+                        <input type="date" name="birthDate">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefone <span class="required">*</span></label>
+                        <input type="tel" name="phone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="email" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Responsável Financeiro (se menor de idade) -->
+            <div class="section" id="financialSection" style="display: none;">
+                <div class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    Responsável Financeiro
+                </div>
+
+                <div class="form-group">
+                    <label>Nome Completo <span class="required">*</span></label>
+                    <input type="text" name="finName">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>CPF <span class="required">*</span></label>
+                        <input type="text" name="finCpf" maxlength="14">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone <span class="required">*</span></label>
+                        <input type="tel" name="finPhone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" name="finEmail">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">
+                <i class="fas fa-check"></i> Finalizar Pré-Matrícula
+            </button>
+        </form>
+
+        <!-- Mensagem de Sucesso -->
+        <div id="successMessage" class="success-message hidden">
+            <i class="fas fa-check-circle"></i>
+            <h2>Pré-Matrícula Realizada com Sucesso!</h2>
+            <p>Em breve entraremos em contato para finalizar sua matrícula.</p>
+            <p style="margin-top: 1rem; color: #718096;">
+                Você receberá um email de confirmação em instantes.
+            </p>
+        </div>
+    </div>
+
+    <script src="/js/shared/api-client.js"></script>
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('plan');
+        const courseId = urlParams.get('course');
+        const price = urlParams.get('price');
+
+        // Camera stream
+        let stream = null;
+        let photoData = null;
+
+        // Load plan info
+        if (planId) {
+            loadPlanInfo(planId, price);
+        }
+
+        async function loadPlanInfo(planId, customPrice) {
+            try {
+                const response = await fetch(`/api/billing-plans/${planId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const plan = result.data;
+                    document.getElementById('planName').textContent = plan.name;
+                    document.getElementById('planPrice').textContent = 
+                        parseFloat(customPrice || plan.price).toFixed(2);
+                    document.getElementById('planBanner').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading plan:', error);
+            }
+        }
+
+        // Photo capture functionality
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' }
+                });
+                
+                const video = document.getElementById('videoPreview');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                document.getElementById('photoButtons').classList.add('hidden');
+                document.getElementById('cameraButtons').classList.remove('hidden');
+            } catch (error) {
+                alert('Erro ao acessar câmera: ' + error.message);
+            }
+        });
+
+        document.getElementById('takePictureBtn').addEventListener('click', () => {
+            const video = document.getElementById('videoPreview');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            photoData = canvas.toDataURL('image/jpeg', 0.8);
+            displayPhoto(photoData);
+            stopCamera();
+        });
+
+        document.getElementById('cancelCameraBtn').addEventListener('click', () => {
+            stopCamera();
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    photoData = event.target.result;
+                    displayPhoto(photoData);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function displayPhoto(dataUrl) {
+            document.getElementById('photoPlaceholder').style.display = 'none';
+            const preview = document.getElementById('photoPreview');
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+            document.getElementById('photoData').value = dataUrl;
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('cameraButtons').classList.add('hidden');
+            document.getElementById('photoButtons').classList.remove('hidden');
+        }
+
+        // Check if minor (show financial responsible section)
+        document.querySelector('[name="birthDate"]').addEventListener('change', (e) => {
+            const birthDate = new Date(e.target.value);
+            const today = new Date();
+            const age = today.getFullYear() - birthDate.getFullYear();
+            
+            if (age < 18) {
+                document.getElementById('financialSection').style.display = 'block';
+            } else {
+                document.getElementById('financialSection').style.display = 'none';
+            }
+        });
+
+        // Input masks
+        document.querySelector('[name="cpf"]').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.querySelector('[name="finCpf"]').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        const phoneInputs = document.querySelectorAll('[name="phone"], [name="finPhone"]');
+        phoneInputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                e.target.value = value;
+            });
+        });
+
+        // Form submission
+        document.getElementById('preEnrollmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            
+            try {
+                const formData = new FormData(form);
+                const data = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    cpf: formData.get('cpf').replace(/\D/g, ''),
+                    phone: formData.get('phone').replace(/\D/g, ''),
+                    email: formData.get('email'),
+                    birthDate: formData.get('birthDate') ? new Date(formData.get('birthDate')).toISOString() : null,
+                    photoUrl: photoData,
+                    planId: planId,
+                    courseId: courseId,
+                    customPrice: price ? parseFloat(price) : null,
+                    source: 'public_link'
+                };
+                
+                // Financial responsible if needed
+                if (document.getElementById('financialSection').style.display !== 'none') {
+                    data.financialResponsible = {
+                        name: formData.get('finName'),
+                        cpf: formData.get('finCpf').replace(/\D/g, ''),
+                        phone: formData.get('finPhone').replace(/\D/g, ''),
+                        email: formData.get('finEmail')
+                    };
+                }
+                
+                const response = await fetch('/api/pre-enrollment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('preEnrollmentForm').classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                } else {
+                    throw new Error(result.message || 'Erro ao processar pré-matrícula');
+                }
+                
+            } catch (error) {
+                alert('Erro: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Finalizar Pré-Matrícula';
+            }
+        });
+    </script>
+</body>
+</html>

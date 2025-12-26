@@ -192,3 +192,70 @@
     color: var(--text-secondary);
 }
 
+/* ============================================================================
+   CORREÇÕES MOBILE - Portal do Aluno
+   Aplicar em: /public/css/portal/components.css (adicionar ao final)
+   Data: 19/12/2025
+   ============================================================================ */
+
+/* ===== TOUCH TARGETS & ACESSIBILIDADE ===== */
+@media (max-width: 768px) {
+    /* Botões com área de toque mínima de 44px */
+    .btn, 
+    .btn-icon,
+    .nav-item,
+    .list-item-action {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Inputs mais amigáveis para toque */
+    .form-control {
+        min-height: 48px; /* 44px + bordas */
+        font-size: 16px; /* Evita zoom automático no iOS */
+    }
+
+    /* Cards com mais respiro em mobile */
+    .card {
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Ajuste de espaçamento global */
+    .container {
+        padding: 0 1.25rem;
+    }
+}
+
+/* ===== SAFE AREA INSETS (iOS) ===== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .bottom-nav {
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        height: calc(60px + env(safe-area-inset-bottom));
+    }
+
+    .page-content {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom)); /* Espaço para nav bar */
+    }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+    .btn-primary {
+        border: 2px solid #000;
+        background: #000;
+        color: #fff;
+    }
+
+    .card {
+        border: 2px solid #000;
+        box-shadow: none;
+    }
+
+    .form-control {
+        border: 2px solid #000;
+    }
+}
