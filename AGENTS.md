@@ -1,6 +1,6 @@
 # AGENTS.MD - Guia de Desenvolvimento Academia Krav Maga v2.0
 
-**Última atualização**: 14/11/2025  
+**Última atualização**: 27/12/2025
 **Versão**: 2.2.2
 
 ---
