@@ -1,9 +1,10 @@
 {
     "name": "krav-maga-academy-backend",
-    "version": "1.0.4",
+    "version": "2.2.2",
     "description": "Sistema de gestão para academia de Krav Maga com IA integrada",
     "main": "dist/server.js",
     "scripts": {
+        "version": "node scripts/sync-agents-version.js",
         "dev": "tsx watch src/server.ts",
         "dev:simple": "node servers/server-simple.js",
         "vercel-build": "prisma generate && (prisma migrate deploy || prisma db push --skip-generate) && node --max-old-space-size=3072 ./node_modules/typescript/bin/tsc --project tsconfig.build.json --skipLibCheck true && tsc-alias && node scripts/copy-public.js",
