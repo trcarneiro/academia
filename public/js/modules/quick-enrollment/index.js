@@ -11,8 +11,12 @@ const QuickEnrollment = {
     formData: {
         plan: null,
         course: null,
-        hasFinancialResponsible: false
+        hasFinancialResponsible: false,
+        photo: null,
+        isEditMode: false,
+        studentId: null
     },
+    stream: null,
     plans: [],
     courses: [],
 
@@ -70,8 +74,36 @@ const QuickEnrollment = {
                     <p>Cadastro simplificado em uma única tela</p>
                 </div>
 
+                <div class="pvd-mode-toggle">
+                    <button type="button" class="pvd-btn-outline" onclick="quickEnrollment.toggleEditMode()">
+                        <i class="fas fa-search"></i> Já é aluno? Editar
+                    </button>
+                </div>
+
                 <form class="pvd-form-simplified" id="quickEnrollmentForm">
                     
+                    <!-- FOTO DO ALUNO -->
+                    <div class="pvd-photo-section">
+                        <div class="pvd-camera-container">
+                            <div id="cameraPlaceholder" class="pvd-camera-placeholder" onclick="quickEnrollment.startCamera()">
+                                <i class="fas fa-camera"></i>
+                                <span>Tirar Foto</span>
+                            </div>
+                            <video id="cameraPreview" class="pvd-camera-preview" autoplay playsinline style="display: none;"></video>
+                            <img id="photoPreview" class="pvd-photo-preview" style="display: none;">
+                            <canvas id="photoCanvas" style="display: none;"></canvas>
+                        </div>
+                        
+                        <div class="pvd-camera-controls">
+                            <button type="button" id="btnCapture" class="pvd-btn-camera" style="display: none;" onclick="quickEnrollment.takePhoto()">
+                                <i class="fas fa-camera"></i> Capturar
+                            </button>
+                            <button type="button" id="btnRetake" class="pvd-btn-camera retake" style="display: none;" onclick="quickEnrollment.retakePhoto()">
+                                <i class="fas fa-redo"></i> Tirar Outra
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- DADOS DO ALUNO -->
                     <div class="pvd-section">
                         <h2>👤 Dados do Aluno</h2>
@@ -190,6 +222,20 @@ const QuickEnrollment = {
 
                 </form>
             </div>
+
+            <!-- SEARCH OVERLAY -->
+            <div id="searchOverlay" class="pvd-search-overlay" style="display: none;" onclick="if(event.target === this) quickEnrollment.toggleEditMode()">
+                <div class="pvd-search-box">
+                    <div class="pvd-search-input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="studentSearchInput" placeholder="Buscar por nome ou CPF..." onkeyup="quickEnrollment.searchStudent(this.value)">
+                    </div>
+                    <div id="searchResults" class="pvd-search-results"></div>
+                    <div style="text-align: right; margin-top: 1rem;">
+                        <button type="button" class="pvd-btn-outline" onclick="quickEnrollment.toggleEditMode()">Fechar</button>
+                    </div>
+                </div>
+            </div>
         `;
     },
 
@@ -233,6 +279,158 @@ const QuickEnrollment = {
                 }
             });
         });
+    },
+
+    // --- CAMERA METHODS ---
+
+    async startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            this.stream = stream;
+            
+            const video = document.getElementById('cameraPreview');
+            video.srcObject = stream;
+            video.style.display = 'block';
+            
+            document.getElementById('cameraPlaceholder').style.display = 'none';
+            document.getElementById('photoPreview').style.display = 'none';
+            
+            document.getElementById('btnCapture').style.display = 'flex';
+            document.getElementById('btnRetake').style.display = 'none';
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('Erro ao acessar a câmera. Verifique as permissões.');
+        }
+    },
+
+    takePhoto() {
+        const video = document.getElementById('cameraPreview');
+        const canvas = document.getElementById('photoCanvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const photoData = canvas.toDataURL('image/jpeg');
+        this.formData.photo = photoData;
+
+        // Show preview
+        const img = document.getElementById('photoPreview');
+        img.src = photoData;
+        img.style.display = 'block';
+        video.style.display = 'none';
+
+        // Update controls
+        document.getElementById('btnCapture').style.display = 'none';
+        document.getElementById('btnRetake').style.display = 'flex';
+
+        this.stopCamera();
+    },
+
+    retakePhoto() {
+        this.formData.photo = null;
+        this.startCamera();
+    },
+
+    stopCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+    },
+
+    // --- QUICK EDIT METHODS ---
+
+    toggleEditMode() {
+        const overlay = document.getElementById('searchOverlay');
+        if (overlay.style.display === 'none') {
+            overlay.style.display = 'flex';
+            document.getElementById('studentSearchInput').focus();
+        } else {
+            overlay.style.display = 'none';
+        }
+    },
+
+    async searchStudent(term) {
+        if (!term || term.length < 3) {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+
+        try {
+            const response = await this.moduleAPI.request(`/api/students?search=${term}`);
+            if (response.success) {
+                this.renderSearchResults(response.data);
+            }
+        } catch (error) {
+            console.error('Error searching students:', error);
+        }
+    },
+
+    renderSearchResults(students) {
+        const container = document.getElementById('searchResults');
+        if (!students.length) {
+            container.innerHTML = '<div class="pvd-search-item">Nenhum aluno encontrado</div>';
+            return;
+        }
+
+        container.innerHTML = students.map(student => `
+            <div class="pvd-search-item" onclick="quickEnrollment.selectStudent('${student.id}')">
+                <img src="${student.photoUrl || '/img/default-avatar.png'}" alt="${student.firstName}">
+                <div class="pvd-search-info">
+                    <h4>${student.firstName} ${student.lastName}</h4>
+                    <p>${student.cpf || 'Sem CPF'}</p>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async selectStudent(studentId) {
+        try {
+            const response = await this.moduleAPI.request(`/api/students/${studentId}`);
+            if (response.success) {
+                this.loadStudentData(response.data);
+                this.toggleEditMode();
+            }
+        } catch (error) {
+            console.error('Error loading student:', error);
+            alert('Erro ao carregar dados do aluno');
+        }
+    },
+
+    loadStudentData(student) {
+        this.formData.isEditMode = true;
+        this.formData.studentId = student.id;
+        this.formData.photo = student.photoUrl;
+
+        const form = document.getElementById('quickEnrollmentForm');
+        
+        // Fill basic data
+        form.querySelector('[name="firstName"]').value = student.firstName;
+        form.querySelector('[name="lastName"]').value = student.lastName;
+        form.querySelector('[name="cpf"]').value = student.cpf || '';
+        form.querySelector('[name="email"]').value = student.email || '';
+        form.querySelector('[name="phone"]').value = student.phone || '';
+        
+        if (student.birthDate) {
+            form.querySelector('[name="birthDate"]').value = student.birthDate.split('T')[0];
+        }
+
+        // Show photo if exists
+        if (student.photoUrl) {
+            const img = document.getElementById('photoPreview');
+            img.src = student.photoUrl;
+            img.style.display = 'block';
+            document.getElementById('cameraPlaceholder').style.display = 'none';
+            document.getElementById('btnRetake').style.display = 'flex';
+        }
+
+        // Update submit button
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Matrícula';
+        
+        alert(`Modo de Edição: ${student.firstName} ${student.lastName}`);
     },
 
     renderPlans() {
@@ -405,25 +603,42 @@ const QuickEnrollment = {
                 phone: form.querySelector('[name="phone"]')?.value?.replace(/\D/g, '') || null,
                 email: form.querySelector('[name="email"]')?.value?.trim() || null,
                 birthDate: birthDate,
-                photoUrl: null,
+                photoUrl: this.formData.photo,
                 enrollment: { 
                     packageId: this.formData.plan.id,
                     customPrice: finalPrice
                 }
             };
 
-            console.log('📤 Creating student...', studentPayload);
-            const studentRes = await this.moduleAPI.request('/api/students', {
-                method: 'POST',
-                body: JSON.stringify(studentPayload)
-            });
+            let studentId;
 
-            if (!studentRes.success) {
-                throw new Error(studentRes.message || 'Erro ao criar aluno');
+            if (this.formData.isEditMode && this.formData.studentId) {
+                // UPDATE MODE
+                console.log('📤 Updating student...', studentPayload);
+                const studentRes = await this.moduleAPI.request(`/api/students/${this.formData.studentId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(studentPayload)
+                });
+
+                if (!studentRes.success) {
+                    throw new Error(studentRes.message || 'Erro ao atualizar aluno');
+                }
+                studentId = this.formData.studentId;
+                console.log('✅ Student updated:', studentId);
+            } else {
+                // CREATE MODE
+                console.log('📤 Creating student...', studentPayload);
+                const studentRes = await this.moduleAPI.request('/api/students', {
+                    method: 'POST',
+                    body: JSON.stringify(studentPayload)
+                });
+
+                if (!studentRes.success) {
+                    throw new Error(studentRes.message || 'Erro ao criar aluno');
+                }
+                studentId = studentRes.data.id;
+                console.log('✅ Student created:', studentId);
             }
-            
-            const studentId = studentRes.data.id;
-            console.log('✅ Student created:', studentId);
 
             // 2. Criar responsável financeiro se necessário
             if (this.formData.hasFinancialResponsible) {
@@ -482,7 +697,28 @@ const QuickEnrollment = {
                 
                 // Resetar formulário
                 form.reset();
-                this.formData = { plan: null, course: null, hasFinancialResponsible: false };
+                this.formData = { 
+                    plan: null, 
+                    course: null, 
+                    hasFinancialResponsible: false,
+                    photo: null,
+                    isEditMode: false,
+                    studentId: null
+                };
+
+                // Reset Photo UI
+                const photoPreview = document.getElementById('photoPreview');
+                if (photoPreview) photoPreview.style.display = 'none';
+                
+                const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+                if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+                
+                const btnRetake = document.getElementById('btnRetake');
+                if (btnRetake) btnRetake.style.display = 'none';
+                
+                const btnCapture = document.getElementById('btnCapture');
+                if (btnCapture) btnCapture.style.display = 'none';
+
                 this.renderPlans();
                 document.getElementById('customPriceField').style.display = 'none';
                 document.getElementById('courseField').style.display = 'none';
