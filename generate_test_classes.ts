@@ -45,6 +45,8 @@ async function main() {
 
   const endTime = new Date();
   endTime.setHours(23, 0, 0, 0);
+  // Adicionar mais 5 horas para garantir cobertura de fuso horário (até 04:00 UTC do dia seguinte)
+  endTime.setHours(endTime.getHours() + 5);
 
   let currentTime = new Date(now);
   let lessonCount = 1;
