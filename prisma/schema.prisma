@@ -3659,6 +3659,7 @@ model PreEnrollment {
   financialResponsible  Json?
   source                String    // 'public_link', 'website', 'landing_page'
   status                String    @default("PENDING") // PENDING, CONVERTED, REJECTED
+  notes                 String?   @db.Text
   convertedAt           DateTime?
   studentId             String?
   createdAt             DateTime  @default(now())

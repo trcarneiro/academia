@@ -13,8 +13,7 @@ $PublicKey = $PublicKey.Trim()
 Write-Host "🔑 Configurando acesso SSH sem senha..." -ForegroundColor Cyan
 Write-Host "--------------------------------------------------"
 Write-Host "Vou conectar ao servidor para instalar a chave."
-Write-Host "Quando pedir a senha, digite (ou cole):" -ForegroundColor Yellow
-Write-Host "Ojqemgeowt*a1" -ForegroundColor Green
+Write-Host "Quando pedir a senha, digite a senha do servidor." -ForegroundColor Yellow
 Write-Host "--------------------------------------------------"
 
 # 3. Copiar a chave para o servidor

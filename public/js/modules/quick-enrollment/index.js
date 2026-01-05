@@ -24,9 +24,12 @@ const QuickEnrollment = {
         console.log('🚀 QuickEnrollment init (Simplified v3.0)');
         await this.initializeAPI();
         this.loadCSS();
-        this.render();
-        await this.loadData();
-        this.setupEvents();
+        
+        if (this.container) {
+            this.render();
+            await this.loadData();
+            this.setupEvents();
+        }
         
         window.quickEnrollment = this;
         window.app?.dispatchEvent('module:loaded', { name: 'quickEnrollment' });
@@ -43,7 +46,7 @@ const QuickEnrollment = {
     loadCSS() {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = '/css/modules/quick-enrollment.css';
+        link.href = `/css/modules/quick-enrollment.css?v=${new Date().getTime()}`;
         document.head.appendChild(link);
     },
 
@@ -67,6 +70,10 @@ const QuickEnrollment = {
     },
 
     render() {
+        if (!this.container) {
+            console.error('Container not set for QuickEnrollment');
+            return;
+        }
         this.container.innerHTML = `
             <div class="pvd-container">
                 <div class="pvd-header">

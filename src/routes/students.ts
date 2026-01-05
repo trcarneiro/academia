@@ -33,12 +33,19 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       const where: any = { organizationId };
       
       if (search && search.length >= 2) {
+        const searchClean = search.replace(/\D/g, ''); // Remove non-digits for CPF/phone
         where.OR = [
           { registrationNumber: { contains: search, mode: 'insensitive' } },
-          { cpf: { contains: search.replace(/\D/g, ''), mode: 'insensitive' } },
+          { user: { phone: { contains: search, mode: 'insensitive' } } },
           { user: { firstName: { contains: search, mode: 'insensitive' } } },
           { user: { lastName: { contains: search, mode: 'insensitive' } } },
+          { user: { email: { contains: search, mode: 'insensitive' } } },
         ];
+        
+        // Add CPF search only if search looks like CPF (numeric only)
+        if (searchClean.length >= 3) {
+          where.OR.push({ user: { cpf: { contains: searchClean, mode: 'insensitive' } } });
+        }
       }
       
       const students = await prisma.student.findMany({

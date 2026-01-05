@@ -337,6 +337,80 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
   });
 
   /**
+   * PUT /api/pre-enrollment/:id
+   * Update pre-enrollment
+   */
+  fastify.put('/:id', async (request: FastifyRequest<{ Params: { id: string }, Body: any }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+      const updates = request.body;
+
+      const preEnrollment = await prisma.preEnrollment.update({
+        where: { id },
+        data: updates
+      });
+
+      return reply.send({
+        success: true,
+        data: preEnrollment
+      });
+
+    } catch (error: any) {
+      logger.error('❌ Error updating pre-enrollment:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Erro ao atualizar pré-matrícula'
+      });
+    }
+  });
+
+  /**
+   * POST /api/pre-enrollment/:id/notes
+   * Add note to pre-enrollment
+   */
+  fastify.post('/:id/notes', async (request: FastifyRequest<{ Params: { id: string }, Body: { note: string } }>, reply: FastifyReply) => {
+    try {
+      const { id } = request.params;
+      const { note } = request.body;
+
+      const preEnrollment = await prisma.preEnrollment.findUnique({
+        where: { id }
+      });
+
+      if (!preEnrollment) {
+        return reply.code(404).send({
+          success: false,
+          message: 'Pré-matrícula não encontrada'
+        });
+      }
+
+      // Concatenar nota existente
+      const currentNotes = preEnrollment.notes || '';
+      const timestamp = new Date().toLocaleString('pt-BR');
+      const newNotes = currentNotes 
+        ? `${currentNotes}\n\n[${timestamp}] ${note}`
+        : `[${timestamp}] ${note}`;
+
+      const updated = await prisma.preEnrollment.update({
+        where: { id },
+        data: { notes: newNotes }
+      });
+
+      return reply.send({
+        success: true,
+        data: updated
+      });
+
+    } catch (error: any) {
+      logger.error('❌ Error adding note:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Erro ao adicionar nota'
+      });
+    }
+  });
+
+  /**
    * DELETE /api/pre-enrollment/:id
    * Reject/delete pre-enrollment
    */
