@@ -17,22 +17,22 @@
     --kiosk-success: #00d084;
     --kiosk-error: #e63946;
     --kiosk-warning: #f4a740;
-    
+
     /* Backgrounds */
     --kiosk-bg: #f8f9fa;
     --kiosk-surface: #ffffff;
     --kiosk-border: #e0e0e0;
     --kiosk-text: #1e293b;
     --kiosk-text-muted: #64748b;
-    
+
     /* Shadows */
     --kiosk-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     --kiosk-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
-    
+
     /* Geometry */
     --kiosk-radius: 12px;
     --kiosk-radius-lg: 16px;
-    
+
     /* Transitions */
     --kiosk-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --kiosk-transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -85,8 +85,17 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.1); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
 }
 
 /* ===== HEADER ===== */
@@ -296,11 +305,12 @@ body.kiosk-clean-mode .camera-section {
 
 /* Hide text on small screens */
 @media (max-width: 768px) {
+
     .btn-fullscreen .btn-text,
     .btn-kiosk-mode .btn-text {
         display: none;
     }
-    
+
     .btn-fullscreen,
     .btn-kiosk-mode {
         padding: 0.75rem;
@@ -442,7 +452,8 @@ body.kiosk-clean-mode .camera-section {
     color: var(--kiosk-primary);
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
@@ -584,8 +595,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Coluna Esquerda: Câmera */
@@ -717,7 +735,7 @@ body.kiosk-clean-mode .camera-section {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .manual-search-card {
         padding: 1.5rem;
     }
@@ -728,11 +746,11 @@ body.kiosk-clean-mode .camera-section {
     .camera-section {
         padding: 1rem;
     }
-    
+
     .search-box-tablet {
         gap: 0.75rem;
     }
-    
+
     .search-input-tablet,
     .btn-search-tablet {
         font-size: 1rem;
@@ -796,7 +814,9 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .face-status p {
@@ -885,8 +905,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .match-badge {
@@ -932,7 +959,8 @@ body.kiosk-clean-mode .camera-section {
     gap: 1rem;
     max-width: 600px;
     margin: 0 auto;
-    position: relative; /* Para posicionar autocomplete dropdown */
+    position: relative;
+    /* Para posicionar autocomplete dropdown */
 }
 
 .search-input {
@@ -998,6 +1026,7 @@ body.kiosk-clean-mode .camera-section {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1021,9 +1050,9 @@ body.kiosk-clean-mode .camera-section {
 }
 
 .autocomplete-item:hover {
-    background: linear-gradient(90deg, 
-        rgba(102, 126, 234, 0.12) 0%, 
-        rgba(118, 75, 162, 0.12) 100%);
+    background: linear-gradient(90deg,
+            rgba(102, 126, 234, 0.12) 0%,
+            rgba(118, 75, 162, 0.12) 100%);
     padding-left: 2rem;
     transform: scale(1.02);
 }
@@ -1091,9 +1120,9 @@ body.kiosk-clean-mode .camera-section {
 
 .student-option:hover {
     border-color: var(--kiosk-primary);
-    background: linear-gradient(135deg, 
-        rgba(102, 126, 234, 0.05) 0%, 
-        rgba(118, 75, 162, 0.05) 100%);
+    background: linear-gradient(135deg,
+            rgba(102, 126, 234, 0.05) 0%,
+            rgba(118, 75, 162, 0.05) 100%);
     transform: translateY(-4px) scale(1.02);
     box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
 }
@@ -1191,12 +1220,12 @@ body.kiosk-clean-mode .camera-section {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .camera-container {
         max-width: 500px;
         margin: 0 auto;
     }
-    
+
     .detection-stats {
         padding: 1rem;
     }
@@ -1210,7 +1239,7 @@ body.kiosk-clean-mode .camera-section {
         padding: 1rem;
         margin: 1rem 0;
     }
-    
+
     .camera-container {
         width: 100%;
         max-width: 100%;
@@ -1218,60 +1247,60 @@ body.kiosk-clean-mode .camera-section {
         aspect-ratio: 3 / 4;
         border-width: 2px;
     }
-    
+
     .face-outline {
         width: 80%;
         height: 80%;
         max-width: 200px;
         max-height: 250px;
     }
-    
+
     .detection-stats {
         padding: 0.5rem;
         gap: 1rem;
     }
-    
+
     .stat-card {
         padding: 1rem;
         gap: 0.75rem;
     }
-    
+
     .stat-label {
         font-size: 1rem;
     }
-    
+
     .quality-badge,
     .match-badge {
         padding: 0.5rem 1rem;
         font-size: 1rem;
     }
-    
+
     .fallback-section {
         padding: 1.5rem;
     }
-    
+
     .search-box {
         gap: 0.75rem;
     }
-    
+
     .search-input {
         padding: 0.75rem 1rem;
         font-size: 1rem;
     }
-    
+
     .search-btn {
         padding: 0.75rem 1.5rem;
         font-size: 0.95rem;
     }
-    
+
     .checkins-history {
         padding: 1.5rem;
     }
-    
+
     .history-header h3 {
         font-size: 1.125rem;
     }
-    
+
     .history-list {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         max-height: 300px;
@@ -1284,79 +1313,79 @@ body.kiosk-clean-mode .camera-section {
         gap: 1rem;
         padding: 0.75rem;
     }
-    
+
     .camera-container {
         aspect-ratio: 3 / 4;
         border-width: 1px;
     }
-    
+
     .face-outline {
         width: 85%;
         height: 85%;
         max-width: 150px;
         max-height: 200px;
     }
-    
+
     .face-status {
         bottom: 1rem;
         padding: 0.75rem;
         font-size: 0.85rem;
     }
-    
+
     .detection-stats {
         gap: 0.75rem;
     }
-    
+
     .stat-card {
         padding: 0.75rem;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .stat-label {
         font-size: 0.95rem;
     }
-    
+
     .quality-badge,
     .match-badge {
         padding: 0.5rem 0.75rem;
         font-size: 0.95rem;
     }
-    
+
     .fallback-section {
         padding: 1rem;
     }
-    
+
     .fallback-section h3 {
         font-size: 1.125rem;
         margin-bottom: 1rem;
     }
-    
+
     .search-box {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .search-input {
         padding: 0.5rem 1rem;
         font-size: 1rem;
     }
-    
+
     .search-btn {
         padding: 0.75rem 1rem;
         width: 100%;
     }
-    
+
     .checkins-history {
         padding: 1rem;
     }
-    
+
     .history-header {
         flex-direction: column;
         gap: 1rem;
         align-items: flex-start;
     }
-    
+
     .history-list {
         grid-template-columns: 1fr;
         max-height: 250px;
@@ -1473,6 +1502,7 @@ body.kiosk-clean-mode .camera-section {
     background: rgba(245, 158, 11, 0.1);
     color: var(--kiosk-warning);
 }
+
 /* END FIX */
 
 .search-result-match {
@@ -1651,10 +1681,13 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-warning {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
+
     50% {
         opacity: 0.85;
         transform: scale(1.02);
@@ -1693,6 +1726,7 @@ body.kiosk-clean-mode .camera-section {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1767,7 +1801,8 @@ body.kiosk-clean-mode .camera-section {
 }
 
 /* ===== CLASSES SECTION ===== */
-.classes-section, .activity-section {
+.classes-section,
+.activity-section {
     background: var(--kiosk-surface);
     border-radius: var(--kiosk-radius-lg);
     padding: 2rem;
@@ -1775,7 +1810,8 @@ body.kiosk-clean-mode .camera-section {
     box-shadow: var(--kiosk-shadow);
 }
 
-.classes-section h3, .activity-section h3 {
+.classes-section h3,
+.activity-section h3 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0 1.5rem 0;
@@ -1889,13 +1925,16 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-timer {
-    0%, 100% { 
-        opacity: 1; 
-        transform: scale(1); 
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
     }
-    50% { 
-        opacity: 0.8; 
-        transform: scale(1.02); 
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
     }
 }
 
@@ -1981,8 +2020,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-warning {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 .checkin-btn {
@@ -2034,9 +2080,11 @@ body.kiosk-clean-mode .camera-section {
     0% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
     }
+
     70% {
         box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
     }
@@ -2199,6 +2247,7 @@ body.kiosk-clean-mode .camera-section {
         opacity: 0;
         transform: translateY(-20px) scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -2206,9 +2255,19 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes successPulse {
-    0% { transform: scale(0.8); opacity: 0; }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* ===== RECOMMENDATIONS SECTION ===== */
@@ -2290,6 +2349,7 @@ body.kiosk-clean-mode .camera-section {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2305,70 +2365,70 @@ body.kiosk-clean-mode .camera-section {
     .kiosk-header {
         padding: 1rem;
     }
-    
+
     .header-content {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
     }
-    
+
     .logo-section h1 {
         font-size: 1.5rem;
     }
-    
+
     .current-time {
         font-size: 1.25rem;
     }
-    
+
     .stage {
         padding: 1rem;
     }
-    
+
     .welcome-section h2 {
         font-size: 2rem;
     }
-    
+
     .welcome-section p {
         font-size: 1.25rem;
     }
-    
+
     .lookup-form {
         padding: 2rem;
     }
-    
+
     .student-header {
         flex-direction: column;
         gap: 1.5rem;
         text-align: center;
     }
-    
+
     .student-info {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .student-meta {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .classes-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 1rem;
     }
-    
+
     .modal-actions {
         flex-direction: column;
     }
-    
+
     .modal-actions .btn-secondary,
     .modal-actions .btn-primary {
         width: 100%;
@@ -2385,6 +2445,7 @@ body.kiosk-clean-mode .camera-section {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2438,7 +2499,7 @@ body.kiosk-clean-mode .camera-section {
     background-clip: text;
 }
 
-.kiosk-redirect-info > p {
+.kiosk-redirect-info>p {
     font-size: 1.25rem;
     color: var(--kiosk-text-muted);
     margin-bottom: 3rem;
@@ -2495,7 +2556,7 @@ body.kiosk-clean-mode .camera-section {
     .kiosk-actions {
         flex-direction: column;
     }
-    
+
     .kiosk-actions .btn {
         width: 100%;
         max-width: none;
@@ -2660,8 +2721,17 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-warning {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.85; transform: scale(1.05); }
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
 }
 
 .stat-content {
@@ -2805,8 +2875,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
 }
 
 .course-info {
@@ -2917,8 +2994,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-green {
-    0%, 100% { box-shadow: 0 8px 32px rgba(0, 208, 132, 0.3); }
-    50% { box-shadow: 0 12px 48px rgba(0, 208, 132, 0.5); }
+
+    0%,
+    100% {
+        box-shadow: 0 8px 32px rgba(0, 208, 132, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 12px 48px rgba(0, 208, 132, 0.5);
+    }
 }
 
 .btn-confirm-huge.enabled:hover {
@@ -2939,7 +3023,7 @@ body.kiosk-clean-mode .camera-section {
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .courses-grid-large {
         grid-template-columns: 1fr;
     }
@@ -2950,20 +3034,20 @@ body.kiosk-clean-mode .camera-section {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .student-photo-large {
         width: 120px;
         height: 120px;
     }
-    
+
     .student-name-huge {
         font-size: 2rem;
     }
-    
+
     .stats-row {
         grid-template-columns: 1fr;
     }
-    
+
     .btn-cancel-top {
         position: static;
         width: 100%;
@@ -3001,7 +3085,9 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Reactivation Screen */
@@ -3465,7 +3551,10 @@ body.kiosk-clean-mode .camera-section {
     padding: 2rem;
 }
 
-.success-icon, .error-icon, .info-icon, .timeout-icon {
+.success-icon,
+.error-icon,
+.info-icon,
+.timeout-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
 }
@@ -3489,7 +3578,11 @@ body.kiosk-clean-mode .camera-section {
     color: var(--kiosk-text-muted) !important;
 }
 
-.local-actions, .error-actions, .fallback-actions, .timeout-actions, .success-actions {
+.local-actions,
+.error-actions,
+.fallback-actions,
+.timeout-actions,
+.success-actions {
     display: flex;
     justify-content: center;
     gap: 1rem;
@@ -3563,9 +3656,11 @@ body.kiosk-clean-mode .camera-section {
         transform: scale(0);
         opacity: 0;
     }
+
     50% {
         transform: scale(1.2);
     }
+
     100% {
         transform: scale(1);
         opacity: 1;
@@ -3648,13 +3743,18 @@ body.kiosk-clean-mode .camera-section {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .progress-label {
@@ -3689,8 +3789,15 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes pulse-success {
-    0%, 100% { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3); }
-    50% { box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5); }
+
+    0%,
+    100% {
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+    }
 }
 
 /* Classes Section */
@@ -4062,7 +4169,9 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .error-state {
@@ -4084,24 +4193,25 @@ body.kiosk-clean-mode .camera-section {
 
 /* Responsive Adjustments for V2 */
 @media (max-width: 768px) {
+
     .classes-grid,
     .upcoming-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .available-classes {
         grid-template-columns: 1fr;
     }
-    
+
     .reactivation-actions {
         flex-direction: column;
     }
-    
+
     .btn-reactivate,
     .btn-back {
         width: 100%;
     }
-    
+
     .schedule-header {
         flex-direction: column;
         gap: 0.5rem;
@@ -4130,15 +4240,27 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== UI TRANSITIONS ===== */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .fade-in {
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.checkin-dashboard, .checkin-dashboard-v2, .camera-section, .success-view, .success-container, .reactivation-screen {
+.checkin-dashboard,
+.checkin-dashboard-v2,
+.camera-section,
+.success-view,
+.success-container,
+.reactivation-screen {
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
@@ -4229,6 +4351,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ----- 1. CÂMERA MOBILE CORRIGIDA ----- */
 @media (max-width: 480px) {
+
     /* Container de câmera otimizado */
     .camera-section {
         grid-template-columns: 1fr;
@@ -4236,31 +4359,35 @@ body.kiosk-clean-mode .camera-section {
         padding: 1rem;
         margin: 1rem 0;
     }
-    
+
     .camera-column {
         gap: 1.25rem;
     }
-    
+
     .camera-container {
-        aspect-ratio: 3 / 4;              /* ✅ Proporção vertical ideal */
-        max-height: 65vh;                 /* ✅ Maior área útil */
+        aspect-ratio: 3 / 4;
+        /* ✅ Proporção vertical ideal */
+        max-height: 65vh;
+        /* ✅ Maior área útil */
         max-width: 100%;
         border-width: 2px;
         border-radius: 16px;
         overflow: hidden;
     }
-    
+
     /* Overlay de detecção facial maior */
     .face-outline {
         width: 80%;
         height: 80%;
-        max-width: 180px;                 /* ✅ Área ampliada */
+        max-width: 180px;
+        /* ✅ Área ampliada */
         max-height: 240px;
     }
-    
+
     /* Status da detecção mais legível */
     .face-status {
-        font-size: 1.1rem;                /* ✅ Texto maior */
+        font-size: 1.1rem;
+        /* ✅ Texto maior */
         padding: 1rem 1.25rem;
         bottom: 1rem;
         left: 0.75rem;
@@ -4268,31 +4395,32 @@ body.kiosk-clean-mode .camera-section {
         border-radius: 12px;
         backdrop-filter: blur(10px);
     }
-    
+
     .face-status p {
         font-size: 1rem;
         line-height: 1.4;
     }
-    
+
     /* Stats de detecção compactas */
     .detection-stats {
         gap: 0.75rem;
         padding: 0.75rem 0;
     }
-    
+
     .stat-card {
         padding: 0.875rem;
-        flex-direction: row;              /* ✅ Horizontal economiza espaço */
+        flex-direction: row;
+        /* ✅ Horizontal economiza espaço */
         align-items: center;
         gap: 0.75rem;
         border-radius: 12px;
     }
-    
+
     .stat-label {
         font-size: 0.9rem;
         text-align: left;
     }
-    
+
     .quality-badge,
     .match-badge {
         padding: 0.5rem 1rem;
@@ -4308,45 +4436,45 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.25rem;
         border-radius: 16px;
     }
-    
+
     .search-header h3 {
         font-size: 1.3rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .search-header p {
         font-size: 0.95rem;
         line-height: 1.5;
     }
-    
+
     .search-box-tablet {
         gap: 0.75rem;
     }
-    
+
     .search-input-tablet {
         padding: 1rem 1.25rem;
         font-size: 1.05rem;
         border-radius: 12px;
         border-width: 2px;
     }
-    
+
     .btn-search-tablet {
         padding: 1rem 1.5rem;
         font-size: 1.05rem;
         border-radius: 12px;
         font-weight: 700;
     }
-    
+
     .search-tips {
         padding: 1rem;
         border-radius: 12px;
     }
-    
+
     .search-tips p {
         font-size: 0.95rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .search-tips li {
         font-size: 0.9rem;
         padding: 0.5rem 0;
@@ -4357,35 +4485,40 @@ body.kiosk-clean-mode .camera-section {
 /* ----- 3. AUTOCOMPLETE DROPDOWN MOBILE ----- */
 @media (max-width: 480px) {
     .autocomplete-dropdown {
-        max-height: 50vh;                 /* ✅ Menos invasivo */
+        max-height: 50vh;
+        /* ✅ Menos invasivo */
         border-width: 3px;
         border-radius: 16px;
         box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
     }
-    
+
     .autocomplete-item {
         padding: 1.25rem 1rem;
-        min-height: 70px;                 /* ✅ Touch target adequado */
+        min-height: 70px;
+        /* ✅ Touch target adequado */
         gap: 1rem;
         border-bottom-width: 2px;
     }
-    
+
     .autocomplete-item:hover {
         padding-left: 1.5rem;
         transform: scale(1.01);
     }
-    
+
     .autocomplete-item .student-name {
-        font-size: 1.2rem;                /* ✅ Nome legível */
+        font-size: 1.2rem;
+        /* ✅ Nome legível */
         font-weight: 700;
         line-height: 1.3;
         letter-spacing: 0.01em;
     }
-    
+
     .autocomplete-item .student-detail {
-        font-size: 1rem;                  /* ✅ Matrícula legível */
+        font-size: 1rem;
+        /* ✅ Matrícula legível */
         font-weight: 500;
-        white-space: normal;              /* ✅ Quebra se necessário */
+        white-space: normal;
+        /* ✅ Quebra se necessário */
         word-break: break-word;
     }
 }
@@ -4398,29 +4531,32 @@ body.kiosk-clean-mode .camera-section {
         gap: 1rem;
         max-height: calc(100vh - 180px);
     }
-    
+
     .student-option {
         padding: 1.25rem 1.5rem;
-        min-height: 80px;                 /* ✅ Altura confortável */
+        min-height: 80px;
+        /* ✅ Altura confortável */
         border-width: 3px;
         border-radius: 16px;
         gap: 0.75rem;
     }
-    
+
     .student-option:hover {
         transform: translateY(-2px) scale(1.02);
         box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
     }
-    
+
     .student-option .student-name {
-        font-size: 1.2rem;                /* ✅ Nome legível */
+        font-size: 1.2rem;
+        /* ✅ Nome legível */
         font-weight: 700;
         line-height: 1.3;
         word-break: break-word;
     }
-    
+
     .student-option .student-matric {
-        font-size: 1rem;                  /* ✅ Matrícula legível */
+        font-size: 1rem;
+        /* ✅ Matrícula legível */
         font-weight: 500;
     }
 }
@@ -4434,37 +4570,37 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.5rem;
         border-radius: 16px;
     }
-    
+
     .student-photo-large {
         width: 100px;
         height: 100px;
         border-width: 4px;
         margin: 0 auto;
     }
-    
+
     .avatar-placeholder {
         font-size: 2.5rem;
     }
-    
+
     .student-info-large {
         text-align: center;
         width: 100%;
     }
-    
+
     .student-name-huge {
         font-size: clamp(1.5rem, 6vw, 2.25rem);
         word-break: break-word;
         line-height: 1.2;
         margin-bottom: 1rem;
     }
-    
+
     .student-meta-row {
         flex-direction: column;
         gap: 0.75rem;
         align-items: center;
         width: 100%;
     }
-    
+
     .student-id-badge,
     .student-phone {
         padding: 0.75rem 1.25rem;
@@ -4473,7 +4609,7 @@ body.kiosk-clean-mode .camera-section {
         width: 100%;
         max-width: 300px;
     }
-    
+
     .btn-cancel-top {
         position: relative;
         top: auto;
@@ -4491,19 +4627,22 @@ body.kiosk-clean-mode .camera-section {
 /* ----- 6. STATS ROW MOBILE (1 COLUNA) ----- */
 @media (max-width: 480px) {
     .stats-row {
-        grid-template-columns: 1fr;       /* ✅ 1 coluna = mais espaço */
+        grid-template-columns: 1fr;
+        /* ✅ 1 coluna = mais espaço */
         gap: 1rem;
     }
-    
+
     .stats-row .stat-card {
-        padding: 1.25rem;                 /* ✅ Padding generoso */
-        flex-direction: row;              /* ✅ Horizontal */
+        padding: 1.25rem;
+        /* ✅ Padding generoso */
+        flex-direction: row;
+        /* ✅ Horizontal */
         align-items: center;
         gap: 1rem;
         border-radius: 16px;
         min-height: 80px;
     }
-    
+
     .stats-row .stat-icon {
         font-size: 2.25rem;
         width: 60px;
@@ -4511,31 +4650,32 @@ body.kiosk-clean-mode .camera-section {
         flex-shrink: 0;
         border-radius: 12px;
     }
-    
+
     .stats-row .stat-content {
         flex: 1;
         text-align: left;
     }
-    
+
     .stats-row .stat-label {
         font-size: 0.85rem;
         margin-bottom: 0.25rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    
+
     .stats-row .stat-value {
-        font-size: 1.75rem;               /* ✅ Número grande e legível */
+        font-size: 1.75rem;
+        /* ✅ Número grande e legível */
         font-weight: 800;
         margin-bottom: 0.25rem;
         line-height: 1;
     }
-    
+
     .stats-row .stat-value-small {
         font-size: 1.25rem;
         font-weight: 700;
     }
-    
+
     .stats-row .stat-hint {
         font-size: 0.8rem;
         line-height: 1.3;
@@ -4548,36 +4688,36 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.5rem;
         border-radius: 16px;
     }
-    
+
     .course-progress-section .section-title {
         font-size: 1.35rem;
         flex-wrap: wrap;
         gap: 0.75rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .course-name {
         font-size: 1.25rem;
         line-height: 1.3;
         margin-bottom: 0.75rem;
     }
-    
+
     .progress-stats {
         font-size: 0.95rem;
         line-height: 1.5;
     }
-    
+
     .progress-bar-container {
         height: 28px;
         border-radius: 14px;
         margin: 1rem 0;
     }
-    
+
     .progress-label {
         font-size: 1rem;
         font-weight: 700;
     }
-    
+
     .graduation-badge {
         padding: 1rem 1.25rem;
         font-size: 1rem;
@@ -4592,7 +4732,7 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.5rem;
         border-radius: 16px;
     }
-    
+
     .classes-section .section-title {
         font-size: 1.35rem;
         flex-direction: column;
@@ -4600,72 +4740,72 @@ body.kiosk-clean-mode .camera-section {
         gap: 0.5rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .title-hint {
         font-size: 0.95rem;
         text-align: left;
         line-height: 1.4;
     }
-    
+
     .classes-subtitle {
         font-size: 1.15rem;
         margin: 1.25rem 0 1rem 0;
     }
-    
+
     .classes-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .class-card {
         padding: 1.25rem;
         border-width: 3px;
         border-radius: 16px;
         min-height: 120px;
     }
-    
+
     .class-header {
         flex-wrap: wrap;
         gap: 0.75rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .class-time {
         font-size: 1.15rem;
         font-weight: 700;
     }
-    
+
     .class-status-badge {
         font-size: 0.8rem;
         padding: 0.35rem 0.75rem;
         border-radius: 12px;
     }
-    
+
     .class-name {
         font-size: 1.1rem;
         line-height: 1.3;
         margin-bottom: 0.75rem;
     }
-    
+
     .class-details {
         gap: 0.5rem;
         margin-bottom: 1rem;
     }
-    
+
     .class-instructor,
     .class-room,
     .class-slots {
         font-size: 0.9rem;
         line-height: 1.4;
     }
-    
+
     .btn-checkin-turma {
         padding: 1rem 1.5rem;
         font-size: 1.05rem;
         border-radius: 12px;
         min-height: 52px;
     }
-    
+
     .btn-checkin-turma .icon {
         font-size: 1.5rem;
     }
@@ -4677,29 +4817,29 @@ body.kiosk-clean-mode .camera-section {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .upcoming-card {
         padding: 1rem;
         border-width: 2px;
         border-radius: 16px;
     }
-    
+
     .upcoming-time {
         font-size: 1.05rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .upcoming-name {
         font-size: 1rem;
         line-height: 1.3;
         margin-bottom: 0.5rem;
     }
-    
+
     .upcoming-countdown {
         font-size: 0.9rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .upcoming-instructor {
         font-size: 0.85rem;
     }
@@ -4711,51 +4851,57 @@ body.kiosk-clean-mode .camera-section {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .course-card-large {
-        padding: 1.5rem;                  /* ✅ Padding generoso */
+        padding: 1.5rem;
+        /* ✅ Padding generoso */
         gap: 1.25rem;
         min-height: 120px;
         border-width: 3px;
         border-radius: 16px;
     }
-    
+
     .course-card-large:hover {
         transform: translateY(-4px) scale(1.02);
     }
-    
+
     .course-number {
-        width: 70px;                      /* ✅ Tamanho adequado */
+        width: 70px;
+        /* ✅ Tamanho adequado */
         height: 70px;
-        font-size: 2.5rem;                /* ✅ Número legível */
+        font-size: 2.5rem;
+        /* ✅ Número legível */
         flex-shrink: 0;
         border-radius: 50%;
     }
-    
+
     .course-info {
         flex: 1;
-        min-width: 0;                     /* Permite truncamento */
+        min-width: 0;
+        /* Permite truncamento */
     }
-    
+
     .course-name-large {
-        font-size: 1.3rem;                /* ✅ Nome legível */
+        font-size: 1.3rem;
+        /* ✅ Nome legível */
         line-height: 1.3;
         margin-bottom: 0.75rem;
         word-break: break-word;
     }
-    
+
     .course-meta {
         gap: 0.5rem;
     }
-    
+
     .course-time,
     .course-instructor {
         font-size: 0.95rem;
         line-height: 1.4;
     }
-    
+
     .course-check {
-        width: 40px;                      /* ✅ Checkbox visível */
+        width: 40px;
+        /* ✅ Checkbox visível */
         height: 40px;
         font-size: 1.75rem;
         border-width: 3px;
@@ -4769,7 +4915,7 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.25rem;
         border-radius: 16px;
     }
-    
+
     .btn-confirm-huge {
         padding: 1.5rem 2rem;
         font-size: 1.35rem;
@@ -4777,7 +4923,7 @@ body.kiosk-clean-mode .camera-section {
         min-height: 60px;
         letter-spacing: 0.03em;
     }
-    
+
     .btn-confirm-huge .icon {
         font-size: 2rem;
     }
@@ -4789,56 +4935,56 @@ body.kiosk-clean-mode .camera-section {
         min-height: 100dvh;
         padding: 1.25rem;
     }
-    
+
     .reactivation-header {
         margin-bottom: 1.5rem;
     }
-    
+
     .reactivation-header h2 {
         font-size: 2rem;
         line-height: 1.2;
     }
-    
+
     .reactivation-content {
         padding: 2rem 1.5rem;
         border-radius: 16px;
     }
-    
+
     .reactivation-message {
         font-size: 1.3rem;
         line-height: 1.4;
         margin-bottom: 1rem;
     }
-    
+
     .reactivation-submessage {
         font-size: 1.05rem;
         line-height: 1.5;
         margin-bottom: 2rem;
     }
-    
+
     .reactivation-benefits {
         padding: 1.5rem;
         border-radius: 16px;
         margin-bottom: 2rem;
     }
-    
+
     .reactivation-benefits h3 {
         font-size: 1.2rem;
         margin-bottom: 1rem;
     }
-    
+
     .reactivation-benefits li {
         font-size: 1.05rem;
         padding: 0.75rem 0;
         line-height: 1.5;
     }
-    
+
     .reactivation-actions {
         flex-direction: column;
         gap: 1rem;
         margin-top: 2rem;
     }
-    
+
     .btn-reactivate,
     .btn-back {
         width: 100%;
@@ -4857,50 +5003,50 @@ body.kiosk-clean-mode .camera-section {
         margin-bottom: 2rem;
         line-height: 1.3;
     }
-    
+
     .plans-grid {
         grid-template-columns: 1fr;
         gap: 1.25rem;
     }
-    
+
     .plan-card {
         padding: 2rem 1.5rem;
         border-width: 3px;
         border-radius: 16px;
     }
-    
+
     .plan-badge {
         font-size: 0.8rem;
         padding: 0.5rem 1rem;
         border-radius: 0 16px 0 12px;
     }
-    
+
     .plan-name {
         font-size: 1.3rem;
         margin-top: 1rem;
         margin-bottom: 1rem;
     }
-    
+
     .price-value {
         font-size: 2rem;
         font-weight: 800;
     }
-    
+
     .price-period {
         font-size: 0.95rem;
     }
-    
+
     .plan-description {
         font-size: 0.95rem;
         line-height: 1.5;
         margin-bottom: 1rem;
     }
-    
+
     .plan-classes {
         font-size: 1rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .btn-select-plan {
         padding: 1rem 1.5rem;
         font-size: 1.1rem;
@@ -4914,60 +5060,60 @@ body.kiosk-clean-mode .camera-section {
     .pix-payment-screen {
         padding: 1.25rem;
     }
-    
+
     .pix-title {
         font-size: 1.5rem;
         margin-bottom: 0.75rem;
         line-height: 1.3;
     }
-    
+
     .pix-plan {
         font-size: 1.05rem;
         margin-bottom: 2rem;
         line-height: 1.4;
     }
-    
+
     .pix-qr-container {
         padding: 1.25rem;
         border-width: 3px;
         border-radius: 16px;
     }
-    
+
     .pix-qr-image {
         width: 100%;
         max-width: 220px;
         height: auto;
     }
-    
+
     .pix-no-qr {
         width: 100%;
         max-width: 220px;
         height: 220px;
         font-size: 0.95rem;
     }
-    
+
     .pix-copypaste {
         margin-bottom: 2rem;
     }
-    
+
     .pix-label {
         font-size: 0.95rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .pix-code-container {
         flex-direction: column;
         gap: 0.75rem;
         max-width: 100%;
     }
-    
+
     .pix-code-input {
         padding: 0.875rem;
         font-size: 0.8rem;
         text-align: center;
         border-radius: 12px;
     }
-    
+
     .btn-copy-pix {
         padding: 0.875rem 1.25rem;
         font-size: 1rem;
@@ -4975,12 +5121,12 @@ body.kiosk-clean-mode .camera-section {
         border-radius: 12px;
         min-height: 48px;
     }
-    
+
     .pix-actions {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .btn-cancel {
         width: 100%;
         justify-content: center;
@@ -4988,7 +5134,7 @@ body.kiosk-clean-mode .camera-section {
         border-radius: 12px;
         min-height: 52px;
     }
-    
+
     .pix-help {
         font-size: 0.9rem;
         line-height: 1.5;
@@ -4997,6 +5143,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ----- 15. PAYMENT STATUS SCREENS ----- */
 @media (max-width: 480px) {
+
     .local-payment-screen,
     .payment-error-screen,
     .no-plans-screen,
@@ -5004,7 +5151,7 @@ body.kiosk-clean-mode .camera-section {
     .payment-timeout-screen {
         padding: 1.5rem;
     }
-    
+
     .success-icon,
     .error-icon,
     .info-icon,
@@ -5012,30 +5159,30 @@ body.kiosk-clean-mode .camera-section {
         font-size: 3.5rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .local-payment-info {
         padding: 1.5rem;
         border-radius: 16px;
         margin: 2rem 0;
     }
-    
+
     .local-payment-info p {
         font-size: 1.05rem;
         line-height: 1.5;
         margin: 0.5rem 0;
     }
-    
+
     .payment-id {
         font-size: 0.9rem !important;
     }
-    
+
     .error-message {
         font-size: 1.05rem;
         padding: 1.25rem;
         border-radius: 16px;
         line-height: 1.5;
     }
-    
+
     .local-actions,
     .error-actions,
     .fallback-actions,
@@ -5045,7 +5192,7 @@ body.kiosk-clean-mode .camera-section {
         gap: 1rem;
         margin-top: 2rem;
     }
-    
+
     .btn-confirm {
         width: 100%;
         padding: 1.5rem 2rem;
@@ -5061,57 +5208,57 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.5rem;
         border-radius: 16px;
     }
-    
+
     .schedule-header {
         flex-direction: column;
         gap: 0.75rem;
         text-align: center;
         margin-bottom: 1.5rem;
     }
-    
+
     .schedule-header h3 {
         font-size: 1.3rem;
     }
-    
+
     .schedule-header .current-time {
         font-size: 1.5rem;
         font-weight: 800;
     }
-    
+
     .available-classes {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .available-classes .class-card {
         padding: 1.25rem;
         border-width: 3px;
         border-radius: 16px;
     }
-    
+
     .available-classes .time-badge {
         font-size: 0.9rem;
         padding: 0.5rem 1rem;
         border-radius: 16px;
     }
-    
+
     .available-classes .countdown {
         font-size: 0.8rem;
         padding: 0.35rem 0.75rem;
         border-radius: 12px;
     }
-    
+
     .available-classes .class-info h4 {
         font-size: 1.1rem;
         line-height: 1.3;
     }
-    
+
     .available-classes .class-instructor,
     .available-classes .class-capacity {
         font-size: 0.9rem;
         line-height: 1.4;
     }
-    
+
     .available-classes .class-status {
         font-size: 0.9rem;
         margin-top: 1rem;
@@ -5125,23 +5272,23 @@ body.kiosk-clean-mode .camera-section {
         padding: 1.25rem;
         border-radius: 16px;
     }
-    
+
     .history-header {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .history-header h3 {
         font-size: 1.15rem;
     }
-    
+
     .checkin-badge {
         width: 36px;
         height: 36px;
         font-size: 1rem;
     }
-    
+
     .history-list {
         grid-template-columns: 1fr;
         max-height: 220px;
@@ -5154,20 +5301,20 @@ body.kiosk-clean-mode .camera-section {
     .empty-state {
         padding: 3rem 1.5rem;
     }
-    
+
     .empty-state i,
     .empty-icon {
         font-size: 3rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .empty-state h3,
     .empty-text {
         font-size: 1.2rem;
         line-height: 1.3;
         margin-bottom: 0.75rem;
     }
-    
+
     .empty-state p,
     .empty-hint {
         font-size: 0.95rem;
@@ -5177,6 +5324,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== TOUCH TARGET IMPROVEMENTS (ALL DEVICES) ===== */
 @media (hover: none) and (pointer: coarse) {
+
     /* Garantir 44x44px mínimo em touch devices */
     .btn-primary,
     .btn-secondary,
@@ -5197,16 +5345,16 @@ body.kiosk-clean-mode .camera-section {
         min-height: 44px;
         min-width: 44px;
     }
-    
+
     /* Aumentar padding para touch */
     .autocomplete-item {
         padding: 1.25rem;
     }
-    
+
     .student-option {
         padding: 1.25rem 1.5rem;
     }
-    
+
     /* Desabilitar hover em touch */
     .course-card-large:hover,
     .class-card:hover,
@@ -5214,7 +5362,7 @@ body.kiosk-clean-mode .camera-section {
     .autocomplete-item:hover {
         transform: none;
     }
-    
+
     /* Feedback visual em tap */
     .course-card-large:active,
     .class-card.can-checkin:active,
@@ -5227,16 +5375,17 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== SAFE AREA INSETS (iOS) ===== */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
+
     .checkin-dashboard,
     .checkin-dashboard-v2,
     .reactivation-screen {
         padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
     }
-    
+
     .dashboard-footer {
         padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
     }
-    
+
     .kiosk-header {
         padding-top: calc(0.75rem + env(safe-area-inset-top));
     }
@@ -5244,6 +5393,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -5255,6 +5405,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== HIGH CONTRAST MODE ===== */
 @media (prefers-contrast: high) {
+
     .btn-primary,
     .btn-confirm,
     .btn-confirm-huge,
@@ -5262,7 +5413,7 @@ body.kiosk-clean-mode .camera-section {
     .btn-checkin-turma {
         border: 3px solid #000;
     }
-    
+
     .class-card,
     .student-option,
     .course-card-large,
@@ -5278,48 +5429,48 @@ body.kiosk-clean-mode .camera-section {
         gap: 1.5rem;
         padding: 1.25rem;
     }
-    
+
     .camera-container {
         max-width: 400px;
         margin: 0 auto;
     }
-    
+
     .dashboard-header {
         flex-direction: column;
         text-align: center;
         gap: 1.25rem;
     }
-    
+
     .student-photo-large {
         width: 100px;
         height: 100px;
     }
-    
+
     .student-name-huge {
         font-size: 1.8rem;
     }
-    
+
     .btn-cancel-top {
         position: relative;
         width: auto;
         margin: 0 auto;
     }
-    
+
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
     }
-    
+
     .classes-grid,
     .plans-grid,
     .courses-grid-large {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .reactivation-actions {
         flex-direction: row;
     }
-    
+
     .pix-code-container {
         flex-direction: row;
     }
@@ -5327,6 +5478,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== TOUCH TARGET IMPROVEMENTS ===== */
 @media (hover: none) and (pointer: coarse) {
+
     /* Ensure all interactive elements have minimum 44x44px touch targets */
     .btn-primary,
     .btn-secondary,
@@ -5346,16 +5498,16 @@ body.kiosk-clean-mode .camera-section {
     .class-card.can-checkin {
         min-height: 44px;
     }
-    
+
     /* Increase spacing for touch */
     .autocomplete-item {
         padding: 1rem 1.25rem;
     }
-    
+
     .student-option {
         padding: 1rem 1.25rem;
     }
-    
+
     /* Disable hover effects on touch devices */
     .course-card-large:hover,
     .class-card:hover,
@@ -5363,7 +5515,7 @@ body.kiosk-clean-mode .camera-section {
     .autocomplete-item:hover {
         transform: none;
     }
-    
+
     /* Add active states for touch feedback */
     .course-card-large:active,
     .class-card.can-checkin:active,
@@ -5376,16 +5528,17 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== SAFE AREA INSETS (iPhone notch/home indicator) ===== */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
+
     .checkin-dashboard,
     .checkin-dashboard-v2,
     .reactivation-screen {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
-    
+
     .dashboard-footer {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
-    
+
     .kiosk-header {
         padding-top: calc(0.75rem + env(safe-area-inset-top));
     }
@@ -5393,6 +5546,7 @@ body.kiosk-clean-mode .camera-section {
 
 /* ===== REDUCED MOTION PREFERENCES ===== */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -5400,16 +5554,16 @@ body.kiosk-clean-mode .camera-section {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-    
+
     .fade-in {
         animation: none;
         opacity: 1;
     }
-    
+
     .success-checkmark {
         animation: none;
     }
-    
+
     .available-pulse,
     .pulse-warning,
     .pulse-success {
@@ -5423,7 +5577,7 @@ body.kiosk-clean-mode .camera-section {
         --kiosk-border: #333;
         --kiosk-text-muted: #444;
     }
-    
+
     .btn-primary,
     .btn-confirm,
     .btn-confirm-huge,
@@ -5431,7 +5585,7 @@ body.kiosk-clean-mode .camera-section {
     .btn-checkin-turma {
         border: 2px solid #000;
     }
-    
+
     .class-card,
     .student-option,
     .course-card-large,
@@ -5895,8 +6049,13 @@ body.kiosk-clean-mode .camera-section {
 }
 
 @keyframes shrink {
-    from { width: 100%; }
-    to { width: 0%; }
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
 }
 
 /* === RESPONSIVE: Kiosk Layout V2 === */
@@ -5905,27 +6064,27 @@ body.kiosk-clean-mode .camera-section {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .camera-secondary-section {
         order: 2;
     }
-    
+
     .search-primary-section {
         order: 1;
     }
-    
+
     .camera-card-compact {
         max-width: 100%;
     }
-    
+
     .auto-checkin-screen {
         padding: 1rem;
     }
-    
+
     .single-turma-card {
         padding: 1.5rem;
     }
-    
+
     .countdown-number {
         font-size: 3rem;
     }
@@ -5936,192 +6095,252 @@ body.kiosk-clean-mode .camera-section {
         padding: 1rem 1.25rem;
         font-size: 1.2rem;
     }
-    
+
     .search-header-large h2 {
         font-size: 1.5rem;
     }
-    
+
     .search-icon-large {
         font-size: 2rem;
     }
-    
+
     .search-hints {
         gap: 0.75rem;
     }
-    
+
     .hint-item {
         font-size: 0.8rem;
         padding: 0.4rem 0.75rem;
     }
-    
+
     .action-buttons {
         flex-direction: column;
     }
-    
+
     .btn-confirm-large,
     .btn-cancel-secondary {
         width: 100%;
         justify-content: center;
 
-/* --- KIOSK MODE (FULLSCREEN) --- */
-body.kiosk-mode-active .app-sidebar,
-body.kiosk-mode-active .app-header,
-body.kiosk-mode-active .mobile-header {
-    display: none !important;
-}
+        /* --- KIOSK MODE (FULLSCREEN) --- */
+        body.kiosk-mode-active .app-sidebar,
+        body.kiosk-mode-active .app-header,
+        body.kiosk-mode-active .mobile-header {
+            display: none !important;
+        }
 
-body.kiosk-mode-active .main-content {
-    margin-left: 0 !important;
-    padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    overflow-y: auto;
-    background-color: #f3f4f6;
-}
+        body.kiosk-mode-active .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            overflow-y: auto;
+            background-color: #f3f4f6;
+        }
 
-body.kiosk-mode-active .kiosk-container {
-    padding: 2rem;
-    height: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
+        body.kiosk-mode-active .kiosk-container {
+            padding: 2rem;
+            height: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-/* --- LAYOUT GRID --- */
-.kiosk-grid {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: 1fr; /* Mobile First: Pilha vertical */
-}
+        /* --- LAYOUT GRID --- */
+        .kiosk-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+            /* Mobile First: Pilha vertical */
+        }
 
-/* Tablet e Desktop (PC com Touch) */
-@media (min-width: 1024px) {
-    .kiosk-grid {
-        grid-template-columns: 1.5fr 1fr; /* Esquerda maior (Busca/Info), Direita (Câmera) */
-        grid-template-rows: auto auto;
-    }
+        /* Tablet e Desktop (PC com Touch) */
+        @media (min-width: 1024px) {
+            .kiosk-grid {
+                grid-template-columns: 1.5fr 1fr;
+                /* Esquerda maior (Busca/Info), Direita (Câmera) */
+                grid-template-rows: auto auto;
+            }
 
-    .camera-section {
-        grid-column: 2;
-        grid-row: 1 / span 2; /* Câmera ocupa toda altura na direita */
-        position: sticky;
-        top: 1rem;
-    }
+            .camera-section {
+                grid-column: 2;
+                grid-row: 1 / span 2;
+                /* Câmera ocupa toda altura na direita */
+                position: sticky;
+                top: 1rem;
+            }
 
-    .left-column {
-        grid-column: 1;
-    }
+            .left-column {
+                grid-column: 1;
+            }
 
-    .info-widgets-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-}
+            .info-widgets-section {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                margin-top: 1.5rem;
+            }
+        }
 
-/* --- COMPONENTES VISUAIS --- */
-.kiosk-header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
+        /* --- COMPONENTES VISUAIS --- */
+        .kiosk-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
 
-.btn-kiosk-toggle {
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
+        .btn-kiosk-toggle {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
 
-.btn-kiosk-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
+        .btn-kiosk-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
 
-.btn-kiosk-toggle.btn-danger {
-    background: #ef4444;
-}
+        .btn-kiosk-toggle.btn-danger {
+            background: #ef4444;
+        }
 
-/* Widgets Extras (Loja, Eventos) */
-.kiosk-widget {
-    background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-    margin-bottom: 1rem;
-}
+        /* Widgets Extras (Loja, Eventos) */
+        .kiosk-widget {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
 
-.kiosk-widget:active {
-    transform: scale(0.98); /* Feedback tátil */
-}
+        .kiosk-widget:active {
+            transform: scale(0.98);
+            /* Feedback tátil */
+        }
 
-.kiosk-widget h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-}
+        .kiosk-widget h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
 
-.kiosk-widget-content {
-    color: #6b7280;
-    font-size: 0.9rem;
-}
+        .kiosk-widget-content {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
 
-/* Ajustes Touch */
-.search-box-large input {
-    height: 60px; /* Maior para toque */
-    font-size: 1.2rem;
-}
+        /* Ajustes Touch */
+        .search-box-large input {
+            height: 60px;
+            /* Maior para toque */
+            font-size: 1.2rem;
+        }
 
-.btn-search-large {
-    width: 60px;
-    height: 60px;
-}
+        .btn-search-large {
+            width: 60px;
+            height: 60px;
+        }
 
-.search-tags {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    justify-content: center;
-}
+        .search-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
 
-.tag {
-    background: #f3f4f6;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
+        .tag {
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
 
-.btn-secondary-sm {
-    background: white;
-    border: 1px solid #e5e7eb;
-    color: #374151;
-    padding: 0.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
-}
+        .btn-secondary-sm {
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
 
-.btn-secondary-sm:hover {
-    background: #f9fafb;
-    border-color: #d1d5db;
-}
+        .btn-secondary-sm:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        /* ============================================================================
+   MOBILE OPTIMIZATIONS (Hotfix v2)
+   ============================================================================ */
+
+        @media (max-width: 1024px) {
+            .kiosk-container {
+                padding: 0.5rem;
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            /* ESCONDER CABEÇALHO NO MOBILE */
+            .kiosk-header-actions {
+                display: none !important;
+            }
+
+            .kiosk-grid-new {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                grid-template-rows: minmax(250px, 35vh) auto 1fr !important;
+                gap: 0.75rem !important;
+            }
+
+            /* CÂMERA NO TOPO - ÁREA MAIOR */
+            .camera-area {
+                grid-column: 1 !important;
+                grid-row: 1 !important;
+                min-height: 250px !important;
+            }
+
+            .search-area {
+                grid-column: 1 !important;
+                grid-row: 2 !important;
+            }
+
+            .classes-area {
+                grid-column: 1 !important;
+                grid-row: 3 !important;
+            }
+
+            /* Ajustes visuais para mobile */
+            .camera-container {
+                border-radius: 12px !important;
+            }
+
+            .camera-feed {
+                border-radius: 12px !important;
+            }
+
+            .search-input {
+                font-size: 16px !important;
+                /* Evita zoom no iOS */
+            }
+        }
