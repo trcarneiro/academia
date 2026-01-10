@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Academia Krav Maga</title>
     <!-- Supabase SDK -->
@@ -26,7 +27,7 @@
             background: white;
             padding: 2.5rem;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
             text-align: center;
@@ -60,11 +61,14 @@
             margin: 1.5rem 0;
             color: #666;
         }
-        .divider::before, .divider::after {
+
+        .divider::before,
+        .divider::after {
             content: '';
             flex: 1;
             border-bottom: 1px solid #ddd;
         }
+
         .divider span {
             padding: 0 10px;
             font-size: 0.9rem;
@@ -86,6 +90,7 @@
             justify-content: center;
             gap: 10px;
         }
+
         .btn-google:hover {
             background: #f8f9fa;
             border-color: #ccc;
@@ -179,6 +184,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-card">
         <div class="login-header">
@@ -245,11 +251,11 @@
             // Check if we have a hash with access_token
             if (window.location.hash && window.location.hash.includes('access_token')) {
                 const { data, error } = await supabaseClient.auth.getSession()
-                
+
                 if (data?.session) {
                     // Save to localStorage
                     localStorage.setItem('token', data.session.access_token)
-                    
+
                     // Construct basic user object from session
                     const user = {
                         id: data.session.user.id,
@@ -257,12 +263,12 @@
                         organizationId: data.session.user.user_metadata?.orgId || '',
                         role: data.session.user.user_metadata?.role || 'STUDENT'
                     }
-                    
+
                     localStorage.setItem('user', JSON.stringify(user))
                     if (user.organizationId) {
                         localStorage.setItem('activeOrganizationId', user.organizationId)
                     }
-                    
+
                     window.location.href = '/'
                 }
             }
@@ -270,12 +276,12 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorMessage = document.getElementById('errorMessage');
-            
+
             // Reset state
             errorMessage.style.display = 'none';
             loginBtn.disabled = true;
@@ -300,7 +306,7 @@
                     if (userData.user?.organizationId) {
                         localStorage.setItem('activeOrganizationId', userData.user.organizationId);
                     }
-                    
+
                     // Redirect to dashboard
                     window.location.href = '/';
                 } else {
@@ -320,4 +326,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <script>
         // 🔒 AUTH GUARD
         // Disable dev auto-login to force real authentication
         window.__DISABLE_DEV_AUTO_AUTH__ = true;
-        
+
         // Check for token
         const token = localStorage.getItem('token');
         if (!token) {
@@ -14,7 +15,7 @@
         }
     </script>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academia Dashboard</title>
     <!-- Supabase SDK (required for Auth Module) -->
@@ -69,6 +70,7 @@
     <link rel="stylesheet" href="/css/modules/agent-activity.css">
     <link rel="stylesheet" href="/css/modules/marketing.css">
 </head>
+
 <body>
     <!-- Barra Superior Minimalista -->
     <header class="top-bar">
@@ -81,7 +83,7 @@
         <div class="search-bar">
             <input type="text" placeholder="Buscar alunos, planos...">
         </div>
-        
+
         <!-- Organization Selector -->
         <div class="organization-selector">
             <button class="org-button" id="orgSelectorBtn" title="Selecionar organização">
@@ -99,9 +101,10 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="user-actions">
-            <div class="system-version" id="systemVersion" title="Versão do Sistema" style="margin-right: 15px; font-size: 0.8rem; color: #666; display: flex; flex-direction: column; align-items: flex-end; cursor: help;">
+            <div class="system-version" id="systemVersion" title="Versão do Sistema"
+                style="margin-right: 15px; font-size: 0.8rem; color: #666; display: flex; flex-direction: column; align-items: flex-end; cursor: help;">
                 <span class="version-number" style="font-weight: bold;">v...</span>
                 <span class="environment-badge" style="font-size: 0.7rem; opacity: 0.8;">...</span>
             </div>
@@ -151,6 +154,12 @@
                 <li data-module="instructors">
                     <i class="fas fa-chalkboard-teacher"></i> <span>Instrutores</span>
                 </li>
+                <li data-module="instructor-dashboard">
+                    <i class="fas fa-user-tie"></i> <span>Minha Aula</span>
+                </li>
+                <li data-module="classroom-display">
+                    <i class="fas fa-tv"></i> <span>Display de Sala</span>
+                </li>
                 <li data-module="checkin-kiosk">
                     <i class="fas fa-check-circle"></i> <span>Check-in Kiosk</span>
                 </li>
@@ -165,6 +174,9 @@
                 </li>
                 <li data-module="graduation">
                     <i class="fas fa-user-graduate"></i> <span>Graduação</span>
+                </li>
+                <li data-module="leaderboard">
+                    <i class="fas fa-trophy"></i> <span>Ranking</span>
                 </li>
                 <li data-module="crm">
                     <i class="fas fa-bullseye"></i> <span>CRM</span>
@@ -213,8 +225,9 @@
     </main>
 
     <!-- Auth Container (sobrepõe tudo quando não há session) -->
-    <div id="auth-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;z-index:9999;overflow:auto">
-      <div id="auth-container"></div>
+    <div id="auth-overlay"
+        style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a2e;z-index:9999;overflow:auto">
+        <div id="auth-container"></div>
     </div>
 
     <!-- Chart.js for Dashboard Visualizations -->
@@ -225,7 +238,7 @@
 
     <!-- Load core app utilities FIRST (organization context) -->
     <script src="/js/core/app.js"></script>
-    
+
     <!-- Load shared utilities before SPA router (non-module, globals on window) -->
     <script src="/js/shared/utils/feedback.js"></script>
     <script src="/js/shared/organization-context.js"></script>
@@ -234,14 +247,16 @@
     <script src="/js/shared/websocket-client.js"></script>
     <!-- Design Tokens (theme/branding) runtime applier -->
     <script src="/js/shared/design-tokens.js"></script>
-    
+    <!-- Role-Based Access Control -->
+    <script src="/js/shared/role-guard.js"></script>
+
     <!-- Organization Selector Component -->
     <script src="/js/components/organization-selector.js"></script>
 
     <!-- SPA Router and UI Controller -->
     <script src="/js/dashboard/spa-router.js"></script>
     <script src="/js/dashboard/ui-controller.js"></script>
-    
+
     <!-- Auth Module -->
     <script src="/js/modules/auth/index.js"></script>
 
@@ -254,7 +269,7 @@
 
     <!-- AI Module -->
     <script type="module" src="/js/modules/ai/index.js"></script>
-    
+
     <!-- Agents Module -->
     <script type="module" src="/js/modules/agents/index.js"></script>
     <script type="module" src="/js/modules/agents/dashboard-widget.js"></script>
@@ -264,6 +279,9 @@
 
     <!-- Students Module -->
     <script type="module" src="/js/modules/students/index.js"></script>
+
+    <!-- Leaderboard Module -->
+    <script type="module" src="/js/modules/leaderboard/index.js"></script>
 
     <!-- Turmas Module -->
     <script type="module" src="/js/modules/turmas/index.js"></script>
@@ -292,7 +310,7 @@
 
     <!-- Dashboard Widgets -->
     <script src="/js/modules/dashboard/widgets/task-approval-widget.js"></script>
-    
+
     <!-- Organization Selector Initializer -->
     <script src="/js/components/organization-selector-init.js"></script>
 
@@ -319,7 +337,7 @@
                     localStorage.removeItem('user');
                     localStorage.removeItem('activeOrganizationId');
                     sessionStorage.clear();
-                    
+
                     // Redirecionar para página de login
                     window.location.href = '/login.html';
                 });
@@ -327,4 +345,5 @@
         });
     </script>
 </body>
+
 </html>
