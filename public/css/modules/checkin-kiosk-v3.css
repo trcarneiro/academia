@@ -67,11 +67,13 @@
 /* GRID LAYOUT NOVO */
 .kiosk-grid-new {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 50% / 50% */
+    grid-template-columns: 1fr 1fr;
+    /* 50% / 50% */
     grid-template-rows: minmax(400px, auto) 1fr;
     gap: 1.5rem;
     flex-grow: 1;
-    overflow: hidden; /* Evita scroll na página toda */
+    overflow: hidden;
+    /* Evita scroll na página toda */
 }
 
 /* ÁREA 1: CÂMERA (Esquerda) */
@@ -220,7 +222,8 @@
 
 /* ÁREA 3: TURMAS (Baixo) */
 .classes-area {
-    grid-column: 1 / -1; /* Ocupa toda a largura */
+    grid-column: 1 / -1;
+    /* Ocupa toda a largura */
     grid-row: 2;
     overflow: hidden;
     display: flex;
@@ -372,37 +375,169 @@
 
 /* Animações */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.5); opacity: 0.5; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Responsividade */
 @media (max-width: 1024px) {
+    .kiosk-container {
+        padding: 0.5rem;
+        height: 100vh;
+        height: 100dvh;
+        /* Dynamic viewport height for mobile */
+    }
+
+    /* ESCONDER CABEÇALHO NO MOBILE */
+    .kiosk-header-actions {
+        display: none !important;
+    }
+
     .kiosk-grid-new {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: minmax(250px, 35vh) auto 1fr;
+        gap: 0.75rem;
     }
-    
+
+    /* CÂMERA NO TOPO - ÁREA MAIOR */
     .camera-area {
         grid-column: 1;
         grid-row: 1;
-        height: 300px;
+        min-height: 250px;
     }
-    
+
+    .camera-card-premium {
+        border-radius: 16px;
+    }
+
+    .camera-status {
+        bottom: 10px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    /* BUSCA - COMPACTA */
     .search-area {
         grid-column: 1;
         grid-row: 2;
     }
-    
+
+    .search-card-premium {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .search-icon-large {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
+        border-radius: 14px;
+    }
+
+    .search-card-premium h2 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .search-card-premium p {
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .kiosk-input-large {
+        padding: 0.9rem 1rem 0.9rem 2.8rem;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
+
+    .search-icon-input {
+        font-size: 1.1rem;
+        left: 0.9rem;
+    }
+
+    .search-hint {
+        display: none;
+    }
+
+    /* TURMAS - COMPACTA */
     .classes-area {
         grid-column: 1;
         grid-row: 3;
+    }
+
+    .classes-card-premium {
+        padding: 0.75rem;
+        border-radius: 16px;
+    }
+
+    .classes-header {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .classes-header h3 {
+        font-size: 1rem;
+    }
+
+    .classes-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .class-card-active {
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+
+    .class-time {
+        font-size: 1.2rem;
+    }
+
+    .class-name {
+        font-size: 0.95rem;
+    }
+}
+
+/* Mobile pequeno (< 480px) */
+@media (max-width: 480px) {
+    .kiosk-grid-new {
+        grid-template-rows: minmax(200px, 30vh) auto 1fr;
+    }
+
+    .camera-area {
+        min-height: 200px;
+    }
+
+    .search-icon-large {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
     }
 }
 

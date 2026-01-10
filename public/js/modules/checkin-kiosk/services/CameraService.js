@@ -62,41 +62,58 @@ class CameraService {
                 videoConstraints.height = { ideal: 720 };
             }
 
-            // Try multiple constraint combinations - MOST PERMISSIVE FIRST
+            // Try multiple constraint combinations - FRONT CAMERA FIRST FOR MOBILE
             let stream = null;
-            const constraintVariants = [
-                // 1. Any video (most permissive - Android fallback)
-                { video: true, audio: false },
-                // 2. Simplified constraints for mobile
-                { video: { facingMode: 'user' }, audio: false },
-                // 3. Full constraints with size limits
-                { video: videoConstraints, audio: false },
-                // 4. Without facingMode (some devices don't support)
-                { video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
-            ];
+            let constraintVariants;
+
+            if (isMobile) {
+                // Mobile: prioritize front camera explicitly
+                constraintVariants = [
+                    // 1. Front camera with exact facing mode
+                    { video: { facingMode: { exact: 'user' } }, audio: false },
+                    // 2. Front camera preferred
+                    { video: { facingMode: 'user' }, audio: false },
+                    // 3. Front camera with size constraints
+                    { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+                    // 4. Any video (fallback)
+                    { video: true, audio: false },
+                ];
+            } else {
+                // Desktop: standard constraints
+                constraintVariants = [
+                    // 1. Any video (most permissive)
+                    { video: true, audio: false },
+                    // 2. With facingMode user
+                    { video: { facingMode: 'user' }, audio: false },
+                    // 3. Full constraints with size limits
+                    { video: videoConstraints, audio: false },
+                    // 4. Without facingMode
+                    { video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+                ];
+            }
 
             let lastError = null;
             for (let i = 0; i < constraintVariants.length; i++) {
                 const constraints = constraintVariants[i];
                 try {
                     console.log(`🔄 [${i + 1}/${constraintVariants.length}] Tentando constraints:`, JSON.stringify(constraints));
-                    
+
                     // Set timeout for getUserMedia
                     const timeoutPromise = new Promise((_, reject) => {
                         setTimeout(() => reject(new Error(`getUserMedia timeout após 10s com variante ${i + 1}`)), 10000);
                     });
-                    
+
                     stream = await Promise.race([
                         navigator.mediaDevices.getUserMedia(constraints),
                         timeoutPromise
                     ]);
-                    
+
                     console.log(`✅ Camera acessada com sucesso (variante ${i + 1}):`, JSON.stringify(constraints));
                     break;
                 } catch (error) {
                     lastError = error;
                     console.warn(`⚠️ [${i + 1}/${constraintVariants.length}] Falhou:`, error.name, error.message);
-                    
+
                     // Log specific Android-related issues
                     if (isAndroid && error.name === 'NotReadableError') {
                         console.error('🤖 Android NotReadableError - câmera pode estar em uso por outro app');
