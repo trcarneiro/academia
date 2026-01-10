@@ -27,6 +27,7 @@ class CheckinController {
         this.currentMatch = null;
         this.detectionRunning = false;
         this.detectionTimeout = null;
+        this.isDestroyed = false; // Prevents operations after destroy()
     }
 
     /**
@@ -62,19 +63,19 @@ class CheckinController {
             try {
                 if (!videoElement) throw new Error('Video element not found');
                 await this.cameraService.startCamera(videoElement);
-                
+
                 // 7. Start face detection loop (only if camera is available)
                 this.startDetection();
                 console.log('✅ Camera started, face detection active');
             } catch (cameraError) {
                 console.warn('⚠️ Camera not available, switching to manual mode only');
-                
+
                 // Add class to grid to trigger CSS changes
                 const grid = this.container.querySelector('.kiosk-grid-new');
                 if (grid) {
                     grid.classList.add('no-camera');
                 }
-                
+
                 // Hide camera area
                 const cameraArea = this.container.querySelector('.camera-area');
                 if (cameraArea) {
@@ -88,13 +89,13 @@ class CheckinController {
             console.log('✅ CheckinController initialized');
         } catch (error) {
             console.error('❌ Error initializing controller:', error);
-            
+
             // Show error with retry option
             this.cameraView?.showError(error.message, async () => {
                 console.log('🔄 Retrying initialization...');
                 await this.init(); // Retry
             });
-            
+
             window.app?.handleError(error, { module: 'CheckinKiosk', context: 'init' });
         }
     }
@@ -111,6 +112,12 @@ class CheckinController {
      * Start continuous face detection
      */
     startDetection() {
+        // Prevent starting detection after module is destroyed
+        if (this.isDestroyed) {
+            console.log('⚠️ Controller destroyed, skipping startDetection');
+            return;
+        }
+
         if (this.detectionRunning) {
             console.warn('Detection already running');
             return;
@@ -211,6 +218,7 @@ class CheckinController {
             }
 
             const student = studentResponse.data;
+            this.currentStudent = student; // Save for error handling
 
             // 2. Fetch available courses
             const coursesResponse = await this.moduleAPI.request(
@@ -277,9 +285,25 @@ class CheckinController {
             const student = await this.biometricService.getStudentDetails(studentId);
             const course = await this.getCourseDetails(courseId);
 
+            // Fetch progress for gamification
+            let progress = null;
+            try {
+                const progressResponse = await this.moduleAPI.request(`/api/students/${studentId}/course-progress`);
+                if (progressResponse.success) {
+                    progress = progressResponse.data;
+                }
+            } catch (e) {
+                console.warn('Failed to load progress for success screen', e);
+            }
+
+            // Extract gamification data from response
+            const gamification = response.data?.gamification || null;
+
             this.successView.render({
-                studentName: student.name,
-                courseName: course.name,
+                student: student,
+                course: course,
+                progress: progress,
+                gamification: gamification, // Pass gamification data
                 timestamp: new Date().toISOString(),
             });
 
@@ -289,7 +313,32 @@ class CheckinController {
             await this.loadAndDisplayHistory();
         } catch (error) {
             console.error('Error completing check-in:', error);
-            this.successView?.showError({ message: error.message });
+
+            // Show error on ConfirmationView if active
+            if (this.confirmationView) {
+                this.confirmationView.enable(); // Re-enable buttons if they were disabled
+
+                // Show clear alert to user
+                alert(`❌ Falha no Check-in:\n${error.message}`);
+
+                // Visual feedback on the button if possible
+                const btn = this.container.querySelector('#confirm-btn') ||
+                    this.container.querySelector('.btn-checkin-turma[disabled]'); // Try to find the button that was clicked
+
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = `<span class="icon">❌</span> <span class="text">Erro!</span>`;
+                    btn.classList.add('error');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('error');
+                        btn.disabled = false;
+                    }, 3000);
+                }
+            } else {
+                this.successView?.showError({ message: error.message });
+            }
+
             window.app?.handleError(error, { module: 'CheckinKiosk', context: 'completeCheckin' });
         }
     }
@@ -299,6 +348,13 @@ class CheckinController {
      */
     rejectMatch() {
         console.log('❌ Match rejected by user');
+
+        // Prevent operations after module has been destroyed
+        if (this.isDestroyed) {
+            console.log('⚠️ Controller already destroyed, skipping rejectMatch');
+            return;
+        }
+
         this.currentMatch = null;
         this.state = 'IDLE';
         this.renderCameraView();
@@ -311,12 +367,12 @@ class CheckinController {
     async handleAutocomplete(query) {
         try {
             console.log(`🔍 Autocomplete for: "${query}"`);
-            
+
             // Use the same search method
             const results = await this.biometricService.searchManual(query);
-            
+
             console.log(`📊 Autocomplete results: ${results.length} found`);
-            
+
             return results;
         } catch (error) {
             console.error('❌ Autocomplete error:', error);
@@ -403,7 +459,7 @@ class CheckinController {
                     };
                     await this.showConfirmation(match);
                 });
-                
+
                 // Add keyboard support
                 option.addEventListener('keydown', async (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -464,6 +520,13 @@ class CheckinController {
      */
     reset() {
         console.log('🔄 Resetting to camera view...');
+
+        // Prevent reset after module is destroyed
+        if (this.isDestroyed) {
+            console.log('⚠️ Controller destroyed, skipping reset');
+            return;
+        }
+
         this.state = 'IDLE';
         this.currentMatch = null;
         this.renderCameraView();
@@ -481,8 +544,16 @@ class CheckinController {
      * Cleanup on destroy
      */
     destroy() {
+        this.isDestroyed = true; // Mark as destroyed first
         this.stopDetection();
         this.cameraService.stopCamera();
+
+        // Clear any pending confirmation timeouts
+        if (this.confirmationView) {
+            this.confirmationView.stopTimeout();
+            this.confirmationView = null;
+        }
+
         console.log('🛑 Controller destroyed');
     }
 }
