@@ -255,6 +255,7 @@
                 if (data?.session) {
                     // Save to localStorage
                     localStorage.setItem('token', data.session.access_token)
+                    localStorage.setItem('authToken', data.session.access_token) // Fix for ApiClient
 
                     // Construct basic user object from session
                     const user = {
@@ -302,6 +303,7 @@
                     // Save token and user info (data is wrapped in data.data by ResponseHelper)
                     const userData = data.data || data;
                     localStorage.setItem('token', userData.token);
+                    localStorage.setItem('authToken', userData.token); // Fix for ApiClient
                     localStorage.setItem('user', JSON.stringify(userData.user));
                     if (userData.user?.organizationId) {
                         localStorage.setItem('activeOrganizationId', userData.user.organizationId);
