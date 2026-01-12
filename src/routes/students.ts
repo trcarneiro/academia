@@ -19,19 +19,19 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
     duration: true
   } as const;
 
-  
+
   // Get all students (scoped by organization)
   fastify.get('/', async (request: FastifyRequest<{ Querystring: { search?: string } }>, reply: FastifyReply) => {
     try {
       const { requireOrganizationId } = await import('@/utils/tenantHelpers');
       const organizationId = requireOrganizationId(request, reply);
       if (!organizationId) return; // reply already sent
-      
+
       const { search } = request.query;
-      
+
       // Build where clause with search filter
       const where: any = { organizationId };
-      
+
       if (search && search.length >= 2) {
         const searchClean = search.replace(/\D/g, ''); // Remove non-digits for CPF/phone
         where.OR = [
@@ -41,13 +41,13 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           { user: { lastName: { contains: search, mode: 'insensitive' } } },
           { user: { email: { contains: search, mode: 'insensitive' } } },
         ];
-        
+
         // Add CPF search only if search looks like CPF (numeric only)
         if (searchClean.length >= 3) {
           where.OR.push({ user: { cpf: { contains: searchClean, mode: 'insensitive' } } });
         }
       }
-      
+
       const students = await prisma.student.findMany({
         where,
         include: {
@@ -78,7 +78,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         const totalAttendances = student._count.attendances;
         const totalSubscriptions = student._count.subscriptions;
         const hasActiveSubscription = student.subscriptions.length > 0;
-        
+
         return {
           ...student,
           isActive: hasActiveSubscription, // Override isActive based on active subscription
@@ -148,8 +148,8 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // Check for active subscription to determine active status
       const hasActiveSubscription = student.subscriptions.some(sub => sub.status === 'ACTIVE');
       const studentWithActiveStatus = {
-          ...student,
-          isActive: hasActiveSubscription
+        ...student,
+        isActive: hasActiveSubscription
       };
 
       return reply.send({
@@ -209,11 +209,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       const totalAttendances = student._count.attendances;
       const activeSubscriptions = student.subscriptions.length;
       const lastAttendance = student.attendances[0]?.createdAt || null;
-      
+
       // Calculate attendance rate (simple version - last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+
       const recentAttendances = await prisma.attendance.count({
         where: {
           studentId: id,
@@ -267,12 +267,12 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // Determine organization id (from body or first organization)
       let orgId = body.organizationId as string | undefined;
       logger.info('Initial orgId:', orgId);
-      
+
       if (!orgId) {
         logger.info('No orgId provided, looking for first organization...');
         let firstOrg = await prisma.organization.findFirst();
         logger.info('Found organization:', firstOrg);
-        
+
         if (!firstOrg) {
           logger.info('No organization found, creating default organization...');
           // Create default organization if none exists
@@ -293,7 +293,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         }
         orgId = firstOrg.id;
       }
-      
+
       logger.info('Final orgId:', orgId);
 
       // Generate temporary password
@@ -307,7 +307,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // Map frontend category to valid enum value
       const validCategories = ['ADULT', 'FEMALE', 'SENIOR', 'CHILD', 'INICIANTE1', 'INICIANTE2', 'INICIANTE3', 'HEROI1', 'HEROI2', 'HEROI3', 'MASTER_1', 'MASTER_2', 'MASTER_3'];
       let category = body.category || 'ADULT';
-      
+
       // Map common frontend values to valid enum values
       if (category === 'REGULAR' || category === 'ADULTO') {
         category = 'ADULT';
@@ -333,12 +333,12 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       if (existingUser) {
         logger.info('User already exists, using existing user:', existingUser);
         user = existingUser;
-        
+
         // Check if this user already has a student record
         const existingStudent = await prisma.student.findUnique({
           where: { userId: user.id }
         });
-        
+
         if (existingStudent) {
           return reply.code(400).send({
             success: false,
@@ -346,6 +346,23 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           });
         }
       } else {
+        // Check if user already exists with this CPF
+        if (cpf) {
+          const existingUserCpf = await prisma.user.findFirst({
+            where: {
+              organizationId: orgId!,
+              cpf: cpf
+            }
+          });
+
+          if (existingUserCpf) {
+            return reply.code(400).send({
+              success: false,
+              message: 'CPF já cadastrado no sistema'
+            });
+          }
+        }
+
         // First create User
         logger.info('Creating user with data:', {
           firstName,
@@ -356,7 +373,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           birthDate,
           organizationId: orgId
         });
-        
+
         const userCreateData: any = {
           firstName,
           lastName,
@@ -368,11 +385,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
         if (cpf) userCreateData.cpf = cpf;
         if (birthDate) userCreateData.birthDate = new Date(birthDate);
-        
+
         user = await prisma.user.create({
           data: userCreateData
         });
-        
+
         logger.info('User created successfully:', user);
       }
 
@@ -383,7 +400,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         isActive,
         organizationId: orgId
       };
-      
+
       logger.info('Creating student with data:', createData);
 
       // Optional fields - handle both nested and flat structure
@@ -396,37 +413,77 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       if (body.medicalObservations || body.medicalConditions) {
         createData.medicalConditions = body.medicalObservations || body.medicalConditions;
       }
+      if (body.financialResponsibleId) {
+        createData.financialResponsibleId = body.financialResponsibleId;
+      }
 
-      const result = await prisma.student.create({ 
+      const result = await prisma.student.create({
         data: createData,
         include: {
           user: true
         }
       });
-      
+
       logger.info('Student created successfully:', result);
+
+      // 📸 Create Biometric Data (Photo)
+      if (body.photoUrl) {
+        try {
+          await prisma.biometricData.create({
+            data: {
+              studentId: result.id,
+              photoUrl: body.photoUrl, // Storing base64 data URI directly for now
+              photoBase64: body.photoUrl,
+              qualityScore: 80, // Default good score for manual enrollment
+              enrollmentMethod: 'QUICK_ENROLLMENT',
+              embedding: [] // Empty embedding initially
+            }
+          });
+          logger.info('📸 Biometric data created successfully');
+        } catch (bioError) {
+          logger.error('Error creating biometric data:', bioError);
+          // Non-fatal error
+        }
+      }
 
       // 🆕 AUTOMATIC ENROLLMENT IN BASE COURSE FROM PLAN
       if (body.enrollment && body.enrollment.packageId) {
         try {
           logger.info('🎯 Processing automatic enrollment for package:', body.enrollment.packageId);
-          
+
           // Get plan with courses
           const plan = await prisma.billingPlan.findUnique({
             where: { id: body.enrollment.packageId }
           });
-          
+
           if (!plan) {
             logger.warn('⚠️ Plan not found, skipping auto-enrollment');
           } else {
             logger.info('📦 Found plan:', plan.name);
-            
+
+            // 🆕 Create Student Subscription
+            await prisma.studentSubscription.create({
+              data: {
+                organizationId: orgId!,
+                studentId: result.id,
+                planId: plan.id,
+                currentPrice: body.enrollment.customPrice !== undefined ? Number(body.enrollment.customPrice) : plan.price,
+                billingType: plan.billingType, // Assumes BillingType matches (e.g. MONTHLY)
+                status: 'ACTIVE',
+                startDate: body.enrollment.enrollmentDate ? new Date(body.enrollment.enrollmentDate) : new Date(),
+                financialResponsibleId: body.financialResponsibleId || undefined,
+                isActive: true,
+                autoRenew: true
+              }
+            });
+            logger.info('💰 Student subscription created successfully');
+
             // Get course IDs from plan features
             const planFeatures = plan.features as any;
             const courseIds = planFeatures?.courseIds || [];
-            
+
             logger.info('📚 Plan courses:', courseIds);
-            
+
             if (courseIds.length === 0) {
               logger.warn('⚠️ No courses in plan, skipping auto-enrollment');
             } else {
@@ -442,19 +499,19 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
                   martialArt: true
                 }
               });
-              
+
               // Filter for base course
               const baseCourse = planCourses.find((c: any) => c.isBaseCourse === true);
-              
+
               if (!baseCourse) {
                 logger.warn('⚠️ No base course found in plan courses, skipping auto-enrollment');
               } else {
                 logger.info('✅ Found base course:', baseCourse.name, 'from', baseCourse.martialArt?.name);
-                
+
                 // Auto-enroll student in base course
                 const expectedEndDate = new Date();
                 expectedEndDate.setMonth(expectedEndDate.getMonth() + 12); // 12 months duration
-                
+
                 const enrollment = await prisma.courseEnrollment.create({
                   data: {
                     studentId: result.id,
@@ -466,7 +523,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
                     gender: body.gender || body.user?.gender || 'MALE'
                   }
                 });
-                
+
                 logger.info('🎓 Student auto-enrolled in base course:', {
                   course: baseCourse.name,
                   martialArt: baseCourse.martialArt?.name,
@@ -610,7 +667,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Get student course enrollments
       const enrollments = await prisma.courseEnrollment.findMany({
-        where: { 
+        where: {
           studentId: id
         },
         include: {
@@ -642,7 +699,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   });
 
   // Update enrollment status
-  fastify.patch('/:id/enrollments/:enrollmentId/status', async (request: FastifyRequest<{ 
+  fastify.patch('/:id/enrollments/:enrollmentId/status', async (request: FastifyRequest<{
     Params: { id: string, enrollmentId: string },
     Body: { status: string }
   }>, reply: FastifyReply) => {
@@ -695,7 +752,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   });
 
   // Delete student enrollment
-  fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{ 
+  fastify.delete('/:id/enrollments/:enrollmentId', async (request: FastifyRequest<{
     Params: { id: string, enrollmentId: string }
   }>, reply: FastifyReply) => {
     try {
@@ -736,7 +793,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   });
 
   // Get available courses for student (not enrolled yet)
-  fastify.get('/:id/available-courses', async (request: FastifyRequest<{ 
+  fastify.get('/:id/available-courses', async (request: FastifyRequest<{
     Params: { id: string }
   }>, reply: FastifyReply) => {
     try {
@@ -806,7 +863,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Get subscription payments
       const payments = await prisma.payment?.findMany({
-        where: { 
+        where: {
           subscription: {
             studentId: id
           }
@@ -935,7 +992,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   }>, reply: FastifyReply) => {
     try {
       const { students } = request.body;
-      
+
       if (!students || !Array.isArray(students)) {
         return reply.code(400).send({
           success: false,
@@ -1093,7 +1150,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       });
 
       const activeEnrollments = enrollments.filter(e => e.status === 'ACTIVE');
-      const courseProgress = activeEnrollments.length > 0 
+      const courseProgress = activeEnrollments.length > 0
         ? Math.round(activeEnrollments.reduce((acc, e) => acc + (e.attendanceRate || 0), 0) / activeEnrollments.length)
         : 0;
 
@@ -1194,7 +1251,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // const { id } = _request.params; // TODO: Implement real techniques tracking system
 
       // For now, return empty data structure
-      
+
       return reply.send({
         success: true,
         data: {
@@ -1222,7 +1279,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Get student enrollments
       const enrollments = await prisma.courseEnrollment.findMany({
-        where: { 
+        where: {
           studentId: id,
           status: 'ACTIVE'
         },
@@ -1262,7 +1319,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           }
         });
       }
-      
+
       // Calculate progress based on lessons completed and attendance
       const lessonsCompleted = currentEnrollment.lessonsCompleted || 0;
       const totalLessons = currentEnrollment.course.duration || 12;
@@ -1298,7 +1355,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Generate missing content based on real progress
       const missingContent = [];
-      
+
       if (classAttendance.progress < 80) {
         missingContent.push({
           category: 'Frequência',
@@ -1320,8 +1377,8 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Calculate realistic completion estimate
       const remainingLessons = Math.max(0, totalLessons - lessonsCompleted);
-      const estimatedCompletion = remainingLessons > 0 
-        ? `${Math.ceil(remainingLessons / 2)} semanas` 
+      const estimatedCompletion = remainingLessons > 0
+        ? `${Math.ceil(remainingLessons / 2)} semanas`
         : 'Curso concluído';
 
       return reply.send({
@@ -1383,7 +1440,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       const { requireOrganizationId } = await import('@/utils/tenantHelpers');
       const organizationId = requireOrganizationId(request, reply);
       if (!organizationId) return; // reply already sent
-      
+
       const body = request.body as { name?: string; cpfCnpj?: string; email?: string; phone?: string };
       const { name, cpfCnpj, email, phone } = body;
 
@@ -1524,8 +1581,8 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       return reply.send({
         success: true,
         data: updatedStudent,
-        message: responsibleStudentId 
-          ? 'Responsável financeiro vinculado com sucesso' 
+        message: responsibleStudentId
+          ? 'Responsável financeiro vinculado com sucesso'
           : 'Responsável financeiro removido com sucesso'
       });
     } catch (error) {
@@ -1577,7 +1634,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       });
 
       // Calculate consolidated charges
-      const consolidatedCharges = dependents.flatMap(dep => 
+      const consolidatedCharges = dependents.flatMap(dep =>
         dep.subscriptions.map(sub => ({
           studentId: dep.id,
           studentName: `${dep.user.firstName} ${dep.user.lastName}`,
@@ -1591,7 +1648,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       const subTotal = consolidatedCharges.reduce((sum, charge) => sum + Number(charge.amount), 0);
       const responsibleTotal = responsible?.subscriptions.reduce((sum, sub) => sum + Number(sub.price ?? sub.plan?.price ?? 0), 0) || 0;
-      
+
       let discount = 0;
       if (responsible?.consolidatedDiscountValue) {
         const value = Number(responsible.consolidatedDiscountValue);
@@ -1693,7 +1750,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // For now, return empty array since Charge table structure unclear
       // In future: fetch from Charge/Invoice/Payment table
       // This endpoint intentionally returns empty to avoid 500 errors
-      
+
       return reply.send({
         success: true,
         data: []
@@ -1855,7 +1912,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
   fastify.delete('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
       const { id } = request.params;
-      
+
       // Check if student exists
       const student = await prisma.student.findUnique({
         where: { id },
@@ -1869,28 +1926,40 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Check for history before deleting
+      const attendanceCount = await prisma.attendance.count({ where: { studentId: id } });
+      const subscriptionCount = await prisma.studentSubscription.count({ where: { studentId: id } });
+
+      // If student has history, BLOCK deletion
+      if (attendanceCount > 0 || subscriptionCount > 0) {
+        return reply.code(400).send({
+          success: false,
+          message: 'Este aluno possui histórico financeiro ou de presença e não pode ser excluído. Por favor, desative o cadastro para manter os registros.'
+        });
+      }
+
       // Delete in transaction - student and related user
       await prisma.$transaction(async (tx) => {
         // Delete student enrollments first
         await tx.courseEnrollment.deleteMany({
           where: { studentId: id }
         });
-        
+
         // Delete student subscriptions
         await tx.studentSubscription.deleteMany({
           where: { studentId: id }
         });
-        
+
         // Delete student attendances
         await tx.attendance.deleteMany({
           where: { studentId: id }
         });
-        
+
         // Delete turma associations
         await tx.turmaStudent.deleteMany({
           where: { studentId: id }
         });
-        
+
         // Delete the student
         await tx.student.delete({
           where: { id }
@@ -1931,9 +2000,9 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 
       // Get the financial responsible with their linked students
       const responsible = await prisma.financialResponsible.findFirst({
-        where: { 
-          id, 
-          organizationId 
+        where: {
+          id,
+          organizationId
         }
       });
 
@@ -2037,9 +2106,9 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       if (!organizationId) return;
 
       const { id } = request.params as { id: string };
-      const body = request.body as { 
-        name?: string; 
-        email?: string; 
+      const body = request.body as {
+        name?: string;
+        email?: string;
         phone?: string;
         consolidateBilling?: boolean;
       };

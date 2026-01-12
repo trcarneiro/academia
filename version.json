@@ -1,5 +1,12 @@
 [
   {
+    "id": 1767903487748,
+    "timestamp": "2026-01-08T20:18:07.748Z",
+    "version": "2.2.3",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
     "id": 1734539000000,
     "timestamp": "2025-12-18T15:30:00.000Z",
     "version": "1.0.4",

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script>
+        // Check for token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Instrutor | Academia</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="/css/force-reset.css">
+    <link rel="stylesheet" href="/css/design-system/index.css">
+    <link rel="stylesheet" href="/css/global-premium-colors.css">
+    <link rel="stylesheet" href="/css/forms-ux.css">
+    
+    <!-- Instructor Portal Specific Styles -->
+    <style>
+        body {
+            background-color: var(--bg-primary, #f4f7fa);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .instructor-header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h1 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructor-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Class Card */
+        .class-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid var(--primary-color, #007bff);
+            cursor: pointer;
+        }
+        
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+        }
+
+        .class-time {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .class-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .class-location {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .class-stats {
+            display: flex;
+            gap: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .stat-item {
+             display: flex; 
+             align-items: center; 
+             gap: 5px; 
+             color: var(--text-secondary);
+        }
+
+        .class-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #1565c0;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .student-list {
+            margin-top: 1.5rem;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eee;
+            object-fit: cover;
+        }
+
+        /* Checkbox Toggle */
+        .checkin-toggle {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="instructor-header">
+        <div class="header-left">
+            <h1><i class="fas fa-chalkboard-teacher"></i> Portal do Instrutor</h1>
+        </div>
+        <div class="header-right">
+             <button id="logoutBtn" class="btn-ghost" style="border:none; background:transparent; cursor:pointer; color: #666;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+             </button>
+        </div>
+    </header>
+
+    <main class="instructor-content">
+        <div class="welcome-section">
+            <h2 id="welcomeMsg">Olá, Instrutor</h2>
+            <p>Aqui estão suas aulas de hoje:</p>
+            <input type="date" id="dateFilter" class="form-control" style="max-width: 200px; margin-top: 10px;">
+        </div>
+
+        <div id="classesGrid" class="dashboard-grid">
+            <!-- Classes will be loaded here -->
+            <p style="color: #666;">Carregando aulas...</p>
+        </div>
+    </main>
+
+    <!-- Class Detail Modal -->
+    <div id="classModal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                <h2 id="modalTitle">Detalhes da Aula</h2>
+                <button onclick="document.getElementById('classModal').style.display='none'" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div id="modalDetails" style="margin-bottom: 2rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                <!-- Details injected here -->
+            </div>
+
+            <h3>Check-in de Alunos</h3>
+            <div id="studentList" class="student-list">
+                <!-- Students injected here -->
+            </div>
+            
+            <div style="margin-top: 2rem; text-align: right;">
+                 <button onclick="document.getElementById('classModal').style.display='none'" class="btn-secondary" style="padding: 10px 20px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor: pointer;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core & Shared Scripts -->
+    <script src="/js/shared/api-client.js"></script>
+    
+    <!-- Module Script -->
+    <script type="module" src="/js/modules/instructor/index.js"></script>
+    
+    <script>
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+</html>

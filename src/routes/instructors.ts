@@ -349,11 +349,11 @@ export default async function instructorsRoutes(
             'Existing user with email:',
             existingUserWithEmail
               ? {
-                  id: existingUserWithEmail.id,
-                  email: existingUserWithEmail.email,
-                  firstName: existingUserWithEmail.firstName,
-                  lastName: existingUserWithEmail.lastName,
-                }
+                id: existingUserWithEmail.id,
+                email: existingUserWithEmail.email,
+                firstName: existingUserWithEmail.firstName,
+                lastName: existingUserWithEmail.lastName,
+              }
               : null
           );
 
@@ -483,6 +483,217 @@ export default async function instructorsRoutes(
       request.log.error(error);
       reply.code(500);
       return { success: false, error: 'Failed to delete instructor' };
+    }
+  });
+  // --- INSTRUCTOR FACING ROUTES ---
+
+  // GET /api/instructors/me/classes - Get current instructor's classes
+  fastify.get('/me/classes', async (request, reply) => {
+    try {
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+      const user = (request as any).user;
+
+      if (!organizationId || !user) return;
+
+      // 1. Find the instructor profile for the logged user
+      const instructor = await prisma.instructor.findFirst({
+        where: { userId: user.id, organizationId }
+      });
+
+      if (!instructor) {
+        return reply.code(403).send({
+          success: false,
+          message: 'Usuário não é um instrutor'
+        });
+      }
+
+      // 2. Get classes (default to today if no date provided)
+      const { date } = request.query as any;
+
+      let dateFilter: any = {};
+
+      if (date) {
+        const queryDate = new Date(date);
+        const startOfDay = new Date(queryDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(queryDate.setHours(23, 59, 59, 999));
+
+        dateFilter = {
+          gte: startOfDay,
+          lte: endOfDay
+        };
+      } else {
+        // Default: Today
+        const now = new Date();
+        const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+        dateFilter = {
+          gte: startOfDay,
+          lte: endOfDay
+        };
+      }
+
+      const classes = await prisma.class.findMany({
+        where: {
+          organizationId,
+          instructorId: instructor.id,
+          date: dateFilter
+        },
+        include: {
+          course: { select: { name: true } },
+          trainingArea: { select: { name: true } },
+          unit: { select: { name: true } },
+          _count: {
+            select: { attendances: true } // Count check-ins
+          }
+        },
+        orderBy: { startTime: 'asc' }
+      });
+
+      return {
+        success: true,
+        data: classes.map(c => ({
+          id: c.id,
+          title: c.title || c.course.name,
+          startTime: c.startTime,
+          endTime: c.endTime,
+          location: c.trainingArea?.name || c.unit?.name || c.location,
+          status: c.status,
+          enrolledCount: c.actualStudents, // Pre-calculated or need to count?
+          checkInCount: c._count.attendances
+        }))
+      };
+
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ success: false, message: 'Erro ao buscar aulas' });
+    }
+  });
+
+  // GET /api/instructors/classes/:id - Get class details & students
+  fastify.get('/classes/:id', async (request, reply) => {
+    try {
+      const { id } = request.params as any;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+
+      const classData = await prisma.class.findUnique({
+        where: { id },
+        include: {
+          course: true,
+          lessonPlan: true,
+          attendances: {
+            include: {
+              student: {
+                include: {
+                  user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!classData) return reply.code(404).send({ success: false });
+
+      // Check if user is the instructor (optional security check)
+
+      // We need list of "Expected Students" vs "Checked-in Students".
+      // Usually classes have "CourseEnrollment" (fixed students) or "ClassBooking" (registrations).
+      // Assuming CourseEnrollment for fixed classes.
+
+      let expectedStudents: any[] = [];
+
+      if (classData.courseId) {
+        const enrollments = await prisma.courseEnrollment.findMany({
+          where: {
+            courseId: classData.courseId,
+            status: 'ACTIVE',
+            // organizationId // Schema check needed
+          },
+          include: {
+            student: {
+              include: {
+                user: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } }
+              }
+            }
+          }
+        });
+        expectedStudents = enrollments.map(e => e.student);
+      }
+
+      // Merge Attendance status
+      const studentList = expectedStudents.map(student => {
+        const attendance = classData.attendances.find(a => a.studentId === student.id);
+        return {
+          studentId: student.id,
+          userId: student.userId,
+          name: `${student.user.firstName} ${student.user.lastName}`,
+          avatarUrl: student.user.avatarUrl,
+          checkedIn: !!attendance,
+          attendanceId: attendance?.id
+        };
+      });
+
+      return {
+        success: true,
+        data: {
+          class: {
+            id: classData.id,
+            title: classData.title || classData.course.name,
+            date: classData.date,
+            startTime: classData.startTime,
+            endTime: classData.endTime,
+            lessonPlan: classData.lessonPlan
+          },
+          students: studentList
+        }
+      };
+
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ success: false });
+    }
+  });
+
+  // POST /api/instructors/classes/:id/check-in - Toggle Check-in
+  fastify.post('/classes/:id/check-in', async (request, reply) => {
+    try {
+      const { id } = request.params as any; // Class ID
+      const { studentId, status } = request.body as any; // status: PRESENT, ABSENT (or boolean)
+      const organizationId = requireOrganizationId(request as any, reply as any) as string;
+
+      // Check if attendance exists
+      const existing = await prisma.attendance.findFirst({
+        where: {
+          classId: id,
+          studentId: studentId
+        }
+      });
+
+      if (existing) {
+        if (status === false || status === 'ABSENT') {
+          // Remove check-in
+          await prisma.attendance.delete({ where: { id: existing.id } });
+        }
+      } else {
+        if (status === true || status === 'PRESENT') {
+          // Create check-in
+          await prisma.attendance.create({
+            data: {
+              classId: id,
+              studentId: studentId,
+              organizationId,
+              date: new Date(),
+              status: 'PRESENT'
+            }
+          });
+        }
+      }
+
+      return { success: true };
+
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ success: false });
     }
   });
 }

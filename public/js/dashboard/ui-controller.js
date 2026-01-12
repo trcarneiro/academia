@@ -10,10 +10,26 @@ class UIController {
         const menuToggle = document.querySelector('.menu-toggle');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.sidebar-overlay');
-        
+
+        // Restore collapsed state from localStorage (Desktop only)
+        if (sidebar && window.innerWidth > 992) {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+            }
+        }
+
         if (menuToggle && sidebar) {
             menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
+                if (window.innerWidth <= 992) {
+                    // Mobile: Toggle Off-canvas
+                    sidebar.classList.toggle('active');
+                } else {
+                    // Desktop: Toggle Collapse
+                    sidebar.classList.toggle('collapsed');
+                    // Save preference
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                }
             });
         }
 
@@ -30,11 +46,20 @@ class UIController {
             const sidebar = document.querySelector('.sidebar');
             // 🔒 Guard: Only run if sidebar exists (not on login page)
             if (!sidebar) return;
-            
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('mobile');
+
+            // Breakpoint aligned with CSS (992px)
+            if (window.innerWidth <= 992) {
+                document.body.classList.add('mobile-view');
+                sidebar.classList.remove('collapsed'); // Reset collaspe on mobile
             } else {
-                sidebar.classList.remove('mobile', 'active');
+                document.body.classList.remove('mobile-view', 'active');
+                sidebar.classList.remove('active'); // Reset off-canvas on desktop
+
+                // Restore collapse state if returning to desktop
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (isCollapsed) {
+                    sidebar.classList.add('collapsed');
+                }
             }
         };
 
@@ -45,15 +70,15 @@ class UIController {
     initMenuNavigation() {
         // Navegação do menu lateral
         const menuItems = document.querySelectorAll('.main-menu li[data-module]');
-        
+
         menuItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 // Remove active de todos os itens
                 menuItems.forEach(i => i.classList.remove('active'));
-                
+
                 // Adiciona active no item clicado
                 item.classList.add('active');
-                
+
                 // Emite evento para o router
                 const module = item.dataset.module;
                 if (window.router) {

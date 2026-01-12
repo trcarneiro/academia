@@ -170,14 +170,14 @@ export class EvaluationService {
 
     // Update technique progress based on evaluation results
     for (const technique of evaluationData.techniquesTested) {
-      await this.updateTechniqueProgressFromEvaluation(
+      await EvaluationService.updateTechniqueProgressFromEvaluation(
         evaluationData.enrollmentId,
         technique
       );
     }
 
     // Calculate XP reward based on performance
-    const baseXP = this.calculateBaseXP(evaluationData.type, evaluationData.lessonNumber);
+    const baseXP = EvaluationService.calculateBaseXP(evaluationData.type, evaluationData.lessonNumber);
     const performanceBonus = Math.floor((evaluationData.overallScore - 70) / 5) * 10; // 10 XP per 5% above 70%
     const passBonus = evaluationData.passed ? 50 : 0;
     const totalXP = Math.max(baseXP + performanceBonus + passBonus, 25);
@@ -291,7 +291,7 @@ export class EvaluationService {
     }
 
     // Find evaluation template for this lesson
-    const evaluationTemplate = this.EVALUATION_SCHEDULES.KRAV_MAGA.find(
+    const evaluationTemplate = EvaluationService.EVALUATION_SCHEDULES.KRAV_MAGA.find(
       item => item.lessonNumber === lessonNumber
     );
 
@@ -375,8 +375,8 @@ export class EvaluationService {
     };
 
     // Generate recommendations based on evaluation results
-    const recommendations = this.generateRecommendations(evaluation, progressSummary);
-    const nextSteps = this.generateNextSteps(evaluation, enrollment);
+    const recommendations = EvaluationService.generateRecommendations(evaluation, progressSummary);
+    const nextSteps = EvaluationService.generateNextSteps(evaluation, enrollment);
 
     return {
       evaluation: {
@@ -460,8 +460,8 @@ export class EvaluationService {
     const passedEvaluations = evaluations.filter(e => e.passed).length;
     const passRate = totalEvaluations > 0 ? (passedEvaluations / totalEvaluations) * 100 : 0;
 
-    const avgScore = totalEvaluations > 0 
-      ? evaluations.reduce((sum, e) => sum + e.overallScore, 0) / totalEvaluations 
+    const avgScore = totalEvaluations > 0
+      ? evaluations.reduce((sum, e) => sum + e.overallScore, 0) / totalEvaluations
       : 0;
 
     // Group by evaluation type
@@ -513,7 +513,7 @@ export class EvaluationService {
     enrollmentId: string,
     technique: TechniqueTested
   ): Promise<void> {
-    const proficiencyLevel = this.determineProficiencyFromAccuracy(technique.accuracy);
+    const proficiencyLevel = EvaluationService.determineProficiencyFromAccuracy(technique.accuracy);
 
     await prisma.techniqueProgress.upsert({
       where: {
@@ -602,7 +602,7 @@ export class EvaluationService {
 
     if (evaluation.passed) {
       nextSteps.push('Parabéns! Continue progredindo para a próxima etapa do curso');
-      
+
       if (evaluation.lessonNumber < 48) {
         nextSteps.push('Prepare-se para as técnicas da próxima fase');
       } else {
@@ -616,7 +616,7 @@ export class EvaluationService {
 
     // Add specific recommendations based on course progress
     const progressPercent = (enrollment.lessonsCompleted / enrollment.course.totalClasses) * 100;
-    
+
     if (progressPercent < 25) {
       nextSteps.push('Foque no domínio das técnicas fundamentais');
     } else if (progressPercent < 50) {

@@ -82,6 +82,8 @@ import portalRoutes from '@/routes/portal';
 import permissionsRoutes from '@/routes/permissions';
 import horariosSugeridosRoutes from '@/routes/horarios-sugeridos';
 import preEnrollmentRoutes from '@/routes/pre-enrollment';
+import instructorDashboardRoutes from '@/routes/instructor-dashboard';
+import classroomDisplayRoutes from '@/routes/classroom-display';
 import deploySessionsRoutes from '@/routes/ops/deploySessions';
 const frequencyRoutes = require('./routes/frequency');
 
@@ -131,12 +133,12 @@ export const buildApp = async () => {
 
   // Static files (skip in serverless environment)
   const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
-  
+
   if (!isServerless) {
     const publicPath = path.join(__dirname, '..', 'public');
     const publicPathDist = path.join(__dirname, 'public');
     const staticPath = require('fs').existsSync(publicPathDist) ? publicPathDist : publicPath;
-    
+
     logger.info(`📁 Serving static files from: ${staticPath}`);
     await server.register(normalizePlugin(staticFiles, 'static'), { root: staticPath, prefix: '/' } as any);
   } else {
@@ -225,7 +227,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(marketingRoutes, 'marketingRoutes'), { prefix: '/api/marketing' } as any);
   await server.register(normalizePlugin(landingPublicRoutes, 'landingPublicRoutes'), { prefix: '/lp' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
-  
+
   const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
   await server.register(normalizePlugin(frequencyRoutesFunction, 'frequencyRoutes'), { prefix: '/api/frequency' } as any);
   await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
@@ -237,6 +239,8 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(portalRoutes, 'portalRoutes'), { prefix: '/api/portal' } as any);
   await server.register(normalizePlugin(permissionsRoutes, 'permissionsRoutes'), { prefix: '/api/auth' } as any);
   await server.register(normalizePlugin(preEnrollmentRoutes, 'preEnrollmentRoutes'), { prefix: '/api/pre-enrollment' } as any);
+  await server.register(normalizePlugin(instructorDashboardRoutes, 'instructorDashboardRoutes'), { prefix: '/api/instructor' } as any);
+  await server.register(normalizePlugin(classroomDisplayRoutes, 'classroomDisplayRoutes'), { prefix: '/api/classroom' } as any);
 
   server.setErrorHandler(errorHandler);
 

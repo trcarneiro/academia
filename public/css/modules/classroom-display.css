@@ -1,0 +1,364 @@
+/**
+ * Classroom Display Styles
+ * Optimized for large TV/monitors (1920x1080)
+ * High contrast, large text, no interaction needed
+ */
+
+/* Container */
+.classroom-display-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* Header */
+.display-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 3rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.academy-logo {
+    font-size: 3rem;
+}
+
+.academy-name {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #f5f5f5 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.current-time {
+    font-size: 3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #4ade80;
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+}
+
+/* Class Banner */
+.class-banner {
+    padding: 2rem 3rem;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+    border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.class-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.class-instructor {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.class-instructor i {
+    color: #60a5fa;
+}
+
+.no-class-banner,
+.no-class-message {
+    padding: 1rem;
+}
+
+.no-class-banner span,
+.no-class-message h2 {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Activity Display - Main Focus Area */
+.activity-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+}
+
+.current-activity {
+    text-align: center;
+    width: 100%;
+}
+
+.activity-label {
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 2rem;
+}
+
+.activity-box {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2rem;
+    padding: 4rem 6rem;
+    display: inline-block;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.activity-name {
+    font-size: 4rem;
+    font-weight: 700;
+    margin: 0 0 2rem 0;
+    text-transform: uppercase;
+}
+
+.activity-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.timer-icon {
+    font-size: 2rem;
+}
+
+.timer-value {
+    font-size: 8rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #4ade80;
+    text-shadow: 0 0 40px rgba(74, 222, 128, 0.5);
+    line-height: 1;
+}
+
+.timer-value.timer-warning {
+    color: #f87171;
+    text-shadow: 0 0 40px rgba(248, 113, 113, 0.5);
+    animation: pulse-warning 1s infinite;
+}
+
+@keyframes pulse-warning {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.timer-label {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.1em;
+}
+
+/* No Activity State */
+.no-activity,
+.no-class-display {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.no-activity .activity-icon,
+.no-class-display .rest-icon {
+    font-size: 6rem;
+    margin-bottom: 2rem;
+}
+
+.no-activity h2,
+.no-class-display h2 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.no-class-display p {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Progress Bar */
+.class-progress {
+    padding: 1.5rem 3rem 2rem;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar {
+    height: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    border-radius: 0.5rem;
+    transition: width 1s ease;
+}
+
+.progress-times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.start-time,
+.end-time {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.current-marker {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+/* Next Activity Preview */
+.next-activity-preview {
+    padding: 1.5rem 3rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-top: 1px solid rgba(139, 92, 246, 0.3);
+    display: flex;
+    justify-content: center;
+}
+
+.next-activity-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.next-label {
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.next-name {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.next-duration {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Loading State */
+.loading-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.loading-display i {
+    font-size: 2.5rem;
+    color: #60a5fa;
+}
+
+/* Error State */
+.display-error {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0f0f23;
+    color: white;
+    text-align: center;
+}
+
+.display-error .error-icon {
+    font-size: 6rem;
+    margin-bottom: 2rem;
+}
+
+.display-error h2 {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+}
+
+.display-error p {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Fullscreen Mode Adjustments */
+:fullscreen .classroom-display-container,
+:-webkit-full-screen .classroom-display-container {
+    cursor: none;
+}
+
+/* TV/Large Display Media Query */
+@media (min-width: 1920px) {
+    .academy-name {
+        font-size: 2.5rem;
+    }
+
+    .class-title {
+        font-size: 4.5rem;
+    }
+
+    .activity-name {
+        font-size: 5rem;
+    }
+
+    .timer-value {
+        font-size: 12rem;
+    }
+}
+
+/* Smaller screens fallback */
+@media (max-width: 1280px) {
+    .display-header {
+        padding: 1rem 2rem;
+    }
+
+    .academy-name {
+        font-size: 1.5rem;
+    }
+
+    .current-time {
+        font-size: 2rem;
+    }
+
+    .class-title {
+        font-size: 2.5rem;
+    }
+
+    .activity-box {
+        padding: 2rem 4rem;
+    }
+
+    .activity-name {
+        font-size: 2.5rem;
+    }
+
+    .timer-value {
+        font-size: 5rem;
+    }
+}

@@ -1,0 +1,393 @@
+/**
+ * Instructor Dashboard Styles
+ * Premium UI following AGENTS.md guidelines
+ */
+
+/* Header Gradient */
+.instructor-header-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+}
+
+/* Current Class Card */
+.current-class-card {
+    position: relative;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+}
+
+.current-class-card.class-active {
+    border: 2px solid var(--success-color);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+}
+
+.current-class-card.class-scheduled {
+    border: 2px solid var(--warning-color);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
+}
+
+.class-status-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.badge-active {
+    background: var(--success-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.badge-active.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.badge-scheduled {
+    background: var(--warning-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.class-header {
+    margin-bottom: 1.5rem;
+}
+
+.class-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+}
+
+.class-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.class-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.class-meta i {
+    color: var(--primary-color);
+}
+
+.class-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.class-actions .btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Empty Class Card */
+.empty-class-card {
+    padding: 3rem;
+    text-align: center;
+}
+
+.empty-class-card .empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.empty-class-card .empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-class-card .empty-state p {
+    color: var(--text-secondary);
+}
+
+/* Lesson Plan Card */
+.lesson-plan-card {
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.lesson-plan-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.lesson-plan-card .card-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.lesson-plan-card .card-header h3 i {
+    color: var(--primary-color);
+}
+
+.btn-collapse {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.lesson-plan-card.collapsed .btn-collapse {
+    transform: rotate(180deg);
+}
+
+.lesson-plan-card.collapsed .lesson-plan-content {
+    display: none;
+}
+
+.lesson-plan-content {
+    padding: 1.5rem;
+}
+
+/* Activities Timeline */
+.activities-timeline {
+    position: relative;
+    padding-left: 3rem;
+}
+
+.activities-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.activity-item {
+    position: relative;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-number {
+    position: absolute;
+    left: -2.5rem;
+    width: 2rem;
+    height: 2rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.activity-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.activity-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.activity-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.activity-duration i {
+    color: var(--warning-color);
+}
+
+.activity-type {
+    background: var(--bg-tertiary);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.activity-description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+}
+
+.activity-techniques {
+    margin-top: 0.75rem;
+}
+
+.technique-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    margin: 0.25rem 0.25rem 0 0;
+}
+
+/* Next Classes Card */
+.next-classes-card {
+    padding: 1.5rem;
+}
+
+.next-classes-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem 0;
+}
+
+.next-classes-card h3 i {
+    color: var(--primary-color);
+}
+
+.next-classes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.next-class-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.next-class-item:hover {
+    background: var(--bg-tertiary);
+    transform: translateX(4px);
+}
+
+.next-class-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    padding: 0.5rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-sm);
+}
+
+.next-class-date .day {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.next-class-date .time {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.next-class-info {
+    flex: 1;
+}
+
+.next-class-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.next-class-info .students-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.next-class-info .students-count i {
+    margin-right: 0.25rem;
+}
+
+.next-class-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.has-plan-badge {
+    color: var(--success-color);
+    font-size: 1.25rem;
+}
+
+.no-plan-badge {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .current-class-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .class-status-badge {
+        position: static;
+        margin-bottom: 1rem;
+    }
+    
+    .class-title {
+        font-size: 1.35rem;
+    }
+    
+    .class-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .class-actions {
+        flex-direction: column;
+    }
+    
+    .class-actions button {
+        width: 100%;
+    }
+    
+    .activities-timeline {
+        padding-left: 2.5rem;
+    }
+    
+    .activity-number {
+        left: -2rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.8rem;
+    }
+}

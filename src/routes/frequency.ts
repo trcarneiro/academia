@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FrequencyStatsService } from '@/services/frequencyStatsService';
+import { PerformanceService } from '@/services/performanceService';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/utils/database';
 import { z } from 'zod';
@@ -122,7 +123,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
         const query = request.query as any;
         const organizationId =
           query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
-        
+
         const page = parseInt(query.page || '1', 10);
         const pageSize = parseInt(query.pageSize || '20', 10);
         const turmaId = query.turmaId;
@@ -132,15 +133,15 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
 
         // Buscar aulas (TurmaLesson) com presenças
         const where: any = {};
-        
+
         if (turmaId) {
           where.turmaId = turmaId;
         }
-        
+
         if (status) {
           where.status = status;
         }
-        
+
         if (startDate || endDate) {
           where.scheduledDate = {};
           if (startDate) where.scheduledDate.gte = new Date(startDate as string);
@@ -153,7 +154,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
             where: { organizationId },
             select: { id: true }
           });
-          
+
           if (turmas.length > 0) {
             where.turmaId = { in: turmas.map((t: any) => t.id) };
           }
@@ -203,7 +204,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
           totalStudents: lesson.attendances.length,
           presentStudents: lesson.attendances.filter((a: any) => a.present).length,
           absentStudents: lesson.attendances.filter((a: any) => !a.present).length,
-          attendanceRate: lesson.attendances.length > 0 
+          attendanceRate: lesson.attendances.length > 0
             ? Math.round((lesson.attendances.filter((a: any) => a.present).length / lesson.attendances.length) * 100)
             : 0,
           participants: lesson.attendances.map((a: any) => ({
@@ -240,6 +241,78 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
   );
 
   /**
+   * GET /api/frequency/classes
+   * Obter lista de turmas/aulas disponíveis para check-in
+   */
+  fastify.get(
+    '/classes',
+    async (
+      request: FastifyRequest<{ Querystring: FrequencyQuery }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const organizationId =
+          request.query.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+
+        // Buscar turmas ativas da organização
+        const turmas = await prisma.turma.findMany({
+          where: {
+            organizationId,
+            isActive: true
+          },
+          include: {
+            course: {
+              select: { name: true }
+            },
+            instructor: {
+              include: {
+                user: {
+                  select: { firstName: true, lastName: true }
+                }
+              }
+            },
+            _count: {
+              select: {
+                students: true
+              }
+            }
+          },
+          orderBy: {
+            name: 'asc'
+          }
+        });
+
+        // Formatar resposta
+        const formattedClasses = turmas.map((turma: any) => ({
+          id: turma.id,
+          name: turma.name,
+          courseName: turma.course?.name || 'Curso não especificado',
+          instructorName: turma.instructor?.user
+            ? `${turma.instructor.user.firstName} ${turma.instructor.user.lastName}`
+            : 'Instrutor não especificado',
+          schedule: turma.schedule,
+          modality: turma.modality,
+          studentsCount: turma._count.students,
+          isActive: turma.isActive
+        }));
+
+        return reply.send({
+          success: true,
+          data: formattedClasses,
+          total: formattedClasses.length
+        });
+      } catch (error) {
+        logger.error('Error fetching classes:', error);
+        return reply.code(500).send({
+          success: false,
+          message:
+            error instanceof Error ? error.message : 'Erro ao buscar turmas',
+        });
+      }
+    }
+  );
+
+  /**
    * POST /api/frequency/checkin
    * Registrar presença em uma turma (cria aula se não existir)
    */
@@ -259,7 +332,7 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
       try {
         const { studentId, turmaId, timestamp } = request.body;
         const date = new Date(timestamp);
-        
+
         // 1. Buscar ou criar aula (TurmaLesson) para hoje
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
@@ -338,13 +411,13 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
         });
 
         if (existingAttendance) {
-           if (!existingAttendance.present) {
-             await prisma.turmaAttendance.update({
-               where: { id: existingAttendance.id },
-               data: { present: true, checkedAt: new Date() }
-             });
-           }
-           return reply.send({ success: true, message: 'Presença atualizada' });
+          if (!existingAttendance.present) {
+            await prisma.turmaAttendance.update({
+              where: { id: existingAttendance.id },
+              data: { present: true, checkedAt: new Date() }
+            });
+          }
+          return reply.send({ success: true, message: 'Presença atualizada' });
         }
 
         await prisma.turmaAttendance.create({
@@ -365,6 +438,134 @@ export default async function frequencyRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({
           success: false,
           message: error instanceof Error ? error.message : 'Erro ao registrar presença'
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/frequency/student/:studentId/techniques
+   * Buscar técnicas praticadas por um aluno em um curso
+   */
+  fastify.get(
+    '/student/:studentId/techniques',
+    async (
+      request: FastifyRequest<{
+        Params: { studentId: string };
+        Querystring: { courseId: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const { studentId } = request.params;
+        const { courseId } = request.query;
+
+        if (!courseId) {
+          return reply.code(400).send({
+            success: false,
+            message: 'courseId é obrigatório'
+          });
+        }
+
+        const techniques = await PerformanceService.getStudentTechniques(
+          studentId,
+          courseId
+        );
+
+        return reply.send({
+          success: true,
+          data: techniques,
+          total: techniques.length
+        });
+      } catch (error) {
+        logger.error('Error fetching student techniques:', error);
+        return reply.code(500).send({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Erro ao buscar técnicas do aluno'
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/frequency/student/:studentId/performance
+   * Calcular performance do aluno (Bronze/Prata/Ouro)
+   */
+  fastify.get(
+    '/student/:studentId/performance',
+    async (
+      request: FastifyRequest<{
+        Params: { studentId: string };
+        Querystring: { courseId: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const { studentId } = request.params;
+        const { courseId } = request.query;
+
+        if (!courseId) {
+          return reply.code(400).send({
+            success: false,
+            message: 'courseId é obrigatório'
+          });
+        }
+
+        const performance = await PerformanceService.calculatePerformance(
+          studentId,
+          courseId
+        );
+
+        return reply.send({
+          success: true,
+          data: performance
+        });
+      } catch (error) {
+        logger.error('Error calculating student performance:', error);
+        return reply.code(500).send({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Erro ao calcular performance do aluno'
+        });
+      }
+    }
+  );
+
+  /**
+   * GET /api/frequency/lesson/:lessonId/techniques
+   * Buscar técnicas de uma aula específica
+   */
+  fastify.get(
+    '/lesson/:lessonId/techniques',
+    async (
+      request: FastifyRequest<{
+        Params: { lessonId: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const { lessonId } = request.params;
+
+        const techniques = await PerformanceService.getLessonTechniques(lessonId);
+
+        return reply.send({
+          success: true,
+          data: techniques,
+          total: techniques.length
+        });
+      } catch (error) {
+        logger.error('Error fetching lesson techniques:', error);
+        return reply.code(500).send({
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Erro ao buscar técnicas da aula'
         });
       }
     }

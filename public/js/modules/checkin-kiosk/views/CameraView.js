@@ -7,8 +7,8 @@ class CameraView {
     constructor(container, moduleAPI, callbacks = {}) {
         this.container = container;
         this.moduleAPI = moduleAPI;
-        this.onManualSearch = callbacks.onManualSearch || (() => {});
-        this.onFaceDetected = callbacks.onFaceDetected || (() => {});
+        this.onManualSearch = callbacks.onManualSearch || (() => { });
+        this.onFaceDetected = callbacks.onFaceDetected || (() => { });
         this.onAutocomplete = callbacks.onAutocomplete || null;
         this.onStudentSelect = callbacks.onStudentSelect || null; // NOVO: callback para seleção direta
     }
@@ -95,7 +95,7 @@ class CameraView {
                 </div>
             </div>
         `;
-        
+
         // Setup events after render
         this.setupEvents();
 
@@ -113,15 +113,15 @@ class CameraView {
     async loadTodayClasses() {
         try {
             console.log('📅 [loadTodayClasses] Iniciando...');
-            
+
             const classesContainer = this.container.querySelector('#available-classes');
-            
+
             console.log('📦 Container check:', {
                 hasContainer: !!this.container,
                 hasClassesDiv: !!classesContainer,
                 containerHTML: this.container?.innerHTML?.substring(0, 200)
             });
-            
+
             if (!classesContainer) {
                 console.error('❌ Container #available-classes não encontrado!');
                 return;
@@ -130,42 +130,42 @@ class CameraView {
             // Get today's day of week (0 = Sunday, 1 = Monday, etc.)
             const today = new Date();
             const dayOfWeek = today.getDay();
-            
+
             console.log('🔍 [Turmas] Contextos disponíveis:', {
                 organizationContext: !!window.organizationContext,
                 app: !!window.app,
                 OrganizationContext: !!window.OrganizationContext,
                 currentOrganizationId: !!window.currentOrganizationId
             });
-            
+
             // Get organization ID from multiple possible sources
             let organizationId = null;
-            
+
             // Try window.currentOrganizationId (CORRETO - usado pelo app.js)
             if (window.currentOrganizationId) {
                 organizationId = window.currentOrganizationId;
             }
-            
+
             // Try window.organizationContext (secondary)
             if (!organizationId && window.organizationContext) {
-                organizationId = window.organizationContext.getActiveOrganizationId?.() || 
-                                window.organizationContext.activeOrganizationId ||
-                                window.organizationContext.organizationId;
+                organizationId = window.organizationContext.getActiveOrganizationId?.() ||
+                    window.organizationContext.activeOrganizationId ||
+                    window.organizationContext.organizationId;
             }
-            
+
             // Try window.app (tertiary)
             if (!organizationId && window.app) {
                 organizationId = window.app.organizationId;
             }
-            
+
             // Try window.OrganizationContext (fallback)
             if (!organizationId && window.OrganizationContext) {
                 organizationId = window.OrganizationContext.getActiveOrganizationId?.() ||
-                                window.OrganizationContext.activeOrganizationId;
+                    window.OrganizationContext.activeOrganizationId;
             }
 
             console.log('🔍 Organization ID:', organizationId);
-            
+
             if (!organizationId) {
                 console.error('❌ No organization ID found. Debug info:', {
                     organizationContext: window.organizationContext,
@@ -182,10 +182,10 @@ class CameraView {
             const response = await this.moduleAPI.request(`/api/turmas?organizationId=${organizationId}`, {
                 method: 'GET'
             });
-            
+
             // moduleAPI returns { success: true, data: [...] }
             // We need to handle if response is the data object itself or the wrapper
-            const data = response; 
+            const data = response;
 
             console.log('📦 API Response:', {
                 success: data.success,
@@ -207,12 +207,12 @@ class CameraView {
             const todayClasses = data.data.filter(turma => {
                 // Check if turma is for today (schedule.daysOfWeek is an array)
                 if (!turma.isActive || !turma.schedule) return false;
-                
+
                 // Parse schedule if it's a string
-                const schedule = typeof turma.schedule === 'string' 
-                    ? JSON.parse(turma.schedule) 
+                const schedule = typeof turma.schedule === 'string'
+                    ? JSON.parse(turma.schedule)
                     : turma.schedule;
-                
+
                 // Check if today's day is in the daysOfWeek array
                 return schedule.daysOfWeek && schedule.daysOfWeek.includes(dayOfWeek);
             });
@@ -234,7 +234,7 @@ class CameraView {
                 // Parse schedule to get time
                 const scheduleA = typeof a.schedule === 'string' ? JSON.parse(a.schedule) : a.schedule;
                 const scheduleB = typeof b.schedule === 'string' ? JSON.parse(b.schedule) : b.schedule;
-                
+
                 const timeA = this.parseTime(scheduleA.time);
                 const timeB = this.parseTime(scheduleB.time);
                 return timeA - timeB;
@@ -263,20 +263,20 @@ class CameraView {
 
         container.innerHTML = classes.map(turma => {
             // Parse schedule to get time and duration
-            const schedule = typeof turma.schedule === 'string' 
-                ? JSON.parse(turma.schedule) 
+            const schedule = typeof turma.schedule === 'string'
+                ? JSON.parse(turma.schedule)
                 : turma.schedule;
-            
+
             const startTime = schedule.time; // e.g., "19:00"
             const duration = schedule.duration || 60;
-            
+
             // Calculate end time
             const startMinutes = this.parseTime(startTime);
             const endMinutes = startMinutes + duration;
             const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
-            
+
             const minutesUntilStart = startMinutes - currentMinutes;
-            
+
             let canCheckIn = false;
             let statusText = '';
             let statusColor = '#64748b';
@@ -293,7 +293,7 @@ class CameraView {
                 statusColor = '#ef4444'; // Red
             }
 
-            const instructorName = turma.instructor 
+            const instructorName = turma.instructor
                 ? `${turma.instructor.firstName} ${turma.instructor.lastName}`
                 : 'Instrutor não definido';
 
@@ -310,12 +310,12 @@ class CameraView {
                         <span class="student-count">
                             <i class="fas fa-users"></i> ${turma.students?.length || 0}/${turma.maxStudents || 20}
                         </span>
-                        ${canCheckIn 
-                            ? `<button class="btn-checkin-manual" onclick="window.app.navigateTo('/turmas/${turma.id}')">
+                        ${canCheckIn
+                    ? `<button class="btn-checkin-manual" onclick="window.app.navigateTo('/turmas/${turma.id}')">
                                  <i class="fas fa-check"></i> Check-in
-                               </button>` 
-                            : `<span style="color: ${statusColor}; font-weight: 600; font-size: 0.85rem;">${statusText}</span>`
-                        }
+                               </button>`
+                    : `<span style="color: ${statusColor}; font-weight: 600; font-size: 0.85rem;">${statusText}</span>`
+                }
                     </div>
                 </div>
             `;
@@ -358,9 +358,9 @@ class CameraView {
             const timeElement = this.container.querySelector('#current-time');
             if (timeElement) {
                 const now = new Date();
-                timeElement.textContent = now.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                timeElement.textContent = now.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
             }
         };
@@ -397,7 +397,7 @@ class CameraView {
         });
 
         if (!searchInput) {
-            console.error('❌ Search input not found! Available inputs:', 
+            console.error('❌ Search input not found! Available inputs:',
                 Array.from(this.container.querySelectorAll('input')).map(i => ({ id: i.id, class: i.className }))
             );
             return;
@@ -428,9 +428,9 @@ class CameraView {
         // Autocomplete on typing (with debounce)
         searchInput?.addEventListener('input', (e) => {
             const query = e.target.value.trim();
-            
+
             console.log('⌨️ Input event fired, query:', `"${query}"`, 'length:', query.length);
-            
+
             // Clear previous timeout
             if (autocompleteTimeout) {
                 clearTimeout(autocompleteTimeout);
@@ -472,7 +472,7 @@ class CameraView {
             if (isKiosk) {
                 btn.innerHTML = '<i class="fas fa-compress"></i> Sair do Modo Kiosk';
                 btn.classList.add('btn-danger');
-                
+
                 // Tenta colocar o navegador em fullscreen também
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -480,7 +480,7 @@ class CameraView {
             } else {
                 btn.innerHTML = '<i class="fas fa-expand"></i> Modo Tela Cheia';
                 btn.classList.remove('btn-danger');
-                
+
                 // Sai do fullscreen do navegador
                 if (document.exitFullscreen && document.fullscreenElement) {
                     document.exitFullscreen().catch(e => console.log(e));
@@ -501,7 +501,7 @@ class CameraView {
             }
 
             const results = await this.onAutocomplete(query);
-            
+
             if (!results || results.length === 0) {
                 this.hideAutocomplete();
                 return;
@@ -515,7 +515,7 @@ class CameraView {
             if (!searchBox) {
                 searchBox = this.container.querySelector('.manual-search-card');
             }
-            
+
             if (!searchBox) {
                 console.error('❌ Search box container not found');
                 console.log('🔍 Available containers:', {
@@ -570,11 +570,11 @@ class CameraView {
                 const selectItem = () => {
                     const studentId = item.dataset.studentId;
                     const studentName = item.dataset.studentName;
-                    
+
                     console.log('🎯 Autocomplete item clicked:', studentName, studentId);
-                    
+
                     this.hideAutocomplete();
-                    
+
                     // IR DIRETO PARA DASHBOARD (sem passar pela lista)
                     if (this.onStudentSelect) {
                         this.onStudentSelect({ studentId, name: studentName });
@@ -582,7 +582,7 @@ class CameraView {
                 };
 
                 item.addEventListener('click', selectItem);
-                
+
                 // Add keyboard support
                 item.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -608,128 +608,162 @@ class CameraView {
     }
 
     /**
-     * Update detection status - COMPATÍVEL com layout v2 (compacto)
+     * Update detection status - COMPATIBLE with Kiosk V3
      */
     updateDetectionStatus(face) {
-        // Try both old and new layout element IDs
-        const statusEl = this.container.querySelector('#face-status');
+        // Kiosk V3 elements
         const statusTextEl = this.container.querySelector('#face-status-text');
-        const qualityEl = this.container.querySelector('#quality-indicator');
+        const statusDot = this.container.querySelector('.status-dot');
 
-        // Safety check: elements may not exist if view changed
-        if (!qualityEl) {
-            // Silently return - view probably changed to confirmation/success
-            return;
-        }
+        // Legacy fallback
+        const statusEl = this.container.querySelector('#face-status');
+        const qualityEl = this.container.querySelector('#quality-indicator');
 
         if (face) {
             const quality = Math.round(face.confidence * 100);
-            
-            // Layout v2 (compacto)
+
+            // V3 Update
             if (statusTextEl) {
-                statusTextEl.textContent = `Detectado ${quality}%`;
-                statusEl?.classList.add('detected');
+                statusTextEl.textContent = `Rosto detectado (${quality}%)`;
+                statusTextEl.style.color = '#22c55e'; // Green
+                if (statusDot) statusDot.style.backgroundColor = '#22c55e';
             }
-            // Layout v1 (antigo)
-            else if (statusEl) {
+
+            // Legacy Update
+            if (statusEl) {
                 statusEl.innerHTML = `
                     <div class="status-pulse"></div>
                     <p>✅ Rosto detectado (${quality}%)</p>
                 `;
                 statusEl.classList.add('detected');
             }
+            if (qualityEl) qualityEl.textContent = `${quality}%`;
 
-            qualityEl.textContent = `${quality}%`;
-            qualityEl.className = qualityEl.className.includes('compact') 
-                ? `quality-badge-compact ${quality > 80 ? 'quality-good' : quality > 60 ? 'quality-fair' : 'quality-poor'}`
-                : `quality-badge ${quality > 80 ? 'quality-good' : quality > 60 ? 'quality-fair' : 'quality-poor'}`;
         } else {
-            // Layout v2 (compacto)
+            // V3 Update
             if (statusTextEl) {
-                statusTextEl.textContent = 'Detectando...';
-                statusEl?.classList.remove('detected');
+                statusTextEl.textContent = 'Aguardando aluno...';
+                statusTextEl.style.color = '#64748b'; // Slate
+                if (statusDot) statusDot.style.backgroundColor = '#ef4444'; // Red/Pulse
             }
-            // Layout v1 (antigo)
-            else if (statusEl) {
+
+            // Legacy Update
+            if (statusEl) {
                 statusEl.innerHTML = `
                     <div class="status-spinner"></div>
                     <p>📍 Detectando rosto...</p>
                 `;
                 statusEl.classList.remove('detected');
             }
-            
-            qualityEl.textContent = '---';
-            qualityEl.className = qualityEl.className.includes('compact') 
-                ? 'quality-badge-compact quality-poor'
-                : 'quality-badge quality-poor';
+            if (qualityEl) qualityEl.textContent = '---';
         }
     }
 
     /**
-     * Show match found state
+     * Show autocomplete suggestions - FIXED for V3
      */
-    showMatch(match) {
-        const matchStatusEl = this.container.querySelector('#match-status');
-        matchStatusEl.textContent = `✅ ${match.name} (${match.similarity}%)`;
-        matchStatusEl.className = 'match-badge match-found';
+    async showAutocomplete(query) {
+        try {
+            if (!this.onAutocomplete) return;
+
+            const results = await this.onAutocomplete(query);
+
+            if (!results || results.length === 0) {
+                this.hideAutocomplete();
+                return;
+            }
+
+            // Target the search input wrapper in V3
+            let searchWrapper = this.container.querySelector('.search-input-wrapper-large');
+
+            // Fallbacks for older layouts
+            if (!searchWrapper) searchWrapper = this.container.querySelector('.search-box-large');
+            if (!searchWrapper) searchWrapper = this.container.querySelector('.search-card-premium');
+
+            if (!searchWrapper) {
+                console.error('❌ Search container not found');
+                return;
+            }
+
+            // Ensure relative positioning
+            if (getComputedStyle(searchWrapper).position === 'static') {
+                searchWrapper.style.position = 'relative';
+            }
+
+            // Create/update dropdown
+            let dropdown = this.container.querySelector('.autocomplete-dropdown');
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.className = 'autocomplete-dropdown';
+                // Adjust styling for V3 if needed
+                dropdown.style.top = '100%';
+                dropdown.style.left = '0';
+                dropdown.style.right = '0';
+                dropdown.style.marginTop = '0.5rem';
+                searchWrapper.appendChild(dropdown);
+            }
+
+            const sortedResults = results.sort((a, b) => {
+                const nameA = (a.name || a.firstName).toLowerCase();
+                const nameB = (b.name || b.firstName).toLowerCase();
+                return nameA.localeCompare(nameB, 'pt-BR');
+            });
+
+            dropdown.innerHTML = sortedResults.slice(0, 10).map(student => `
+                <div class="autocomplete-item" 
+                     data-student-id="${student.id}" 
+                     data-student-name="${student.name || student.firstName + ' ' + student.lastName}">
+                    <div class="student-name">${student.name || student.firstName + ' ' + student.lastName}</div>
+                    <div class="student-detail">${student.cpf || 'Sem CPF'}</div>
+                </div>
+            `).join('');
+
+            dropdown.style.display = 'block';
+
+            // Click handlers
+            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const { studentId, studentName } = item.dataset;
+                    this.hideAutocomplete();
+                    if (this.onStudentSelect) {
+                        this.onStudentSelect({ studentId, name: studentName });
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error('❌ Autocomplete error:', error);
+        }
     }
 
     /**
-     * Show no match state
-     */
-    showNoMatch() {
-        const matchStatusEl = this.container.querySelector('#match-status');
-        matchStatusEl.textContent = 'Nenhuma correspondência';
-        matchStatusEl.className = 'match-badge match-none';
-    }
-
-    /**
-     * Get video element
-     */
-    getVideoElement() {
-        return this.container.querySelector('#qr-video');
-    }
-
-    /**
-     * Update history list
+     * Update history list - RESILIENT VERSION
      */
     updateHistory(records) {
         const historyList = this.container.querySelector('#history-list');
         const countBadge = this.container.querySelector('#checkin-count');
 
+        // Gracefully exit if elements don't exist (V3 layout doesn't show history list)
+        if (!historyList || !countBadge) {
+            // console.log('ℹ️ History view elements not present in this layout');
+            return;
+        }
+
         if (!records || records.length === 0) {
-            historyList.innerHTML = `
-                <div class="empty-state">
-                    <p>Nenhum check-in registrado ainda</p>
-                </div>
-            `;
+            historyList.innerHTML = '<div class="empty-state"><p>Nenhum check-in</p></div>';
             countBadge.textContent = '0';
             return;
         }
 
         countBadge.textContent = records.length;
-
-        // Mostrar últimos 5
-        const recent = records.slice(0, 5);
-        historyList.innerHTML = recent
-            .map(
-                (r) => `
+        historyList.innerHTML = records.slice(0, 5).map(r => `
             <div class="history-item">
-                <div class="history-time">${new Date(r.timestamp).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                })}</div>
+                <div class="history-time">${new Date(r.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
                 <div class="history-info">
-                    <div class="history-name">${r.studentName || 'Desconhecido'}</div>
-                    <div class="history-course">${r.courseName || 'Sem curso'}</div>
-                </div>
-                <div class="history-method">
-                    ${r.method === 'biometric' ? '👤 Biométrico' : '✏️ Manual'}
+                    <div class="history-name">${r.studentName}</div>
                 </div>
             </div>
-        `
-            )
-            .join('');
+        `).join('');
     }
 
     /**
@@ -750,12 +784,12 @@ class CameraView {
      */
     showError(message, onRetry = null) {
         const statusEl = this.container.querySelector('#face-status');
-        
+
         // Format message with line breaks and better structure
         const lines = message.split('\n').filter(line => line.trim());
         const mainMessage = lines[0] || message;
         const details = lines.slice(1).join('<br>');
-        
+
         let html = `
             <div style="text-align: center; padding: 15px;">
                 <p style="font-size: 18px; margin-bottom: 10px; color: #ff6b6b;">
@@ -765,10 +799,10 @@ class CameraView {
                 ${onRetry ? '<button id="retry-camera-btn" class="btn-retry">🔄 Tentar Novamente</button>' : ''}
             </div>
         `;
-        
+
         statusEl.innerHTML = html;
         statusEl.classList.add('error');
-        
+
         // Attach retry listener
         if (onRetry) {
             const retryBtn = statusEl.querySelector('#retry-camera-btn');

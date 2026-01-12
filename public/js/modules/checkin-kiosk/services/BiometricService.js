@@ -18,7 +18,7 @@ class BiometricService {
     async loadStudentsCache() {
         try {
             console.log('📥 Loading students cache for autocomplete...');
-            
+
             const response = await this.moduleAPI.request('/api/students', {
                 method: 'GET',
             });
@@ -37,11 +37,11 @@ class BiometricService {
                     subscriptions: student.subscriptions || [],
                     isActive: student.isActive !== false, // Student active status
                 }));
-                
+
                 console.log(`✅ Loaded ${this.studentsCache.length} students (no subscription filter)`);
-                
+
                 // DEBUG: Verificar se Pedro Teste foi carregado
-                const pedro = this.studentsCache.find(s => 
+                const pedro = this.studentsCache.find(s =>
                     s.firstName === 'Pedro' && s.lastName === 'Teste'
                 );
                 if (pedro) {
@@ -49,13 +49,13 @@ class BiometricService {
                 } else {
                     console.warn('❌ Pedro Teste NÃO foi carregado no cache!');
                     console.log('🔍 Procurando "Pedro" no cache...');
-                    const pedros = this.studentsCache.filter(s => 
-                        s.firstName.toLowerCase().includes('pedro') || 
+                    const pedros = this.studentsCache.filter(s =>
+                        s.firstName.toLowerCase().includes('pedro') ||
                         s.lastName.toLowerCase().includes('pedro')
                     );
                     console.log(`📋 Encontrados ${pedros.length} alunos com "Pedro":`, pedros);
                 }
-                
+
                 this.cacheLoaded = true;
                 console.log(`✅ Loaded ${this.studentsCache.length} students for autocomplete`);
             } else {
@@ -122,30 +122,30 @@ class BiometricService {
                 const matricula = (student.matricula || '').toLowerCase();
                 const cpf = (student.cpf || '').replace(/\D/g, '');
                 const queryCpf = queryLower.replace(/\D/g, '');
-                
+
                 // Busca progressiva: cada letra digitada elimina mais alunos
                 // Verifica se COMEÇA com a query (mais preciso que includes)
                 const startsWithFirstName = firstName.startsWith(queryLower);
                 const startsWithLastName = lastName.startsWith(queryLower);
                 const startsWithFullName = fullName.startsWith(queryLower);
-                
+
                 // Busca secundária: contém em qualquer parte do nome
                 const containsInFirstName = firstName.includes(queryLower);
                 const containsInLastName = lastName.includes(queryLower);
                 const containsInFullName = fullName.includes(queryLower);
-                
+
                 // Busca por matrícula e CPF
                 const matchesMatricula = matricula.startsWith(queryLower);
                 const matchesCpf = queryCpf && cpf.startsWith(queryCpf);
-                
+
                 // Prioridade: 1) Começa com | 2) Contém | 3) Matrícula/CPF
                 return startsWithFirstName || startsWithLastName || startsWithFullName ||
-                       containsInFirstName || containsInLastName || containsInFullName ||
-                       matchesMatricula || matchesCpf;
+                    containsInFirstName || containsInLastName || containsInFullName ||
+                    matchesMatricula || matchesCpf;
             });
-            
+
             console.log(`✅ Found ${results.length} results locally:`, results.slice(0, 10).map(r => r.name));
-            
+
             return results;
         } catch (error) {
             console.error('❌ Error searching students:', error);
@@ -161,14 +161,22 @@ class BiometricService {
     async getStudentDetails(studentId) {
         try {
             console.log(`📋 Fetching full details for student: ${studentId}`);
-            
+
             const response = await this.moduleAPI.request(`/api/students/${studentId}`, {
                 method: 'GET',
             });
 
             if (response.success && response.data) {
                 console.log('✅ Full student data loaded');
-                return response.data;
+                const student = response.data;
+                // Add flat properties for easier access
+                return {
+                    ...student,
+                    name: student.user ? `${student.user.firstName} ${student.user.lastName}` : 'Sem nome',
+                    firstName: student.user?.firstName || '',
+                    lastName: student.user?.lastName || '',
+                    avatarUrl: student.user?.avatarUrl || '',
+                };
             }
 
             console.warn('⚠️ Failed to load student details');

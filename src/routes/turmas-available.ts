@@ -73,18 +73,18 @@ export default async function availableTurmasRoutes(fastify: FastifyInstance) {
         todayLessons.forEach((lesson) => {
           const turma = lesson.turma;
           const scheduledDate = new Date(lesson.scheduledDate);
-          
+
           const startTime = `${scheduledDate.getHours().toString().padStart(2, '0')}:${scheduledDate.getMinutes().toString().padStart(2, '0')}`;
           const duration = lesson.duration || 90;
-          
+
           // Calculate end time
           const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
           const endMinutes = startMinutes + duration;
           const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
 
-          // Check-in abre 30min antes e fecha 15min após início
-          const checkInOpensTime = subtractMinutes(startTime, 30);
-          const checkInClosesTime = addMinutes(startTime, 15);
+          // Check-in abre 60min antes e fecha 60min após início (RELAXED FOR TESTING)
+          const checkInOpensTime = subtractMinutes(startTime, 60);
+          const checkInClosesTime = addMinutes(startTime, 60);
 
           const isCheckInOpen =
             currentTime >= checkInOpensTime && currentTime <= checkInClosesTime;
@@ -140,7 +140,7 @@ export default async function availableTurmasRoutes(fastify: FastifyInstance) {
           success: true,
           data: {
             openNow,
-            upcoming: upcoming.slice(0, 5), // Mostrar apenas próximas 5
+            upcoming: upcoming.slice(0, 20), // Mostrar próximas 20 (Expanded for testing)
             total: {
               openNow: openNow.length,
               upcoming: upcoming.length,

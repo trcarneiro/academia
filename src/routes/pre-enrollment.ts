@@ -34,7 +34,7 @@ interface GenerateLinkPayload {
 }
 
 export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
-  
+
   /**
    * POST /api/pre-enrollment
    * Create a pre-enrollment (public, no auth required)
@@ -180,72 +180,150 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Criar usuário
-      const user = await prisma.user.create({
-        data: {
-          organizationId: organizationId!,
-          email: preEnrollment.email,
-          password: 'temp123456', // Temporário
-          role: 'STUDENT',
-          firstName: preEnrollment.firstName,
-          lastName: preEnrollment.lastName,
-          phone: preEnrollment.phone,
-          avatarUrl: preEnrollment.photoUrl
-        }
-      });
+      // 1. Procurar usuário existente por CPF ou Email
+      const searchConditions: any[] = [];
+      if (preEnrollment.cpf) searchConditions.push({ cpf: preEnrollment.cpf });
+      if (preEnrollment.email) searchConditions.push({ email: preEnrollment.email });
 
-      // Criar estudante
-      const student = await prisma.student.create({
-        data: {
-          organizationId: organizationId!,
-          userId: user.id,
-          enrollmentDate: new Date()
-        }
-      });
+      let user = null;
+      let isUpdate = false;
 
-      // Criar matrícula no plano se houver
-      if (preEnrollment.planId) {
-        await prisma.subscription.create({
+      if (searchConditions.length > 0) {
+        user = await prisma.user.findFirst({
+          where: {
+            organizationId: organizationId!,
+            OR: searchConditions
+          }
+        });
+      }
+
+      // 2. Criar ou Atualizar Usuário
+      if (user) {
+        logger.info('👤 Found existing user for conversion, updating...', { userId: user.id });
+        isUpdate = true;
+
+        // Atualizar dados do usuário
+        user = await prisma.user.update({
+          where: { id: user.id },
           data: {
+            firstName: preEnrollment.firstName,
+            lastName: preEnrollment.lastName,
+            phone: preEnrollment.phone,
+            avatarUrl: preEnrollment.photoUrl || user.avatarUrl,
+            // Mantemos email/cpf se já existiam
+          }
+        });
+
+      } else {
+        logger.info('👤 Creating new user for conversion');
+        user = await prisma.user.create({
+          data: {
+            organizationId: organizationId!,
+            email: preEnrollment.email,
+            password: 'temp123456', // Temporário
+            role: 'STUDENT',
+            firstName: preEnrollment.firstName,
+            lastName: preEnrollment.lastName,
+            phone: preEnrollment.phone,
+            cpf: preEnrollment.cpf,
+            avatarUrl: preEnrollment.photoUrl
+          }
+        });
+      }
+
+      // 3. Garantir que existe registro de Estudante
+      let student = await prisma.student.findUnique({
+        where: { userId: user.id }
+      });
+
+      if (!student) {
+        student = await prisma.student.create({
+          data: {
+            organizationId: organizationId!,
+            userId: user.id,
+            enrollmentDate: new Date(),
+            isActive: true
+          }
+        });
+      }
+
+      // 4. Processar Matrícula (Subscription)
+      if (preEnrollment.planId) {
+        const hasActiveSub = await prisma.subscription.findFirst({
+          where: {
             studentId: student.id,
             packageId: preEnrollment.planId,
-            organizationId: organizationId!,
-            status: 'ACTIVE',
-            startDate: new Date(),
-            currentPrice: preEnrollment.customPrice || 0
+            status: 'ACTIVE'
           }
         });
+
+        if (!hasActiveSub) {
+          await prisma.subscription.create({
+            data: {
+              studentId: student.id,
+              packageId: preEnrollment.planId,
+              organizationId: organizationId!,
+              status: 'ACTIVE',
+              startDate: new Date(),
+              currentPrice: preEnrollment.customPrice || 0
+            }
+          });
+        }
       }
 
-      // Matricular no curso se houver
+      // 5. Matricular no curso se houver
       if (preEnrollment.courseId) {
-        await prisma.courseEnrollment.create({
-          data: {
+        const hasActiveEnrollment = await prisma.courseEnrollment.findFirst({
+          where: {
             studentId: student.id,
             courseId: preEnrollment.courseId,
-            enrolledAt: new Date()
+            status: 'ACTIVE'
           }
         });
+
+        if (!hasActiveEnrollment) {
+          await prisma.courseEnrollment.create({
+            data: {
+              studentId: student.id,
+              courseId: preEnrollment.courseId,
+              enrolledAt: new Date(),
+              status: 'ACTIVE'
+            }
+          });
+        }
       }
 
-      // Criar responsável financeiro se houver
+      // 6. Criar/Vincular Responsável Financeiro
       if (preEnrollment.financialResponsible) {
         const finData = JSON.parse(preEnrollment.financialResponsible as string);
-        await prisma.financialResponsible.create({
-          data: {
+
+        // Verificar se já existe responsável
+        let finResp = await prisma.financialResponsible.findFirst({
+          where: {
             organizationId: organizationId!,
-            name: finData.name,
-            cpf: finData.cpf,
-            email: finData.email,
-            phone: finData.phone,
-            students: {
-              connect: { id: student.id }
-            }
+            cpfCnpj: finData.cpf
           }
+        });
+
+        if (!finResp) {
+          finResp = await prisma.financialResponsible.create({
+            data: {
+              organizationId: organizationId!,
+              name: finData.name,
+              cpfCnpj: finData.cpf,
+              email: finData.email,
+              phone: finData.phone
+            }
+          });
+        }
+
+        await prisma.student.update({
+          where: { id: student.id },
+          data: { financialResponsibleId: finResp.id }
         });
       }
 
-      // Atualizar pré-matrícula
+      // 7. Atualizar pré-matrícula
       await prisma.preEnrollment.update({
         where: { id },
         data: {
@@ -255,16 +333,19 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
         }
       });
 
-      logger.info('✅ Pre-enrollment converted to student', { 
-        preEnrollmentId: id, 
-        studentId: student.id 
+      logger.info('✅ Pre-enrollment converted/updated successfully', {
+        preEnrollmentId: id,
+        studentId: student.id,
+        isUpdate
       });
 
       return reply.send({
         success: true,
         data: {
           student,
-          message: 'Pré-matrícula convertida com sucesso!'
+          message: isUpdate
+            ? 'Dados do aluno atualizados com sucesso!'
+            : 'Pré-matrícula convertida e aluno criado com sucesso!'
         }
       });
 
@@ -272,7 +353,8 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
       logger.error('❌ Error converting pre-enrollment:', error);
       return reply.code(500).send({
         success: false,
-        message: 'Erro ao converter pré-matrícula'
+        message: 'Erro ao converter pré-matrícula',
+        error: error.message
       });
     }
   });
@@ -387,7 +469,7 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
       // Concatenar nota existente
       const currentNotes = preEnrollment.notes || '';
       const timestamp = new Date().toLocaleString('pt-BR');
-      const newNotes = currentNotes 
+      const newNotes = currentNotes
         ? `${currentNotes}\n\n[${timestamp}] ${note}`
         : `[${timestamp}] ${note}`;
 

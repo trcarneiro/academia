@@ -8,7 +8,7 @@ class ConfirmationView {
     constructor(container, moduleAPI, callbacks = {}) {
         this.container = container;
         this.moduleAPI = moduleAPI;
-        
+
         // Wrap callbacks to handle timeout cleanup
         this.onConfirm = (...args) => {
             this.stopTimeout();
@@ -18,7 +18,7 @@ class ConfirmationView {
             this.stopTimeout();
             if (callbacks.onReject) callbacks.onReject(...args);
         };
-        
+
         // Timeout configuration
         this.timeoutTimer = null;
         this.TIMEOUT_MS = 30000; // 30s auto-close
@@ -31,7 +31,7 @@ class ConfirmationView {
     async render(student, courses) {
         // CRITICAL: Validate active plan (business rule)
         const hasActivePlan = student.subscriptions?.some(s => s.status === 'ACTIVE');
-        
+
         if (!hasActivePlan) {
             this.renderReactivationScreen(student);
             return;
@@ -51,16 +51,16 @@ class ConfirmationView {
             // AUTO CHECK-IN: Se só tem 1 turma aberta agora, faz automático
             // ============================================================
             const openNowTurmas = turmasData?.openNow || [];
-            
+
             if (openNowTurmas.length === 1) {
                 const turma = openNowTurmas[0];
                 console.log('🚀 AUTO CHECK-IN: Apenas 1 turma disponível -', turma.name);
-                
+
                 // Mostrar confirmação rápida antes de fazer check-in
                 this.showAutoCheckinConfirmation(student, turma, progressData);
                 return;
             }
-            
+
             // Se 0 ou 2+ turmas, mostrar dashboard completo para seleção
             this.renderFullDashboard(student, progressData, turmasData);
         } catch (error) {
@@ -94,7 +94,7 @@ class ConfirmationView {
             const response = await this.moduleAPI.request(`/api/turmas/available-now?organizationId=${organizationId}&studentId=${studentId}`, {
                 method: 'GET'
             });
-            
+
             console.log('📦 [ConfirmationView] Turmas response:', response);
             console.log('📊 [ConfirmationView] Data structure:', {
                 success: response.success,
@@ -116,16 +116,16 @@ class ConfirmationView {
     showAutoCheckinConfirmation(student, turma, progressData) {
         const AUTO_CHECKIN_DELAY = 5; // segundos
         let countdown = AUTO_CHECKIN_DELAY;
-        
+
         this.container.innerHTML = `
             <div class="auto-checkin-screen fade-in">
                 <!-- Header com foto do aluno -->
                 <div class="auto-checkin-header">
                     <div class="student-photo-large">
-                        ${student.user?.avatarUrl 
-                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
-                        }
+                        ${student.user?.avatarUrl
+                ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />`
+                : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+            }
                     </div>
                     <div class="student-greeting">
                         <h1>Olá, ${student.user?.firstName || 'Aluno'}! 👋</h1>
@@ -182,7 +182,7 @@ class ConfirmationView {
             if (countdownEl) {
                 countdownEl.textContent = countdown;
             }
-            
+
             if (countdown <= 0) {
                 this.executeAutoCheckin(turma);
             }
@@ -216,12 +216,12 @@ class ConfirmationView {
     executeAutoCheckin(turma) {
         this.stopAutoCheckinTimer();
         console.log('✅ Executing auto check-in for turma:', turma.name);
-        
+
         // Call the onConfirm callback with turma data
         if (turma.courseId && turma.lessonId) {
-            this.onConfirm(turma.courseId, { 
-                turmaId: turma.id, 
-                lessonId: turma.lessonId 
+            this.onConfirm(turma.courseId, {
+                turmaId: turma.id,
+                lessonId: turma.lessonId
             });
         } else {
             console.warn('⚠️ Turma missing courseId or lessonId, using fallback');
@@ -237,10 +237,10 @@ class ConfirmationView {
             <div class="checkin-dashboard loading fade-in">
                 <div class="dashboard-header">
                     <div class="student-photo-large">
-                        ${student.user?.avatarUrl 
-                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
-                        }
+                        ${student.user?.avatarUrl
+                ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />`
+                : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+            }
                     </div>
                     <div class="student-info-large">
                         <h1 class="student-name-huge">${student.user?.firstName || ''} ${student.user?.lastName || ''}</h1>
@@ -264,15 +264,15 @@ class ConfirmationView {
         // Store student for later use
         this.currentStudent = student;
         this.reactivationState = 'initial'; // initial, selecting, payment, success
-        
+
         this.container.innerHTML = `
             <div class="reactivation-screen fade-in">
                 <div class="reactivation-header">
                     <div class="student-photo-large">
-                        ${student.user?.avatarUrl 
-                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
-                        }
+                        ${student.user?.avatarUrl
+                ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />`
+                : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+            }
                     </div>
                     <h2>⚠️ Plano Inativo</h2>
                 </div>
@@ -313,7 +313,7 @@ class ConfirmationView {
         this.container.querySelector('#btn-show-plans')?.addEventListener('click', () => {
             this.showPlanSelection(student);
         });
-        
+
         this.container.querySelector('#reject-btn')?.addEventListener('click', () => {
             this.onReject();
         });
@@ -327,7 +327,7 @@ class ConfirmationView {
     async showPlanSelection(student) {
         this.stopTimeout(); // Pausar timeout durante seleção
         this.reactivationState = 'selecting';
-        
+
         // Show loading
         const content = this.container.querySelector('.reactivation-content');
         if (content) {
@@ -343,7 +343,7 @@ class ConfirmationView {
             // Fetch available plans
             const response = await fetch('/api/billing-plans');
             if (!response.ok) throw new Error('Erro ao carregar planos');
-            
+
             const result = await response.json();
             const plans = (result.data || result || []).filter(p => p.isActive !== false);
 
@@ -419,7 +419,7 @@ class ConfirmationView {
      */
     async processReactivation(student, plan) {
         this.reactivationState = 'payment';
-        
+
         const content = this.container.querySelector('.reactivation-content');
         if (!content) return;
 
@@ -436,9 +436,9 @@ class ConfirmationView {
             const response = await fetch('/api/subscriptions/reactivate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    studentId: student.id, 
-                    planId: plan.id 
+                body: JSON.stringify({
+                    studentId: student.id,
+                    planId: plan.id
                 })
             });
 
@@ -469,7 +469,7 @@ class ConfirmationView {
      */
     showPixPayment(student, plan, paymentData) {
         const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-        
+
         const content = this.container.querySelector('.reactivation-content');
         if (!content) return;
 
@@ -479,10 +479,10 @@ class ConfirmationView {
                 <p class="pix-plan">Plano: <strong>${plan.name}</strong> - ${formatPrice(Number(plan.price))}</p>
                 
                 <div class="pix-qr-container">
-                    ${paymentData.pix.qrCode 
-                        ? `<img src="data:image/png;base64,${paymentData.pix.qrCode}" alt="QR Code PIX" class="pix-qr-image" />`
-                        : '<div class="pix-no-qr">QR Code não disponível</div>'
-                    }
+                    ${paymentData.pix.qrCode
+                ? `<img src="data:image/png;base64,${paymentData.pix.qrCode}" alt="QR Code PIX" class="pix-qr-image" />`
+                : '<div class="pix-no-qr">QR Code não disponível</div>'
+            }
                 </div>
                 
                 ${paymentData.pix.copyPaste ? `
@@ -554,7 +554,7 @@ class ConfirmationView {
      */
     showInvoiceLink(student, plan, paymentData) {
         const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-        
+
         const content = this.container.querySelector('.reactivation-content');
         if (!content) return;
 
@@ -598,7 +598,7 @@ class ConfirmationView {
      */
     showLocalPayment(student, plan, paymentData) {
         const formatPrice = (price) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
-        
+
         const content = this.container.querySelector('.reactivation-content');
         if (!content) return;
 
@@ -705,7 +705,7 @@ class ConfirmationView {
             try {
                 const response = await fetch(`/api/subscriptions/${subscriptionId}`);
                 if (!response.ok) return;
-                
+
                 const result = await response.json();
                 const subscription = result.data || result;
 
@@ -817,12 +817,12 @@ class ConfirmationView {
      */
     renderFullDashboard(student, progressData, turmasData) {
         const planStatus = student.subscriptions?.[0];
-        const validUntil = planStatus?.endDate 
+        const validUntil = planStatus?.endDate
             ? new Date(planStatus.endDate).toLocaleDateString('pt-BR')
             : 'Sem prazo';
-        
+
         const planName = planStatus?.plan?.name || 'Sem plano ativo';
-        
+
         // Calculate days remaining
         let daysRemaining = 0;
         let isExpiring = false;
@@ -838,10 +838,10 @@ class ConfirmationView {
                 <!-- Header with Student Info + Matricula -->
                 <div class="dashboard-header">
                     <div class="student-photo-large">
-                        ${student.user?.avatarUrl 
-                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder" aria-hidden="true">${(student.user?.firstName || '?')[0]}</div>`
-                        }
+                        ${student.user?.avatarUrl
+                ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />`
+                : `<div class="avatar-placeholder" aria-hidden="true">${(student.user?.firstName || '?')[0]}</div>`
+            }
                     </div>
                     <div class="student-info-large">
                         <h1 class="student-name-huge">${student.user?.firstName || ''} ${student.user?.lastName || ''}</h1>
@@ -871,10 +871,10 @@ class ConfirmationView {
                         <div class="stat-content">
                             <div class="stat-label">Validade</div>
                             <div class="stat-value-small">${validUntil}</div>
-                            ${daysRemaining > 0 && daysRemaining <= 30 
-                                ? `<div class="stat-hint ${isExpiring ? 'hint-urgent' : ''}">${daysRemaining} dias restantes</div>` 
-                                : ''
-                            }
+                            ${daysRemaining > 0 && daysRemaining <= 30
+                ? `<div class="stat-hint ${isExpiring ? 'hint-urgent' : ''}">${daysRemaining} dias restantes</div>`
+                : ''
+            }
                         </div>
                     </div>
 
@@ -924,9 +924,9 @@ class ConfirmationView {
                                 </div>
                             ` : `
                                 <div class="graduation-badge warning">
-                                    ${progressData.eligibilityStatus === 'NEEDS_MORE_ACTIVITIES' 
-                                        ? `⏳ Faltam ${progressData.remainingActivities} atividades` 
-                                        : '📈 Continue melhorando suas notas (média ≥7.0)'}
+                                    ${progressData.eligibilityStatus === 'NEEDS_MORE_ACTIVITIES'
+                    ? `⏳ Faltam ${progressData.remainingActivities} atividades`
+                    : '📈 Continue melhorando suas notas (média ≥7.0)'}
                                 </div>
                             `}
                         </div>
@@ -944,7 +944,7 @@ class ConfirmationView {
                     ${turmasData && turmasData.openNow && turmasData.openNow.length > 0 ? `
                         <div class="classes-open-now">
                             <h3 class="classes-subtitle">🟢 Check-in Aberto AGORA</h3>
-                            <div class="classes-grid">
+                            <div class="classes-grid" style="display: flex; flex-direction: column; gap: 1rem; max-width: 600px; margin: 0 auto;">
                                 ${turmasData.openNow.map(turma => `
                                     <div class="class-card active" data-turma-id="${turma.id}" data-lesson-id="${turma.lessonId}" data-course-id="${turma.courseId}">
                                         <div class="class-header">
@@ -977,7 +977,7 @@ class ConfirmationView {
                         <div class="classes-upcoming">
                             <h3 class="classes-subtitle">⏰ Próximas Turmas</h3>
                             <div class="upcoming-grid">
-                                ${turmasData.upcoming.slice(0, 3).map(turma => `
+                                ${turmasData.upcoming.slice(0, 10).map(turma => `
                                     <div class="upcoming-card">
                                         <div class="upcoming-time">${turma.startTime} - ${turma.endTime}</div>
                                         <div class="upcoming-name">${turma.name}</div>
@@ -1004,13 +1004,13 @@ class ConfirmationView {
         const planStatus = student.subscriptions && student.subscriptions.length > 0
             ? student.subscriptions[0]
             : null;
-        
-        const validUntil = planStatus?.endDate 
+
+        const validUntil = planStatus?.endDate
             ? new Date(planStatus.endDate).toLocaleDateString('pt-BR')
             : 'Sem prazo';
-        
+
         const planName = planStatus?.plan?.name || 'Sem plano ativo';
-        const planPrice = planStatus?.currentPrice 
+        const planPrice = planStatus?.currentPrice
             ? `R$ ${parseFloat(planStatus.currentPrice).toFixed(2).replace('.', ',')}`
             : '--';
 
@@ -1049,10 +1049,10 @@ class ConfirmationView {
                 <!-- Header with Student Info -->
                 <div class="dashboard-header">
                     <div class="student-photo-large">
-                        ${student.user?.avatarUrl 
-                            ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />` 
-                            : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
-                        }
+                        ${student.user?.avatarUrl
+                ? `<img src="${student.user.avatarUrl}" alt="${student.user.firstName}" />`
+                : `<div class="avatar-placeholder">${(student.user?.firstName || '?')[0]}</div>`
+            }
                     </div>
                     <div class="student-info-large">
                         <h1 class="student-name-huge">${student.user?.firstName || ''} ${student.user?.lastName || ''}</h1>
@@ -1082,10 +1082,10 @@ class ConfirmationView {
                         <div class="stat-content">
                             <div class="stat-label">Validade</div>
                             <div class="stat-value">${validUntil}</div>
-                            ${daysRemaining > 0 && daysRemaining <= 30 
-                                ? `<div class="stat-hint ${isExpiring ? 'hint-urgent' : ''}">${daysRemaining} dias restantes</div>` 
-                                : ''
-                            }
+                            ${daysRemaining > 0 && daysRemaining <= 30
+                ? `<div class="stat-hint ${isExpiring ? 'hint-urgent' : ''}">${daysRemaining} dias restantes</div>`
+                : ''
+            }
                         </div>
                     </div>
 
@@ -1150,7 +1150,7 @@ class ConfirmationView {
         checkinButtons.forEach((button) => {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
-                
+
                 const turmaId = button.dataset.turmaId;
                 const lessonId = button.dataset.lessonId;
                 const courseId = button.dataset.courseId;
@@ -1253,7 +1253,7 @@ class ConfirmationView {
      */
     startTimeout() {
         this.stopTimeout();
-        
+
         // Add visual progress bar if dashboard exists
         const dashboard = this.container.querySelector('.checkin-dashboard-v2, .checkin-dashboard');
         if (dashboard) {
@@ -1265,7 +1265,7 @@ class ConfirmationView {
             progressBar.className = 'timeout-progress-bar';
             progressBar.innerHTML = '<div class="timeout-progress-fill"></div>';
             dashboard.appendChild(progressBar);
-            
+
             // Animate width
             setTimeout(() => {
                 const fill = progressBar.querySelector('.timeout-progress-fill');

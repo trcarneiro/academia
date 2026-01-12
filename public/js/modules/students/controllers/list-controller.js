@@ -7,7 +7,7 @@ export class StudentsListController {
     constructor(api) {
         this.api = api; // ModuleAPIHelper instance
         this.container = null;
-        
+
         // Initialize state properties
         this.students = [];
         this.totalCount = 0;
@@ -19,12 +19,12 @@ export class StudentsListController {
         this.filterStatus = '';
         this.isLoading = false;
         this.selectedStudents = new Set();
-        
+
         // View mode: 'table' or 'cards'
         // Force cards view on mobile (768px or less)
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
         this.viewMode = isMobile ? 'cards' : (localStorage.getItem('students-view-mode') || 'table');
-        
+
         // Listen for resize to switch views
         this.mediaQuery = window.matchMedia('(max-width: 768px)');
         this.handleMediaQueryChange = (e) => {
@@ -35,7 +35,7 @@ export class StudentsListController {
             }
         };
         this.mediaQuery.addEventListener('change', this.handleMediaQueryChange);
-        
+
         // Debug helper
         window.studentsListController = this;
     }
@@ -520,7 +520,7 @@ export class StudentsListController {
             this.totalCount = this.students.length;
             this.updateStats();
             this.updateTable();
-            
+
             // Apply saved view mode (aguarda DOM estar pronto com retry)
             this.waitForViewElements();
         } catch (err) {
@@ -542,23 +542,23 @@ export class StudentsListController {
         // Sem Plano = não tem nenhuma subscription
         const withoutPlan = total - withPlan;
         const filtered = this.getFiltered().length;
-        
+
         // Calculate percentages
         const withPlanPercentage = total > 0 ? Math.round((withPlan / total) * 100) : 0;
         const withoutPlanPercentage = total > 0 ? Math.round((withoutPlan / total) * 100) : 0;
-        
+
         // Animate counters
         this.animateCounter('total-students', 0, total, 800);
         this.animateCounter('active-students', 0, withPlan, 800);
         this.animateCounter('with-subs', 0, withoutPlan, 800);
         this.animateCounter('filtered-students', 0, filtered, 800);
-        
+
         // Update percentage trends
         const activeTrend = this.container?.querySelector('#active-percentage');
         if (activeTrend) {
             activeTrend.innerHTML = `<i class="fas fa-check-circle"></i> ${withPlanPercentage}% com plano`;
         }
-        
+
         const subsTrend = this.container?.querySelector('#subs-percentage');
         if (subsTrend) {
             subsTrend.innerHTML = `<i class="fas fa-user-slash"></i> ${withoutPlanPercentage}% sem plano`;
@@ -569,11 +569,11 @@ export class StudentsListController {
     animateCounter(elementId, start, end, duration) {
         const element = this.container?.querySelector(`#${elementId}`);
         if (!element) return;
-        
+
         const range = end - start;
         const increment = range / (duration / 16); // 60fps
         let current = start;
-        
+
         const timer = setInterval(() => {
             current += increment;
             if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
@@ -586,7 +586,7 @@ export class StudentsListController {
 
     getFiltered() {
         let filtered = [...this.students];
-        
+
         // Text search
         if (this.searchQuery) {
             const q = this.searchQuery.toLowerCase();
@@ -594,21 +594,25 @@ export class StudentsListController {
                 const name = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.toLowerCase();
                 const email = (s?.user?.email || '').toLowerCase();
                 const phone = (s?.user?.phone || '').toLowerCase();
-                return name.includes(q) || email.includes(q) || phone.includes(q);
+                // Add CPF check (remove non-digits for comparison if needed, but simple string includes is safer for partial matches)
+                const cpf = (s?.user?.cpf || s?.cpf || '').replace(/\D/g, '');
+                const searchDigits = q.replace(/\D/g, '');
+
+                return name.includes(q) || email.includes(q) || phone.includes(q) || (searchDigits.length > 0 && cpf.includes(searchDigits)) || (s?.user?.cpf || '').includes(q);
             });
         }
-        
+
         // Category filter
         if (this.filterCategory) {
             filtered = filtered.filter(s => s?.category === this.filterCategory);
         }
-        
+
         // Status filter
         if (this.filterStatus) {
             const isActive = this.filterStatus === 'active';
             filtered = filtered.filter(s => s?.isActive === isActive);
         }
-        
+
         return filtered;
     }
 
@@ -638,16 +642,16 @@ export class StudentsListController {
                             </div>
                             <h3 class="empty-title">Nenhum estudante encontrado</h3>
                             <p class="empty-message">
-                                ${this.searchQuery || this.filterCategory || this.filterStatus ? 
-                                    'Tente ajustar os filtros ou limpe-os para ver todos os estudantes.' : 
-                                    'Comece adicionando seu primeiro estudante ao sistema.'
-                                }
+                                ${this.searchQuery || this.filterCategory || this.filterStatus ?
+                    'Tente ajustar os filtros ou limpe-os para ver todos os estudantes.' :
+                    'Comece adicionando seu primeiro estudante ao sistema.'
+                }
                             </p>
                             <div class="empty-actions">
-                                ${this.searchQuery || this.filterCategory || this.filterStatus ? 
-                                    '<button onclick="document.getElementById(\'clear-filters-btn\').click()" class="btn-form btn-secondary-form">Limpar Filtros</button>' : 
-                                    '<button onclick="document.getElementById(\'create-student-btn\').click()" class="btn-form btn-primary-form">Adicionar Primeiro Estudante</button>'
-                                }
+                                ${this.searchQuery || this.filterCategory || this.filterStatus ?
+                    '<button onclick="document.getElementById(\'clear-filters-btn\').click()" class="btn-form btn-secondary-form">Limpar Filtros</button>' :
+                    '<button onclick="document.getElementById(\'create-student-btn\').click()" class="btn-form btn-primary-form">Adicionar Primeiro Estudante</button>'
+                }
                             </div>
                         </div>
                     </td>
@@ -666,13 +670,13 @@ export class StudentsListController {
                 const attends = s?._count?.attendances || 0;
                 const plan = s?.activeSubscription?.plan?.name || 'Sem plano';
                 const isActive = s?.isActive;
-                const statusBadge = isActive ? 
+                const statusBadge = isActive ?
                     '<span class="status-badge status-active pulse-animation"><i class="fas fa-check-circle"></i> Ativo</span>' :
                     '<span class="status-badge status-inactive"><i class="fas fa-times-circle"></i> Inativo</span>';
-                
+
                 const attendanceRate = this.calculateAttendanceRate(s);
                 const progressBar = this.renderProgressBar(attendanceRate);
-                
+
                 return `
                     <tr class="row-link row-animated" data-id="${s.id}" title="Duplo clique para editar" style="animation-delay: ${index * 0.03}s">
                         <td class="col-select">
@@ -681,16 +685,16 @@ export class StudentsListController {
                         <td class="col-student">
                             <div class="student-info-card">
                                 <div class="student-avatar">
-                                    ${s?.user?.avatarUrl ? 
-                                        `<img src="${s.user.avatarUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">` :
-                                        (s?.biometricData?.photoUrl ? 
-                                            (String(s.biometricData.photoUrl).startsWith('biometric://') ?
-                                                `<div class="avatar-placeholder biometric-active" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:1.2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>` :
-                                                `<img src="${s.biometricData.photoUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`
-                                            ) :
-                                            `<img src="/images/avatar-placeholder.png" alt="${name}">`
-                                        )
-                                    }
+                                    ${s?.user?.avatarUrl ?
+                        `<img src="${s.user.avatarUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">` :
+                        (s?.biometricData?.photoUrl ?
+                            (String(s.biometricData.photoUrl).startsWith('biometric://') ?
+                                `<div class="avatar-placeholder biometric-active" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:1.2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>` :
+                                `<img src="${s.biometricData.photoUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`
+                            ) :
+                            `<img src="/images/avatar-placeholder.png" alt="${name}">`
+                        )
+                    }
                                 </div>
                                 <div class="student-details">
                                     <div class="student-name">${name}</div>
@@ -791,12 +795,12 @@ export class StudentsListController {
                 e.preventDefault();
                 const id = tr.getAttribute('data-id');
                 console.log('🎯 Duplo clique no estudante:', id);
-                
+
                 // Visual feedback
                 tr.style.background = 'var(--primary-color)';
                 tr.style.color = 'white';
                 tr.style.transform = 'scale(1.01)';
-                
+
                 setTimeout(() => {
                     location.hash = `student-editor/${id}`;
                     if (window.router?.navigateTo) {
@@ -804,7 +808,7 @@ export class StudentsListController {
                     }
                 }, 200);
             });
-            
+
             // Enhanced hover feedback
             tr.addEventListener('mouseenter', () => {
                 if (!tr.style.background.includes('var(--primary-color)')) {
@@ -813,7 +817,7 @@ export class StudentsListController {
                     tr.title = 'Duplo clique para editar';
                 }
             });
-            
+
             tr.addEventListener('mouseleave', () => {
                 if (!tr.style.background.includes('var(--primary-color)')) {
                     tr.style.background = '';
@@ -827,12 +831,12 @@ export class StudentsListController {
         const totalPagesEl = this.container.querySelector('#total-pages');
         const paginationInfoEl = this.container.querySelector('#pagination-info');
         const filteredStudentsEl = this.container.querySelector('#filtered-students');
-        
+
         if (currentPageEl) currentPageEl.textContent = String(this.currentPage);
         if (totalPagesEl) totalPagesEl.textContent = String(totalPages);
         if (paginationInfoEl) paginationInfoEl.textContent = `Mostrando ${pageItems.length} de ${list.length} (Total: ${this.students.length})`;
         if (filteredStudentsEl) filteredStudentsEl.textContent = String(list.length);
-        
+
         const prev = this.container.querySelector('#prev-page-btn');
         const next = this.container.querySelector('#next-page-btn');
         if (prev) prev.disabled = this.currentPage <= 1;
@@ -851,7 +855,7 @@ export class StudentsListController {
         const checkboxes = this.container.querySelectorAll('.student-checkbox:checked');
         const bulkBar = this.container.querySelector('#bulk-actions-bar');
         const selectedCount = this.container.querySelector('#selected-count');
-        
+
         if (checkboxes.length > 0) {
             bulkBar.style.display = 'flex';
             selectedCount.textContent = checkboxes.length;
@@ -905,11 +909,11 @@ export class StudentsListController {
             s?._count?.subscriptions || 0,
             s?._count?.attendances || 0
         ]);
-        
+
         const csvContent = [headers, ...rows]
             .map(row => row.map(field => `"${field}"`).join(','))
             .join('\n');
-        
+
         return csvContent;
     }
 
@@ -999,10 +1003,10 @@ export class StudentsListController {
             this.viewMode = 'cards';
             return;
         }
-        
+
         this.viewMode = this.viewMode === 'table' ? 'cards' : 'table';
         localStorage.setItem('students-view-mode', this.viewMode);
-        
+
         this.updateViewDisplay();
         this.updateViewToggleButton();
     }
@@ -1104,7 +1108,7 @@ export class StudentsListController {
             const category = student.category || 'ADULT';
             const isActive = student.isActive !== false;
             const attendanceRate = this.calculateAttendanceRate(student);
-            
+
             return `
                 <div class="student-card" 
                      data-student-id="${student.id}" 
@@ -1114,16 +1118,16 @@ export class StudentsListController {
                     <!-- Card Header with Avatar -->
                     <div class="card-header-premium">
                         <div class="student-avatar large ${user.avatarUrl ? '' : (student.biometricData?.photoUrl ? (String(student.biometricData.photoUrl).startsWith('biometric://') ? 'biometric-mode' : '') : 'avatar-initials')}">
-                            ${user.avatarUrl 
-                                ? `<img src="${user.avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
-                                : (student.biometricData?.photoUrl 
-                                    ? (String(student.biometricData.photoUrl).startsWith('biometric://')
-                                        ? `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`
-                                        : `<img src="${student.biometricData.photoUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
-                                    )
-                                    : `<span>${initials}</span>`
-                                )
-                            }
+                            ${user.avatarUrl
+                    ? `<img src="${user.avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
+                    : (student.biometricData?.photoUrl
+                        ? (String(student.biometricData.photoUrl).startsWith('biometric://')
+                            ? `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`
+                            : `<img src="${student.biometricData.photoUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
+                        )
+                        : `<span>${initials}</span>`
+                    )
+                }
                         </div>
                         <div class="student-status-badge">
                             <span class="status-badge status-${isActive ? 'active' : 'inactive'} pulse-animation">

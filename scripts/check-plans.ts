@@ -3,22 +3,15 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function checkPlans() {
-  const plans = await prisma.billingPlan.findMany({
-    include: {
-      organization: { select: { name: true } }
-    }
+  const plans = await prisma.lessonPlan.findMany({
+    take: 5,
+    orderBy: { lessonNumber: 'asc' },
+    select: { id: true, title: true, lessonNumber: true, courseId: true }
   });
-  
-  console.log('\n📦 PLANOS CADASTRADOS:\n');
-  plans.forEach(pl => {
-    console.log(`   - ${pl.name}`);
-    console.log(`     Organização: ${pl.organization.name}`);
-    console.log(`     Org ID: ${pl.organizationId}`);
-    console.log(`     Preço: R$ ${pl.price}`);
-    console.log(`     Features:`, pl.features);
-    console.log('');
-  });
-  
+
+  console.log('Planos encontrados:');
+  console.log(JSON.stringify(plans, null, 2));
+
   await prisma.$disconnect();
 }
 

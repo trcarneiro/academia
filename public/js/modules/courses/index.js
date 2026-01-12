@@ -4,10 +4,18 @@ const CoursesModule = {
     container: null,
     service: null,
     currentView: null,
+    isInitialized: false,
+    isNavigating: false, // Guard against concurrent navigation
 
     async init() {
+        // Guard against re-initialization
+        if (this.isInitialized && this.container) {
+            console.log('📚 Courses Module already initialized, skipping');
+            return;
+        }
+
         console.log('📚 Initializing Courses Module v2.0');
-        
+
         // 1. Initialize Service
         this.service = new CoursesService();
         await this.service.init();
@@ -16,11 +24,11 @@ const CoursesModule = {
         this.loadCSS();
 
         // 3. Find Container
-        this.container = document.getElementById('module-container') || 
-                         document.getElementById('content-area') || 
-                         document.getElementById('app-content') ||
-                         document.getElementById('main-content');
-                         
+        this.container = document.getElementById('module-container') ||
+            document.getElementById('content-area') ||
+            document.getElementById('app-content') ||
+            document.getElementById('main-content');
+
         if (!this.container) {
             console.error('❌ Container not found');
             return;
@@ -28,8 +36,11 @@ const CoursesModule = {
 
         // 4. Register Global Access
         window.coursesModule = this;
-        
-        // 5. Initial Navigation
+
+        // 5. Mark as initialized (before navigation)
+        this.isInitialized = true;
+
+        // 6. Initial Navigation
         // Check if we have an ID in the hash (e.g. #courses/edit/123)
         const hash = window.location.hash;
         if (hash.includes('/edit/')) {
@@ -41,7 +52,7 @@ const CoursesModule = {
             this.navigate('list');
         }
 
-        // 6. Dispatch Event
+        // 7. Dispatch Event
         if (window.app?.dispatchEvent) {
             window.app.dispatchEvent('module:loaded', { name: 'courses' });
         }
@@ -59,17 +70,25 @@ const CoursesModule = {
     },
 
     async navigate(viewName, params = {}) {
+        // Guard against concurrent navigation
+        if (this.isNavigating) {
+            console.log(`⚠️ Skipping navigation to ${viewName} - already navigating`);
+            return;
+        }
+        this.isNavigating = true;
+
         console.log(`🧭 Navigating to ${viewName}`, params);
-        
+
         // Clear current view
         if (this.currentView && this.currentView.destroy) {
             this.currentView.destroy();
+            this.currentView = null;
         }
-        
+
         // Load new view
         try {
             let ViewClass;
-            
+
             if (viewName === 'list') {
                 const module = await import('./views/list-view.js');
                 ViewClass = module.ListView;
@@ -90,6 +109,9 @@ const CoursesModule = {
                 <p>${error.message}</p>
                 <button onclick="coursesModule.navigate('list')" class="btn-primary">Back to List</button>
             </div>`;
+        } finally {
+            // Reset navigation guard
+            this.isNavigating = false;
         }
     }
 };

@@ -1,0 +1,112 @@
+🚀 Starting Test Suite A: The Hero's Journey
+🏢 Using Organization: Smart Defence (ff5ee00e-d8a3-4291-9428-d28b852fb472)
+🔑 Generating Admin Token...
+✅ Token generated.
+👤 Creating Test Hero...
+PrismaClientValidationError: 
+Invalid `prisma.student.create()` invocation in
+h:\projetos\academia\scripts\test-gamification-journey.ts:57:42
+
+  54     }
+  55 });
+  56 
+→ 57 const student = await prisma.student.create({
+       data: {
+         user: {
+           connect: {
+             id: "662bb9de-3f17-46e1-913e-5f21b517b89f"
+           }
+         },
+         organization: {
+           connect: {
+             id: "ff5ee00e-d8a3-4291-9428-d28b852fb472"
+           }
+         },
+         cpf: "9998882129",
+         ~~~
+         isActive: true,
+         totalXP: 0,
+         globalLevel: 1,
+         currentStreak: 0,
+     ?   id?: String,
+     ?   emergencyContact?: String | Null,
+     ?   medicalConditions?: String | Null,
+     ?   category?: StudentCategory,
+     ?   gender?: Gender | Null,
+     ?   age?: Int | Null,
+     ?   physicalCondition?: PhysicalCondition | Null,
+     ?   specialNeeds?: StudentCreatespecialNeedsInput | SpecialNeed[],
+     ?   longestStreak?: Int,
+     ?   lastCheckinDate?: DateTime | Null,
+     ?   preferredDays?: StudentCreatepreferredDaysInput | String[],
+     ?   preferredTimes?: StudentCreatepreferredTimesInput | String[],
+     ?   notifications?: Boolean,
+     ?   enrollmentDate?: DateTime,
+     ?   createdAt?: DateTime,
+     ?   updatedAt?: DateTime,
+     ?   registrationNumber?: String | Null,
+     ?   consolidatedDiscountValue?: Decimal | Null,
+     ?   consolidatedDiscountType?: String | Null,
+     ?   passwordHash?: String | Null,
+     ?   emailVerified?: Boolean,
+     ?   asaasCustomerId?: String | Null,
+     ?   agentConversations?: AgentConversationCreateNestedManyWithoutStudentInput,
+     ?   asaasCustomer?: AsaasCustomerCreateNestedOneWithoutStudentInput,
+     ?   techniqueProgress?: StudentTechniqueProgressCreateNestedManyWithoutStudentInput,
+     ?   assessmentAttempts?: AssessmentAttemptCreateNestedManyWithoutStudentInput,
+     ?   attendancePatterns?: AttendancePatternCreateNestedOneWithoutStudentInput,
+     ?   attendanceRecords?: AttendanceRecordCreateNestedManyWithoutStudentInput,
+     ?   attendances?: AttendanceCreateNestedManyWithoutStudentInput,
+     ?   badgeUnlocks?: BadgeUnlockCreateNestedManyWithoutStudentInput,
+     ?   biometricAttempts?: BiometricAttemptCreateNestedManyWithoutStudentInput,
+     ?   biometricData?: BiometricDataCreateNestedOneWithoutStudentInput,
+     ?   challengeProgress?: ChallengeProgressCreateNestedManyWithoutStudentInput,
+     ?   enrollments?: CourseEnrollmentCreateNestedManyWithoutStudentInput,
+     ?   creditRenewals?: CreditRenewalCreateNestedManyWithoutStudentInput,
+     ?   creditUsages?: CreditUsageCreateNestedManyWithoutStudentInput,
+     ?   evaluationRecords?: EvaluationRecordCreateNestedManyWithoutStudentInput,
+     ?   evaluations?: EvaluationCreateNestedManyWithoutStudentInput,
+     ?   feedbackActivities?: FeedbackActivityCreateNestedManyWithoutStudentInput,
+     ?   feedbackLessons?: FeedbackLessonCreateNestedManyWithoutStudentInput,
+     ?   convertedFromLead?: LeadCreateNestedOneWithoutConvertedStudentInput,
+     ?   activityExecutions?: LessonActivityExecutionCreateNestedManyWithoutStudentInput,
+     ?   payments?: PaymentCreateNestedManyWithoutStudentInput,
+     ?   personalClasses?: PersonalTrainingClassCreateNestedManyWithoutStudentInput,
+     ?   personalPreferences?: PersonalTrainingPreferenceCreateNestedOneWithoutStudentInput,
+     ?   physicalTestAttempts?: PhysicalTestAttemptCreateNestedManyWithoutStudentInput,
+     ?   pointsTransactions?: PointsTransactionCreateNestedManyWithoutStudentInput,
+     ?   progressRecords?: ProgressCreateNestedManyWithoutStudentInput,
+     ?   achievements?: StudentAchievementCreateNestedManyWithoutStudentInput,
+     ?   studentCourses?: StudentCourseCreateNestedManyWithoutStudentInput,
+     ?   studentCredits?: StudentCreditCreateNestedManyWithoutStudentInput,
+     ?   degreeHistory?: StudentDegreeHistoryCreateNestedManyWithoutStudentInput,
+     ?   graduations?: StudentGraduationCreateNestedManyWithoutStudentInput,
+     ?   progressTracking?: StudentProgressCreateNestedManyWithoutStudentInput,
+     ?   progressions?: StudentProgressionCreateNestedManyWithoutStudentInput,
+     ?   subscriptions?: StudentSubscriptionCreateNestedManyWithoutStudentInput,
+     ?   turmaInterests?: TurmaInterestCreateNestedManyWithoutStudentInput,
+     ?   horarioSuggestions?: HorarioSugeridoCreateNestedManyWithoutStudentInput,
+     ?   horarioSupports?: HorarioSupporterCreateNestedManyWithoutStudentInput,
+     ?   sessions?: StudentSessionCreateNestedManyWithoutStudentInput,
+     ?   portalNotifications?: StudentNotificationCreateNestedManyWithoutStudentInput,
+     ?   financialResponsible?: FinancialResponsibleCreateNestedOneWithoutStudentsInput,
+     ?   financialResponsibleStudent?: StudentCreateNestedOneWithoutFinancialDependentsInput,
+     ?   financialDependents?: StudentCreateNestedManyWithoutFinancialResponsibleStudentInput,
+     ?   teacherEvaluations?: TeacherEvaluationCreateNestedManyWithoutStudentInput,
+     ?   techniqueRecords?: TechniqueRecordCreateNestedManyWithoutStudentInput,
+     ?   turmaAttendances?: TurmaAttendanceCreateNestedManyWithoutStudentInput,
+     ?   turmaStudents?: TurmaStudentCreateNestedManyWithoutStudentInput,
+     ?   jobApplications?: JobApplicationCreateNestedManyWithoutStudentInput,
+     ?   preEnrollments?: PreEnrollmentCreateNestedManyWithoutStudentInput
+       }
+     })
+
+Unknown argument `cpf`. Did you mean `id`? Available options are marked with ?.
+    at throwValidationException (h:\projetos\academia\node_modules\@prisma\client\src\runtime\core\errorRendering\throwValidationException.ts:45:9)
+    at ei.handleRequestError (h:\projetos\academia\node_modules\@prisma\client\src\runtime\RequestHandler.ts:202:7)
+    at ei.handleAndLogRequestError (h:\projetos\academia\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (h:\projetos\academia\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (h:\projetos\academia\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async main (h:\projetos\academia\scripts\test-gamification-journey.ts:57:21) {
+  clientVersion: '6.19.0'
+}

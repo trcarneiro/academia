@@ -23,7 +23,8 @@
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
-    padding-bottom: 20px !important; /* Espaço extra na parte inferior */
+    padding-bottom: 20px !important;
+    /* Espaço extra na parte inferior */
 }
 
 /* Garantir que TODOS os li sejam visíveis */
@@ -39,14 +40,15 @@
 @media (max-width: 992px) {
     .sidebar {
         transform: translateX(-100%) !important;
-        height: 100vh !important; /* Altura total da tela */
+        height: 100vh !important;
+        /* Altura total da tela */
         overflow-y: auto !important;
     }
-    
+
     .sidebar.active {
         transform: translateX(0) !important;
     }
-    
+
     /* Menu em mobile deve ter altura suficiente */
     .main-menu {
         height: auto !important;
@@ -71,14 +73,21 @@
     .content-area {
         margin-left: var(--sidebar-width) !important;
     }
-    
+
+    /* Override for collapsed state */
+    body:not(.mobile-view) .sidebar.collapsed~.content-area {
+        margin-left: 70px !important;
+    }
+
     .sidebar {
         transform: translateX(0) !important;
     }
 }
 
 /* Fix para botões e links */
-button, a, .main-menu li {
+button,
+a,
+.main-menu li {
     transition: all 0.2s ease !important;
 }
 
@@ -86,6 +95,10 @@ button, a, .main-menu li {
 .main-menu li i {
     display: inline-block !important;
     margin-right: 12px !important;
+}
+
+body:not(.mobile-view) .sidebar.collapsed .main-menu li i {
+    margin-right: 0 !important;
 }
 
 /* CORREÇÃO ESPECÍFICA: Forçar exibição do item lesson-plans */
@@ -111,17 +124,21 @@ button, a, .main-menu li {
         width: 24px !important;
         height: 18px !important;
         cursor: pointer !important;
-        z-index: 9999 !important; /* Super high z-index */
+        z-index: 9999 !important;
+        /* Super high z-index */
         margin-right: 15px !important;
     }
 
     .menu-toggle span {
         display: block !important;
-        height: 3px !important; /* Thicker for better visibility */
+        height: 3px !important;
+        /* Thicker for better visibility */
         width: 100% !important;
-        background-color: #1E293B !important; /* Dark Slate - High Contrast */
+        background-color: #1E293B !important;
+        /* Dark Slate - High Contrast */
         border-radius: 3px !important;
-        margin-bottom: 4px; /* Ensure spacing */
+        margin-bottom: 4px;
+        /* Ensure spacing */
     }
 }
 
@@ -134,7 +151,7 @@ button, a, .main-menu li {
         width: 260px !important;
         height: calc(100vh - var(--topbar-height, 65px)) !important;
         background: white !important;
-        box-shadow: 4px 0 10px rgba(0,0,0,0.1) !important;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1) !important;
         z-index: 2000 !important;
         transform: translateX(-100%) !important;
         transition: transform 0.3s ease-in-out !important;
@@ -154,11 +171,11 @@ button, a, .main-menu li {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 1999;
     }
 
-    .sidebar.active + .sidebar-overlay {
+    .sidebar.active+.sidebar-overlay {
         display: block;
     }
 }
@@ -181,4 +198,3 @@ button, a, .main-menu li {
     width: 100% !important;
     border-radius: 3px !important;
 }
-

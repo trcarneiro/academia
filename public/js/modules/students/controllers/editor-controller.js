@@ -16,7 +16,7 @@ export class StudentEditorController {
     async render(targetContainer, studentId = null) {
         this.container = targetContainer;
         this.currentStudentId = studentId;
-        
+
         // Reset current student data for new student
         if (!studentId) {
             this.current = {};
@@ -49,7 +49,7 @@ export class StudentEditorController {
     renderHTML() {
         const s = this.current;
         const isEdit = !!s?.id;
-        
+
         this.container.innerHTML = `
             <div class="module-isolated-container" data-module="students">
                 <!-- Header Premium com Guidelines.MD -->
@@ -67,6 +67,12 @@ export class StudentEditorController {
                                 <i class="fas fa-arrow-left"></i>
                                 Voltar
                             </button>
+                            ${isEdit ? `
+                            <button id="delete-student" class="btn-form btn-danger-form">
+                                <i class="fas fa-trash"></i>
+                                Excluir
+                            </button>
+                            ` : ''}
                             ${isEdit ? `
                             <button id="duplicate-student" class="btn-form btn-info-form">
                                 <i class="fas fa-copy"></i>
@@ -173,12 +179,12 @@ export class StudentEditorController {
                                     <div class="capture-preview-area">
                                         <div id="photo-preview" class="photo-preview ${s?.biometricData?.photoUrl ? 'has-photo' : ''}">
                                             ${(() => {
-                                                const bioUrl = s?.biometricData?.photoUrl;
-                                                const isBioUri = bioUrl && bioUrl.startsWith('biometric://');
-                                                const avatarUrl = s?.user?.avatarUrl;
-                                                
-                                                if (isBioUri && !avatarUrl) {
-                                                    return `
+                const bioUrl = s?.biometricData?.photoUrl;
+                const isBioUri = bioUrl && bioUrl.startsWith('biometric://');
+                const avatarUrl = s?.user?.avatarUrl;
+
+                if (isBioUri && !avatarUrl) {
+                    return `
                                                         <div class="no-photo-placeholder biometric-active" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
                                                             <i class="fas fa-fingerprint" style="font-size: 3rem; color: var(--success-color); margin-bottom: 10px;"></i>
                                                             <p style="font-weight: 600; margin: 0;">Biometria Ativa</p>
@@ -188,23 +194,23 @@ export class StudentEditorController {
                                                             </div>
                                                         </div>
                                                     `;
-                                                } else if (bioUrl || avatarUrl) {
-                                                    const url = isBioUri ? avatarUrl : bioUrl;
-                                                    return `
+                } else if (bioUrl || avatarUrl) {
+                    const url = isBioUri ? avatarUrl : bioUrl;
+                    return `
                                                         <img src="${url}" alt="Foto do aluno" class="captured-photo">
                                                         <div class="photo-status">
                                                             <span class="status-badge success">✅ Cadastrado</span>
                                                         </div>
                                                     `;
-                                                } else {
-                                                    return `
+                } else {
+                    return `
                                                         <div class="no-photo-placeholder">
                                                             <i class="fas fa-user-circle"></i>
                                                             <p>Nenhuma foto cadastrada</p>
                                                         </div>
                                                     `;
-                                                }
-                                            })()}
+                }
+            })()}
                                         </div>
                                         <div class="capture-actions">
                                             <button type="button" id="btn-capture-photo" class="btn-form btn-primary-form">
@@ -398,9 +404,9 @@ export class StudentEditorController {
                                         <label for="paymentDay">Dia de Vencimento</label>
                                         <select id="paymentDay">
                                             <option value="">Selecione...</option>
-                                            ${Array.from({length: 28}, (_, i) => i + 1).map(day => 
-                                                `<option value="${day}">${day}</option>`
-                                            ).join('')}
+                                            ${Array.from({ length: 28 }, (_, i) => i + 1).map(day =>
+                `<option value="${day}">${day}</option>`
+            ).join('')}
                                         </select>
                                         <div class="field-help">Dia do mês para vencimento das mensalidades</div>
                                     </div>
@@ -520,6 +526,11 @@ export class StudentEditorController {
                             </div>
 
                             <div class="section-body">
+                                <!-- Gamification Section -->
+                                <div id="gamification-overview-container" style="margin-bottom: 2rem; display: none;">
+                                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Carregando Gamification...</div>
+                                </div>
+
                                 <div class="overview-grid">
                                     <div class="overview-card stat-card-enhanced">
                                         <h4><i class="fas fa-chart-line"></i> Resumo Geral</h4>
@@ -684,46 +695,79 @@ export class StudentEditorController {
             duplicateBtn.addEventListener('click', () => this.duplicateStudent());
         }
 
+        // Delete button
+        const deleteBtn = this.container.querySelector('#delete-student');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm('Tem certeza que deseja excluir este estudante? Esta ação não pode ser desfeita.')) {
+                    try {
+                        const loadingBtn = deleteBtn.innerHTML;
+                        deleteBtn.disabled = true;
+                        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+
+                        await this.api.fetchWithStates(`/api/students/${this.current.id}`, {
+                            method: 'DELETE',
+                            onSuccess: () => {
+                                alert('Estudante excluído com sucesso.');
+                                window.router.navigateTo('students');
+                            },
+                            onError: (err) => {
+                                console.error('Delete error:', err);
+                                alert(err.message || 'Erro ao excluir estudante.');
+                                deleteBtn.disabled = false;
+                                deleteBtn.innerHTML = loadingBtn;
+                            }
+                        });
+                    } catch (error) {
+                        // Error handled by onError above or catch block
+                        console.error('Delete flow error:', error);
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = loadingBtn;
+                    }
+                }
+            });
+        }
+
         // Enhanced tab switching with lazy loading for new tabs
         this.container.querySelectorAll('.tab-button').forEach(btn => {
             btn.addEventListener('click', async () => {
                 console.log('🖱️ [Tab Click] Clicked on tab:', btn.getAttribute('data-tab'));
-                
+
                 // Prevenir clique em abas desabilitadas
                 if (btn.disabled) {
                     console.warn('⏸️ [Tab Click] Tab is disabled, ignoring...');
                     return;
                 }
-                
+
                 this.container.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 const tab = btn.getAttribute('data-tab');
                 console.log('🎯 [Tab Click] Activating tab:', tab);
-                
+
                 this.container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 const targetPanel = this.container.querySelector(`#tab-${tab}`);
                 if (targetPanel) {
                     targetPanel.classList.add('active');
                     console.log('✅ [Tab Click] Panel displayed:', targetPanel.id);
                 }
-                
+
                 // Lazy load tab content
                 console.log('🔍 [Tab Click] Tab:', tab, 'Loaded:', btn.dataset.loaded, 'StudentId:', this.current?.id);
-                
+
                 // Load packages for plan tab (new student mode)
                 if (tab === 'plano' && !this.current?.id && !btn.dataset.loaded) {
                     console.log('� [Tab Click] Loading packages for NEW student...');
                     btn.dataset.loaded = '1';
                     await this.loadPackagesForEnrollment();
                 }
-                
+
                 // Load courses for courses tab (new student mode)
                 if (tab === 'cursos' && !this.current?.id && !btn.dataset.loaded) {
                     console.log('📚 [Tab Click] Loading courses for NEW student...');
                     btn.dataset.loaded = '1';
                     await this.loadCoursesForEnrollment();
                 }
-                
+
                 // Load tab content for existing student (edit mode)
                 if (!btn.dataset.loaded && this.current?.id) {
                     console.log('📡 [Tab Click] Loading tab content for EXISTING student...');
@@ -744,15 +788,15 @@ export class StudentEditorController {
         this.trackFormChanges();
         this.setupFieldMasks();
         this.setupAutoSave();
-        
+
         // Biometric photo capture events
         const btnCapturePhoto = this.container.querySelector('#btn-capture-photo');
         const btnRemovePhoto = this.container.querySelector('#btn-remove-photo');
-        
+
         if (btnCapturePhoto) {
             btnCapturePhoto.addEventListener('click', () => this.openPhotoCaptureDialog());
         }
-        
+
         if (btnRemovePhoto) {
             btnRemovePhoto.addEventListener('click', () => this.removeStudentPhoto());
         }
@@ -763,36 +807,36 @@ export class StudentEditorController {
         const saveBtn = this.container.querySelector('#save-student');
         const originalText = saveBtn?.textContent;
         console.log('📝 Save button:', saveBtn, 'Original text:', originalText);
-        
+
         try {
             if (saveBtn) {
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
             }
-            
+
             console.log('✅ Validating form...');
             if (!this.validateForm()) {
                 console.log('❌ Form validation failed!');
                 return;
             }
-            
+
             console.log('📦 Collecting form data...');
             const payload = this.collectFormData();
             console.log('📊 Payload:', payload);
-            
+
             let studentId;
             let studentResponse;
-            
+
             if (this.current?.id) {
                 console.log('🔄 Updating student:', this.current.id);
-                studentResponse = await this.api.saveWithFeedback(`/api/students/${this.current.id}`, payload, { 
+                studentResponse = await this.api.saveWithFeedback(`/api/students/${this.current.id}`, payload, {
                     method: 'PUT',
                     successMessage: 'Estudante atualizado com sucesso!'
                 });
                 studentId = this.current.id;
             } else {
                 console.log('➕ Creating new student');
-                studentResponse = await this.api.saveWithFeedback('/api/students', payload, { 
+                studentResponse = await this.api.saveWithFeedback('/api/students', payload, {
                     method: 'POST',
                     successMessage: 'Estudante cadastrado com sucesso!'
                 });
@@ -800,7 +844,7 @@ export class StudentEditorController {
                 studentId = studentResponse?.data?.id || studentResponse?.id;
                 console.log('✅ New student created with ID:', studentId);
             }
-            
+
             // Upload biometric photo if captured
             if (this.capturedPhoto && studentId) {
                 console.log('📸 Uploading biometric photo...');
@@ -809,12 +853,12 @@ export class StudentEditorController {
                 }
                 await this.uploadBiometricPhoto(studentId);
             }
-            
+
             console.log('✅ Save successful! Redirecting...');
             setTimeout(() => {
                 window.router?.navigateTo('students');
             }, 1500);
-            
+
         } catch (err) {
             console.error('❌ Save error:', err);
             window.app?.handleError?.(err, 'students:save');
@@ -830,7 +874,7 @@ export class StudentEditorController {
 
     async uploadBiometricPhoto(studentId) {
         if (!this.capturedPhoto) return;
-        
+
         // Safety check for studentId
         if (!studentId) {
             console.error('❌ Cannot upload biometric photo: studentId is missing');
@@ -841,25 +885,25 @@ export class StudentEditorController {
         try {
             // The backend expects JSON with: embedding (array), photoUrl (string), qualityScore (number)
             // We need to send the face descriptor and the photo as dataURL
-            
+
             if (!this.capturedPhoto.descriptor) {
                 console.warn('⚠️ No face descriptor available, skipping biometric upload');
                 this.showMessage('⚠️ Foto salva apenas como avatar (sem dados biométricos)', 'warning');
                 return;
             }
-            
+
             const payload = {
                 embedding: Array.from(this.capturedPhoto.descriptor),
                 photoUrl: this.capturedPhoto.dataUrl, // Base64 data URL
                 qualityScore: 85 // Default quality score
             };
-            
+
             console.log('📸 Uploading biometric data...', {
                 studentId,
                 embeddingLength: payload.embedding.length,
                 photoUrlLength: payload.photoUrl?.length
             });
-            
+
             // Ensure URL matches backend route: POST /api/biometric/students/:studentId/face-embedding
             const response = await fetch(`/api/biometric/students/${studentId}/face-embedding`, {
                 method: 'POST',
@@ -869,18 +913,18 @@ export class StudentEditorController {
                     'x-organization-id': window.academyApp?.organizationId || localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             const result = await response.json();
             console.log('✅ Biometric photo uploaded:', result);
-            
+
             // Clear captured photo after successful upload
             this.capturedPhoto = null;
             this.currentFaceDescriptor = null;
-            
+
         } catch (error) {
             console.error('❌ Error uploading biometric photo:', error);
             this.showMessage('⚠️ Aluno salvo, mas houve erro ao enviar a foto. Tente adicionar novamente.', 'warning');
@@ -925,16 +969,16 @@ export class StudentEditorController {
         const firstName = this.container.querySelector('#firstName')?.value?.trim();
         const lastName = this.container.querySelector('#lastName')?.value?.trim();
         const email = this.container.querySelector('#email')?.value?.trim();
-        
+
         console.log('📋 Form values:', { firstName, lastName, email });
-        
+
         if (!firstName) errors.push('Primeiro nome é obrigatório');
         if (!lastName) errors.push('Sobrenome é obrigatório');
         if (!email) errors.push('E-mail é obrigatório');
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             errors.push('E-mail deve ter formato válido (exemplo@dominio.com)');
         }
-        
+
         // Enrollment data is optional for new students
         // Students can be created with just name and email
         // Enrollment and payment can be added later
@@ -942,29 +986,29 @@ export class StudentEditorController {
             console.log('📝 New student with enrollment data');
             console.log('Selected package:', this.selectedPackage);
         }
-        
+
         if (errors.length > 0) {
             console.log('❌ Validation errors:', errors);
             this.showMessage(errors.join('<br>'), 'error');
             return false;
         }
-        
+
         console.log('✅ Validation passed!');
         return true;
     }
 
     duplicateStudent() {
         if (!this.current?.id) return;
-        
+
         if (confirm('Criar um novo estudante baseado neste?')) {
             const formData = this.collectFormData();
             delete formData.id;
             formData.firstName = `${formData.firstName} (Cópia)`;
-            
+
             this.current = null;
             this.renderHTML();
             this.bindEvents();
-            
+
             Object.keys(formData).forEach(key => {
                 const field = this.container.querySelector(`#${key}`);
                 if (field && formData[key]) {
@@ -1022,7 +1066,7 @@ export class StudentEditorController {
 
     setupAutoSave() {
         if (this.current?.id) return;
-        
+
         setInterval(() => {
             if (this.formChanged) {
                 const formData = this.collectFormData();
@@ -1068,20 +1112,20 @@ export class StudentEditorController {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(dialog);
-        
+
         this.currentFacingMode = 'user'; // Default
-        
+
         // Start camera and face detection
         this.startPhotoCamera();
-        
+
         // Event listeners
         const closeBtn = dialog.querySelector('#close-photo-dialog');
         const cancelBtn = dialog.querySelector('#cancel-capture');
         const captureBtn = dialog.querySelector('#capture-photo-main');
         const switchBtn = dialog.querySelector('#switch-camera');
-        
+
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
             closeBtn.addEventListener('touchend', (e) => {
@@ -1089,7 +1133,7 @@ export class StudentEditorController {
                 this.closePhotoCaptureDialog();
             });
         }
-        
+
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => this.closePhotoCaptureDialog());
         }
@@ -1104,7 +1148,7 @@ export class StudentEditorController {
                 this.switchCamera();
             });
         }
-        
+
         // Botão principal de captura (overlay na câmera)
         if (captureBtn) {
             const handleCapture = (e) => {
@@ -1115,7 +1159,7 @@ export class StudentEditorController {
                     this.captureStudentPhoto();
                 }
             };
-            
+
             captureBtn.addEventListener('click', handleCapture);
             captureBtn.addEventListener('touchend', handleCapture);
         }
@@ -1124,24 +1168,24 @@ export class StudentEditorController {
     async switchCamera() {
         this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
         console.log('🔄 Switching camera to:', this.currentFacingMode);
-        
+
         // Stop current stream
         if (this.currentStream) {
             this.currentStream.getTracks().forEach(track => track.stop());
         }
-        
+
         await this.startPhotoCamera();
     }
 
     async startPhotoCamera() {
         const video = document.getElementById('photo-video');
         const captureBtn = document.getElementById('capture-photo-main');
-        
+
         try {
             // Update button state
             captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Iniciando câmera...</span>';
             captureBtn.disabled = true;
-            
+
             // Load models if needed
             if (window.faceapi && !this.modelsLoaded) {
                 const modelsPath = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
@@ -1162,24 +1206,24 @@ export class StudentEditorController {
 
             // Request camera access
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
+                video: {
                     facingMode: this.currentFacingMode || 'user',
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
                 audio: false
             });
-            
+
             video.srcObject = stream;
             this.currentStream = stream;
-            
+
             // Mirror effect only for user facing camera
             if ((this.currentFacingMode || 'user') === 'user') {
                 video.style.transform = 'scaleX(-1)';
             } else {
                 video.style.transform = 'none';
             }
-            
+
             // Wait for video to load
             await new Promise((resolve) => {
                 video.onloadedmetadata = () => {
@@ -1187,7 +1231,7 @@ export class StudentEditorController {
                     resolve();
                 };
             });
-            
+
             // Start face detection (if face-api.js is available)
             if (window.faceapi) {
                 this.startFaceDetection(video, captureBtn);
@@ -1199,7 +1243,7 @@ export class StudentEditorController {
                     captureBtn.classList.add('ready');
                 }, 1500);
             }
-            
+
         } catch (error) {
             console.error('❌ Error starting camera:', error);
             captureBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erro na câmera</span>';
@@ -1224,7 +1268,7 @@ export class StudentEditorController {
                             .detectSingleFace(video, new window.faceapi.TinyFaceDetectorOptions())
                             .withFaceLandmarks()
                             .withFaceDescriptor();
-                        
+
                         if (detection) {
                             captureBtn.innerHTML = '<i class="fas fa-camera"></i><span>CAPTURAR FOTO</span>';
                             captureBtn.classList.remove('searching');
@@ -1243,9 +1287,9 @@ export class StudentEditorController {
                     }
                 }
             }, 500);
-            
+
             this.detectionInterval = detectionInterval;
-            
+
         } catch (error) {
             console.error('❌ Face detection error:', error);
             // Fallback: enable capture anyway
@@ -1259,14 +1303,14 @@ export class StudentEditorController {
         const video = document.getElementById('photo-video');
         const canvas = document.getElementById('photo-canvas');
         const context = canvas.getContext('2d');
-        
+
         // Set canvas size to video size
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
+
         // Draw current video frame to canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
+
         // Convert canvas to blob
         canvas.toBlob(async (blob) => {
             // Store photo data
@@ -1276,19 +1320,19 @@ export class StudentEditorController {
                 descriptor: this.currentFaceDescriptor || null,
                 timestamp: new Date().toISOString()
             };
-            
+
             console.log('📸 Photo captured!', {
                 size: blob.size,
                 hasDescriptor: !!this.currentFaceDescriptor
             });
-            
+
             // Close dialog and update preview
             this.closePhotoCaptureDialog();
             this.updatePhotoPreview();
-            
+
             // Show success message
             this.showMessage('✅ Foto capturada com sucesso! Salve o aluno para registrar.', 'success');
-            
+
         }, 'image/jpeg', 0.9);
     }
 
@@ -1298,13 +1342,13 @@ export class StudentEditorController {
             this.currentStream.getTracks().forEach(track => track.stop());
             this.currentStream = null;
         }
-        
+
         // Stop face detection
         if (this.detectionInterval) {
             clearInterval(this.detectionInterval);
             this.detectionInterval = null;
         }
-        
+
         // Remove dialog
         const dialog = document.getElementById('photo-capture-dialog');
         if (dialog) {
@@ -1314,10 +1358,10 @@ export class StudentEditorController {
 
     updatePhotoPreview() {
         if (!this.capturedPhoto) return;
-        
+
         const preview = this.container.querySelector('#photo-preview');
         if (!preview) return;
-        
+
         preview.innerHTML = `
             <img src="${this.capturedPhoto.dataUrl}" alt="Foto capturada" class="captured-photo">
             <div class="photo-status">
@@ -1325,13 +1369,13 @@ export class StudentEditorController {
             </div>
         `;
         preview.classList.add('has-photo');
-        
+
         // Update button text
         const captureBtn = this.container.querySelector('#btn-capture-photo');
         if (captureBtn) {
             captureBtn.innerHTML = '<i class="fas fa-camera"></i> Atualizar Foto';
         }
-        
+
         // Show remove button if not exists
         const removeBtn = this.container.querySelector('#btn-remove-photo');
         if (!removeBtn) {
@@ -1350,10 +1394,10 @@ export class StudentEditorController {
 
     removeStudentPhoto() {
         if (!confirm('Tem certeza que deseja remover a foto?')) return;
-        
+
         this.capturedPhoto = null;
         this.currentFaceDescriptor = null;
-        
+
         const preview = this.container.querySelector('#photo-preview');
         if (preview) {
             preview.innerHTML = `
@@ -1364,19 +1408,19 @@ export class StudentEditorController {
             `;
             preview.classList.remove('has-photo');
         }
-        
+
         // Update button text
         const captureBtn = this.container.querySelector('#btn-capture-photo');
         if (captureBtn) {
             captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capturar Foto';
         }
-        
+
         // Remove delete button
         const removeBtn = this.container.querySelector('#btn-remove-photo');
         if (removeBtn) {
             removeBtn.remove();
         }
-        
+
         this.showMessage('Foto removida. As alterações serão aplicadas ao salvar.', 'info');
     }
 
@@ -1390,7 +1434,7 @@ export class StudentEditorController {
             </div>
         `;
         messageDiv.style.display = 'block';
-        
+
         if (type !== 'error') {
             setTimeout(() => {
                 messageDiv.style.display = 'none';
@@ -1421,8 +1465,26 @@ export class StudentEditorController {
 
 
     async renderOverviewTab(studentId) {
+        const gamificationContainer = this.container.querySelector('#gamification-overview-container');
         const summaryDiv = this.container.querySelector('#overview-summary');
         const goalsDiv = this.container.querySelector('#overview-goals');
+
+        // Gamification Load
+        if (gamificationContainer) {
+            gamificationContainer.style.display = 'block';
+            this.api.request(`/api/gamification/profile/${studentId}`)
+                .then(res => {
+                    if (res.success && res.data) {
+                        this.renderGamificationCard(gamificationContainer, res.data);
+                    } else {
+                        gamificationContainer.style.display = 'none';
+                    }
+                })
+                .catch(err => {
+                    console.warn('Gamification load error:', err);
+                    gamificationContainer.style.display = 'none';
+                });
+        }
 
         try {
             // Load student stats
@@ -1499,10 +1561,71 @@ export class StudentEditorController {
         }
     }
 
+    renderGamificationCard(container, data) {
+        const { level, nextLevelXP, currentXP, levelProgress, streak, totalXP, recentAchievements } = data;
+
+        // Ensure achievements is an array
+        const badges = recentAchievements || [];
+
+        container.innerHTML = `
+            <div class="gamification-card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                <div class="gamification-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div class="level-info" style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="level-badge" style="background: #fbbf24; color: #78350f; font-weight: 800; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 4px solid rgba(255,255,255,0.2);">
+                            ${level || 1}
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: #f1f5f9;">Nível ${level || 1}</h4>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">${(totalXP || 0).toLocaleString()} XP Total</div>
+                        </div>
+                    </div>
+                    <div class="streak-badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.3);">
+                        <span>🔥</span> ${streak || 0} dias seguidos
+                    </div>
+                </div>
+
+                <div class="xp-progress" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; color: #cbd5e1;">
+                        <span>XP Atual: ${(currentXP || 0)}</span>
+                        <span>Próximo Nível: ${(nextLevelXP || 100)}</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 999px; height: 12px; overflow: hidden;">
+                        <div style="width: ${Math.min(levelProgress || 0, 100)}%; background: linear-gradient(to right, #3b82f6, #8b5cf6); height: 100%; border-radius: 999px; transition: width 1s ease-out;"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; text-align: right; margin-top: 0.5rem; color: #94a3b8;">
+                         ${Math.round(levelProgress || 0)}% para o nível ${(level || 1) + 1}
+                    </div>
+                </div>
+
+                ${badges.length > 0 ? `
+                <div class="badges-section">
+                    <h5 style="margin: 0 0 1rem 0; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Conquistas Recentes</h5>
+                    <div class="badges-list" style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                        ${badges.map(achievement => `
+                            <div class="badge-item" title="${achievement.achievement?.name || 'Conquista'}: ${achievement.achievement?.description || ''}" style="flex-shrink: 0; text-align: center; width: 64px; cursor: help;">
+                                <div style="width: 48px; height: 48px; margin: 0 auto 0.5rem auto; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                    ${achievement.achievement?.icon || '🏆'}
+                                </div>
+                                <div style="font-size: 0.7rem; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px;">
+                                    ${achievement.achievement?.name || 'Conquista'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : `
+                <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1rem;">
+                    Continue treinando para desbloquear conquistas! 🏆
+                </div>
+                `}
+            </div>
+        `;
+    }
+
     // 🆕 Renderizar aba "Responsável Financeiro"
     async renderResponsibleTab(studentId) {
         console.log('🔵 [ResponsibleTab] Starting render for student:', studentId);
-        
+
         const container = this.container.querySelector('#student-responsible-container');
         if (!container) {
             console.error('❌ [ResponsibleTab] Container not found!');
@@ -1527,18 +1650,18 @@ export class StudentEditorController {
             console.log('📡 [ResponsibleTab] Fetching student data...');
             const studentRes = await this.api.request(`/api/students/${studentId}`);
             console.log('✅ [ResponsibleTab] Student data received:', studentRes);
-            
+
             if (!studentRes || !studentRes.success) {
                 throw new Error('Failed to load student data');
             }
             const student = studentRes.data || {};
             console.log('📦 [ResponsibleTab] Student:', student.user?.firstName, student.user?.lastName);
-            
+
             // Carregar lista de TODOS os alunos (para selecionar outro aluno como responsável)
             console.log('📡 [ResponsibleTab] Fetching all students...');
             const allStudentsRes = await this.api.request('/api/students');
             console.log('✅ [ResponsibleTab] All students received:', allStudentsRes?.data?.length);
-            
+
             // Filtrar e ordenar alunos alfabeticamente
             const allStudents = (allStudentsRes.data || [])
                 .filter(s => s.id !== studentId) // Excluir o próprio aluno
@@ -1547,7 +1670,7 @@ export class StudentEditorController {
                     const nameB = [b.user?.firstName, b.user?.lastName].filter(Boolean).join(' ').toLowerCase();
                     return nameA.localeCompare(nameB, 'pt-BR');
                 });
-            
+
             // Carregar lista de responsáveis financeiros (cadastros separados)
             let responsibles = [];
             try {
@@ -1642,13 +1765,13 @@ export class StudentEditorController {
                                 <select id="responsibleStudentSelect" class="form-control">
                                     <option value="">-- Selecionar Aluno --</option>
                                     ${allStudents.map(s => {
-                                        const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
-                                        return `
+                const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
+                return `
                                         <option value="${s.id}" ${student.financialResponsibleStudentId === s.id ? 'selected' : ''}>
                                             ${fullName} - ${s.user?.email || 'Sem email'}
                                         </option>
                                     `;
-                                    }).join('')}
+            }).join('')}
                                 </select>
                                 <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos, etc.</small>
                             </div>
@@ -1719,25 +1842,25 @@ export class StudentEditorController {
 
                             <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
                                 ${(() => {
-                                    const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
-                                    const grandTotal = (parseFloat(dependentsData.totalAmount) || 0) + responsibleTotal;
-                                    return `
+                        const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                        const grandTotal = (parseFloat(dependentsData.totalAmount) || 0) + responsibleTotal;
+                        return `
                                         <strong>💰 Total Consolidado: R$ ${grandTotal.toFixed(2)}</strong>
                                         ${responsibleTotal > 0 ? `<div style="font-size: 0.85em; margin-top: 4px; color: #666;">(Incluindo R$ ${responsibleTotal.toFixed(2)} do responsável)</div>` : ''}
                                     `;
-                                })()}
+                    })()}
                             </div>
 
                             <div class="dependents-list">
                                 ${(dependentsData.dependents || []).map(dep => {
-                                    const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
-                                    const subsLength = (dep?.subscriptions || []).length;
-                                    const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
-                                        return sum + price;
-                                    }, 0);
-                                    
-                                    return `
+                        const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
+                        const subsLength = (dep?.subscriptions || []).length;
+                        const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
+                            const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                            return sum + price;
+                        }, 0);
+
+                        return `
                                         <div class="dependent-card" style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 0.5rem;">
                                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                                 <div>
@@ -1754,7 +1877,7 @@ export class StudentEditorController {
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                    }).join('')}
                             </div>
 
                             <details style="margin-top: 1rem;">
@@ -1763,13 +1886,13 @@ export class StudentEditorController {
                                 </summary>
                                 <div style="margin-top: 1rem;">
                                     ${(dependentsData.consolidatedCharges || []).map(charge => {
-                                        const studentName = charge?.studentName || 'Aluno';
-                                        const planName = charge?.planName || 'Plano';
-                                        const amount = charge?.amount || 0;
-                                        const status = charge?.status || 'Desconhecido';
-                                        const endDateStr = charge?.endDate ? `(vence em ${new Date(charge.endDate).toLocaleDateString()})` : '';
-                                        
-                                        return `
+                        const studentName = charge?.studentName || 'Aluno';
+                        const planName = charge?.planName || 'Plano';
+                        const amount = charge?.amount || 0;
+                        const status = charge?.status || 'Desconhecido';
+                        const endDateStr = charge?.endDate ? `(vence em ${new Date(charge.endDate).toLocaleDateString()})` : '';
+
+                        return `
                                             <div style="padding: 0.75rem; border-left: 3px solid #667eea; background: #f0f4ff; margin-bottom: 0.5rem;">
                                                 <strong>${studentName}</strong> - ${planName}<br>
                                                 <span style="color: #666;">
@@ -1778,7 +1901,7 @@ export class StudentEditorController {
                                                 </span>
                                             </div>
                                         `;
-                                    }).join('')}
+                    }).join('')}
                                 </div>
                             </details>
                         </div>
@@ -2039,8 +2162,8 @@ export class StudentEditorController {
                 listDiv.innerHTML = `
                     <div class="techniques-grid">
                         ${techniques.map(tech => {
-                            const masteryLevel = this.getMasteryPercentage(tech.mastery);
-                            return `
+                    const masteryLevel = this.getMasteryPercentage(tech.mastery);
+                    return `
                                 <div class="technique-card">
                                     <div class="technique-header">
                                         <h4>${tech.name}</h4>
@@ -2056,7 +2179,7 @@ export class StudentEditorController {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                }).join('')}
                     </div>
                 `;
             }
@@ -2125,18 +2248,18 @@ export class StudentEditorController {
 
     async renderCoursesTab(studentId) {
         console.log('🔄 Loading courses tab for student:', studentId);
-        
+
         const currentCoursesList = this.container.querySelector('#current-courses-list');
         const availableCoursesList = this.container.querySelector('#available-courses-list');
-        
+
         if (!currentCoursesList || !availableCoursesList) {
             console.error('❌ Course list containers not found in DOM');
             return;
         }
-        
+
         try {
             console.log('📡 Fetching courses data...');
-            
+
             // Load current enrollments and available courses
             const [enrollmentsRes, availableRes] = await Promise.all([
                 this.api.request(`/api/students/${studentId}/enrollments`),
@@ -2145,7 +2268,7 @@ export class StudentEditorController {
 
             const enrollments = enrollmentsRes.data || [];
             const availableCourses = availableRes.data || [];
-            
+
             console.log('📚 Current enrollments:', enrollments.length);
             console.log('📖 Available courses:', availableCourses.length);
 
@@ -2161,8 +2284,8 @@ export class StudentEditorController {
                 currentCoursesList.innerHTML = `
                     <div class="courses-list">
                         ${enrollments.map(enr => {
-                            const isBaseCourse = enr.course?.isBaseCourse || false;
-                            return `
+                    const isBaseCourse = enr.course?.isBaseCourse || false;
+                    return `
                                 <div class="course-item ${isBaseCourse ? 'base-course' : ''}" data-enrollment-id="${enr.id}">
                                     <div class="course-item-header">
                                         <div class="course-item-title">
@@ -2196,7 +2319,7 @@ export class StudentEditorController {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+                }).join('')}
                     </div>
                 `;
             }
@@ -2273,7 +2396,7 @@ export class StudentEditorController {
     async addCourse(studentId, courseId, courseName) {
         try {
             console.log('➕ Adding course:', courseName);
-            
+
             const confirmed = confirm(`Deseja adicionar o curso "${courseName}" para este aluno?`);
             if (!confirmed) return;
 
@@ -2283,7 +2406,7 @@ export class StudentEditorController {
             });
 
             this.showMessage(`Curso "${courseName}" adicionado com sucesso!`, 'success');
-            
+
             // Reload courses tab
             await this.renderCoursesTab(studentId);
 
@@ -2296,7 +2419,7 @@ export class StudentEditorController {
     async removeCourse(studentId, enrollmentId) {
         try {
             console.log('➖ Removing enrollment:', enrollmentId);
-            
+
             const confirmed = confirm('⚠️ ATENÇÃO: Deseja remover esta matrícula?\n\nIsso apagará todo o progresso, histórico de aulas e graduações associadas a este curso.\n\nEsta ação NÃO pode ser desfeita.');
             if (!confirmed) return;
 
@@ -2305,7 +2428,7 @@ export class StudentEditorController {
             });
 
             this.showMessage('Curso removido com sucesso!', 'success');
-            
+
             // Reload courses tab
             await this.renderCoursesTab(studentId);
 
@@ -2318,7 +2441,7 @@ export class StudentEditorController {
     async toggleEnrollmentStatus(studentId, enrollmentId, newStatus) {
         try {
             console.log(`🔄 Changing enrollment ${enrollmentId} status to ${newStatus}`);
-            
+
             const actionName = newStatus === 'ACTIVE' ? 'ativar' : 'inativar';
             const confirmed = confirm(`Deseja ${actionName} esta matrícula?`);
             if (!confirmed) return;
@@ -2329,7 +2452,7 @@ export class StudentEditorController {
             });
 
             this.showMessage(`Matrícula ${newStatus === 'ACTIVE' ? 'ativada' : 'inativada'} com sucesso!`, 'success');
-            
+
             // Reload courses tab
             await this.renderCoursesTab(studentId);
 
@@ -2347,7 +2470,7 @@ export class StudentEditorController {
     async loadCoursesTab(studentId) {
         const enrolledContainer = this.container.querySelector('#enrolled-courses-tab');
         const availableContainer = this.container.querySelector('#available-courses-tab');
-        
+
         if (!enrolledContainer || !availableContainer) {
             console.error('❌ Courses tab containers not found');
             return;
@@ -2358,7 +2481,7 @@ export class StudentEditorController {
             const coursesRes = await this.api.request(`/api/students/${studentId}/courses`);
             const enrollments = coursesRes.data?.enrolledCourses || [];
             const availableCourses = coursesRes.data?.availableCourses || [];
-            
+
             console.log('📚 Course enrollments:', enrollments);
             console.log('📚 Available courses:', availableCourses);
 
@@ -2374,7 +2497,7 @@ export class StudentEditorController {
                 enrolledContainer.innerHTML = enrollments.map(enrollment => {
                     const course = enrollment.course || {};
                     const isActive = enrollment.status === 'ACTIVE';
-                    
+
                     return `
                         <div class="course-item data-card-premium" style="border-left: 4px solid ${isActive ? '#28a745' : '#6c757d'};">
                             <div class="course-header">
@@ -2451,12 +2574,12 @@ export class StudentEditorController {
 
     async renderFinancialTab(studentId) {
         const panel = this.container.querySelector('#tab-financial');
-        
+
         try {
             // Load student data with financial relationships
             const studentRes = await this.api.request(`/api/students/${studentId}`);
             const studentFull = studentRes.data || {};
-            
+
             // Load all financial data in parallel
             const [
                 subscriptionsRes,
@@ -2477,7 +2600,7 @@ export class StudentEditorController {
             const subscriptions = subscriptionsRes.data || [];
             const payments = paymentsRes.data || [];
             const packages = packagesRes.data || [];
-            
+
             // Filtrar e ordenar alunos alfabeticamente
             const allStudents = (allStudentsRes.data || [])
                 .filter(s => s.id !== studentId)
@@ -2486,9 +2609,9 @@ export class StudentEditorController {
                     const nameB = [b.user?.firstName, b.user?.lastName].filter(Boolean).join(' ').toLowerCase();
                     return nameA.localeCompare(nameB, 'pt-BR');
                 });
-                
+
             const responsibles = responsiblesRes.data || [];
-            
+
             // Ensure dependentsData has correct types
             let dependentsData = dependentsRes.data || { dependents: [], totalDependents: 0, totalAmount: 0 };
             if (dependentsData) {
@@ -2585,13 +2708,13 @@ export class StudentEditorController {
                                     <select id="responsibleStudentSelect" class="form-control">
                                         <option value="">-- Selecionar Aluno --</option>
                                         ${allStudents.map(s => {
-                                            const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
-                                            return `
+                const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(' ') || 'Sem nome';
+                return `
                                             <option value="${s.id}" ${studentFull.financialResponsibleStudentId === s.id ? 'selected' : ''}>
                                                 ${fullName} - ${s.user?.email || 'Sem email'}
                                             </option>
                                         `;
-                                        }).join('')}
+            }).join('')}
                                     </select>
                                     <small class="field-help">💡 Ideal para famílias: pai/mãe paga por filhos</small>
                                 </div>
@@ -2672,18 +2795,18 @@ export class StudentEditorController {
                             ` : `
                                 <div class="subscriptions-list">
                                     ${activeSubscriptions.map(sub => {
-                                        const subscriptionPayload = encodeURIComponent(JSON.stringify({
-                                            id: sub.id,
-                                            studentId,
-                                            planId: sub.planId || sub.plan?.id || '',
-                                            planName: sub.plan?.name || 'Plano',
-                                            originalPrice: parseFloat(sub.plan?.price ?? sub.price ?? 0) || 0,
-                                            currentPrice: parseFloat(sub.currentPrice ?? sub.plan?.price ?? sub.price ?? 0) || 0,
-                                            startDate: sub.startDate,
-                                            nextDueDate: sub.nextDueDate || sub.endDate || '',
-                                            status: sub.status || (sub.isActive ? 'ACTIVE' : 'PAUSED')
-                                        }));
-                                        return `
+                const subscriptionPayload = encodeURIComponent(JSON.stringify({
+                    id: sub.id,
+                    studentId,
+                    planId: sub.planId || sub.plan?.id || '',
+                    planName: sub.plan?.name || 'Plano',
+                    originalPrice: parseFloat(sub.plan?.price ?? sub.price ?? 0) || 0,
+                    currentPrice: parseFloat(sub.currentPrice ?? sub.plan?.price ?? sub.price ?? 0) || 0,
+                    startDate: sub.startDate,
+                    nextDueDate: sub.nextDueDate || sub.endDate || '',
+                    status: sub.status || (sub.isActive ? 'ACTIVE' : 'PAUSED')
+                }));
+                return `
                                             <div class="subscription-card">
                                                 <div class="subscription-header">
                                                     <h4>${sub.plan?.name || 'Plano'}</h4>
@@ -2718,7 +2841,7 @@ export class StudentEditorController {
                                                 </div>
                                             </div>
                                         `;
-                                    }).join('')}
+            }).join('')}
                                 </div>
                             `}
                         </div>
@@ -2745,12 +2868,12 @@ export class StudentEditorController {
                                     </div>
                                     <div style="margin-top: 8px;">
                                         ${(() => {
-                                            const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
-                                            const depSubTotal = parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0;
-                                            const depTotal = parseFloat(dependentsData.totalAmount) || 0;
-                                            const grandTotal = depTotal + responsibleTotal;
-                                            
-                                            return `
+                        const responsibleTotal = activeSubscriptions.reduce((sum, sub) => sum + (parseFloat(sub.price ?? sub.plan?.price) || 0), 0);
+                        const depSubTotal = parseFloat(dependentsData.subTotal || dependentsData.totalAmount) || 0;
+                        const depTotal = parseFloat(dependentsData.totalAmount) || 0;
+                        const grandTotal = depTotal + responsibleTotal;
+
+                        return `
                                                 ${responsibleTotal > 0 ? `
                                                 <div style="display: flex; justify-content: space-between; color: var(--primary-color); margin-bottom: 4px;">
                                                     <span>Assinatura do Responsável:</span>
@@ -2764,9 +2887,9 @@ export class StudentEditorController {
                                                 ${(parseFloat(dependentsData.discount) || 0) > 0 ? `
                                                 <div style="display: flex; justify-content: space-between; color: var(--success-color);">
                                                     <span>
-                                                        ${dependentsData.discountType === 'PERCENTAGE' ? `Desconto (${dependentsData.discountValue}%)` : 
-                                                          dependentsData.discountType === 'FIXED_PRICE' ? 'Ajuste para Valor Fixo' : 
-                                                          'Desconto Fixo'}
+                                                        ${dependentsData.discountType === 'PERCENTAGE' ? `Desconto (${dependentsData.discountValue}%)` :
+                                    dependentsData.discountType === 'FIXED_PRICE' ? 'Ajuste para Valor Fixo' :
+                                        'Desconto Fixo'}
                                                     </span>
                                                     <span>- R$ ${(parseFloat(dependentsData.discount) || 0).toFixed(2)}</span>
                                                 </div>
@@ -2776,7 +2899,7 @@ export class StudentEditorController {
                                                     <span>R$ ${grandTotal.toFixed(2)}</span>
                                                 </div>
                                             `;
-                                        })()}
+                    })()}
                                     </div>
                                     <p style="margin-top: 8px; font-size: 0.9em; opacity: 0.8;">
                                         A fatura mensal será gerada com o valor total acima, incluindo todos os dependentes e a assinatura do responsável.
@@ -2786,14 +2909,14 @@ export class StudentEditorController {
 
                             <div class="dependents-list">
                                 ${(dependentsData.dependents || []).map(dep => {
-                                    const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
-                                    const subsLength = (dep?.subscriptions || []).length;
-                                    const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
-                                        const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
-                                        return sum + price;
-                                    }, 0);
-                                    
-                                    return `
+                        const userName = [dep?.user?.firstName, dep?.user?.lastName].filter(Boolean).join(' ') || 'Nome não disponível';
+                        const subsLength = (dep?.subscriptions || []).length;
+                        const totalPrice = (dep?.subscriptions || []).reduce((sum, sub) => {
+                            const price = parseFloat(sub.price ?? sub.plan?.price) || 0;
+                            return sum + price;
+                        }, 0);
+
+                        return `
                                         <div class="dependent-card">
                                             <div class="dependent-header">
                                                 <i class="fas fa-user"></i>
@@ -2807,7 +2930,7 @@ export class StudentEditorController {
                                             </div>
                                         </div>
                                     `;
-                                }).join('')}
+                    }).join('')}
                             </div>
                         </div>
                     </details>
@@ -2833,23 +2956,23 @@ export class StudentEditorController {
                                         </div>
                                         <ul class="package-features">
                                             ${(() => {
-                                                let features = pkg.features;
-                                                if (!features) {
-                                                    features = ['Acesso às aulas', 'Suporte técnico'];
-                                                } else if (typeof features === 'string') {
-                                                    try {
-                                                        features = JSON.parse(features);
-                                                    } catch (e) {
-                                                        features = ['Acesso às aulas', 'Suporte técnico'];
-                                                    }
-                                                }
-                                                if (!Array.isArray(features)) {
-                                                    features = ['Acesso às aulas', 'Suporte técnico'];
-                                                }
-                                                return features.map(feature => `
+                            let features = pkg.features;
+                            if (!features) {
+                                features = ['Acesso às aulas', 'Suporte técnico'];
+                            } else if (typeof features === 'string') {
+                                try {
+                                    features = JSON.parse(features);
+                                } catch (e) {
+                                    features = ['Acesso às aulas', 'Suporte técnico'];
+                                }
+                            }
+                            if (!Array.isArray(features)) {
+                                features = ['Acesso às aulas', 'Suporte técnico'];
+                            }
+                            return features.map(feature => `
                                                     <li><i class="fas fa-check"></i> ${feature}</li>
                                                 `).join('');
-                                            })()}
+                        })()}
                                         </ul>
                                         <button class="btn-form btn-primary-form btn-block"
                                             data-student-id="${studentId}"
@@ -3082,7 +3205,7 @@ export class StudentEditorController {
     async loadCoursesForEnrollment() {
         const loadingEl = this.container.querySelector('#courses-loading');
         const containerEl = this.container.querySelector('#courses-container');
-        
+
         // Initialize selected courses array
         this.selectedCourses = this.selectedCourses || [];
 
@@ -3189,7 +3312,7 @@ export class StudentEditorController {
 
     addCourseToSelectedList(courseId, courseName, courseLevel) {
         const listEl = this.container.querySelector('#selected-courses-list');
-        
+
         const courseItem = document.createElement('div');
         courseItem.className = 'selected-course-item';
         courseItem.dataset.courseId = courseId;
@@ -3211,7 +3334,7 @@ export class StudentEditorController {
             // Uncheck the checkbox
             const checkbox = this.container.querySelector(`.course-checkbox[data-course-id="${courseId}"]`);
             if (checkbox) checkbox.checked = false;
-            
+
             // Remove from selection
             this.toggleCourseSelection(courseId, courseName, courseLevel, false);
         });
@@ -3228,7 +3351,7 @@ export class StudentEditorController {
         console.log('📦 [Packages] Starting to load packages...');
         const loadingEl = this.container.querySelector('#packages-loading');
         const containerEl = this.container.querySelector('#packages-container');
-        
+
         console.log('📦 [Packages] Elements found:', {
             loading: !!loadingEl,
             container: !!containerEl
@@ -3262,37 +3385,37 @@ export class StudentEditorController {
             containerEl.innerHTML = `
                 <div class="packages-grid-enrollment">
                     ${packages.map(pkg => {
-                        // Extract features - handle both array and object formats
-                        let featuresList = ['Acesso às aulas', 'Suporte técnico', 'Certificado'];
-                        
-                        if (pkg.features) {
-                            if (Array.isArray(pkg.features)) {
-                                featuresList = pkg.features;
-                            } else if (typeof pkg.features === 'object') {
-                                // Features is an object with courseIds, etc
-                                featuresList = [];
-                                if (pkg.features.courseIds && pkg.features.courseIds.length > 0) {
-                                    featuresList.push(`Acesso a ${pkg.features.courseIds.length} curso(s)`);
-                                }
-                                if (pkg.isUnlimitedAccess) {
-                                    featuresList.push('Acesso ilimitado');
-                                }
-                                if (pkg.classesPerWeek) {
-                                    featuresList.push(`${pkg.classesPerWeek} aulas por semana`);
-                                }
-                                if (pkg.hasPersonalTraining) {
-                                    featuresList.push('Personal Training incluído');
-                                }
-                                if (pkg.hasNutrition) {
-                                    featuresList.push('Acompanhamento nutricional');
-                                }
-                                if (pkg.allowFreeze) {
-                                    featuresList.push(`Congelamento até ${pkg.freezeMaxDays || 30} dias`);
-                                }
-                            }
+                // Extract features - handle both array and object formats
+                let featuresList = ['Acesso às aulas', 'Suporte técnico', 'Certificado'];
+
+                if (pkg.features) {
+                    if (Array.isArray(pkg.features)) {
+                        featuresList = pkg.features;
+                    } else if (typeof pkg.features === 'object') {
+                        // Features is an object with courseIds, etc
+                        featuresList = [];
+                        if (pkg.features.courseIds && pkg.features.courseIds.length > 0) {
+                            featuresList.push(`Acesso a ${pkg.features.courseIds.length} curso(s)`);
                         }
-                        
-                        return `
+                        if (pkg.isUnlimitedAccess) {
+                            featuresList.push('Acesso ilimitado');
+                        }
+                        if (pkg.classesPerWeek) {
+                            featuresList.push(`${pkg.classesPerWeek} aulas por semana`);
+                        }
+                        if (pkg.hasPersonalTraining) {
+                            featuresList.push('Personal Training incluído');
+                        }
+                        if (pkg.hasNutrition) {
+                            featuresList.push('Acompanhamento nutricional');
+                        }
+                        if (pkg.allowFreeze) {
+                            featuresList.push(`Congelamento até ${pkg.freezeMaxDays || 30} dias`);
+                        }
+                    }
+                }
+
+                return `
                         <div class="package-card-enrollment" data-package-id="${pkg.id}">
                             <div class="package-badge">${pkg.popular ? '⭐ Mais Popular' : ''}</div>
                             <div class="package-header-enrollment">
@@ -3316,7 +3439,7 @@ export class StudentEditorController {
                             </button>
                         </div>
                         `;
-                    }).join('')}
+            }).join('')}
                 </div>
             `;
 
@@ -3348,7 +3471,7 @@ export class StudentEditorController {
         // Show package details
         const detailsSection = this.container.querySelector('#package-details-section');
         const infoDiv = this.container.querySelector('#selected-package-info');
-        
+
         detailsSection.style.display = 'block';
         infoDiv.innerHTML = `
             <div class="selected-package-display">
@@ -3379,12 +3502,12 @@ export class StudentEditorController {
         // Save enrollment button
         const btnSaveEnrollment = this.container.querySelector('#btn-save-enrollment');
         const btnBackToPlan = this.container.querySelector('#btn-back-to-plan');
-        
+
         if (btnSaveEnrollment) {
             btnSaveEnrollment.addEventListener('click', async () => {
                 // Enrollment is optional - just trigger main save
                 this.showMessage('Salvando...', 'info');
-                
+
                 // Trigger main save (via main save button)
                 const mainSaveBtn = this.container.querySelector('#save-student');
                 if (mainSaveBtn) {
@@ -3395,7 +3518,7 @@ export class StudentEditorController {
                 }
             });
         }
-        
+
         if (btnBackToPlan) {
             btnBackToPlan.addEventListener('click', () => {
                 const planoTab = this.container.querySelector('[data-tab="plano"]');
@@ -3404,7 +3527,7 @@ export class StudentEditorController {
                 }
             });
         }
-        
+
         // Listen to discount changes
         const discountInput = this.container.querySelector('#discount');
         if (discountInput) {
@@ -3488,10 +3611,10 @@ export class StudentEditorController {
         }
 
         console.log(`📅 Navegando para cronograma do curso: ${courseName}`);
-        
+
         // Navigate to course editor with schedule tab
         window.location.hash = `#course-editor?id=${courseId}&tab=schedule`;
-        
+
         // Show feedback
         window.app?.showFeedback?.(`Abrindo cronograma: ${courseName}`, 'info');
     }
@@ -3600,7 +3723,7 @@ export class StudentEditorController {
 
         } catch (error) {
             console.error('❌ Erro ao matricular aluno:', error);
-            
+
             // Check if it's a 404 error (endpoint not found)
             if (error.message?.includes('404') || error.message?.includes('not found')) {
                 window.app?.showFeedback?.(
@@ -3632,7 +3755,7 @@ export class StudentEditorController {
     getMasteryLabel(level) {
         const labels = {
             'beginner': 'Iniciante',
-            'intermediate': 'Intermediário', 
+            'intermediate': 'Intermediário',
             'advanced': 'Avançado',
             'expert': 'Expert'
         };
@@ -3698,10 +3821,10 @@ export class StudentEditorController {
                         discountType: formValues.discountType
                     })
                 });
-                
+
                 // Reload to show changes
                 await this.renderFinancialTab(this.currentStudentId);
-                
+
                 Swal.fire('Sucesso', 'Desconto atualizado com sucesso!', 'success');
             } catch (error) {
                 console.error('Error updating discount:', error);
@@ -3712,9 +3835,9 @@ export class StudentEditorController {
 }
 
 // Global functions for course management
-window.enrollInCourse = async function(studentId, courseId, courseName) {
+window.enrollInCourse = async function (studentId, courseId, courseName) {
     if (!confirm(`Matricular aluno no curso "${courseName}"?`)) return;
-    
+
     try {
         const response = await fetch(`/api/students/${studentId}/enrollments`, {
             method: 'POST',
@@ -3730,7 +3853,7 @@ window.enrollInCourse = async function(studentId, courseId, courseName) {
                 currentLevel: 'Iniciante'
             })
         });
-        
+
         if (response.ok) {
             window.app?.showToast?.('Aluno matriculado com sucesso!', 'success');
             // Refresh the courses tab
@@ -3738,16 +3861,16 @@ window.enrollInCourse = async function(studentId, courseId, courseName) {
         } else {
             throw new Error('Failed to enroll student');
         }
-        
+
     } catch (error) {
         console.error('Error enrolling student:', error);
         window.app?.showToast?.('Erro ao matricular aluno', 'error');
     }
 };
 
-window.unenrollFromCourse = async function(studentId, enrollmentId) {
+window.unenrollFromCourse = async function (studentId, enrollmentId) {
     if (!confirm('Tem certeza que deseja cancelar esta matrícula?')) return;
-    
+
     try {
         const response = await fetch(`/api/students/${studentId}/enrollments/${enrollmentId}`, {
             method: 'DELETE',
@@ -3756,7 +3879,7 @@ window.unenrollFromCourse = async function(studentId, enrollmentId) {
                 'x-organization-id': localStorage.getItem('activeOrganizationId') || 'ff5ee00e-d8a3-4291-9428-d28b852fb472'
             }
         });
-        
+
         if (response.ok) {
             window.app?.showToast?.('Matrícula cancelada com sucesso!', 'success');
             // Refresh the courses tab
@@ -3764,24 +3887,24 @@ window.unenrollFromCourse = async function(studentId, enrollmentId) {
         } else {
             throw new Error('Failed to unenroll student');
         }
-        
+
     } catch (error) {
         console.error('Error unenrolling student:', error);
         window.app?.showToast?.('Erro ao cancelar matrícula', 'error');
     }
 };
 
-window.openStudentSchedule = function(studentId, courseId) {
+window.openStudentSchedule = function (studentId, courseId) {
     // Navigate to student schedule view
     window.router?.navigateTo(`students/${studentId}/schedule/${courseId}`);
 };
 
-window.openCoursesManager = function() {
+window.openCoursesManager = function () {
     // Navigate to courses management
     window.router?.navigateTo('courses');
 };
 
-window.subscribeToPackageFromButton = function(buttonElement) {
+window.subscribeToPackageFromButton = function (buttonElement) {
     if (!buttonElement) {
         return;
     }
@@ -3799,7 +3922,7 @@ window.subscribeToPackageFromButton = function(buttonElement) {
     window.subscribeToPackage(studentId, planId, planName, planPrice);
 };
 
-window.subscribeToPackage = function(studentId, planId, planName = 'Plano', planPrice = '0.00') {
+window.subscribeToPackage = function (studentId, planId, planName = 'Plano', planPrice = '0.00') {
     if (!studentId || !planId) {
         window.app?.showToast?.('Não foi possível identificar o aluno ou o plano selecionado.', 'error');
         return;
@@ -3817,7 +3940,7 @@ window.subscribeToPackage = function(studentId, planId, planName = 'Plano', plan
     });
 };
 
-window.openSubscriptionDialog = function(options = {}) {
+window.openSubscriptionDialog = function (options = {}) {
     const {
         mode = 'create',
         studentId = '',
@@ -4080,14 +4203,14 @@ window.openSubscriptionDialog = function(options = {}) {
     updatePreview();
 };
 
-window.closeSubscriptionDialog = function() {
+window.closeSubscriptionDialog = function () {
     const dialog = document.getElementById('subscription-pricing-dialog');
     if (dialog) {
         dialog.remove();
     }
 };
 
-window.submitSubscriptionForm = async function(event) {
+window.submitSubscriptionForm = async function (event) {
     event.preventDefault();
 
     const form = event.target;
@@ -4235,7 +4358,7 @@ window.submitSubscriptionForm = async function(event) {
     }
 };
 
-window.viewSubscriptionDetails = function(subscriptionData) {
+window.viewSubscriptionDetails = function (subscriptionData) {
     if (typeof subscriptionData === 'string') {
         try {
             subscriptionData = JSON.parse(decodeURIComponent(subscriptionData));
@@ -4270,7 +4393,7 @@ window.viewSubscriptionDetails = function(subscriptionData) {
     });
 };
 
-window.pauseSubscription = async function(subscriptionId) {
+window.pauseSubscription = async function (subscriptionId) {
     if (!confirm('Deseja pausar esta assinatura?')) return;
 
     try {
@@ -4310,7 +4433,7 @@ window.pauseSubscription = async function(subscriptionId) {
  * Enroll student in a course (called from onclick in HTML)
  * @param {string} courseId - The course ID to enroll
  */
-window.enrollCourse = async function(courseId) {
+window.enrollCourse = async function (courseId) {
     const editor = window.studentEditor;
     if (!editor?.current?.id) {
         console.error('❌ [enrollCourse] No current student');
@@ -4340,9 +4463,9 @@ window.enrollCourse = async function(courseId) {
 };
 
 // Global function for package selector (called from onclick in HTML)
-window.openPackageSelector = async function(studentId) {
+window.openPackageSelector = async function (studentId) {
     console.log('📦 [openPackageSelector] Opening for student:', studentId);
-    
+
     if (!window.studentEditor) {
         console.error('❌ [openPackageSelector] StudentEditor not available');
         alert('Erro: Editor não disponível');
@@ -4442,7 +4565,7 @@ window.openPackageSelector = async function(studentId) {
 };
 
 // Global function to create subscription (called from package selector)
-window.createSubscription = async function(studentId, planId) {
+window.createSubscription = async function (studentId, planId) {
     console.log('💳 [createSubscription] Creating subscription:', { studentId, planId });
 
     try {
@@ -4458,10 +4581,10 @@ window.createSubscription = async function(studentId, planId) {
         if (response.success) {
             // Close dialog
             document.getElementById('package-selector-dialog')?.remove();
-            
+
             // Show success message
             window.app?.showToast?.('Assinatura criada com sucesso!', 'success');
-            
+
             // Reload financial tab if student is currently open
             if (window.studentEditor.current?.id === studentId) {
                 await window.studentEditor.renderFinancialTab(studentId);
@@ -4475,7 +4598,7 @@ window.createSubscription = async function(studentId, planId) {
     }
 };
 
-window.cancelSubscription = async function(subscriptionId) {
+window.cancelSubscription = async function (subscriptionId) {
     if (!confirm('Deseja cancelar esta assinatura? Esta ação não pode ser desfeita.')) return;
 
     try {

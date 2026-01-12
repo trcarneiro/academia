@@ -3,6 +3,19 @@ import { logger } from '@/utils/logger';
 import { StudentCategory, AchievementCategory, ChallengeType, TechniqueProficiency } from '@/types';
 import dayjs from 'dayjs';
 
+// XP Configuration for check-ins
+const CHECK_IN_XP_CONFIG = {
+  BASE_XP: 50,
+  TECHNIQUE_XP: 10,
+  FIRST_OF_MONTH_BONUS: 25,
+  STREAK_MULTIPLIERS: {
+    7: 1.5,   // 7+ dias = +50%
+    30: 2.0,  // 30+ dias = +100%
+    60: 2.5,  // 60+ dias = +150%
+    100: 3.0, // 100+ dias = +200%
+  } as Record<number, number>,
+};
+
 export class GamificationService {
   // Level progression XP requirements
   private static readonly LEVEL_XP_REQUIREMENTS = [
@@ -165,7 +178,7 @@ export class GamificationService {
     const currentLevelXP = this.LEVEL_XP_REQUIREMENTS[currentLevel - 1];
     const nextLevelXP = this.LEVEL_XP_REQUIREMENTS[currentLevel];
     const progress = ((currentXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
-    
+
     return Math.min(Math.max(progress, 0), 100);
   }
 
@@ -258,7 +271,7 @@ export class GamificationService {
         }
 
         unlockedAchievements.push(achievement.id);
-        
+
         logger.info(
           { studentId, achievementId: achievement.id, achievementName: achievement.name },
           'Achievement unlocked'
@@ -271,7 +284,7 @@ export class GamificationService {
 
   private static checkAttendanceAchievement(student: any, criteria: any): boolean {
     const attendanceCount = student.attendances.length;
-    
+
     switch (criteria.type) {
       case 'total_classes':
         return attendanceCount >= criteria.targetValue;
@@ -279,7 +292,7 @@ export class GamificationService {
         return this.getConsecutiveAttendanceDays(student.attendances) >= criteria.targetValue;
       case 'monthly_attendance':
         const thisMonth = dayjs().startOf('month');
-        const monthlyAttendance = student.attendances.filter((a: any) => 
+        const monthlyAttendance = student.attendances.filter((a: any) =>
           dayjs(a.checkInTime).isAfter(thisMonth)
         ).length;
         return monthlyAttendance >= criteria.targetValue;
@@ -290,16 +303,16 @@ export class GamificationService {
 
   private static checkTechniqueAchievement(student: any, criteria: any): boolean {
     const allTechniqueProgress = student.enrollments.flatMap((e: any) => e.techniqueProgress);
-    
+
     switch (criteria.type) {
       case 'techniques_mastered':
-        const masteredCount = allTechniqueProgress.filter((tp: any) => 
+        const masteredCount = allTechniqueProgress.filter((tp: any) =>
           tp.status === TechniqueProficiency.MASTERED
         ).length;
         return masteredCount >= criteria.targetValue;
       case 'category_mastery':
         // Count mastered techniques in specific category
-        const categoryMastered = allTechniqueProgress.filter((tp: any) => 
+        const categoryMastered = allTechniqueProgress.filter((tp: any) =>
           tp.technique?.category === criteria.category && tp.status === TechniqueProficiency.MASTERED
         ).length;
         return categoryMastered >= criteria.targetValue;
@@ -324,7 +337,7 @@ export class GamificationService {
 
   private static checkChallengeAchievement(student: any, criteria: any): boolean {
     const allChallengeProgress = student.enrollments.flatMap((e: any) => e.challengeProgress);
-    
+
     switch (criteria.type) {
       case 'challenges_completed':
         const completedCount = allChallengeProgress.filter((cp: any) => cp.completed).length;
@@ -351,7 +364,7 @@ export class GamificationService {
       case 'perfect_month':
         const thisMonth = dayjs().startOf('month');
         const daysInMonth = dayjs().daysInMonth();
-        const monthlyAttendance = student.attendances.filter((a: any) => 
+        const monthlyAttendance = student.attendances.filter((a: any) =>
           dayjs(a.checkInTime).isAfter(thisMonth)
         ).length;
         // Perfect month = at least 20 days of attendance
@@ -383,7 +396,7 @@ export class GamificationService {
     for (let i = 1; i < sortedDates.length; i++) {
       const currentDate = dayjs(sortedDates[i]);
       const previousDate = dayjs(sortedDates[i - 1]);
-      
+
       if (currentDate.diff(previousDate, 'days') === 1) {
         currentStreak++;
         maxStreak = Math.max(maxStreak, currentStreak);
@@ -545,7 +558,7 @@ export class GamificationService {
         xpReward: 150,
         rarity: 'UNCOMMON' as const,
       },
-      
+
       // Technique Achievements
       {
         name: 'Primeiro Domínio',
@@ -563,7 +576,7 @@ export class GamificationService {
         xpReward: 200,
         rarity: 'RARE' as const,
       },
-      
+
       // Progression Achievements
       {
         name: 'Subindo de Nível',
@@ -581,7 +594,7 @@ export class GamificationService {
         xpReward: 300,
         rarity: 'RARE' as const,
       },
-      
+
       // Challenge Achievements
       {
         name: 'Desafiador',
@@ -611,5 +624,305 @@ export class GamificationService {
     }
 
     logger.info({ organizationId }, 'Default achievements created');
+  }
+
+  // ============================================
+  // PROCESSAMENTO DE CHECK-IN (AUTOMÁTICO)
+  // ============================================
+
+  /**
+   * Processa gamificação após check-in - CHAMADO AUTOMATICAMENTE
+   * Atualiza XP, streak, nível e verifica conquistas
+   */
+  static async processCheckIn(
+    studentId: string,
+    turmaLessonId: string,
+    techniquesCount: number = 0
+  ): Promise<{
+    xpAwarded: number;
+    streak: number;
+    level: number;
+    levelUp: boolean;
+    newAchievements: string[];
+  }> {
+    try {
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: {
+          totalXP: true,
+          globalLevel: true,
+          currentStreak: true,
+          longestStreak: true,
+          lastCheckinDate: true,
+          category: true,
+        },
+      });
+
+      if (!student) {
+        logger.warn({ studentId }, 'Student not found for gamification');
+        return { xpAwarded: 0, streak: 0, level: 1, levelUp: false, newAchievements: [] };
+      }
+
+      // 1. Calcular e atualizar streak
+      const streakResult = await this.updateStudentStreak(studentId);
+
+      // 2. Calcular XP base com multiplicador de streak
+      const streakMultiplier = this.getStreakMultiplier(streakResult.newStreak);
+      let totalXPToAward = Math.floor(CHECK_IN_XP_CONFIG.BASE_XP * streakMultiplier);
+
+      // 3. Adicionar XP por técnicas praticadas
+      totalXPToAward += techniquesCount * CHECK_IN_XP_CONFIG.TECHNIQUE_XP;
+
+      // 4. Verificar bônus de primeira aula do mês
+      const isFirstOfMonth = await this.isFirstCheckInOfMonth(studentId);
+      if (isFirstOfMonth) {
+        totalXPToAward += CHECK_IN_XP_CONFIG.FIRST_OF_MONTH_BONUS;
+      }
+
+      // 5. Conceder XP usando método existente
+      const xpResult = await this.awardXP(
+        studentId,
+        totalXPToAward,
+        'ATTENDANCE',
+        turmaLessonId,
+        `Check-in automático (streak: ${streakResult.newStreak})`
+      );
+
+      logger.info({
+        studentId,
+        turmaLessonId,
+        xpAwarded: xpResult.xpAwarded,
+        streak: streakResult.newStreak,
+        level: xpResult.newLevel,
+        levelUp: xpResult.leveledUp,
+        achievementsUnlocked: xpResult.unlockedAchievements.length,
+      }, 'Gamification processed for check-in');
+
+      return {
+        xpAwarded: xpResult.xpAwarded,
+        streak: streakResult.newStreak,
+        level: xpResult.newLevel,
+        levelUp: xpResult.leveledUp,
+        newAchievements: xpResult.unlockedAchievements,
+      };
+    } catch (error) {
+      logger.error({ error, studentId, turmaLessonId }, 'Error processing gamification');
+      // Não propagar erro para não quebrar o check-in
+      return { xpAwarded: 0, streak: 0, level: 1, levelUp: false, newAchievements: [] };
+    }
+  }
+
+  /**
+   * Retorna o multiplicador de XP baseado no streak
+   */
+  private static getStreakMultiplier(streak: number): number {
+    const thresholds = Object.keys(CHECK_IN_XP_CONFIG.STREAK_MULTIPLIERS)
+      .map(Number)
+      .sort((a, b) => b - a);
+
+    for (const threshold of thresholds) {
+      if (streak >= threshold) {
+        return CHECK_IN_XP_CONFIG.STREAK_MULTIPLIERS[threshold];
+      }
+    }
+
+    return 1.0;
+  }
+
+  /**
+   * Atualiza o streak do aluno
+   */
+  private static async updateStudentStreak(studentId: string): Promise<{
+    newStreak: number;
+    longestStreak: number;
+    streakBroken: boolean;
+  }> {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        currentStreak: true,
+        longestStreak: true,
+        lastCheckinDate: true,
+      },
+    });
+
+    if (!student) {
+      return { newStreak: 1, longestStreak: 1, streakBroken: false };
+    }
+
+    const now = new Date();
+    const today = dayjs().startOf('day');
+    let newStreak = 1;
+    let streakBroken = false;
+
+    if (student.lastCheckinDate) {
+      const lastCheckIn = dayjs(student.lastCheckinDate).startOf('day');
+      const diffInDays = today.diff(lastCheckIn, 'day');
+
+      if (diffInDays === 0) {
+        // Mesmo dia - não incrementa (evita múltiplos check-ins)
+        newStreak = student.currentStreak;
+      } else if (diffInDays === 1) {
+        // Dia seguinte - incrementa streak
+        newStreak = student.currentStreak + 1;
+      } else if (diffInDays <= 3) {
+        // 2-3 dias - dá uma chance (pode ter sido fim de semana)
+        newStreak = student.currentStreak + 1;
+      } else {
+        // Mais de 3 dias sem check-in - reseta streak
+        newStreak = 1;
+        streakBroken = true;
+      }
+    }
+
+    const newLongestStreak = Math.max(newStreak, student.longestStreak);
+
+    // Atualizar no banco
+    await prisma.student.update({
+      where: { id: studentId },
+      data: {
+        currentStreak: newStreak,
+        longestStreak: newLongestStreak,
+        lastCheckinDate: now,
+      },
+    });
+
+    if (streakBroken) {
+      logger.info({ studentId, previousStreak: student.currentStreak }, 'Student streak broken');
+    }
+
+    return {
+      newStreak,
+      longestStreak: newLongestStreak,
+      streakBroken,
+    };
+  }
+
+  /**
+   * Verifica se é o primeiro check-in do mês
+   */
+  private static async isFirstCheckInOfMonth(studentId: string): Promise<boolean> {
+    const startOfMonth = dayjs().startOf('month').toDate();
+
+    const count = await prisma.turmaAttendance.count({
+      where: {
+        studentId,
+        createdAt: { gte: startOfMonth },
+      },
+    });
+
+    return count === 1; // 1 = esse check-in é o primeiro
+  }
+
+  // ============================================
+  // BÔNUS DO PROFESSOR (OPCIONAL)
+  // ============================================
+
+  /**
+   * Concede XP bônus manualmente (intervenção do professor)
+   */
+  static async grantInstructorBonus(
+    studentId: string,
+    amount: number,
+    reason: string,
+    grantedByUserId: string
+  ): Promise<{ newTotalXP: number; newLevel: number }> {
+    const result = await this.awardXP(
+      studentId,
+      amount,
+      'ACHIEVEMENT', // Using ACHIEVEMENT type for bonuses
+      `bonus_${grantedByUserId}`,
+      `Bônus do instrutor: ${reason}`
+    );
+
+    logger.info({ studentId, amount, reason, grantedByUserId }, 'Instructor bonus XP granted');
+
+    return { newTotalXP: result.totalXP, newLevel: result.newLevel };
+  }
+
+  // ============================================
+  // LEADERBOARD
+  // ============================================
+
+  /**
+   * Retorna o ranking de XP da organização
+   */
+  static async getLeaderboard(organizationId: string, limit: number = 10) {
+    const students = await prisma.student.findMany({
+      where: {
+        organizationId,
+        isActive: true,
+      },
+      orderBy: { totalXP: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        totalXP: true,
+        globalLevel: true,
+        currentStreak: true,
+        user: {
+          select: { firstName: true, lastName: true, avatarUrl: true },
+        },
+      },
+    });
+
+    return students.map((s, index) => ({
+      rank: index + 1,
+      studentId: s.id,
+      name: `${s.user.firstName} ${s.user.lastName}`,
+      avatarUrl: s.user.avatarUrl,
+      totalXP: s.totalXP,
+      level: s.globalLevel,
+      streak: s.currentStreak,
+    }));
+  }
+
+  /**
+   * Retorna o perfil de gamificação do aluno
+   */
+  static async getGamificationProfile(studentId: string) {
+    const stats = await this.getStudentStats(studentId);
+
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        user: { select: { firstName: true, lastName: true } },
+        achievements: {
+          include: { achievement: true },
+          orderBy: { unlockedAt: 'desc' },
+          take: 5,
+        },
+      },
+    });
+
+    if (!student) {
+      throw new Error('Student not found');
+    }
+
+    // Buscar histórico de XP recente
+    const recentTransactions = await prisma.pointsTransaction.findMany({
+      where: { studentId },
+      orderBy: { occurredAt: 'desc' },
+      take: 10,
+    });
+
+    return {
+      name: `${student.user.firstName} ${student.user.lastName}`,
+      ...stats,
+      recentAchievements: student.achievements.map(a => ({
+        id: a.achievementId,
+        name: a.achievement.name,
+        description: a.achievement.description,
+        rarity: a.achievement.rarity,
+        badgeImageUrl: a.achievement.badgeImageUrl,
+        unlockedAt: a.unlockedAt,
+        xpReward: a.achievement.xpReward,
+      })),
+      recentXP: recentTransactions.map(t => ({
+        amount: t.amount,
+        source: t.source,
+        occurredAt: t.occurredAt,
+      })),
+    };
   }
 }

@@ -518,13 +518,14 @@ model EducationalPlanTechniques {
 }
 
 model LessonPlanTechniques {
-  lessonPlanId      String
-  techniqueId       String
-  order             Int        @default(0)
-  allocationMinutes Int        @default(0)
-  objectiveMapping  String[]
-  lessonPlan        LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
-  technique         Technique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
+  lessonPlanId        String
+  techniqueId         String
+  order               Int        @default(0)
+  allocationMinutes   Int        @default(0)
+  objectiveMapping    String[]
+  expectedRepetitions Int        @default(1)
+  lessonPlan          LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  technique           Technique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@id([lessonPlanId, techniqueId])
   @@map("lesson_plan_techniques")

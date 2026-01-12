@@ -65,7 +65,7 @@ export class TurmasService {
       where: { id: instructorId },
       select: { userId: true, id: true }
     });
-    
+
     // If not found, try finding by User.id (fallback for frontend sending userId)
     if (!instructor) {
       instructor = await prisma.instructor.findFirst({
@@ -73,7 +73,7 @@ export class TurmasService {
         select: { userId: true, id: true }
       });
     }
-    
+
     return instructor;
   }
 
@@ -163,11 +163,11 @@ export class TurmasService {
 
   async create(data: CreateTurmaData) {
     console.log('[TurmasService] Create method called with data:', JSON.stringify(data, null, 2));
-    
-  // Handle courseIds (multiple courses) or fallback to single courseId
-  const courseIds = data.courseIds && data.courseIds.length > 0 ? data.courseIds : (data.courseId ? [data.courseId] : []);
+
+    // Handle courseIds (multiple courses) or fallback to single courseId
+    const courseIds = data.courseIds && data.courseIds.length > 0 ? data.courseIds : (data.courseId ? [data.courseId] : []);
     console.log('[TurmasService] Processed courseIds:', courseIds);
-    
+
     if (courseIds.length === 0) {
       console.error('[TurmasService] No courses provided');
       throw new Error('At least one course must be provided');
@@ -180,67 +180,67 @@ export class TurmasService {
     try {
       console.log('[TurmasService] Starting transaction...');
       const turma = await prisma.$transaction(async (tx) => {
-      // Create the turma
-      const createdTurma = await tx.turma.create({
-        data: {
-          name: data.name,
-          classType: data.type, // Map 'type' to 'classType'
-          status: 'SCHEDULED',
-          startDate: parseISO(data.startDate),
-          endDate: data.endDate ? parseISO(data.endDate) : null,
-          maxStudents: data.maxStudents || 20,
-          schedule: data.schedule,
-          courseId: primaryCourseId!, // Set primary course for backward compatibility (validated earlier)
-          instructorId: data.instructorId,
-          organizationId: data.organizationId,
-          unitId: data.unitId,
-          trainingAreaId: data.trainingAreaId || null,
-          room: data.room || null,
-          // Prisma expects Decimal for price; allow null if absent
-          price: typeof data.price === 'number' ? new Prisma.Decimal(data.price) : null,
-          description: data.description || null,
-          // requireAttendanceForProgress may not exist in current Prisma client; set via update if needed
+        // Create the turma
+        const createdTurma = await tx.turma.create({
+          data: {
+            name: data.name,
+            classType: data.type, // Map 'type' to 'classType'
+            status: 'SCHEDULED',
+            startDate: parseISO(data.startDate),
+            endDate: data.endDate ? parseISO(data.endDate) : null,
+            maxStudents: data.maxStudents || 20,
+            schedule: data.schedule,
+            courseId: primaryCourseId!, // Set primary course for backward compatibility (validated earlier)
+            instructorId: data.instructorId,
+            organizationId: data.organizationId,
+            unitId: data.unitId,
+            trainingAreaId: data.trainingAreaId || null,
+            room: data.room || null,
+            // Prisma expects Decimal for price; allow null if absent
+            price: typeof data.price === 'number' ? new Prisma.Decimal(data.price) : null,
+            description: data.description || null,
+            // requireAttendanceForProgress may not exist in current Prisma client; set via update if needed
+          }
+        });
+
+        // Create course associations in TurmaCourse table
+        for (const courseId of courseIds) {
+          await tx.turmaCourse.create({
+            data: {
+              turmaId: createdTurma.id,
+              courseId: courseId
+            }
+          });
+        }
+
+        return createdTurma;
+      });
+
+      // Fetch the complete turma with all relationships
+      const completeTurma = await prisma.turma.findUnique({
+        where: { id: turma.id },
+        include: {
+          course: true,
+          instructor: true,
+          organization: true,
+          unit: true,
+          courses: {
+            include: {
+              course: true
+            }
+          }
         }
       });
 
-      // Create course associations in TurmaCourse table
-      for (const courseId of courseIds) {
-        await tx.turmaCourse.create({
-          data: {
-            turmaId: createdTurma.id,
-            courseId: courseId
-          }
-        });
+      // Gerar cronograma automaticamente (não falhar se não conseguir)
+      try {
+        await this.generateSchedule(turma.id);
+      } catch (error) {
+        console.error('Erro ao gerar cronograma da turma:', error);
+        // Não falhar a criação da turma por causa do cronograma
       }
 
-      return createdTurma;
-    });
-
-    // Fetch the complete turma with all relationships
-    const completeTurma = await prisma.turma.findUnique({
-      where: { id: turma.id },
-      include: {
-        course: true,
-        instructor: true,
-        organization: true,
-        unit: true,
-        courses: {
-          include: {
-            course: true
-          }
-        }
-      }
-    });
-
-    // Gerar cronograma automaticamente (não falhar se não conseguir)
-    try {
-      await this.generateSchedule(turma.id);
-    } catch (error) {
-      console.error('Erro ao gerar cronograma da turma:', error);
-      // Não falhar a criação da turma por causa do cronograma
-    }
-
-    return completeTurma;
+      return completeTurma;
     } catch (error) {
       console.error('[TurmasService] Error in create method:', error);
       throw error;
@@ -251,7 +251,7 @@ export class TurmasService {
     try {
       console.log('[TurmasService] Update request for ID:', id);
       console.log('[TurmasService] Update data received:', JSON.stringify(data, null, 2));
-      
+
       const updateData: any = {};
 
       if (data.name) updateData.name = data.name;
@@ -352,10 +352,10 @@ export class TurmasService {
         // Fallback to the previously updated object if refetch somehow fails
         return refreshed ?? updated;
       },
-      {
-        maxWait: 5000, // Reduzido de 10000 - sem lessons o query é rápido
-        timeout: 8000, // Reduzido de 15000
-      });
+        {
+          maxWait: 5000, // Reduzido de 10000 - sem lessons o query é rápido
+          timeout: 8000, // Reduzido de 15000
+        });
 
       console.log('[TurmasService] Update successful');
 
@@ -390,12 +390,12 @@ export class TurmasService {
       }
       throw error;
     }
-  }  
-  
+  }
+
   async delete(id: string) {
     try {
       console.log(`[TurmasService] Deleting turma ${id}...`);
-      
+
       // 🔥 DELETE OPTIMIZATION: Delete in transaction with explicit cascade
       await prisma.$transaction(async (tx) => {
         // 1. Delete attendances first (most records)
@@ -403,25 +403,25 @@ export class TurmasService {
           where: { turmaId: id }
         });
         console.log(`[TurmasService] Deleted ${attendanceCount.count} attendances`);
-        
+
         // 2. Delete lessons (potentially many records)
         const lessonCount = await tx.turmaLesson.deleteMany({
           where: { turmaId: id }
         });
         console.log(`[TurmasService] Deleted ${lessonCount.count} lessons`);
-        
+
         // 3. Delete student enrollments
         const studentCount = await tx.turmaStudent.deleteMany({
           where: { turmaId: id }
         });
         console.log(`[TurmasService] Deleted ${studentCount.count} student enrollments`);
-        
+
         // 4. Delete course associations
         const courseCount = await tx.turmaCourse.deleteMany({
           where: { turmaId: id }
         });
         console.log(`[TurmasService] Deleted ${courseCount.count} course associations`);
-        
+
         // 5. Finally delete the turma itself
         await tx.turma.delete({
           where: { id }
@@ -430,7 +430,7 @@ export class TurmasService {
       }, {
         timeout: 30000 // 30 seconds timeout for large deletes
       });
-      
+
       return true;
     } catch (error) {
       console.error(`[TurmasService] Error deleting turma ${id}:`, error);
@@ -438,7 +438,7 @@ export class TurmasService {
     }
   }
 
-  async generateSchedule(turmaId: string) {
+  async generateSchedule(turmaId: string, startLessonIndex: number = 0) {
     const turma = await prisma.turma.findUnique({
       where: { id: turmaId },
       include: {
@@ -449,7 +449,7 @@ export class TurmasService {
         }
       }
     });
-    
+
     if (!turma) throw new Error('Turma não encontrada');
 
     const { course, schedule, startDate, endDate } = turma;
@@ -458,7 +458,7 @@ export class TurmasService {
     // Limpar cronograma existente
     // 🔥 OPTIMIZATION: Only delete if we're actually going to create new lessons
     const existingCount = await prisma.turmaLesson.count({ where: { turmaId } });
-    
+
     if (existingCount > 0) {
       console.log(`[TurmasService] Deleting ${existingCount} existing lessons for turma ${turmaId}...`);
       await prisma.turmaLesson.deleteMany({
@@ -511,8 +511,8 @@ export class TurmasService {
     }
 
     const timeParts = (scheduleData.time || '00:00').split(':');
-    const scheduleHour = Number.parseInt(timeParts[0] ?? '0', 10);
-    const scheduleMinute = Number.parseInt(timeParts[1] ?? '0', 10);
+    const h = Number.parseInt(timeParts[0] ?? '0', 10);
+    const m = Number.parseInt(timeParts[1] ?? '0', 10);
 
     // Encontrar o primeiro dia alinhado ao cronograma a partir da data inicial
     let currentDate = new Date(startLocal);
@@ -526,8 +526,8 @@ export class TurmasService {
       }
     }
 
-    let lessonIndex = 0;
-    const lessonLimit = lessonPlans.length > 0 ? lessonPlans.length * 104 : 0;
+    let lessonIndex = startLessonIndex;
+    const lessonLimit = lessonPlans.length > 0 ? lessonPlans.length * 104 : 0; // ~2 years guard
 
     while (currentDate <= maxDate) {
       if (scheduleDays.includes(currentDate.getDay())) {
@@ -539,8 +539,8 @@ export class TurmasService {
           currentDate.getFullYear(),
           currentDate.getMonth(),
           currentDate.getDate(),
-          Number.isFinite(scheduleHour) ? scheduleHour : 0,
-          Number.isFinite(scheduleMinute) ? scheduleMinute : 0,
+          Number.isFinite(h) ? h : 0,
+          Number.isFinite(m) ? m : 0,
           0,
           0
         );
@@ -575,8 +575,8 @@ export class TurmasService {
     return lessons;
   }
 
-  async regenerateSchedule(turmaId: string) {
-    return await this.generateSchedule(turmaId);
+  async regenerateSchedule(turmaId: string, startLessonIndex: number = 0) {
+    return await this.generateSchedule(turmaId, startLessonIndex);
   }
 
   async getLessons(turmaId: string, filters: { status?: string } = {}) {
@@ -742,57 +742,57 @@ export class TurmasService {
     });
   }
 
-  
-    async markAttendance(turmaId: string, data: MarkAttendanceData) {
-      // Map status string to boolean flags
-      const present = data.status === 'PRESENT' || data.status === 'LATE' || data.status === 'EXCUSED';
-      const late = data.status === 'LATE';
-      const justified = data.status === 'EXCUSED';
 
-      // Find TurmaStudentId (required by schema)
-      const turmaStudent = await prisma.turmaStudent.findUnique({
-        where: {
-          turmaId_studentId: { turmaId, studentId: data.studentId }
-        }
-      });
+  async markAttendance(turmaId: string, data: MarkAttendanceData) {
+    // Map status string to boolean flags
+    const present = data.status === 'PRESENT' || data.status === 'LATE' || data.status === 'EXCUSED';
+    const late = data.status === 'LATE';
+    const justified = data.status === 'EXCUSED';
 
-      if (!turmaStudent) {
-        throw new Error('Aluno não está matriculado nesta turma');
+    // Find TurmaStudentId (required by schema)
+    const turmaStudent = await prisma.turmaStudent.findUnique({
+      where: {
+        turmaId_studentId: { turmaId, studentId: data.studentId }
       }
+    });
 
-      return await prisma.turmaAttendance.upsert({
-        where: {
-          turmaLessonId_studentId: {
-            turmaLessonId: data.lessonId,
-            studentId: data.studentId
-          }
-        },
-        update: {
-          present,
-          late,
-          justified,
-          checkedAt: new Date()
-        },
-        create: {
-          turmaId,
+    if (!turmaStudent) {
+      throw new Error('Aluno não está matriculado nesta turma');
+    }
+
+    return await prisma.turmaAttendance.upsert({
+      where: {
+        turmaLessonId_studentId: {
           turmaLessonId: data.lessonId,
-          turmaStudentId: turmaStudent.id,
-          studentId: data.studentId,
-          present,
-          late,
-          justified,
-          checkedAt: new Date()
-        },
-        include: {
-          student: true,
-          lesson: {
-            include: {
-              lessonPlan: true
-            }
+          studentId: data.studentId
+        }
+      },
+      update: {
+        present,
+        late,
+        justified,
+        checkedAt: new Date()
+      },
+      create: {
+        turmaId,
+        turmaLessonId: data.lessonId,
+        turmaStudentId: turmaStudent.id,
+        studentId: data.studentId,
+        present,
+        late,
+        justified,
+        checkedAt: new Date()
+      },
+      include: {
+        student: true,
+        lesson: {
+          include: {
+            lessonPlan: true
           }
         }
-      });
-    }
+      }
+    });
+  }
 
   async getReports(turmaId: string, _filters: ReportFilters = {}) {
     const turma = await this.getById(turmaId);
@@ -857,7 +857,7 @@ export class TurmasService {
     return progressReport;
   }
 
-  
+
 
   async search(query: string, filters: any = {}) {
     const where: any = {
@@ -1085,7 +1085,7 @@ export class TurmasService {
           activationDate: new Date()
         }
       });
-      
+
       // TODO: Notify students
     }
   }

@@ -1,0 +1,8 @@
+﻿
+> krav-maga-academy-backend@1.0.4 build
+> node --max-old-space-size=3072 ./node_modules/typescript/bin/tsc --project tsconfig.build.json --skipLibCheck true && tsc-alias && node scripts/copy-public.js
+
+≡ƒôª Copying public folder to dist...
+   From: H:\projetos\academia\public
+   To: H:\projetos\academia\dist\public
+Γ£à Public folder copied successfully!

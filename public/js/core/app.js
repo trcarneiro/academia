@@ -20,18 +20,18 @@ class AcademyApp {
     try {
       const response = await fetch('/version');
       const data = await response.json();
-      
+
       if (data.success) {
         const versionEl = document.getElementById('systemVersion');
         if (versionEl) {
           versionEl.querySelector('.version-number').textContent = `v${data.version}`;
           versionEl.querySelector('.environment-badge').textContent = data.environment.toUpperCase();
-          
+
           // Color coding for environment
           if (data.environment === 'production') {
-             versionEl.querySelector('.environment-badge').style.color = '#28a745'; // Green
+            versionEl.querySelector('.environment-badge').style.color = '#28a745'; // Green
           } else {
-             versionEl.querySelector('.environment-badge').style.color = '#ffc107'; // Yellow/Orange
+            versionEl.querySelector('.environment-badge').style.color = '#ffc107'; // Yellow/Orange
           }
         }
         this.config.version = data.version;
@@ -46,10 +46,10 @@ class AcademyApp {
     // 🔧 TEMPORARY: Populate organization context for dev until Supabase auth is integrated
     // TODO: Remove this when proper auth/session is implemented
     try {
-      const orgId = localStorage.getItem('activeOrganizationId') || 
-                    sessionStorage.getItem('activeOrganizationId') ||
-                    window.currentOrganizationId;
-      
+      const orgId = localStorage.getItem('activeOrganizationId') ||
+        sessionStorage.getItem('activeOrganizationId') ||
+        window.currentOrganizationId;
+
       if (!orgId) {
         // Fallback to Smart Defence organization for development/demo
         // This is ONLY for local development with single org
@@ -61,7 +61,7 @@ class AcademyApp {
         window.currentOrganizationId = orgId;
         console.log('✅ Organization context initialized:', orgId);
       }
-      
+
       // Also add helper to ensure org is available (useful for modules needing guarantee)
       window.ensureOrganizationContext = async () => {
         let attempts = 0;
@@ -71,7 +71,7 @@ class AcademyApp {
         }
         return window.currentOrganizationId;
       };
-      
+
     } catch (err) {
       console.warn('⚠️ Error initializing organization context:', err.message);
     }
@@ -90,7 +90,7 @@ class AcademyApp {
 
     // Load other modules
     const moduleList = [
-      'students', 'classes', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress', 'turmas-sugestoes', 'discounts', 'quickEnrollment'
+      'students', 'packages', 'attendance', 'dashboard', 'activities', 'lesson-plans', 'courses', 'frequency', 'import', 'asaas-import', 'ai', 'agents', 'agent-activity', 'agent-chat-fullscreen', 'turmas', 'organizations', 'units', 'instructors', 'agenda', 'crm', 'checkin-kiosk', 'student-progress', 'turmas-sugestoes', 'discounts', 'quickEnrollment'
     ];
 
     moduleList.forEach(moduleName => {
