@@ -214,8 +214,7 @@ if (-not $DryRun) {
         
         # Upload dos arquivos essenciais
         $filesToUpload = @(
-            "dist/*",
-            "public/*",
+            "dist",
             "prisma/*",
             "package.json",
             "package-lock.json",
