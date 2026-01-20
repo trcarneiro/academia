@@ -1,246 +1,264 @@
 ﻿// AUTH MODULE v2.0 - Supabase Integration
 if (typeof window.AuthModule !== 'undefined') {
-    console.log('Auth Module v2.0 already loaded');
+  console.log('Auth Module v2.0 already loaded');
 } else {
-    console.log('Auth Module v2.0 loaded');
+  console.log('Auth Module v2.0 loaded');
 
-    const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
-    // Use current origin for backend URL to support both local and production environments
-    const BACKEND_URL = window.location.origin;
-    const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
-    const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
+  const SUPABASE_URL = 'https://yawfuymgwukericlhgxh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhd2Z1eW1nd3VrZXJpY2xoZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjA5NTYsImV4cCI6MjA2NjUzNjk1Nn0.sqm8ZAVJoS_tUGSGFuQapJYFTjfdAa7dkLs437A5bUs';
+  // Use current origin for backend URL to support both local and production environments
+  const BACKEND_URL = window.location.origin;
+  const SIGNIN_RELOAD_FLAG = 'auth:signin-reload-pending';
+  const SIGNOUT_RELOAD_FLAG = 'auth:signout-reload-pending';
 
-    let supabaseClient = null;
+  let supabaseClient = null;
 
-    function initializeSupabase() {
-        if (window.supabase && !supabaseClient) {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true, flowType: 'pkce' }
-            });
-            return true;
-        }
-        return false;
+  function initializeSupabase() {
+    if (window.supabase && !supabaseClient) {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true, flowType: 'pkce' }
+      });
+      return true;
     }
+    return false;
+  }
 
-    if (typeof window !== 'undefined') {
-        const checkInterval = setInterval(() => {
-            if (initializeSupabase()) clearInterval(checkInterval);
-        }, 100);
-    }
+  if (typeof window !== 'undefined') {
+    const checkInterval = setInterval(() => {
+      if (initializeSupabase()) clearInterval(checkInterval);
+    }, 100);
+  }
 
-const AuthModule = {
-  container: null,
-  currentUser: null,
-  currentOrganization: null,
-  authAPI: null,
-  hasHandledPersistentSignIn: false,
+  const AuthModule = {
+    container: null,
+    currentUser: null,
+    currentOrganization: null,
+    authAPI: null,
+    hasHandledPersistentSignIn: false,
 
-  // ApiClient compatibility methods
-  getToken() {
-    return this.currentUser?.token || localStorage.getItem('authToken') || localStorage.getItem('token');
-  },
+    // ApiClient compatibility methods
+    getToken() {
+      return this.currentUser?.token || localStorage.getItem('authToken') || localStorage.getItem('token');
+    },
 
-  getUserId() {
-    return this.currentUser?.id || localStorage.getItem('currentUserId') || localStorage.getItem('userId');
-  },
+    getUserId() {
+      return this.currentUser?.id || localStorage.getItem('currentUserId') || localStorage.getItem('userId');
+    },
 
-  async init(container) {
-    this.container = container || document.getElementById('auth-container') || document.body;
-    await this.waitForSupabase();
-    await this.initializeAPI();
-    
-    // IMPORTANTE: Primeiro verificar sessão, só renderizar login se necessário
-    const hasSession = await this.checkSession();
-    
-    // Só configurar listener depois de verificar sessão inicial
-    this.setupAuthStateListener();
-    
-    window.authModule = this;
-    if (window.app) window.app.dispatchEvent('module:loaded', { name: 'auth' });
-    return this;
-  },
+    async init(container) {
+      this.container = container || document.getElementById('auth-container') || document.body;
+      await this.waitForSupabase();
+      await this.initializeAPI();
 
-  async waitForSupabase() {
-    let attempts = 0;
-    while (!supabaseClient && attempts < 50) {
-      await new Promise(r => setTimeout(r, 100));
-      attempts++;
-    }
-    if (!supabaseClient) throw new Error('Supabase timeout');
-  },
+      // Configurar listener ANTES de verificar sessão para capturar INITIAL_SESSION
+      this.setupAuthStateListener();
 
-  async initializeAPI() {
-    if (typeof window.waitForAPIClient === 'function') await window.waitForAPIClient();
-    else {
+      // IMPORTANTE: Verificar sessão após listener estar configurado
+      const hasSession = await this.checkSession();
+
+      window.authModule = this;
+      if (window.app) window.app.dispatchEvent('module:loaded', { name: 'auth' });
+      return this;
+    },
+
+    async waitForSupabase() {
       let attempts = 0;
-      while (!window.createModuleAPI && attempts < 50) {
+      while (!supabaseClient && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
         attempts++;
       }
-    }
-    if (window.createModuleAPI) this.authAPI = window.createModuleAPI('Auth');
-  },
+      if (!supabaseClient) throw new Error('Supabase timeout');
+    },
 
-  async checkSession() {
-    try {
-      console.log('🔍 Checking session...');
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
-      console.log('🔍 Session result:', session ? 'Found' : 'None', error ? `Error: ${error.message}` : '');
-      
-      if (error) {
-        console.error('❌ Session error:', error);
-        this.showLoginUI();
-        return false;
-      }
-      if (session) {
-        console.log('✅ Valid session for:', session.user.email);
-        await this.syncUserWithBackend(session);
-        this.currentUser = session.user;
-        // Attach token for ApiClient compatibility
-        this.currentUser.token = session.access_token;
-        
-        this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
-        this.hasHandledPersistentSignIn = true;
-        
-        // Session válida - esconder overlay de login
-        const authOverlay = document.getElementById('auth-overlay');
-        if (authOverlay) {
-          authOverlay.style.display = 'none';
-          console.log('✅ Auth overlay hidden');
+    async initializeAPI() {
+      if (typeof window.waitForAPIClient === 'function') await window.waitForAPIClient();
+      else {
+        let attempts = 0;
+        while (!window.createModuleAPI && attempts < 50) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
         }
-        console.log('✅ Session válida - usuário autenticado');
-        return true;
-      } else {
-        console.log('⚠️ No session - showing login');
-        this.showLoginUI();
-        return false;
       }
-    } catch (e) { 
-      console.error('Session check error:', e);
-      this.showLoginUI();
-      return false;
-    }
-  },
+      if (window.createModuleAPI) this.authAPI = window.createModuleAPI('Auth');
+    },
 
-  showLoginUI() {
-    const authOverlay = document.getElementById('auth-overlay');
-    if (authOverlay) {
-      authOverlay.style.display = 'block';
-      console.log('🔒 Auth overlay shown');
-    }
-    this.renderLoginForm();
-  },
+    async checkSession() {
+      // Se o listener já detectou usuário, não precisamos checar novamente/mostrar erro
+      if (this.currentUser) {
+        console.log('✅ Session already detected by listener');
+        return true;
+      }
 
-  setupAuthStateListener() {
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-      console.log(`🔔 Auth event: ${event}`);
-      
-      // Tratar sessão válida (SIGNED_IN, TOKEN_REFRESHED, ou INITIAL_SESSION)
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+      try {
+        console.log('🔍 Checking session via getSession()...');
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        console.log('🔍 Session result:', session ? 'Found' : 'None', error ? `Error: ${error.message}` : '');
+
+        if (error) {
+          console.error('❌ Session error:', error);
+          this.showLoginUI();
+          return false;
+        }
         if (session) {
+          console.log('✅ Valid session found via getSession');
           await this.syncUserWithBackend(session);
           this.currentUser = session.user;
-          // Attach token for ApiClient compatibility
           this.currentUser.token = session.access_token;
-          
           this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
-          document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
-          
-          // Esconder overlay de login
-          console.log('✅ Sessão válida detectada - escondendo overlay de login');
+          this.hasHandledPersistentSignIn = true;
+
+          const authOverlay = document.getElementById('auth-overlay');
+          if (authOverlay) authOverlay.style.display = 'none';
+          return true;
+        } else {
+          // Double check if listener picked it up during await
+          if (this.currentUser) {
+            console.log('✅ Session detected by listener during await');
+            return true;
+          }
+
+          console.log('⚠️ No session found via getSession - checking storage...');
+          // Debug storage
+          const sbKey = 'sb-yawfuymgwukericlhgxh-auth-token';
+          const storageItem = localStorage.getItem(sbKey);
+          if (storageItem) {
+            console.log('📦 Found Supabase token in localStorage, requesting refresh...');
+            // Maybe manual re-init or just wait?
+            // If it's there but getSession failed, it might be expired or client misalignment.
+            // Let's not force UI yet if we think it might recover? 
+            // Actually, getSession should have refreshed it. If it returned null, it failed.
+          } else {
+            console.log('❌ No Supabase token in localStorage');
+          }
+
+          this.showLoginUI();
+          return false;
+        }
+      } catch (e) {
+        console.error('Session check error:', e);
+        this.showLoginUI();
+        return false;
+      }
+    },
+
+    showLoginUI() {
+      const authOverlay = document.getElementById('auth-overlay');
+      if (authOverlay) {
+        authOverlay.style.display = 'block';
+        console.log('🔒 Auth overlay shown');
+      }
+      this.renderLoginForm();
+    },
+
+    setupAuthStateListener() {
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        console.log(`🔔 Auth event: ${event}`);
+
+        // Tratar sessão válida (SIGNED_IN, TOKEN_REFRESHED, ou INITIAL_SESSION)
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          if (session) {
+            await this.syncUserWithBackend(session);
+            this.currentUser = session.user;
+            // Attach token for ApiClient compatibility
+            this.currentUser.token = session.access_token;
+
+            this.currentOrganization = session.user.user_metadata?.organizationId || localStorage.getItem('organizationId');
+            document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event, session } }));
+
+            // Esconder overlay de login
+            console.log('✅ Sessão válida detectada - escondendo overlay de login');
+            const authOverlay = document.getElementById('auth-overlay');
+            if (authOverlay) {
+              authOverlay.style.display = 'none';
+              console.log('✅ Auth overlay hidden');
+            } else {
+              console.warn('⚠️ auth-overlay element not found');
+            }
+
+            // Se estiver na página de login, redirecionar para home
+            if (window.location.pathname.includes('login')) {
+              console.log('🔄 Redirecionando de login para home...');
+              window.location.href = '/';
+              return;
+            }
+
+            // Marcar como já processado para evitar loops
+            this.hasHandledPersistentSignIn = true;
+          }
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 SIGNED_OUT detectado');
+          this.currentUser = null;
+          this.currentOrganization = null;
+          this.hasHandledPersistentSignIn = false;
+
+          // Limpar localStorage
+          ['token', 'authToken', 'organizationId', 'activeOrganizationId', 'userId', 'currentUserId', 'userEmail', 'userRole'].forEach(k => localStorage.removeItem(k));
+
+          document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
+
+          // Mostrar overlay de login
           const authOverlay = document.getElementById('auth-overlay');
           if (authOverlay) {
-            authOverlay.style.display = 'none';
-            console.log('✅ Auth overlay hidden');
+            authOverlay.style.display = 'block';
+            this.renderLoginForm();
           } else {
-            console.warn('⚠️ auth-overlay element not found');
+            // Se não tem overlay, redirecionar para login
+            window.location.href = '/login.html';
           }
-          
-          // Se estiver na página de login, redirecionar para home
-          if (window.location.pathname.includes('login')) {
-            console.log('🔄 Redirecionando de login para home...');
-            window.location.href = '/';
-            return;
-          }
-          
-          // Marcar como já processado para evitar loops
-          this.hasHandledPersistentSignIn = true;
-        }
-      } else if (event === 'SIGNED_OUT') {
-        console.log('🚪 SIGNED_OUT detectado');
-        this.currentUser = null;
-        this.currentOrganization = null;
-        this.hasHandledPersistentSignIn = false;
-        
-        // Limpar localStorage
-        ['token', 'authToken', 'organizationId', 'activeOrganizationId', 'userId', 'currentUserId', 'userEmail', 'userRole'].forEach(k => localStorage.removeItem(k));
-        
-        document.dispatchEvent(new CustomEvent('auth:statechange', { detail: { event } }));
-        
-        // Mostrar overlay de login
-        const authOverlay = document.getElementById('auth-overlay');
-        if (authOverlay) {
-          authOverlay.style.display = 'block';
-          this.renderLoginForm();
-        } else {
-          // Se não tem overlay, redirecionar para login
-          window.location.href = '/login.html';
-        }
-      }
-    });
-  },
-
-  async syncUserWithBackend(session) {
-    try {
-      if (!session || !session.user) return;
-      const user = session.user;
-      const userMeta = user.user_metadata || {};
-      const appMeta = user.app_metadata || {};
-      let orgId = userMeta.organizationId || appMeta.organizationId;
-      
-      if (!orgId) {
-        const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email, session.access_token);
-        if (fetchedOrgId) {
-          orgId = fetchedOrgId;
-          localStorage.setItem('organizationId', fetchedOrgId);
-        }
-        if (!orgId) {
-          console.warn(' No organizationId found - using default');
-          orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
-        }
-      }
-      
-      // Update storage with keys compatible with ApiClient
-      localStorage.setItem('token', session.access_token); // Legacy
-      localStorage.setItem('authToken', session.access_token); // ApiClient compatible
-      
-      localStorage.setItem('organizationId', orgId);
-      localStorage.setItem('activeOrganizationId', orgId);
-      
-      localStorage.setItem('userId', user.id); // Legacy
-      localStorage.setItem('currentUserId', user.id); // ApiClient compatible
-      
-      localStorage.setItem('userEmail', user.email);
-      console.log(`✅ User synced: ${user.email} → Org: ${orgId.substring(0, 8)}...`);
-    } catch (e) { console.error('Sync error:', e); }
-  },
-
-  async fetchOrganizationFromBackend(email, token) {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/users/by-email?email=${encodeURIComponent(email)}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
         }
       });
-      if (res.ok) return (await res.json()).data?.organizationId;
-    } catch (e) { console.error('Fetch org error:', e); }
-    return null;
-  },
+    },
 
-  renderLoginForm() {
-    const isDev = window.location.hostname === 'localhost';
-    this.container.innerHTML = `
+    async syncUserWithBackend(session) {
+      try {
+        if (!session || !session.user) return;
+        const user = session.user;
+        const userMeta = user.user_metadata || {};
+        const appMeta = user.app_metadata || {};
+        let orgId = userMeta.organizationId || appMeta.organizationId;
+
+        if (!orgId) {
+          const fetchedOrgId = await this.fetchOrganizationFromBackend(user.email, session.access_token);
+          if (fetchedOrgId) {
+            orgId = fetchedOrgId;
+            localStorage.setItem('organizationId', fetchedOrgId);
+          }
+          if (!orgId) {
+            console.warn(' No organizationId found - using default');
+            orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+          }
+        }
+
+        // Update storage with keys compatible with ApiClient
+        localStorage.setItem('token', session.access_token); // Legacy
+        localStorage.setItem('authToken', session.access_token); // ApiClient compatible
+
+        localStorage.setItem('organizationId', orgId);
+        localStorage.setItem('activeOrganizationId', orgId);
+
+        localStorage.setItem('userId', user.id); // Legacy
+        localStorage.setItem('currentUserId', user.id); // ApiClient compatible
+
+        localStorage.setItem('userEmail', user.email);
+        console.log(`✅ User synced: ${user.email} → Org: ${orgId.substring(0, 8)}...`);
+      } catch (e) { console.error('Sync error:', e); }
+    },
+
+    async fetchOrganizationFromBackend(email, token) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/users/by-email?email=${encodeURIComponent(email)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) return (await res.json()).data?.organizationId;
+      } catch (e) { console.error('Fetch org error:', e); }
+      return null;
+    },
+
+    renderLoginForm() {
+      const isDev = window.location.hostname === 'localhost';
+      this.container.innerHTML = `
       <div class="module-header-premium">
         <h1>Login</h1>
         <p>Powered by Supabase</p>
@@ -264,65 +282,65 @@ const AuthModule = {
         <div style="text-align:center;margin-top:2rem"><a href="/reset-password.html" style="color:#667eea">Esqueceu sua senha?</a></div>
       </div>
     `;
-    this.setupEvents();
-  },
+      this.setupEvents();
+    },
 
-  setupEvents() {
-    const form = document.getElementById('login-form');
-    if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleLogin(); });
-    const googleBtn = document.getElementById('google-signin');
-    if (googleBtn) googleBtn.addEventListener('click', async () => await this.handleGoogleSignIn());
-  },
+    setupEvents() {
+      const form = document.getElementById('login-form');
+      if (form) form.addEventListener('submit', async (e) => { e.preventDefault(); await this.handleLogin(); });
+      const googleBtn = document.getElementById('google-signin');
+      if (googleBtn) googleBtn.addEventListener('click', async () => await this.handleGoogleSignIn());
+    },
 
-  async handleLogin() {
-    if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('login-btn');
-    if (!email || !password) { this.showMessage('Preencha todos os campos', 'error'); return; }
-    try {
-      if (btn) { btn.disabled = true; btn.textContent = 'Autenticando...'; }
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      this.showMessage('Login bem-sucedido!', 'success');
-    } catch (e) {
-      let msg = e.message;
-      if (msg.includes('Invalid login')) msg = 'Email ou senha incorretos';
-      this.showMessage(msg, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
+    async handleLogin() {
+      if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('login-btn');
+      if (!email || !password) { this.showMessage('Preencha todos os campos', 'error'); return; }
+      try {
+        if (btn) { btn.disabled = true; btn.textContent = 'Autenticando...'; }
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        this.showMessage('Login bem-sucedido!', 'success');
+      } catch (e) {
+        let msg = e.message;
+        if (msg.includes('Invalid login')) msg = 'Email ou senha incorretos';
+        this.showMessage(msg, 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
+      }
+    },
+
+    async handleGoogleSignIn() {
+      if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
+      try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin + '/index.html' }
+        });
+        if (error) throw error;
+      } catch (e) { this.showMessage(e.message, 'error'); }
+    },
+
+    async handleLogout() {
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient.auth.signOut();
+      } catch (e) { console.error('Logout error:', e); }
+    },
+
+    showMessage(msg, type) {
+      const el = document.getElementById('auth-message');
+      if (!el) return;
+      const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+      const icons = { success: '', error: '', warning: '', info: 'ℹ' };
+      el.innerHTML = `<div style="padding:1rem;border-radius:8px;background:${colors[type]}22;border:1px solid ${colors[type]};color:${colors[type]}">${icons[type]} ${msg}</div>`;
+      if (type === 'success') setTimeout(() => el.innerHTML = '', 5000);
     }
-  },
+  };
 
-  async handleGoogleSignIn() {
-    if (!supabaseClient) { this.showMessage('Sistema não pronto', 'error'); return; }
-    try {
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/index.html' }
-      });
-      if (error) throw error;
-    } catch (e) { this.showMessage(e.message, 'error'); }
-  },
-
-  async handleLogout() {
-    if (!supabaseClient) return;
-    try {
-      await supabaseClient.auth.signOut();
-    } catch (e) { console.error('Logout error:', e); }
-  },
-
-  showMessage(msg, type) {
-    const el = document.getElementById('auth-message');
-    if (!el) return;
-    const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
-    const icons = { success: '', error: '', warning: '', info: 'ℹ' };
-    el.innerHTML = `<div style="padding:1rem;border-radius:8px;background:${colors[type]}22;border:1px solid ${colors[type]};color:${colors[type]}">${icons[type]} ${msg}</div>`;
-    if (type === 'success') setTimeout(() => el.innerHTML = '', 5000);
-  }
-};
-
-window.AuthModule = AuthModule;
-window.authModule = AuthModule;
-window.initAuthModule = async (c) => { AuthModule.container = c || document.body; return await AuthModule.init(c); };
-window.logout = async () => { if (window.authModule) await window.authModule.handleLogout(); };
+  window.AuthModule = AuthModule;
+  window.authModule = AuthModule;
+  window.initAuthModule = async (c) => { AuthModule.container = c || document.body; return await AuthModule.init(c); };
+  window.logout = async () => { if (window.authModule) await window.authModule.handleLogout(); };
 }

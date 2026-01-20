@@ -340,12 +340,12 @@ class ConfirmationView {
         }
 
         try {
-            // Fetch available plans
-            const response = await fetch('/api/billing-plans');
-            if (!response.ok) throw new Error('Erro ao carregar planos');
+            // Fetch available plans using moduleAPI (includes proper headers)
+            const response = await this.moduleAPI.request('/api/billing-plans', {
+                method: 'GET'
+            });
 
-            const result = await response.json();
-            const plans = (result.data || result || []).filter(p => p.isActive !== false);
+            const plans = (response.data || response || []).filter(p => p.isActive !== false);
 
             if (plans.length === 0) {
                 this.showNoPlansFallback();
@@ -433,22 +433,16 @@ class ConfirmationView {
         `;
 
         try {
-            const response = await fetch('/api/subscriptions/reactivate', {
+            // Use moduleAPI to include organization context
+            const response = await this.moduleAPI.request('/api/subscriptions/reactivate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     studentId: student.id,
                     planId: plan.id
                 })
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Erro ao processar');
-            }
-
-            const result = await response.json();
-            const data = result.data || result;
+            const data = response.data || response;
 
             // Check if PIX was generated
             if (data.pix?.qrCode || data.pix?.copyPaste) {
