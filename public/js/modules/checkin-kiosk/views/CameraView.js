@@ -489,113 +489,7 @@ class CameraView {
         }
     }
 
-    /**
-     * Show autocomplete suggestions
-     */
-    async showAutocomplete(query) {
-        try {
-            // Check if onAutocomplete callback exists
-            if (!this.onAutocomplete) {
-                console.warn('⚠️ No autocomplete callback defined');
-                return;
-            }
 
-            const results = await this.onAutocomplete(query);
-
-            if (!results || results.length === 0) {
-                this.hideAutocomplete();
-                return;
-            }
-
-            // Find or create wrapper with position:relative
-            let searchBox = this.container.querySelector('.search-box-large');
-            if (!searchBox) {
-                searchBox = this.container.querySelector('.search-box-tablet');
-            }
-            if (!searchBox) {
-                searchBox = this.container.querySelector('.manual-search-card');
-            }
-
-            if (!searchBox) {
-                console.error('❌ Search box container not found');
-                console.log('🔍 Available containers:', {
-                    searchBoxLarge: !!this.container.querySelector('.search-box-large'),
-                    searchBoxTablet: !!this.container.querySelector('.search-box-tablet'),
-                    manualSearchCard: !!this.container.querySelector('.manual-search-card'),
-                    container: this.container
-                });
-                return;
-            }
-
-            // Ensure search box has position:relative
-            if (getComputedStyle(searchBox).position === 'static') {
-                searchBox.style.position = 'relative';
-            }
-
-            // Create/update autocomplete dropdown
-            let dropdown = this.container.querySelector('.autocomplete-dropdown');
-            if (!dropdown) {
-                dropdown = document.createElement('div');
-                dropdown.className = 'autocomplete-dropdown';
-                dropdown.setAttribute('role', 'listbox');
-                searchBox.appendChild(dropdown);
-                console.log('✅ Autocomplete dropdown created and attached');
-            }
-
-            // Ordenar alfabeticamente antes de exibir
-            const sortedResults = results.sort((a, b) => {
-                const nameA = (a.name || a.firstName + ' ' + a.lastName).toLowerCase();
-                const nameB = (b.name || b.firstName + ' ' + b.lastName).toLowerCase();
-                return nameA.localeCompare(nameB, 'pt-BR');
-            });
-
-            // Mostrar até 10 resultados (aumentado de 5 para 10)
-            dropdown.innerHTML = sortedResults.slice(0, 10).map(student => `
-                <div class="autocomplete-item" 
-                     data-student-id="${student.id}" 
-                     data-student-name="${student.name || student.firstName + ' ' + student.lastName}"
-                     role="option"
-                     tabindex="0"
-                     aria-label="Select ${student.name || student.firstName + ' ' + student.lastName}">
-                    <span class="student-name">${student.name || student.firstName + ' ' + student.lastName}</span>
-                    <span class="student-detail">${student.matricula || student.cpf || 'Sem matrícula'}</span>
-                </div>
-            `).join('');
-
-            dropdown.style.display = 'block';
-            console.log('✅ Autocomplete dropdown visible with', sortedResults.length, 'total results, showing first 10');
-
-            // Add click listeners to items - IR DIRETO PARA DASHBOARD
-            dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-                const selectItem = () => {
-                    const studentId = item.dataset.studentId;
-                    const studentName = item.dataset.studentName;
-
-                    console.log('🎯 Autocomplete item clicked:', studentName, studentId);
-
-                    this.hideAutocomplete();
-
-                    // IR DIRETO PARA DASHBOARD (sem passar pela lista)
-                    if (this.onStudentSelect) {
-                        this.onStudentSelect({ studentId, name: studentName });
-                    }
-                };
-
-                item.addEventListener('click', selectItem);
-
-                // Add keyboard support
-                item.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        selectItem();
-                    }
-                });
-            });
-
-        } catch (error) {
-            console.error('❌ Autocomplete error:', error);
-        }
-    }
 
     /**
      * Hide autocomplete dropdown
@@ -606,6 +500,8 @@ class CameraView {
             dropdown.style.display = 'none';
         }
     }
+
+
 
     /**
      * Update detection status - COMPATIBLE with Kiosk V3
@@ -764,6 +660,31 @@ class CameraView {
                 </div>
             </div>
         `).join('');
+    }
+
+    /**
+     * Show face recognition match
+     * @param {Object} match - Match object with studentId, name, similarity
+     */
+    showMatch(match) {
+        const statusText = this.container.querySelector('#face-status-text');
+        if (statusText) {
+            statusText.textContent = `✅ ${match.name} (${match.similarity}%)`;
+            statusText.style.color = '#10b981'; // Green color for success
+        }
+
+        // Optional: Add visual feedback to camera overlay
+        const overlay = this.container.querySelector('.camera-overlay');
+        if (overlay) {
+            overlay.style.borderColor = '#10b981';
+            overlay.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+
+            // Reset after 2 seconds
+            setTimeout(() => {
+                overlay.style.borderColor = '';
+                overlay.style.boxShadow = '';
+            }, 2000);
+        }
     }
 
     /**
