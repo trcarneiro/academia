@@ -211,6 +211,13 @@ class SPARouter {
             return;
         }
 
+        // ✅ PREVENT RE-NAVIGATION IF INITIALIZING
+        const state = this.getModuleState(module);
+        if (state.isInitializing) {
+            console.log(`⏳ [Router] Module ${module} is still initializing, skipping re-navigation`);
+            return;
+        }
+
         if (this.routes[module]) {
             this.isNavigating = true;
             this.lastNavigatedModule = module;
@@ -258,7 +265,7 @@ class SPARouter {
         // Hide default header for modules that have their own premium headers
         const defaultHeader = document.querySelector('.module-header');
         if (defaultHeader) {
-            const modulesWithOwnHeaders = ['students', 'activities', 'lesson-plans', 'courses', 'packages', 'billing'];
+            const modulesWithOwnHeaders = ['students', 'activities', 'lesson-plans', 'courses', 'packages', 'billing', 'quickEnrollment'];
             if (modulesWithOwnHeaders.includes(moduleName)) {
                 defaultHeader.style.display = 'none';
             } else {
@@ -337,7 +344,7 @@ class SPARouter {
             },
             'courses': {
                 css: 'css/modules/courses.css',
-                js: 'js/modules/courses/index.js'
+                js: 'js/modules/courses.js'
             },
             'course-editor': {
                 css: 'css/modules/courses.css',
@@ -388,10 +395,10 @@ class SPARouter {
                     'js/modules/checkin-kiosk/services/CameraService.js',
                     'js/modules/checkin-kiosk/services/BiometricService.js',
                     'js/modules/checkin-kiosk/services/AttendanceService.js',
-                    'js/modules/checkin-kiosk/views/CameraView.js',
+                    'js/modules/checkin-kiosk/views/CameraView.v2.js',
                     'js/modules/checkin-kiosk/views/ConfirmationView.js',
                     'js/modules/checkin-kiosk/views/SuccessView.js',
-                    'js/modules/checkin-kiosk/controllers/CheckinController.js',
+                    'js/modules/checkin-kiosk/controllers/CheckinController.v2.js',
                     'js/modules/checkin-kiosk/index.js'
                 ]
             },
@@ -441,7 +448,7 @@ class SPARouter {
             },
             'quickEnrollment': {
                 css: 'css/modules/quick-enrollment.css', // Fix: Use dash in filename
-                js: 'js/modules/quick-enrollment/index.js'
+                js: 'js/modules/quick-enrollment/index.js?v=5'
             }
         };
 
@@ -510,11 +517,16 @@ class SPARouter {
     }
 
     loadJS(url) {
-        // Evitar carregamento duplicado
-        if (document.querySelector(`script[src="${url}"]`)) return;
+        // Obter versão do app ou timestamp
+        const version = window.app?.version || window.appConfig?.version || Date.now();
+        const urlWithVersion = url.includes('?') ? `${url}&v=${version}` : `${url}?v=${version}`;
+
+        // Evitar carregamento duplicado (verifica se já existe script com essa URL base)
+        // Nota: checamos a URL original para evitar duplicação se a versão mudar na mesma sessão
+        if (document.querySelector(`script[src^="${url}"]`)) return;
 
         const script = document.createElement('script');
-        script.src = url;
+        script.src = urlWithVersion;
 
         // Verificar se é um módulo ES6 (baseado no caminho)
         if (url.includes('student-editor') || url.includes('techniques') ||
@@ -943,7 +955,10 @@ router.registerRoute('courses', () => {
             router.loadModuleAssets('courses');
 
             // Re-initialize if already loaded (Subsequent loads)
-            if (window.CoursesModule) {
+            if (typeof window.initializeCoursesModule === 'function') {
+                window.initializeCoursesModule();
+            } else if (window.CoursesModule && window.CoursesModule.init) {
+                // Fallback for V2 if still present
                 window.CoursesModule.init();
             }
         });
@@ -2168,10 +2183,10 @@ router.registerRoute('checkin-kiosk', async () => {
             'js/modules/checkin-kiosk/services/CameraService.js',
             'js/modules/checkin-kiosk/services/BiometricService.js',
             'js/modules/checkin-kiosk/services/AttendanceService.js',
-            'js/modules/checkin-kiosk/views/CameraView.js',
+            'js/modules/checkin-kiosk/views/CameraView.v2.js',
             'js/modules/checkin-kiosk/views/ConfirmationView.js',
             'js/modules/checkin-kiosk/views/SuccessView.js',
-            'js/modules/checkin-kiosk/controllers/CheckinController.js',
+            'js/modules/checkin-kiosk/controllers/CheckinController.v2.js',
             'js/modules/checkin-kiosk/index.js'
         ]);
         console.log('✅ CheckinKiosk assets loaded');
@@ -3075,8 +3090,11 @@ router.registerRoute('classroom-display', async () => {
  * @param {string[]} urls - Array of script URLs
  */
 async function loadScriptsSequentially(urls) {
+    const version = window.sysVersion || '2.3.2.1';
     for (const url of urls) {
-        await loadScript(url);
+        // Build url with version if not present
+        const scriptUrl = url.includes('?v=') ? url : `${url}?v=${version}`;
+        await loadScript(scriptUrl);
     }
 }
 
@@ -3086,24 +3104,28 @@ async function loadScriptsSequentially(urls) {
  */
 function loadScript(url) {
     return new Promise((resolve, reject) => {
-        // Avoid duplicate loading
-        if (document.querySelector(`script[src="${url}"]`)) {
+        // Obter versão do app ou timestamp
+        const version = window.app?.version || window.appConfig?.version || Date.now();
+        const urlWithVersion = url.includes('?') ? `${url}&v=${version}` : `${url}?v=${version}`;
+
+        // Avoid duplicate loading (check base URL)
+        if (document.querySelector(`script[src^="${url}"]`)) {
             console.log(`✓ Script already loaded: ${url}`);
             resolve();
             return;
         }
 
         const script = document.createElement('script');
-        script.src = url;
+        script.src = urlWithVersion;
         script.type = 'application/javascript';
 
         script.onload = () => {
-            console.log(`✓ Script loaded: ${url}`);
+            console.log(`✓ Script loaded: ${urlWithVersion}`);
             resolve();
         };
 
         script.onerror = () => {
-            const error = new Error(`Failed to load script: ${url}`);
+            const error = new Error(`Failed to load script: ${urlWithVersion}`);
             console.error('❌', error.message);
             reject(error);
         };

@@ -10,10 +10,10 @@ import { logger } from '@/utils/logger';
 export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
 
     /**
-     * GET /api/classroom/current-display
+     * GET /api/classroom-display/current
      * Returns the current class info for display (auto-detects based on time)
      */
-    fastify.get('/current-display', async (request: FastifyRequest, reply: FastifyReply) => {
+    fastify.get('/current', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             const { requireOrganizationId } = await import('@/utils/tenantHelpers');
             const organizationId = requireOrganizationId(request, reply);
@@ -53,12 +53,10 @@ export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
                     },
                     lessonPlan: {
                         include: {
-                            sections: {
-                                orderBy: { order: 'asc' },
+                            activityItems: {
+                                orderBy: { ord: 'asc' },
                                 include: {
-                                    activities: {
-                                        orderBy: { order: 'asc' }
-                                    }
+                                    activity: true
                                 }
                             }
                         }
@@ -71,8 +69,14 @@ export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
             let currentClass = null;
             for (const cls of classes) {
                 const classDate = new Date(cls.date);
-                const [startHour, startMin] = (cls.startTime || '00:00').split(':').map(Number);
-                const [endHour, endMin] = (cls.endTime || '23:59').split(':').map(Number);
+
+                const startTimeDate = new Date(cls.startTime);
+                const startHour = startTimeDate.getHours();
+                const startMin = startTimeDate.getMinutes();
+
+                const endTimeDate = new Date(cls.endTime);
+                const endHour = endTimeDate.getHours();
+                const endMin = endTimeDate.getMinutes();
 
                 const classStart = new Date(classDate);
                 classStart.setHours(startHour, startMin, 0, 0);
@@ -139,10 +143,10 @@ export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
     });
 
     /**
-     * GET /api/classroom/:id/display
+     * GET /api/classroom-display/:id
      * Returns display info for a specific class
      */
-    fastify.get('/:id/display', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+    fastify.get('/:id', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
         try {
             const { id } = request.params;
 
@@ -162,12 +166,10 @@ export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
                     },
                     lessonPlan: {
                         include: {
-                            sections: {
-                                orderBy: { order: 'asc' },
+                            activityItems: {
+                                orderBy: { ord: 'asc' },
                                 include: {
-                                    activities: {
-                                        orderBy: { order: 'asc' }
-                                    }
+                                    activity: true
                                 }
                             }
                         }
@@ -184,8 +186,14 @@ export default async function classroomDisplayRoutes(fastify: FastifyInstance) {
 
             const now = new Date();
             const classDate = new Date(cls.date);
-            const [startHour, startMin] = (cls.startTime || '00:00').split(':').map(Number);
-            const [endHour, endMin] = (cls.endTime || '23:59').split(':').map(Number);
+
+            const startTimeDate = new Date(cls.startTime);
+            const startHour = startTimeDate.getHours();
+            const startMin = startTimeDate.getMinutes();
+
+            const endTimeDate = new Date(cls.endTime);
+            const endHour = endTimeDate.getHours();
+            const endMin = endTimeDate.getMinutes();
 
             const classStart = new Date(classDate);
             classStart.setHours(startHour, startMin, 0, 0);
@@ -236,19 +244,41 @@ function flattenLessonPlanActivities(lessonPlan: any): any[] {
     const activities: any[] = [];
     let cumulativeStart = 0;
 
-    for (const section of (lessonPlan.sections || [])) {
-        for (const activity of (section.activities || [])) {
-            const duration = activity.durationMinutes || activity.duration || 10;
+    // Handle new structure (activityItems)
+    if (lessonPlan.activityItems && Array.isArray(lessonPlan.activityItems)) {
+        for (const item of lessonPlan.activityItems) {
+            const activity = item.activity || {};
+            const duration = item.duration || activity.durationMinutes || 10;
+
             activities.push({
-                id: activity.id,
-                name: activity.name || activity.title || section.name,
-                description: activity.description,
+                id: activity.id || item.id,
+                name: activity.title || item.name || 'Atividade',
+                description: activity.description || item.objectives,
                 duration,
                 startMinute: cumulativeStart,
                 endMinute: cumulativeStart + duration,
-                type: section.name || section.type
+                type: item.segment || activity.type
             });
             cumulativeStart += duration;
+        }
+    }
+
+    // Fallback for legacy structure
+    if (lessonPlan.sections && Array.isArray(lessonPlan.sections)) {
+        for (const section of lessonPlan.sections) {
+            for (const activity of (section.activities || [])) {
+                const duration = activity.durationMinutes || activity.duration || 10;
+                activities.push({
+                    id: activity.id,
+                    name: activity.name || activity.title || section.name,
+                    description: activity.description,
+                    duration,
+                    startMinute: cumulativeStart,
+                    endMinute: cumulativeStart + duration,
+                    type: section.name || section.type
+                });
+                cumulativeStart += duration;
+            }
         }
     }
 

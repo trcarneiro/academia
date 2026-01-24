@@ -26,7 +26,18 @@ export default async function instructorDashboardRoutes(fastify: FastifyInstance
 
             // Get instructor ID from auth context or query
             // For now, support query param for testing; in production use auth
-            const instructorId = (request.query as any).instructorId || (request as any).user?.instructorId;
+            let instructorId = (request.query as any).instructorId || (request as any).user?.instructorId;
+
+            // FIX: If no instructorId in token, try to find it from user.id
+            if (!instructorId && (request as any).user?.id) {
+                const instructor = await prisma.instructor.findUnique({
+                    where: { userId: (request as any).user.id },
+                    select: { id: true }
+                });
+                if (instructor) {
+                    instructorId = instructor.id;
+                }
+            }
 
             if (!instructorId) {
                 return reply.code(400).send({
@@ -79,13 +90,12 @@ export default async function instructorDashboardRoutes(fastify: FastifyInstance
                     },
                     lessonPlan: {
                         include: {
-                            sections: {
-                                orderBy: { order: 'asc' },
+                            activityItems: {
+                                orderBy: { ord: 'asc' },
                                 include: {
-                                    activities: {
-                                        orderBy: { order: 'asc' },
+                                    activity: {
                                         include: {
-                                            technique: {
+                                            refTechnique: {
                                                 select: {
                                                     id: true,
                                                     name: true
@@ -257,17 +267,34 @@ function formatClassForResponse(cls: any, startTime: Date, endTime: Date, isCurr
     if (cls.lessonPlan) {
         const allActivities: any[] = [];
 
-        for (const section of (cls.lessonPlan.sections || [])) {
-            for (const activity of (section.activities || [])) {
+        // Handle new structure (activityItems)
+        if (cls.lessonPlan.activityItems && Array.isArray(cls.lessonPlan.activityItems)) {
+            for (const item of cls.lessonPlan.activityItems) {
+                const activity = item.activity || {};
                 allActivities.push({
-                    id: activity.id,
-                    name: activity.name || activity.title,
-                    description: activity.description,
-                    duration: activity.durationMinutes || activity.duration,
-                    type: section.name || section.type,
+                    id: activity.id || item.id,
+                    name: activity.title || item.name || 'Atividade',
+                    description: activity.description || item.objectives,
+                    duration: item.duration || activity.durationMinutes || 10,
+                    type: item.segment || activity.type,
                     order: allActivities.length + 1,
-                    techniques: activity.technique ? [{ name: activity.technique.name }] : []
+                    techniques: activity.refTechnique ? [{ name: activity.refTechnique.name }] : []
                 });
+            }
+        } else {
+            // Fallback for legacy structure
+            for (const section of (cls.lessonPlan.sections || [])) {
+                for (const activity of (section.activities || [])) {
+                    allActivities.push({
+                        id: activity.id,
+                        name: activity.name || activity.title,
+                        description: activity.description,
+                        duration: activity.durationMinutes || activity.duration,
+                        type: section.name || section.type,
+                        order: allActivities.length + 1,
+                        techniques: activity.technique ? [{ name: activity.technique.name }] : []
+                    });
+                }
             }
         }
 

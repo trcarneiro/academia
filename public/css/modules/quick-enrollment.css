@@ -16,7 +16,8 @@
     padding: 1rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--pvd-text);
-    padding-bottom: 80px; /* Space for bottom bar */
+    padding-bottom: 80px;
+    /* Space for bottom bar */
 }
 
 .pvd-header {
@@ -91,8 +92,15 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .pvd-input-group {
@@ -264,14 +272,17 @@
 }
 
 .pvd-camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.pvd-camera-modal .pvd-camera-controls {
     position: absolute;
     bottom: 2rem;
     left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    align-items: center;
 }
 
 .pvd-shutter-btn {
@@ -279,14 +290,14 @@
     height: 70px;
     border-radius: 50%;
     background: white;
-    border: 4px solid rgba(255,255,255,0.3);
+    border: 4px solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
 }
 
 .pvd-close-camera {
     color: white;
     font-size: 1.5rem;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -327,13 +338,13 @@
 }
 
 .pvd-tab:hover {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .pvd-tab.active {
     background: white;
     color: var(--pvd-primary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .pvd-tab i {
@@ -500,7 +511,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.3);
+    border: 3px solid rgba(255, 255, 255, 0.3);
     object-fit: cover;
 }
 
@@ -510,7 +521,7 @@
 }
 
 .pvd-selected-student-info .pvd-status-badge {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
@@ -519,7 +530,7 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     color: white;
     font-size: 1rem;
     cursor: pointer;
@@ -530,7 +541,7 @@
 }
 
 .pvd-btn-icon:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .pvd-edit-section {
@@ -664,7 +675,7 @@
 }
 
 .pvd-btn-clear:hover {
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
@@ -676,15 +687,15 @@
         padding: 8px 10px;
         font-size: 0.8rem;
     }
-    
+
     .pvd-tab i {
         display: none;
     }
-    
+
     .pvd-student-meta {
         font-size: 0.75rem;
     }
-    
+
     .pvd-status-badge {
         padding: 3px 8px;
         font-size: 0.65rem;
@@ -696,7 +707,7 @@
 .pvd-form-simplified {
     background: var(--pvd-card-bg);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .pvd-section {
@@ -956,7 +967,7 @@
     padding: 1.5rem;
     background: white;
     border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .pvd-camera-container {
@@ -968,7 +979,7 @@
     overflow: hidden;
     margin-bottom: 1rem;
     border: 4px solid white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .pvd-camera-preview,
@@ -1020,7 +1031,18 @@
 }
 
 .pvd-btn-camera.retake {
-    background: #e53e3e;
+    background: linear-gradient(135deg, #f56565, #c53030);
+    /* Warm red/orange for warning/redo */
+}
+
+/* Fix for camera controls in simplified form */
+.pvd-form-simplified .pvd-camera-controls {
+    position: static;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+    background: transparent;
+    padding: 0;
 }
 
 /* Quick Edit Styles */
@@ -1052,7 +1074,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
     display: flex;
     justify-content: center;
@@ -1067,7 +1089,7 @@
     max-width: 600px;
     border-radius: 1rem;
     padding: 2rem;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .pvd-search-input-group {

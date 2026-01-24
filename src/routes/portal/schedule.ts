@@ -37,7 +37,7 @@ export default async function portalScheduleRoutes(fastify: FastifyInstance) {
   fastify.post('/enroll/:turmaId', async (request, reply) => {
     const { turmaId } = request.params as { turmaId: string };
     const organizationId = request.organizationId;
-    
+
     if (!organizationId) return ResponseHelper.error(reply, 'Organização não identificada', 400);
 
     try {
@@ -46,6 +46,16 @@ export default async function portalScheduleRoutes(fastify: FastifyInstance) {
     } catch (error) {
       console.error(error);
       return ResponseHelper.error(reply, error.message || 'Erro ao realizar matrícula', 400);
+    }
+  });
+  // Get class history
+  fastify.get('/history', async (request, reply) => {
+    try {
+      const history = await service.getHistory(request.studentId);
+      return ResponseHelper.success(reply, history);
+    } catch (error) {
+      console.error(error);
+      return ResponseHelper.error(reply, 'Erro ao buscar histórico', 500);
     }
   });
 }

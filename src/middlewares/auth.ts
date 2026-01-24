@@ -16,20 +16,34 @@ export const authenticateToken = async (
     }
 
     // Verify with Supabase server client
-    const { data: { user }, error } = await serverSupabase.auth.getUser(token);
-    if (error || !user) {
-      throw new Error('Invalid token');
-    }
+    try {
+      const { data: { user }, error } = await serverSupabase.auth.getUser(token);
+      if (error || !user) throw new Error('Invalid Supabase token');
 
-    // Map Supabase user to AuthenticatedUser
-    (request as any).user = {
-      id: user.id,
-      email: user.email || '',
-      role: (user.app_metadata?.role as UserRole) || 'STUDENT', // Assume role in app_metadata
-      organizationId: (user.app_metadata?.orgId as string) || '',
-    };
+      // Map Supabase user to AuthenticatedUser
+      (request as any).user = {
+        id: user.id,
+        email: user.email || '',
+        role: (user.app_metadata?.role as UserRole) || 'STUDENT',
+        organizationId: (user.app_metadata?.orgId as string) || '',
+      };
+    } catch (supabaseError) {
+      // Fallback: Verify as local JWT (for dev-auth)
+      try {
+        const decoded = (request.server as any).jwt.verify(token) as any;
+        (request as any).user = {
+          id: decoded.userId || decoded.sub,
+          email: decoded.email,
+          role: decoded.role,
+          organizationId: decoded.organizationId
+        };
+        // logger.info('✅ Local JWT verified');
+      } catch (localError) {
+        throw new Error('Invalid token (Supabase & Local)');
+      }
+    }
   } catch (error) {
-    logger.warn({ error }, 'Supabase JWT verification failed');
+    logger.warn({ error }, 'Authentication failed');
     return ResponseHelper.error(reply, 'Token inválido ou expirado', 401);
   }
 };

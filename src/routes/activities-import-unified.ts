@@ -37,13 +37,13 @@ interface ImportResult {
 
 export const importActivitiesHandler = async (request: FastifyRequest<{ Body: ImportBody }>, reply: FastifyReply) => {
     const prisma = new PrismaClient();
-    
+
     try {
-        const { 
-            mode = 'complete', 
-            activities, 
+        const {
+            mode = 'complete',
+            activities,
             updateExisting = true,
-            enrichWithAI = false 
+            enrichWithAI = false
         } = request.body;
 
         if (!activities || !Array.isArray(activities)) {
@@ -79,7 +79,7 @@ export const importActivitiesHandler = async (request: FastifyRequest<{ Body: Im
                     where: {
                         OR: [
                             activityData.id ? { id: activityData.id } : {},
-                            { 
+                            {
                                 name: {
                                     equals: activityData.name,
                                     mode: 'insensitive'
@@ -96,7 +96,7 @@ export const importActivitiesHandler = async (request: FastifyRequest<{ Body: Im
                             type: activityData.type || existing.type,
                             title: activityData.title || activityData.name || existing.title,
                             description: activityData.description || existing.description || (enrichWithAI ? await generateAIDescription(existing.title) : undefined),
-                            equipment: [...(existing.equipment || []), ...(activityData.equipment || activityData.resources || [])].filter((v, i, a) => a.indexOf(v) === i),
+                            equipment: [...(existing.equipment || []), ...(Array.isArray(activityData.equipment) ? activityData.equipment : []), ...(Array.isArray(activityData.resources) ? activityData.resources : [])].filter((v, i, a) => a.indexOf(v) === i),
                             safety: activityData.safety || activityData.risksMitigation || existing.safety,
                             adaptations: [...(existing.adaptations || []), ...(activityData.adaptations || [])].filter((v, i, a) => a.indexOf(v) === i),
                             difficulty: activityData.difficulty ? parseInt(activityData.difficulty) : existing.difficulty,
@@ -126,7 +126,7 @@ export const importActivitiesHandler = async (request: FastifyRequest<{ Body: Im
                 } else {
                     // Obter organizationId
                     const organizationId = await getOrganizationId();
-                    
+
                     // Criar nova atividade com dados completos ou básicos
                     const newActivityData = {
                         organizationId,
@@ -162,7 +162,7 @@ export const importActivitiesHandler = async (request: FastifyRequest<{ Body: Im
         }
 
         const message = `Importação concluída: ${results.created} criadas, ${results.updated} atualizadas, ${results.skipped} ignoradas`;
-        
+
         console.log(`✅ ${message}`);
         if (results.errors.length > 0) {
             console.log(`⚠️ ${results.errors.length} erros encontrados`);

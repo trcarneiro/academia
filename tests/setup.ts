@@ -15,23 +15,36 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  // Clean up database between tests
-  await prisma.attendance.deleteMany();
-  await prisma.attendancePattern.deleteMany();
-  await prisma.class.deleteMany();
-  await prisma.lessonPlan.deleteMany();
-  await prisma.classSchedule.deleteMany();
-  await prisma.courseProgram.deleteMany();
-  await prisma.evaluation.deleteMany();
-  await prisma.progressRecord.deleteMany();
-  await prisma.certificate.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.plan.deleteMany();
-  await prisma.student.deleteMany();
-  await prisma.instructor.deleteMany();
-  await prisma.user.deleteMany();
-});
+  // Clean up database using DELETE with FK checks disabled in a transaction
+  // Use DELETE instead of TRUNCATE because TRUNCATE implicitly commits and breaks transactions
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0;');
+
+      const tablenames = await tx.$queryRaw<Array<{ TABLE_NAME: string }>>`
+        SELECT TABLE_NAME 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = (SELECT DATABASE())
+      `;
+
+      for (const { TABLE_NAME } of tablenames) {
+        if (TABLE_NAME !== '_prisma_migrations') {
+          try {
+            await tx.$executeRawUnsafe(`DELETE FROM \`${TABLE_NAME}\`;`);
+          } catch (error) {
+            console.log(`Failed to delete from ${TABLE_NAME}:`, error);
+          }
+        }
+      }
+
+      await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1;');
+    }, {
+      timeout: 120000 // Increase timeout for massive deletion
+    });
+  } catch (error) {
+    console.error('Error cleaning database:', error);
+  }
+}, 120000);
 
 afterAll(async () => {
   await prisma.$disconnect();

@@ -85,7 +85,7 @@ import preEnrollmentRoutes from '@/routes/pre-enrollment';
 import instructorDashboardRoutes from '@/routes/instructor-dashboard';
 import classroomDisplayRoutes from '@/routes/classroom-display';
 import deploySessionsRoutes from '@/routes/ops/deploySessions';
-const frequencyRoutes = require('./routes/frequency');
+import frequencyRoutes from '@/routes/frequency';
 
 export const buildApp = async () => {
   // ✅ HTTPS Configuration
@@ -228,8 +228,8 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(landingPublicRoutes, 'landingPublicRoutes'), { prefix: '/lp' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
 
-  const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
-  await server.register(normalizePlugin(frequencyRoutesFunction, 'frequencyRoutes'), { prefix: '/api/frequency' } as any);
+  // const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
+  await server.register(normalizePlugin(frequencyRoutes, 'frequencyRoutes'), { prefix: '/api/frequency' } as any);
   await server.register(normalizePlugin(packagesRoutes, 'packagesRoutes'), { prefix: '/api/packages' } as any);
   await server.register(normalizePlugin(subscriptionsRoutes, 'subscriptionsRoutes'), { prefix: '/api/subscriptions' } as any);
   await server.register(normalizePlugin(graduationRoutes, 'graduationRoutes'), { prefix: '/api/graduation' } as any);
@@ -240,7 +240,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(permissionsRoutes, 'permissionsRoutes'), { prefix: '/api/auth' } as any);
   await server.register(normalizePlugin(preEnrollmentRoutes, 'preEnrollmentRoutes'), { prefix: '/api/pre-enrollment' } as any);
   await server.register(normalizePlugin(instructorDashboardRoutes, 'instructorDashboardRoutes'), { prefix: '/api/instructor' } as any);
-  await server.register(normalizePlugin(classroomDisplayRoutes, 'classroomDisplayRoutes'), { prefix: '/api/classroom' } as any);
+  await server.register(normalizePlugin(classroomDisplayRoutes, 'classroomDisplayRoutes'), { prefix: '/api/classroom-display' } as any);
 
   server.setErrorHandler(errorHandler);
 

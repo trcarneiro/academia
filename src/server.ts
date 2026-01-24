@@ -1,6 +1,7 @@
 import { buildApp } from './app';
 import { appConfig } from '@/config';
 import logger from '@/utils/logger';
+import { initializeScheduler } from '@/jobs/scheduler';
 
 // Capturar erros não tratados
 process.on('uncaughtException', (error) => {
@@ -21,6 +22,13 @@ const start = async () => {
     logger.info(`Server running at http://${appConfig.server.host}:${appConfig.server.port}`);
     logger.info(`✅ HTTP Server is ready and accepting connections`);
 
+    // Initialize cron jobs (skip in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      initializeScheduler();
+    } else {
+      logger.info('Skipping Cron Scheduler initialization in test environment');
+    }
+
     // Keep-alive: log a cada 30 segundos para garantir que processo está vivo
     setInterval(() => {
       logger.debug(`Server alive - Uptime: ${Math.floor(process.uptime())}s`);
@@ -28,7 +36,7 @@ const start = async () => {
 
     // Manter processo vivo indefinidamente
     const keepAlivePromise = new Promise((resolve) => {
-      setInterval(() => {}, 10000);
+      setInterval(() => { }, 10000);
     });
 
     await keepAlivePromise;

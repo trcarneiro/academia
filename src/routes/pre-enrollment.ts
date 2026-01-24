@@ -4,6 +4,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { prisma } from '@/utils/database';
 import { logger } from '@/utils/logger';
+import { requireOrganizationId } from '@/utils/tenantHelpers';
 import crypto from 'crypto';
 
 interface PreEnrollmentPayload {
@@ -160,7 +161,13 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
   fastify.post('/:id/convert', async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
     try {
       const { id } = request.params;
-      const organizationId = request.organizationId;
+      let organizationId = request.organizationId;
+
+      if (!organizationId) {
+        const defaultOrg = await prisma.organization.findFirst();
+        if (defaultOrg) organizationId = defaultOrg.id;
+        else throw new Error('No organization found');
+      }
 
       const preEnrollment = await prisma.preEnrollment.findUnique({
         where: { id }
@@ -242,7 +249,10 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
             organizationId: organizationId!,
             userId: user.id,
             enrollmentDate: new Date(),
-            isActive: true
+            isActive: true,
+            preferredDays: [],
+            preferredTimes: [],
+            specialNeeds: []
           }
         });
       }
@@ -366,7 +376,8 @@ export default async function preEnrollmentRoutes(fastify: FastifyInstance) {
   fastify.post('/generate-link', async (request: FastifyRequest<{ Body: GenerateLinkPayload }>, reply: FastifyReply) => {
     try {
       const { planId, courseId, customPrice, expiresIn = 30 } = request.body;
-      const organizationId = request.organizationId;
+      const organizationId = requireOrganizationId(request, reply);
+      if (!organizationId) return;
 
       // Criar token único
       const token = crypto.randomBytes(32).toString('hex');

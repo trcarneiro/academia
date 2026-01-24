@@ -1,11 +1,22 @@
-import { renderNavBottom } from './components/nav-bottom.js';
+import { render as renderHistory } from './pages/history.js';
 
 export default class Router {
     constructor() {
         this.routes = {};
         this.currentRoute = null;
         this.appContainer = document.getElementById('app');
-        
+
+        // Define Routes
+        this.addRoute('/', import('./pages/landing.js').then(m => m.render));
+        this.addRoute('/login', import('./pages/login.js').then(m => m.render));
+        this.addRoute('/register', import('./pages/register.js').then(m => m.render));
+        this.addRoute('/dashboard', import('./pages/dashboard.js').then(m => m.render));
+        this.addRoute('/schedule', import('./pages/schedule.js').then(m => m.render));
+        this.addRoute('/history', renderHistory);
+        this.addRoute('/ranking', import('./pages/ranking.js').then(m => m.render));
+        this.addRoute('/chat', import('./pages/chat.js').then(m => m.render));
+        this.addRoute('/profile', import('./pages/profile.js').then(m => m.render));
+
         window.addEventListener('hashchange', () => this.handleRoute());
         window.addEventListener('load', () => this.handleRoute());
     }
@@ -17,7 +28,7 @@ export default class Router {
     async handleRoute() {
         let hash = window.location.hash.slice(1) || '/';
         console.log('Navigating to:', hash);
-        
+
         // Handle dynamic routes
         let handler = this.routes[hash];
         let params = {};
@@ -28,11 +39,11 @@ export default class Router {
                 if (route.includes(':')) {
                     const routeParts = route.split('/');
                     const hashParts = hash.split('/');
-                    
+
                     if (routeParts.length === hashParts.length) {
                         let match = true;
                         const currentParams = {};
-                        
+
                         for (let i = 0; i < routeParts.length; i++) {
                             if (routeParts[i].startsWith(':')) {
                                 currentParams[routeParts[i].slice(1)] = hashParts[i];
@@ -41,7 +52,7 @@ export default class Router {
                                 break;
                             }
                         }
-                        
+
                         if (match) {
                             handler = this.routes[route];
                             params = currentParams;
@@ -51,7 +62,7 @@ export default class Router {
                 }
             }
         }
-        
+
         if (handler) {
             this.currentRoute = hash;
             await handler(this.appContainer, params);

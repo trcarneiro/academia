@@ -685,16 +685,28 @@ export class StudentsListController {
                         <td class="col-student">
                             <div class="student-info-card">
                                 <div class="student-avatar">
-                                    ${s?.user?.avatarUrl ?
-                        `<img src="${s.user.avatarUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">` :
-                        (s?.biometricData?.photoUrl ?
-                            (String(s.biometricData.photoUrl).startsWith('biometric://') ?
-                                `<div class="avatar-placeholder biometric-active" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:1.2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>` :
-                                `<img src="${s.biometricData.photoUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`
-                            ) :
-                            `<img src="/images/avatar-placeholder.png" alt="${name}">`
-                        )
-                    }
+                                    ${(() => {
+                        const avatarUrl = s?.user?.avatarUrl;
+                        const bioUrl = s?.biometricData?.photoUrl;
+
+                        // Priority 1: Direct user avatar (now synced in backend)
+                        if (avatarUrl && !avatarUrl.startsWith('biometric://')) {
+                            return `<img src="${avatarUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`;
+                        }
+
+                        // Priority 2: Biometric photo if it's a real URL
+                        if (bioUrl && !String(bioUrl).startsWith('biometric://')) {
+                            return `<img src="${bioUrl}" alt="${name}" onerror="this.src='/images/avatar-placeholder.png'">`;
+                        }
+
+                        // Priority 3: Biometric indicator if we know we have data but no image access
+                        if (String(bioUrl).startsWith('biometric://')) {
+                            return `<div class="avatar-placeholder biometric-active" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:1.2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`;
+                        }
+
+                        // Priority 4: Default placeholder
+                        return `<img src="/images/avatar-placeholder.png" alt="${name}">`;
+                    })()}
                                 </div>
                                 <div class="student-details">
                                     <div class="student-name">${name}</div>
@@ -1117,18 +1129,29 @@ export class StudentsListController {
                     
                     <!-- Card Header with Avatar -->
                     <div class="card-header-premium">
-                        <div class="student-avatar large ${user.avatarUrl ? '' : (student.biometricData?.photoUrl ? (String(student.biometricData.photoUrl).startsWith('biometric://') ? 'biometric-mode' : '') : 'avatar-initials')}">
-                            ${user.avatarUrl
-                    ? `<img src="${user.avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
-                    : (student.biometricData?.photoUrl
-                        ? (String(student.biometricData.photoUrl).startsWith('biometric://')
-                            ? `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`
-                            : `<img src="${student.biometricData.photoUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`
-                        )
-                        : `<span>${initials}</span>`
-                    )
-                }
-                        </div>
+                        ${(() => {
+                    const bioUrl = student.biometricData?.photoUrl;
+                    const avatarUrl = user.avatarUrl;
+                    const isBioUri = bioUrl && String(bioUrl).startsWith('biometric://');
+                    const isAvatarUri = avatarUrl && String(avatarUrl).startsWith('biometric://');
+
+                    let content = '';
+                    let extraClass = '';
+
+                    if (avatarUrl && !isAvatarUri) {
+                        content = `<img src="${avatarUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`;
+                    } else if (bioUrl && !isBioUri) {
+                        content = `<img src="${bioUrl}" alt="${fullName}" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; this.parentElement.classList.add('avatar-initials');">`;
+                    } else if (isBioUri) {
+                        extraClass = 'biometric-mode';
+                        content = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--gradient-primary); color:white; border-radius:50%; font-size:2rem;" title="Biometria Facial Ativa"><i class="fas fa-fingerprint"></i></div>`;
+                    } else {
+                        extraClass = 'avatar-initials';
+                        content = `<span>${initials}</span>`;
+                    }
+
+                    return `<div class="student-avatar large ${extraClass}">${content}</div>`;
+                })()}
                         <div class="student-status-badge">
                             <span class="status-badge status-${isActive ? 'active' : 'inactive'} pulse-animation">
                                 ${isActive ? '✅ ATIVO' : '⏸️ INATIVO'}

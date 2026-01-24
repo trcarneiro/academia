@@ -167,7 +167,7 @@ const QuickEnrollment = {
                     <!-- RESPONSÁVEL FINANCEIRO (OPCIONAL) -->
                     <div class="pvd-section">
                         <div class="pvd-section-header">
-                            <h2>💳 Responsável Financeiro (Opcional)</h2>
+                            <h2>💳 Responsável Financeiro (Se necessário)</h2>
                             <button type="button" class="pvd-btn-toggle" id="toggleFinancial" onclick="quickEnrollment.toggleFinancialResponsible()">
                                 <i class="fas fa-plus"></i> Adicionar Responsável
                             </button>
@@ -176,6 +176,9 @@ const QuickEnrollment = {
                         <div id="financialFields" class="pvd-financial-fields" style="display: none;">
                             <div class="pvd-info-box">
                                 <i class="fas fa-info-circle"></i>
+                                <strong>Nota:</strong> A cobrança será gerada automaticamente pelo sistema após a matrícula. Não é necessário informar dados de pagamento agora.
+                                <br><br>
+                                <i class="fas fa-user-check"></i>
                                 Ao cadastrar responsável financeiro, CPF/telefone/email do aluno ficam opcionais
                             </div>
 
@@ -402,7 +405,11 @@ const QuickEnrollment = {
             const firstName = student.firstName || student.user?.firstName || '';
             const lastName = student.lastName || student.user?.lastName || '';
             const cpf = student.cpf || student.user?.cpf || 'Sem CPF';
-            const photoUrl = student.photoUrl || student.biometricData?.photoUrl || '/img/default-avatar.png';
+            // Priority: user.avatarUrl (synced base64) > photoUrl > biometricData.photoUrl
+            let photoUrl = student.user?.avatarUrl || student.photoUrl || student.biometricData?.photoUrl;
+            if (!photoUrl || photoUrl.startsWith('biometric://')) {
+                photoUrl = '/images/default-avatar.svg';
+            }
 
             return `
             <div class="pvd-search-item" onclick="quickEnrollment.selectStudent('${student.id}')">
@@ -432,7 +439,21 @@ const QuickEnrollment = {
         console.log('🔍 Debug loadStudentData:', JSON.stringify(student));
         this.formData.isEditMode = true;
         this.formData.studentId = student.id;
-        this.formData.photo = student.photoUrl || student.biometricData?.photoUrl;
+        // Start of fix for biometric:// URLs
+        // Priority: user.avatarUrl (synced base64) > photoUrl > biometricData.photoUrl  
+        let photoUrl = student.user?.avatarUrl || student.photoUrl || student.biometricData?.photoUrl;
+        this.formData.isBiometric = false;
+
+        if (!photoUrl || photoUrl.startsWith('biometric://')) {
+            // Check if we have the raw biometric URL (indicating user has biometric but no displayable URL)
+            if (student.biometricData?.photoUrl?.startsWith('biometric://')) {
+                this.formData.isBiometric = true;
+            }
+            this.formData.photo = null;
+        } else {
+            this.formData.photo = photoUrl;
+        }
+        // End of fix
 
         const form = document.getElementById('quickEnrollmentForm');
 
@@ -456,12 +477,39 @@ const QuickEnrollment = {
         }
 
         // Show photo if exists
-        if (this.formData.photo) {
+        // Show photo if exists or is biometric
+        if (this.formData.photo || this.formData.isBiometric) {
             const img = document.getElementById('photoPreview');
-            img.src = this.formData.photo;
-            img.style.display = 'block';
-            document.getElementById('cameraPlaceholder').style.display = 'none';
-            document.getElementById('btnRetake').style.display = 'flex';
+            const parent = img.parentElement; // Assuming container is parent
+            const placeholder = document.getElementById('cameraPlaceholder');
+            const btnRetake = document.getElementById('btnRetake');
+
+            // Remove existing biometric placeholder if any
+            const existingBio = parent.querySelector('.biometric-active');
+            if (existingBio) existingBio.remove();
+
+            if (this.formData.isBiometric) {
+                // Hide image, show biometric placeholder
+                img.style.display = 'none';
+
+                const bioDiv = document.createElement('div');
+                bioDiv.className = 'no-photo-placeholder biometric-active';
+                bioDiv.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); width: 100%; position: absolute; top:0; left:0; background: #f5f5f5;';
+                bioDiv.innerHTML = `
+                    <i class="fas fa-fingerprint" style="font-size: 3rem; color: var(--success-color); margin-bottom: 10px;"></i>
+                    <p style="font-weight: 600; margin: 0;">Biometria Ativa</p>
+                    <p style="font-size: 0.8rem; opacity: 0.8; margin: 5px 0 0 0;">Foto no dispositivo</p>
+                `;
+                parent.appendChild(bioDiv);
+                parent.style.position = 'relative'; // Ensure parent has positioning
+
+            } else {
+                img.src = this.formData.photo;
+                img.style.display = 'block';
+            }
+
+            placeholder.style.display = 'none';
+            btnRetake.style.display = 'flex';
         }
 
         // Update submit button
@@ -614,7 +662,7 @@ const QuickEnrollment = {
             const email = form.querySelector('[name="email"]')?.value?.trim();
 
             if (!cpf || !phone || !email) {
-                alert('⚠️ Sem responsável financeiro: CPF, telefone e email do aluno são obrigatórios!');
+                alert('⚠️ Para aluno sem responsável financeiro, é obrigatório: CPF, Telefone e Email.');
                 return;
             }
         } else {
@@ -792,18 +840,17 @@ const QuickEnrollment = {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-check"></i> Finalizar Matrícula';
         }
-        submitForm() {
-            // ... previous code ...
-        },
+    },
 
-        destroy() {
-            console.log('🧹 Destroying QuickEnrollment...');
-            this.stopCamera();
-            this.container = null;
-            // Clean up any global listeners if needed
-        }
-    };
 
-    // Export with both names for compatibility
-    window.QuickEnrollment = QuickEnrollment;
-    window.quickEnrollment = QuickEnrollment;
+    destroy() {
+        console.log('🧹 Destroying QuickEnrollment...');
+        this.stopCamera();
+        this.container = null;
+        // Clean up any global listeners if needed
+    }
+};
+
+// Export with both names for compatibility
+window.QuickEnrollment = QuickEnrollment;
+window.quickEnrollment = QuickEnrollment;

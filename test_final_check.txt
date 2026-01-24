@@ -1,0 +1,18 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769256005835,"pid":142008,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769256017688,"pid":142008,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/financial-module.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769256017769,"pid":142008,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769256017787,"pid":142008,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769256018401,"pid":142008,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769256018511,"pid":142008,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769256019522,"pid":142008,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769256019522,"pid":142008,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769256019522,"pid":142008,"hostname":"C02","msg":"⏳ Initializing Cron Scheduler..."}
+{"level":30,"time":1769256019564,"pid":142008,"hostname":"C02","msg":"✅ Cron Scheduler initialized (Daily at 02:00 AM)"}
+Terminate batch job (Y/N)? 

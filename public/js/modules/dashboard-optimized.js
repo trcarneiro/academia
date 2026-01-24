@@ -1,6 +1,6 @@
-(function() {
+(function () {
     // Global module navigation handler
-    window.navigateToModule = function(moduleName, params) {
+    window.navigateToModule = function (moduleName, params) {
         const contentContainer = document.getElementById('contentContainer');
         if (!contentContainer) return;
 
@@ -11,7 +11,7 @@
                 if (moduleName === 'student-editor') window.__STUDENT_EDITOR_PARAMS = { ...(params || {}) };
                 window.__NAV_PARAMS = { module: moduleName, ...(params || {}) };
             }
-        } catch(e) { console.warn('navigateToModule: could not set params', e); }
+        } catch (e) { console.warn('navigateToModule: could not set params', e); }
 
         let viewPath = '';
         let scriptPath = '';
@@ -121,10 +121,10 @@
                 viewPath = '/views/organizations.html';
                 scriptPath = '/js/modules/organizations.js';
                 break;
-           case 'lesson-plans':
-               viewPath = '/views/lesson-plans.html';
-               scriptPath = '/js/modules/lesson-plans.js';
-               break;
+            case 'lesson-plans':
+                viewPath = '/views/lesson-plans.html';
+                scriptPath = '/js/modules/lesson-plans.js';
+                break;
             case 'plan-editor':
                 viewPath = '/views/plan-editor.html';
                 scriptPath = '/js/modules/plan-editor.js';
@@ -189,7 +189,7 @@
     'use strict';
 
     console.log('📊 Sistema de Gestão de Artes Marciais - Dashboard carregado');
-    
+
     // Module state
     let dashboardData = {
         students: [],
@@ -198,15 +198,15 @@
         // financial data removed - handled by separate module
         lastUpdated: null
     };
-    
+
     // API availability state
     let apiAvailable = false;
     let lastApiCheck = null;
     const API_CHECK_INTERVAL = 30000; // 30 seconds
-    
+
     let updateInterval = null;
     let isInitialized = false;
-    
+
     // Initialize module on page load (robust)
     function bootstrapDashboard() {
         try { initializeDashboardModule(); } catch (e) { console.error('❌ bootstrapDashboard failed', e); }
@@ -218,33 +218,33 @@
         // DOM already parsed
         bootstrapDashboard();
     }
-    
+
     // Remove old single-use listener if present
     // document.addEventListener('DOMContentLoaded', function() { initializeDashboardModule(); });
-    
+
     // Module initialization
     function initializeDashboardModule() {
         console.log('📊 Inicializando Sistema de Gestão de Artes Marciais...');
-        
+
         if (isInitialized) {
             console.log('⚠️ Dashboard module already initialized');
             return;
         }
-        
+
         try {
             renderDashboardStructure();
             setupEventListeners();
             loadDashboardData();
             exportGlobalFunctions();
             setupAutoRefresh();
-            
+
             isInitialized = true;
-            
+
         } catch (error) {
             console.error('❌ Error initializing dashboard module:', error);
         }
     }
-    
+
     // Render complete dashboard structure
     function renderDashboardStructure() {
         const container = document.getElementById('dashboardContainer');
@@ -252,10 +252,10 @@
             console.error('Dashboard container not found');
             return;
         }
-        
+
         // Inject CSS styles for dashboard
         injectDashboardStyles();
-        
+
         container.innerHTML = `
             <!-- Enhanced Sidebar -->
             <aside class="dashboard-sidebar" id="dashboardSidebar">
@@ -514,7 +514,7 @@
             </main>
         `;
     }
-    
+
     // Render dashboard content
     function renderDashboardContent() {
         return `
@@ -661,41 +661,41 @@
             </div>
         `;
     }
-    
+
     // Setup event listeners
     function setupEventListeners() {
         // Sidebar toggle
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('quick-action-btn')) {
                 toggleSidebar();
             }
         });
-        
+
         // Navigation links
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.closest('.nav-link')) {
                 const link = e.target.closest('.nav-link');
                 const page = link.dataset.page;
-                
+
                 if (page && page !== 'dashboard') {
                     // Update active state
                     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
-                    
+
                     // Financial module removed - handled separately via navigateToModule('financial')
                 }
             }
         });
     }
-    
+
     // Toggle sidebar
     function toggleSidebar() {
         const sidebar = document.getElementById('dashboardSidebar');
         if (!sidebar) return;
-        
+
         const isMobile = window.innerWidth <= 768;
         const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
-        
+
         if (isMobile) {
             // Mobile behavior: slide in/out from left
             sidebar.classList.toggle('mobile-open');
@@ -708,7 +708,7 @@
             sidebar.classList.toggle('collapsed');
         }
     }
-    
+
     // Toggle mobile overlay
     function toggleMobileOverlay() {
         let overlay = document.getElementById('mobileOverlay');
@@ -725,7 +725,7 @@
             };
             document.body.appendChild(overlay);
         }
-        
+
         const sidebar = document.getElementById('dashboardSidebar');
         if (sidebar && sidebar.classList.contains('mobile-open')) {
             overlay.classList.add('show');
@@ -733,12 +733,12 @@
             overlay.classList.remove('show');
         }
     }
-    
+
     // Handle window resize
     function handleResize() {
         const sidebar = document.getElementById('dashboardSidebar');
         const overlay = document.getElementById('mobileOverlay');
-        
+
         if (window.innerWidth > 768) {
             // Remove mobile classes when switching to desktop/tablet
             if (sidebar) {
@@ -749,20 +749,20 @@
             }
         }
     }
-    
+
     // Financial section removed - now handled by separate /views/financial.html module
-    
+
     // Check API availability
     async function checkApiAvailability() {
         const now = Date.now();
         if (lastApiCheck && (now - lastApiCheck) < API_CHECK_INTERVAL) {
             return apiAvailable;
         }
-        
+
         try {
-            const response = await fetch('/health', { 
+            const response = await fetch('/health', {
                 method: 'GET',
-                timeout: 5000 
+                timeout: 5000
             });
             apiAvailable = response.ok;
             lastApiCheck = now;
@@ -773,11 +773,11 @@
             return false;
         }
     }
-    
+
     // Load dashboard data
     async function loadDashboardData() {
         const isApiAvailable = await checkApiAvailability();
-        
+
         if (!isApiAvailable) {
             console.log('📡 API not available, using empty state');
             updateWithEmptyState();
@@ -786,7 +786,7 @@
         } else {
             hideOfflineIndicator();
         }
-        
+
         try {
             await Promise.all([
                 fetchStudentsCount(),
@@ -794,7 +794,7 @@
                 fetchAttendanceRate(),
                 fetchMonthlyRevenue()
             ]);
-            
+
             updateLastRefresh();
         } catch (error) {
             console.error('Error loading dashboard data:', error);
@@ -802,14 +802,14 @@
             updateWithEmptyState();
         }
     }
-    
+
     // Fetch students count
     async function fetchStudentsCount() {
         if (!apiAvailable) {
             updateStat('totalStudents', 0);
             return;
         }
-        
+
         try {
             const response = await fetch('/api/students');
             if (response.ok) {
@@ -822,14 +822,14 @@
             updateStat('totalStudents', 0);
         }
     }
-    
+
     // Fetch classes count
     async function fetchClassesCount() {
         if (!apiAvailable) {
             updateStat('totalClasses', 0);
             return;
         }
-        
+
         try {
             const response = await fetch('/api/classes');
             if (response.ok) {
@@ -842,14 +842,14 @@
             updateStat('totalClasses', 0);
         }
     }
-    
+
     // Fetch attendance rate
     async function fetchAttendanceRate() {
         if (!apiAvailable) {
             updateStat('attendanceRate', '0%');
             return;
         }
-        
+
         try {
             // Attendance endpoint not available, using mock calculation
             const studentsResponse = await fetch('/api/students');
@@ -865,31 +865,35 @@
             updateStat('attendanceRate', '0%');
         }
     }
-    
+
     // Fetch monthly revenue
     async function fetchMonthlyRevenue() {
         if (!apiAvailable) {
-            updateStat('monthlyRevenue', 'R$ 0');
+            updateStat('monthlyRevenue', 'R$ 0,00');
             return;
         }
-        
+
         try {
-            // Financial endpoint not available, using mock calculation
-            const studentsResponse = await fetch('/api/students');
-            if (studentsResponse.ok) {
-                const studentsData = await studentsResponse.json();
-                const totalStudents = studentsData.data?.length || 0;
-                const avgMonthlyFee = 150; // R$ 150 average monthly fee
-                const mockRevenue = totalStudents * avgMonthlyFee;
-                updateStat('monthlyRevenue', 'R$ ' + mockRevenue.toLocaleString('pt-BR'));
+            const response = await fetch('/api/financial/stats');
+            if (response.ok) {
+                const data = await response.json();
+                const revenue = data.data?.monthlyRevenue || 0;
+                // Format currency properlt
+                const formatted = new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(revenue);
+
+                updateStat('monthlyRevenue', formatted);
             } else {
-                updateStat('monthlyRevenue', 'R$ 0');
+                updateStat('monthlyRevenue', 'R$ 0,00');
             }
         } catch (error) {
-            updateStat('monthlyRevenue', 'R$ 0');
+            console.warn('Error fetching revenue:', error);
+            updateStat('monthlyRevenue', 'R$ 0,00');
         }
     }
-    
+
     // Update stat element
     function updateStat(elementId, value) {
         const element = document.getElementById(elementId);
@@ -897,7 +901,7 @@
             element.textContent = value;
         }
     }
-    
+
     // Update with empty state when API fails
     function updateWithEmptyState() {
         updateStat('totalStudents', 0);
@@ -906,37 +910,37 @@
         updateStat('monthlyRevenue', 'R$ 0');
         showNoDataMessage();
     }
-    
+
     // Update last refresh time
     function updateLastRefresh() {
         dashboardData.lastUpdated = new Date();
         console.log('✅ Dashboard data updated at', dashboardData.lastUpdated.toLocaleTimeString());
     }
-    
+
     // Setup auto-refresh
     function setupAutoRefresh() {
         // Use intelligent intervals based on API availability
         const interval = apiAvailable ? 5 * 60 * 1000 : 30 * 1000; // 5min vs 30sec
-        
+
         clearInterval(updateInterval);
         updateInterval = setInterval(() => {
             loadDashboardData();
         }, interval);
     }
-    
+
     // Load dashboard (main function)
     function loadDashboard() {
         console.log('📊 Loading dashboard...');
-        
+
         // Ensure structure is rendered
         if (!document.querySelector('.dashboard-header')) {
             renderDashboardStructure();
         }
-        
+
         // Load data
         loadDashboardData();
     }
-    
+
     // Export global functions
     function exportGlobalFunctions() {
         window.loadDashboard = loadDashboard;
@@ -944,11 +948,11 @@
         window.dashboardData = dashboardData;
         window.showNoDataMessage = showNoDataMessage;
         window.handleResize = handleResize;
-        
+
         // Add resize listener
         window.addEventListener('resize', handleResize);
     }
-    
+
     // Show no data message function
     function showNoDataMessage() {
         const container = document.getElementById('dashboardContainer');
@@ -971,11 +975,11 @@
             container.insertBefore(message, container.firstChild);
         }
     }
-    
+
     // Inject dashboard CSS styles
     function injectDashboardStyles() {
         if (document.getElementById('dashboardOptimizedStyles')) return;
-        
+
         const styles = document.createElement('style');
         styles.id = 'dashboardOptimizedStyles';
         styles.textContent = `
@@ -1566,14 +1570,14 @@
                 }
             }
         `;
-        
+
         document.head.appendChild(styles);
     }
-    
+
     // Show/hide offline indicator
     function showOfflineIndicator() {
         hideOfflineIndicator(); // Remove existing first
-        
+
         const indicator = document.createElement('div');
         indicator.id = 'offlineIndicator';
         indicator.style.cssText = `
@@ -1596,17 +1600,17 @@
             <span>🔴</span>
             <span>API Offline</span>
         `;
-        
+
         document.body.appendChild(indicator);
     }
-    
+
     function hideOfflineIndicator() {
         const existing = document.getElementById('offlineIndicator');
         if (existing) {
             existing.remove();
         }
     }
-    
+
     console.log('✅ Sistema de Gestão de Artes Marciais carregado');
-    
+
 })();

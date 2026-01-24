@@ -261,7 +261,7 @@
     <script src="/js/components/organization-selector.js"></script>
 
     <!-- SPA Router and UI Controller -->
-    <script src="/js/dashboard/spa-router.js"></script>
+    <script src="/js/dashboard/spa-router.js?v=2.3.2.1"></script>
     <script src="/js/dashboard/ui-controller.js"></script>
 
     <!-- Auth Module -->
@@ -327,7 +327,7 @@
     <!-- Lesson Plans Module - REMOVIDO: será carregado dinamicamente pelo router -->
 
     <!-- Quick Enrollment Module -->
-    <script type="module" src="/js/modules/quick-enrollment/index.js?v=4"></script>
+    <script type="module" src="/js/modules/quick-enrollment/index.js?v=5"></script>
 
     <!-- Pre-Enrollment Admin Module -->
     <script type="module" src="/js/modules/pre-enrollment-admin/index.js?v=1"></script>
@@ -358,7 +358,8 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                // Force SW update by adding version query param
+                navigator.serviceWorker.register('/sw.js?v=2.3.2.1')
                     .then(registration => {
                         console.log('SW registered: ', registration);
                     })

@@ -1,0 +1,143 @@
+/* History Page Styles */
+.history-page {
+    padding-bottom: 80px;
+    /* Space for bottom nav */
+}
+
+.history-content {
+    padding: 20px;
+}
+
+.history-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.summary-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.summary-card h3 {
+    font-size: 24px;
+    color: #2563eb;
+    margin-bottom: 5px;
+}
+
+.summary-card p {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.history-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid #e5e7eb;
+}
+
+.history-card.status-present {
+    border-left-color: #10b981;
+    /* Green */
+}
+
+.history-card.status-late {
+    border-left-color: #f59e0b;
+    /* Yellow */
+}
+
+.history-card.status-absent {
+    border-left-color: #ef4444;
+    /* Red */
+}
+
+.card-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    min-width: 60px;
+}
+
+.card-date .day {
+    font-size: 18px;
+    font-weight: bold;
+    color: #374151;
+}
+
+.card-date .month {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.card-info {
+    flex: 1;
+    margin-left: 15px;
+}
+
+.card-info h4 {
+    font-size: 16px;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.card-info .class-meta {
+    font-size: 13px;
+    color: #6b7280;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.card-status {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-present .card-status {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-late .card-status {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-absent .card-status {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 16px;
+    margin-top: 20px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}

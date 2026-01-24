@@ -1,0 +1,789 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769272430405,"pid":111736,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769272447349,"pid":111736,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/financial-module.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769272447417,"pid":111736,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769272447430,"pid":111736,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769272447996,"pid":111736,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769272448214,"pid":111736,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769272449700,"pid":111736,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769272449700,"pid":111736,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769272449701,"pid":111736,"hostname":"C02","msg":"⏳ Initializing Cron Scheduler..."}
+{"level":30,"time":1769272449746,"pid":111736,"hostname":"C02","msg":"✅ Cron Scheduler initialized (Daily at 02:00 AM)"}
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould list all billing plans
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould update a billing plan
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould delete a billing plan
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mStudent Subscriptions API[2m > [22m[2mshould list student subscriptions
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mStudent Subscriptions API[2m > [22m[2mshould create a new subscription
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mStudent Subscriptions API[2m > [22m[2mshould not create duplicate active subscriptions
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mStudent Subscriptions API[2m > [22m[2mshould cancel a subscription
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mStudent Subscriptions API[2m > [22m[2mshould get subscription details
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mFinancial Data Validation[2m > [22m[2mshould validate subscription data
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mFinancial Data Validation[2m > [22m[2mshould handle non-existent student
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mFinancial Data Validation[2m > [22m[2mshould handle non-existent plan
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mPayment Processing[2m > [22m[2mshould record payment for subscription
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstderr[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mPayment Processing[2m > [22m[2mshould get payment history for student
+[22m[39mError truncating tables: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1064`. Message: `You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:21:5 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1064'[39m,
+    message: [32m`You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '"users", "organizations" RESTART IDENTITY CASCADE' at line 1`[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+ [31m❯[39m tests/integration/financial-module.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[33m 12851[2mms[22m[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould list all billing plans[39m[33m 601[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould get billing plan by ID[39m[33m 311[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould create a new billing plan[39m[33m 325[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould update a billing plan[39m[33m 336[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould delete a billing plan[39m[33m 915[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould list student subscriptions[39m[33m 303[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:186:46
+
+  183 describe('Student Subscriptions API', () => {
+  184     it('should list student subscriptions', async () => {
+  185         // Create a subscription first
+→ 186         await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769272451702",
+                  planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+                  startDate: new Date("2026-01-24T16:34:17.217Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould create a new subscription[39m[32m 272[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould not create duplicate active subscriptions[39m[33m 302[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:224:46
+
+  221 
+  222 it('should not create duplicate active subscriptions', async () => {
+  223     // Create first subscription
+→ 224     await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:17.795Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould cancel a subscription[39m[33m 314[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:248:67
+
+  245 });
+  246 
+  247 it('should cancel a subscription', async () => {
+→ 248     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:18.109Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould get subscription details[39m[33m 317[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:270:67
+
+  267 });
+  268 
+  269 it('should get subscription details', async () => {
+→ 270     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:18.426Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            },
+            include: {
+              plan: true
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould validate subscription data[39m[33m 318[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent student[39m[33m 306[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent plan[39m[33m 334[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould record payment for subscription[39m[32m 296[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:339:67
+
+  336 
+  337 describe('Payment Processing', () => {
+  338     it('should record payment for subscription', async () => {
+→ 339         const subscription = await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769272451702",
+                  planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+                  startDate: new Date("2026-01-24T16:34:19.682Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould get payment history for student[39m[33m 377[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:366:67
+
+  363 });
+  364 
+  365 it('should get payment history for student', async () => {
+→ 366     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:20.059Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 15 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould list all billing plans
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m99:18[22m[39m
+    [90m 97| [39m        [34mit[39m([32m'should list all billing plans'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m 98| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m 99| [39m                [33m.[39m[35mget[39m([32m'/api/billing-plans'[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m100| [39m                [33m.[39m[34mexpect[39m([34m200[39m)[33m;[39m
+    [90m101| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould get billing plan by ID
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m108:18[22m[39m
+    [90m106| [39m        [34mit[39m([32m'should get billing plan by ID'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m107| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m108| [39m                [33m.[39m[35mget[39m([32m`/api/billing-plans/[39m[36m${[39mtestPlan[33m.[39mid[36m}[39m[32m`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m109| [39m                [33m.[39m[34mexpect[39m([34m200[39m)[33m;[39m
+    [90m110| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould create a new billing plan
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m127:18[22m[39m
+    [90m125| [39m
+    [90m126| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m127| [39m                [33m.[39m[34mpost[39m([32m'/api/billing-plans'[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m128| [39m                [33m.[39m[34msend[39m(newPlan)
+    [90m129| [39m                [33m.[39m[34mexpect[39m([34m201[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould update a billing plan
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as put] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m148:18[22m[39m
+    [90m146| [39m
+    [90m147| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m148| [39m                [33m.[39m[34mput[39m([32m`/api/billing-plans/[39m[36m${[39mtestPlan[33m.[39mid[36m}[39m[32m`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m149| [39m                [33m.[39m[34msend[39m(updateData)
+    [90m150| [39m                [33m.[39m[34mexpect[39m([34m200[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould delete a billing plan
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m171:18[22m[39m
+    [90m169| [39m
+    [90m170| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m171| [39m                [33m.[39m[35mdelete[39m([32m`/api/billing-plans/[39m[36m${[39mtempPlan[33m.[39mid[36m}[39m[32m`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m172| [39m                [33m.[39m[34mexpect[39m([34m200[39m)[33m;[39m
+    [90m173| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould list student subscriptions
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:186:46
+
+  183 describe('Student Subscriptions API', () => {
+  184     it('should list student subscriptions', async () => {
+  185         // Create a subscription first
+→ 186         await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769272451702",
+                  planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+                  startDate: new Date("2026-01-24T16:34:17.217Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m186:13[22m[39m
+    [90m184| [39m        [34mit[39m([32m'should list student subscriptions'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m185| [39m            [90m// Create a subscription first[39m
+    [90m186| [39m            [35mawait[39m prisma[33m.[39mstudentSubscription[33m.[39m[34mcreate[39m({
+    [90m   | [39m            [31m^[39m
+    [90m187| [39m                data[33m:[39m {
+    [90m188| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould create a new subscription
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m212:18[22m[39m
+    [90m210| [39m
+    [90m211| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m212| [39m                [33m.[39m[34mpost[39m([32m`/api/students/[39m[36m${[39mtestStudent[33m.[39mid[36m}[39m[32m/subscriptions`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m213| [39m                [33m.[39m[34msend[39m(subscriptionData)
+    [90m214| [39m                [33m.[39m[34mexpect[39m([34m201[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould not create duplicate active subscriptions
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:224:46
+
+  221 
+  222 it('should not create duplicate active subscriptions', async () => {
+  223     // Create first subscription
+→ 224     await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:17.795Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m224:13[22m[39m
+    [90m222| [39m        it('should not create duplicate active subscriptions', async (…
+    [90m223| [39m            [90m// Create first subscription[39m
+    [90m224| [39m            [35mawait[39m prisma[33m.[39mstudentSubscription[33m.[39m[34mcreate[39m({
+    [90m   | [39m            [31m^[39m
+    [90m225| [39m                data[33m:[39m {
+    [90m226| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould cancel a subscription
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:248:67
+
+  245 });
+  246 
+  247 it('should cancel a subscription', async () => {
+→ 248     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:18.109Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m248:34[22m[39m
+    [90m246| [39m
+    [90m247| [39m        [34mit[39m([32m'should cancel a subscription'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m248| [39m            const subscription = await prisma.studentSubscription.crea…
+    [90m   | [39m                                 [31m^[39m
+    [90m249| [39m                data[33m:[39m {
+    [90m250| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould get subscription details
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:270:67
+
+  267 });
+  268 
+  269 it('should get subscription details', async () => {
+→ 270     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:18.426Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            },
+            include: {
+              plan: true
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m270:34[22m[39m
+    [90m268| [39m
+    [90m269| [39m        [34mit[39m([32m'should get subscription details'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m270| [39m            const subscription = await prisma.studentSubscription.crea…
+    [90m   | [39m                                 [31m^[39m
+    [90m271| [39m                data[33m:[39m {
+    [90m272| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould validate subscription data
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m300:18[22m[39m
+    [90m298| [39m
+    [90m299| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m300| [39m                [33m.[39m[34mpost[39m([32m`/api/students/[39m[36m${[39mtestStudent[33m.[39mid[36m}[39m[32m/subscriptions`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m301| [39m                [33m.[39m[34msend[39m(invalidSubscription)
+    [90m302| [39m                [33m.[39m[34mexpect[39m([34m400[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent student
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m315:18[22m[39m
+    [90m313| [39m
+    [90m314| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m315| [39m                .post('/api/students/non-existent-student/subscription…
+    [90m   | [39m                 [31m^[39m
+    [90m316| [39m                [33m.[39m[34msend[39m(subscriptionData)
+    [90m317| [39m                [33m.[39m[34mexpect[39m([34m404[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent plan
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m329:18[22m[39m
+    [90m327| [39m
+    [90m328| [39m            [35mconst[39m response [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m329| [39m                [33m.[39m[34mpost[39m([32m`/api/students/[39m[36m${[39mtestStudent[33m.[39mid[36m}[39m[32m/subscriptions`[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m330| [39m                [33m.[39m[34msend[39m(subscriptionData)
+    [90m331| [39m                [33m.[39m[34mexpect[39m([34m404[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould record payment for subscription
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:339:67
+
+  336 
+  337 describe('Payment Processing', () => {
+  338     it('should record payment for subscription', async () => {
+→ 339         const subscription = await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769272451702",
+                  planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+                  startDate: new Date("2026-01-24T16:34:19.682Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m339:34[22m[39m
+    [90m337| [39m    [34mdescribe[39m([32m'Payment Processing'[39m[33m,[39m () [33m=>[39m {
+    [90m338| [39m        [34mit[39m([32m'should record payment for subscription'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m339| [39m            const subscription = await prisma.studentSubscription.crea…
+    [90m   | [39m                                 [31m^[39m
+    [90m340| [39m                data[33m:[39m {
+    [90m341| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould get payment history for student
+[31m[1mPrismaClientValidationError[22m: 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:366:67
+
+  363 });
+  364 
+  365 it('should get payment history for student', async () => {
+→ 366     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769272451702",
+              planId: "ae674c92-bcad-48fe-a88d-7af548af78eb",
+              startDate: new Date("2026-01-24T16:34:20.059Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[90m [2m❯[22m throwValidationException node_modules/@prisma/client/src/runtime/core/errorRendering/throwValidationException.ts:[2m45:9[22m[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m202:7[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m366:34[22m[39m
+    [90m364| [39m
+    [90m365| [39m        [34mit[39m([32m'should get payment history for student'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m366| [39m            const subscription = await prisma.studentSubscription.crea…
+    [90m   | [39m                                 [31m^[39m
+    [90m367| [39m                data[33m:[39m {
+    [90m368| [39m                    studentId[33m:[39m testStudent[33m.[39mid[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m15 failed[39m[22m[90m (15)[39m
+[2m   Start at [22m 13:33:29
+[2m   Duration [22m 53.21s[2m (transform 26.08s, setup 271ms, collect 35.51s, tests 12.85s, environment 0ms, prepare 1.44s)[22m
+

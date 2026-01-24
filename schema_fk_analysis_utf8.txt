@@ -1,0 +1,202 @@
+﻿
+  prisma\schema.prisma:732:  unitId               String?
+  prisma\schema.prisma:733:  matId                String?
+  prisma\schema.prisma:734:  scheduleId           String?
+> prisma\schema.prisma:735:  instructorId         String
+  prisma\schema.prisma:736:  courseId             String
+  prisma\schema.prisma:737:  courseProgramId      String?
+  prisma\schema.prisma:738:  lessonPlanId         String?
+  prisma\schema.prisma:758:  activities           
+ClassActivity[]
+  prisma\schema.prisma:759:  course               Course   
+             @relation(fields: [courseId], references: 
+[id])
+  prisma\schema.prisma:760:  courseProgram        
+CourseProgram?        @relation(fields: [courseProgramId], 
+references: [id])
+> prisma\schema.prisma:761:  instructor           
+Instructor            @relation(fields: [instructorId], 
+references: [id])
+  prisma\schema.prisma:762:  lessonPlan           
+LessonPlan?           @relation(fields: [lessonPlanId], 
+references: [id])
+  prisma\schema.prisma:763:  mat                  Mat?     
+             @relation(fields: [matId], references: [id])
+  prisma\schema.prisma:764:  organization         
+Organization          @relation(fields: [organizationId], 
+references: [id], onDelete: Cascade)
+  prisma\schema.prisma:895:model Evaluation {
+  prisma\schema.prisma:896:  id                 String     
+      @id @default(uuid())
+  prisma\schema.prisma:897:  studentId          String
+> prisma\schema.prisma:898:  instructorId       String
+  prisma\schema.prisma:899:  enrollmentId       String
+  prisma\schema.prisma:900:  type               
+EvaluationType
+  prisma\schema.prisma:901:  lessonNumber       Int
+  prisma\schema.prisma:911:  createdAt          DateTime   
+      @default(now())
+  prisma\schema.prisma:912:  updatedAt          DateTime   
+      @default(now())
+  prisma\schema.prisma:913:  enrollment         
+CourseEnrollment @relation(fields: [enrollmentId], 
+references: [id], onDelete: Cascade)
+> prisma\schema.prisma:914:  instructor         Instructor 
+      @relation(fields: [instructorId], references: [id], 
+onDelete: Cascade)
+  prisma\schema.prisma:915:  student            Student    
+      @relation(fields: [studentId], references: [id], 
+onDelete: Cascade)
+  prisma\schema.prisma:916:
+  prisma\schema.prisma:917:  @@map("evaluations")
+  prisma\schema.prisma:1705:  classId      String?
+  prisma\schema.prisma:1706:  courseId     String?
+  prisma\schema.prisma:1707:  studentId    String
+> prisma\schema.prisma:1708:  instructorId String
+  prisma\schema.prisma:1709:  rating       Int
+  prisma\schema.prisma:1710:  criteria     Json?
+  prisma\schema.prisma:1711:  comment      String?
+  prisma\schema.prisma:1712:  createdAt    DateTime   
+@default(now())
+  prisma\schema.prisma:1713:  class        Class?     
+@relation(fields: [classId], references: [id])
+  prisma\schema.prisma:1714:  course       Course?    
+@relation(fields: [courseId], references: [id])
+> prisma\schema.prisma:1715:  instructor   Instructor 
+@relation(fields: [instructorId], references: [id])
+  prisma\schema.prisma:1716:  student      Student    
+@relation(fields: [studentId], references: [id], onDelete: 
+Cascade)
+  prisma\schema.prisma:1717:
+  prisma\schema.prisma:1718:  @@map("teacher_evaluations")
+  prisma\schema.prisma:1767:  description                  
+String?
+  prisma\schema.prisma:1768:  classType                    
+ClassType         @default(COLLECTIVE)
+  prisma\schema.prisma:1769:  status                       
+TurmaStatus       @default(SCHEDULED)
+> prisma\schema.prisma:1770:  instructorId                 
+String
+  prisma\schema.prisma:1771:  maxStudents                  
+Int               @default(20)
+  prisma\schema.prisma:1772:  startDate                    
+DateTime
+  prisma\schema.prisma:1773:  endDate                      
+DateTime?
+  prisma\schema.prisma:1790:  interests                    
+TurmaInterest[]   @relation("TurmaInterests")
+  prisma\schema.prisma:1791:  createdFromSuggestion        
+HorarioSugerido[] @relation("CreatedFromSuggestion")
+  prisma\schema.prisma:1792:  course                       
+Course            @relation(fields: [courseId], 
+references: [id], onDelete: Cascade)
+> prisma\schema.prisma:1793:  instructor                   
+User              @relation(fields: [instructorId], 
+references: [id])
+  prisma\schema.prisma:1794:  organization                 
+Organization      @relation(fields: [organizationId], 
+references: [id], onDelete: Cascade)
+  prisma\schema.prisma:1795:  trainingArea                 
+TrainingArea?     @relation("TurmaTrainingArea", fields: 
+[trainingAreaId], references: [id])
+  prisma\schema.prisma:1796:  unit                         
+Unit?             @relation(fields: [unitId], references: 
+[id])
+  prisma\schema.prisma:1962:  id             String        
+            @id @default(uuid())
+  prisma\schema.prisma:1963:  organizationId String
+  prisma\schema.prisma:1964:  studentId      String
+> prisma\schema.prisma:1965:  instructorId   String
+  prisma\schema.prisma:1966:  title          String
+  prisma\schema.prisma:1967:  description    String?
+  prisma\schema.prisma:1968:  focusAreas     Json
+  prisma\schema.prisma:1974:  status         
+PersonalClassStatus       @default(ACTIVE)
+  prisma\schema.prisma:1975:  createdAt      DateTime      
+            @default(now())
+  prisma\schema.prisma:1976:  updatedAt      DateTime      
+            @default(now())
+> prisma\schema.prisma:1977:  instructor     Instructor    
+            @relation(fields: [instructorId], references: 
+[id], onDelete: Cascade)
+  prisma\schema.prisma:1978:  organization   Organization  
+            @relation(fields: [organizationId], 
+references: [id], onDelete: Cascade)
+  prisma\schema.prisma:1979:  student        Student       
+            @relation(fields: [studentId], references: 
+[id], onDelete: Cascade)
+  prisma\schema.prisma:1980:  sessions       
+PersonalTrainingSession[]
+  prisma\schema.prisma:2041:  description    String?
+  prisma\schema.prisma:2042:  startTime      DateTime
+  prisma\schema.prisma:2043:  endTime        DateTime
+> prisma\schema.prisma:2044:  instructorId   String
+  prisma\schema.prisma:2045:  unitId         String?
+  prisma\schema.prisma:2046:  trainingAreaId String?
+  prisma\schema.prisma:2047:  status         
+AgendaItemStatus @default(SCHEDULED)
+  prisma\schema.prisma:2055:  meetingUrl     String?
+  prisma\schema.prisma:2056:  createdAt      DateTime      
+   @default(now())
+  prisma\schema.prisma:2057:  updatedAt      DateTime      
+   @default(now())
+> prisma\schema.prisma:2058:  instructor     User          
+   @relation(fields: [instructorId], references: [id])
+  prisma\schema.prisma:2059:  organization   Organization  
+   @relation(fields: [organizationId], references: [id], 
+onDelete: Cascade)
+  prisma\schema.prisma:2060:  trainingArea   TrainingArea? 
+   @relation(fields: [trainingAreaId], references: [id])
+  prisma\schema.prisma:2061:  unit           Unit?         
+   @relation(fields: [unitId], references: [id])
+  prisma\schema.prisma:2516:model QualitativeAssessment {
+  prisma\schema.prisma:2517:  id                String     
+     @id @default(uuid())
+  prisma\schema.prisma:2518:  studentProgressId String
+> prisma\schema.prisma:2519:  instructorId      String?
+  prisma\schema.prisma:2520:  rating            Int
+  prisma\schema.prisma:2521:  notes             String?
+  prisma\schema.prisma:2522:  assessmentDate    DateTime   
+     @default(now())
+  prisma\schema.prisma:2523:  createdAt         DateTime   
+     @default(now())
+  prisma\schema.prisma:2524:  updatedAt         DateTime   
+     @updatedAt
+> prisma\schema.prisma:2525:  instructor        
+Instructor?     @relation(fields: [instructorId], 
+references: [id])
+  prisma\schema.prisma:2526:  studentProgress   
+StudentProgress @relation(fields: [studentProgressId], 
+references: [id], onDelete: Cascade)
+  prisma\schema.prisma:2527:
+  prisma\schema.prisma:2528:  @@index([studentProgressId])
+> prisma\schema.prisma:2529:  @@index([instructorId])
+  prisma\schema.prisma:2530:  
+@@map("qualitative_assessments")
+  prisma\schema.prisma:2531:}
+  prisma\schema.prisma:2532:
+  prisma\schema.prisma:3497:  jobId         String
+  prisma\schema.prisma:3498:  userId        String
+  prisma\schema.prisma:3499:  studentId     String?
+> prisma\schema.prisma:3500:  instructorId  String?
+  prisma\schema.prisma:3501:  coverLetter   String?
+  prisma\schema.prisma:3502:  resume        String?
+  prisma\schema.prisma:3503:  status        
+ApplicationStatus @default(PENDING)
+  prisma\schema.prisma:3511:  job           Job            
+   @relation(fields: [jobId], references: [id], onDelete: 
+Cascade)
+  prisma\schema.prisma:3512:  user          User           
+   @relation(fields: [userId], references: [id], onDelete: 
+Cascade)
+  prisma\schema.prisma:3513:  student       Student?       
+   @relation(fields: [studentId], references: [id])
+> prisma\schema.prisma:3514:  instructor    Instructor?    
+   @relation(fields: [instructorId], references: [id])
+  prisma\schema.prisma:3515:  reviewedBy    User?          
+   @relation("ApplicationReviewer", fields: 
+[reviewedById], references: [id])
+  prisma\schema.prisma:3516:
+  prisma\schema.prisma:3517:  @@unique([jobId, userId])
+
+

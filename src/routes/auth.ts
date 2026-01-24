@@ -110,7 +110,16 @@ export default async function authRoutes(fastify: FastifyInstance) {
             data: {
               type: 'object',
               properties: {
-                user: { type: 'object' },
+                user: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    email: { type: 'string' },
+                    role: { type: 'string' },
+                    organizationId: { type: 'string' },
+                    profile: { type: 'object', additionalProperties: true }
+                  }
+                },
                 token: { type: 'string' },
               },
             },

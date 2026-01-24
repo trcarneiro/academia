@@ -1,0 +1,125 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769273062270,"pid":26504,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769273077780,"pid":26504,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/financial-module.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769273077845,"pid":26504,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769273077869,"pid":26504,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769273078450,"pid":26504,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769273078563,"pid":26504,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769273079687,"pid":26504,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769273079687,"pid":26504,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769273079687,"pid":26504,"hostname":"C02","msg":"Skipping Cron Scheduler initialization in test environment"}
+ [31m❯[39m tests/integration/financial-module.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[33m 456911[2mms[22m[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould list all billing plans[39m[33m 30074[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould get billing plan by ID[39m[33m 30013[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould create a new billing plan[39m[33m 30034[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould update a billing plan[39m[33m 30018[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould delete a billing plan[39m[33m 30022[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould list student subscriptions[39m[33m 30019[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould create a new subscription[39m[33m 30018[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould not create duplicate active subscriptions[39m[33m 30007[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould cancel a subscription[39m[33m 30015[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould get subscription details[39m[33m 30010[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould validate subscription data[39m[33m 30004[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent student[39m[33m 30003[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent plan[39m[33m 30011[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould record payment for subscription[39m[33m 30015[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould get payment history for student[39m[33m 30008[2mms[22m[39m
+[31m     → Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests
+[31m[1mPrismaClientKnownRequestError[22m: 
+Invalid `prisma.organization.delete()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:82:39
+
+  79 await prisma.user.deleteMany({
+  80     where: { organizationId: testOrganization.id }
+  81 });
+→ 82 await prisma.organization.delete(
+An operation failed because it depends on one or more records that were required but not found. No record was found for a delete.[39m
+[90m [2m❯[22m ei.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m228:13[22m[39m
+[90m [2m❯[22m ei.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m174:12[22m[39m
+[90m [2m❯[22m ei.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:[2m143:12[22m[39m
+[90m [2m❯[22m a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:[2m833:24[22m[39m
+[36m [2m❯[22m tests/integration/financial-module.test.ts:[2m82:13[22m[39m
+    [90m 80| [39m                where[33m:[39m { organizationId[33m:[39m testOrganization[33m.[39mid }
+    [90m 81| [39m            })[33m;[39m
+    [90m 82| [39m            [35mawait[39m prisma[33m.[39morganization[33m.[39m[35mdelete[39m({
+    [90m   | [39m            [31m^[39m
+    [90m 83| [39m                where[33m:[39m { id[33m:[39m testOrganization[33m.[39mid }
+    [90m 84| [39m            })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 15 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould list all billing plans
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould get billing plan by ID
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould create a new billing plan
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould update a billing plan
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould delete a billing plan
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould list student subscriptions
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould create a new subscription
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould not create duplicate active subscriptions
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould cancel a subscription
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould get subscription details
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould validate subscription data
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent student
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent plan
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould record payment for subscription
+[41m[1m FAIL [22m[49m tests/integration/financial-module.test.ts[2m > [22mFinancial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould get payment history for student
+[31m[1mError[22m: Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[36m [2m❯[22m tests/setup.ts:[2m17:1[22m[39m
+    [90m 15| [39m})[33m;[39m
+    [90m 16| [39m
+    [90m 17| [39m[34mbeforeEach[39m([35masync[39m () [33m=>[39m {
+    [90m   | [39m[31m^[39m
+    [90m 18| [39m  // Clean up database using DELETE with FK checks disabled in a trans…
+    [90m 19| [39m  // Use DELETE instead of TRUNCATE because TRUNCATE implicitly commit…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m15 failed[39m[22m[90m (15)[39m
+[2m   Start at [22m 13:44:16
+[2m   Duration [22m 480.20s[2m (transform 8.31s, setup 162ms, collect 19.35s, tests 456.91s, environment 0ms, prepare 669ms)[22m
+

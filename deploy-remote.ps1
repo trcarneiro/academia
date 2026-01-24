@@ -84,11 +84,13 @@ if (-not $SkipBuild) {
     try {
         npm run build
         Write-Success "Build concluído com sucesso"
-    } catch {
+    }
+    catch {
         Write-Error "Falha no build: $_"
         exit 1
     }
-} else {
+}
+else {
     Write-Warning "Build ignorado (-SkipBuild)"
 }
 
@@ -99,12 +101,14 @@ if (-not $SkipTests) {
     try {
         npm run test -- --run
         Write-Success "Testes passaram"
-    } catch {
+    }
+    catch {
         Write-Error "Testes falharam: $_"
         $continue = Read-Host "Continuar mesmo assim? (s/n)"
         if ($continue -ne 's') { exit 1 }
     }
-} else {
+}
+else {
     Write-Warning "Testes ignorados (-SkipTests)"
 }
 
@@ -127,6 +131,10 @@ tests/
 .github/
 .vscode/
 coverage/
+src/
+scripts/
+.archive/
+.reports/
 "@ | Out-File -FilePath $excludeFile -Encoding UTF8
 
 Write-Success "Lista de exclusao criada"
@@ -169,7 +177,8 @@ Write-Step "Verificando conexão SSH..."
 try {
     Invoke-RemoteCommand "echo 'Conexão OK'" -Silent
     Write-Success "Conectado ao servidor"
-} catch {
+}
+catch {
     Write-Error "Falha na conexão SSH: $_"
     exit 1
 }
@@ -209,8 +218,13 @@ if (-not $DryRun) {
         if ($LASTEXITCODE -ne 0) {
             throw "Falha na sincronização via rsync (Exit Code: $LASTEXITCODE)"
         }
-    } else {
+    }
+    else {
         Write-Host "  Usando pscp (PuTTY)..." -ForegroundColor DarkGray
+        
+        # 🔥 LIMPEZA EXPLÍCITA: Deletar pasta dist antiga para evitar cache de arquivos renomeados/deletados
+        Write-Host "  [CLEAN] Removendo pasta dist antiga no servidor..." -ForegroundColor Yellow
+        Invoke-RemoteCommand "rm -rf $REMOTE_PATH/dist"
         
         # Upload dos arquivos essenciais
         $filesToUpload = @(
@@ -227,7 +241,8 @@ if (-not $DryRun) {
     }
     
     Write-Success "Arquivos sincronizados"
-} else {
+}
+else {
     Write-Host "  [DRY-RUN] Sincronização de arquivos" -ForegroundColor DarkGray
 }
 
@@ -251,7 +266,8 @@ try {
     Write-Host "  -> Executando: npx prisma db push --skip-generate" -ForegroundColor DarkGray
     npx prisma db push --skip-generate
     Write-Success "Migrations aplicadas com sucesso (Local)"
-} catch {
+}
+catch {
     Write-Error "Falha ao aplicar migrations localmente: $_"
     exit 1
 }
@@ -264,7 +280,8 @@ $pm2Installed = $false
 try {
     Invoke-RemoteCommand "which pm2" -Silent
     $pm2Installed = $true
-} catch {
+}
+catch {
     $pm2Installed = $false
 }
 
@@ -272,7 +289,8 @@ if ($pm2Installed) {
     Write-Host "  Usando PM2..." -ForegroundColor DarkGray
     Invoke-RemoteCommand "cd $REMOTE_PATH && pm2 restart academia || pm2 start ecosystem.config.js"
     Invoke-RemoteCommand "pm2 save"
-} else {
+}
+else {
     Write-Host "  Usando systemd..." -ForegroundColor DarkGray
     Invoke-RemoteCommand "sudo systemctl restart academia"
 }
@@ -289,10 +307,12 @@ try {
     
     if ($response.StatusCode -eq 200) {
         Write-Success "Aplicação respondendo corretamente!"
-    } else {
+    }
+    else {
         Write-Warning "Aplicação respondeu com status: $($response.StatusCode)"
     }
-} catch {
+}
+catch {
     Write-Warning "Não foi possível verificar o health check: $_"
 }
 

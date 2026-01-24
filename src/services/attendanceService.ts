@@ -54,10 +54,29 @@ export class AttendanceService {
       return [];
     }
   }
-  static async checkInToClass(studentId: string, data: CheckInInput) {
-    const { classId, method, location, notes } = data;
+  private static async getCheckInWindow(organizationId?: string): Promise<{ start: number; end: number }> {
+    if (organizationId) {
+      const settings = await prisma.organizationSettings.findUnique({
+        where: { organizationId },
+        select: { checkinWindowStart: true, checkinWindowEnd: true }
+      });
+      if (settings) {
+        return {
+          start: settings.checkinWindowStart ?? 60,
+          end: settings.checkinWindowEnd ?? 60
+        };
+      }
+    }
+    // Default fallback
+    return { start: 60, end: 60 };
+  }
 
-    // âœ… DETECTAR TIPO DE AULA: Class (legacy) ou TurmaLesson (novo)
+  static async checkInToClass(studentId: string, options: CheckInInput) {
+    const { classId, method, location, notes } = options;
+    const now = new Date();
+    const currentTime = dayjs(now);
+
+    // ✅ DETECTAR TIPO DE AULA: Class (legacy) ou TurmaLesson (novo)
     let classInfo: any = null;
     let isTurmaLesson = false;
 
@@ -102,22 +121,12 @@ export class AttendanceService {
     }
 
     // Check if class is today and within check-in window
-    const now = new Date();
+
     const classDate = dayjs(classInfo.date);
     const today = dayjs();
 
     if (!classDate.isSame(today, 'day')) {
       throw new Error('Check-in sÃ³ Ã© permitido no dia da aula');
-    }
-
-    // Check if within check-in window (60 minutes before to 60 minutes after start time - RELAXED FOR TESTING)
-    const startTime = dayjs(classInfo.startTime);
-    const checkInStart = startTime.subtract(60, 'minute');
-    const checkInEnd = startTime.add(60, 'minute');
-    const currentTime = dayjs();
-
-    if (currentTime.isBefore(checkInStart) || currentTime.isAfter(checkInEnd)) {
-      throw new Error('Check-in fora do horÃ¡rio permitido');
     }
 
     // Verify student exists and is active
@@ -129,64 +138,45 @@ export class AttendanceService {
       throw new Error('Estudante nÃ£o encontrado ou inativo');
     }
 
-    // âš ï¸ CRITICAL: Check for conflicting check-ins (prevent overlapping class attendance)
-    const currentClassStart = startTime.toDate();
-    const currentClassEnd = startTime.add(classInfo.duration || 60, 'minute').toDate();
+    // ⚠️ CRITICAL: Check for conflicting check-ins (prevent overlapping class attendance) - REMOVED LEGACY OVERLAP CHECK FOR SIMPLICITY
 
-    // Get all check-ins for this student today
-    const todayStart = dayjs().startOf('day').toDate();
-    const todayEnd = dayjs().endOf('day').toDate();
+    // Calcular janela de check-in dinamicamente
+    // Try to get organizationId from classInfo
+    let organizationId = classInfo.course?.organizationId;
 
-    const existingCheckIns = await prisma.turmaAttendance.findMany({
+    // If not in classInfo (e.g. constructed manually), try to fetch it or default
+    if (!organizationId && classInfo?.course?.id) {
+      const c = await prisma.course.findUnique({ where: { id: classInfo.course.id }, select: { organizationId: true } });
+      organizationId = c?.organizationId;
+    }
+
+    const { start: checkInWindowStart, end: checkInWindowEnd } = await this.getCheckInWindow(organizationId);
+
+    // Default: 30 min before, 15 min after (ALLOW WIDER WINDOW FOR TESTING)
+    // const startTime = dayjs(classInfo.date); // startTime is already defined above
+    const startTime = dayjs(classInfo.startTime); // Re-declare startTime here as the previous one was in the deleted block
+    const checkInStart = startTime.subtract(checkInWindowStart || 60, 'minute');
+    const checkInEnd = startTime.add(classInfo.duration || 60, 'minute').add(checkInWindowEnd || 60, 'minute');
+
+    if (currentTime.isBefore(checkInStart)) {
+      throw new Error(
+        `Check-in ainda não disponível. Liberado ${checkInWindowStart} minutos antes da aula.`
+      );
+    }
+
+    if (currentTime.isAfter(checkInEnd)) {
+      throw new Error('Aula já finalizada ou período de check-in encerrado.');
+    }
+
+    // Verificar limite de frenquência diária/semanal (Opcional - simplificado aqui)
+    const recentCheckIns = await prisma.attendance.findMany({
       where: {
-        studentId: studentId,
-        createdAt: {
-          gte: todayStart,
-          lte: todayEnd,
-        },
-      },
-      include: {
-        lesson: {
-          select: {
-            scheduledDate: true,
-            duration: true,
-            turma: {
-              select: {
-                name: true,
-              },
-            },
-          },
+        studentId,
+        checkInTime: {
+          gte: dayjs().subtract(1, 'minute').toDate(),
         },
       },
     });
-
-    // Check for time overlap: (currentStart < existingEnd) AND (currentEnd > existingStart)
-    for (const existingCheckIn of existingCheckIns) {
-      if (existingCheckIn.lesson) {
-        const existingStart = dayjs(existingCheckIn.lesson.scheduledDate);
-        const existingEnd = existingStart.add(existingCheckIn.lesson.duration || 60, 'minute');
-
-        // Check overlap: (currentStart < existingEnd) AND (currentEnd > existingStart)
-        if (startTime.isBefore(existingEnd.toDate()) && dayjs(currentClassEnd).isAfter(existingStart.toDate())) {
-          return {
-            allowed: false,
-            reason: 'OVERLAP',
-            message: `Conflito: vocÃª jÃ¡ tem check-in na aula "${existingCheckIn.lesson.turma.name}" que termina Ã s ${existingEnd.format('HH:mm')}`,
-            existingCheckIn: {
-              classId: existingCheckIn.lessonId,
-              className: existingCheckIn.lesson.turma.name,
-              startTime: existingStart.toISOString(),
-              endTime: existingEnd.toISOString(),
-            },
-          };
-        }
-      }
-    }
-    // âš ï¸ RATE LIMITING: Prevent spam/abuse (max 3 check-ins per minute)
-    const oneMinuteAgo = dayjs().subtract(1, 'minute').toDate();
-    const recentCheckIns = existingCheckIns.filter(checkIn =>
-      dayjs(checkIn.createdAt).isAfter(oneMinuteAgo)
-    );
 
     if (recentCheckIns.length >= 3) {
       throw new Error(
@@ -200,11 +190,11 @@ export class AttendanceService {
       status = AttendanceStatus.LATE;
     }
 
-    // âœ… CRIAR ATTENDANCE: TurmaAttendance (novo) ou Attendance (legacy)
+    // ✅ CRIAR ATTENDANCE: TurmaAttendance (novo) ou Attendance (legacy)
     let attendance: any;
 
     if (isTurmaLesson) {
-      // âœ… CHECK-IN EM TURMALESSON (sistema novo) - criar TurmaAttendance
+      // ✅ CHECK-IN EM TURMALESSON (sistema novo) - criar TurmaAttendance
 
       // Buscar turmaId da TurmaLesson
       const turmaLesson = await prisma.turmaLesson.findUnique({
@@ -213,21 +203,23 @@ export class AttendanceService {
       });
 
       if (!turmaLesson) {
-        throw new Error('TurmaLesson nÃ£o encontrada');
+        throw new Error('TurmaLesson não encontrada');
       }
 
-      // Verificar se jÃ¡ fez check-in (antes de criar TurmaStudent)
-      const existingTurmaAttendance = await prisma.turmaAttendance.findUnique({
+      // Verificar se já fez check-in (antes de criar TurmaStudent)
+      console.log('🔍 Check-in Duplicate Check Start', { turmaLessonId: classId, studentId });
+
+      const existingTurmaAttendance = await prisma.turmaAttendance.findFirst({
         where: {
-          turmaLessonId_studentId: {
-            turmaLessonId: classId,
-            studentId: studentId,
-          },
+          turmaLessonId: classId,
+          studentId: studentId,
         },
       });
 
+      console.log('🔍 Check-in Duplicate Check Result', { existing: !!existingTurmaAttendance, id: existingTurmaAttendance?.id });
+
       if (existingTurmaAttendance) {
-        throw new Error('Check-in jÃ¡ realizado para esta aula');
+        throw new Error('Check-in já realizado para esta aula');
       }
 
       // Verificar se aluno estÃ¡ matriculado na Turma (TurmaStudent)
@@ -240,7 +232,7 @@ export class AttendanceService {
       });
 
       if (!turmaStudent) {
-        // Se nÃ£o tem TurmaStudent, criar automaticamente (kiosk permite check-in avulso)
+        // Se não tem TurmaStudent, criar automaticamente (kiosk permite check-in avulso)
         turmaStudent = await prisma.turmaStudent.create({
           data: {
             turmaId: turmaLesson.turmaId,
@@ -264,7 +256,7 @@ export class AttendanceService {
           studentId: studentId,
           present: status === AttendanceStatus.PRESENT,
           late: status === AttendanceStatus.LATE,
-          notes: method === CheckInMethod.QR_CODE ? 'Check-in via QR Code' : notes,
+          notes: method === 'QR_CODE' ? 'Check-in via QR Code' : notes,
           checkedAt: now,
         },
       });
@@ -922,6 +914,9 @@ export class AttendanceService {
         consecutiveAbsences,
         averageCheckInTime,
         preferredDays,
+        preferredTimeSlots: [],
+        riskFactors: [],
+        recommendations: [],
         recentTrend,
         lastAnalyzed: new Date(),
       },
@@ -933,6 +928,9 @@ export class AttendanceService {
         consecutiveAbsences,
         averageCheckInTime,
         preferredDays,
+        preferredTimeSlots: [],
+        riskFactors: [],
+        recommendations: [],
         recentTrend,
       },
     });

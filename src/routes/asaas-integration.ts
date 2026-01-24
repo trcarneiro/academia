@@ -81,10 +81,10 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         let customerEmail = asaasCustomer.email;
         if (!customerEmail) {
           // Generate email from CPF, phone, or ID
-          const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
-                           asaasCustomer.phone?.replace(/\D/g, '') || 
-                           asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
-                           customerId;
+          const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') ||
+            asaasCustomer.phone?.replace(/\D/g, '') ||
+            asaasCustomer.mobilePhone?.replace(/\D/g, '') ||
+            customerId;
           customerEmail = `customer_${identifier}@temp.academia.local`;
           logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
         }
@@ -142,6 +142,8 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
               medicalConditions: `Imported from Asaas on ${new Date().toLocaleDateString('pt-BR')} - Customer ID: ${customerId}`,
               enrollmentDate: new Date(),
               isActive: true,
+              preferredDays: [],
+              preferredTimes: [],
             },
           });
 
@@ -149,6 +151,33 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         });
 
         logger.info(`Customer ${asaasCustomer.name} imported successfully`);
+
+        // Create task if temporary email was used
+        if (customerEmail.includes('@temp.academia.local')) {
+          try {
+            await prisma.agentTask.create({
+              data: {
+                organizationId,
+                title: 'Atualizar Email de Aluno Importado',
+                description: `O aluno ${firstName} ${lastName} foi importado sem email. Um email temporário foi gerado: ${customerEmail}. Por favor, solicite o email correto e atualize o cadastro.`,
+                category: 'ENROLLMENT',
+                actionType: 'UPDATE_RECORD',
+                priority: 'MEDIUM',
+                status: 'PENDING',
+                actionPayload: {
+                  studentId: result.student.id,
+                  userId: result.user.id,
+                  currentEmail: customerEmail
+                },
+                targetEntity: 'Student'
+              }
+            });
+            logger.info(`Created task for updating email of student ${result.student.id}`);
+          } catch (taskError) {
+            logger.error('Error creating email update task:', taskError);
+            // Don't fail the request if task creation fails, just log it
+          }
+        }
 
         return reply.send({
           success: true,
@@ -230,10 +259,10 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           // Generate temporary email if not provided
           let customerEmail = asaasCustomer.email;
           if (!customerEmail) {
-            const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') || 
-                             asaasCustomer.phone?.replace(/\D/g, '') || 
-                             asaasCustomer.mobilePhone?.replace(/\D/g, '') || 
-                             customerId;
+            const identifier = asaasCustomer.cpfCnpj?.replace(/\D/g, '') ||
+              asaasCustomer.phone?.replace(/\D/g, '') ||
+              asaasCustomer.mobilePhone?.replace(/\D/g, '') ||
+              customerId;
             customerEmail = `customer_${identifier}@temp.academia.local`;
             logger.info(`Generated temporary email for customer ${asaasCustomer.name}: ${customerEmail}`);
           }
@@ -288,11 +317,51 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
                 medicalConditions: `Imported from Asaas on ${new Date().toLocaleDateString('pt-BR')} - Customer ID: ${customerId}`,
                 enrollmentDate: new Date(),
                 isActive: true,
+                preferredDays: [],
+                preferredTimes: [],
               },
             });
           });
 
           results.success++;
+
+          // Create task if temporary email was used
+          if (customerEmail.includes('@temp.academia.local')) {
+            try {
+              // Get IDs from the created records (need to capture them from transaction or find them)
+              const createdUser = await prisma.user.findUnique({
+                where: { email: customerEmail.toLowerCase() }
+              });
+
+              if (createdUser) {
+                const createdStudent = await prisma.student.findUnique({
+                  where: { userId: createdUser.id }
+                });
+
+                if (createdStudent) {
+                  await prisma.agentTask.create({
+                    data: {
+                      organizationId,
+                      title: 'Atualizar Email de Aluno Importado',
+                      description: `O aluno ${firstName} ${lastName} foi importado sem email. Um email temporário foi gerado: ${customerEmail}. Por favor, solicite o email correto e atualize o cadastro.`,
+                      category: 'ENROLLMENT',
+                      actionType: 'UPDATE_RECORD',
+                      priority: 'MEDIUM',
+                      status: 'PENDING',
+                      actionPayload: {
+                        studentId: createdStudent.id,
+                        userId: createdUser.id,
+                        currentEmail: customerEmail
+                      },
+                      targetEntity: 'Student'
+                    }
+                  });
+                }
+              }
+            } catch (taskError) {
+              logger.error(`Error creating email update task for ${customerEmail}:`, taskError);
+            }
+          }
         } catch (error) {
           results.failed++;
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';

@@ -10,10 +10,10 @@ export class AuthService {
   static async register(data: RegisterInput) {
     const { email, password, role, firstName, lastName, phone, emergencyContact, birthDate, medicalConditions, organizationId } = data;
 
-    const supabaseData = await supabase.auth.signUp({ 
-      email, 
-      password, 
-      options: { data: { orgId: organizationId, role } } 
+    const supabaseData = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { orgId: organizationId, role } }
     });
     if (!supabaseData.data.user) {
       throw new Error('Falha no registro Supabase');
@@ -25,6 +25,7 @@ export class AuthService {
       id: supabaseUserId,
       email,
       role,
+      password, // Include password
       organizationId,
     };
 
@@ -101,6 +102,7 @@ export class AuthService {
         data: {
           id: supabaseData.data.user.id,
           email,
+          password, // Include password
           role: 'ADMIN',
           organizationId: DEFAULT_ORG_ID,
         },
@@ -117,7 +119,7 @@ export class AuthService {
     const token = supabaseData.data.session.access_token;
 
     logger.info({ userId: user.id, email: user.email, role: user.role }, 'User logged in');
-    return {
+    const result = {
       id: user.id,
       email: user.email,
       role: user.role,
@@ -125,6 +127,8 @@ export class AuthService {
       profile,
       token,
     };
+    console.log('DEBUG: AuthService.login returning:', JSON.stringify(result, null, 2));
+    return result;
   }
 
   static async findUserById(id: string) {

@@ -1,5 +1,26 @@
 [
   {
+    "id": 1768933594532,
+    "timestamp": "2026-01-20T18:26:34.532Z",
+    "version": "2.3.2",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
+    "id": 1768933393916,
+    "timestamp": "2026-01-20T18:23:13.916Z",
+    "version": "2.3.1",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
+    "id": 1768916114833,
+    "timestamp": "2026-01-20T13:35:14.833Z",
+    "version": "2.3.0",
+    "description": "Auto-bumped version",
+    "files": {}
+  },
+  {
     "id": 1767903487748,
     "timestamp": "2026-01-08T20:18:07.748Z",
     "version": "2.2.3",

@@ -89,18 +89,18 @@ export class AsaasService {
   constructor(apiKey: string, isSandbox = true) {
     this.apiKey = apiKey;
     this.isSandbox = isSandbox;
-    this.baseUrl = isSandbox 
-      ? 'https://sandbox.asaas.com/api/v3'
-      : 'https://www.asaas.com/api/v3';
+    this.baseUrl = isSandbox
+      ? 'https://api-sandbox.asaas.com/v3'
+      : 'https://api.asaas.com/v3';
   }
 
   async makeRequest<T>(
-    endpoint: string, 
+    endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const options: RequestInit = {
       method,
       headers: {
@@ -116,7 +116,7 @@ export class AsaasService {
 
     try {
       const response = await fetch(url, options);
-      
+
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(`Asaas API Error: ${response.status} - ${errorData}`);
@@ -160,7 +160,7 @@ export class AsaasService {
         }
       });
     }
-    
+
     const endpoint = `/customers${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     return this.makeRequest(endpoint);
   }
@@ -199,7 +199,7 @@ export class AsaasService {
         }
       });
     }
-    
+
     const endpoint = `/payments${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     return this.makeRequest(endpoint);
   }
@@ -247,7 +247,7 @@ export class AsaasService {
         }
       });
     }
-    
+
     const endpoint = `/subscriptions${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     return this.makeRequest(endpoint);
   }
@@ -287,7 +287,7 @@ export class AsaasService {
 
   calculateDueDate(startDate: Date, billingType: 'MONTHLY' | 'QUARTERLY' | 'YEARLY'): Date {
     const dueDate = new Date(startDate);
-    
+
     switch (billingType) {
       case 'MONTHLY':
         dueDate.setMonth(dueDate.getMonth() + 1);
@@ -299,7 +299,7 @@ export class AsaasService {
         dueDate.setFullYear(dueDate.getFullYear() + 1);
         break;
     }
-    
+
     return dueDate;
   }
 }

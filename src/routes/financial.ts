@@ -43,7 +43,7 @@ const webhookSchema = z.object({
 export default async function financialRoutes(
   fastify: FastifyInstance
 ) {
-  
+
   // ==========================================
   // SUBSCRIPTION PLANS
   // ==========================================
@@ -107,7 +107,7 @@ export default async function financialRoutes(
         return reply.code(400).send({ success: false, error: 'No organization found' });
       }
       const financialService = new FinancialService(org.id);
-      
+
       const validatedData = createPlanSchema.parse(request.body);
       const plan = await financialService.createPlan(validatedData as CreatePlanData);
 
@@ -386,7 +386,7 @@ export default async function financialRoutes(
       const updateData = request.body as any;
       if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
       if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
-      
+
       const subscription = await financialService.updateSubscription(id, updateData);
 
       return {
@@ -482,6 +482,56 @@ export default async function financialRoutes(
     }
   });
 
+  // GET /api/financial/stats - Estatísticas globais (Dashboard)
+  fastify.get('/stats', {
+    schema: {
+      description: 'Get global financial stats',
+      tags: ['Financial']
+    }
+  }, async (request, reply) => {
+    try {
+      const org = await prisma.organization.findFirst();
+      if (!org) {
+        return reply.code(400).send({ success: false, error: 'No organization found' });
+      }
+
+      // Calcular receita mensal (Soma de currentPrice de assinaturas ATIVAS)
+      // Ajuste para periodicidade (se BillingType != MONTHLY, dividir pelo prazo?)
+      // Por simplicidade inicial: considera valor da parcela como receita mensal recorrente se for mensal.
+      const activeSubscriptions = await prisma.studentSubscription.findMany({
+        where: {
+          organizationId: org.id,
+          status: 'ACTIVE',
+          isActive: true
+        },
+        select: {
+          currentPrice: true,
+          billingType: true
+        }
+      });
+
+      let monthlyRevenue = 0;
+      activeSubscriptions.forEach(sub => {
+        let value = Number(sub.currentPrice);
+        if (sub.billingType === 'QUARTERLY') value = value / 3;
+        if (sub.billingType === 'YEARLY') value = value / 12;
+        // Se for MONTHLY ou outros, mantém
+        monthlyRevenue += value;
+      });
+
+      return {
+        success: true,
+        data: {
+          monthlyRevenue,
+          activeSubscriptions: activeSubscriptions.length
+        }
+      };
+    } catch (error) {
+      reply.code(500);
+      return { success: false, error: 'Failed to fetch financial stats' };
+    }
+  });
+
   // ==========================================
   // REPORTS
   // ==========================================
@@ -510,7 +560,7 @@ export default async function financialRoutes(
       const financialService = new FinancialService(org.id);
       const { startDate, endDate } = request.query as any;
       const validatedData = financialReportSchema.parse({ startDate, endDate });
-      
+
       const report = await financialService.getOrganizationFinancialReport(
         new Date(validatedData.startDate),
         new Date(validatedData.endDate)
@@ -563,7 +613,7 @@ export default async function financialRoutes(
         return { success: false, error: 'No organization found' };
       }
       const financialService = new FinancialService(org.id);
-      
+
       // TODO: Validate webhook signature
       const result = await financialService.processWebhook(request.body);
 
@@ -686,7 +736,7 @@ export default async function financialRoutes(
         }
       });
 
-      const creditPurchases = creditPlans.flatMap(plan => 
+      const creditPurchases = creditPlans.flatMap(plan =>
         plan.subscriptions.map(subscription => ({
           id: subscription.id,
           student: subscription.student,

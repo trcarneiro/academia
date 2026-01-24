@@ -15,26 +15,29 @@ describe('Financial Module Integration Tests', () => {
         testOrganization = await prisma.organization.create({
             data: {
                 name: 'Test Organization',
-                slug: 'test-org-financial'
+                slug: `test-org-financial-${Date.now()}`
             }
         });
 
         // Create test data
         testStudent = await prisma.student.create({
             data: {
-                id: 'test-student-fin-001',
+                id: `test-student-fin-${Date.now()}`,
                 category: 'ADULT',
-                organizationId: testOrganization.id,
+                organization: { connect: { id: testOrganization.id } },
                 user: {
                     create: {
                         firstName: 'Test',
                         lastName: 'Student',
-                        email: 'test.financial@example.com',
+                        email: `test.financial.${Date.now()}@example.com`,
                         phone: '(11) 99999-9999',
                         password: 'test123',
                         organizationId: testOrganization.id
                     }
-                }
+                },
+                specialNeeds: [],
+                preferredDays: [],
+                preferredTimes: []
             },
             include: {
                 user: true
@@ -56,30 +59,36 @@ describe('Financial Module Integration Tests', () => {
 
     afterAll(async () => {
         // Clean up test data in reverse order
-        await prisma.payment.deleteMany({
-            where: { subscription: { studentId: testStudent.id } }
-        });
-        await prisma.subscription.deleteMany({
-            where: { studentId: testStudent.id }
-        });
-        await prisma.billingPlan.deleteMany({
-            where: { organizationId: testOrganization.id }
-        });
-        await prisma.student.deleteMany({
-            where: { organizationId: testOrganization.id }
-        });
-        await prisma.user.deleteMany({
-            where: { organizationId: testOrganization.id }
-        });
-        await prisma.organization.delete({
-            where: { id: testOrganization.id }
-        });
+        if (testStudent) {
+            await prisma.payment.deleteMany({
+                where: { subscription: { studentId: testStudent.id } }
+            });
+        }
+        if (testStudent) {
+            await prisma.studentSubscription.deleteMany({
+                where: { studentId: testStudent.id }
+            });
+        }
+        if (testOrganization) {
+            await prisma.billingPlan.deleteMany({
+                where: { organizationId: testOrganization.id }
+            });
+            await prisma.student.deleteMany({
+                where: { organizationId: testOrganization.id }
+            });
+            await prisma.user.deleteMany({
+                where: { organizationId: testOrganization.id }
+            });
+            await prisma.organization.delete({
+                where: { id: testOrganization.id }
+            });
+        }
         await prisma.$disconnect();
     });
 
     beforeEach(async () => {
         // Clean subscriptions before each test
-        await prisma.subscription.deleteMany({
+        await prisma.studentSubscription.deleteMany({
             where: { studentId: testStudent.id }
         });
     });
@@ -174,7 +183,7 @@ describe('Financial Module Integration Tests', () => {
     describe('Student Subscriptions API', () => {
         it('should list student subscriptions', async () => {
             // Create a subscription first
-            await prisma.subscription.create({
+            await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,
@@ -212,7 +221,7 @@ describe('Financial Module Integration Tests', () => {
 
         it('should not create duplicate active subscriptions', async () => {
             // Create first subscription
-            await prisma.subscription.create({
+            await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,
@@ -236,7 +245,7 @@ describe('Financial Module Integration Tests', () => {
         });
 
         it('should cancel a subscription', async () => {
-            const subscription = await prisma.subscription.create({
+            const subscription = await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,
@@ -251,14 +260,14 @@ describe('Financial Module Integration Tests', () => {
 
             expect(response.body.success).toBe(true);
 
-            const updatedSubscription = await prisma.subscription.findUnique({
+            const updatedSubscription = await prisma.studentSubscription.findUnique({
                 where: { id: subscription.id }
             });
             expect(updatedSubscription?.status).toBe('CANCELLED');
         });
 
         it('should get subscription details', async () => {
-            const subscription = await prisma.subscription.create({
+            const subscription = await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,
@@ -327,7 +336,7 @@ describe('Financial Module Integration Tests', () => {
 
     describe('Payment Processing', () => {
         it('should record payment for subscription', async () => {
-            const subscription = await prisma.subscription.create({
+            const subscription = await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,
@@ -354,7 +363,7 @@ describe('Financial Module Integration Tests', () => {
         });
 
         it('should get payment history for student', async () => {
-            const subscription = await prisma.subscription.create({
+            const subscription = await prisma.studentSubscription.create({
                 data: {
                     studentId: testStudent.id,
                     planId: testPlan.id,

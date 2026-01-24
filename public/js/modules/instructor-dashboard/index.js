@@ -9,34 +9,35 @@
  */
 
 // Load module-specific styles
-const moduleStyles = document.createElement('link');
-moduleStyles.rel = 'stylesheet';
-moduleStyles.href = '/css/modules/instructor-dashboard.css';
-document.head.appendChild(moduleStyles);
+(function () {
+    const moduleStyles = document.createElement('link');
+    moduleStyles.rel = 'stylesheet';
+    moduleStyles.href = '/css/modules/instructor-dashboard.css';
+    document.head.appendChild(moduleStyles);
 
-let moduleAPI = null;
+    let moduleAPI = null;
 
-async function initializeAPI() {
-    if (!window.createModuleAPI) {
-        throw new Error('API client not loaded');
+    async function initializeAPI() {
+        if (!window.createModuleAPI) {
+            throw new Error('API client not loaded');
+        }
+        moduleAPI = window.createModuleAPI('InstructorDashboard');
     }
-    moduleAPI = window.createModuleAPI('InstructorDashboard');
-}
 
-/**
- * Initialize the Instructor Dashboard module
- */
-window.initInstructorDashboard = async function (container) {
-    console.log('🎓 [InstructorDashboard] Initializing...');
+    /**
+     * Initialize the Instructor Dashboard module
+     */
+    window.initInstructorDashboard = async function (container) {
+        console.log('🎓 [InstructorDashboard] Initializing...');
 
-    try {
-        await initializeAPI();
-        await renderDashboard(container);
-        window.app?.dispatchEvent?.('module:loaded', { name: 'instructor-dashboard' });
-    } catch (err) {
-        console.error('InstructorDashboard init error:', err);
-        window.app?.handleError?.(err, 'instructor-dashboard:init');
-        container.innerHTML = `
+        try {
+            await initializeAPI();
+            await renderDashboard(container);
+            window.app?.dispatchEvent?.('module:loaded', { name: 'instructor-dashboard' });
+        } catch (err) {
+            console.error('InstructorDashboard init error:', err);
+            window.app?.handleError?.(err, 'instructor-dashboard:init');
+            container.innerHTML = `
             <div class="error-state">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h3>Erro ao carregar Painel do Instrutor</h3>
@@ -44,11 +45,11 @@ window.initInstructorDashboard = async function (container) {
                 <button onclick="location.reload()" class="btn-form btn-primary-form">Tentar Novamente</button>
             </div>
         `;
-    }
-};
+        }
+    };
 
-async function renderDashboard(container) {
-    container.innerHTML = `
+    async function renderDashboard(container) {
+        container.innerHTML = `
         <div class="module-isolated-container instructor-dashboard" data-module="instructor-dashboard">
             <!-- Header -->
             <div class="module-header-premium instructor-header-gradient">
@@ -96,43 +97,43 @@ async function renderDashboard(container) {
         </div>
     `;
 
-    // Bind refresh button
-    container.querySelector('#refresh-dashboard')?.addEventListener('click', () => {
-        loadDashboardData(container);
-    });
-
-    // Load data
-    await loadDashboardData(container);
-}
-
-async function loadDashboardData(container) {
-    try {
-        const response = await moduleAPI.fetchWithStates('/api/instructor/my-classes', {
-            onError: (err) => console.error('Load error:', err)
+        // Bind refresh button
+        container.querySelector('#refresh-dashboard')?.addEventListener('click', () => {
+            loadDashboardData(container);
         });
 
-        const data = response?.data || response || {};
+        // Load data
+        await loadDashboardData(container);
+    }
 
-        renderCurrentClass(container, data.currentClass);
-        renderLessonPlan(container, data.currentClass?.lessonPlan);
-        renderNextClasses(container, data.nextClasses || []);
+    async function loadDashboardData(container) {
+        try {
+            const response = await moduleAPI.fetchWithStates('/api/instructor/my-classes', {
+                onError: (err) => console.error('Load error:', err)
+            });
 
-    } catch (err) {
-        console.error('Error loading dashboard data:', err);
-        container.querySelector('#current-class-container').innerHTML = `
+            const data = response?.data || response || {};
+
+            renderCurrentClass(container, data.currentClass);
+            renderLessonPlan(container, data.currentClass?.lessonPlan);
+            renderNextClasses(container, data.nextClasses || []);
+
+        } catch (err) {
+            console.error('Error loading dashboard data:', err);
+            container.querySelector('#current-class-container').innerHTML = `
             <div class="error-state">
                 <i class="fas fa-exclamation-circle"></i>
                 <p>Erro ao carregar dados: ${err.message}</p>
             </div>
         `;
+        }
     }
-}
 
-function renderCurrentClass(container, currentClass) {
-    const section = container.querySelector('#current-class-container');
+    function renderCurrentClass(container, currentClass) {
+        const section = container.querySelector('#current-class-container');
 
-    if (!currentClass) {
-        section.innerHTML = `
+        if (!currentClass) {
+            section.innerHTML = `
             <div class="data-card-premium empty-class-card">
                 <div class="empty-state">
                     <i class="fas fa-coffee"></i>
@@ -141,15 +142,15 @@ function renderCurrentClass(container, currentClass) {
                 </div>
             </div>
         `;
-        return;
-    }
+            return;
+        }
 
-    const startTime = new Date(currentClass.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const endTime = new Date(currentClass.endTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const studentCount = currentClass.students?.length || 0;
-    const isActive = currentClass.status === 'IN_PROGRESS';
+        const startTime = new Date(currentClass.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const endTime = new Date(currentClass.endTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const studentCount = currentClass.students?.length || 0;
+        const isActive = currentClass.status === 'IN_PROGRESS';
 
-    section.innerHTML = `
+        section.innerHTML = `
         <div class="data-card-premium current-class-card ${isActive ? 'class-active' : 'class-scheduled'}">
             <div class="class-status-badge">
                 ${isActive ? '<span class="badge-active pulse">🟢 EM ANDAMENTO</span>' : '<span class="badge-scheduled">📅 AGENDADA</span>'}
@@ -196,19 +197,19 @@ function renderCurrentClass(container, currentClass) {
             </div>
         </div>
     `;
-}
-
-function renderLessonPlan(container, lessonPlan) {
-    const section = container.querySelector('#lesson-plan-container');
-
-    if (!lessonPlan) {
-        section.style.display = 'none';
-        return;
     }
 
-    const activities = lessonPlan.activities || lessonPlan.sections || [];
+    function renderLessonPlan(container, lessonPlan) {
+        const section = container.querySelector('#lesson-plan-container');
 
-    section.innerHTML = `
+        if (!lessonPlan) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const activities = lessonPlan.activities || lessonPlan.sections || [];
+
+        section.innerHTML = `
         <div class="data-card-premium lesson-plan-card">
             <div class="card-header">
                 <h3>
@@ -260,14 +261,14 @@ function renderLessonPlan(container, lessonPlan) {
         </div>
     `;
 
-    section.style.display = 'block';
-}
+        section.style.display = 'block';
+    }
 
-function renderNextClasses(container, nextClasses) {
-    const section = container.querySelector('#next-classes-container');
+    function renderNextClasses(container, nextClasses) {
+        const section = container.querySelector('#next-classes-container');
 
-    if (!nextClasses || nextClasses.length === 0) {
-        section.innerHTML = `
+        if (!nextClasses || nextClasses.length === 0) {
+            section.innerHTML = `
             <div class="data-card-premium">
                 <h3><i class="fas fa-calendar-alt"></i> Próximas Aulas</h3>
                 <div class="empty-state small">
@@ -276,19 +277,19 @@ function renderNextClasses(container, nextClasses) {
                 </div>
             </div>
         `;
-        return;
-    }
+            return;
+        }
 
-    section.innerHTML = `
+        section.innerHTML = `
         <div class="data-card-premium next-classes-card">
             <h3><i class="fas fa-calendar-alt"></i> Próximas Aulas</h3>
             <div class="next-classes-list">
                 ${nextClasses.slice(0, 5).map(cls => {
-        const date = new Date(cls.startTime);
-        const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
-        const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(cls.startTime);
+            const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
+            const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        return `
+            return `
                         <div class="next-class-item">
                             <div class="next-class-date">
                                 <span class="day">${dayName}</span>
@@ -314,65 +315,66 @@ function renderNextClasses(container, nextClasses) {
                             </div>
                         </div>
                     `;
-    }).join('')}
+        }).join('')}
             </div>
         </div>
     `;
-}
-
-// Global API for onclick handlers
-window.instructorDashboard = {
-    async startClass(classId) {
-        if (!confirm('Iniciar esta aula agora?')) return;
-
-        try {
-            await moduleAPI.saveWithFeedback(`/api/instructor/class/${classId}/start`, {}, {
-                method: 'POST',
-                successMessage: 'Aula iniciada com sucesso!'
-            });
-            // Reload dashboard
-            const container = document.querySelector('[data-module="instructor-dashboard"]')?.parentElement;
-            if (container) await loadDashboardData(container);
-        } catch (err) {
-            alert('Erro ao iniciar aula: ' + err.message);
-        }
-    },
-
-    async finishClass(classId) {
-        if (!confirm('Finalizar esta aula?')) return;
-
-        try {
-            await moduleAPI.saveWithFeedback(`/api/instructor/class/${classId}/finish`, {}, {
-                method: 'POST',
-                successMessage: 'Aula finalizada com sucesso!'
-            });
-            const container = document.querySelector('[data-module="instructor-dashboard"]')?.parentElement;
-            if (container) await loadDashboardData(container);
-        } catch (err) {
-            alert('Erro ao finalizar aula: ' + err.message);
-        }
-    },
-
-    toggleLessonPlan() {
-        const section = document.querySelector('#lesson-plan-container');
-        if (section) {
-            section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        }
-    },
-
-    showStudentsList(classId) {
-        // Navigate to attendance/check-in view
-        if (window.router) {
-            window.router.navigateTo('frequency', { classId });
-        } else {
-            window.location.hash = `#frequency?classId=${classId}`;
-        }
     }
-};
 
-// Export for SPA router
-window.instructorDashboardModule = {
-    init: window.initInstructorDashboard
-};
+    // Global API for onclick handlers
+    window.instructorDashboard = {
+        async startClass(classId) {
+            if (!confirm('Iniciar esta aula agora?')) return;
 
-console.log('✅ Instructor Dashboard module loaded');
+            try {
+                await moduleAPI.saveWithFeedback(`/api/instructor/class/${classId}/start`, {}, {
+                    method: 'POST',
+                    successMessage: 'Aula iniciada com sucesso!'
+                });
+                // Reload dashboard
+                const container = document.querySelector('[data-module="instructor-dashboard"]')?.parentElement;
+                if (container) await loadDashboardData(container);
+            } catch (err) {
+                alert('Erro ao iniciar aula: ' + err.message);
+            }
+        },
+
+        async finishClass(classId) {
+            if (!confirm('Finalizar esta aula?')) return;
+
+            try {
+                await moduleAPI.saveWithFeedback(`/api/instructor/class/${classId}/finish`, {}, {
+                    method: 'POST',
+                    successMessage: 'Aula finalizada com sucesso!'
+                });
+                const container = document.querySelector('[data-module="instructor-dashboard"]')?.parentElement;
+                if (container) await loadDashboardData(container);
+            } catch (err) {
+                alert('Erro ao finalizar aula: ' + err.message);
+            }
+        },
+
+        toggleLessonPlan() {
+            const section = document.querySelector('#lesson-plan-container');
+            if (section) {
+                section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            }
+        },
+
+        showStudentsList(classId) {
+            // Navigate to attendance/check-in view
+            if (window.router) {
+                window.router.navigateTo('frequency', { classId });
+            } else {
+                window.location.hash = `#frequency?classId=${classId}`;
+            }
+        }
+    };
+
+    // Export for SPA router
+    window.instructorDashboardModule = {
+        init: window.initInstructorDashboard
+    };
+
+    console.log('✅ Instructor Dashboard module loaded');
+})();

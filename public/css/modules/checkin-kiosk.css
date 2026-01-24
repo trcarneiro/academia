@@ -6344,3 +6344,113 @@ body.kiosk-clean-mode .camera-section {
                 /* Evita zoom no iOS */
             }
         }
+/* ============================================================================
+   MOBILE OPTIMIZATIONS (Audit Fix v3 - Jan 2026)
+   Target: Checks-in Kiosk for Screens < 480px
+   ============================================================================ */
+
+@media (max-width: 480px) {
+    /* 1. LAYOUT & GRID */
+    .kiosk-grid-new, 
+    .kiosk-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    .kiosk-container {
+        padding: 0.5rem !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow-y: auto !important;
+    }
+
+    /* 2. CAMERA OPTIMIZATION */
+    .camera-area, 
+    .camera-section {
+        order: 1 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .camera-card-premium,
+    .camera-container {
+        aspect-ratio: 3 / 4 !important;
+        max-height: 55vh !important;
+        border-radius: 16px !important;
+        border-width: 3px !important;
+    }
+    
+    .face-outline {
+        width: 80% !important;
+        height: 80% !important;
+        max-width: none !important;
+    }
+
+    /* 3. TOUCH TARGETS & READABILITY */
+    /* Search Input */
+    .search-input-wrapper-large input,
+    .kiosk-input-large,
+    #manual-search {
+        min-height: 60px !important; /* Larger touch target */
+        font-size: 1.25rem !important; /* Readable text without zoom */
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* Buttons */
+    .btn-search-large,
+    button[class*='btn-'] {
+        min-height: 48px !important;
+        min-width: 48px !important;
+    }
+
+    /* Autocomplete Items */
+    .autocomplete-item {
+        min-height: 60px !important;
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+
+    .student-name {
+        font-size: 1.1rem !important;
+    }
+
+    /* Dashboard Stats & Classes */
+    .classes-area {
+        order: 3 !important;
+    }
+
+    .class-card,
+    .class-card-active {
+        padding: 1.25rem !important;
+        min-height: 100px !important;
+    }
+
+    .class-time {
+        font-size: 1.1rem !important;
+    }
+
+    .class-name {
+        font-size: 1.3rem !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Hide less critical elements to save space */
+    .kiosk-header-actions p,
+    .search-hint {
+        display: none !important;
+    }
+    
+    .kiosk-header-actions h1 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Ensure search box is visible */
+    .search-area {
+        order: 2 !important;
+        margin-top: 0.5rem !important;
+    }
+}
+

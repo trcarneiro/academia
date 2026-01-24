@@ -1,0 +1,154 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769255893689,"pid":125260,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769255903338,"pid":125260,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/financial-module.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769255903399,"pid":125260,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769255903413,"pid":125260,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769255904053,"pid":125260,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769255904155,"pid":125260,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769255905130,"pid":125260,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769255905130,"pid":125260,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769255905130,"pid":125260,"hostname":"C02","msg":"⏳ Initializing Cron Scheduler..."}
+{"level":30,"time":1769255905167,"pid":125260,"hostname":"C02","msg":"✅ Cron Scheduler initialized (Daily at 02:00 AM)"}
+ [31m❯[39m tests/integration/financial-module.test.ts [2m([22m[2m15 tests[22m[2m | [22m[31m15 failed[39m[2m)[22m[33m 79605[2mms[22m[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould list all billing plans[39m[33m 8168[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould get billing plan by ID[39m[33m 4541[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould create a new billing plan[39m[33m 4182[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould update a billing plan[39m[33m 4104[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mBilling Plans API[2m > [22mshould delete a billing plan[39m[33m 4236[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould list student subscriptions[39m[33m 4681[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:186:46
+
+  183 describe('Student Subscriptions API', () => {
+  184     it('should list student subscriptions', async () => {
+  185         // Create a subscription first
+→ 186         await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769255907035",
+                  planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+                  startDate: new Date("2026-01-24T11:58:59.337Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould create a new subscription[39m[33m 5001[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould not create duplicate active subscriptions[39m[33m 5183[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:224:46
+
+  221 
+  222 it('should not create duplicate active subscriptions', async () => {
+  223     // Create first subscription
+→ 224     await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769255907035",
+              planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+              startDate: new Date("2026-01-24T11:59:09.609Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould cancel a subscription[39m[33m 5638[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:248:67
+
+  245 });
+  246 
+  247 it('should cancel a subscription', async () => {
+→ 248     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769255907035",
+              planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+              startDate: new Date("2026-01-24T11:59:15.247Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mStudent Subscriptions API[2m > [22mshould get subscription details[39m[33m 4720[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:270:67
+
+  267 });
+  268 
+  269 it('should get subscription details', async () => {
+→ 270     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769255907035",
+              planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+              startDate: new Date("2026-01-24T11:59:19.963Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            },
+            include: {
+              plan: true
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould validate subscription data[39m[33m 4398[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent student[39m[33m 4059[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mFinancial Data Validation[2m > [22mshould handle non-existent plan[39m[33m 4711[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould record payment for subscription[39m[33m 4821[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:339:67
+
+  336 
+  337 describe('Payment Processing', () => {
+  338     it('should record payment for subscription', async () => {
+→ 339         const subscription = await prisma.studentSubscription.create({
+                data: {
+                  studentId: "test-student-fin-1769255907035",
+                  planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+                  startDate: new Date("2026-01-24T11:59:37.960Z"),
+                  status: "ACTIVE",
+              +   currentPrice: Decimal
+                }
+              })
+
+Argument `currentPrice` is missing.[39m
+[31m   [31m×[31m Financial Module Integration Tests[2m > [22mPayment Processing[2m > [22mshould get payment history for student[39m[33m 4403[2mms[22m[39m
+[31m     → 
+Invalid `prisma.studentSubscription.create()` invocation in
+H:\projetos\academia\tests\integration\financial-module.test.ts:366:67
+
+  363 });
+  364 
+  365 it('should get payment history for student', async () => {
+→ 366     const subscription = await prisma.studentSubscription.create({
+            data: {
+              studentId: "test-student-fin-1769255907035",
+              planId: "ea849286-4937-430b-a094-e8bf06cc12b5",
+              startDate: new Date("2026-01-24T11:59:42.363Z"),
+              status: "ACTIVE",
+          +   currentPrice: Decimal
+            }
+          })
+
+Argument `currentPrice` is missing.[39m
+Terminate batch job (Y/N)? 

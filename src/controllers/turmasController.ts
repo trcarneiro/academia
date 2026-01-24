@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { TurmasService, CreateTurmaData, MarkAttendanceData } from '@/services/turmasService';
+import { RecurrenceService } from '@/services/recurrenceService';
 import { ResponseHelper } from '@/utils/response';
 import { z } from 'zod';
 
@@ -68,7 +69,7 @@ export class TurmasController {
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { organizationId, unitId, status, type, isActive } = request.query as any;
-      
+
       const turmas = await this.turmasService.list({
         organizationId,
         unitId,
@@ -86,13 +87,13 @@ export class TurmasController {
   async get(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
-      
+
       console.log('[TurmasController] Get request for ID:', id);
-      
+
       const turma = await this.turmasService.getById(id);
-      
+
       console.log('[TurmasController] Turma found:', !!turma);
-      
+
       if (!turma) {
         return ResponseHelper.notFound(reply, 'Turma não encontrada');
       }
@@ -107,10 +108,10 @@ export class TurmasController {
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
       console.log('[TurmasController] Create request body:', JSON.stringify(request.body, null, 2));
-      
+
       const validatedData = CreateTurmaSchema.parse(request.body);
       console.log('[TurmasController] Validation passed, validated data:', JSON.stringify(validatedData, null, 2));
-      
+
       // Convert Instructor.id to User.id if needed
       if (validatedData.instructorId) {
         const instructor = await this.turmasService.getInstructorUserId(validatedData.instructorId);
@@ -121,22 +122,30 @@ export class TurmasController {
         console.log('[TurmasController] Converting Instructor.id to User.id:', instructor.userId);
         validatedData.instructorId = instructor.userId;
       }
-      
+
       const turma = await this.turmasService.create(validatedData as CreateTurmaData);
       if (!turma) {
         console.error('[TurmasController] Service returned null on create');
         return ResponseHelper.error(reply, 'Erro ao criar turma', 500);
       }
       console.log('[TurmasController] Turma created successfully:', turma.id);
+
+      // Trigger autonomous lesson generation
+      // We don't await this to avoid blocking the response, or we could await if we want to ensure it's done.
+      // Given it might be heavy, let's fire and forget, capturing errors in logs.
+      RecurrenceService.generateLessonsForTurma(turma.id).catch(err => {
+        console.error('[TurmasController] Failed to generate recurrent lessons:', err);
+      });
+
       return ResponseHelper.created(reply, turma);
     } catch (error) {
       console.error('[TurmasController] Create error:', error);
-      
+
       if (error instanceof z.ZodError) {
         console.error('[TurmasController] Validation errors:', error.errors);
         return ResponseHelper.badRequest(reply, 'Dados inválidos', error.errors);
       }
-      
+
       return ResponseHelper.error(reply, 'Erro ao criar turma', 500);
     }
   }
@@ -144,14 +153,14 @@ export class TurmasController {
   async update(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
-      
+
       console.log('[TurmasController] Update request for ID:', id);
       console.log('[TurmasController] Update request body:', JSON.stringify(request.body, null, 2));
-      
+
       console.log('[TurmasController] Starting validation with UpdateTurmaSchema...');
       const validatedData = UpdateTurmaSchema.parse(request.body);
       console.log('[TurmasController] Validation passed, validated data:', JSON.stringify(validatedData, null, 2));
-      
+
       // Convert Instructor.id to User.id if needed (same as create)
       if (validatedData.instructorId) {
         const instructor = await this.turmasService.getInstructorUserId(validatedData.instructorId);
@@ -162,24 +171,31 @@ export class TurmasController {
         console.log('[TurmasController] Converting Instructor.id to User.id:', instructor.userId);
         validatedData.instructorId = instructor.userId;
       }
-      
+
       console.log('[TurmasController] Calling turmasService.update...');
       const turma = await this.turmasService.update(id, validatedData as any);
       console.log('[TurmasController] Service update completed successfully');
-      
+
       if (!turma) {
         console.log('[TurmasController] No turma returned from service');
         return ResponseHelper.notFound(reply, 'Turma não encontrada');
       }
 
       console.log('[TurmasController] Returning success response');
+      console.log('[TurmasController] Returning success response');
+
+      // Trigger recurrence update if schedule was changed (or blindly on any update for safety)
+      RecurrenceService.generateLessonsForTurma(turma.id).catch(err => {
+        console.error('[TurmasController] Failed to update recurrent lessons:', err);
+      });
+
       return ResponseHelper.success(reply, turma);
     } catch (error) {
       console.error('[TurmasController] Update error:', error);
       if (error instanceof Error) {
         console.error('[TurmasController] Error stack:', error.stack);
       }
-      
+
       if (error instanceof z.ZodError) {
         console.error('[TurmasController] Validation errors:', error.errors);
         return ResponseHelper.badRequest(reply, 'Dados inválidos', error.errors);
@@ -197,9 +213,9 @@ export class TurmasController {
   async delete(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
-      
+
       const success = await this.turmasService.delete(id);
-      
+
       if (!success) {
         return ResponseHelper.notFound(reply, 'Turma não encontrada');
       }
@@ -213,9 +229,9 @@ export class TurmasController {
   async generateSchedule(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
-      
+
       const schedule = await this.turmasService.generateSchedule(id);
-      
+
       return ResponseHelper.success(reply, schedule);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao gerar cronograma', 500);
@@ -226,9 +242,9 @@ export class TurmasController {
     try {
       const { id } = request.params as { id: string };
       const { status } = request.query as any;
-      
+
       const lessons = await this.turmasService.getLessons(id, { status });
-      
+
       return ResponseHelper.success(reply, lessons);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao buscar aulas', 500);
@@ -237,11 +253,11 @@ export class TurmasController {
 
   async updateLessonStatus(request: FastifyRequest, reply: FastifyReply) {
     try {
-  const { lessonId } = request.params as { id: string; lessonId: string };
+      const { lessonId } = request.params as { id: string; lessonId: string };
       const { status } = request.body as { status: string };
-      
+
       const lesson = await this.turmasService.updateLessonStatus(lessonId, status);
-      
+
       return ResponseHelper.success(reply, lesson);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao atualizar status da aula', 500);
@@ -251,9 +267,9 @@ export class TurmasController {
   async getStudents(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
-      
+
       const students = await this.turmasService.getStudents(id);
-      
+
       return ResponseHelper.success(reply, students);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao buscar alunos', 500);
@@ -264,9 +280,9 @@ export class TurmasController {
     try {
       const { id } = request.params as { id: string };
       const { studentId } = request.body as { studentId: string };
-      
+
       const turmaStudent = await this.turmasService.addStudent(id, studentId);
-      
+
       return ResponseHelper.created(reply, turmaStudent);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao adicionar aluno', 500);
@@ -276,9 +292,9 @@ export class TurmasController {
   async removeStudent(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id, studentId } = request.params as { id: string; studentId: string };
-      
+
       const success = await this.turmasService.removeStudent(id, studentId);
-      
+
       if (!success) {
         return ResponseHelper.notFound(reply, 'Aluno não encontrado na turma');
       }
@@ -293,14 +309,14 @@ export class TurmasController {
     try {
       const { id } = request.params as { id: string };
       const { lessonId, studentId, startDate, endDate } = request.query as any;
-      
+
       const attendance = await this.turmasService.getAttendance(id, {
         lessonId,
         studentId,
         startDate,
         endDate
       });
-      
+
       return ResponseHelper.success(reply, attendance);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao buscar frequência', 500);
@@ -311,9 +327,9 @@ export class TurmasController {
     try {
       const { id } = request.params as { id: string };
       const validatedData = MarkAttendanceSchema.parse(request.body);
-      
+
       const attendance = await this.turmasService.markAttendance(id, validatedData as MarkAttendanceData);
-      
+
       return ResponseHelper.success(reply, attendance);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -327,13 +343,13 @@ export class TurmasController {
     try {
       const { id } = request.params as { id: string };
       const { type, startDate, endDate } = request.query as any;
-      
+
       const reports = await this.turmasService.getReports(id, {
         type,
         startDate,
         endDate
       });
-      
+
       return ResponseHelper.success(reply, reports);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao gerar relatórios', 500);
@@ -343,9 +359,9 @@ export class TurmasController {
   async search(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { q, filters } = request.query as any;
-      
+
       const turmas = await this.turmasService.search(q, filters);
-      
+
       return ResponseHelper.success(reply, turmas);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao pesquisar turmas', 500);
@@ -356,9 +372,9 @@ export class TurmasController {
     try {
       const { instructorId } = request.params as { instructorId: string };
       const { status } = request.query as any;
-      
+
       const turmas = await this.turmasService.getByInstructor(instructorId, { status });
-      
+
       return ResponseHelper.success(reply, turmas);
     } catch (error) {
       return ResponseHelper.error(reply, 'Erro ao buscar turmas do instrutor', 500);
@@ -394,12 +410,12 @@ export class TurmasController {
       const { courseId } = request.body as { courseId: string };
 
       console.log(`[TurmasController] addCourseToTurma - turmaId: ${id}, courseId: ${courseId}`);
-      
+
       const result = await this.turmasService.addCourseToTurma(id, courseId);
       return ResponseHelper.created(reply, result);
     } catch (error) {
       console.error('[TurmasController] Erro ao adicionar curso:', error);
-      
+
       // Retornar mensagem específica se for erro conhecido
       if (error instanceof Error) {
         if (error.message === 'Curso já está associado à turma') {
@@ -410,7 +426,7 @@ export class TurmasController {
         }
         return ResponseHelper.error(reply, error.message, 500);
       }
-      
+
       return ResponseHelper.error(reply, 'Erro ao adicionar curso à turma', 500);
     }
   }
@@ -445,7 +461,7 @@ export class TurmasController {
   async removeInterest(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id, studentId } = request.params as { id: string, studentId: string };
-      
+
       await this.turmasService.removeInterest(id, studentId);
       return ResponseHelper.success(reply, { success: true });
     } catch (error) {

@@ -35,16 +35,16 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       if (search && search.length >= 2) {
         const searchClean = search.replace(/\D/g, ''); // Remove non-digits for CPF/phone
         where.OR = [
-          { registrationNumber: { contains: search, mode: 'insensitive' } },
-          { user: { phone: { contains: search, mode: 'insensitive' } } },
-          { user: { firstName: { contains: search, mode: 'insensitive' } } },
-          { user: { lastName: { contains: search, mode: 'insensitive' } } },
-          { user: { email: { contains: search, mode: 'insensitive' } } },
+          { registrationNumber: { contains: search } },
+          { user: { phone: { contains: search } } },
+          { user: { firstName: { contains: search } } },
+          { user: { lastName: { contains: search } } },
+          { user: { email: { contains: search } } },
         ];
 
         // Add CPF search only if search looks like CPF (numeric only)
         if (searchClean.length >= 3) {
-          where.OR.push({ user: { cpf: { contains: searchClean, mode: 'insensitive' } } });
+          where.OR.push({ user: { cpf: { contains: searchClean } } });
         }
       }
 
@@ -398,7 +398,11 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
         userId: user.id,
         category: category, // Use the mapped/validated category
         isActive,
-        organizationId: orgId
+        organizationId: orgId,
+        specialNeeds: [], // Default empty array to satisfy Prisma/DB
+        registrationNumber: body.registrationNumber || studentData.enrollmentNumber || null,
+        preferredDays: [], // Default empty array
+        preferredTimes: [], // Default empty array
       };
 
       logger.info('Creating student with data:', createData);
@@ -429,17 +433,27 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
       // 📸 Create Biometric Data (Photo)
       if (body.photoUrl) {
         try {
+          const isBase64 = body.photoUrl.startsWith('data:image');
+          const finalPhotoUrl = isBase64 ? `biometric://${result.id}` : body.photoUrl;
+
           await prisma.biometricData.create({
             data: {
               studentId: result.id,
-              photoUrl: body.photoUrl, // Storing base64 data URI directly for now
-              photoBase64: body.photoUrl,
+              photoUrl: finalPhotoUrl,
+              photoBase64: isBase64 ? body.photoUrl : null,
               qualityScore: 80, // Default good score for manual enrollment
               enrollmentMethod: 'QUICK_ENROLLMENT',
               embedding: [] // Empty embedding initially
             }
           });
           logger.info('📸 Biometric data created successfully');
+
+          // 🆕 Also update user avatar for easier display in lists
+          await prisma.user.update({
+            where: { id: result.userId },
+            data: { avatarUrl: body.photoUrl }
+          });
+          logger.info('👤 User avatar updated');
         } catch (bioError) {
           logger.error('Error creating biometric data:', bioError);
           // Non-fatal error
@@ -520,7 +534,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
                     expectedEndDate,
                     status: 'ACTIVE',
                     category: category as any,
-                    gender: body.gender || body.user?.gender || 'MALE'
+                    gender: body.gender || body.user?.gender || 'MASCULINO'
                   }
                 });
 
@@ -603,6 +617,55 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // 📸 Handle Photo Update
+      if (body.photoUrl) {
+        try {
+          // If we have an embedding (standard editor), save it properly
+          if (body.embedding && Array.from(body.embedding).length > 0) {
+            const { biometricService } = require('@/services/biometricService');
+            await biometricService.saveEmbedding(
+              id,
+              Array.from(body.embedding),
+              body.photoUrl,
+              body.qualityScore || 85
+            );
+          } else {
+            // If we only have the URL (quick enrollment / asaas import), update BiometricData and Avatar
+            const isBase64 = body.photoUrl.startsWith('data:image');
+            const finalPhotoUrl = isBase64 ? `biometric://${id}` : body.photoUrl;
+
+            await prisma.biometricData.upsert({
+              where: { studentId: id },
+              update: {
+                photoUrl: finalPhotoUrl,
+                photoBase64: isBase64 ? body.photoUrl : null,
+                lastUpdatedAt: new Date()
+              },
+              create: {
+                studentId: id,
+                photoUrl: finalPhotoUrl,
+                photoBase64: isBase64 ? body.photoUrl : null,
+                embedding: [],
+                qualityScore: 80,
+                enrollmentMethod: 'UPDATE'
+              }
+            });
+
+            // Update user avatar
+            if (isBase64) {
+              await prisma.user.update({
+                where: { id: existingStudent.userId },
+                data: { avatarUrl: body.photoUrl }
+              });
+            }
+          }
+          logger.info(`📸 Photo updated for student ${id}`);
+        } catch (photoError) {
+          logger.error('Error updating photo data:', photoError);
+          // Non-fatal
+        }
+      }
 
       return reply.send({
         success: true,

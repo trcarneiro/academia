@@ -1,0 +1,562 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769272778495,"pid":59688,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769272810273,"pid":59688,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/financial-module.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769272810359,"pid":59688,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769272810424,"pid":59688,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769272811597,"pid":59688,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769272812284,"pid":59688,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769272815341,"pid":59688,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769272815341,"pid":59688,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769272815341,"pid":59688,"hostname":"C02","msg":"Skipping Cron Scheduler initialization in test environment"}
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate course_enrollments: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`challenge_progress`, CONSTRAINT `challenge_progress_enrollmentId_fkey` FOREIGN KEY (`enrollmentId`) REFERENCES `academia`.`course_enrollments` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`challenge_progress`, CONSTRAINT `challenge_progress_enrollmentId_fkey` FOREIGN KEY (`enrollmentId`) REFERENCES `academia`.`course_enrollments` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate asaas_customers: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`payments`, CONSTRAINT `payments_asaasCustomerId_fkey` FOREIGN KEY (`asaasCustomerId`) REFERENCES `academia`.`asaas_customers` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`payments`, CONSTRAINT `payments_asaasCustomerId_fkey` FOREIGN KEY (`asaasCustomerId`) REFERENCES `academia`.`asaas_customers` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate training_areas: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`agenda_items`, CONSTRAINT `agenda_items_trainingAreaId_fkey` FOREIGN KEY (`trainingAreaId`) REFERENCES `academia`.`training_areas` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`agenda_items`, CONSTRAINT `agenda_items_trainingAreaId_fkey` FOREIGN KEY (`trainingAreaId`) REFERENCES `academia`.`training_areas` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate martial_arts: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`achievements`, CONSTRAINT `achievements_martialArtId_fkey` FOREIGN KEY (`martialArtId`) REFERENCES `academia`.`martial_arts` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`achievements`, CONSTRAINT `achievements_martialArtId_fkey` FOREIGN KEY (`martialArtId`) REFERENCES `academia`.`martial_arts` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate deploy_artifacts: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`deploy_sessions`, CONSTRAINT `deploy_sessions_artifactId_fkey` FOREIGN KEY (`artifactId`) REFERENCES `academia`.`deploy_artifacts` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`deploy_sessions`, CONSTRAINT `deploy_sessions_artifactId_fkey` FOREIGN KEY (`artifactId`) REFERENCES `academia`.`deploy_artifacts` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate courses: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_definitions`, CONSTRAINT `assessment_definitions_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `academia`.`courses` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_definitions`, CONSTRAINT `assessment_definitions_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `academia`.`courses` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate horarios_sugeridos: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`horario_supporters`, CONSTRAINT `horario_supporters_horarioId_fkey` FOREIGN KEY (`horarioId`) REFERENCES `academia`.`horarios_sugeridos` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`horario_supporters`, CONSTRAINT `horario_supporters_horarioId_fkey` FOREIGN KEY (`horarioId`) REFERENCES `academia`.`horarios_sugeridos` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate ai_agents: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`AgentTask`, CONSTRAINT `AgentTask_agentId_fkey` FOREIGN KEY (`agentId`) REFERENCES `academia`.`ai_agents` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`AgentTask`, CONSTRAINT `AgentTask_agentId_fkey` FOREIGN KEY (`agentId`) REFERENCES `academia`.`ai_agents` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate classes: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_attempts`, CONSTRAINT `assessment_attempts_classId_fkey` FOREIGN KEY (`classId`) REFERENCES `academia`.`classes` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_attempts`, CONSTRAINT `assessment_attempts_classId_fkey` FOREIGN KEY (`classId`) REFERENCES `academia`.`classes` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate activities: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`class_activities`, CONSTRAINT `class_activities_activityId_fkey` FOREIGN KEY (`activityId`) REFERENCES `academia`.`activities` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`class_activities`, CONSTRAINT `class_activities_activityId_fkey` FOREIGN KEY (`activityId`) REFERENCES `academia`.`activities` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate class_activities: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`feedback_activities`, CONSTRAINT `feedback_activities_classActivityId_fkey` FOREIGN KEY (`classActivityId`) REFERENCES `academia`.`class_activities` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`feedback_activities`, CONSTRAINT `feedback_activities_classActivityId_fkey` FOREIGN KEY (`classActivityId`) REFERENCES `academia`.`class_activities` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate badges: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`badge_unlocks`, CONSTRAINT `badge_unlocks_badgeId_fkey` FOREIGN KEY (`badgeId`) REFERENCES `academia`.`badges` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`badge_unlocks`, CONSTRAINT `badge_unlocks_badgeId_fkey` FOREIGN KEY (`badgeId`) REFERENCES `academia`.`badges` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate instructors: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `academia`.`instructors` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `academia`.`instructors` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate activity_categories: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`activities`, CONSTRAINT `activities_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `academia`.`activity_categories` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`activities`, CONSTRAINT `activities_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `academia`.`activity_categories` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate google_ads_campaigns: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`google_ads_ad_groups`, CONSTRAINT `google_ads_ad_groups_campaignId_fkey` FOREIGN KEY (`campaignId`) REFERENCES `academia`.`google_ads_campaigns` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`google_ads_ad_groups`, CONSTRAINT `google_ads_ad_groups_campaignId_fkey` FOREIGN KEY (`campaignId`) REFERENCES `academia`.`google_ads_campaigns` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate attendances: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`credit_usages`, CONSTRAINT `credit_usages_attendanceId_fkey` FOREIGN KEY (`attendanceId`) REFERENCES `academia`.`attendances` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`credit_usages`, CONSTRAINT `credit_usages_attendanceId_fkey` FOREIGN KEY (`attendanceId`) REFERENCES `academia`.`attendances` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate student_subscriptions: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`payments`, CONSTRAINT `payments_subscriptionId_fkey` FOREIGN KEY (`subscriptionId`) REFERENCES `academia`.`student_subscriptions` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`payments`, CONSTRAINT `payments_subscriptionId_fkey` FOREIGN KEY (`subscriptionId`) REFERENCES `academia`.`student_subscriptions` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould get billing plan by ID
+[22m[39mFailed to truncate rag_chunks: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`rag_embeddings`, CONSTRAINT `rag_embeddings_chunkId_fkey` FOREIGN KEY (`chunkId`) REFERENCES `academia`.`rag_chunks` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`rag_embeddings`, CONSTRAINT `rag_embeddings_chunkId_fkey` FOREIGN KEY (`chunkId`) REFERENCES `academia`.`rag_chunks` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate units: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`agenda_items`, CONSTRAINT `agenda_items_unitId_fkey` FOREIGN KEY (`unitId`) REFERENCES `academia`.`units` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`agenda_items`, CONSTRAINT `agenda_items_unitId_fkey` FOREIGN KEY (`unitId`) REFERENCES `academia`.`units` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate class_schedules: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_scheduleId_fkey` FOREIGN KEY (`scheduleId`) REFERENCES `academia`.`class_schedules` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_scheduleId_fkey` FOREIGN KEY (`scheduleId`) REFERENCES `academia`.`class_schedules` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate turma_students: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`turma_attendances`, CONSTRAINT `turma_attendances_turmaStudentId_fkey` FOREIGN KEY (`turmaStudentId`) REFERENCES `academia`.`turma_students` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`turma_attendances`, CONSTRAINT `turma_attendances_turmaStudentId_fkey` FOREIGN KEY (`turmaStudentId`) REFERENCES `academia`.`turma_students` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate turma_attendances: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`lesson_activity_executions`, CONSTRAINT `lesson_activity_executions_attendanceId_fkey` FOREIGN KEY (`attendanceId`) REFERENCES `academia`.`turma_attendances` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`lesson_activity_executions`, CONSTRAINT `lesson_activity_executions_attendanceId_fkey` FOREIGN KEY (`attendanceId`) REFERENCES `academia`.`turma_attendances` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate rubrics: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_definitions`, CONSTRAINT `assessment_definitions_rubricId_fkey` FOREIGN KEY (`rubricId`) REFERENCES `academia`.`rubrics` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`assessment_definitions`, CONSTRAINT `assessment_definitions_rubricId_fkey` FOREIGN KEY (`rubricId`) REFERENCES `academia`.`rubrics` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate AgentTask: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`task_executions`, CONSTRAINT `task_executions_taskId_fkey` FOREIGN KEY (`taskId`) REFERENCES `academia`.`AgentTask` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`task_executions`, CONSTRAINT `task_executions_taskId_fkey` FOREIGN KEY (`taskId`) REFERENCES `academia`.`AgentTask` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate lesson_plan_activities: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`lesson_activity_executions`, CONSTRAINT `lesson_activity_executions_activityId_fkey` FOREIGN KEY (`activityId`) REFERENCES `academia`.`lesson_plan_activities` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`lesson_activity_executions`, CONSTRAINT `lesson_activity_executions_activityId_fkey` FOREIGN KEY (`activityId`) REFERENCES `academia`.`lesson_plan_activities` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate discounts: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`billing_plan_discounts`, CONSTRAINT `billing_plan_discounts_discountId_fkey` FOREIGN KEY (`discountId`) REFERENCES `academia`.`discounts` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`billing_plan_discounts`, CONSTRAINT `billing_plan_discounts_discountId_fkey` FOREIGN KEY (`discountId`) REFERENCES `academia`.`discounts` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate student_progress: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`qualitative_assessments`, CONSTRAINT `qualitative_assessments_studentProgressId_fkey` FOREIGN KEY (`studentProgressId`) REFERENCES `academia`.`student_progress` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`qualitative_assessments`, CONSTRAINT `qualitative_assessments_studentProgressId_fkey` FOREIGN KEY (`studentProgressId`) REFERENCES `academia`.`student_progress` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+[90mstdout[2m | tests/integration/financial-module.test.ts[2m > [22m[2mFinancial Module Integration Tests[2m > [22m[2mBilling Plans API[2m > [22m[2mshould create a new billing plan
+[22m[39mFailed to truncate mats: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `1701`. Message: `Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_matId_fkey` FOREIGN KEY (`matId`) REFERENCES `academia`.`mats` (`id`))`
+    at ei.handleRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:228:13[90m)[39m
+    at ei.handleAndLogRequestError [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:174:12[90m)[39m
+    at ei.request [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\RequestHandler.ts:143:12[90m)[39m
+    at a [90m(H:\projetos\academia\[39mnode_modules\[4m@prisma[24m\client\src\runtime\getPrismaClient.ts:833:24[90m)[39m
+    at [90mH:\projetos\academia\[39mtests\setup.ts:31:11 {
+  code: [32m'P2010'[39m,
+  meta: {
+    code: [32m'1701'[39m,
+    message: [32m'Cannot truncate a table referenced in a foreign key constraint (`academia`.`classes`, CONSTRAINT `classes_matId_fkey` FOREIGN KEY (`matId`) REFERENCES `academia`.`mats` (`id`))'[39m
+  },
+  clientVersion: [32m'6.19.0'[39m
+}
+
+
+[31m⎯⎯⎯⎯[39m[1m[41m Unhandled Rejection [49m[22m[31m⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: Channel closed[39m
+[90m [2m❯[22m target.send node:internal/child_process:[2m753:16[22m[39m
+[90m [2m❯[22m ProcessWorker.send node_modules/tinypool/dist/index.js:[2m140:41[22m[39m
+[90m [2m❯[22m MessagePort.<anonymous> node_modules/tinypool/dist/index.js:[2m149:62[22m[39m
+[90m [2m❯[22m [nodejs.internal.kHybridDispatch] node:internal/event_target:[2m827:20[22m[39m
+[90m [2m❯[22m MessagePort.<anonymous> node:internal/per_context/messageport:[2m23:28[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22m[39m
+[31m[1mSerialized Error:[22m[39m [90m{ code: 'ERR_IPC_CHANNEL_CLOSED' }[39m
+
+
+
