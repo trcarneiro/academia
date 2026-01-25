@@ -10,7 +10,7 @@ describe('Financial Module Integration Tests', () => {
     let testPlan: any;
     let testOrganization: any;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         // Create test organization
         testOrganization = await prisma.organization.create({
             data: {
@@ -54,42 +54,6 @@ describe('Financial Module Integration Tests', () => {
                 isActive: true,
                 organizationId: testOrganization.id
             }
-        });
-    });
-
-    afterAll(async () => {
-        // Clean up test data in reverse order
-        if (testStudent) {
-            await prisma.payment.deleteMany({
-                where: { subscription: { studentId: testStudent.id } }
-            });
-        }
-        if (testStudent) {
-            await prisma.studentSubscription.deleteMany({
-                where: { studentId: testStudent.id }
-            });
-        }
-        if (testOrganization) {
-            await prisma.billingPlan.deleteMany({
-                where: { organizationId: testOrganization.id }
-            });
-            await prisma.student.deleteMany({
-                where: { organizationId: testOrganization.id }
-            });
-            await prisma.user.deleteMany({
-                where: { organizationId: testOrganization.id }
-            });
-            await prisma.organization.delete({
-                where: { id: testOrganization.id }
-            });
-        }
-        await prisma.$disconnect();
-    });
-
-    beforeEach(async () => {
-        // Clean subscriptions before each test
-        await prisma.studentSubscription.deleteMany({
-            where: { studentId: testStudent.id }
         });
     });
 
