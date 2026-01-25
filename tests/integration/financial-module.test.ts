@@ -236,7 +236,8 @@ describe('Financial Module Integration Tests', () => {
                     studentId: testStudent.id,
                     planId: testPlan.id,
                     startDate: new Date(),
-                    status: 'ACTIVE'
+                    status: 'ACTIVE',
+                    currentPrice: 99.99
                 },
                 include: {
                     plan: true
