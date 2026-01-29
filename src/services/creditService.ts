@@ -80,16 +80,16 @@ export async function getCreditsSummary(studentId: string, organizationId: strin
  */
 export async function useCredits(payload: {
   studentId: string;
-  attendanceId: string;
+  attendanceId?: string;
   creditsToUse: number;
   description: string;
   organizationId: string;
-}) {
+}, tx: any = prisma) {
   const { studentId, attendanceId, creditsToUse, description, organizationId } = payload;
 
   try {
     // 1. Buscar créditos disponíveis (em ordem de expiração)
-    const availableCredits = await prisma.studentCredit.findFirst({
+    let availableCredits = await tx.studentCredit.findFirst({
       where: {
         studentId,
         organizationId,
@@ -101,47 +101,80 @@ export async function useCredits(payload: {
       orderBy: { expiresAt: 'asc' }
     });
 
+    // 1.1 Se não achar com saldo suficiente, tentar achar QUALQUER crédito ativo para negativar
     if (!availableCredits) {
+      // Fallback: Find any active credit (or the most recent one) to apply negative balance
+      availableCredits = await tx.studentCredit.findFirst({
+        where: {
+          studentId,
+          organizationId,
+          // status: 'ACTIVE' // Relaxed status check? No, stick to active or creating debt on last plan
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+    }
+
+    // 1.2 Se ainda não tiver crédito nenhum (aluno novo sem plano), talvez impedir ou criar um "fictício"?
+    // Por enquanto, vamos assumir que se o aluno existe, deve ter algum registro ou cria-se um "Crédito Negativo" solto no uso?
+    // Melhor: se tiver um crédito (mesmo sem saldo), usa ele.
+
+    if (!availableCredits) {
+      // Se realmente não tem registro de crédito, não dá pra negativar "Saldo".
+      // Nesse caso, retornamos sucesso mas com aviso, ou criamos um registro de uso "sem lastro".
+      // Vamos permitir retornar success: false se não tiver histórico nenhum, mas true se tiver.
+
+      // Mas o requisito é "pode agendar". Vamos criar um "Registro de Dívida" se não houver crédito?
+      // Simplificação: Se não achar crédito, vamos apenas logar o uso como "Dívida" (sem vincular a creditId ou criando um creditId placeholder).
+      // A melhor abordagem é encontrar o último registro e negativar.
+
+      // Retornar 'success: true' com flag de dívida para o Controller decidir
       return {
-        success: false,
-        message: 'Créditos insuficientes para esta aula'
+        success: true,
+        data: {
+          creditUsageId: null, // Sem vínculo
+          creditsRemaining: -creditsToUse,
+          totalCredits: 0,
+          isDebt: true
+        },
+        message: 'Agendamento permitido sem créditos (Gerando dívida)'
       };
     }
 
-    // 2. Atualizar StudentCredit
-    const updatedCredit = await prisma.studentCredit.update({
+    // 2. Atualizar StudentCredit (permitindo negativo)
+    const updatedCredit = await tx.studentCredit.update({
       where: { id: availableCredits.id },
       data: {
         creditsUsed: {
           increment: creditsToUse
         },
         creditsAvailable: {
-          decrement: creditsToUse
+          decrement: creditsToUse // Will go negative
         }
       }
     });
 
     // 3. Registrar uso em CreditUsage
-    const creditUsage = await prisma.creditUsage.create({
+    const creditUsage = await tx.creditUsage.create({
       data: {
         organizationId,
         studentId,
         creditId: availableCredits.id,
-        attendanceId,
+        attendanceId: attendanceId || undefined,
         creditsUsed: creditsToUse,
         description,
         usedAt: new Date()
       }
     });
 
-    logger.info(`✅ Créditos consumidos: ${creditsToUse} para aluno ${studentId} na aula ${attendanceId}`);
+    logger.info(`✅ Créditos consumidos (possível negativo): ${creditsToUse} para aluno ${studentId}. Saldo atual: ${updatedCredit.creditsAvailable}`);
 
     return {
       success: true,
       data: {
         creditUsageId: creditUsage.id,
         creditsRemaining: updatedCredit.creditsAvailable,
-        totalCredits: updatedCredit.totalCredits
+        totalCredits: updatedCredit.totalCredits,
+        isDebt: updatedCredit.creditsAvailable < 0
       }
     };
   } catch (error) {
@@ -426,6 +459,70 @@ export async function renewCreditsManual(payload: {
     return {
       success: false,
       message: 'Erro ao renovar créditos'
+    };
+  }
+}
+
+/**
+ * Restaura créditos de uma aula cancelada
+ */
+export async function restoreCredit(payload: {
+  studentId: string;
+  descriptionKeyword: string;
+  organizationId: string;
+}, tx: any = prisma) {
+  const { studentId, descriptionKeyword, organizationId } = payload;
+
+  try {
+    // 1. Buscar o uso de crédito correspondente
+    const creditUsage = await tx.creditUsage.findFirst({
+      where: {
+        studentId,
+        organizationId,
+        description: {
+          contains: descriptionKeyword
+        }
+      },
+      orderBy: { usedAt: 'desc' }
+    });
+
+    if (!creditUsage) {
+      return {
+        success: false,
+        message: 'Uso de crédito não encontrado para estorno'
+      };
+    }
+
+    // 2. Devolver crédito ao saldo do aluno (StudentCredit)
+    await tx.studentCredit.update({
+      where: { id: creditUsage.creditId },
+      data: {
+        creditsUsed: { decrement: creditUsage.creditsUsed },
+        creditsAvailable: { increment: creditUsage.creditsUsed }
+      }
+    });
+
+    // 3. Remover ou marcar o registro de uso como estornado
+    // Como não temos status no CreditUsage, vamos deletar ou alterar a descrição
+    await tx.creditUsage.update({
+      where: { id: creditUsage.id },
+      data: {
+        description: `${creditUsage.description} (ESTORNADO)`,
+        creditsUsed: 0 // Zerar para não contar em relatórios de consumo
+      }
+    });
+
+    logger.info(`✅ Crédito estornado: ${creditUsage.creditsUsed} para aluno ${studentId}`);
+
+    return {
+      success: true,
+      message: 'Crédito estornado com sucesso'
+    };
+  } catch (error) {
+    logger.error('Erro ao estornar crédito:', error);
+    return {
+      success: false,
+      message: 'Erro ao processar estorno de crédito'
     };
   }
 }

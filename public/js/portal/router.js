@@ -16,6 +16,7 @@ export default class Router {
         this.addRoute('/ranking', import('./pages/ranking.js').then(m => m.render));
         this.addRoute('/chat', import('./pages/chat.js').then(m => m.render));
         this.addRoute('/profile', import('./pages/profile.js').then(m => m.render));
+        this.addRoute('/notifications', import('./pages/notifications.js').then(m => m.render));
 
         window.addEventListener('hashchange', () => this.handleRoute());
         window.addEventListener('load', () => this.handleRoute());

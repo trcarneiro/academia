@@ -4,6 +4,7 @@
  */
 
 import { logger } from '@/utils/logger';
+import prisma from '@/utils/prisma';
 import { AgentPermissionService } from '../agentPermissionService';
 
 export interface SendSMSParams {
@@ -62,20 +63,51 @@ export class NotificationTool {
         };
       }
 
-      // TODO: Integrar com serviço de SMS (ex: Asaas, Twilio, etc)
-      logger.info('Sending SMS:', {
-        phoneNumbers,
-        messageLength: message.length,
-        agentId,
+      // 1. Find students
+      const students = await prisma.student.findMany({
+        where: { user: { phone: { in: phoneNumbers } } }
       });
 
-      // Simular envio por enquanto
+      // 2. Create Broadcast Record
+      const broadcast = await (prisma as any).broadcast.create({
+        data: {
+          organizationId,
+          title: 'SMS Broadcast',
+          message,
+          segment: 'CUSTOM_LIST',
+          channels: ['SMS'],
+          status: 'COMPLETED',
+          sentAt: new Date(),
+          authorId: agentId.length === 36 ? agentId : undefined,
+          stats: {
+            sent: students.length,
+            failed: phoneNumbers.length - students.length
+          }
+        }
+      });
+
+      // 3. Create In-App Notifications too (optional but recommended for centralizing)
+      if (students.length > 0) {
+        await prisma.studentNotification.createMany({
+          data: students.map(student => ({
+            studentId: student.id,
+            title: 'Novo Aviso (SMS)',
+            message,
+            type: 'MARKETING' as any,
+            priority: 'NORMAL' as any,
+            read: false,
+            metadata: { broadcastId: broadcast.id } as any
+          }))
+        });
+      }
+
+      logger.info('SMS Broadcast Sent:', { broadcastId: broadcast.id, recipients: students.length });
+
       return {
         success: true,
         data: {
-          sent: phoneNumbers.length,
-          phoneNumbers,
-          message,
+          sent: students.length,
+          broadcastId: broadcast.id
         },
       };
     } catch (error) {
@@ -122,22 +154,49 @@ export class NotificationTool {
         };
       }
 
-      // TODO: Integrar com serviço de Email (ex: SendGrid, AWS SES, etc)
-      logger.info('Sending Email:', {
-        emails,
-        subject,
-        agentId,
+      // 1. Find students
+      const students = await prisma.student.findMany({
+        where: { user: { email: { in: emails } } }
       });
 
-      // Simular envio por enquanto
-      return {
-        success: true,
+      if (students.length === 0) {
+        return { success: false, error: 'No valid students found for these emails' };
+      }
+
+      // 2. Create Broadcast Record
+      const broadcast = await prisma.broadcast.create({
         data: {
-          sent: emails.length,
-          emails,
-          subject,
-        },
-      };
+          organizationId,
+          title: subject,
+          message: body,
+          segment: 'CUSTOM_LIST',
+          channels: ['EMAIL'],
+          status: 'COMPLETED', // Since we are "sending" immediately
+          sentAt: new Date(),
+          authorId: agentId.length === 36 ? agentId : undefined, // Only link if agentId is a valid UUID (User ID)
+          stats: {
+            sent: students.length,
+            failed: emails.length - students.length
+          }
+        }
+      });
+
+      // 3. Create Notifications
+      await prisma.studentNotification.createMany({
+        data: students.map(student => ({
+          studentId: student.id,
+          title: subject,
+          message: body,
+          type: 'MARKETING' as any,
+          priority: 'NORMAL' as any,
+          read: false,
+          metadata: { broadcastId: broadcast.id } as any
+        }))
+      });
+
+      logger.info('Broadcast Sent:', { broadcastId: broadcast.id, recipients: students.length });
+
+      return { success: true, data: { sent: students.length, broadcastId: broadcast.id } };
     } catch (error) {
       logger.error('Error sending email:', error);
       return { success: false, error: 'Failed to send email' };
@@ -166,21 +225,50 @@ export class NotificationTool {
         return { success: false, error: 'Title and message are required' };
       }
 
-      // TODO: Implementar notificações push via WebSocket ou Firebase
-      logger.info('Sending push notification:', {
-        userIds,
-        title,
-        agentId,
+      // 1. Create Broadcast Record
+      const broadcast = await (prisma as any).broadcast.create({
+        data: {
+          organizationId,
+          title,
+          message,
+          segment: 'CUSTOM_LIST',
+          channels: ['PUSH'],
+          status: 'COMPLETED',
+          sentAt: new Date(),
+          authorId: agentId.length === 36 ? agentId : undefined,
+          stats: {
+            sent: userIds.length,
+            failed: 0
+          }
+        }
       });
 
-      // Simular envio por enquanto
+      // 2. Create Notifications for Students
+      const students = await prisma.student.findMany({
+        where: { userId: { in: userIds } }
+      });
+
+      if (students.length > 0) {
+        await prisma.studentNotification.createMany({
+          data: students.map(student => ({
+            studentId: student.id,
+            title,
+            message,
+            type: 'MARKETING' as any,
+            priority: 'NORMAL' as any,
+            read: false,
+            metadata: { broadcastId: broadcast.id } as any
+          }))
+        });
+      }
+
+      logger.info('Push Broadcast Sent:', { broadcastId: broadcast.id, recipients: students.length });
+
       return {
         success: true,
         data: {
-          sent: userIds.length,
-          userIds,
-          title,
-          message,
+          sent: students.length,
+          broadcastId: broadcast.id
         },
       };
     } catch (error) {

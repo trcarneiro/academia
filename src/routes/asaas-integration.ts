@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 
 interface ImportCustomerBody {
   customerId: string;
+  defaultCourseId?: string;
+  defaultPlanId?: string;
 }
 
 // Fetch customer details from Asaas
@@ -36,13 +38,45 @@ async function fetchAsaasCustomer(customerId: string): Promise<any> {
   }
 }
 
+// Fetch customer subscriptions from Asaas
+async function fetchAsaasSubscriptions(customerId: string): Promise<any[]> {
+  const apiKey = process.env.ASAAS_API_KEY;
+  const baseUrl = process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3';
+
+  if (!apiKey) {
+    logger.warn('ASAAS_API_KEY not configured, cannot fetch subscriptions');
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/subscriptions?customer=${customerId}&limit=10`, {
+      method: 'GET',
+      headers: {
+        'access_token': apiKey,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      logger.warn(`Failed to fetch subscriptions for customer ${customerId}: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    logger.error(`Error fetching subscriptions for customer ${customerId}:`, error);
+    return [];
+  }
+}
+
 export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
   // POST /api/asaas/import-customer - Import single customer
   fastify.post<{ Body: ImportCustomerBody }>(
     '/import-customer',
     async (request, reply: FastifyReply) => {
       try {
-        const { customerId } = request.body;
+        const { customerId, defaultCourseId, defaultPlanId } = request.body;
         const organizationId = request.headers['x-organization-id'] as string;
 
         if (!organizationId) {
@@ -76,6 +110,31 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
 
         // Fetch customer from Asaas
         const asaasCustomer = await fetchAsaasCustomer(customerId);
+
+        // Fetch subscriptions
+        const subscriptions = await fetchAsaasSubscriptions(customerId);
+        const activeSubscription = subscriptions.find((s: any) => s.status === 'ACTIVE' || s.status === 'RECEIVED');
+
+        const isActive = !!activeSubscription;
+
+        // Default values
+        let targetPlanId = defaultPlanId;
+        let targetCourseId = defaultCourseId;
+
+        // Auto-resolve defaults if active
+        if (isActive && !targetPlanId) {
+          const defaultPlan = await prisma.billingPlan.findFirst({
+            where: { organizationId, name: 'Ilimitado Anual' }
+          });
+          targetPlanId = defaultPlan?.id;
+        }
+
+        if (!targetCourseId) {
+          const defaultCourse = await prisma.course.findFirst({
+            where: { organizationId, name: { contains: 'Krav Maga' } }
+          });
+          targetCourseId = defaultCourse?.id;
+        }
 
         // Generate temporary email if not provided
         let customerEmail = asaasCustomer.email;
@@ -125,7 +184,8 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
               phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
               cpf: asaasCustomer.cpfCnpj || '',
               role: 'STUDENT',
-              isActive: true,
+              isActive: isActive, // Set based on subscription
+              canApproveCategories: '[]',
               organizationId,
             },
           });
@@ -138,14 +198,70 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
               category: 'ADULT', // StudentCategory enum value
               gender: 'MASCULINO', // Gender enum value (default)
               physicalCondition: 'INICIANTE', // PhysicalCondition enum value
-              specialNeeds: [],
-              medicalConditions: `Imported from Asaas on ${new Date().toLocaleDateString('pt-BR')} - Customer ID: ${customerId}`,
+              physicalCondition: 'INICIANTE', // PhysicalCondition enum value
+              specialNeeds: '[]',
+              medicalConditions: `Imported from Asaas on ${new Date().toLocaleDateString('pt-BR')} - Customer ID: ${customerId}. Active Sub: ${isActive ? 'Yes' : 'No'}`,
               enrollmentDate: new Date(),
-              isActive: true,
-              preferredDays: [],
-              preferredTimes: [],
+              isActive: isActive, // Set based on subscription
+              asaasCustomerId: customerId, // Store Asaas ID
+              preferredDays: '[]',
+              preferredTimes: '[]',
             },
           });
+
+          // Create Asaas Customer Link Record
+          await tx.asaasCustomer.create({
+            data: {
+              organizationId,
+              studentId: student.id,
+              asaasId: customerId,
+              name: asaasCustomer.name,
+              email: customerEmail,
+              cpfCnpj: asaasCustomer.cpfCnpj,
+              phone: asaasCustomer.phone,
+              mobilePhone: asaasCustomer.mobilePhone,
+              isActive: isActive
+            }
+          });
+
+          // Enroll in default course if selected and active
+          if (isActive && targetCourseId && targetPlanId) {
+            try {
+              await tx.studentCourse.create({
+                data: {
+                  studentId: student.id,
+                  courseId: targetCourseId,
+                  paymentPlanId: targetPlanId,
+                  status: 'ACTIVE',
+                  startDate: new Date(),
+                  isActive: true,
+                }
+              });
+              logger.info(`Enrolled student ${student.id} in course ${targetCourseId}`);
+
+              // Create Subscription Record
+              await tx.studentSubscription.create({
+                data: {
+                  organizationId,
+                  studentId: student.id,
+                  planId: targetPlanId,
+                  status: 'ACTIVE',
+                  currentPrice: activeSubscription.value, // Use Asaas Value
+                  billingType: 'MONTHLY', // Defaulting
+                  asaasCustomerId: customerId,
+                  asaasSubscriptionId: activeSubscription.id,
+                  isActive: true,
+                  startDate: new Date(activeSubscription.dateCreated || new Date()),
+                  nextBillingDate: activeSubscription.nextDueDate ? new Date(activeSubscription.nextDueDate) : undefined
+                }
+              });
+              logger.info(`Created subscription record for student ${student.id}`);
+
+            } catch (enrollError) {
+              logger.error(`Failed to enroll student ${student.id} in default course or create subscription:`, enrollError);
+              // We don't fail the whole import for this, just log
+            }
+          }
 
           return { user, student };
         });
@@ -164,11 +280,11 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
                 actionType: 'UPDATE_RECORD',
                 priority: 'MEDIUM',
                 status: 'PENDING',
-                actionPayload: {
+                actionPayload: JSON.stringify({
                   studentId: result.student.id,
                   userId: result.user.id,
                   currentEmail: customerEmail
-                },
+                }),
                 targetEntity: 'Student'
               }
             });
@@ -244,7 +360,20 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      logger.info(`Starting batch import for organization ${organizationId} (${organization.name}): ${customerIds.length} customers`);
+      // 1. Resolve Default Plan (Ilimitado Anual)
+      const defaultPlan = await prisma.billingPlan.findFirst({
+        where: { organizationId, name: 'Ilimitado Anual' }
+      });
+
+      // 2. Resolve Default Course (Krav Maga)
+      const defaultCourse = await prisma.course.findFirst({
+        where: { organizationId, name: { contains: 'Krav Maga' } }
+      });
+
+      if (!defaultPlan) logger.warn('Default Plan "Ilimitado Anual" not found');
+      if (!defaultCourse) logger.warn('Default Course "Krav Maga" not found');
+
+      logger.info(`Starting batch import for organization ${organizationId} (${organization.name}): ${customerIds.length} customers. Defaults: Plan=${defaultPlan?.name}, Course=${defaultCourse?.name}`);
 
       const results = {
         success: 0,
@@ -255,6 +384,14 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
       for (const customerId of customerIds) {
         try {
           const asaasCustomer = await fetchAsaasCustomer(customerId);
+
+          // FETCH SUBSCRIPTIONS
+          const subscriptions = await fetchAsaasSubscriptions(customerId);
+          // Find active or received subscription (most recent/relevant)
+          const activeSubscription = subscriptions.find((s: any) => s.status === 'ACTIVE' || s.status === 'RECEIVED');
+
+          const isActive = !!activeSubscription;
+          const subscriptionValue = activeSubscription ? activeSubscription.value : 0;
 
           // Generate temporary email if not provided
           let customerEmail = asaasCustomer.email;
@@ -281,7 +418,6 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
             continue;
           }
 
-          // Parse name
           const names = (asaasCustomer.name || '').trim().split(' ');
           const firstName = names[0] || asaasCustomer.name;
           const lastName = names.slice(1).join(' ') || '';
@@ -290,8 +426,8 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
           const tempPassword = Math.random().toString(36).substring(2, 15);
           const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-          // Create user and student
           await prisma.$transaction(async (tx) => {
+            // Create User
             const user = await tx.user.create({
               data: {
                 email: customerEmail.toLowerCase(),
@@ -301,26 +437,85 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
                 phone: asaasCustomer.phone || asaasCustomer.mobilePhone || '',
                 cpf: asaasCustomer.cpfCnpj || '',
                 role: 'STUDENT',
-                isActive: true,
+                isActive: isActive, // INACTIVE if no subscription
+                canApproveCategories: '[]',
                 organizationId,
               },
             });
 
-            await tx.student.create({
+            // Create Student
+            const student = await tx.student.create({
               data: {
                 userId: user.id,
                 organizationId,
                 category: 'ADULT',
                 gender: 'MASCULINO',
                 physicalCondition: 'INICIANTE',
-                specialNeeds: [],
-                medicalConditions: `Imported from Asaas on ${new Date().toLocaleDateString('pt-BR')} - Customer ID: ${customerId}`,
+                physicalCondition: 'INICIANTE',
+                specialNeeds: '[]',
+                medicalConditions: `Imported from Asaas. Active Sub: ${isActive ? 'Yes' : 'No'} (${activeSubscription?.id || 'None'})`,
                 enrollmentDate: new Date(),
-                isActive: true,
-                preferredDays: [],
-                preferredTimes: [],
+                isActive: isActive,
+                asaasCustomerId: customerId,
+                preferredDays: '[]',
+                preferredTimes: '[]',
               },
             });
+
+            // Create Asaas Customer Link Record
+            await tx.asaasCustomer.create({
+              data: {
+                organizationId,
+                studentId: student.id,
+                asaasId: customerId,
+                name: asaasCustomer.name,
+                email: customerEmail,
+                cpfCnpj: asaasCustomer.cpfCnpj,
+                phone: asaasCustomer.phone,
+                mobilePhone: asaasCustomer.mobilePhone,
+                isActive: isActive
+              }
+            });
+
+            // If Active, Enroll and Subscribe
+            if (isActive && defaultCourse && defaultPlan) {
+              // 1. Enroll in Course
+              try {
+                await tx.studentCourse.create({
+                  data: {
+                    studentId: student.id,
+                    courseId: defaultCourse.id,
+                    paymentPlanId: defaultPlan.id,
+                    status: 'ACTIVE',
+                    startDate: new Date(),
+                    isActive: true,
+                  }
+                });
+              } catch (e) {
+                logger.error(`Error enrolling student ${student.id} in course`, e);
+              }
+
+              // 2. Create Subscription
+              try {
+                await tx.studentSubscription.create({
+                  data: {
+                    organizationId,
+                    studentId: student.id,
+                    planId: defaultPlan.id,
+                    status: 'ACTIVE',
+                    currentPrice: subscriptionValue, // USE ASAAS VALUE
+                    billingType: 'MONTHLY', // Assuming Monthly for now based on plan
+                    asaasCustomerId: customerId,
+                    asaasSubscriptionId: activeSubscription.id,
+                    isActive: true,
+                    startDate: new Date(activeSubscription.dateCreated || new Date()),
+                    nextBillingDate: activeSubscription.nextDueDate ? new Date(activeSubscription.nextDueDate) : undefined
+                  }
+                });
+              } catch (e) {
+                logger.error(`Error creating subscription for student ${student.id}`, e);
+              }
+            }
           });
 
           results.success++;
@@ -348,11 +543,11 @@ export default async function asaasIntegrationRoutes(fastify: FastifyInstance) {
                       actionType: 'UPDATE_RECORD',
                       priority: 'MEDIUM',
                       status: 'PENDING',
-                      actionPayload: {
+                      actionPayload: JSON.stringify({
                         studentId: createdStudent.id,
                         userId: createdUser.id,
                         currentEmail: customerEmail
-                      },
+                      }),
                       targetEntity: 'Student'
                     }
                   });

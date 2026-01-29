@@ -1,7 +1,7 @@
 # AGENTS.MD - Guia de Desenvolvimento Academia Krav Maga v2.0
 
-**Última atualização**: 27/12/2025
-**Versão**: 2.2.2
+**Última atualização**: 26/01/2026
+**Versão**: 2.3.0
 
 ---
 
@@ -12,6 +12,13 @@
 3. [Features Pendentes](#features-pendentes)
 4. [Roadmap de Desenvolvimento](#roadmap-de-desenvolvimento)
 5. [Arquitetura e Padrões](#arquitetura-e-padrões)
+6. [Regras de Dados (CRÍTICO)](#regras-de-dados)
+
+---
+
+## 🚫 REGRAS DE DADOS (CRÍTICO)
+> [!CAUTION]
+> **NUNCA** apagar o banco de dados. Comandos como `npx prisma migrate reset` ou scripts de "wipe" são proibidos para agentes de IA. A persistência dos dados de produção e desenvolvimento é obrigatória. Schema sync deve ser feito apenas via `npx prisma db push` sem destruição de dados.
 
 ---
 
@@ -25,7 +32,21 @@ Sistema de gestão multi-tenant para academias de Krav Maga com foco em:
 
 ---
 
-## ✅ FEATURES IMPLEMENTADAS
+## ✅ FEATURES IMPLEMENTADAS (AUDITED)
+
+### 0. Broadcast & Notificações v1.0 (NOVO 🆕)
+
+**Status**: ✅ 100% Implementado (26/01/2026)
+
+**Arquitetura**: Antigravity Brain [Walkthrough](file:///C:/Users/trcar/.gemini/antigravity/brain/4c97989d-d339-4ac2-8e91-9a5e5d2bdd11/walkthrough.md)
+
+**Funcionalidades**:
+- ✅ Tabela `Broadcast` para histórico e agendamento
+- ✅ Integração de canais (Push, SMS, Email em base unificada)
+- ✅ Admin UI integrada ao **Portal** (Clean Code, SPA pattern)
+- ✅ `NotificationTool` (MCP) atualizada para usar o novo modelo
+
+---
 
 ### 1. Módulo de Instrutores v2.1.1 (COMPLETO)
 

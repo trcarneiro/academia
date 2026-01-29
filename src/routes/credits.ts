@@ -350,4 +350,21 @@ export default async function creditsRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  /**
+   * POST /api/credits/generate-charge
+   * Gera cobrança manual (ou recupera pendente) para o aluno
+   */
+  fastify.post('/generate-charge', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { CreditController } = require('@/controllers/creditController');
+      return await CreditController.generateCharge(request, reply);
+    } catch (error) {
+      logger.error('Erro no endpoint generate-charge:', error);
+      return reply.code(500).send({
+        success: false,
+        message: 'Erro interno ao gerar cobrança'
+      });
+    }
+  });
 }

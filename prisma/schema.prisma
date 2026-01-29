@@ -32,10 +32,12 @@ model Organization {
   customDomain             String?
   createdAt                DateTime                  @default(now())
   updatedAt                DateTime                  @updatedAt
+  agentTasks               AgentTask[]               @relation("OrgToAgentTask")
   achievements             Achievement[]
   activities               Activity[]
   activityTrackingSettings ActivityTrackingSettings?
   agendaItems              AgendaItem[]
+  agentInsights            AgentInsight[]            @relation("OrgToInsight")
   agentInteractions        AgentInteraction[]        @relation("AgentInteractions")
   agentPermissions         AgentPermission[]         @relation("AgentPermissions")
   aiAgents                 AIAgent[]
@@ -43,19 +45,25 @@ model Organization {
   attendances              Attendance[]
   badges                   Badge[]
   billingPlans             BillingPlan[]
+  broadcasts               Broadcast[]
   challenges               Challenge[]
   classes                  Class[]
+  coursePrograms           CourseProgram[]
   courseTemplates          CourseTemplate[]
   courses                  Course[]
-  coursePrograms           CourseProgram[]
-  googleAdsConfig          GoogleAdsConfig?
   creditRenewals           CreditRenewal[]           @relation("CreditRenewalOrganization")
   creditUsages             CreditUsage[]             @relation("CreditUsageOrganization")
   crmSettings              CrmSettings?
+  discounts                Discount[]
+  enrollmentLinks          EnrollmentLink[]
   financialResponsibles    FinancialResponsible[]
   financialSettings        FinancialSettings?
   googleAdsCampaigns       GoogleAdsCampaign[]
+  googleAdsConfig          GoogleAdsConfig?
+  horarioSuggestions       HorarioSugerido[]
   instructors              Instructor[]
+  jobs                     Job[]
+  landingPages             LandingPage[]
   leads                    Lead[]
   martialArts              MartialArt[]
   mats                     Mat[]
@@ -67,16 +75,8 @@ model Organization {
   students                 Student[]
   techniqueLibraries       TechniqueLibrary[]
   turmas                   Turma[]
-  horarioSuggestions       HorarioSugerido[]
   units                    Unit[]
   users                    User[]
-
-  agentTasks               AgentTask[]               @relation("OrgToAgentTask")
-  agentInsights            AgentInsight[]            @relation("OrgToInsight")
-  landingPages             LandingPage[]
-  jobs                     Job[]
-  discounts                Discount[]
-  enrollmentLinks          EnrollmentLink[]
 
   @@map("organizations")
 }
@@ -149,9 +149,9 @@ model Course {
   category              StudentCategory           @default(ADULT)
   orderIndex            Int                       @default(1)
   nextCourseId          String?                   @unique
-  prerequisites         Json
-  objectives            Json
-  requirements          Json
+  prerequisites         String                    @db.LongText
+  objectives            String                    @db.LongText
+  requirements          String                    @db.LongText
   imageUrl              String?
   isActive              Boolean                   @default(true)
   createdAt             DateTime                  @default(now())
@@ -172,11 +172,13 @@ model Course {
   nextCourse            Course?                   @relation("CourseProgression", fields: [nextCourseId], references: [id])
   previousCourse        Course?                   @relation("CourseProgression")
   organization          Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  enrollmentLinks       EnrollmentLink[]
   evaluationRecords     EvaluationRecord[]
   instructor_courses    InstructorCourse[]
   lessonPlans           LessonPlan[]
   personalSessions      PersonalTrainingSession[]
   planCourses           PlanCourse[]
+  preEnrollments        PreEnrollment[]
   progressRecords       Progress[]
   studentCourses        StudentCourse[]
   degreeHistory         StudentDegreeHistory[]
@@ -187,10 +189,10 @@ model Course {
   turmasCourses         TurmaCourse[]
   turmas                Turma[]
   weeklyChallenges      WeeklyChallenge[]
-  preEnrollments        PreEnrollment[]
-  enrollmentLinks       EnrollmentLink[]
 
   @@unique([organizationId, name])
+  @@index([courseTemplateId], map: "courses_courseTemplateId_fkey")
+  @@index([martialArtId], map: "courses_martialArtId_fkey")
   @@map("courses")
 }
 
@@ -206,6 +208,7 @@ model CourseProgram {
   classes        Class[]
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId], map: "course_programs_organizationId_fkey")
   @@map("course_programs")
 }
 
@@ -220,10 +223,10 @@ model CourseTemplate {
   totalClasses     Int
   minAge           Int            @default(16)
   maxAge           Int?
-  objectives       Json
-  requirements     Json
-  structure        Json
-  ragSettings      Json?
+  objectives       String         @db.LongText
+  requirements     String         @db.LongText
+  structure        String         @db.LongText
+  ragSettings      String?        @db.LongText
   isSystemTemplate Boolean        @default(false)
   isActive         Boolean        @default(true)
   createdAt        DateTime       @default(now())
@@ -241,10 +244,10 @@ model TechniqueLibrary {
   name              String
   description       String?
   category          TechniqueCategory
-  content           Json
-  ragEmbeddings     Json?
-  prerequisites     Json
-  relatedTechniques Json
+  content           String            @db.LongText
+  ragEmbeddings     String?           @db.LongText
+  prerequisites     String            @db.LongText
+  relatedTechniques String            @db.LongText
   difficulty        Int               @default(1)
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
@@ -264,19 +267,18 @@ model LessonPlan {
   weekNumber        Int
   unit              String?
   level             Int                       @default(1)
-  warmup            Json
-  techniques        Json
-  simulations       Json
-  cooldown          Json
-  mentalModule      Json?
+  warmup            String                    @db.LongText
+  techniques        String                    @db.LongText
+  simulations       String                    @db.LongText
+  cooldown          String                    @db.LongText
+  mentalModule      String?                   @db.LongText
   tacticalModule    String?
-  adaptations       Json?
+  adaptations       String?                   @db.LongText
   duration          Int                       @default(60)
   difficulty        Int                       @default(1)
-  objectives        Json
-  equipment         Json
-  activities        Json
-  activityItems     LessonPlanActivity[]
+  objectives        String                    @db.LongText
+  equipment         String                    @db.LongText
+  activities        String                    @db.LongText
   videoUrl          String?
   thumbnailUrl      String?
   createdAt         DateTime                  @default(now())
@@ -286,6 +288,7 @@ model LessonPlan {
   previousVersionId String?
   version           Int                       @default(1)
   classes           Class[]
+  activityItems     LessonPlanActivity[]
   techniqueLinks    LessonPlanTechniques[]
   course            Course                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   previousVersion   LessonPlan?               @relation("LessonPlanVersions", fields: [previousVersionId], references: [id])
@@ -295,57 +298,59 @@ model LessonPlan {
   turmaLessons      TurmaLesson[]
 
   @@unique([courseId, lessonNumber, isActive])
+  @@index([previousVersionId], map: "lesson_plans_previousVersionId_fkey")
   @@map("lesson_plans")
 }
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Technique {
-  id                     String                      @id @default(uuid())
-  martialArtId           String?
-  name                   String
-  description            String?
-  difficulty             Int?
-  prerequisites          Json
-  videoUrl               String?
-  imageUrl               String?
-  baseXP                 Int?
-  masteryXP              Int?
-  badgeIcon              String?
-  createdAt              DateTime                    @default(now())
-  updatedAt              DateTime                    @updatedAt
-  slug                   String?                     @unique
-  shortDescription       String?
-  subcategory            String?
-  modality               String?
-  complexity             String?
-  durationMin            Int?
-  durationMax            Int?
-  groupSizeMin           Int?
-  groupSizeMax           Int?
-  ageRangeMin            Int?
-  ageRangeMax            Int?
-  objectives             Json
-  resources              Json
-  assessmentCriteria     Json
-  risksMitigation        Json
-  tags                   Json
-  references             Json
-  bnccCompetenciesText   String?                     @default("")
-  category               String?
-  instructions           Json
-  stepByStep             Json
-  bnccCompetencies       Json
-  referencedByActivities Activity[]                  @relation("ActivityTechniqueRef")
-  courseTechniques       CourseTechnique[]
-  educationalLinks       EducationalPlanTechniques[]
-  lessonLinks            LessonPlanTechniques[]
-  requiredByEdges        TechniquePrerequisite[]     @relation("TechniquePrerequisitesPrerequisite")
-  prerequisitesEdges     TechniquePrerequisite[]     @relation("TechniquePrerequisitesTechnique")
-  techniqueProgress      TechniqueProgress[]
+  id                       String                      @id @default(uuid())
+  martialArtId             String?
+  name                     String
+  description              String?
+  difficulty               Int?
+  prerequisites            String                      @db.LongText
+  videoUrl                 String?
+  imageUrl                 String?
+  baseXP                   Int?
+  masteryXP                Int?
+  badgeIcon                String?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  slug                     String?                     @unique
+  shortDescription         String?
+  subcategory              String?
+  modality                 String?
+  complexity               String?
+  durationMin              Int?
+  durationMax              Int?
+  groupSizeMin             Int?
+  groupSizeMax             Int?
+  ageRangeMin              Int?
+  ageRangeMax              Int?
+  objectives               String                      @db.LongText
+  resources                String                      @db.LongText
+  assessmentCriteria       String                      @db.LongText
+  risksMitigation          String                      @db.LongText
+  tags                     String                      @db.LongText
+  references               String                      @db.LongText
+  bnccCompetenciesText     String?                     @default("")
+  category                 String?
+  instructions             String                      @db.LongText
+  stepByStep               String                      @db.LongText
+  bnccCompetencies         String                      @db.LongText
+  referencedByActivities   Activity[]                  @relation("ActivityTechniqueRef")
+  courseTechniques         CourseTechnique[]
+  educationalLinks         EducationalPlanTechniques[]
+  lessonLinks              LessonPlanTechniques[]
   studentTechniqueProgress StudentTechniqueProgress[]
-  techniqueRecords       TechniqueRecord[]
-  martialArt             MartialArt?                 @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
+  requiredByEdges          TechniquePrerequisite[]     @relation("TechniquePrerequisitesPrerequisite")
+  prerequisitesEdges       TechniquePrerequisite[]     @relation("TechniquePrerequisitesTechnique")
+  techniqueProgress        TechniqueProgress[]
+  techniqueRecords         TechniqueRecord[]
+  martialArt               MartialArt?                 @relation(fields: [martialArtId], references: [id], onDelete: Cascade)
 
+  @@index([martialArtId], map: "techniques_martialArtId_fkey")
   @@map("techniques")
 }
 
@@ -362,57 +367,56 @@ model CourseTechnique {
 
   @@unique([courseId, techniqueId])
   @@unique([courseId, orderIndex])
+  @@index([techniqueId], map: "course_techniques_techniqueId_fkey")
   @@map("course_techniques")
 }
 
 model User {
-  id                   String              @id @default(uuid())
+  id                   String                   @id @default(uuid())
   organizationId       String
   email                String?
   password             String
-  role                 UserRole            @default(STUDENT)
+  role                 UserRole                 @default(STUDENT)
   firstName            String
   lastName             String
-  avatarUrl            String?             @db.LongText
+  avatarUrl            String?                  @db.LongText
   phone                String?
   cpf                  String?
   birthDate            DateTime?
-  isActive             Boolean             @default(true)
-  emailVerified        Boolean             @default(false)
+  isActive             Boolean                  @default(true)
+  emailVerified        Boolean                  @default(false)
   lastLoginAt          DateTime?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @default(now())
-  canApproveAgentTasks Boolean             @default(false)
-  canExecuteAgentTasks Boolean             @default(false)
-  canCreateAgents      Boolean             @default(false)
-  canDeleteAgents      Boolean             @default(false)
-  maxTaskPriority      String              @default("MEDIUM")
-  canApproveCategories Json @default("[]")
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @default(now())
+  canApproveAgentTasks Boolean                  @default(false)
+  canExecuteAgentTasks Boolean                  @default(false)
+  canCreateAgents      Boolean                  @default(false)
+  canDeleteAgents      Boolean                  @default(false)
+  maxTaskPriority      String                   @default("MEDIUM")
+  canApproveCategories String                   @db.LongText
+  approvedTasks        AgentTask[]              @relation("ApprovedTasks")
+  assignedTasks        AgentTask[]              @relation("AssignedTasks")
+  createdTasks         AgentTask[]              @relation("CreatedTasks")
+  executorTasks        AgentTask[]              @relation("ExecutorTasks")
   agendaItems          AgendaItem[]
   agentConversations   AgentConversation[]
-  approvedPermissions  AgentPermission[]   @relation("ApprovedPermissions")
+  approvedPermissions  AgentPermission[]        @relation("ApprovedPermissions")
+  authoredBroadcasts   Broadcast[]
   instructor           Instructor?
-  leadActivities       LeadActivity[]      @relation("LeadActivities")
-  leadNotes            LeadNote[]          @relation("LeadNotes")
-  assignedLeads        Lead[]              @relation("LeadAssignedTo")
-  student              Student?
-  attendanceChecks     TurmaAttendance[]   @relation("AttendanceChecker")
-  turmas               Turma[]
-  organization         Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  // Agent System Relations
-  createdTasks         AgentTask[]         @relation("CreatedTasks")
-  assignedTasks        AgentTask[]         @relation("AssignedTasks")
-  approvedTasks        AgentTask[]         @relation("ApprovedTasks")
-  executorTasks        AgentTask[]         @relation("ExecutorTasks")
-  taskExecutions       TaskExecution[]     @relation("TaskExecutions")
-  
-  // Permission System Relations
-  permissionOverrides  UserPermissionOverride[]
-  createdJobs          Job[]               @relation("JobCreator")
+  reviewedApplications JobApplication[]         @relation("ApplicationReviewer")
   jobApplications      JobApplication[]
-  reviewedApplications JobApplication[]    @relation("ApplicationReviewer")
+  createdJobs          Job[]                    @relation("JobCreator")
+  leadActivities       LeadActivity[]           @relation("LeadActivities")
+  leadNotes            LeadNote[]               @relation("LeadNotes")
+  assignedLeads        Lead[]                   @relation("LeadAssignedTo")
+  student              Student?
+  taskExecutions       TaskExecution[]          @relation("TaskExecutions")
+  attendanceChecks     TurmaAttendance[]        @relation("AttendanceChecker")
+  turmas               Turma[]
+  permissionOverrides  UserPermissionOverride[]
+  organization         Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId], map: "users_organizationId_fkey")
   @@map("users")
 }
 
@@ -420,21 +424,20 @@ model Student {
   id                            String                      @id @default(uuid())
   organizationId                String
   userId                        String                      @unique
-  user                          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   emergencyContact              String?
   medicalConditions             String?
   category                      StudentCategory             @default(ADULT)
   gender                        Gender?                     @default(MASCULINO)
   age                           Int?
   physicalCondition             PhysicalCondition?          @default(INICIANTE)
-  specialNeeds                  Json
+  specialNeeds                  String                      @db.LongText
   totalXP                       Int                         @default(0)
   globalLevel                   Int                         @default(1)
   currentStreak                 Int                         @default(0)
   longestStreak                 Int                         @default(0)
   lastCheckinDate               DateTime?
-  preferredDays                 Json
-  preferredTimes                Json
+  preferredDays                 String                      @db.LongText
+  preferredTimes                String                      @db.LongText
   notifications                 Boolean                     @default(true)
   enrollmentDate                DateTime                    @default(now())
   isActive                      Boolean                     @default(true)
@@ -443,18 +446,13 @@ model Student {
   financialResponsibleId        String?
   registrationNumber            String?                     @unique
   financialResponsibleStudentId String?
-  
-  // Consolidated Billing Fields
-  consolidatedDiscountValue     Decimal?                    @default(0)
-  consolidatedDiscountType      String?                     @default("FIXED") // FIXED, PERCENTAGE
-
-  agentConversations            AgentConversation[]
-  asaasCustomer                 AsaasCustomer?
-  // Portal Auth & Asaas
+  consolidatedDiscountValue     Decimal?                    @default(0.000000000000000000000000000000)
+  consolidatedDiscountType      String?                     @default("FIXED")
   passwordHash                  String?
   emailVerified                 Boolean                     @default(false)
   asaasCustomerId               String?                     @unique
-  techniqueProgress             StudentTechniqueProgress[]
+  agentConversations            AgentConversation[]
+  asaasCustomer                 AsaasCustomer?
   assessmentAttempts            AssessmentAttempt[]
   attendancePatterns            AttendancePattern?
   attendanceRecords             AttendanceRecord[]
@@ -470,6 +468,9 @@ model Student {
   evaluations                   Evaluation[]
   feedbackActivities            FeedbackActivity[]
   feedbackLessons               FeedbackLesson[]
+  horarioSupports               HorarioSupporter[]          @relation("StudentHorarioSupporters")
+  horarioSuggestions            HorarioSugerido[]
+  jobApplications               JobApplication[]
   convertedFromLead             Lead?                       @relation("LeadToStudent")
   activityExecutions            LessonActivityExecution[]
   payments                      Payment[]
@@ -477,31 +478,33 @@ model Student {
   personalPreferences           PersonalTrainingPreference?
   physicalTestAttempts          PhysicalTestAttempt[]
   pointsTransactions            PointsTransaction[]
+  preEnrollments                PreEnrollment[]
   progressRecords               Progress[]
   achievements                  StudentAchievement[]
   studentCourses                StudentCourse[]
   studentCredits                StudentCredit[]
   degreeHistory                 StudentDegreeHistory[]
   graduations                   StudentGraduation[]
+  portalNotifications           StudentNotification[]       @relation("StudentNotifications")
   progressTracking              StudentProgress[]
   progressions                  StudentProgression[]
+  sessions                      StudentSession[]            @relation("StudentSessions")
   subscriptions                 StudentSubscription[]
-  turmaInterests                TurmaInterest[]           @relation("StudentTurmaInterests")
-  horarioSuggestions            HorarioSugerido[]
-  horarioSupports               HorarioSupporter[]        @relation("StudentHorarioSupporters")
-  sessions                      StudentSession[]          @relation("StudentSessions")
-  portalNotifications           StudentNotification[]     @relation("StudentNotifications")
+  techniqueProgress             StudentTechniqueProgress[]
   financialResponsible          FinancialResponsible?       @relation(fields: [financialResponsibleId], references: [id])
   financialResponsibleStudent   Student?                    @relation("FinancialDependents", fields: [financialResponsibleStudentId], references: [id])
   financialDependents           Student[]                   @relation("FinancialDependents")
   organization                  Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   teacherEvaluations            TeacherEvaluation[]
   techniqueRecords              TechniqueRecord[]
   turmaAttendances              TurmaAttendance[]
+  turmaInterests                TurmaInterest[]             @relation("StudentTurmaInterests")
   turmaStudents                 TurmaStudent[]
-  jobApplications               JobApplication[]
-  preEnrollments                PreEnrollment[]
 
+  @@index([financialResponsibleId], map: "students_financialResponsibleId_fkey")
+  @@index([financialResponsibleStudentId], map: "students_financialResponsibleStudentId_fkey")
+  @@index([organizationId], map: "students_organizationId_fkey")
   @@map("students")
 }
 
@@ -513,6 +516,7 @@ model EducationalPlanTechniques {
   technique         Technique @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@id([educationalPlanId, techniqueId])
+  @@index([techniqueId], map: "educational_plan_techniques_techniqueId_fkey")
   @@map("educational_plan_techniques")
 }
 
@@ -521,41 +525,42 @@ model LessonPlanTechniques {
   techniqueId         String
   order               Int        @default(0)
   allocationMinutes   Int        @default(0)
-  objectiveMapping    Json
+  objectiveMapping    String     @db.LongText
   expectedRepetitions Int        @default(1)
   lessonPlan          LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
   technique           Technique  @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@id([lessonPlanId, techniqueId])
+  @@index([techniqueId], map: "lesson_plan_techniques_techniqueId_fkey")
   @@map("lesson_plan_techniques")
 }
 
 model FinancialResponsible {
-  id               String                @id @default(uuid())
-  organizationId   String
-  name             String
-  cpfCnpj          String
-  email            String
-  phone            String?
-  birthDate        DateTime?
-  address          String?
-  addressNumber    String?
-  complement       String?
-  neighborhood     String?
-  city             String?
-  state            String?
-  zipCode          String?
-  relationshipType String?
-  asaasId          String?
-  isActive         Boolean               @default(true)
-  consolidateBilling Boolean             @default(true)
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @default(now())
-  asaasCustomer    AsaasCustomer?
-  organization     Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  payments         Payment[]
-  subscriptions    StudentSubscription[]
-  students         Student[]
+  id                 String                @id @default(uuid())
+  organizationId     String
+  name               String
+  cpfCnpj            String
+  email              String
+  phone              String?
+  birthDate          DateTime?
+  address            String?
+  addressNumber      String?
+  complement         String?
+  neighborhood       String?
+  city               String?
+  state              String?
+  zipCode            String?
+  relationshipType   String?
+  asaasId            String?
+  isActive           Boolean               @default(true)
+  consolidateBilling Boolean               @default(true)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @default(now())
+  asaasCustomer      AsaasCustomer?
+  organization       Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payments           Payment[]
+  subscriptions      StudentSubscription[]
+  students           Student[]
 
   @@unique([organizationId, cpfCnpj])
   @@unique([organizationId, email])
@@ -574,7 +579,7 @@ model TechniqueRecord {
   lastPracticed  DateTime             @default(now())
   masteredAt     DateTime?
   videoUrl       String?
-  aiAnalysis     Json?
+  aiAnalysis     String?              @db.LongText
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @default(now())
   lessonPlan     LessonPlan?          @relation(fields: [lessonPlanId], references: [id])
@@ -582,6 +587,8 @@ model TechniqueRecord {
   technique      Technique            @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, techniqueId])
+  @@index([lessonPlanId], map: "technique_records_lessonPlanId_fkey")
+  @@index([techniqueId], map: "technique_records_techniqueId_fkey")
   @@map("technique_records")
 }
 
@@ -607,11 +614,11 @@ model Unit {
   updatedAt        DateTime                  @default(now())
   agendaItems      AgendaItem[]
   classes          Class[]
+  jobs             Job[]
   mats             Mat[]
   personalSessions PersonalTrainingSession[]
   trainingAreas    TrainingArea[]
   turmas           Turma[]
-  jobs             Job[]
   organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, name])
@@ -626,7 +633,7 @@ model TrainingArea {
   capacity         Int                       @default(20)
   areaType         String
   dimensions       String?
-  equipment        Json
+  equipment        String                    @db.LongText
   flooring         String?
   isActive         Boolean                   @default(true)
   createdAt        DateTime                  @default(now())
@@ -649,7 +656,7 @@ model Mat {
   description    String?
   capacity       Int          @default(20)
   dimensions     String?
-  equipment      Json
+  equipment      String       @db.LongText
   materialType   String?
   isActive       Boolean      @default(true)
   createdAt      DateTime     @default(now())
@@ -659,6 +666,7 @@ model Mat {
   unit           Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
   @@unique([unitId, name])
+  @@index([organizationId], map: "mats_organizationId_fkey")
   @@map("mats")
 }
 
@@ -666,16 +674,15 @@ model Instructor {
   id                     String                    @id @default(uuid())
   organizationId         String
   userId                 String                    @unique
-  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specializations        Json
-  certifications         Json
+  specializations        String                    @db.LongText
+  certifications         String                    @db.LongText
   bio                    String?
-  martialArts            Json
+  martialArts            String                    @db.LongText
   maxStudentsPerClass    Int                       @default(20)
   experience             String?
-  availability           Json?
+  availability           String?                   @db.LongText
   hourlyRate             Decimal?                  @db.Decimal(10, 2)
-  preferredUnits         Json
+  preferredUnits         String                    @db.LongText
   hireDate               DateTime                  @default(now())
   isActive               Boolean                   @default(true)
   createdAt              DateTime                  @default(now())
@@ -684,12 +691,14 @@ model Instructor {
   evaluations            Evaluation[]
   instructor_courses     InstructorCourse[]
   organization           Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                   User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobApplications        JobApplication[]
   activityValidations    LessonActivityExecution[] @relation("ActivityValidation")
   personalClasses        PersonalTrainingClass[]
   qualitativeAssessments QualitativeAssessment[]
   teacherEvaluations     TeacherEvaluation[]
-  jobApplications        JobApplication[]
 
+  @@index([organizationId], map: "instructors_organizationId_fkey")
   @@map("instructors")
 }
 
@@ -698,11 +707,11 @@ model InstructorCourse {
   instructor_id String
   course_id     String
   is_lead       Boolean?   @default(false)
-  certified_at  DateTime?  
-  expires_at    DateTime?  
+  certified_at  DateTime?
+  expires_at    DateTime?
   notes         String?
-  created_at    DateTime?  @default(now()) 
-  updated_at    DateTime?  @default(now()) 
+  created_at    DateTime?  @default(now())
+  updated_at    DateTime?  @default(now())
   courses       Course     @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_instructor_courses_course")
   instructors   Instructor @relation(fields: [instructor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_instructor_courses_instructor")
 
@@ -744,7 +753,7 @@ model Class {
   status               ClassStatus           @default(SCHEDULED)
   actualStudents       Int                   @default(0)
   maxStudents          Int                   @default(20)
-  agenda               Json?
+  agenda               String?               @db.LongText
   notes                String?
   qrCode               String?               @unique
   qrCodeExpiry         DateTime?
@@ -770,6 +779,15 @@ model Class {
   studentCourses       StudentCourse[]
   teacherEvaluations   TeacherEvaluation[]
 
+  @@index([courseId], map: "classes_courseId_fkey")
+  @@index([courseProgramId], map: "classes_courseProgramId_fkey")
+  @@index([instructorId], map: "classes_instructorId_fkey")
+  @@index([lessonPlanId], map: "classes_lessonPlanId_fkey")
+  @@index([matId], map: "classes_matId_fkey")
+  @@index([organizationId], map: "classes_organizationId_fkey")
+  @@index([scheduleId], map: "classes_scheduleId_fkey")
+  @@index([trainingAreaId], map: "classes_trainingAreaId_fkey")
+  @@index([unitId], map: "classes_unitId_fkey")
   @@map("classes")
 }
 
@@ -792,6 +810,8 @@ model Attendance {
   creditUsages   CreditUsage[]
 
   @@unique([studentId, classId])
+  @@index([classId], map: "attendances_classId_fkey")
+  @@index([organizationId], map: "attendances_organizationId_fkey")
   @@map("attendances")
 }
 
@@ -819,6 +839,7 @@ model CourseEnrollment {
   techniqueProgress TechniqueProgress[]
 
   @@unique([studentId, courseId])
+  @@index([courseId], map: "course_enrollments_courseId_fkey")
   @@map("course_enrollments")
 }
 
@@ -832,7 +853,7 @@ model TechniqueProgress {
   practiceCount       Int                  @default(0)
   masteredAt          DateTime?
   videoUrl            String?
-  aiAnalysis          Json?
+  aiAnalysis          String?              @db.LongText
   instructorValidated Boolean              @default(false)
   validatedBy         String?
   validatedAt         DateTime?
@@ -843,6 +864,7 @@ model TechniqueProgress {
   technique           Technique            @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, techniqueId])
+  @@index([techniqueId], map: "technique_progress_techniqueId_fkey")
   @@map("technique_progress")
 }
 
@@ -889,6 +911,8 @@ model ChallengeProgress {
   student             Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, challengeId])
+  @@index([challengeId], map: "challenge_progress_challengeId_fkey")
+  @@index([studentId], map: "challenge_progress_studentId_fkey")
   @@map("challenge_progress")
 }
 
@@ -899,21 +923,24 @@ model Evaluation {
   enrollmentId       String
   type               EvaluationType
   lessonNumber       Int
-  techniquesTested   Json
-  physicalTest       Json?
+  techniquesTested   String           @db.LongText
+  physicalTest       String?          @db.LongText
   overallScore       Float
   passed             Boolean          @default(false)
   instructorNotes    String?
   videoUrl           String?
-  recommendedActions Json
+  recommendedActions String           @db.LongText
   evaluatedBy        String
-  evaluatedAt         DateTime         @default(now())
+  evaluatedAt        DateTime         @default(now())
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @default(now())
   enrollment         CourseEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
   instructor         Instructor       @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   student            Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([enrollmentId], map: "evaluations_enrollmentId_fkey")
+  @@index([instructorId], map: "evaluations_instructorId_fkey")
+  @@index([studentId], map: "evaluations_studentId_fkey")
   @@map("evaluations")
 }
 
@@ -938,6 +965,7 @@ model StudentProgression {
   student              Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, martialArtId])
+  @@index([martialArtId], map: "student_progressions_martialArtId_fkey")
   @@map("student_progressions")
 }
 
@@ -948,7 +976,7 @@ model Achievement {
   name                String
   description         String
   category            AchievementCategory
-  criteria            Json
+  criteria            String               @db.LongText
   xpReward            Int                  @default(0)
   badgeImageUrl       String?
   rarity              AchievementRarity    @default(COMMON)
@@ -959,6 +987,8 @@ model Achievement {
   organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   studentAchievements StudentAchievement[]
 
+  @@index([martialArtId], map: "achievements_martialArtId_fkey")
+  @@index([organizationId], map: "achievements_organizationId_fkey")
   @@map("achievements")
 }
 
@@ -973,6 +1003,7 @@ model StudentAchievement {
   student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, achievementId])
+  @@index([achievementId], map: "student_achievements_achievementId_fkey")
   @@map("student_achievements")
 }
 
@@ -989,13 +1020,14 @@ model Challenge {
   recurringType  RecurringType?
   xpReward       Int                 @default(0)
   badgeReward    String?
-  criteria       Json
+  criteria       String              @db.LongText
   targetValue    Int                 @default(1)
   isActive       Boolean             @default(true)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @default(now())
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId], map: "challenges_organizationId_fkey")
   @@map("challenges")
 }
 
@@ -1018,6 +1050,9 @@ model StudentCourse {
   student         Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId])
+  @@index([classId], map: "student_courses_classId_fkey")
+  @@index([courseId], map: "student_courses_courseId_fkey")
+  @@index([paymentPlanId], map: "student_courses_paymentPlanId_fkey")
   @@map("student_courses")
 }
 
@@ -1039,6 +1074,8 @@ model AttendanceRecord {
   student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, classId, lessonNumber])
+  @@index([classId], map: "attendance_records_classId_fkey")
+  @@index([courseId], map: "attendance_records_courseId_fkey")
   @@map("attendance_records")
 }
 
@@ -1047,8 +1084,8 @@ model Progress {
   studentId           String
   courseId            String
   lessonNumber        Int
-  techniquesLearned   Json
-  challengesCompleted Json
+  techniquesLearned   String   @db.LongText
+  challengesCompleted String   @db.LongText
   points              Int      @default(0)
   reflections         String?
   progressDate        DateTime @default(now())
@@ -1058,6 +1095,7 @@ model Progress {
   student             Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId, lessonNumber])
+  @@index([courseId], map: "progress_records_courseId_fkey")
   @@map("progress_records")
 }
 
@@ -1068,9 +1106,9 @@ model TechniqueDetail {
   description   String?
   category      TechniqueCategory
   lessonNumber  Int
-  instructions  Json
-  objectives    Json
-  adaptations   Json?
+  instructions  String            @db.LongText
+  objectives    String            @db.LongText
+  adaptations   String?           @db.LongText
   orderInLesson Int               @default(1)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @default(now())
@@ -1086,7 +1124,7 @@ model WeeklyChallenge {
   weekNumber      Int
   name            String
   description     String
-  baseRepetitions Json
+  baseRepetitions String   @db.LongText
   baseTime        Int?
   pointsReward    Int      @default(15)
   createdAt       DateTime @default(now())
@@ -1102,11 +1140,11 @@ model EvaluationRecord {
   studentId           String
   courseId            String
   lessonNumber        Int
-  techniquesEvaluated Json
+  techniquesEvaluated String           @db.LongText
   physicalTest        String?
   physicalTestResult  String?
-  simulationScenarios Json
-  simulationResults   Json
+  simulationScenarios String           @db.LongText
+  simulationResults   String           @db.LongText
   precision           Float?
   status              EvaluationStatus
   certificateIssued   Boolean          @default(false)
@@ -1119,6 +1157,7 @@ model EvaluationRecord {
   student             Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId, lessonNumber])
+  @@index([courseId], map: "evaluation_records_courseId_fkey")
   @@map("evaluation_records")
 }
 
@@ -1130,14 +1169,14 @@ model AttendancePattern {
   attendanceRate      Float           @default(0)
   consecutiveAbsences Int             @default(0)
   averageCheckInTime  String?
-  preferredDays       Json
-  preferredTimeSlots  Json
+  preferredDays       String          @db.LongText
+  preferredTimeSlots  String          @db.LongText
   recentTrend         AttendanceTrend @default(STABLE)
   trendConfidence     Float           @default(0)
   dropoutRisk         DropoutRisk     @default(LOW)
-  riskFactors         Json
-  recommendations     Json
-  aiInsights          Json?
+  riskFactors         String          @db.LongText
+  recommendations     String          @db.LongText
+  aiInsights          String?         @db.LongText
   lastAnalyzed        DateTime        @default(now())
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @default(now())
@@ -1174,6 +1213,7 @@ model AsaasCustomer {
   payments               Payment[]
   subscriptions          StudentSubscription[]
 
+  @@index([organizationId], map: "asaas_customers_organizationId_fkey")
   @@map("asaas_customers")
 }
 
@@ -1201,8 +1241,8 @@ model BillingPlan {
   accessAllModalities     Boolean               @default(false)
   allowFreeze             Boolean               @default(true)
   freezeMaxDays           Int                   @default(30)
-  features                Json?
-  paymentDiscounts        Json?                 // Configuração de descontos por método de pagamento
+  features                String?               @db.LongText
+  paymentDiscounts        String?               @db.LongText
   isActive                Boolean               @default(true)
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @default(now())
@@ -1213,7 +1253,7 @@ model BillingPlan {
   allowTransfer           Boolean?              @default(false)
   autoRenewChargeMethod   String?
   autoRenewCredits        Boolean?              @default(false)
-  bulkDiscountTiers       Json?
+  bulkDiscountTiers       String?               @db.LongText
   creditQuantity          Int?
   creditRenewalMethod     CreditRenewalMethod?  @default(INCLUDED)
   creditRenewalTrigger    CreditRenewalTrigger? @default(MONTHLY)
@@ -1225,63 +1265,53 @@ model BillingPlan {
   refundDaysBeforeExp     Int?                  @default(7)
   renewalIntervalDays     Int?
   transferFeePercent      Decimal?              @db.Decimal(5, 2)
+  discounts               BillingPlanDiscount[]
   course                  Course?               @relation("BillingPlanPrimaryCourse", fields: [courseId], references: [id])
   organization            Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  enrollmentLinks         EnrollmentLink[]
   planCourses             PlanCourse[]          @relation("PlanCourseToPlan")
+  preEnrollments          PreEnrollment[]
   studentCourses          StudentCourse[]       @relation("BillingPlanStudentCourses")
   studentCredits          StudentCredit[]       @relation("BillingPlanCredits")
   subscriptions           StudentSubscription[] @relation("BillingPlanSubscriptions")
-  discounts               BillingPlanDiscount[]
-  preEnrollments          PreEnrollment[]
-  enrollmentLinks         EnrollmentLink[]
 
+  @@index([courseId], map: "billing_plans_courseId_fkey")
+  @@index([organizationId], map: "billing_plans_organizationId_fkey")
   @@map("billing_plans")
 }
 
 model Discount {
-  id              String          @id @default(uuid())
-  organizationId  String
-  name            String
-  description     String?
-  type            DiscountType    @default(PERCENTAGE)
-  value           Decimal         @db.Decimal(10, 2)
-  triggerType     DiscountTrigger @default(MANUAL)
-  triggerValue    String?         // e.g. "PIX", "BLACKFRIDAY2025"
-  startDate       DateTime?
-  endDate         DateTime?
-  isActive        Boolean         @default(true)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id             String                @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  type           DiscountType          @default(PERCENTAGE)
+  value          Decimal               @db.Decimal(10, 2)
+  triggerType    DiscountTrigger       @default(MANUAL)
+  triggerValue   String?
+  startDate      DateTime?
+  endDate        DateTime?
+  isActive       Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  plans          BillingPlanDiscount[]
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  plans           BillingPlanDiscount[]
-
+  @@index([organizationId], map: "discounts_organizationId_fkey")
   @@map("discounts")
 }
 
 model BillingPlanDiscount {
-  id              String      @id @default(uuid())
-  planId          String
-  discountId      String
-  createdAt       DateTime    @default(now())
-
-  plan            BillingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  discount        Discount    @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  id         String      @id @default(uuid())
+  planId     String
+  discountId String
+  createdAt  DateTime    @default(now())
+  discount   Discount    @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  plan       BillingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@unique([planId, discountId])
+  @@index([discountId], map: "billing_plan_discounts_discountId_fkey")
   @@map("billing_plan_discounts")
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED_AMOUNT
-}
-
-enum DiscountTrigger {
-  MANUAL
-  PAYMENT_METHOD
-  COUPON
-  CAMPAIGN
 }
 
 model StudentSubscription {
@@ -1310,6 +1340,11 @@ model StudentSubscription {
   plan                   BillingPlan           @relation("BillingPlanSubscriptions", fields: [planId], references: [id])
   student                Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([asaasCustomerId], map: "student_subscriptions_asaasCustomerId_fkey")
+  @@index([financialResponsibleId], map: "student_subscriptions_financialResponsibleId_fkey")
+  @@index([organizationId], map: "student_subscriptions_organizationId_fkey")
+  @@index([planId], map: "student_subscriptions_planId_fkey")
+  @@index([studentId], map: "student_subscriptions_studentId_fkey")
   @@map("student_subscriptions")
 }
 
@@ -1335,7 +1370,7 @@ model Payment {
   asaasBoletoCode        String?
   asaasChargeUrl         String?
   pixCode                String?
-  webhookData            Json?
+  webhookData            String?               @db.LongText
   notes                  String?
   isManual               Boolean               @default(false)
   createdAt              DateTime              @default(now())
@@ -1346,6 +1381,11 @@ model Payment {
   student                Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
   subscription           StudentSubscription?  @relation(fields: [subscriptionId], references: [id])
 
+  @@index([asaasCustomerId], map: "payments_asaasCustomerId_fkey")
+  @@index([financialResponsibleId], map: "payments_financialResponsibleId_fkey")
+  @@index([organizationId], map: "payments_organizationId_fkey")
+  @@index([studentId], map: "payments_studentId_fkey")
+  @@index([subscriptionId], map: "payments_subscriptionId_fkey")
   @@map("payments")
 }
 
@@ -1357,8 +1397,8 @@ model FinancialSettings {
   asaasWebhookToken  String?
   isSandbox          Boolean      @default(true)
   defaultBillingType BillingType  @default(MONTHLY)
-  lateFeePercentage  Decimal      @default(2.0) @db.Decimal(5, 2)
-  interestRate       Decimal      @default(1.0) @db.Decimal(5, 2)
+  lateFeePercentage  Decimal      @default(2.00) @db.Decimal(5, 2)
+  interestRate       Decimal      @default(1.00) @db.Decimal(5, 2)
   sendReminders      Boolean      @default(true)
   reminderDaysBefore Int          @default(3)
   createdAt          DateTime     @default(now())
@@ -1400,6 +1440,9 @@ model StudentCredit {
   @@index([studentId, status])
   @@index([expiresAt])
   @@index([organizationId])
+  @@index([planId], map: "student_credits_planId_fkey")
+  @@index([previousCreditId], map: "student_credits_previousCreditId_fkey")
+  @@index([subscriptionId], map: "student_credits_subscriptionId_fkey")
   @@map("student_credits")
 }
 
@@ -1422,6 +1465,7 @@ model CreditUsage {
   @@index([creditId])
   @@index([attendanceId])
   @@index([usedAt])
+  @@index([organizationId], map: "credit_usages_organizationId_fkey")
   @@map("credit_usages")
 }
 
@@ -1454,6 +1498,7 @@ model PlanCourse {
   plan      BillingPlan @relation("PlanCourseToPlan", fields: [planId], references: [id], onDelete: Cascade)
 
   @@id([planId, courseId])
+  @@index([courseId], map: "plan_courses_courseId_fkey")
   @@map("plan_courses")
 }
 
@@ -1465,6 +1510,7 @@ model TechniquePrerequisite {
   technique               Technique @relation("TechniquePrerequisitesTechnique", fields: [techniqueId], references: [id], onDelete: Cascade)
 
   @@id([techniqueId, prerequisiteTechniqueId])
+  @@index([prerequisiteTechniqueId], map: "technique_prerequisite_prerequisiteTechniqueId_fkey")
   @@map("technique_prerequisite")
 }
 
@@ -1474,7 +1520,7 @@ model MentalModule {
   objective        String
   recommendedPhase String?
   durationMin      Int?
-  tags             Json
+  tags             String   @db.LongText
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now())
 
@@ -1500,7 +1546,7 @@ model RagChunk {
   sourceId       String?
   version        Int           @default(1)
   lang           String        @default("pt-BR")
-  tags           Json
+  tags           String        @db.LongText
   text           String
   hash           String        @unique
   embedding      Bytes?
@@ -1531,12 +1577,12 @@ model Activity {
   type            ActivityType
   title           String
   description     String?
-  equipment       Json @default("[]")
+  equipment       String               @db.LongText
   safety          String?
-  adaptations     Json @default("[]")
+  adaptations     String               @db.LongText
   difficulty      Int?
   refTechniqueId  String?
-  defaultParams   Json?
+  defaultParams   String?              @db.LongText
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @default(now())
   categoryId      String?
@@ -1546,6 +1592,9 @@ model Activity {
   classItems      ClassActivity[]
   lessonPlanItems LessonPlanActivity[]
 
+  @@index([categoryId], map: "activities_categoryId_fkey")
+  @@index([organizationId], map: "activities_organizationId_fkey")
+  @@index([refTechniqueId], map: "activities_refTechniqueId_fkey")
   @@map("activities")
 }
 
@@ -1555,13 +1604,13 @@ model LessonPlanActivity {
   activityId           String
   segment              LessonSegment
   ord                  Int                       @default(1)
-  params               Json?
+  params               String?                   @db.LongText
   objectives           String?
   safetyNotes          String?
   adaptations          String?
   createdAt            DateTime                  @default(now())
   updatedAt            DateTime                  @default(now())
-  intensityMultiplier  Float                     @default(1.0)
+  intensityMultiplier  Float                     @default(1)
   minimumForGraduation Int?
   repetitionsPerClass  Int                       @default(1)
   executions           LessonActivityExecution[]
@@ -1569,6 +1618,7 @@ model LessonPlanActivity {
   lessonPlan           LessonPlan                @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
 
   @@unique([lessonPlanId, ord])
+  @@index([activityId], map: "lesson_plan_activities_activityId_fkey")
   @@map("lesson_plan_activities")
 }
 
@@ -1578,7 +1628,7 @@ model ClassActivity {
   activityId      String
   segment         LessonSegment
   ord             Int                @default(1)
-  paramsUsed      Json?
+  paramsUsed      String?            @db.LongText
   completed       Boolean            @default(false)
   adaptationsUsed String?
   createdAt       DateTime           @default(now())
@@ -1588,6 +1638,7 @@ model ClassActivity {
   feedbacks       FeedbackActivity[]
 
   @@unique([classId, ord])
+  @@index([activityId], map: "class_activities_activityId_fkey")
   @@map("class_activities")
 }
 
@@ -1610,6 +1661,7 @@ model RubricCriterion {
   weight      Int     @default(1)
   rubric      Rubric  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
 
+  @@index([rubricId], map: "rubric_criteria_rubricId_fkey")
   @@map("rubric_criteria")
 }
 
@@ -1624,6 +1676,8 @@ model AssessmentDefinition {
   course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   rubric   Rubric?             @relation(fields: [rubricId], references: [id], onDelete: Cascade)
 
+  @@index([courseId], map: "assessment_definitions_courseId_fkey")
+  @@index([rubricId], map: "assessment_definitions_rubricId_fkey")
   @@map("assessment_definitions")
 }
 
@@ -1636,11 +1690,14 @@ model AssessmentAttempt {
   startedAt    DateTime?
   completedAt  DateTime?
   scoreTotal   Int?
-  details      Json?
+  details      String?              @db.LongText
   assessment   AssessmentDefinition @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   class        Class?               @relation(fields: [classId], references: [id])
   student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([assessmentId], map: "assessment_attempts_assessmentId_fkey")
+  @@index([classId], map: "assessment_attempts_classId_fkey")
+  @@index([studentId], map: "assessment_attempts_studentId_fkey")
   @@map("assessment_attempts")
 }
 
@@ -1667,6 +1724,9 @@ model PhysicalTestAttempt {
   student   Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
   test      PhysicalTestDefinition @relation(fields: [testId], references: [id], onDelete: Cascade)
 
+  @@index([classId], map: "physical_test_attempts_classId_fkey")
+  @@index([studentId], map: "physical_test_attempts_studentId_fkey")
+  @@index([testId], map: "physical_test_attempts_testId_fkey")
   @@map("physical_test_attempts")
 }
 
@@ -1682,6 +1742,7 @@ model FeedbackLesson {
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([classId, studentId])
+  @@index([studentId], map: "feedback_lessons_studentId_fkey")
   @@map("feedback_lessons")
 }
 
@@ -1697,6 +1758,7 @@ model FeedbackActivity {
   student             Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([classActivityId, studentId])
+  @@index([studentId], map: "feedback_activities_studentId_fkey")
   @@map("feedback_activities")
 }
 
@@ -1707,7 +1769,7 @@ model TeacherEvaluation {
   studentId    String
   instructorId String
   rating       Int
-  criteria     Json?
+  criteria     String?    @db.LongText
   comment      String?
   createdAt    DateTime   @default(now())
   class        Class?     @relation(fields: [classId], references: [id])
@@ -1715,6 +1777,10 @@ model TeacherEvaluation {
   instructor   Instructor @relation(fields: [instructorId], references: [id])
   student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([classId], map: "teacher_evaluations_classId_fkey")
+  @@index([courseId], map: "teacher_evaluations_courseId_fkey")
+  @@index([instructorId], map: "teacher_evaluations_instructorId_fkey")
+  @@index([studentId], map: "teacher_evaluations_studentId_fkey")
   @@map("teacher_evaluations")
 }
 
@@ -1722,7 +1788,7 @@ model Badge {
   id             String        @id @default(uuid())
   organizationId String
   name           String
-  criteria       Json?
+  criteria       String?       @db.LongText
   iconUrl        String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @default(now())
@@ -1743,6 +1809,7 @@ model BadgeUnlock {
   student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([badgeId, studentId])
+  @@index([studentId], map: "badge_unlocks_studentId_fkey")
   @@map("badge_unlocks")
 }
 
@@ -1756,6 +1823,7 @@ model PointsTransaction {
   occurredAt DateTime @default(now())
   student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([studentId], map: "points_transactions_studentId_fkey")
   @@map("points_transactions")
 }
 
@@ -1771,7 +1839,7 @@ model Turma {
   maxStudents                  Int               @default(20)
   startDate                    DateTime
   endDate                      DateTime?
-  schedule                     Json
+  schedule                     String            @db.LongText
   unitId                       String?
   room                         String?
   price                        Decimal?          @db.Decimal(10, 2)
@@ -1783,18 +1851,23 @@ model Turma {
   updatedAt                    DateTime          @default(now())
   trainingAreaId               String?
   requireAttendanceForProgress Boolean           @default(false)
+  createdFromSuggestion        HorarioSugerido[] @relation("CreatedFromSuggestion")
   attendances                  TurmaAttendance[]
   courses                      TurmaCourse[]
+  interests                    TurmaInterest[]   @relation("TurmaInterests")
   lessons                      TurmaLesson[]
   students                     TurmaStudent[]
-  interests                    TurmaInterest[]   @relation("TurmaInterests")
-  createdFromSuggestion        HorarioSugerido[] @relation("CreatedFromSuggestion")
   course                       Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   instructor                   User              @relation(fields: [instructorId], references: [id])
   organization                 Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   trainingArea                 TrainingArea?     @relation("TurmaTrainingArea", fields: [trainingAreaId], references: [id])
   unit                         Unit?             @relation(fields: [unitId], references: [id])
 
+  @@index([courseId], map: "turmas_courseId_fkey")
+  @@index([instructorId], map: "turmas_instructorId_fkey")
+  @@index([organizationId], map: "turmas_organizationId_fkey")
+  @@index([trainingAreaId], map: "turmas_trainingAreaId_fkey")
+  @@index([unitId], map: "turmas_unitId_fkey")
   @@map("turmas")
 }
 
@@ -1804,57 +1877,53 @@ model TurmaInterest {
   studentId String
   createdAt DateTime @default(now())
   notified  Boolean  @default(false)
-
-  turma   Turma   @relation("TurmaInterests", fields: [turmaId], references: [id], onDelete: Cascade)
-  student Student @relation("StudentTurmaInterests", fields: [studentId], references: [id], onDelete: Cascade)
+  student   Student  @relation("StudentTurmaInterests", fields: [studentId], references: [id], onDelete: Cascade)
+  turma     Turma    @relation("TurmaInterests", fields: [turmaId], references: [id], onDelete: Cascade)
 
   @@unique([turmaId, studentId])
+  @@index([studentId], map: "turma_interests_studentId_fkey")
   @@map("turma_interests")
 }
 
 model HorarioSugerido {
-  id              String          @id @default(uuid())
-  studentId       String
-  organizationId  String
-  
-  // Dados da sugestão
-  dayOfWeek       Int             // 0-6 (domingo a sábado)
-  startTime       String          // "19:00"
-  endTime         String          // "20:30"
-  courseType      String?         // "DEFESA_PESSOAL", "COMBATE", etc.
-  level           String?         // "INICIANTE", "INTERMEDIARIO", "AVANCADO"
-  preferredUnit   String?         // ID da unidade preferida
-  notes           String?         // Observações do aluno
-  
-  // Controle
-  status          String          @default("PENDING") // PENDING, APPROVED, REJECTED, FULFILLED
-  votes           Int             @default(1)         // Outros alunos podem "votar"
-  createdAt       DateTime        @default(now())
-  reviewedAt      DateTime?
-  reviewedBy      String?         // ID do admin que revisou
-  createdTurmaId  String?         // ID da turma criada (se aprovada)
-  
-  // Relações
-  student         Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  supporters      HorarioSupporter[] @relation("HorarioSupporters")
-  createdTurma    Turma?          @relation("CreatedFromSuggestion", fields: [createdTurmaId], references: [id])
-  
+  id             String             @id @default(uuid())
+  studentId      String
+  organizationId String
+  dayOfWeek      Int
+  startTime      String
+  endTime        String
+  courseType     String?
+  level          String?
+  preferredUnit  String?
+  notes          String?
+  status         String             @default("PENDING")
+  votes          Int                @default(1)
+  createdAt      DateTime           @default(now())
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdTurmaId String?
+  supporters     HorarioSupporter[] @relation("HorarioSupporters")
+  createdTurma   Turma?             @relation("CreatedFromSuggestion", fields: [createdTurmaId], references: [id])
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  student        Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
   @@index([organizationId, status])
   @@index([dayOfWeek, startTime])
+  @@index([createdTurmaId], map: "horarios_sugeridos_createdTurmaId_fkey")
+  @@index([studentId], map: "horarios_sugeridos_studentId_fkey")
   @@map("horarios_sugeridos")
 }
 
 model HorarioSupporter {
-  id              String          @id @default(uuid())
-  horarioId       String
-  studentId       String
-  createdAt       DateTime        @default(now())
-  
-  horario         HorarioSugerido @relation("HorarioSupporters", fields: [horarioId], references: [id], onDelete: Cascade)
-  student         Student         @relation("StudentHorarioSupporters", fields: [studentId], references: [id], onDelete: Cascade)
-  
+  id        String          @id @default(uuid())
+  horarioId String
+  studentId String
+  createdAt DateTime        @default(now())
+  horario   HorarioSugerido @relation("HorarioSupporters", fields: [horarioId], references: [id], onDelete: Cascade)
+  student   Student         @relation("StudentHorarioSupporters", fields: [studentId], references: [id], onDelete: Cascade)
+
   @@unique([horarioId, studentId])
+  @@index([studentId], map: "horario_supporters_studentId_fkey")
   @@map("horario_supporters")
 }
 
@@ -1869,9 +1938,9 @@ model TurmaLesson {
   status             TurmaStatus               @default(SCHEDULED)
   duration           Int                       @default(60)
   notes              String?
-  materials          Json @default("[]")
-  objectives         Json @default("[]")
-  techniques         Json?
+  materials          String                    @db.LongText
+  objectives         String                    @db.LongText
+  techniques         String?                   @db.LongText
   isActive           Boolean                   @default(true)
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @default(now())
@@ -1881,6 +1950,7 @@ model TurmaLesson {
   turma              Turma                     @relation(fields: [turmaId], references: [id], onDelete: Cascade)
 
   @@unique([turmaId, lessonNumber])
+  @@index([lessonPlanId], map: "turma_lessons_lessonPlanId_fkey")
   @@map("turma_lessons")
 }
 
@@ -1900,6 +1970,7 @@ model TurmaStudent {
   turma         Turma             @relation(fields: [turmaId], references: [id], onDelete: Cascade)
 
   @@unique([turmaId, studentId])
+  @@index([studentId], map: "turma_students_studentId_fkey")
   @@map("turma_students")
 }
 
@@ -1925,6 +1996,10 @@ model TurmaAttendance {
   turmaStudent       TurmaStudent              @relation(fields: [turmaStudentId], references: [id], onDelete: Cascade)
 
   @@unique([turmaLessonId, studentId])
+  @@index([checkedBy], map: "turma_attendances_checkedBy_fkey")
+  @@index([studentId], map: "turma_attendances_studentId_fkey")
+  @@index([turmaId], map: "turma_attendances_turmaId_fkey")
+  @@index([turmaStudentId], map: "turma_attendances_turmaStudentId_fkey")
   @@map("turma_attendances")
 }
 
@@ -1955,6 +2030,7 @@ model TurmaCourse {
   turma     Turma    @relation(fields: [turmaId], references: [id], onDelete: Cascade)
 
   @@unique([turmaId, courseId])
+  @@index([courseId], map: "turma_courses_courseId_fkey")
   @@map("turma_courses")
 }
 
@@ -1965,7 +2041,7 @@ model PersonalTrainingClass {
   instructorId   String
   title          String
   description    String?
-  focusAreas     Json
+  focusAreas     String                    @db.LongText
   trainingType   PersonalTrainingType      @default(INDIVIDUAL)
   intensity      String                    @default("Intermediário")
   duration       Int                       @default(60)
@@ -1979,6 +2055,9 @@ model PersonalTrainingClass {
   student        Student                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   sessions       PersonalTrainingSession[]
 
+  @@index([instructorId], map: "personal_training_classes_instructorId_fkey")
+  @@index([organizationId], map: "personal_training_classes_organizationId_fkey")
+  @@index([studentId], map: "personal_training_classes_studentId_fkey")
   @@map("personal_training_classes")
 }
 
@@ -1999,7 +2078,7 @@ model PersonalTrainingSession {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @default(now())
   courseId             String?
-  lessonContent        Json?
+  lessonContent        String?               @db.LongText
   lessonPlanId         String?
   nextLessonSuggestion String?
   progressNotes        String?
@@ -2011,16 +2090,21 @@ model PersonalTrainingSession {
   trainingArea         TrainingArea?         @relation("PersonalSessionTrainingArea", fields: [trainingAreaId], references: [id])
   unit                 Unit?                 @relation(fields: [unitId], references: [id])
 
+  @@index([courseId], map: "personal_training_sessions_courseId_fkey")
+  @@index([lessonPlanId], map: "personal_training_sessions_lessonPlanId_fkey")
+  @@index([personalClassId], map: "personal_training_sessions_personalClassId_fkey")
+  @@index([trainingAreaId], map: "personal_training_sessions_trainingAreaId_fkey")
+  @@index([unitId], map: "personal_training_sessions_unitId_fkey")
   @@map("personal_training_sessions")
 }
 
 model PersonalTrainingPreference {
   id                   String   @id @default(uuid())
   studentId            String   @unique
-  preferredDays        Json
-  preferredTimes       Json
-  preferredInstructors Json
-  trainingFocus        Json
+  preferredDays        String   @db.LongText
+  preferredTimes       String   @db.LongText
+  preferredInstructors String   @db.LongText
+  trainingFocus        String   @db.LongText
   intensity            String   @default("Intermediário")
   sessionDuration      Int      @default(60)
   maxSessionsPerWeek   Int      @default(2)
@@ -2060,6 +2144,10 @@ model AgendaItem {
   trainingArea   TrainingArea?    @relation(fields: [trainingAreaId], references: [id])
   unit           Unit?            @relation(fields: [unitId], references: [id])
 
+  @@index([instructorId], map: "agenda_items_instructorId_fkey")
+  @@index([organizationId], map: "agenda_items_organizationId_fkey")
+  @@index([trainingAreaId], map: "agenda_items_trainingAreaId_fkey")
+  @@index([unitId], map: "agenda_items_unitId_fkey")
   @@map("agenda_items")
 }
 
@@ -2114,8 +2202,8 @@ model Lead {
   costPerAcquisition  Decimal?        @db.Decimal(10, 2)
   estimatedLTV        Decimal?        @db.Decimal(10, 2)
   actualRevenue       Decimal?        @db.Decimal(10, 2)
-  tags                Json
-  customFields        Json?
+  tags                String          @db.LongText
+  customFields        String?         @db.LongText
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @default(now())
   activities          LeadActivity[]
@@ -2143,13 +2231,14 @@ model LeadActivity {
   scheduledFor DateTime?
   completedAt  DateTime?
   duration     Int?
-  attachments  Json?
+  attachments  String?          @db.LongText
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @default(now())
   lead         Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
   user         User             @relation("LeadActivities", fields: [userId], references: [id])
 
   @@index([leadId, createdAt])
+  @@index([userId], map: "lead_activities_userId_fkey")
   @@map("lead_activities")
 }
 
@@ -2165,6 +2254,7 @@ model LeadNote {
   user      User     @relation("LeadNotes", fields: [userId], references: [id])
 
   @@index([leadId, createdAt])
+  @@index([userId], map: "lead_notes_userId_fkey")
   @@map("lead_notes")
 }
 
@@ -2179,9 +2269,9 @@ model GoogleAdsCampaign {
   budgetType        String?
   impressions       Int                @default(0)
   clicks            Int                @default(0)
-  cost              Decimal            @default(0) @db.Decimal(10, 2)
+  cost              Decimal            @default(0.00) @db.Decimal(10, 2)
   conversions       Int                @default(0)
-  conversionValue   Decimal            @default(0) @db.Decimal(10, 2)
+  conversionValue   Decimal            @default(0.00) @db.Decimal(10, 2)
   ctr               Decimal?           @db.Decimal(5, 2)
   cpc               Decimal?           @db.Decimal(10, 2)
   conversionRate    Decimal?           @db.Decimal(5, 2)
@@ -2207,9 +2297,9 @@ model GoogleAdsAdGroup {
   adGroupStatus   String
   impressions     Int                @default(0)
   clicks          Int                @default(0)
-  cost            Decimal            @default(0) @db.Decimal(10, 2)
+  cost            Decimal            @default(0.00) @db.Decimal(10, 2)
   conversions     Int                @default(0)
-  conversionValue Decimal            @default(0) @db.Decimal(10, 2)
+  conversionValue Decimal            @default(0.00) @db.Decimal(10, 2)
   lastSyncAt      DateTime           @default(now())
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @default(now())
@@ -2229,9 +2319,9 @@ model GoogleAdsKeyword {
   status          String
   impressions     Int              @default(0)
   clicks          Int              @default(0)
-  cost            Decimal          @default(0) @db.Decimal(10, 2)
+  cost            Decimal          @default(0.00) @db.Decimal(10, 2)
   conversions     Int              @default(0)
-  conversionValue Decimal          @default(0) @db.Decimal(10, 2)
+  conversionValue Decimal          @default(0.00) @db.Decimal(10, 2)
   qualityScore    Int?
   lastSyncAt      DateTime         @default(now())
   createdAt       DateTime         @default(now())
@@ -2310,7 +2400,7 @@ model LessonActivityExecution {
   completed         Boolean            @default(false)
   repetitionsCount  Int                @default(1)
   durationMinutes   Int?
-  intensityApplied  Float              @default(1.0)
+  intensityApplied  Float              @default(1)
   performanceRating Int?
   instructorNotes   String?
   validatedBy       String?
@@ -2326,6 +2416,8 @@ model LessonActivityExecution {
   @@unique([attendanceId, activityId])
   @@index([studentId, activityId])
   @@index([turmaLessonId])
+  @@index([activityId], map: "lesson_activity_executions_activityId_fkey")
+  @@index([validatedBy], map: "lesson_activity_executions_validatedBy_fkey")
   @@map("lesson_activity_executions")
 }
 
@@ -2337,7 +2429,7 @@ model CourseGraduationLevel {
   totalDegrees               Int      @default(4)
   degreePercentageIncrement  Float    @default(20)
   minimumAttendanceRate      Float    @default(80)
-  minimumQualityRating       Float    @default(3.0)
+  minimumQualityRating       Float    @default(3)
   minimumRepetitionsTotal    Int      @default(500)
   minimumMonthsEnrolled      Int      @default(3)
   requiresInstructorApproval Boolean  @default(true)
@@ -2365,6 +2457,7 @@ model StudentDegreeHistory {
   student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, courseId])
+  @@index([courseId], map: "student_degree_history_courseId_fkey")
   @@map("student_degree_history")
 }
 
@@ -2390,35 +2483,35 @@ model StudentGraduation {
   student               Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId, toBelt])
+  @@index([courseId], map: "student_graduations_courseId_fkey")
   @@map("student_graduations")
 }
 
 model AIAgent {
-  id             String              @id @default(uuid())
-  organizationId String
-  name           String
-  description    String?
-  specialization AgentSpecialization
-  model          String              @default("gemini-1.5-flash")
-  systemPrompt   String
-  ragSources     Json
-  mcpTools       Json
-  temperature    Float               @default(0.7)
-  maxTokens      Int                 @default(2048)
-  noCodeMode     Boolean             @default(true)
-  isActive       Boolean             @default(true)
-  autoSaveInsights Boolean           @default(true)
-  isPublic       Boolean             @default(false)
-  averageRating  Float?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @default(now())
-  conversations  AgentConversation[]
-  interactions   AgentInteraction[]  @relation("AgentInteractions")
-  permissions    AgentPermission[]   @relation("AgentPermissions")
-  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  tasks                AgentTask[]         @relation("AgentToTask")
-  insights             AgentInsight[]      @relation("AgentToInsight")
+  id               String              @id @default(uuid())
+  organizationId   String
+  name             String
+  description      String?
+  specialization   AgentSpecialization
+  model            String              @default("gemini-1.5-flash")
+  systemPrompt     String
+  ragSources       String              @db.LongText
+  mcpTools         String              @db.LongText
+  temperature      Float               @default(0.7)
+  maxTokens        Int                 @default(2048)
+  noCodeMode       Boolean             @default(true)
+  isActive         Boolean             @default(true)
+  autoSaveInsights Boolean             @default(true)
+  isPublic         Boolean             @default(false)
+  averageRating    Float?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @default(now())
+  tasks            AgentTask[]         @relation("AgentToTask")
+  conversations    AgentConversation[]
+  insights         AgentInsight[]      @relation("AgentToInsight")
+  interactions     AgentInteraction[]  @relation("AgentInteractions")
+  permissions      AgentPermission[]   @relation("AgentPermissions")
+  organization     Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, isActive])
   @@index([specialization])
@@ -2430,10 +2523,10 @@ model AgentConversation {
   agentId   String
   userId    String?
   studentId String?
-  messages  Json
+  messages  String   @db.LongText
   rating    Int?
   feedback  String?
-  metadata  Json?
+  metadata  String?  @db.LongText
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   agent     AIAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
@@ -2453,8 +2546,8 @@ model AgentInteraction {
   organizationId String
   type           String
   message        String
-  action         Json?
-  metadata       Json?
+  action         String?      @db.LongText
+  metadata       String?      @db.LongText
   isRead         Boolean      @default(false)
   createdAt      DateTime     @default(now())
   agent          AIAgent      @relation("AgentInteractions", fields: [agentId], references: [id], onDelete: Cascade)
@@ -2471,13 +2564,13 @@ model AgentPermission {
   agentId         String
   organizationId  String
   action          String
-  details         Json
+  details         String       @db.LongText
   status          String       @default("PENDING")
   approvedBy      String?
   approvedAt      DateTime?
   deniedReason    String?
   executedAt      DateTime?
-  executionResult Json?
+  executionResult String?      @db.LongText
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   agent           AIAgent      @relation("AgentPermissions", fields: [agentId], references: [id], onDelete: Cascade)
@@ -2488,6 +2581,7 @@ model AgentPermission {
   @@index([agentId])
   @@index([status])
   @@index([createdAt])
+  @@index([approvedBy], map: "agent_permissions_approvedBy_fkey")
   @@map("agent_permissions")
 }
 
@@ -2552,7 +2646,7 @@ model CourseRequirement {
 model BiometricData {
   id               String   @id @default(uuid())
   studentId        String   @unique
-  embedding        Json
+  embedding        String   @db.LongText
   photoUrl         String
   photoBase64      String?  @db.LongText
   qualityScore     Int
@@ -2593,6 +2687,525 @@ model BiometricAttempt {
   @@index([attemptedAt])
   @@index([method])
   @@map("biometric_attempts")
+}
+
+model AgentTask {
+  id               String          @id @default(uuid())
+  organizationId   String
+  agentId          String?
+  createdByUserId  String?
+  assignedToUserId String?
+  title            String
+  description      String
+  category         String
+  actionType       String
+  targetEntity     String?
+  actionPayload    String          @db.LongText
+  reasoning        String?         @db.LongText
+  requiresApproval Boolean         @default(true)
+  autoExecute      Boolean         @default(false)
+  automationLevel  String          @default("MANUAL")
+  approvalStatus   String          @default("PENDING")
+  status           String          @default("PENDING")
+  priority         String          @default("MEDIUM")
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectedReason   String?
+  executorType     String?         @default("AGENT")
+  executorId       String?
+  scheduledFor     DateTime?
+  recurrenceRule   String?
+  maxRetries       Int             @default(3)
+  retryCount       Int             @default(0)
+  lastRetryAt      DateTime?
+  nextRetryAt      DateTime?
+  executedAt       DateTime?
+  executionResult  String?         @db.LongText
+  errorMessage     String?
+  executionLog     String?         @db.LongText
+  dueDate          DateTime?
+  metadata         String?         @db.LongText
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  agent            AIAgent?        @relation("AgentToTask", fields: [agentId], references: [id])
+  approver         User?           @relation("ApprovedTasks", fields: [approvedBy], references: [id])
+  assignedTo       User?           @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
+  createdBy        User?           @relation("CreatedTasks", fields: [createdByUserId], references: [id])
+  executor         User?           @relation("ExecutorTasks", fields: [executorId], references: [id])
+  organization     Organization    @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
+  executions       TaskExecution[] @relation("TaskExecutions")
+
+  @@index([organizationId, approvalStatus])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([executorType, executorId])
+  @@index([scheduledFor])
+  @@index([approvalStatus])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([approvedBy], map: "AgentTask_approvedBy_fkey")
+  @@index([executorId], map: "AgentTask_executorId_fkey")
+}
+
+model TaskExecution {
+  id            String    @id @default(uuid())
+  taskId        String
+  attemptNumber Int       @default(1)
+  executorType  String
+  executorId    String?
+  status        String
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  duration      Int?
+  result        String?   @db.LongText
+  errorMessage  String?
+  errorStack    String?
+  metadata      String?   @db.LongText
+  executor      User?     @relation("TaskExecutions", fields: [executorId], references: [id])
+  task          AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([executorType, executorId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([executorId], map: "task_executions_executorId_fkey")
+  @@map("task_executions")
+}
+
+model AgentInsight {
+  id             String       @id @default(uuid())
+  organizationId String
+  agentId        String
+  executionId    String?
+  type           String
+  category       String?
+  title          String
+  content        String
+  priority       String       @default("MEDIUM")
+  status         String       @default("NEW")
+  isPinned       Boolean      @default(false)
+  isRead         Boolean      @default(false)
+  metadata       String?      @db.LongText
+  relatedEntity  String?
+  relatedId      String?
+  actionTaken    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
+  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([agentId])
+  @@index([type])
+  @@index([category])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_insights")
+}
+
+model LandingPage {
+  id                    String            @id @default(uuid())
+  organizationId        String
+  name                  String
+  slug                  String
+  title                 String
+  description           String?
+  keywords              String            @db.LongText
+  theme                 String?           @db.LongText
+  faviconUrl            String?
+  ogImageUrl            String?
+  htmlContent           String?           @db.Text
+  cssContent            String?           @db.Text
+  jsContent             String?           @db.Text
+  sections              String?           @db.LongText
+  googleAnalyticsId     String?
+  facebookPixelId       String?
+  googleAdsConversionId String?
+  whatsappNumber        String?
+  status                LandingPageStatus @default(DRAFT)
+  publishedAt           DateTime?
+  lastGeneratedAt       DateTime?
+  lastGeneratedBy       String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  forms                 LandingForm[]
+  pageViews             LandingPageView[]
+  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@index([status])
+  @@map("landing_pages")
+}
+
+model LandingForm {
+  id               String      @id @default(uuid())
+  landingPageId    String
+  name             String
+  position         String      @default("hero")
+  fields           String      @db.LongText
+  submitButtonText String      @default("Quero Começar!")
+  successMessage   String      @default("Obrigado! Entraremos em contato em breve.")
+  autoCreateLead   Boolean     @default(true)
+  leadSource       String      @default("LANDING_PAGE")
+  leadTemperature  String      @default("HOT")
+  assignToUserId   String?
+  tags             String      @db.LongText
+  submissions      Int         @default(0)
+  conversions      Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  landingPage      LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@index([landingPageId])
+  @@map("landing_forms")
+}
+
+model LandingPageView {
+  id            String      @id @default(uuid())
+  landingPageId String
+  sessionId     String
+  userAgent     String?
+  ipAddress     String?
+  referrer      String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmContent    String?
+  utmTerm       String?
+  timeOnPage    Int?
+  scrollDepth   Int?
+  visitedAt     DateTime    @default(now())
+  landingPage   LandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@index([landingPageId, visitedAt])
+  @@index([sessionId])
+  @@map("landing_page_views")
+}
+
+/// Sessões de autenticação do Portal do Aluno
+/// Suporta Magic Link (código 6 dígitos via WhatsApp) e JWT
+model StudentSession {
+  id          String    @id @default(uuid())
+  studentId   String
+  token       String    @unique
+  magicCode   String?
+  codeExpires DateTime?
+  userAgent   String?
+  ipAddress   String?
+  deviceType  String?
+  expiresAt   DateTime
+  isActive    Boolean   @default(true)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime  @default(now())
+  student     Student   @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([token])
+  @@index([magicCode])
+  @@index([expiresAt])
+  @@map("student_sessions")
+}
+
+/// Notificações do Portal do Aluno
+/// Tipos: PAYMENT, CLASS, ACHIEVEMENT, SYSTEM, REMINDER
+model StudentNotification {
+  id        String                  @id @default(uuid())
+  studentId String
+  type      StudentNotificationType
+  title     String
+  message   String
+  link      String?
+  icon      String?
+  read      Boolean                 @default(false)
+  readAt    DateTime?
+  dismissed Boolean                 @default(false)
+  priority  NotificationPriority    @default(NORMAL)
+  metadata  String?                 @db.LongText
+  expiresAt DateTime?
+  createdAt DateTime                @default(now())
+  student   Student                 @relation("StudentNotifications", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, read])
+  @@index([studentId, type])
+  @@index([createdAt])
+  @@map("student_notifications")
+}
+
+model Permission {
+  id              String                   @id @default(uuid())
+  module          String
+  action          String
+  description     String?
+  createdAt       DateTime                 @default(now())
+  rolePermissions RolePermission[]
+  userOverrides   UserPermissionOverride[]
+
+  @@unique([module, action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String          @id @default(uuid())
+  role         UserRole
+  permissionId String
+  scope        PermissionScope @default(ALL)
+  createdAt    DateTime        @default(now())
+  permission   Permission      @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([permissionId], map: "role_permissions_permissionId_fkey")
+  @@map("role_permissions")
+}
+
+model UserPermissionOverride {
+  id           String           @id @default(uuid())
+  userId       String
+  permissionId String
+  granted      Boolean
+  scope        PermissionScope?
+  reason       String?
+  createdAt    DateTime         @default(now())
+  createdBy    String?
+  permission   Permission       @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionId])
+  @@index([permissionId], map: "user_permission_overrides_permissionId_fkey")
+  @@map("user_permission_overrides")
+}
+
+model StudentTechniqueProgress {
+  id          String    @id @default(uuid())
+  studentId   String
+  techniqueId String
+  completed   Boolean   @default(false)
+  rating      Int?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  technique   Technique @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, techniqueId])
+  @@index([techniqueId], map: "student_technique_progress_techniqueId_fkey")
+  @@map("student_technique_progress")
+}
+
+model Job {
+  id               String           @id @default(uuid())
+  organizationId   String
+  title            String
+  description      String
+  requirements     String?
+  responsibilities String?
+  benefits         String?
+  type             JobType          @default(FULL_TIME)
+  level            JobLevel         @default(MID)
+  location         String?
+  remoteOption     Boolean          @default(false)
+  salary           String?
+  unitId           String?
+  department       String?
+  vacancies        Int              @default(1)
+  status           JobStatus        @default(DRAFT)
+  publishedAt      DateTime?
+  closedAt         DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdById      String?
+  applications     JobApplication[]
+  createdBy        User?            @relation("JobCreator", fields: [createdById], references: [id])
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  unit             Unit?            @relation(fields: [unitId], references: [id])
+
+  @@index([createdById], map: "jobs_createdById_fkey")
+  @@index([organizationId], map: "jobs_organizationId_fkey")
+  @@index([unitId], map: "jobs_unitId_fkey")
+  @@map("jobs")
+}
+
+model JobApplication {
+  id            String            @id @default(uuid())
+  jobId         String
+  userId        String
+  studentId     String?
+  instructorId  String?
+  coverLetter   String?
+  resume        String?
+  status        ApplicationStatus @default(PENDING)
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+  interviewDate DateTime?
+  instructor    Instructor?       @relation(fields: [instructorId], references: [id])
+  job           Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reviewedBy    User?             @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
+  student       Student?          @relation(fields: [studentId], references: [id])
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+  @@index([instructorId], map: "job_applications_instructorId_fkey")
+  @@index([reviewedById], map: "job_applications_reviewedById_fkey")
+  @@index([studentId], map: "job_applications_studentId_fkey")
+  @@index([userId], map: "job_applications_userId_fkey")
+  @@map("job_applications")
+}
+
+model DeployArtifact {
+  id              String          @id @default(uuid())
+  sourceVersion   String
+  buildTimestamp  DateTime        @default(now())
+  aliasesResolved Boolean         @default(true)
+  checksum        String
+  contents        String
+  location        String
+  sizeBytes       Int
+  createdAt       DateTime        @default(now())
+  sessions        DeploySession[]
+
+  @@map("deploy_artifacts")
+}
+
+model DeploySession {
+  id                String              @id @default(uuid())
+  artifactId        String
+  operator          String
+  targetEnvironment String
+  status            DeploySessionStatus @default(PENDING)
+  notes             String?
+  startedAt         DateTime            @default(now())
+  completedAt       DateTime?
+  healthCheck       HealthCheck?
+  logs              DeployLog[]
+  artifact          DeployArtifact      @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  @@index([artifactId], map: "deploy_sessions_artifactId_fkey")
+  @@map("deploy_sessions")
+}
+
+model HealthCheck {
+  id                     String            @id @default(uuid())
+  sessionId              String            @unique
+  endpoint               String
+  startedAt              DateTime          @default(now())
+  completedAt            DateTime          @default(now())
+  httpStatus             Int
+  latencyMs              Int
+  stabilityWindowMinutes Int               @default(30)
+  restartsObserved       Int               @default(0)
+  result                 HealthCheckResult
+  logExcerpt             String?
+  session                DeploySession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("deploy_health_checks")
+}
+
+model DeployLog {
+  id        String         @id @default(uuid())
+  sessionId String
+  timestamp DateTime       @default(now())
+  level     DeployLogLevel @default(INFO)
+  message   String
+  data      String?        @db.LongText
+  session   DeploySession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId], map: "deploy_logs_sessionId_fkey")
+  @@map("deploy_logs")
+}
+
+model PreEnrollment {
+  id                   String       @id @default(uuid())
+  firstName            String
+  lastName             String
+  cpf                  String       @unique
+  phone                String
+  email                String       @unique
+  birthDate            DateTime?
+  photoUrl             String?      @db.Text
+  planId               String?
+  courseId             String?
+  customPrice          Decimal?     @db.Decimal(10, 2)
+  financialResponsible String?      @db.LongText
+  source               String
+  status               String       @default("PENDING")
+  notes                String?      @db.Text
+  convertedAt          DateTime?
+  studentId            String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  course               Course?      @relation(fields: [courseId], references: [id])
+  plan                 BillingPlan? @relation(fields: [planId], references: [id])
+  student              Student?     @relation(fields: [studentId], references: [id])
+
+  @@index([courseId], map: "pre_enrollments_courseId_fkey")
+  @@index([planId], map: "pre_enrollments_planId_fkey")
+  @@index([studentId], map: "pre_enrollments_studentId_fkey")
+  @@map("pre_enrollments")
+}
+
+model EnrollmentLink {
+  id             String       @id @default(uuid())
+  organizationId String
+  token          String       @unique
+  planId         String
+  courseId       String?
+  customPrice    Decimal?     @db.Decimal(10, 2)
+  expiresAt      DateTime
+  isActive       Boolean      @default(true)
+  usageCount     Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  course         Course?      @relation(fields: [courseId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan           BillingPlan  @relation(fields: [planId], references: [id])
+
+  @@index([courseId], map: "enrollment_links_courseId_fkey")
+  @@index([organizationId], map: "enrollment_links_organizationId_fkey")
+  @@index([planId], map: "enrollment_links_planId_fkey")
+  @@map("enrollment_links")
+}
+
+model Broadcast {
+  id             String          @id @default(uuid())
+  organizationId String
+  title          String
+  message        String          @db.Text
+  segment        String
+  channels       String          @db.LongText
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  status         BroadcastStatus @default(DRAFT)
+  stats          String?         @db.LongText
+  authorId       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  author         User?           @relation(fields: [authorId], references: [id])
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([authorId], map: "broadcasts_authorId_fkey")
+  @@index([organizationId], map: "broadcasts_organizationId_fkey")
+  @@map("broadcasts")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DiscountTrigger {
+  MANUAL
+  PAYMENT_METHOD
+  COUPON
+  CAMPAIGN
 }
 
 enum CourseCategory {
@@ -2675,14 +3288,6 @@ enum PhysicalCondition {
   AVANCADO
 }
 
-enum SpecialNeed {
-  TEA
-  TDAH
-  MOBILIDADE_REDUZIDA
-  AUDITIVA
-  VISUAL
-}
-
 enum EvaluationStatus {
   AUTONOMIA
   EM_DESENVOLVIMENTO
@@ -2747,13 +3352,6 @@ enum EvaluationType {
   KNOWLEDGE
 }
 
-enum EvaluationCategory {
-  TECHNICAL
-  PHYSICAL
-  MENTAL
-  BEHAVIORAL
-}
-
 enum AchievementCategory {
   ATTENDANCE
   TECHNIQUE
@@ -2792,13 +3390,6 @@ enum RecurringType {
   WEEKLY
   MONTHLY
   QUARTERLY
-}
-
-enum CertificateType {
-  COMPLETION
-  ACHIEVEMENT
-  PARTICIPATION
-  GRADING
 }
 
 enum BillingType {
@@ -2935,16 +3526,6 @@ enum TurmaStatus {
   RESCHEDULED
 }
 
-enum WeekDay {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
-}
-
 enum PersonalTrainingType {
   INDIVIDUAL
   SEMI_PRIVATE
@@ -3028,354 +3609,26 @@ enum AgentSpecialization {
   curriculum
 }
 
-model AgentTask {
-  id                String    @id @default(uuid())
-  organizationId    String
-  agentId           String?
-  createdByUserId   String?
-  assignedToUserId  String?
-  
-  // Task Definition
-  title             String
-  description       String
-  category          String // DATABASE_CHANGE, WHATSAPP_MESSAGE, EMAIL, SMS, MARKETING, BILLING, ENROLLMENT
-  actionType        String // UPDATE_RECORD, SEND_MESSAGE, CREATE_RECORD, DELETE_RECORD
-  targetEntity      String? // Student, Course, Payment, etc
-  actionPayload     Json // Data needed to execute the action
-  reasoning         Json? // { insights: [], expectedImpact: string, risks: [], dataSupport: {} }
-  
-  // Approval Workflow
-  requiresApproval  Boolean   @default(true)
-  autoExecute       Boolean   @default(false)
-  automationLevel   String    @default("MANUAL") // MANUAL, SEMI_AUTO, AUTO_LOW_RISK, FULL_AUTO
-  approvalStatus    String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED
-  status            String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED, FAILED
-  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  approvedBy        String?
-  approvedAt        DateTime?
-  rejectedReason    String?
-  
-  //  EXECUTION & ORCHESTRATION
-  executorType      String?   @default("AGENT") // AGENT (IA executa), USER (humano executa), SYSTEM (auto)
-  executorId        String? // ID do agente IA ou usuÃƒÂ¡rio que vai executar
-  scheduledFor      DateTime? // Data/hora agendada para execuÃƒÂ§ÃƒÂ£o futura
-  recurrenceRule    String? // Regra cron (ex: "0 9 * * 1" = toda segunda ÃƒÂ s 9h)
-  maxRetries        Int       @default(3) // MÃƒÂ¡ximo de tentativas em caso de falha
-  retryCount        Int       @default(0) // Tentativas jÃƒÂ¡ realizadas
-  lastRetryAt       DateTime? // Data da ÃƒÂºltima tentativa
-  nextRetryAt       DateTime? // PrÃƒÂ³xima tentativa agendada
-  
-  // Execution Results
-  executedAt        DateTime?
-  executionResult   Json? // Result after execution
-  errorMessage      String?
-  executionLog      Json? // Array de logs de execuÃƒÂ§ÃƒÂ£o: [{ timestamp, action, result, error }]
-  
-  // Metadata
-  dueDate           DateTime?
-  metadata          Json? // Additional context
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relations
-  agent             AIAgent?  @relation("AgentToTask", fields: [agentId], references: [id], onDelete: SetNull)
-  organization      Organization @relation("OrgToAgentTask", fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy         User?     @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  assignedTo        User?     @relation("AssignedTasks", fields: [assignedToUserId], references: [id], onDelete: SetNull)
-  approver          User?     @relation("ApprovedTasks", fields: [approvedBy], references: [id], onDelete: SetNull)
-  executor          User?     @relation("ExecutorTasks", fields: [executorId], references: [id], onDelete: SetNull)
-  executions        TaskExecution[] @relation("TaskExecutions")
-
-  @@index([organizationId, approvalStatus])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([createdByUserId])
-  @@index([assignedToUserId])
-  @@index([executorType, executorId])
-  @@index([scheduledFor])
-  @@index([approvalStatus])
-  @@index([status])
-  @@index([priority])
-  @@index([createdAt])
-}
-
-model TaskExecution {
-  id              String    @id @default(uuid())
-  taskId          String
-  attemptNumber   Int       @default(1)
-  executorType    String // AGENT, USER, SYSTEM
-  executorId      String?
-  status          String // STARTED, COMPLETED, FAILED, TIMEOUT
-  startedAt       DateTime  @default(now())
-  completedAt     DateTime?
-  duration        Int? // DuraÃƒÂ§ÃƒÂ£o em milissegundos
-  result          Json? // Resultado da execuÃƒÂ§ÃƒÂ£o
-  errorMessage    String?
-  errorStack      String?
-  metadata        Json? // Logs adicionais
-  
-  task            AgentTask @relation("TaskExecutions", fields: [taskId], references: [id], onDelete: Cascade)
-  executor        User?     @relation("TaskExecutions", fields: [executorId], references: [id], onDelete: SetNull)
-  
-  @@index([taskId])
-  @@index([executorType, executorId])
-  @@index([status])
-  @@index([startedAt])
-  @@map("task_executions")
-}
-
-model AgentInsight {
-  id             String       @id @default(uuid())
-  organizationId String
-  agentId        String
-  executionId    String? // ID da execuÃƒÂ§ÃƒÂ£o que gerou o insight
-  type           String // INSIGHT, NOTIFICATION, RECOMMENDATION
-  category       String? // GROWTH, ENGAGEMENT, FINANCIAL, OPERATIONAL, RISK
-  title          String
-  content        String
-  priority       String       @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status         String       @default("NEW") // NEW, PINNED, ARCHIVED, DISMISSED
-  isPinned       Boolean      @default(false)
-  isRead         Boolean      @default(false)
-  metadata       Json? // Additional context, metrics, etc
-  relatedEntity  String? // Student, Course, Payment, etc
-  relatedId      String? // ID of related entity
-  actionTaken    String? // What action was taken (if any)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  agent          AIAgent      @relation("AgentToInsight", fields: [agentId], references: [id], onDelete: Cascade)
-  organization   Organization @relation("OrgToInsight", fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId, type])
-  @@index([organizationId, status])
-  @@index([agentId])
-  @@index([type])
-  @@index([category])
-  @@index([priority])
-  @@index([status])
-  @@index([createdAt])
-  @@map("agent_insights")
-}
-
-// ============================================================================
-// LANDING PAGE BUILDER - Marketing Module
-// ============================================================================
-
-model LandingPage {
-  id              String   @id @default(uuid())
-  organizationId  String
-  
-  // Identificação
-  name            String              // "Site SmartDefence Principal"
-  slug            String              // "smartdefence" (único por org)
-  
-  // SEO
-  title           String              // <title> tag
-  description     String?             // Meta description
-  keywords        Json @default("[]")
-  
-  // Configurações visuais
-  theme           Json?               // { primaryColor, secondaryColor, font, logo }
-  faviconUrl      String?
-  ogImageUrl      String?             // Open Graph image
-  
-  // Conteúdo - Gerado pelo Agente de Marketing
-  htmlContent     String?             @db.Text  // HTML completo da página
-  cssContent      String?             @db.Text  // CSS customizado
-  jsContent       String?             @db.Text  // JS customizado (analytics)
-  
-  // Estrutura de seções (para regeneração)
-  sections        Json?               // Array de seções configuradas
-  
-  // Integrações
-  googleAnalyticsId   String?
-  facebookPixelId     String?
-  googleAdsConversionId String?
-  whatsappNumber      String?
-  
-  // Status
-  status          LandingPageStatus   @default(DRAFT)
-  publishedAt     DateTime?
-  lastGeneratedAt DateTime?           // Última vez que IA gerou conteúdo
-  lastGeneratedBy String?             // ID do agente que gerou
-  
-  // Timestamps
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  
-  // Relations
-  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  forms           LandingForm[]
-  pageViews       LandingPageView[]
-  
-  @@unique([organizationId, slug])
-  @@index([organizationId, status])
-  @@index([status])
-  @@map("landing_pages")
-}
-
 enum LandingPageStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
 }
 
-model LandingForm {
-  id              String   @id @default(uuid())
-  landingPageId   String
-  
-  // Identificação
-  name            String              // "Formulário Principal"
-  position        String              @default("hero") // hero, footer, popup
-  
-  // Configuração
-  fields          Json                // Array de campos: [{name, type, required, placeholder}]
-  submitButtonText String            @default("Quero Começar!")
-  successMessage  String             @default("Obrigado! Entraremos em contato em breve.")
-  
-  // Integração com CRM
-  autoCreateLead  Boolean            @default(true)
-  leadSource      String             @default("LANDING_PAGE")
-  leadTemperature String             @default("HOT") // COLD, WARM, HOT
-  assignToUserId  String?            // Auto-assign a vendedor
-  tags            Json @default("[]")
-  
-  // Stats
-  submissions     Int                @default(0)
-  conversions     Int                @default(0)
-  
-  // Timestamps
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  
-  // Relations
-  landingPage     LandingPage        @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
-  
-  @@index([landingPageId])
-  @@map("landing_forms")
-}
-
-model LandingPageView {
-  id              String   @id @default(uuid())
-  landingPageId   String
-  
-  // Dados da visita
-  sessionId       String
-  userAgent       String?
-  ipAddress       String?
-  referrer        String?
-  
-  // UTM Tracking
-  utmSource       String?
-  utmMedium       String?
-  utmCampaign     String?
-  utmContent      String?
-  utmTerm         String?
-  
-  // Comportamento
-  timeOnPage      Int?                // Segundos
-  scrollDepth     Int?                // Porcentagem
-  
-  // Timestamps
-  visitedAt       DateTime            @default(now())
-  
-  // Relations
-  landingPage     LandingPage         @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
-  
-  @@index([landingPageId, visitedAt])
-  @@index([sessionId])
-  @@map("landing_page_views")
-}
-
-// ============================================================================
-// PORTAL DO ALUNO - Student Self-Service Module
-// ============================================================================
-
-/// Sessões de autenticação do Portal do Aluno
-/// Suporta Magic Link (código 6 dígitos via WhatsApp) e JWT
-model StudentSession {
-  id          String    @id @default(uuid())
-  studentId   String
-  
-  // Tokens
-  token       String    @unique          // JWT token
-  magicCode   String?                    // Código 6 dígitos para Magic Link
-  codeExpires DateTime?                  // Expiração do código (5 min)
-  
-  // Device info
-  userAgent   String?
-  ipAddress   String?
-  deviceType  String?                    // mobile, desktop, tablet
-  
-  // Status
-  expiresAt   DateTime                   // Expiração do JWT (7 dias)
-  isActive    Boolean   @default(true)
-  revokedAt   DateTime?
-  
-  // Timestamps
-  createdAt   DateTime  @default(now())
-  lastUsedAt  DateTime  @default(now())
-  
-  // Relations
-  student     Student   @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
-  
-  @@index([studentId])
-  @@index([token])
-  @@index([magicCode])
-  @@index([expiresAt])
-  @@map("student_sessions")
-}
-
-/// Notificações do Portal do Aluno
-/// Tipos: PAYMENT, CLASS, ACHIEVEMENT, SYSTEM, REMINDER
-model StudentNotification {
-  id          String    @id @default(uuid())
-  studentId   String
-  
-  // Conteúdo
-  type        StudentNotificationType
-  title       String
-  message     String
-  link        String?                    // Deep link para ação
-  icon        String?                    // Ícone customizado
-  
-  // Status
-  read        Boolean   @default(false)
-  readAt      DateTime?
-  dismissed   Boolean   @default(false)
-  
-  // Prioridade
-  priority    NotificationPriority @default(NORMAL)
-  
-  // Metadados
-  metadata    Json?                      // Dados adicionais (paymentId, classId, etc)
-  expiresAt   DateTime?                  // Notificações temporárias
-  
-  // Timestamps
-  createdAt   DateTime  @default(now())
-  
-  // Relations
-  student     Student   @relation("StudentNotifications", fields: [studentId], references: [id], onDelete: Cascade)
-  
-  @@index([studentId, read])
-  @@index([studentId, type])
-  @@index([createdAt])
-  @@map("student_notifications")
-}
-
 enum StudentNotificationType {
-  PAYMENT_DUE           // Pagamento próximo do vencimento
-  PAYMENT_OVERDUE       // Pagamento vencido
-  PAYMENT_CONFIRMED     // Pagamento confirmado
-  CLASS_REMINDER        // Lembrete de aula
-  CLASS_CANCELLED       // Aula cancelada
-  CLASS_RESCHEDULED     // Aula reagendada
-  ACHIEVEMENT_UNLOCKED  // Conquista desbloqueada
-  LEVEL_UP              // Subiu de nível
-  BELT_PROMOTION        // Promovido de faixa
-  SYSTEM                // Mensagem do sistema
-  WELCOME               // Boas-vindas
-  REMINDER              // Lembrete genérico
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  PAYMENT_CONFIRMED
+  CLASS_REMINDER
+  CLASS_CANCELLED
+  CLASS_RESCHEDULED
+  ACHIEVEMENT_UNLOCKED
+  LEVEL_UP
+  BELT_PROMOTION
+  SYSTEM
+  MARKETING
+  WELCOME
+  REMINDER
 }
 
 enum NotificationPriority {
@@ -3385,137 +3638,11 @@ enum NotificationPriority {
   URGENT
 }
 
-// ============================================
-// PERMISSIONS SYSTEM
-// ============================================
-
-model Permission {
-  id          String   @id @default(uuid())
-  module      String   // 'students', 'turmas', 'courses', etc.
-  action      String   // 'list', 'view', 'create', 'edit', 'delete'
-  description String?
-  createdAt   DateTime @default(now())
-  
-  rolePermissions      RolePermission[]
-  userOverrides        UserPermissionOverride[]
-  
-  @@unique([module, action])
-  @@map("permissions")
-}
-
-model RolePermission {
-  id           String     @id @default(uuid())
-  role         UserRole
-  permissionId String
-  scope        PermissionScope @default(ALL) // all, own, team, none
-  createdAt    DateTime   @default(now())
-  
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  @@unique([role, permissionId])
-  @@map("role_permissions")
-}
-
-model UserPermissionOverride {
-  id           String     @id @default(uuid())
-  userId       String
-  permissionId String
-  granted      Boolean    // true = permite, false = nega
-  scope        PermissionScope? // null = usa scope default do role
-  reason       String?    // motivo da exceção
-  createdAt    DateTime   @default(now())
-  createdBy    String?    // quem criou a exceção
-  
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, permissionId])
-  @@map("user_permission_overrides")
-}
-
 enum PermissionScope {
-  ALL    // Acesso a todos os dados
-  OWN    // Apenas próprios dados
-  TEAM   // Dados do time/turmas relacionadas
-  NONE   // Sem acesso
-}
-
-
-model StudentTechniqueProgress {
-  id          String    @id @default(uuid())
-  studentId   String
-  techniqueId String
-  
-  completed   Boolean   @default(false)
-  rating      Int?      // 1-5 auto-avalia��o
-  completedAt DateTime?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  technique   Technique @relation(fields: [techniqueId], references: [id], onDelete: Cascade)
-  
-  @@unique([studentId, techniqueId])
-  @@map("student_technique_progress")
-}
-
-
-model Job {
-  id               String           @id @default(uuid())
-  organizationId   String
-  title            String
-  description      String
-  requirements     String?
-  responsibilities String?
-  benefits         String?
-  type             JobType          @default(FULL_TIME)
-  level            JobLevel         @default(MID)
-  location         String?
-  remoteOption     Boolean          @default(false)
-  salary           String?
-  unitId           String?
-  department       String?
-  vacancies        Int              @default(1)
-  status           JobStatus        @default(DRAFT)
-  publishedAt      DateTime?
-  closedAt         DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  createdById      String?
-
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  unit             Unit?            @relation(fields: [unitId], references: [id])
-  createdBy        User?            @relation("JobCreator", fields: [createdById], references: [id])
-  applications     JobApplication[]
-
-  @@map("jobs")
-}
-
-model JobApplication {
-  id            String            @id @default(uuid())
-  jobId         String
-  userId        String
-  studentId     String?
-  instructorId  String?
-  coverLetter   String?
-  resume        String?
-  status        ApplicationStatus @default(PENDING)
-  appliedAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  reviewedById  String?
-  reviewedAt    DateTime?
-  reviewNotes   String?
-  interviewDate DateTime?
-
-  job           Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  student       Student?          @relation(fields: [studentId], references: [id])
-  instructor    Instructor?       @relation(fields: [instructorId], references: [id])
-  reviewedBy    User?             @relation("ApplicationReviewer", fields: [reviewedById], references: [id])
-
-  @@unique([jobId, userId])
-  @@map("job_applications")
+  ALL
+  OWN
+  TEAM
+  NONE
 }
 
 enum JobType {
@@ -3555,74 +3682,6 @@ enum ApplicationStatus {
   HIRED
 }
 
-// ============================================
-// DEPLOY OPERATIONS
-// ============================================
-
-model DeployArtifact {
-  id             String   @id @default(uuid())
-  sourceVersion  String
-  buildTimestamp DateTime @default(now())
-  aliasesResolved Boolean @default(true)
-  checksum       String
-  contents       String
-  location       String
-  sizeBytes      Int
-  createdAt      DateTime @default(now())
-
-  sessions       DeploySession[]
-
-  @@map("deploy_artifacts")
-}
-
-model DeploySession {
-  id                String               @id @default(uuid())
-  artifactId        String
-  operator          String
-  targetEnvironment String
-  status            DeploySessionStatus  @default(PENDING)
-  notes             String?
-  startedAt         DateTime             @default(now())
-  completedAt       DateTime?
-
-  artifact          DeployArtifact       @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  healthCheck       HealthCheck?
-  logs              DeployLog[]
-
-  @@map("deploy_sessions")
-}
-
-model HealthCheck {
-  id                     String             @id @default(uuid())
-  sessionId              String             @unique
-  endpoint               String
-  startedAt              DateTime           @default(now())
-  completedAt            DateTime           @default(now())
-  httpStatus             Int
-  latencyMs              Int
-  stabilityWindowMinutes Int                @default(30)
-  restartsObserved       Int                @default(0)
-  result                 HealthCheckResult
-  logExcerpt             String?
-
-  session                DeploySession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@map("deploy_health_checks")
-}
-
-model DeployLog {
-  id        String          @id @default(uuid())
-  sessionId String
-  timestamp DateTime        @default(now())
-  level     DeployLogLevel  @default(INFO)
-  message   String
-  data      Json?
-
-  session   DeploySession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@map("deploy_logs")
-}
-
 enum DeploySessionStatus {
   PENDING
   IN_PROGRESS
@@ -3642,56 +3701,10 @@ enum DeployLogLevel {
   ERROR
 }
 
-
-// Pré-matrículas (Self-service)
-model PreEnrollment {
-  id                    String    @id @default(uuid())
-  firstName             String
-  lastName              String
-  cpf                   String
-  phone                 String
-  email                 String
-  birthDate             DateTime?
-  photoUrl              String?   @db.Text
-  planId                String?
-  courseId              String?
-  customPrice           Decimal?  @db.Decimal(10, 2)
-  financialResponsible  Json?
-  source                String    // 'public_link', 'website', 'landing_page'
-  status                String    @default("PENDING") // PENDING, CONVERTED, REJECTED
-  notes                 String?   @db.Text
-  convertedAt           DateTime?
-  studentId             String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  
-  plan                  BillingPlan? @relation(fields: [planId], references: [id])
-  course                Course?      @relation(fields: [courseId], references: [id])
-  student               Student?     @relation(fields: [studentId], references: [id])
-  
-  @@unique([email])
-  @@unique([cpf])
-  @@map("pre_enrollments")
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
-
-// Links de matrícula gerados
-model EnrollmentLink {
-  id              String    @id @default(uuid())
-  organizationId  String
-  token           String    @unique
-  planId          String
-  courseId        String?
-  customPrice     Decimal?  @db.Decimal(10, 2)
-  expiresAt       DateTime
-  isActive        Boolean   @default(true)
-  usageCount      Int       @default(0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  plan            BillingPlan  @relation(fields: [planId], references: [id])
-  course          Course?      @relation(fields: [courseId], references: [id])
-  
-  @@map("enrollment_links")
-}
-

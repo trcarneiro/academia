@@ -2,15 +2,22 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
+import { authenticateToken, allRoles } from '@/middlewares/auth';
 import StudentCourseService from '@/services/studentCourseService';
 
 /**
  * Helper: Extract organizationId from request or use fallback
  */
-function getOrganizationId(request: any): string {
-  return request.user?.organizationId || 
-         request.headers['x-organization-id'] as string ||
-         'ff5ee00e-d8a3-4291-9428-d28b852fb472'; // Smart Defence Demo (fallback)
+async function getOrganizationId(request: any): Promise<string> {
+  const userOrgId = request.user?.organizationId;
+  const headerOrgId = (request.headers['x-organization-id'] as string);
+
+  if (userOrgId) return userOrgId;
+  if (headerOrgId) return headerOrgId;
+
+  // Fallback: First organization found in DB
+  const org = await prisma.organization.findFirst();
+  return org?.id || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
 }
 
 /**
@@ -22,20 +29,20 @@ async function deactivateOtherSubscriptions(studentId: string, exceptSubscriptio
     studentId,
     status: 'ACTIVE'
   };
-  
+
   if (exceptSubscriptionId) {
     whereClause.id = { not: exceptSubscriptionId };
   }
-  
+
   const result = await prisma.studentSubscription.updateMany({
     where: whereClause,
     data: { status: 'INACTIVE', isActive: false }
   });
-  
+
   if (result.count > 0) {
     console.log(`⚠️ ${result.count} assinatura(s) anterior(es) desativada(s) automaticamente para aluno ${studentId}`);
   }
-  
+
   return result.count;
 }
 
@@ -43,12 +50,14 @@ async function deactivateOtherSubscriptions(studentId: string, exceptSubscriptio
  * 📅 Subscriptions Routes - API de Assinaturas dos Alunos
  */
 export default async function subscriptionsRoutes(fastify: FastifyInstance) {
-  
+
   // GET /api/subscriptions - Listar todas as assinaturas ativas
-  fastify.get('/', async (request, reply) => {
+  fastify.get('/', {
+    preHandler: [authenticateToken, allRoles]
+  }, async (request, reply) => {
     try {
-      const organizationId = getOrganizationId(request);
-      
+      const organizationId = await getOrganizationId(request);
+
       const subscriptions = await prisma.studentSubscription.findMany({
         where: {
           organizationId,
@@ -78,9 +87,9 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           createdAt: 'desc'
         }
       });
-      
+
       return ResponseHelper.success(reply, subscriptions);
-      
+
     } catch (error) {
       console.error('Erro ao buscar assinaturas:', error);
       return ResponseHelper.error(reply, error);
@@ -88,11 +97,13 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   });
 
   // GET /api/subscriptions/:id - Buscar assinatura específica
-  fastify.get('/:id', async (request, reply) => {
+  fastify.get('/:id', {
+    preHandler: [authenticateToken, allRoles]
+  }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = getOrganizationId(request);
-      
+      const organizationId = await getOrganizationId(request);
+
       const subscription = await prisma.studentSubscription.findFirst({
         where: {
           id,
@@ -122,13 +133,13 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           }
         }
       });
-      
+
       if (!subscription) {
         return ResponseHelper.notFound(reply, 'Assinatura não encontrada');
       }
-      
+
       return ResponseHelper.success(reply, subscription);
-      
+
     } catch (error) {
       console.error('Erro ao buscar assinatura:', error);
       return ResponseHelper.error(reply, error);
@@ -137,6 +148,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
 
   // POST /api/subscriptions - Criar nova assinatura
   fastify.post('/', {
+    // preHandler: [authenticateToken, allRoles],
     schema: {
       description: 'Create new subscription for student',
       tags: ['Subscriptions'],
@@ -153,39 +165,39 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
     }
   }, async (request, reply) => {
     try {
-      const { studentId, planId, startDate, status = 'ACTIVE' } = request.body as { 
-        studentId: string; 
+      const { studentId, planId, startDate, status = 'ACTIVE' } = request.body as {
+        studentId: string;
         planId: string;
         startDate?: string;
         status?: string;
       };
       const organizationId = getOrganizationId(request);
-      
+
       console.log(`📝 POST /api/subscriptions - studentId: ${studentId}, planId: ${planId}`);
-      
+
       // Verificar se aluno existe
       const student = await prisma.student.findFirst({
         where: { id: studentId, organizationId }
       });
-      
+
       if (!student) {
         return ResponseHelper.notFound(reply, 'Aluno não encontrado');
       }
-      
+
       // Verificar se plano existe
       const plan = await prisma.billingPlan.findFirst({
         where: { id: planId, organizationId, isActive: true }
       });
-      
+
       if (!plan) {
         return ResponseHelper.notFound(reply, 'Plano não encontrado');
       }
-      
+
       // Desativar assinaturas ativas anteriores (cada aluno só pode ter UMA ativa)
       if (status === 'ACTIVE') {
         await deactivateOtherSubscriptions(studentId);
       }
-      
+
       // Criar assinatura
       const subscription = await prisma.studentSubscription.create({
         data: {
@@ -218,7 +230,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           }
         }
       });
-      
+
       // Ativar o aluno se a assinatura for ACTIVE
       if (status === 'ACTIVE') {
         await prisma.student.update({
@@ -236,10 +248,10 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           // Non-blocking error
         }
       }
-      
+
       console.log(`✅ Assinatura criada: ${subscription.id}`);
       return ResponseHelper.success(reply, subscription, 'Assinatura criada com sucesso');
-      
+
     } catch (error) {
       console.error('❌ Erro ao criar assinatura:', error);
       return ResponseHelper.error(reply, error);
@@ -247,23 +259,25 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   });
 
   // PATCH /api/subscriptions/:id - Editar assinatura
-  fastify.patch('/:id', async (request, reply) => {
+  fastify.patch('/:id', {
+    preHandler: [authenticateToken, allRoles]
+  }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
       const { currentPrice, startDate, status } = request.body as { currentPrice?: number; startDate?: string; status?: string };
-      const organizationId = getOrganizationId(request);
-      
+      const organizationId = await getOrganizationId(request);
+
       // Buscar assinatura
       const subscription = await prisma.studentSubscription.findFirst({ where: { id, organizationId } });
       if (!subscription) {
         return ResponseHelper.notFound(reply, 'Assinatura não encontrada');
       }
-      
+
       // Se for ativar, desativar outras assinaturas ativas do mesmo aluno
       if (status === 'ACTIVE') {
         await deactivateOtherSubscriptions(subscription.studentId, id);
       }
-      
+
       // Atualizar assinatura
       const updated = await prisma.studentSubscription.update({
         where: { id },
@@ -273,7 +287,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           status: status || subscription.status
         }
       });
-      
+
       return ResponseHelper.success(reply, updated, 'Assinatura atualizada');
     } catch (error) {
       return ResponseHelper.error(reply, error);
@@ -282,6 +296,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
 
   // DELETE /api/subscriptions/:id - Deletar assinatura
   fastify.delete('/:id', {
+    // preHandler: [authenticateToken, allRoles],
     schema: {
       description: 'Delete subscription',
       tags: ['Subscriptions'],
@@ -296,10 +311,10 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = getOrganizationId(request);
-      
+      const organizationId = await getOrganizationId(request);
+
       console.log(`🗑️ DELETE /api/subscriptions/${id} - organizationId: ${organizationId}`);
-      
+
       // Buscar assinatura
       const subscription = await prisma.studentSubscription.findFirst({
         where: {
@@ -307,39 +322,39 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
           organizationId
         }
       });
-      
+
       console.log(`   subscription found:`, subscription ? `✅ ${subscription.id}` : '❌ null');
-      
+
       if (!subscription) {
         return ResponseHelper.notFound(reply, 'Assinatura não encontrada');
       }
-      
+
       // Verificar se há checkins/frequências
       const attendances = await prisma.attendance.count({
         where: {
           studentId: subscription.studentId
         }
       });
-      
+
       console.log(`   attendances count: ${attendances}`);
-      
+
       if (attendances > 0) {
         console.log(`   ❌ Cannot delete - has attendances`);
         return ResponseHelper.badRequest(
-          reply, 
+          reply,
           `Não é possível deletar. Este aluno tem ${attendances} entrada(s) no sistema`
         );
       }
-      
+
       // Deletar assinatura
       console.log(`   ✅ Proceeding with delete...`);
       await prisma.studentSubscription.delete({
         where: { id }
       });
-      
+
       console.log(`   ✅ Delete completed successfully`);
       return ResponseHelper.success(reply, { id }, 'Assinatura deletada com sucesso');
-      
+
     } catch (error) {
       console.error('❌ Erro ao deletar assinatura:', error);
       console.error('   Error message:', (error as any)?.message);
@@ -350,11 +365,13 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
   // ==========================================
   // POST /api/subscriptions/reactivate - Gerar link de pagamento para reativação
   // ==========================================
-  fastify.post('/reactivate', async (request, reply) => {
+  fastify.post('/reactivate', {
+    preHandler: [authenticateToken, allRoles]
+  }, async (request, reply) => {
     try {
       const { studentId, planId } = request.body as { studentId: string; planId: string };
-      const organizationId = getOrganizationId(request);
-      
+      const organizationId = await getOrganizationId(request);
+
       if (!studentId || !planId) {
         return ResponseHelper.badRequest(reply, 'studentId e planId são obrigatórios');
       }
@@ -425,7 +442,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
 
       // Verificar/Criar customer no Asaas
       let asaasCustomer = student.asaasCustomer;
-      
+
       if (!asaasCustomer) {
         // Criar customer no Asaas
         const cpf = student.user.cpf?.replace(/\D/g, '') || '';
@@ -441,7 +458,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
         };
 
         const createdCustomer = await asaasService.createCustomer(asaasCustomerData);
-        
+
         asaasCustomer = await prisma.asaasCustomer.create({
           data: {
             studentId: student.id,
@@ -472,7 +489,7 @@ export default async function subscriptionsRoutes(fastify: FastifyInstance) {
       // Buscar QR Code PIX
       let pixQrCode = null;
       let pixCopyPaste = null;
-      
+
       try {
         const pixData = await asaasService.makeRequest<any>(`/payments/${asaasPayment.id}/pixQrCode`);
         pixQrCode = pixData.encodedImage;

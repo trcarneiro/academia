@@ -99,12 +99,38 @@ export class AsaasService {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    // Dynamic Environment Loading
+    let effectiveBaseUrl = this.baseUrl;
+    let effectiveApiKey = this.apiKey;
+
+    try {
+      const settingsPath = require('path').join(__dirname, '../../data/app-settings.json');
+      // @ts-ignore
+      const fs = require('fs');
+      if (fs.existsSync(settingsPath)) {
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+        const env = settings.asaas?.environment || 'sandbox';
+
+        if (env === 'production') {
+          effectiveBaseUrl = 'https://api.asaas.com/v3';
+          effectiveApiKey = process.env.ASAAS_API_KEY_PROD || this.apiKey;
+        } else {
+          effectiveBaseUrl = 'https://api-sandbox.asaas.com/v3';
+          effectiveApiKey = process.env.ASAAS_API_KEY_SANDBOX || this.apiKey;
+        }
+
+        console.log(`🔌 Asaas Service using ${env.toUpperCase()} environment`);
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to load dynamic settings for Asaas, using defaults', e);
+    }
+
+    const url = `${effectiveBaseUrl}${endpoint}`;
 
     const options: RequestInit = {
       method,
       headers: {
-        'access_token': this.apiKey,
+        'access_token': effectiveApiKey,
         'Content-Type': 'application/json',
         'User-Agent': 'KravMagaAcademy/1.0'
       }

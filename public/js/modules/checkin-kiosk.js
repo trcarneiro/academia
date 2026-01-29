@@ -11,17 +11,17 @@ class CheckinKiosk {
         this.currentStudent = null;
         this.availableClasses = [];
         this.initialized = false;
-        
+
         // API Client
         this.apiClient = null;
-        
+
         // Students cache for instant search
         this.studentsCache = [];
         this.cacheLoaded = false;
-        
+
         // DOM Elements
         this.elements = {};
-        
+
         // State
         this.isLoading = false;
     }
@@ -34,28 +34,28 @@ class CheckinKiosk {
 
         try {
             console.log('🖥️ Inicializando Check-in Kiosk...');
-            
+
             // Wait for API Client
             await this.waitForAPIClient();
 
             // Setup DOM elements
             this.setupElements();
-            
+
             // Setup event listeners
             this.setupEventListeners();
-            
+
             // Start clock
             this.startClock();
-            
+
             // Load students cache
             await this.loadStudentsCache();
-            
+
             // Hide loading screen
             this.hideLoadingScreen();
-            
+
             this.initialized = true;
             console.log('✅ Check-in Kiosk inicializado com sucesso');
-            
+
         } catch (error) {
             console.error('❌ Erro ao inicializar Check-in Kiosk:', error);
             this.showError('Erro ao inicializar sistema. Tente novamente.');
@@ -103,7 +103,7 @@ class CheckinKiosk {
         if (!container || !this.currentStudent) return;
 
         const recommendations = this.generateRecommendations();
-        
+
         container.innerHTML = recommendations.map(rec => `
             <div class="recommendation-card ${rec.priority}-priority">
                 <div class="recommendation-header">
@@ -138,7 +138,7 @@ class CheckinKiosk {
 
         // Attendance-based recommendations
         const attendanceRate = stats.attendanceRate || 0;
-        
+
         if (attendanceRate < 70) {
             recommendations.push({
                 priority: 'high',
@@ -223,9 +223,9 @@ class CheckinKiosk {
     async loadStudentsCache() {
         try {
             console.log('📥 Carregando cache de alunos...');
-            
+
             const response = await this.apiClient.get('/api/attendance/students/all');
-            
+
             if (response.success && response.data) {
                 this.studentsCache = response.data;
                 this.cacheLoaded = true;
@@ -233,7 +233,7 @@ class CheckinKiosk {
             } else {
                 console.warn('⚠️ Não foi possível carregar cache de alunos');
             }
-            
+
         } catch (error) {
             console.error('❌ Erro ao carregar cache de alunos:', error);
         }
@@ -257,16 +257,16 @@ class CheckinKiosk {
             mainContent: document.getElementById('main-content'),
             lookupStage: document.getElementById('lookup-stage'),
             dashboardStage: document.getElementById('dashboard-stage'),
-            
+
             // Clock
             currentTime: document.getElementById('current-time'),
-            
+
             // Lookup form
             registrationInput: document.getElementById('registration-input'),
             lookupBtn: document.getElementById('lookup-btn'),
             lookupError: document.getElementById('lookup-error'),
             searchResults: document.getElementById('search-results'),
-            
+
             // Student info
             studentAvatar: document.getElementById('student-avatar'),
             studentName: document.getElementById('student-name'),
@@ -276,12 +276,12 @@ class CheckinKiosk {
             studentPlanValidity: document.getElementById('student-plan-validity'),
             studentCourse: document.getElementById('student-course'),
             studentTurma: document.getElementById('student-turma'),
-            
+
             // Stats
             attendanceRate: document.getElementById('attendance-rate'),
             classesMonth: document.getElementById('classes-month'),
             graduationLevel: document.getElementById('graduation-level'),
-            
+
             // Classes and activity
             availableClasses: document.getElementById('available-classes'),
             upcomingClasses: document.getElementById('upcoming-classes'),
@@ -291,17 +291,17 @@ class CheckinKiosk {
             paymentsOverdueAmount: document.getElementById('payments-overdue-amount'),
             paymentsLast: document.getElementById('payments-last'),
             paymentsNextDue: document.getElementById('payments-next-due'),
-            
+
             // Buttons
             logoutBtn: document.getElementById('logout-btn'),
-            
+
             // Modals
             confirmationModal: document.getElementById('confirmation-modal'),
             successModal: document.getElementById('success-modal'),
             cancelCheckin: document.getElementById('cancel-checkin'),
             confirmCheckin: document.getElementById('confirm-checkin'),
             successOk: document.getElementById('success-ok'),
-            
+
             // Modal content
             confirmClassName: document.getElementById('confirm-class-name'),
             confirmClassTime: document.getElementById('confirm-class-time'),
@@ -320,18 +320,18 @@ class CheckinKiosk {
         this.elements.registrationInput.addEventListener('input', (e) => {
             const value = e.target.value.trim();
             this.elements.lookupBtn.disabled = value.length < 1;
-            
+
             // Clear previous timeout
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
-            
+
             // Hide search results if input is empty
             if (value.length === 0) {
                 this.hideSearchResults();
                 return;
             }
-            
+
             // Instant search for any input (using cache)
             if (this.cacheLoaded) {
                 // Instant search with cache
@@ -401,7 +401,7 @@ class CheckinKiosk {
                 month: 'long',
                 day: 'numeric'
             });
-            
+
             if (this.elements.currentTime) {
                 this.elements.currentTime.textContent = `${timeString} - ${dateString}`;
             }
@@ -438,7 +438,7 @@ class CheckinKiosk {
      */
     async lookupStudent(overrideQuery = null) {
         const query = overrideQuery || this.elements.registrationInput.value.trim();
-        
+
         if (!query || query.length < 1) {
             this.showError('Digite pelo menos 1 caractere');
             return;
@@ -450,16 +450,16 @@ class CheckinKiosk {
 
         try {
             console.log('🔍 Buscando aluno:', query);
-            
+
             // Check if query is a UUID (student ID) or a registration number
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
             const endpoint = isUUID ? `/api/attendance/student/id/${query}` : `/api/attendance/student/${encodeURIComponent(query)}`;
-            
+
             const response = await this.apiClient.get(endpoint);
-            
+
             console.log('🔍 Resposta da API:', response);
             console.log('🔍 Resposta da API (JSON):', JSON.stringify(response, null, 2));
-            
+
             // The actual student data is nested inside the 'data' property of the response
             const studentData = response.data;
             console.log('🔍 Extracted student data:', studentData);
@@ -474,7 +474,7 @@ class CheckinKiosk {
                 this.showError('Aluno não encontrado ou dados inválidos recebidos.');
                 console.error('Error: Invalid or empty student data received from API.', response);
             }
-            
+
         } catch (error) {
             console.error('Erro ao buscar aluno:', error);
             this.showError('Erro ao buscar aluno. Verifique os dados e tente novamente.');
@@ -506,17 +506,17 @@ class CheckinKiosk {
      */
     searchStudentsLocal(query) {
         const searchTerm = query.toLowerCase().trim();
-        
+
         const results = this.studentsCache.filter(student => {
             return student.searchString.includes(searchTerm);
         }).slice(0, 8); // Limitar a 8 resultados
-        
+
         // Determine match type for each result
         const processedResults = results.map(student => ({
             ...student,
             matchType: student.registrationNumber.includes(searchTerm) ? 'registration' : 'name'
         }));
-        
+
         this.showSearchResults(processedResults, query);
     }
 
@@ -526,15 +526,15 @@ class CheckinKiosk {
     async searchStudentsAPI(query) {
         try {
             console.log('🔍 Buscando alunos via API:', query);
-            
+
             const response = await this.apiClient.get(`/api/attendance/students/search/${encodeURIComponent(query)}?limit=8`);
-            
+
             if (response.success && response.data) {
                 this.showSearchResults(response.data, query);
             } else {
                 this.hideSearchResults();
             }
-            
+
         } catch (error) {
             console.error('Erro ao buscar alunos:', error);
             this.hideSearchResults();
@@ -546,7 +546,7 @@ class CheckinKiosk {
      */
     showSearchResults(students, query) {
         const container = this.elements.searchResults;
-        
+
         if (!students || students.length === 0) {
             container.innerHTML = `
                 <div class="search-no-results">
@@ -564,22 +564,22 @@ class CheckinKiosk {
                 ${students.length} aluno(s) encontrado(s)
             </div>
             ${students.map(student => {
-                // 🔥 FIX: Show enrollment status in search results
-                const enrollmentStatus = student.hasActiveEnrollment 
-                    ? `<span class="enrollment-badge enrolled">✅ Matriculado${student.enrollments?.[0] ? `: ${student.enrollments[0].courseName}` : ''}</span>`
-                    : `<span class="enrollment-badge not-enrolled">❌ Sem matrícula</span>`;
-                
-                const planStatus = student.hasActivePlan
-                    ? `<span class="plan-badge active">✅ Plano Ativo</span>`
-                    : `<span class="plan-badge inactive">❌ Sem plano</span>`;
-                
-                return `
+            // 🔥 FIX: Show enrollment status in search results
+            const enrollmentStatus = student.hasActiveEnrollment
+                ? `<span class="enrollment-badge enrolled">✅ Matriculado${student.enrollments?.[0] ? `: ${student.enrollments[0].courseName}` : ''}</span>`
+                : `<span class="enrollment-badge not-enrolled">❌ Sem matrícula</span>`;
+
+            const planStatus = student.hasActivePlan
+                ? `<span class="plan-badge active">✅ Plano Ativo</span>`
+                : `<span class="plan-badge inactive">❌ Sem plano</span>`;
+
+            return `
                 <div class="search-result-item" onclick="window.checkinKiosk.selectStudent('${student.id}', '${student.registrationNumber}')">
                     <div class="search-result-avatar">
-                        ${student.avatar ? 
-                            `<img src="${student.avatar}" alt="${student.name}">` : 
-                            `<div class="default-avatar">${student.name.charAt(0).toUpperCase()}</div>`
-                        }
+                        ${student.avatar ?
+                    `<img src="${student.avatar}" alt="${student.name}">` :
+                    `<div class="default-avatar">${student.name.charAt(0).toUpperCase()}</div>`
+                }
                     </div>
                     <div class="search-result-info">
                         <div class="search-result-name">${student.name}</div>
@@ -597,9 +597,9 @@ class CheckinKiosk {
                     </div>
                 </div>
                 `;
-            }).join('')}
+        }).join('')}
         `;
-        
+
         container.style.display = 'block';
     }
 
@@ -628,7 +628,7 @@ class CheckinKiosk {
         try {
             // Load dashboard data
             await this.loadDashboardData();
-            
+
             // Check if enhanced dashboard is available
             if (typeof EnhancedKioskDashboard !== 'undefined') {
                 // Use enhanced dashboard
@@ -638,7 +638,7 @@ class CheckinKiosk {
                 this.updateStudentInfo();
                 this.switchStage('dashboard');
             }
-            
+
         } catch (error) {
             console.error('Erro ao carregar dashboard:', error);
             this.showError('Erro ao carregar informações do aluno');
@@ -651,40 +651,40 @@ class CheckinKiosk {
     async showEnhancedDashboard() {
         try {
             const enhancedDashboard = new EnhancedKioskDashboard();
-            
+
             // Prepare enhanced data structure
             const enhancedData = {
                 // Student basic info
                 id: this.currentStudent.id,
-                name: this.currentStudent.name || 
-                      [this.currentStudent.firstName, this.currentStudent.lastName].filter(Boolean).join(' '),
+                name: this.currentStudent.name ||
+                    [this.currentStudent.firstName, this.currentStudent.lastName].filter(Boolean).join(' '),
                 registrationNumber: this.currentStudent.registrationNumber,
                 graduationLevel: this.currentStudent.graduationLevel || 'Iniciante',
                 avatar: this.currentStudent.avatar,
-                
+
                 // Dashboard data
                 dashboard: this.currentStudent.dashboard,
-                
+
                 // Available classes for check-in
                 availableClasses: this.availableClasses || [],
-                
+
                 // API client for dynamic operations
                 apiClient: this.apiClient
             };
-            
+
             // Get dashboard container
             const dashboardContainer = document.querySelector('.kiosk-stage[data-stage="dashboard"] .dashboard-content');
             if (dashboardContainer) {
                 // Render enhanced dashboard
                 dashboardContainer.innerHTML = enhancedDashboard.renderEnhancedDashboard(enhancedData);
-                
+
                 // Initialize enhanced dashboard interactions
                 enhancedDashboard.initializeInteractions();
             }
-            
+
             // Switch to dashboard stage
             this.switchStage('dashboard');
-            
+
         } catch (error) {
             console.error('Erro ao renderizar dashboard avançado:', error);
             // Fallback to original dashboard
@@ -710,9 +710,19 @@ class CheckinKiosk {
             throw new Error('Erro ao carregar aulas');
         }
 
+        // Fetch credits independently to avoid breaking if API is missing
+        try {
+            const creditsResponse = await this.apiClient.get(`/api/credits/summary/${this.currentStudent.id}`);
+            if (creditsResponse.success) {
+                this.currentStudent.credits = creditsResponse.data;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch credits for kiosk', e);
+        }
+
         this.currentStudent.dashboard = dashboardResponse.data;
         this.availableClasses = classesResponse.data;
-        
+
         console.log('📊 Dashboard data loaded:', this.currentStudent.dashboard);
         console.log('📅 Available classes:', this.availableClasses);
     }
@@ -723,11 +733,11 @@ class CheckinKiosk {
     updateStudentInfo() {
         const s = this.currentStudent || {};
         const dashboard = s.dashboard || {};
-    const studentDash = dashboard.student || {};
-    const plan = dashboard.plan || null;
-    const currentCourse = dashboard.currentCourse || null;
-    const currentTurma = dashboard.currentTurma || null;
-    const payments = dashboard.payments || null;
+        const studentDash = dashboard.student || {};
+        const plan = dashboard.plan || null;
+        const currentCourse = dashboard.currentCourse || null;
+        const currentTurma = dashboard.currentTurma || null;
+        const payments = dashboard.payments || null;
 
         // Compute display fields with safe fallbacks
         const displayName = s.name || [s.firstName, s.lastName].filter(Boolean).join(' ') || studentDash.name || 'Aluno';
@@ -740,6 +750,87 @@ class CheckinKiosk {
         this.elements.studentName.textContent = displayName;
         this.elements.studentRegistration.textContent = `Matrícula: ${registrationNumber}`;
         this.elements.studentLevel.textContent = `Faixa: ${graduationLevel}`;
+
+        // Credit Warning Injection
+        const creditData = this.currentStudent.credits;
+        const existingWarning = document.getElementById('kiosk-credit-warning');
+        if (existingWarning) existingWarning.remove();
+
+        if (creditData && creditData.totalAvailable <= 1) {
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'kiosk-credit-warning';
+            warningDiv.className = 'credit-warning-banner';
+            warningDiv.style.cssText = `
+                background-color: ${creditData.totalAvailable <= 0 ? '#fee2e2' : '#fef3c7'};
+                color: ${creditData.totalAvailable <= 0 ? '#b91c1c' : '#92400e'};
+                padding: 12px;
+                margin-top: 10px;
+                border-radius: 8px;
+                border: 1px solid ${creditData.totalAvailable <= 0 ? '#fca5a5' : '#fcd34d'};
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                font-weight: 600;
+                animation: ${creditData.totalAvailable <= 0 ? 'pulse 2s infinite' : 'none'};
+            `;
+
+            warningDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>${creditData.totalAvailable <= 0 ? 'SEM CRÉDITOS! Renovação necessária.' : `ATENÇÃO: Apenas ${creditData.totalAvailable} crédito(s) restante(s).`}</span>
+                </div>
+                ${creditData.totalAvailable <= 0 ? `
+                <button id="btn-kiosk-pay" class="btn btn-primary btn-sm" style="background-color: #dc2626; border-color: #dc2626; color: white; width: 100%; margin-top: 5px;">
+                    💳 Pagar Agora / Gerar Cobrança
+                </button>` : ''}
+            `;
+
+            // Insert after student details
+            const detailsContainer = this.elements.studentName.parentElement;
+            detailsContainer.appendChild(warningDiv);
+
+            // Bind Event
+            const btnPay = warningDiv.querySelector('#btn-kiosk-pay');
+            if (btnPay) {
+                btnPay.onclick = async (e) => {
+                    e.stopPropagation(); // Prevent card clicks if any
+                    try {
+                        btnPay.disabled = true;
+                        btnPay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+
+                        const response = await this.apiClient.post('/api/credits/generate-charge', {
+                            studentId: this.currentStudent.id
+                        });
+
+                        if (response.success && response.data) {
+                            const payment = response.data.payment;
+                            this.showSuccessModal({
+                                title: 'Cobrança Gerada',
+                                message: `
+                                    <div style="text-align: center;">
+                                        <p>Escaneie o QR Code ou copie o código abaixo:</p>
+                                        <div style="background: #f3f4f6; padding: 1rem; margin: 1rem 0; word-break: break-all; font-family: monospace; font-size: 0.9rem;">
+                                            ${payment.pixCode || 'Código PIX indisponível (Use o Link)'}
+                                        </div>
+                                        <a href="${payment.invoiceUrl}" target="_blank" class="btn btn-primary" style="margin-top: 10px; display: inline-block;">Ver Fatura Completa</a>
+                                    </div>
+                                `
+                            });
+                        } else {
+                            throw new Error(response.message || 'Erro ao gerar cobrança');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        this.showErrorModal(err.message || 'Não foi possível gerar a cobrança. Tente novamente.');
+                    } finally {
+                        if (btnPay) {
+                            btnPay.disabled = false;
+                            btnPay.innerHTML = '💳 Pagar Agora / Gerar Cobrança';
+                        }
+                    }
+                };
+            }
+        }
 
         // Avatar
         if (avatar) {
@@ -756,7 +847,7 @@ class CheckinKiosk {
             const planStatus = plan?.isActive ? '✅ Ativo' : '❌ Inativo';
             const planName = plan?.name || 'Sem plano';
             this.elements.studentPlan.textContent = `Plano: ${planName} ${planStatus}`;
-            
+
             // Adicionar classe CSS baseada no status
             if (plan?.isActive) {
                 this.elements.studentPlan.classList.add('plan-active');
@@ -774,7 +865,7 @@ class CheckinKiosk {
                 const start = plan.startDate ? new Date(plan.startDate).toLocaleDateString('pt-BR') : '-';
                 const end = plan.endDate ? new Date(plan.endDate).toLocaleDateString('pt-BR') : 'Indeterminado';
                 const daysLeft = plan.endDate ? Math.ceil((new Date(plan.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
-                
+
                 let validityText = `Validade: ${start} até ${end}`;
                 if (daysLeft !== null && daysLeft <= 7 && daysLeft > 0) {
                     validityText += ` ⚠️ (${daysLeft} dias restantes)`;
@@ -783,44 +874,44 @@ class CheckinKiosk {
                     validityText = `❌ Plano expirado em ${end}`;
                     this.elements.studentPlanValidity.classList.add('plan-expired');
                 }
-                
+
                 this.elements.studentPlanValidity.textContent = validityText;
             }
         }
-                if (this.elements.studentCourse) {
-                        const fallbackCourse = (dashboard.enrollments && dashboard.enrollments.length > 0)
-                            ? dashboard.enrollments[0].course
-                            : null;
-                        const courseName = currentCourse?.name || fallbackCourse?.name || null;
-                        
-                        if (courseName) {
-                            this.elements.studentCourse.textContent = `Curso: ${courseName}`;
-                            this.elements.studentCourse.classList.remove('no-course');
-                        } else {
-                            this.elements.studentCourse.textContent = `Curso: Nenhum curso matriculado`;
-                            this.elements.studentCourse.classList.add('no-course');
-                            
-                            // Mostrar dica útil
-                            if (plan?.features?.courseIds && plan.features.courseIds.length > 0) {
-                                this.showEnrollmentHint(plan.features.courseIds);
-                            }
-                        }
+        if (this.elements.studentCourse) {
+            const fallbackCourse = (dashboard.enrollments && dashboard.enrollments.length > 0)
+                ? dashboard.enrollments[0].course
+                : null;
+            const courseName = currentCourse?.name || fallbackCourse?.name || null;
+
+            if (courseName) {
+                this.elements.studentCourse.textContent = `Curso: ${courseName}`;
+                this.elements.studentCourse.classList.remove('no-course');
+            } else {
+                this.elements.studentCourse.textContent = `Curso: Nenhum curso matriculado`;
+                this.elements.studentCourse.classList.add('no-course');
+
+                // Mostrar dica útil
+                if (plan?.features?.courseIds && plan.features.courseIds.length > 0) {
+                    this.showEnrollmentHint(plan.features.courseIds);
                 }
-                if (this.elements.studentTurma) {
-                        this.elements.studentTurma.textContent = `Turma: ${currentTurma?.name || 'Não matriculado em turma'}`;
-                }
-        
+            }
+        }
+        if (this.elements.studentTurma) {
+            this.elements.studentTurma.textContent = `Turma: ${currentTurma?.name || 'Não matriculado em turma'}`;
+        }
+
         // Available classes
         this.renderAvailableClasses();
-        
+
         // Recent activity
         this.renderRecentActivity();
 
-    // Upcoming classes
-    this.renderUpcomingClasses();
+        // Upcoming classes
+        this.renderUpcomingClasses();
 
-    // Payments summary
-    this.renderPaymentsSummary(payments);
+        // Payments summary
+        this.renderPaymentsSummary(payments);
     }
 
     /**
@@ -828,7 +919,7 @@ class CheckinKiosk {
      */
     renderAvailableClasses() {
         const container = this.elements.availableClasses;
-        
+
         if (!this.availableClasses || this.availableClasses.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -849,29 +940,29 @@ class CheckinKiosk {
         };
 
         const statusConfig = {
-            'AVAILABLE': { 
-                title: '✅ Disponíveis Agora', 
+            'AVAILABLE': {
+                title: '✅ Disponíveis Agora',
                 subtitle: 'Você pode fazer check-in nestas aulas',
                 icon: 'fa-check-circle',
                 color: '#10b981',
                 defaultOpen: true
             },
-            'CHECKED_IN': { 
-                title: '✓ Check-ins Realizados', 
+            'CHECKED_IN': {
+                title: '✓ Check-ins Realizados',
                 subtitle: 'Você já fez check-in hoje',
                 icon: 'fa-calendar-check',
                 color: '#3b82f6',
                 defaultOpen: true
             },
-            'NOT_YET': { 
-                title: '⏰ Próximas Aulas', 
+            'NOT_YET': {
+                title: '⏰ Próximas Aulas',
                 subtitle: 'Check-in ainda não liberado',
                 icon: 'fa-clock',
                 color: '#f59e0b',
                 defaultOpen: false
             },
-            'EXPIRED': { 
-                title: '⌛ Aulas Encerradas', 
+            'EXPIRED': {
+                title: '⌛ Aulas Encerradas',
                 subtitle: 'Período de check-in expirado',
                 icon: 'fa-history',
                 color: '#ef4444',
@@ -917,7 +1008,7 @@ class CheckinKiosk {
     renderRecentActivity() {
         const container = this.elements.recentActivity;
         const recentAttendances = this.currentStudent.dashboard.recentAttendances;
-        
+
         if (!recentAttendances || recentAttendances.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -999,7 +1090,7 @@ class CheckinKiosk {
      */
     requestCheckin(classId) {
         const classInfo = this.availableClasses.find(c => c.id === classId);
-        
+
         if (!classInfo || !classInfo.canCheckIn) {
             this.showError('Check-in não disponível para esta aula');
             return;
@@ -1009,7 +1100,7 @@ class CheckinKiosk {
         this.elements.confirmClassName.textContent = classInfo.name;
         this.elements.confirmClassTime.textContent = `${this.formatTime(classInfo.startTime)} - ${this.formatTime(classInfo.endTime)}`;
         this.elements.confirmInstructor.textContent = classInfo.instructor?.name || 'Instrutor não definido';
-        
+
         this.currentCheckinClass = classInfo;
         this.showModal('confirmation');
     }
@@ -1042,9 +1133,9 @@ class CheckinKiosk {
                 // Show success modal
                 this.elements.successClassName.textContent = this.currentCheckinClass.name;
                 this.elements.successTime.textContent = new Date().toLocaleTimeString('pt-BR');
-                
+
                 this.showModal('success');
-                
+
                 console.log('✅ Check-in realizado com sucesso:', response.data);
             } else {
                 this.showError(response.message || 'Erro ao realizar check-in');
@@ -1078,16 +1169,16 @@ class CheckinKiosk {
         this.currentStudent = null;
         this.availableClasses = [];
         this.currentCheckinClass = null;
-        
+
         // Clear form
         this.elements.registrationInput.value = '';
         this.elements.lookupBtn.disabled = true;
         this.hideError();
         this.hideSearchResults();
-        
+
         // Switch to lookup stage
         this.switchStage('lookup');
-        
+
         // Focus on input
         setTimeout(() => {
             this.elements.registrationInput.focus();
@@ -1101,7 +1192,7 @@ class CheckinKiosk {
         // Hide all stages
         this.elements.lookupStage.classList.remove('active');
         this.elements.dashboardStage.classList.remove('active');
-        
+
         // Show target stage
         if (stage === 'lookup') {
             this.elements.lookupStage.classList.add('active');
@@ -1127,7 +1218,7 @@ class CheckinKiosk {
     showEnrollmentHint(availableCourseIds) {
         const container = this.elements.aiRecommendations;
         if (!container) return;
-        
+
         container.innerHTML = `
             <div class="recommendation-card enrollment-hint">
                 <div class="recommendation-icon">
@@ -1173,7 +1264,7 @@ class CheckinKiosk {
      */
     setLoading(loading) {
         this.isLoading = loading;
-        
+
         if (loading) {
             this.elements.lookupBtn.disabled = true;
             this.elements.lookupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
@@ -1190,7 +1281,7 @@ class CheckinKiosk {
     toggleGroup(sectionId) {
         const section = document.getElementById(sectionId);
         const header = section.previousElementSibling;
-        
+
         if (section.classList.contains('open')) {
             section.classList.remove('open');
             header.classList.remove('open');
@@ -1212,7 +1303,7 @@ class CheckinKiosk {
         };
 
         const statusClass = classInfo.status.toLowerCase();
-        
+
         // Calculate time remaining until check-in opens (for NOT_YET status)
         let timeInfo = '';
         if (classInfo.status === 'NOT_YET') {
@@ -1223,7 +1314,7 @@ class CheckinKiosk {
             const diffMins = Math.floor(diffMs / 60000);
             const diffHours = Math.floor(diffMins / 60);
             const remainingMins = diffMins % 60;
-            
+
             if (diffHours > 0) {
                 timeInfo = `<div class="time-remaining countdown">⏱️ Check-in abre em ${diffHours}h ${remainingMins}min</div>`;
             } else if (diffMins > 0) {
@@ -1237,12 +1328,12 @@ class CheckinKiosk {
             const now = new Date();
             const diffMs = checkInEnd - now;
             const diffMins = Math.floor(diffMs / 60000);
-            
+
             if (diffMins > 0) {
                 timeInfo = `<div class="time-remaining countdown available">⏳ Janela fecha em ${diffMins} minutos</div>`;
             }
         }
-        
+
         return `
             <div class="class-card ${statusClass}">
                 <div class="class-status ${statusClass}">
@@ -1261,9 +1352,9 @@ class CheckinKiosk {
                     </button>
                 ` : `
                     <button class="checkin-btn" disabled>
-                        ${classInfo.hasCheckedIn ? '✓ Check-in Realizado' : 
-                          classInfo.status === 'NOT_YET' ? '🔒 Aguardando' : 
-                          '⌛ Indisponível'}
+                        ${classInfo.hasCheckedIn ? '✓ Check-in Realizado' :
+                classInfo.status === 'NOT_YET' ? '🔒 Aguardando' :
+                    '⌛ Indisponível'}
                     </button>
                 `}
             </div>
@@ -1275,7 +1366,7 @@ class CheckinKiosk {
      */
     formatTime(timeString) {
         if (!timeString) return '';
-        
+
         try {
             const date = new Date(timeString);
             return date.toLocaleTimeString('pt-BR', {
@@ -1292,7 +1383,7 @@ class CheckinKiosk {
      */
     formatDate(dateString) {
         if (!dateString) return '';
-        
+
         try {
             const date = new Date(dateString);
             return date.toLocaleDateString('pt-BR', {
@@ -1312,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.checkinKiosk && typeof window.checkinKiosk.destroy === 'function') {
         window.checkinKiosk.destroy();
     }
-    
+
     window.checkinKiosk = new CheckinKiosk();
     await window.checkinKiosk.init();
 });

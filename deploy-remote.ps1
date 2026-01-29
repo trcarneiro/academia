@@ -232,6 +232,7 @@ if (-not $DryRun) {
             "prisma/*",
             "package.json",
             "package-lock.json",
+            "ecosystem.config.js",
             ".env"
         )
         

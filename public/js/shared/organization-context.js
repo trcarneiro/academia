@@ -15,15 +15,15 @@ function getActiveOrganizationId() {
     if (orgId) {
         return orgId;
     }
-    
+
     // Fallback para window.currentOrganizationId
     if (window.currentOrganizationId) {
         return window.currentOrganizationId;
     }
-    
-    // Fallback final para Smart Defence (organização padrão)
-    console.warn('⚠️ No active organization found, using default Smart Defence');
-    return 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+
+    // Fallback final para Academia Demo (organização padrão)
+    console.warn('⚠️ No active organization found, using default Academia Demo');
+    return 'b03d6cc5-7d58-437e-87a7-834226931d2a';
 }
 
 /**
@@ -47,7 +47,7 @@ function getOrganizationHeaders(additionalHeaders = {}) {
  */
 async function fetchWithOrganization(url, options = {}) {
     const orgId = getActiveOrganizationId();
-    
+
     const enhancedOptions = {
         ...options,
         headers: {
@@ -55,14 +55,14 @@ async function fetchWithOrganization(url, options = {}) {
             ...(options.headers || {})
         }
     };
-    
+
     // Se tem body e não tem Content-Type, adiciona
     if (options.body && !enhancedOptions.headers['Content-Type']) {
         enhancedOptions.headers['Content-Type'] = 'application/json';
     }
-    
+
     console.log(`🌐 [Org: ${orgId.substring(0, 8)}...] ${options.method || 'GET'} ${url}`);
-    
+
     return fetch(url, enhancedOptions);
 }
 
@@ -74,18 +74,18 @@ async function fetchWithOrganization(url, options = {}) {
 async function ensureOrganizationContext() {
     let attempts = 0;
     const maxAttempts = 50; // 5 segundos (50 x 100ms)
-    
+
     while (attempts < maxAttempts) {
         const orgId = localStorage.getItem('activeOrganizationId') || window.currentOrganizationId;
         if (orgId) {
             console.log('✅ Organization context available:', orgId.substring(0, 8) + '...');
             return true;
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
     }
-    
+
     console.warn('⚠️ Organization context not available after 5s, using default');
     return false;
 }
@@ -109,6 +109,6 @@ if (typeof window !== 'undefined') {
     window.fetchWithOrganization = fetchWithOrganization;
     window.ensureOrganizationContext = ensureOrganizationContext;
     window.onOrganizationChange = onOrganizationChange;
-    
+
     console.log('✅ Organization context helper loaded');
 }

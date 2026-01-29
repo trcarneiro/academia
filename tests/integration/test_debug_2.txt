@@ -1,0 +1,18 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769314992079,"pid":133012,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mStarting Setup...
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mOrg created: e9c6da9f-3c60-44f3-9fc2-0a918d1edf30
+Creating Instructor User...
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mInstructor created: bdd0fd51-e981-45d2-baeb-db0106bec8b0
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mSetup Complete
+
+Terminate batch job (Y/N)? 

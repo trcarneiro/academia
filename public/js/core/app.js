@@ -51,12 +51,12 @@ class AcademyApp {
         window.currentOrganizationId;
 
       if (!orgId) {
-        // Fallback to Smart Defence organization for development/demo
+        // Fallback to Academia Demo organization for development/demo
         // This is ONLY for local development with single org
-        const DEV_ORG_ID = 'ff5ee00e-d8a3-4291-9428-d28b852fb472'; // Smart Defence
+        const DEV_ORG_ID = 'b03d6cc5-7d58-437e-87a7-834226931d2a'; // Academia Demo
         localStorage.setItem('activeOrganizationId', DEV_ORG_ID);
         window.currentOrganizationId = DEV_ORG_ID;
-        console.log('🔧 [DEV MODE] Organization context initialized with Smart Defence:', DEV_ORG_ID);
+        console.log('🔧 [DEV MODE] Organization context initialized with Academia Demo:', DEV_ORG_ID);
       } else {
         window.currentOrganizationId = orgId;
         console.log('✅ Organization context initialized:', orgId);

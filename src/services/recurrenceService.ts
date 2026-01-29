@@ -7,17 +7,14 @@ import dayOfYear from 'dayjs/plugin/dayOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 
 dayjs.extend(weekOfYear);
+import { normalizeSchedule } from '@/utils/schedule';
+
+dayjs.extend(weekOfYear);
 dayjs.extend(dayOfYear);
 dayjs.extend(isoWeek);
 
-interface ScheduleConfig {
-    days: number[]; // 0-6 (Sunday-Saturday)
-    startTime: string; // HH:mm
-    endTime?: string; // HH:mm
-    duration?: number; // minutes
-}
-
 export class RecurrenceService {
+
     /**
      * Generates lessons for a Turma for the specified window (default 6 months)
      * Handles reconciliation: creates missing, deletes invalid future lessons (if no attendance)
@@ -39,9 +36,17 @@ export class RecurrenceService {
             return;
         }
 
-        const schedule = turma.schedule as unknown as ScheduleConfig;
-        if (!schedule.days || schedule.days.length === 0 || !schedule.startTime) {
-            logger.warn({ turmaId, schedule }, 'Invalid schedule configuration');
+        let scheduleData: any;
+        try {
+            scheduleData = typeof turma.schedule === 'string' ? JSON.parse(turma.schedule) : turma.schedule;
+        } catch (e) {
+            logger.warn({ turmaId, schedule: turma.schedule }, 'Failed to parse schedule JSON');
+            return;
+        }
+
+        const slots = normalizeSchedule(scheduleData);
+        if (slots.length === 0) {
+            logger.warn({ turmaId, schedule: scheduleData }, 'Invalid schedule configuration');
             return;
         }
 
@@ -49,24 +54,23 @@ export class RecurrenceService {
         const today = dayjs().startOf('day');
         const endDate = today.add(windowMonths, 'month').endOf('day');
 
-        // Use stored startDate or today, whichever is later (don't backfill past too far if just activated)
-        // But if we are re-generating, we should respect the Turma start date.
         let generationStart = dayjs(turma.startDate).startOf('day');
         if (generationStart.isBefore(today)) {
-            generationStart = today; // Only generate/fix future from today onwards
+            generationStart = today;
         }
 
-        // Parse Start Time
-        const [startHour, startMinute] = schedule.startTime.split(':').map(Number);
-
         // 2. Generate Expected Dates
-        const expectedDates: Date[] = [];
+        const expectedDates: { date: Date; duration: number }[] = [];
         let current = generationStart;
 
         while (current.isBefore(endDate)) {
-            if (schedule.days.includes(current.day())) {
+            const dayOfWeek = current.day();
+            const daySlots = slots.filter(s => s.dayOfWeek === dayOfWeek);
+
+            for (const slot of daySlots) {
+                const [startHour, startMinute] = slot.startTime.split(':').map(Number);
                 const lessonDate = current.hour(startHour).minute(startMinute).second(0).toDate();
-                expectedDates.push(lessonDate);
+                expectedDates.push({ date: lessonDate, duration: slot.duration });
             }
             current = current.add(1, 'day');
         }
@@ -78,7 +82,7 @@ export class RecurrenceService {
         const futureLessons = existingLessons.filter(l => dayjs(l.scheduledDate).isAfter(today.subtract(1, 'day')));
 
         // Set of expected timestamps for O(1) lookup
-        const expectedTimestamps = new Set(expectedDates.map(d => d.getTime()));
+        const expectedTimestamps = new Set(expectedDates.map(d => d.date.getTime()));
 
         // A. Identify Lessons to Delete (Invalid Future Lessons)
         // Condition: Scheduled in future AND not in new schedule AND has NO attendance
@@ -92,7 +96,7 @@ export class RecurrenceService {
         const existingTimestamps = new Set(futureLessons.map(l => new Date(l.scheduledDate).getTime()));
 
         // C. Identify Missing Lessons to Create
-        const toCreate = expectedDates.filter(d => !existingTimestamps.has(d.getTime()));
+        const toCreate = expectedDates.filter(d => !existingTimestamps.has(d.date.getTime()));
 
         logger.info({
             turmaId,
@@ -123,16 +127,16 @@ export class RecurrenceService {
 
                 let nextNumber = (lastLesson?.lessonNumber || 0) + 1;
 
-                const dataToCreate = toCreate.map(date => ({
+                const dataToCreate = toCreate.map(item => ({
                     turmaId,
                     lessonNumber: nextNumber++,
-                    title: `Aula - ${dayjs(date).format('DD/MM/YYYY')}`,
-                    scheduledDate: date,
+                    title: `Aula - ${dayjs(item.date).format('DD/MM/YYYY')}`,
+                    scheduledDate: item.date,
                     status: 'SCHEDULED' as const, // Force literal type if needed by Prisma types
-                    duration: schedule.duration || 60,
+                    duration: item.duration,
                     isActive: true,
-                    materials: [],
-                    objectives: []
+                    materials: '',
+                    objectives: ''
                 }));
 
                 await tx.turmaLesson.createMany({
@@ -154,8 +158,6 @@ export class RecurrenceService {
     static async processAllActiveTurmas() {
         logger.info('Starting batch recurrence processing for ALL active turmas');
 
-        // Find all active recurring turmas
-        // We assume all 'ACTIVE' turmas should have recurrence if they have a schedule
         const activeTurmas = await prisma.turma.findMany({
             where: { isActive: true, status: 'ACTIVE' },
             select: { id: true }

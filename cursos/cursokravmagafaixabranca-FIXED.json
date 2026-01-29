@@ -4,8 +4,16 @@
     "name": "Krav Maga - Faixa Branca",
     "description": "Curso completo de fundamentos do Krav Maga para iniciantes. Aborda posturas básicas, socos, chutes, defesas e movimentações essenciais em 48 aulas, com foco em personalização e simulações realistas.",
     "level": "BEGINNER",
-    "duration": "6 meses / 24 semanas",
+    "classesPerWeek": 2,
+    "duration": 24,
     "totalLessons": 48,
+    "minAge": 16,
+    "maxAge": 99,
+    "isBaseCourse": true,
+    "orderIndex": 1,
+    "sequence": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80",
+    "isActive": true,
     "graduation": {
       "currentBelt": "BRANCA",
       "nextBelt": "AMARELA",
@@ -13,7 +21,6 @@
       "nextBeltColor": "#FFD700",
       "progressionSystem": {
         "type": "PERCENTAGE_BASED",
-        "totalDegrees": 4,
         "degreePercentageIncrement": 25,
         "description": "Sistema de 4 graus baseado nos 5 Mini-Testes Modulares do curso de 48 aulas."
       },

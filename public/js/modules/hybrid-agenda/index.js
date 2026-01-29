@@ -32,7 +32,7 @@ class HybridAgendaModule {
                 console.log('⚠️ Hybrid Agenda Module already initialized, skipping...');
                 return this;
             }
-            
+
             console.log('🏳️‍⚖️ Initializing Hybrid Agenda Module (AGENTS.md compliant)...', this.name);
             console.log('🛠️ Container received:', container);
             console.log('🛠️ Route received:', route);
@@ -79,10 +79,10 @@ class HybridAgendaModule {
         }
     }
     async initializeAPI() {
-    console.log('🛠️ Initializing API...');
+        console.log('🛠️ Initializing API...');
         // Check for API client (AGENTS.md requirement)
-    console.log('🛠️ Checking for API client...');
-    console.log('🛠️ window.createModuleAPI:', typeof window.createModuleAPI);
+        console.log('🛠️ Checking for API client...');
+        console.log('🛠️ window.createModuleAPI:', typeof window.createModuleAPI);
         if (typeof window.createModuleAPI !== 'function') {
             console.log('⏳ Waiting for API client...');
             await this.waitForAPIClient();
@@ -95,9 +95,9 @@ class HybridAgendaModule {
     registerWithAcademyApp() {
         // AGENTS.md compliant integration with AcademyApp
         if (window.app && typeof window.app.dispatchEvent === 'function') {
-            window.app.dispatchEvent('module:loaded', { 
+            window.app.dispatchEvent('module:loaded', {
                 name: this.name,
-                version: this.version 
+                version: this.version
             });
         }
         // Export module globally for window access (AGENTS.md pattern)
@@ -120,7 +120,7 @@ class HybridAgendaModule {
         });
     }
     async renderMainInterface(container) {
-    console.log('🛠️ Rendering main interface with Premium UI...');
+        console.log('🛠️ Rendering main interface with Premium UI...');
         container.innerHTML = this.getMainHTML();
         console.log('… Main interface rendered');
     }
@@ -200,7 +200,7 @@ class HybridAgendaModule {
         `;
     }
     setupEventListeners() {
-    console.log('🛠️ Setting up event listeners...');
+        console.log('🛠️ Setting up event listeners...');
         // Prevent multiple bindings if initialize is called again
         if (this._listenersBound) {
             console.log('⚠️ Event listeners already bound; skipping rebind');
@@ -258,7 +258,7 @@ class HybridAgendaModule {
                 const y = event.clientY - rect.top;
                 const hourHeight = this.currentView === 'day' ? 60 : 50;
                 const hour = Math.floor(y / hourHeight) + 6;
-                const minute = Math.floor((y % hourHeight) / (hourHeight/4)) * 15;
+                const minute = Math.floor((y % hourHeight) / (hourHeight / 4)) * 15;
                 const date = timeSlot.dataset.date || this.currentDate.toISOString().split('T')[0];
                 const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 this.showSchedulingOptions(date, time);
@@ -267,7 +267,7 @@ class HybridAgendaModule {
         console.log('… Event listeners set up');
     }
     async loadInitialData() {
-    console.log('🛠️ Loading initial data...');
+        console.log('🛠️ Loading initial data...');
         try {
             // Show loading state
             this.showLoadingState();
@@ -744,7 +744,7 @@ class HybridAgendaModule {
         const startTime = this.convertUTCToLocal(item.startTime);
         const endTime = this.convertUTCToLocal(item.endTime);
         const typeClass = item.type === 'TURMA' ? 'turma-item' : 'personal-item';
-    const typeIcon = item.type === 'TURMA' ? '🥋' : '🧍';
+        const typeIcon = item.type === 'TURMA' ? '🥋' : '🧍';
         return `
             <div class="data-card-premium agenda-item ${typeClass}" data-id="${item.id}" data-type="${item.type}">
                 <div class="agenda-item-header">
@@ -763,13 +763,13 @@ class HybridAgendaModule {
                         <div class="detail-group">
                             <span class="detail-icon">🕐</span>
                             <span class="detail-text">
-                                ${startTime.toLocaleString('pt-BR', { 
-                                    year: 'numeric', 
-                                    month: '2-digit', 
-                                    day: '2-digit', 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                })} - ${endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                ${startTime.toLocaleString('pt-BR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        })} - ${endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         </div>
                         <div class="detail-group">
@@ -866,7 +866,7 @@ class HybridAgendaModule {
             const start = new Date(weekStart);
             const end = new Date(weekStart);
             end.setDate(start.getDate() + 6);
-            end.setHours(23,59,59,999);
+            end.setHours(23, 59, 59, 999);
             return d >= start && d <= end;
         });
         let minHour = 6, maxHour = 22;
@@ -890,7 +890,7 @@ class HybridAgendaModule {
                 return this.isSameDate(item.startTime, day);
             });
             columns.push(`
-                <div class="week-column" data-date="${dayDateString}" style="min-height:${hoursVisible*60}px">
+                <div class="week-column" data-date="${dayDateString}" style="min-height:${hoursVisible * 60}px">
                     ${dayEvents.map(item => this.renderWeekEvent(item, hourOffset)).join('')}
                 </div>
             `);
@@ -906,7 +906,7 @@ class HybridAgendaModule {
         const top = ((startHour - hourOffset) * 60 + startMinute);
         const height = Math.max(duration, 20);
         const typeClass = item.type === 'TURMA' ? 'turma-event' : 'personal-event';
-        
+
         // Debug log para posicionamento
         console.log(`📅 Event positioning for "${item.title}":`, {
             originalStartTime: item.startTime,
@@ -920,7 +920,7 @@ class HybridAgendaModule {
             height: `${height}px`,
             duration: `${duration} minutes`
         });
-        
+
         return `
             <div class="week-event ${typeClass} agenda-item" 
                  data-id="${item.id}" 
@@ -943,7 +943,7 @@ class HybridAgendaModule {
         });
     }
     renderMonthHeaders() {
-    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         return dayNames.map(day => `<div class="month-header-day">${day}</div>`).join('');
     }
     renderMonthCells() {
@@ -1110,7 +1110,7 @@ class HybridAgendaModule {
     showSchedulingOptions(date, time) {
         // Quick scheduling modal
         const timeString = `${date} ${time}`;
-    console.log('🗓️ Quick scheduling for:', timeString);
+        console.log('🗓️ Quick scheduling for:', timeString);
         // Pre-fill form with selected date/time and show modal
         this.showUnifiedModal(null, {
             date: date,
@@ -1161,7 +1161,7 @@ class HybridAgendaModule {
         this.loadAgendaData();
     }
     async handleAgendaItemClick(itemId, itemType) {
-    console.log('🎯 Agenda item clicked:', itemId, itemType);
+        console.log('🎯 Agenda item clicked:', itemId, itemType);
         // Simple debounce to avoid rapid repeated clicks
         const now = Date.now();
         if (this._lastClick && now - this._lastClick < 600) {
@@ -1216,11 +1216,11 @@ class HybridAgendaModule {
     }
     // Navigation methods (AGENTS.md: Full-screen pages, no modals)
     navigateToTurmaDetails(turmaId) {
-    console.log('🧭 Navigating to turma details:', turmaId);
+        console.log('🧭 Navigating to turma details:', turmaId);
         this.showTurmaDetailsPage(turmaId);
     }
     navigateToPersonalSessionDetails(sessionId) {
-    console.log('🧭 Navigating to personal session details:', sessionId);
+        console.log('🧭 Navigating to personal session details:', sessionId);
         this.showPersonalSessionDetailsPage(sessionId);
     }
     async showTurmaDetailsPage(turmaId) {
@@ -1441,19 +1441,19 @@ class HybridAgendaModule {
     }
     setupTurmaDetailsEvents(turmaId) {
         // Setup any specific event handlers for turma details page
-    console.log('🛠️ Setting up turma details events for:', turmaId);
+        console.log('🛠️ Setting up turma details events for:', turmaId);
     }
     setupPersonalSessionDetailsEvents(sessionId) {
         // Setup any specific event handlers for personal session details page
-    console.log('🛠️ Setting up personal session details events for:', sessionId);
+        console.log('🛠️ Setting up personal session details events for:', sessionId);
     }
     editTurma(turmaId) {
-    console.log('🛠️ Editing turma:', turmaId);
+        console.log('🛠️ Editing turma:', turmaId);
         // TODO: Implement turma editing page (full-screen)
         this.showUnifiedModal(); // For now, use unified modal
     }
     editPersonalSession(sessionId) {
-    console.log('🛠️ Editing personal session:', sessionId);
+        console.log('🛠️ Editing personal session:', sessionId);
         // TODO: Implement personal session editing page (full-screen)
         this.showUnifiedModal(); // For now, use unified modal
     }
@@ -1543,7 +1543,7 @@ class HybridAgendaModule {
                 </div>
             </div>
         `;
-    // Event listeners para as opções
+        // Event listeners para as opções
         menu.querySelectorAll('.scheduling-option').forEach(option => {
             option.addEventListener('click', (e) => {
                 const type = option.dataset.type;
@@ -1553,7 +1553,7 @@ class HybridAgendaModule {
                 menu.remove();
             });
         });
-    // Event listener para botão de cancelar
+        // Event listener para botão de cancelar
         menu.querySelector('.close-menu-btn').addEventListener('click', () => {
             menu.remove();
         });
@@ -1594,7 +1594,7 @@ class HybridAgendaModule {
         }
     }
     async scheduleEvent(date, time) {
-    alert('Funcionalidade de eventos será implementada em breve!');
+        alert('Funcionalidade de eventos será implementada em breve!');
     }
     async showPersonalTrainingForm(date, time) {
         return new Promise((resolve) => {
@@ -1702,7 +1702,7 @@ class HybridAgendaModule {
         });
     }
     createFormContainer(title, date, time) {
-    // Remove formulário existente se houver
+        // Remove formulário existente se houver
         const existingForm = document.querySelector('.scheduling-form-overlay');
         if (existingForm) {
             existingForm.remove();
@@ -1868,7 +1868,7 @@ class HybridAgendaModule {
         }
     }
     addMockSessionToCalendar(sessionData, type) {
-    // Adiciona sessão mockup aos dados do calendário
+        // Adiciona sessão mockup aos dados do calendário
         const mockItem = {
             id: `mock-${Date.now()}`,
             type: type,
@@ -1973,10 +1973,10 @@ class HybridAgendaModule {
     // Following AGENTS.md: No modals, use full-screen pages instead
     // Supports both create and edit modes (consolidated from simple.js)
     showUnifiedModal(editData = null) {
-    const isEditMode = !!editData;
-    const modeText = isEditMode ? 'Editar' : 'Criar';
-    const modeIcon = isEditMode ? '✏️' : '•';
-    console.log(`🛠️ Showing unified ${isEditMode ? 'edit' : 'create'} page (full-screen)...`);
+        const isEditMode = !!editData;
+        const modeText = isEditMode ? 'Editar' : 'Criar';
+        const modeIcon = isEditMode ? '✏️' : '•';
+        console.log(`🛠️ Showing unified ${isEditMode ? 'edit' : 'create'} page (full-screen)...`);
         const container = document.getElementById('agenda-container');
         if (!container) {
             console.error('❌ Container not found');
@@ -1988,7 +1988,7 @@ class HybridAgendaModule {
     }
     getUnifiedCreatePageHTML(editData = null, isEditMode = false, modeText = 'Criar', modeIcon = '•') {
         const formTitle = isEditMode ? `${modeIcon} ${modeText} Agendamento` : `${modeIcon} ${modeText} Novo Agendamento`;
-    const formSubtitle = isEditMode ? 'Edite os dados do agendamento' : 'Agende uma sessão personal ou aula coletiva';
+        const formSubtitle = isEditMode ? 'Edite os dados do agendamento' : 'Agende uma sessão personal ou aula coletiva';
         const hiddenIdField = isEditMode ? `<input type="hidden" name="id" value="${editData.id}">` : '';
         // Set default values for edit mode
         const defaultType = editData ? editData.type : 'PERSONAL_SESSION';
@@ -2014,10 +2014,10 @@ class HybridAgendaModule {
                             recurrenceData = JSON.parse(editData.recurrenceRule);
                         }
                         if (recurrenceData) {
-                            defaultRecurring = recurrenceData.type === 'WEEKLY' ? 'weekly' : 
-                                              recurrenceData.type === 'MONTHLY' ? 'monthly' : 'weekly';
+                            defaultRecurring = recurrenceData.type === 'WEEKLY' ? 'weekly' :
+                                recurrenceData.type === 'MONTHLY' ? 'monthly' : 'weekly';
                             defaultDaysOfWeek = Array.isArray(recurrenceData.daysOfWeek) ? recurrenceData.daysOfWeek : [];
-                            defaultEndRecurrence = recurrenceData.endDate ? 
+                            defaultEndRecurrence = recurrenceData.endDate ?
                                 new Date(recurrenceData.endDate).toISOString().split('T')[0] : '';
                         } else if (typeof editData.recurrenceRule === 'string') {
                             const upper = editData.recurrenceRule.toUpperCase();
@@ -2037,7 +2037,7 @@ class HybridAgendaModule {
                 defaultRecurring = 'false';
             }
         }
-    console.log('🛠️ Creating form with recurrence defaults:', {
+        console.log('🛠️ Creating form with recurrence defaults:', {
             defaultRecurring,
             defaultDaysOfWeek,
             defaultEndRecurrence,
@@ -2098,6 +2098,17 @@ class HybridAgendaModule {
                                 </label>
                             </div>
                             ${isEditMode ? `<input type="hidden" name="type" value="${defaultType}">` : ''}
+                        </div>
+                        <div id="personal-fields" class="form-section" style="display: none;">
+                            <h3>👤 Seleção do Aluno</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="studentId">Aluno *</label>
+                                    <select id="studentId" name="studentId" class="form-select">
+                                        <option value="">Carregando alunos...</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-section">
                             <h3>📝 Informações Básicas</h3>
@@ -2253,13 +2264,14 @@ class HybridAgendaModule {
         }
     }
     async loadUnifiedFormData(editData = null) {
-    console.log('🛠️ Loading unified form data...', editData ? 'with edit data' : 'for creation');
+        console.log('🛠️ Loading unified form data...', editData ? 'with edit data' : 'for creation');
         try {
             // Load instructors, units, and training areas in parallel
             await Promise.all([
                 this.loadInstructors(editData),
                 this.loadUnits(editData),
-                this.loadTrainingAreas(editData)
+                this.loadTrainingAreas(editData),
+                this.loadStudents(editData)
             ]);
             // If in edit mode, set additional form values after data is loaded
             if (editData) {
@@ -2369,12 +2381,49 @@ class HybridAgendaModule {
             console.error('Error loading training areas:', error);
         }
     }
+    async loadStudents(editData = null) {
+        try {
+            await this.api.fetchWithStates('/api/students', {
+                method: 'GET',
+                onSuccess: (data) => {
+                    const select = document.getElementById('studentId');
+                    if (select && data) {
+                        select.innerHTML = '<option value="">Selecione um aluno</option>';
+                        data.forEach(student => {
+                            const isSelected = editData && editData.studentId === student.id;
+                            select.innerHTML += `<option value="${student.id}" ${isSelected ? 'selected' : ''}>${student.name}</option>`;
+                        });
+                    }
+                },
+                onError: (error) => {
+                    console.error('Error loading students:', error);
+                }
+            });
+        } catch (error) {
+            console.error('Error loading students:', error);
+        }
+    }
     toggleFormFields() {
         const typeRadios = document.querySelectorAll('input[name="type"]');
         const selectedType = Array.from(typeRadios).find(radio => radio.checked)?.value;
         const turmaFields = document.getElementById('turma-fields');
+        const turmaFields = document.getElementById('turma-fields');
+        const personalFields = document.getElementById('personal-fields');
+
         if (turmaFields) {
             turmaFields.style.display = selectedType === 'TURMA' ? 'block' : 'none';
+        }
+        if (personalFields) {
+            personalFields.style.display = selectedType === 'PERSONAL_SESSION' ? 'block' : 'none';
+            // Add required attribute dynamically to prevent validation errors on hidden fields
+            const studentSelect = document.getElementById('studentId');
+            if (studentSelect) {
+                if (selectedType === 'PERSONAL_SESSION') {
+                    studentSelect.setAttribute('required', 'required');
+                } else {
+                    studentSelect.removeAttribute('required');
+                }
+            }
         }
     }
     toggleRecurrenceFields() {
@@ -2441,8 +2490,67 @@ class HybridAgendaModule {
             // Add type-specific fields
             if (data.type === 'TURMA') {
                 agendaData.maxStudents = parseInt(data.maxStudents) || 10;
+            } else if (data.type === 'PERSONAL_SESSION') {
+                agendaData.studentId = data.studentId;
             }
+
             console.log(`🛠️ Submitting agenda data (${isEditMode ? 'UPDATE' : 'CREATE'}) with timezone fix:`, agendaData);
+
+            // HANDLE RECURRENCE LOOP FOR PERSONAL SESSIONS
+            if (!isEditMode && agendaData.type === 'PERSONAL_SESSION' && agendaData.isRecurring && selectedDays.length > 0) {
+                // Calculate all dates
+                const datesToSchedule = [];
+                const endDateRecurrence = data.endRecurrence ? new Date(data.endRecurrence) : null;
+                const maxOccurrences = 52; // Safety limit
+
+                // Start from next occurrence logic or simple loop
+                // Simple loop: iterate from start date until end date
+                let currentDateIter = new Date(startDate);
+                let occurrences = 0;
+
+                // If end date is not specified, default to 1 month
+                const effectiveEndDate = endDateRecurrence || new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+                while (currentDateIter <= effectiveEndDate && occurrences < maxOccurrences) {
+                    // Check if current day is in selected days
+                    if (selectedDays.includes(currentDateIter.getDay())) {
+                        // Clone data
+                        const sessionDate = new Date(currentDateIter);
+                        // Set time
+                        sessionDate.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0);
+
+                        const sessionEndDate = new Date(sessionDate.getTime() + parseInt(data.duration) * 60000);
+
+                        // Create payload
+                        const singleSessionPayload = { ...agendaData };
+                        singleSessionPayload.isRecurring = false; // We are creating individual instances
+                        singleSessionPayload.recurrenceRule = null;
+                        singleSessionPayload.startTime = sessionDate.toISOString();
+                        singleSessionPayload.endTime = sessionEndDate.toISOString();
+
+                        datesToSchedule.push(singleSessionPayload);
+                    }
+                    // Next day
+                    currentDateIter.setDate(currentDateIter.getDate() + 1);
+                }
+
+                console.log(`Generaring ${datesToSchedule.length} sessions for recurrence.`);
+
+                // Execute sequentially
+                let successCount = 0;
+                for (const payload of datesToSchedule) {
+                    await this.api.saveWithFeedback('/api/hybrid-agenda', payload, {
+                        method: 'POST',
+                        onSuccess: () => successCount++,
+                        onError: (e) => console.error('Error creating recurrent session', e)
+                    });
+                }
+
+                this.showSuccessMessage(`${successCount} sessões de Personal Training criadas!`);
+                this.backToMain();
+                return; // Stop standard flow
+            }
+
             // Create or Update via API (use saveWithFeedback to respect method and body)
             const url = isEditMode ? `/api/hybrid-agenda/${data.id}` : '/api/hybrid-agenda';
             const method = isEditMode ? 'PUT' : 'POST';
@@ -2454,6 +2562,20 @@ class HybridAgendaModule {
                     this.backToMain();
                 },
                 onError: (error) => {
+                    // Check for Auto-Billing Payment Link
+                    if (error.status === 402 && error.data && error.data.payment) {
+                        const payment = error.data.payment;
+                        this.showErrorMessage(`
+                            <strong>Saldo Insuficiente!</strong><br>
+                            Uma cobrança foi gerada automaticamente.<br><br>
+                            <a href="${payment.invoiceUrl}" target="_blank" class="btn-primary" style="color: white; text-decoration: none; display: inline-block; margin-top: 5px;">
+                                💸 Pagar Agora (R$ ${payment.value})
+                            </a>
+                            ${payment.pixCode ? `<br><br><small>Ou use o PIX Copia e Cola:</small><br><input type="text" value="${payment.pixCode}" readonly onclick="this.select()" style="width:100%; margin-top:5px;">` : ''}
+                        `);
+                        return;
+                    }
+
                     const errorMessage = isEditMode ? 'Erro ao atualizar agendamento' : 'Erro ao criar agendamento';
                     throw new Error(error?.message || errorMessage);
                 }
@@ -2501,7 +2623,7 @@ class HybridAgendaModule {
             return;
         }
         // Render details page with Premium UI
-        const typeInfo = item.type === 'PERSONAL_SESSION' 
+        const typeInfo = item.type === 'PERSONAL_SESSION'
             ? { icon: '🧍', name: 'Personal Training', color: '#764ba2' }
             : { icon: '🥋', name: 'Aula Coletiva', color: '#667eea' };
         container.innerHTML = `
@@ -2569,7 +2691,7 @@ class HybridAgendaModule {
         `;
     }
     async renderEditPage(container, itemId) {
-    console.log(`🛠️ Rendering edit page for item: ${itemId}`);
+        console.log(`🛠️ Rendering edit page for item: ${itemId}`);
         // Buscar dados do item
         let itemData = this.agendaData?.find(item => item.id === itemId);
         // If we already know it's a TURMA from the local list, redirect immediately
@@ -2620,7 +2742,7 @@ class HybridAgendaModule {
         this.showUnifiedModal(itemData);
     }
     backToMain() {
-    console.log('🛠️ Returning to main agenda view...');
+        console.log('🛠️ Returning to main agenda view...');
         this.initialize(document.getElementById('agenda-container'));
     }
     // Delete agenda item (consolidated from simple.js)
@@ -2680,7 +2802,7 @@ window.initHybridAgendaModule = async function initHybridAgendaModule(container,
         window.hybridAgendaModule = hybridAgendaModule;
         return hybridAgendaModule;
     } catch (error) {
-    console.error('❌ Failed to initialize Hybrid Agenda module:', error);
+        console.error('❌ Failed to initialize Hybrid Agenda module:', error);
         if (window.app) {
             window.app.handleError(error, 'hybrid-agenda:init');
         }
@@ -2696,43 +2818,43 @@ window.initHybridAgendaModule = async function initHybridAgendaModule(container,
 // Export for global access (consolidated from simple.js)
 window.hybridAgenda = HybridAgendaModule;
 // Global functions for onclick compatibility (from removed simple.js)
-window.showCreateModal = function() {
+window.showCreateModal = function () {
     if (window.hybridAgenda) {
         window.hybridAgenda.showUnifiedModal();
     }
 };
-window.closeCreateModal = function() {
+window.closeCreateModal = function () {
     if (window.hybridAgenda) {
         window.hybridAgenda.backToMain();
     }
 };
-window.handleAgendaItemClick = function(itemId, itemType) {
+window.handleAgendaItemClick = function (itemId, itemType) {
     if (window.hybridAgenda) {
         window.hybridAgenda.handleAgendaItemClick(itemId, itemType);
     }
 };
-window.deleteAgendaItem = function(itemId) {
+window.deleteAgendaItem = function (itemId) {
     if (window.hybridAgenda) {
         window.hybridAgenda.deleteAgendaItem(itemId);
     }
 };
 // Additional legacy functions from simple.js for compatibility
-window.showCreateMenu = function(date, time) {
+window.showCreateMenu = function (date, time) {
     console.log('🛠️ showCreateMenu called - redirecting to unified modal');
     if (window.hybridAgenda) {
         window.hybridAgenda.showUnifiedModal();
     }
 };
-window.closeCreateMenu = function() {
+window.closeCreateMenu = function () {
     console.log('🛠️ closeCreateMenu called - no action needed (full-screen mode)');
 };
-window.showSchedulingForm = function(type, date, time) {
+window.showSchedulingForm = function (type, date, time) {
     console.log('🛠️ showSchedulingForm called - redirecting to unified modal');
     if (window.hybridAgenda) {
         window.hybridAgenda.showUnifiedModal();
     }
 };
-window.closeSchedulingForm = function() {
+window.closeSchedulingForm = function () {
     console.log('🛠️ closeSchedulingForm called - returning to main view');
     if (window.hybridAgenda) {
         window.hybridAgenda.backToMain();

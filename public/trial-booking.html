@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Agendar Aula Experimental</title>
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Day.js -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/pt-br.js"></script>
+    <script>dayjs.locale('pt-br');</script>
+
+    <!-- Project Styles -->
+    <link rel="stylesheet" href="/css/force-reset.css">
+    <link rel="stylesheet" href="/css/design-system/index.css">
+    <link rel="stylesheet" href="/css/forms-ux.css">
+    <link rel="stylesheet" href="/css/global-premium-colors.css">
+
+    <style>
+        :root {
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        body {
+            background-color: #f9fafb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: calc(var(--safe-bottom) + 20px);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .lp-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: calc(var(--safe-top) + 12px) 1rem 12px 1rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .org-logo {
+            height: 36px;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .page-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+            flex: 1;
+            box-sizing: border-box;
+        }
+
+        /* --- Welcome Card --- */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-color, #2563eb), var(--secondary-color, #1e40af));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2), 0 4px 6px -2px rgba(37, 99, 235, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+        }
+
+        .welcome-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.02em;
+        }
+
+        .welcome-text {
+            opacity: 0.95;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* --- Guest Form --- */
+        .guest-form-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color, #2563eb);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .cta-button {
+            width: 100%;
+            background: var(--primary-color, #2563eb);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .cta-button:active {
+            transform: scale(0.98);
+        }
+
+        .cta-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* --- Unified Sections --- */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #111827;
+            padding-left: 0.25rem;
+            letter-spacing: -0.01em;
+        }
+
+        .date-selector {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.75rem;
+            padding: 0.25rem 0.25rem 1.5rem 0.25rem;
+            margin-bottom: 0.5rem;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            scroll-padding-left: 1rem;
+        }
+
+        .date-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .date-chip {
+            background: white;
+            border: 1px solid #f3f4f6;
+            border-radius: 1rem;
+            padding: 0.85rem 0;
+            width: 72px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .date-chip.active {
+            background: var(--primary-color, #2563eb);
+            color: white;
+            border-color: var(--primary-color, #2563eb);
+            box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .date-chip .day-name {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            display: block;
+            letter-spacing: 0.05em;
+            opacity: 0.7;
+        }
+
+        .date-chip.active .day-name {
+            opacity: 0.9;
+        }
+
+        .date-chip .day-number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .class-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .class-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .class-card:active {
+            transform: scale(0.98);
+            background-color: #fafafa;
+        }
+
+        .class-time {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f0f9ff;
+            color: var(--primary-color, #2563eb);
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.85rem;
+            min-width: 76px;
+        }
+
+        .time-start {
+            font-weight: 800;
+            font-size: 1.2rem;
+            line-height: 1;
+            margin-bottom: 0.1rem;
+        }
+
+        .time-end {
+            font-size: 0.75rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        .class-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .class-modality {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            display: inline-block;
+            margin-bottom: 0.35rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .class-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #111827;
+            margin-bottom: 0.35rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .instructor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .instructor-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e5e7eb;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #e5e7eb;
+        }
+
+        .book-btn {
+            background: var(--primary-color, #2563eb);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .book-btn:active {
+            transform: scale(0.9);
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+        }
+
+        .book-btn i {
+            font-size: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: #9ca3af;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Loading Spinner --- */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+        }
+
+        .spinner-ring {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid var(--primary-color, #2563eb);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- SweetAlert Customization --- */
+        .swal2-popup {
+            border-radius: 1.5rem !important;
+            font-family: 'Inter', sans-serif !important;
+            padding: 2rem 1rem !important;
+        }
+
+        /* --- Utilities --- */
+        .hidden {
+            display: none !important;
+        }
+
+        .skeleton {
+            background: #e5e7eb;
+            border-radius: 0.5rem;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="lp-header">
+        <img id="orgLogo" class="org-logo" style="display: none;" alt="Logo">
+        <h1 style="font-size: 0.95rem; font-weight: 600; color: #374151; margin: 0;">Agendar Aula Experimental</h1>
+    </header>
+
+    <div class="page-container">
+
+        <!-- --- Guest Registration (Mode 1) --- -->
+        <div id="guestSection" class="hidden">
+            <div class="welcome-card" style="margin-bottom: 2rem;">
+                <div class="welcome-title">Vamos começar? 🚀</div>
+                <div class="welcome-text">Preencha seus dados abaixo para ver os horários e agendar sua aula gratuita.
+                </div>
+            </div>
+
+            <div class="guest-form-card">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" id="regName" class="form-input" placeholder="Seu nome">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WhatsApp</label>
+                    <input type="tel" id="regPhone" class="form-input" placeholder="(00) 00000-0000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="regEmail" class="form-input" placeholder="seu@email.com">
+                </div>
+
+                <button onclick="registerLead()" class="cta-button">
+                    <span>Ver Horários</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- --- Booking Context (Mode 2) --- -->
+        <div id="bookingSection" class="hidden">
+            <div id="welcomeCard" class="welcome-card" style="display: none;">
+                <div class="welcome-title">Olá, <span id="leadName">...</span>! 👋</div>
+                <div class="welcome-text">Selecione um horário abaixo para garantir sua aula experimental gratuita.
+                </div>
+            </div>
+
+            <div class="section-title">Escolha uma data</div>
+            <div id="dateSelector" class="date-selector">
+                <div class="date-chip skeleton" style="border:none;"></div>
+                <div class="date-chip skeleton" style="border:none;"></div>
+                <div class="date-chip skeleton" style="border:none;"></div>
+                <div class="date-chip skeleton" style="border:none;"></div>
+                <div class="date-chip skeleton" style="border:none;"></div>
+            </div>
+
+            <div class="section-title">Horários disponíveis</div>
+            <div id="classList" class="class-list">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // State
+        const urlParams = new URLSearchParams(window.location.search);
+        let leadId = urlParams.get('leadId');
+        let currentOrgId = null;
+        let selectedDate = dayjs().format('YYYY-MM-DD');
+        let classesData = {};
+
+        const API_BASE = '';
+
+        async function init() {
+            if (!leadId) {
+                document.getElementById('guestSection').classList.remove('hidden');
+                document.body.style.opacity = '1';
+            } else {
+                document.getElementById('bookingSection').classList.remove('hidden');
+                loadBookingData();
+                document.body.style.opacity = '1';
+            }
+        }
+
+        async function registerLead() {
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const email = document.getElementById('regEmail').value;
+
+            if (!name || !phone || !email) {
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
+                return;
+            }
+
+            try {
+                const btn = document.querySelector('.cta-button');
+                btn.innerHTML = '<div class="spinner-ring" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>';
+                btn.disabled = true;
+
+                const res = await fetch(`${API_BASE}/lp/crm/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, email })
+                });
+
+                const json = await res.json();
+
+                if (json.success) {
+                    leadId = json.data.id;
+
+                    document.getElementById('guestSection').classList.add('hidden');
+                    document.getElementById('bookingSection').classList.remove('hidden');
+
+                    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?leadId=' + leadId;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+
+                    loadBookingData();
+                } else {
+                    throw new Error(json.message);
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Falha ao realizar cadastro.' });
+                const btn = document.querySelector('.cta-button');
+                btn.innerHTML = `<span>Ver Horários</span><i class="fas fa-arrow-right"></i>`;
+                btn.disabled = false;
+            }
+        }
+
+        async function loadBookingData() {
+            try {
+                await Promise.all([
+                    fetchLeadInfo(),
+                    fetchClasses()
+                ]);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('dateSelector').innerHTML = '';
+                document.getElementById('classList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-wifi" style="font-size: 2rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                        <p>Erro de conexão</p>
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #e5e7eb; border: none; border-radius: 0.5rem; font-weight: 600;">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchLeadInfo() {
+            try {
+                const res = await fetch(`${API_BASE}/lp/crm/info/${leadId}`);
+                const json = await res.json();
+                if (json.success) {
+                    const lead = json.data;
+                    document.getElementById('leadName').innerText = lead.name.split(' ')[0];
+                    document.getElementById('welcomeCard').style.display = 'block';
+                    if (lead.organization) {
+                        currentOrgId = lead.organizationId;
+                        const root = document.documentElement;
+                        if (lead.organization.primaryColor) root.style.setProperty('--primary-color', lead.organization.primaryColor);
+                        if (lead.organization.secondaryColor) root.style.setProperty('--secondary-color', lead.organization.secondaryColor);
+                        if (lead.organization.logoUrl) {
+                            const img = document.getElementById('orgLogo');
+                            img.src = lead.organization.logoUrl;
+                            img.style.display = 'block';
+                        }
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchClasses() {
+            const query = leadId ? `?leadId=${leadId}` : '';
+            const res = await fetch(`${API_BASE}/lp/crm/classes${query}`);
+            const json = await res.json();
+            if (json.success) {
+                classesData = json.data;
+                renderDateSelector();
+                renderClassList();
+            }
+        }
+
+        function renderDateSelector() {
+            const container = document.getElementById('dateSelector');
+            container.innerHTML = '';
+            for (let i = 0; i < 7; i++) {
+                const date = dayjs().add(i, 'day');
+                const dateStr = date.format('YYYY-MM-DD');
+                const isSelected = dateStr === selectedDate;
+                const chip = document.createElement('div');
+                chip.className = `date-chip ${isSelected ? 'active' : ''}`;
+                chip.onclick = () => {
+                    selectedDate = dateStr;
+                    renderDateSelector();
+                    renderClassList();
+                    setTimeout(() => {
+                        const activeEl = document.querySelector('.date-chip.active');
+                        if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }, 50);
+                };
+                chip.innerHTML = `<span class="day-name">${i === 0 ? 'Hoje' : date.format('ddd').replace('.', '')}</span><span class="day-number">${date.format('DD')}</span>`;
+                container.appendChild(chip);
+            }
+        }
+
+        function renderClassList() {
+            const container = document.getElementById('classList');
+            container.innerHTML = '';
+            const dayClasses = classesData[selectedDate] || [];
+            if (dayClasses.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon-circle"><i class="fas fa-calendar-day" style="font-size: 1.5rem; color: #9ca3af;"></i></div><p style="font-weight: 500;">Sem aulas neste dia</p></div>`;
+                return;
+            }
+            dayClasses.forEach(cls => {
+                const card = document.createElement('div');
+                card.className = 'class-card';
+                card.onclick = (e) => { if (!e.target.closest('.book-btn')) confirmBooking(cls.id, cls.title, cls.startTime, cls.modality); };
+                card.innerHTML = `
+                    <div class="class-time"><span class="time-start">${cls.startTime}</span><span class="time-end">${cls.endTime}</span></div>
+                    <div class="class-info">
+                        <span class="class-modality">${cls.modality}</span>
+                        <div class="class-title">${cls.title}</div>
+                        <div class="instructor-info">
+                            <img src="${cls.instructor?.avatarUrl || 'https://ui-avatars.com/api/?name=Instructor'}" class="instructor-avatar">
+                            <span>${cls.instructor?.firstName || 'Instrutor'}</span>
+                        </div>
+                    </div>
+                    <button class="book-btn"><i class="fas fa-arrow-right"></i></button>`;
+                container.appendChild(card);
+            });
+        }
+
+        function confirmBooking(classId, title, time, modality) {
+            Swal.fire({
+                title: 'Confirmar Agendamento?',
+                html: `Deseja agendar sua aula de <b>${modality}</b> às <b>${time}</b>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, Agendar!',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb',
+                heightAuto: false
+            }).then((result) => { if (result.isConfirmed) bookClass(classId); });
+        }
+
+        async function bookClass(classId) {
+            try {
+                Swal.fire({ title: 'Agendando...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), heightAuto: false });
+                const res = await fetch(`${API_BASE}/lp/crm/book`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ leadId, classId, date: selectedDate })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    Swal.fire({ icon: 'success', title: 'Confirmado! 🎉', text: 'Sua aula foi agendada.', confirmButtonColor: '#2563eb', heightAuto: false }).then(() => location.reload());
+                } else { throw new Error(json.message); }
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Erro', text: error.message || 'Falha ao agendar.', heightAuto: false });
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

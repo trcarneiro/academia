@@ -17,19 +17,19 @@ class ImportController {
         this.activeTab = 'asaas'; // Aba ativa padrão
         this.moduleAPI = null;
         this.asaasCustomers = [];
-        
+
         // Estados do workflow
         this.steps = {
             1: 'upload',
-            2: 'validate', 
+            2: 'validate',
             3: 'preview',
             4: 'import'
         };
-        
+
         // Controle da aba Asaas
         this.asaasTabLoaded = false;
         this.asaasCustomers = [];
-        
+
         this.onError = null; // Callback para erros
     }
 
@@ -39,18 +39,18 @@ class ImportController {
     async init() {
         try {
             console.log('🎮 Inicializando ImportController...');
-            
+
             await this.initializeAPI();
             this.setupMainStructure();
             this.setupEventListeners();
             this.setupTabSwitching(); // Configurar troca de abas
             await this.loadImportStats();
-            
+
             // Renderizar aba ativa (CSV por padrão)
             this.loadCSVTab();
-            
+
             console.log('✅ ImportController inicializado com sucesso');
-            
+
         } catch (error) {
             console.error('❌ Erro ao inicializar ImportController:', error);
             if (this.onError) {
@@ -82,7 +82,7 @@ class ImportController {
                 successful: parseInt(localStorage.getItem('import_successful') || '0'),
                 failed: parseInt(localStorage.getItem('import_failed') || '0')
             };
-            
+
             this.updateStatsCards(stats);
         } catch (error) {
             console.warn('⚠️ Erro ao carregar stats de importação:', error);
@@ -105,45 +105,39 @@ class ImportController {
 
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
-                const targetTab = e.currentTarget.dataset.tab;
+                tab.addEventListener('click', async (e) => {
+                    const targetTab = e.currentTarget.dataset.tab;
 
-                // Remover active de todas as abas
-                tabs.forEach(t => t.classList.remove('active'));
-                e.currentTarget.classList.add('active');
+                    // Remover active de todas as abas
+                    tabs.forEach(t => t.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
 
-                // Alternar conteúdo
-                if (targetTab === 'csv') {
-                    csvContent.style.display = 'block';
-                    asaasContent.style.display = 'none';
-                    this.currentTab = 'csv';
-                    console.log('📄 Aba CSV ativa');
-                } else if (targetTab === 'asaas') {
-                    csvContent.style.display = 'none';
-                    asaasContent.style.display = 'block';
-                    this.currentTab = 'asaas';
-                    
-                    // Carregar conteúdo da aba Asaas na primeira vez
-                    if (!this.asaasTabLoaded) {
-                        this.loadAsaasTab();
-                        this.asaasTabLoaded = true;
+                    if (targetTab === 'asaas') {
+                        this.activeTab = 'asaas';
+                        csvContent.style.display = 'none';
+                        asaasContent.style.display = 'block';
+
+                        if (!this.asaasTabLoaded) {
+                            await this.loadAsaasTab();
+                            this.asaasTabLoaded = true;
+                        }
+
+                        console.log('💳 Aba Asaas ativa');
                     }
-                    
-                    console.log('💳 Aba Asaas ativa');
-                }
+                });
             });
-        });
-    }
+        }
 
     /**
      * Carregar conteúdo da aba Asaas
      */
     loadAsaasTab() {
-        const asaasContent = this.container.querySelector('#asaas-tab-content');
-        
-        if (!asaasContent) {
-            console.error('❌ Container da aba Asaas não encontrado');
-            return;
-        }
+            const asaasContent = this.container.querySelector('#asaas-tab-content');
+
+            if(!asaasContent) {
+                console.error('❌ Container da aba Asaas não encontrado');
+                return;
+            }
 
         asaasContent.innerHTML = `
             <div class="asaas-import-wrapper">
@@ -153,6 +147,26 @@ class ImportController {
                     <p>Importe seus clientes do Asaas para o sistema</p>
                     <div id="connection-status" class="connection-status">
                         <span class="status-badge status-idle">⚪ Aguardando teste de conexão</span>
+                    </div>
+                </div>
+
+                <!-- Default Course/Plan Selection -->
+                <div class="asaas-settings-panel">
+                    <h3>📚 Matrícula Automática (Opcional)</h3>
+                    <p>Selecione um curso e plano para matricular automaticamente os novos alunos importados.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="import-default-course">Curso Padrão</label>
+                            <select id="import-default-course" class="form-select">
+                                <option value="">Selecione um curso...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="import-default-plan">Plano Padrão</label>
+                            <select id="import-default-plan" class="form-select" disabled>
+                                <option value="">Selecione um curso primeiro...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -222,52 +236,52 @@ class ImportController {
             </div>
         `;
 
-        // Configurar eventos da aba Asaas
-        this.setupAsaasEvents();
+            // Configurar eventos da aba Asaas
+            this.setupAsaasEvents();
 
-        // Configurar event listeners dos botões
-        const btnTest = this.container.querySelector('#btn-test-connection');
-        const btnFetch = this.container.querySelector('#btn-fetch-asaas');
-        const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
-        const btnClean = this.container.querySelector('#btn-clean-duplicates');
+            // Configurar event listeners dos botões
+            const btnTest = this.container.querySelector('#btn-test-connection');
+            const btnFetch = this.container.querySelector('#btn-fetch-asaas');
+            const btnImportAll = this.container.querySelector('#btn-import-all-asaas');
+            const btnClean = this.container.querySelector('#btn-clean-duplicates');
 
-        if (btnTest) {
-            btnTest.addEventListener('click', () => this.testAsaasConnection());
-        }
+            if(btnTest) {
+                btnTest.addEventListener('click', () => this.testAsaasConnection());
+            }
 
-        if (btnFetch) {
-            btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
-        }
+        if(btnFetch) {
+                btnFetch.addEventListener('click', () => this.fetchAsaasCustomers());
+            }
 
-        if (btnImportAll) {
-            btnImportAll.addEventListener('click', () => this.importAllAsaas());
-        }
+        if(btnImportAll) {
+                btnImportAll.addEventListener('click', () => this.importAllAsaas());
+            }
 
-        if (btnClean) {
-            btnClean.addEventListener('click', () => this.cleanDuplicates());
-        }
+        if(btnClean) {
+                btnClean.addEventListener('click', () => this.cleanDuplicates());
+            }
 
         console.log('✅ Aba Asaas carregada');
-    }
+        }
 
     /**
      * Atualizar cards de estatísticas
      */
     updateStatsCards(stats) {
-        const totalEl = this.container.querySelector('#stat-total-imports');
-        const successEl = this.container.querySelector('#stat-successful');
-        const failedEl = this.container.querySelector('#stat-failed');
-        
-        if (totalEl) totalEl.textContent = stats.total || 0;
-        if (successEl) successEl.textContent = stats.successful || 0;
-        if (failedEl) failedEl.textContent = stats.failed || 0;
-    }
+            const totalEl = this.container.querySelector('#stat-total-imports');
+            const successEl = this.container.querySelector('#stat-successful');
+            const failedEl = this.container.querySelector('#stat-failed');
+
+            if(totalEl) totalEl.textContent = stats.total || 0;
+            if(successEl) successEl.textContent = stats.successful || 0;
+            if(failedEl) failedEl.textContent = stats.failed || 0;
+        }
 
     /**
      * Configurar estrutura principal do módulo
      */
     setupMainStructure() {
-        this.container.innerHTML = `
+            this.container.innerHTML = `
             <div class="module-isolated-import">
                 <!-- Header Premium -->
                 <div class="import-header-premium">
@@ -366,322 +380,230 @@ class ImportController {
                 </div>
             </div>
         `;
-    }
+        }
     /**
      * Carregar aba CSV (upload de arquivo)
      */
     loadCSVTab() {
-        const content = this.container.querySelector('#import-content');
-        
-        if (!content) {
-            console.warn('⚠️ Container #import-content não encontrado');
-            return;
-        }
-        
+            const content = this.container.querySelector('#import-content');
+
+            if(!content) {
+                console.warn('⚠️ Container #import-content não encontrado');
+                return;
+            }
+
         // Renderizar view de upload
         this.renderUploadView();
-    }
+        }
 
     /**
      * Renderizar view de upload de arquivo CSV
      */
     renderUploadView() {
-        const content = this.container.querySelector('#import-content');
-                        <div class="stat-info">
-                            <div class="stat-value" id="asaas-total-customers">-</div>
-                            <div class="stat-label">Clientes no Asaas</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card-enhanced stat-gradient-success">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="asaas-imported">-</div>
-                            <div class="stat-label">Já Importados</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card-enhanced stat-gradient-warning">
-                        <div class="stat-icon">📥</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="asaas-pending">-</div>
-                            <div class="stat-label">Pendentes</div>
-                        </div>
-                    </div>
-                </div>
+            const content = this.container.querySelector('#import-content');
+            // Content already rendered by lines 519-570
+            // Removing duplicate/corrupted HTML block
 
-                <!-- Ações -->
-                <div class="data-card-premium">
-                    <div class="asaas-actions-section">
-                        <div class="action-buttons">
-                            <button 
-                                id="btn-fetch-asaas" 
-                                class="btn-import-primary"
-                                onclick="window.import.controller.fetchAsaasCustomers()">
-                                🔄 Buscar Clientes do Asaas
-                            </button>
-                            
-                            <button 
-                                id="btn-import-all-asaas" 
-                                class="btn-import-success"
-                                style="display: none;"
-                                onclick="window.import.controller.importAllAsaas()">
-                                📥 Importar Todos Pendentes
-                            </button>
+            // Content cleaned up
 
-                            <button 
-                                id="btn-test-asaas" 
-                                class="btn-import-secondary"
-                                onclick="window.import.controller.testAsaasConnection()">
-                                🔌 Testar Conexão
-                            </button>
+            // Content already handled
 
-                            <button 
-                                id="btn-clean-duplicates" 
-                                class="btn-import-warning"
-                                style="display: none;"
-                                onclick="window.import.controller.cleanDuplicates()">
-                                🧹 Limpar Duplicatas
-                            </button>
-                        </div>
 
-                        <div class="connection-status" id="connection-status">
-                            <span class="status-badge status-unknown">⚪ Status desconhecido</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lista de Clientes -->
-                <div class="data-card-premium" id="asaas-customers-container" style="display: none;">
-                    <div class="card-header">
-                        <h2>📋 Clientes do Asaas</h2>
-                        <div class="filters-asaas">
-                            <input 
-                                type="text" 
-                                id="search-asaas-customers" 
-                                placeholder="🔍 Buscar por nome ou email..."
-                                class="input-search-asaas">
-                            
-                            <select id="filter-asaas-status" class="select-filter-asaas">
-                                <option value="all">Todos</option>
-                                <option value="pending">Pendentes</option>
-                                <option value="imported">Já Importados</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="asaas-customers-list" class="customers-list-asaas">
-                        <!-- Lista será renderizada aqui -->
-                    </div>
-                </div>
-
-                <!-- Resultados -->
-                <div class="data-card-premium" id="asaas-import-results" style="display: none;">
-                    <div class="card-header">
-                        <h2>📊 Resultados da Importação</h2>
-                    </div>
-                    <div id="asaas-results-content" class="results-content-asaas">
-                        <!-- Resultados serão renderizados aqui -->
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Configurar eventos da aba Asaas
-        this.setupAsaasEvents();
-        console.log('✅ Aba Asaas carregada');
-    }
+            // Configurar eventos da aba Asaas
+            this.setupAsaasEvents();
+            console.log('✅ Aba Asaas carregada');
+        }
 
     /**
      * Configurar event listeners
      */
     setupEventListeners() {
-        // Botão Voltar
-        const btnBack = this.container.querySelector('#btn-back');
-        if (btnBack) {
-            btnBack.addEventListener('click', () => this.previousStep());
-        }
+            // Botão Voltar
+            const btnBack = this.container.querySelector('#btn-back');
+            if(btnBack) {
+                btnBack.addEventListener('click', () => this.previousStep());
+            }
 
         // Botão Próximo
         const btnNext = this.container.querySelector('#btn-next');
-        if (btnNext) {
-            btnNext.addEventListener('click', () => this.nextStep());
+            if(btnNext) {
+                btnNext.addEventListener('click', () => this.nextStep());
+            }
         }
-    }
 
     /**
      * Carregar view de upload (Passo 1)
      */
     loadUploadView() {
-        this.updateProgressSteps(1);
-        
-        const content = this.container.querySelector('#import-content');
-        content.innerHTML = `
+            this.updateProgressSteps(1);
+
+            const content = this.container.querySelector('#import-content');
+            content.innerHTML = `
             <div class="upload-view fade-in">
                 <!-- Upload Area Premium -->
                 <div class="upload-area-premium" id="upload-area">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Arraste seu arquivo CSV aqui</div>
                     <div class="upload-subtext">ou clique para selecionar</div>
-                    <input type="file" id="file-input" class="file-input-hidden" accept=".csv" />
+                    <input type="file" id="file-input" class="file-input-hidden" accept=".json,.csv" />
                 </div>
 
                 <!-- Info sobre formato -->
-                <div class="data-preview-premium">
-                    <h3>📋 Formatos Suportados</h3>
-                    <div class="format-tabs">
-                        <div class="format-tab active" data-format="sistema">
-                            <h4>🎓 Formato Padrão</h4>
-                            <p>Campos: nome, email, telefone, documento, endereco, valor_mensalidade</p>
-                        </div>
-                        <div class="format-tab" data-format="asaas">
-                            <h4>💳 Formato Asaas</h4>
-                            <p>Importação direta de exportações do Asaas (mapeamento automático)</p>
-                        </div>
+            <div class="data-preview-premium">
+                <h3>📋 Formatos Suportados</h3>
+                <div class="format-tabs">
+                    <div class="format-tab active" data-format="sistema">
+                        <h4>🎓 Formato Padrão</h4>
+                        <p>Campos: nome, email, telefone, documento, endereco, valor_mensalidade</p>
                     </div>
-                    
-                    <div class="format-details active" data-format="sistema">
-                        <p><strong>📋 Formato Padrão do Sistema:</strong></p>
-                        <ul>
-                            <li><strong>nome</strong> - Nome completo do aluno</li>
-                            <li><strong>email</strong> - Email válido</li>
-                            <li><strong>telefone</strong> - Telefone no formato brasileiro</li>
-                            <li><strong>documento</strong> - CPF ou CNPJ</li>
-                            <li><strong>endereco</strong> - Endereço completo</li>
-                            <li><strong>valor_mensalidade</strong> - Valor da mensalidade</li>
-                            <li><strong>empresa</strong> - Código da empresa (opcional)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="format-details" data-format="asaas">
-                        <p><strong>💳 Formato Asaas (Detecção Automática):</strong></p>
-                        <ul>
-                            <li><strong>Nome</strong> → mapeado para <code>nome</code></li>
-                            <li><strong>Email</strong> → mapeado para <code>email</code></li>
-                            <li><strong>Celular</strong> → mapeado para <code>telefone</code></li>
-                            <li><strong>CPF ou CNPJ</strong> → mapeado para <code>documento</code></li>
-                            <li><strong>Rua + Número + Bairro + Cidade</strong> → concatenado em <code>endereco</code></li>
-                            <li><strong>Valor a vencer</strong> → processado para <code>valor_mensalidade</code></li>
-                        </ul>
-                        <p class="format-note">✨ O sistema detecta automaticamente o formato e faz a conversão!</p>
+                    <div class="format-tab" data-format="asaas">
+                        <h4>💳 Formato Asaas</h4>
+                        <p>Importação direta de exportações do Asaas (mapeamento automático)</p>
                     </div>
                 </div>
-            </div>
-        `;
 
-        // Setup upload functionality
-        this.setupUploadArea();
-        
-        // Setup format tabs
-        this.setupFormatTabs();
-        
-        // Hide action buttons for upload step
-        this.container.querySelector('#btn-back').style.display = 'none';
-        this.container.querySelector('#btn-next').style.display = 'none';
-    }
+                <div class="format-details active" data-format="sistema">
+                    <p><strong>📋 Formato Padrão do Sistema:</strong></p>
+                    <ul>
+                        <li><strong>nome</strong> - Nome completo do aluno</li>
+                        <li><strong>email</strong> - Email válido</li>
+                        <li><strong>telefone</strong> - Telefone no formato brasileiro</li>
+                        <li><strong>documento</strong> - CPF ou CNPJ</li>
+                        <li><strong>endereco</strong> - Endereço completo</li>
+                        <li><strong>valor_mensalidade</strong> - Valor da mensalidade</li>
+                        <li><strong>empresa</strong> - Código da empresa (opcional)</li>
+                    </ul>
+                </div>
+
+                <div class="format-details" data-format="asaas">
+                    <p><strong>💳 Formato Asaas (Detecção Automática):</strong></p>
+                    <ul>
+                        <li><strong>Nome</strong> → mapeado para <code>nome</code></li>
+                        <li><strong>Email</strong> → mapeado para <code>email</code></li>
+                        <li><strong>Celular</strong> → mapeado para <code>telefone</code></li>
+                        <li><strong>CPF ou CNPJ</strong> → mapeado para <code>documento</code></li>
+                        <li><strong>Rua + Número + Bairro + Cidade</strong> → concatenado em <code>endereco</code></li>
+                        <li><strong>Valor a vencer</strong> → processado para <code>valor_mensalidade</code></li>
+                    </ul>
+                    <p class="format-note">✨ O sistema detecta automaticamente o formato e faz a conversão!</p>
+                </div>
+            </div>
+            </div>
+            `;
+
+            // Setup upload functionality
+            this.setupUploadArea();
+
+            // Setup format tabs
+            this.setupFormatTabs();
+
+            // Hide action buttons for upload step
+            this.container.querySelector('#btn-back').style.display = 'none';
+            this.container.querySelector('#btn-next').style.display = 'none';
+        }
 
     /**
      * Configurar área de upload
      */
     setupUploadArea() {
-        const uploadArea = this.container.querySelector('#upload-area');
-        const fileInput = this.container.querySelector('#file-input');
+            const uploadArea = this.container.querySelector('#upload-area');
+            const fileInput = this.container.querySelector('#file-input');
 
-        // Click to select file
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
+            // Click to select file
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
 
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.handleFileUpload(file);
-            }
-        });
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleFileUpload(file);
+                }
+            });
 
-        // Drag and drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'text/csv') {
-                this.handleFileUpload(file);
-            } else {
-                this.showError('Por favor, selecione um arquivo CSV válido.');
-            }
-        });
-    }
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+
+                const file = e.dataTransfer.files[0];
+                if (file && file.type === 'text/csv') {
+                    this.handleFileUpload(file);
+                } else {
+                    this.showError('Por favor, selecione um arquivo CSV válido.');
+                }
+            });
+        }
 
     /**
      * Processar upload de arquivo
      */
     async handleFileUpload(file) {
-        try {
-            console.log('📁 Processando upload do arquivo:', file.name);
-            
-            // Show loading
-            const uploadArea = this.container.querySelector('#upload-area');
-            uploadArea.innerHTML = `
-                <div class="import-loading">
+            try {
+                console.log('📁 Processando upload do arquivo:', file.name);
+
+                // Show loading
+                const uploadArea = this.container.querySelector('#upload-area');
+                uploadArea.innerHTML = `
+            <div class="import-loading">
                     <div class="spinner"></div>
-                    <p>Processando arquivo CSV...</p>
+                    <p>Processando arquivo...</p>
                 </div>
             `;
 
-            // Read file content
-            const content = await this.readFileContent(file);
-            
-            // Parse CSV (simplified)
-            const data = this.parseCSVContent(content);
-            
-            this.uploadedData = {
-                filename: file.name,
-                size: file.size,
-                data: data,
-                uploadedAt: new Date().toISOString()
-            };
+                // Read file content
+                const content = await this.readFileContent(file);
 
-            console.log('✅ Arquivo processado com sucesso:', this.uploadedData);
-            
-            // Move to validation step
-            this.nextStep();
-            
-        } catch (error) {
-            console.error('❌ Erro no upload:', error);
-            this.showError('Erro ao processar arquivo: ' + error.message);
-            this.loadUploadView(); // Reset upload view
+                // Parse CSV (simplified)
+                const data = this.parseCSVContent(content);
+
+                this.uploadedData = {
+                    filename: file.name,
+                    size: file.size,
+                    data: data,
+                    uploadedAt: new Date().toISOString()
+                };
+
+                console.log('✅ Arquivo processado com sucesso:', this.uploadedData);
+
+                // Move to validation step
+                this.nextStep();
+
+            } catch(error) {
+                console.error('❌ Erro no upload:', error);
+                this.showError('Erro ao processar arquivo: ' + error.message);
+                this.loadUploadView(); // Reset upload view
+            }
         }
-    }
 
     /**
      * Ler conteúdo do arquivo
      */
     readFileContent(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-            reader.readAsText(file);
-        });
-    }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+                reader.readAsText(file);
+            });
+        }
 
     /**
      * Parse simplificado do CSV
      */
     parseCSVContent(content) {
-        const lines = content.split('\n').filter(line => line.trim());
-        if (lines.length < 2) {
+            const lines = content.split('\n').filter(line => line.trim());
+            if(lines.length < 2) {
             throw new Error('Arquivo CSV deve ter pelo menos 2 linhas (cabeçalho + dados)');
         }
 
@@ -695,11 +617,11 @@ class ImportController {
         for (let i = 1; i < lines.length; i++) {
             const values = this.parseCSVLine(lines[i]);
             const row = {};
-            
+
             headers.forEach((header, index) => {
                 row[header] = values[index] ? values[index].trim().replace(/['"]/g, '') : '';
             });
-            
+
             // Aplicar mapeamento se necessário
             const mappedRow = this.mapRowToStandardFormat(row, formatType);
             data.push(mappedRow);
@@ -715,10 +637,10 @@ class ImportController {
         const values = [];
         let current = '';
         let inQuotes = false;
-        
+
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
-            
+
             if (char === '"') {
                 inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
@@ -728,7 +650,7 @@ class ImportController {
                 current += char;
             }
         }
-        
+
         values.push(current); // Último valor
         return values;
     }
@@ -739,10 +661,10 @@ class ImportController {
     detectCSVFormat(headers) {
         const asaasFields = ['Nome', 'Email', 'Celular', 'CPF ou CNPJ', 'Rua', 'Número', 'Bairro', 'Cidade', 'Valor a vencer'];
         const standardFields = ['nome', 'email', 'telefone', 'documento', 'endereco', 'valor_mensalidade'];
-        
+
         const asaasMatches = asaasFields.filter(field => headers.includes(field)).length;
         const standardMatches = standardFields.filter(field => headers.includes(field)).length;
-        
+
         if (asaasMatches >= 5) {
             return 'asaas';
         } else if (standardMatches >= 3) {
@@ -780,7 +702,7 @@ class ImportController {
             asaasRow['CEP'],
             asaasRow['Estado']
         ].filter(parte => parte && parte.trim() && parte.trim() !== '');
-        
+
         const endereco = enderecoPartes.join(', ');
 
         // Limpar valor monetário
@@ -815,11 +737,11 @@ class ImportController {
      */
     smartMapping(row) {
         const mapped = {};
-        
+
         // Mapear campos comuns
         Object.keys(row).forEach(key => {
             const lowerKey = key.toLowerCase();
-            
+
             if (lowerKey.includes('nome') || lowerKey.includes('name')) {
                 mapped.nome = row[key];
             } else if (lowerKey.includes('email') || lowerKey.includes('e-mail')) {
@@ -834,7 +756,7 @@ class ImportController {
                 mapped.valor_mensalidade = row[key];
             }
         });
-        
+
         return { ...row, ...mapped }; // Manter campos originais + mapeados
     }
 
@@ -843,10 +765,10 @@ class ImportController {
      */
     loadValidationView() {
         this.updateProgressSteps(2);
-        
+
         const content = this.container.querySelector('#import-content');
         content.innerHTML = `
-            <div class="validation-view fade-in">
+            < div class="validation-view fade-in" >
                 <div class="import-stats">
                     <div class="stat-card-import">
                         <div class="stat-icon">📊</div>
@@ -874,18 +796,101 @@ class ImportController {
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            </div >
+            `;
 
         // Run validation
         setTimeout(() => this.runValidation(), 1000);
-        
+
         // Show back button
         this.container.querySelector('#btn-back').style.display = 'inline-block';
     }
 
     /**
-     * Executar validação dos dados
+     * Carregar cursos disponíveis para o dropdown
+     */
+    async loadAvailableCourses() {
+        try {
+            const courseSelect = this.container.querySelector('#import-default-course');
+            const planSelect = this.container.querySelector('#import-default-plan');
+
+            if (!courseSelect) return;
+
+            // Fetch courses
+            const response = await fetch('/api/courses');
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                // Clear and populate
+                courseSelect.innerHTML = '<option value="">Selecione um curso...</option>';
+
+                result.data.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.id;
+                    option.textContent = course.name;
+                    courseSelect.appendChild(option);
+                });
+
+                // Add change listener
+                courseSelect.addEventListener('change', (e) => {
+                    const courseId = e.target.value;
+                    if (courseId) {
+                        this.loadPlansForCourse(courseId);
+                        planSelect.disabled = false;
+                    } else {
+                        planSelect.innerHTML = '<option value="">Selecione um curso primeiro...</option>';
+                        planSelect.disabled = true;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao carregar cursos:', error);
+        }
+    }
+
+    /**
+     * Carregar planos para um curso específico
+     */
+    async loadPlansForCourse(courseId) {
+        try {
+            const planSelect = this.container.querySelector('#import-default-plan');
+            if (!planSelect) return;
+
+            planSelect.innerHTML = '<option value="">Carregando planos...</option>';
+            planSelect.disabled = true;
+
+            // Fetch plans for course
+            const response = await fetch(`/api/courses/${courseId}/plans`);
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                planSelect.innerHTML = '<option value="">Selecione um plano...</option>';
+
+                if (result.data.length === 0) {
+                    planSelect.innerHTML = '<option value="">Nenhum plano disponível</option>';
+                } else {
+                    result.data.forEach(plan => {
+                        const option = document.createElement('option');
+                        option.value = plan.id;
+                        option.textContent = `${plan.name} - ${plan.price ? 'R$ ' + plan.price : 'Grátis'}`;
+                        planSelect.appendChild(option);
+                    });
+                }
+
+                planSelect.disabled = false;
+            } else {
+                planSelect.innerHTML = '<option value="">Erro ao carregar planos</option>';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar planos:', error);
+            const planSelect = this.container.querySelector('#import-default-plan');
+            if (planSelect) planSelect.innerHTML = '<option value="">Erro ao carregar planos</option>';
+        }
+    }
+
+    // Existing methods...
+    /**
+     * Parse validação dos dados
      */
     runValidation() {
         const validData = [];
@@ -893,32 +898,32 @@ class ImportController {
 
         this.uploadedData.data.forEach((row, index) => {
             const rowErrors = [];
-            
+
             // Validações básicas para campos obrigatórios
             if (!row.nome || row.nome.length < 2) {
                 rowErrors.push('Nome inválido ou muito curto');
             }
-            
+
             // Email é opcional, mas se fornecido deve ser válido
             if (row.email && !this.isValidEmail(row.email)) {
                 rowErrors.push('Email em formato inválido');
             }
-            
+
             // Validação de telefone (opcional mas se existir deve ser válido)
             if (row.telefone && !this.isValidPhone(row.telefone)) {
                 rowErrors.push('Telefone em formato inválido');
             }
-            
+
             // Validação de CPF/CNPJ (opcional mas se existir deve ser válido)
             if (row.documento && !this.isValidDocument(row.documento)) {
                 rowErrors.push('CPF/CNPJ em formato inválido');
             }
-            
+
             // Validação de valor monetário
             if (row.valor_mensalidade && !this.isValidMonetary(row.valor_mensalidade)) {
                 rowErrors.push('Valor da mensalidade inválido');
             }
-            
+
             if (rowErrors.length === 0) {
                 validData.push(row);
             } else {
@@ -983,11 +988,11 @@ class ImportController {
         formatTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const format = tab.dataset.format;
-                
+
                 // Update active tab
                 formatTabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
+
                 // Update active details
                 formatDetails.forEach(detail => {
                     detail.classList.remove('active');
@@ -1015,46 +1020,46 @@ class ImportController {
         // Success message
         if (this.validationResults.valid.length > 0) {
             resultsHTML += `
-                <div class="validation-message success">
-                    <span>✅</span>
+            < div class="validation-message success" >
+                <span>✅</span>
                     ${this.validationResults.valid.length} registros válidos encontrados
-                </div>
+                </div >
             `;
         }
 
         // Error messages
         if (this.validationResults.errors.length > 0) {
             resultsHTML += `
-                <div class="validation-message error">
-                    <span>❌</span>
+            < div class="validation-message error" >
+                <span>❌</span>
                     ${this.validationResults.errors.length} registros com problemas encontrados
-                </div>
+                </div >
             `;
-            
+
             // Show first few errors
             const maxErrors = Math.min(5, this.validationResults.errors.length);
             for (let i = 0; i < maxErrors; i++) {
                 const error = this.validationResults.errors[i];
                 resultsHTML += `
-                    <div class="validation-message warning">
-                        <span>⚠️</span>
+            < div class="validation-message warning" >
+                <span>⚠️</span>
                         Linha ${error.line}: ${error.errors.join(', ')}
-                    </div>
-                `;
+                    </div >
+            `;
             }
-            
+
             if (this.validationResults.errors.length > 5) {
                 resultsHTML += `
-                    <div class="validation-message warning">
-                        <span>📝</span>
+            < div class="validation-message warning" >
+                <span>📝</span>
                         E mais ${this.validationResults.errors.length - 5} erros...
-                    </div>
-                `;
+                    </div >
+            `;
             }
         }
 
         resultsDiv.innerHTML = resultsHTML;
-        
+
         // Show next button if we have valid data
         const btnNext = this.container.querySelector('#btn-next');
         if (this.validationResults.valid.length > 0) {
@@ -1070,12 +1075,12 @@ class ImportController {
      */
     updateProgressSteps(currentStep) {
         this.currentStep = currentStep;
-        
+
         const steps = this.container.querySelectorAll('.progress-step');
         steps.forEach((step, index) => {
             const stepNumber = index + 1;
             step.classList.remove('active', 'completed');
-            
+
             if (stepNumber < currentStep) {
                 step.classList.add('completed');
             } else if (stepNumber === currentStep) {
@@ -1127,12 +1132,12 @@ class ImportController {
      */
     loadPreviewView() {
         this.updateProgressSteps(3);
-        
+
         const content = this.container.querySelector('#import-content');
         const validData = this.validationResults.valid.slice(0, 10); // Primeiros 10 registros
-        
+
         let tableHTML = `
-            <table class="preview-table">
+            < table class="preview-table" >
                 <thead>
                     <tr>
                         <th>Nome</th>
@@ -1143,7 +1148,7 @@ class ImportController {
                 </thead>
                 <tbody>
         `;
-        
+
         validData.forEach(row => {
             tableHTML += `
                 <tr>
@@ -1154,9 +1159,9 @@ class ImportController {
                 </tr>
             `;
         });
-        
-        tableHTML += '</tbody></table>';
-        
+
+        tableHTML += '</tbody></table > ';
+
         content.innerHTML = `
             <div class="preview-view fade-in">
                 <div class="data-preview-premium">
@@ -1165,7 +1170,7 @@ class ImportController {
                 </div>
             </div>
         `;
-        
+
         // Update buttons
         this.container.querySelector('#btn-back').style.display = 'inline-block';
         const btnNext = this.container.querySelector('#btn-next');
@@ -1178,7 +1183,7 @@ class ImportController {
      */
     loadImportView() {
         this.updateProgressSteps(4);
-        
+
         const content = this.container.querySelector('#import-content');
         content.innerHTML = `
             <div class="import-view fade-in">
@@ -1188,11 +1193,11 @@ class ImportController {
                 </div>
             </div>
         `;
-        
+
         // Hide buttons during import
         this.container.querySelector('#btn-back').style.display = 'none';
         this.container.querySelector('#btn-next').style.display = 'none';
-        
+
         // Simulate import process
         setTimeout(() => this.processStudentImport(), 2000);
     }
@@ -1204,7 +1209,7 @@ class ImportController {
         try {
             console.log('🔄 Processando importação de alunos...');
             console.log('📊 Dados válidos para importação:', this.validationResults.valid);
-            
+
             // Fazer chamada real para API
             const response = await fetch('/api/students/bulk-import', {
                 method: 'POST',
@@ -1236,11 +1241,11 @@ class ImportController {
             };
 
             this.showImportResults(results);
-            
+
         } catch (error) {
             console.error('❌ Erro na importação:', error);
             this.showError('Erro durante a importação: ' + error.message);
-            
+
             // Voltar para a view de preview
             this.loadPreviewView();
         }
@@ -1254,21 +1259,21 @@ class ImportController {
         const totalImports = parseInt(localStorage.getItem('import_total') || '0') + 1;
         const successful = parseInt(localStorage.getItem('import_successful') || '0') + (results.imported > 0 ? 1 : 0);
         const failed = parseInt(localStorage.getItem('import_failed') || '0') + (results.skipped > 0 ? 1 : 0);
-        
+
         localStorage.setItem('import_total', totalImports.toString());
         localStorage.setItem('import_successful', successful.toString());
         localStorage.setItem('import_failed', failed.toString());
-        
+
         // Atualizar cards imediatamente
         this.updateStatsCards({ total: totalImports, successful, failed });
-        
+
         const content = this.container.querySelector('#import-content');
-        
+
         // Determinar tipo de mensagem
         const hasErrors = results.skipped > 0;
         const messageClass = hasErrors ? 'warning' : 'success';
         const messageIcon = hasErrors ? '⚠️' : '🎉';
-        const messageText = hasErrors ? 
+        const messageText = hasErrors ?
             `Importação concluída com ${results.skipped} registro(s) ignorado(s)` :
             'Importação concluída com sucesso!';
 
@@ -1386,133 +1391,135 @@ class ImportController {
 
         // Filtro de status
         const filterStatus = this.container.querySelector('#filter-asaas-status');
-        if (filterStatus) {
-            filterStatus.addEventListener('change', (e) => {
-                this.filterAsaasByStatus(e.target.value);
-            });
-        }
+        filterStatus.addEventListener('change', (e) => {
+            this.filterAsaasByStatus(e.target.value);
+        });
+    }
+
+        // Carregar cursos disponíveis
+        this.loadAvailableCourses();
     }
 
     /**
      * Testar conexão com Asaas
      */
     async testAsaasConnection() {
-        try {
-            const statusEl = document.getElementById('connection-status');
-            statusEl.innerHTML = '<span class="status-badge status-loading">⏳ Testando conexão...</span>';
+    try {
+        const statusEl = document.getElementById('connection-status');
+        statusEl.innerHTML = '<span class="status-badge status-loading">⏳ Testando conexão...</span>';
 
-            const response = await this.moduleAPI.request('/api/asaas/test', {
-                method: 'GET'
-            });
+        const response = await this.moduleAPI.request('/api/asaas/test', {
+            method: 'GET'
+        });
 
-            if (response.success) {
-                statusEl.innerHTML = '<span class="status-badge status-success">✅ Conexão OK</span>';
-                this.showNotification('Conexão com Asaas estabelecida!', 'success');
-            } else {
-                throw new Error(response.message || 'Falha na conexão');
-            }
-
-        } catch (error) {
-            const statusEl = document.getElementById('connection-status');
-            statusEl.innerHTML = '<span class="status-badge status-error">❌ Conexão falhou</span>';
-            this.showNotification(`Erro: ${error.message}`, 'error');
+        if (response.success) {
+            statusEl.innerHTML = '<span class="status-badge status-success">✅ Conexão OK</span>';
+            this.showNotification('Conexão com Asaas estabelecida!', 'success');
+        } else {
+            throw new Error(response.message || 'Falha na conexão');
         }
+
+    } catch (error) {
+        const statusEl = document.getElementById('connection-status');
+        statusEl.innerHTML = '<span class="status-badge status-error">❌ Conexão falhou</span>';
+        this.showNotification(`Erro: ${error.message}`, 'error');
     }
+}
 
     /**
      * Buscar clientes do Asaas
      */
     async fetchAsaasCustomers() {
-        try {
-            const btn = document.getElementById('btn-fetch-asaas');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Buscando...';
+    try {
+        const btn = document.getElementById('btn-fetch-asaas');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Buscando...';
 
-            const response = await this.moduleAPI.request('/api/asaas/customers', {
-                method: 'GET'
-            });
+        const response = await this.moduleAPI.request('/api/asaas/customers', {
+            method: 'GET'
+        });
 
-            if (response.success && response.data) {
-                this.asaasCustomers = response.data.data || [];
-                
-                // Atualizar stats
-                document.getElementById('asaas-total-customers').textContent = this.asaasCustomers.length;
-                
-                // Verificar quais já foram importados
-                await this.checkImportedAsaasCustomers();
-                
-                // Renderizar lista
-                this.renderAsaasCustomersList();
-                
-                // Mostrar botões
-                document.getElementById('btn-import-all-asaas').style.display = 'inline-block';
-                document.getElementById('btn-clean-duplicates').style.display = 'inline-block';
-                document.getElementById('asaas-customers-container').style.display = 'block';
-                
-                this.showNotification(`${this.asaasCustomers.length} clientes encontrados!`, 'success');
-            } else {
-                throw new Error(response.message || 'Falha ao buscar clientes');
-            }
+        if (response.success && response.data) {
+            this.asaasCustomers = response.data.data || [];
 
-        } catch (error) {
-            this.showNotification(`Erro: ${error.message}`, 'error');
-        } finally {
-            const btn = document.getElementById('btn-fetch-asaas');
-            btn.disabled = false;
-            btn.innerHTML = '🔄 Buscar Clientes do Asaas';
+            // Atualizar stats
+            document.getElementById('asaas-total-customers').textContent = this.asaasCustomers.length;
+
+            // Verificar quais já foram importados
+            await this.checkImportedAsaasCustomers();
+
+            // Renderizar lista
+            this.renderAsaasCustomersList();
+
+            // Mostrar botões
+            document.getElementById('btn-import-all-asaas').style.display = 'inline-block';
+            document.getElementById('btn-clean-duplicates').style.display = 'inline-block';
+            document.getElementById('asaas-customers-container').style.display = 'block';
+
+            this.showNotification(`${this.asaasCustomers.length} clientes encontrados!`, 'success');
+        } else {
+            throw new Error(response.message || 'Falha ao buscar clientes');
         }
+
+    } catch (error) {
+        this.showNotification(`Erro: ${error.message}`, 'error');
+    } finally {
+        const btn = document.getElementById('btn-fetch-asaas');
+        btn.disabled = false;
+        btn.innerHTML = '🔄 Buscar Clientes do Asaas';
     }
+}
 
     /**
      * Verificar clientes já importados
      */
     async checkImportedAsaasCustomers() {
-        try {
-            const response = await this.moduleAPI.request('/api/students', {
-                method: 'GET'
+    try {
+        const response = await this.moduleAPI.request('/api/students', {
+            method: 'GET'
+        });
+
+        if (response.success && response.data) {
+            const existingEmails = new Set(
+                response.data.map(s => s.user?.email?.toLowerCase()).filter(Boolean)
+            );
+
+            // Marcar clientes que já existem
+            this.asaasCustomers.forEach(customer => {
+                customer.isImported = existingEmails.has(customer.email?.toLowerCase());
             });
 
-            if (response.success && response.data) {
-                const existingEmails = new Set(
-                    response.data.map(s => s.user?.email?.toLowerCase()).filter(Boolean)
-                );
+            // Atualizar stats
+            const imported = this.asaasCustomers.filter(c => c.isImported).length;
+            const pending = this.asaasCustomers.length - imported;
 
-                // Marcar clientes que já existem
-                this.asaasCustomers.forEach(customer => {
-                    customer.isImported = existingEmails.has(customer.email?.toLowerCase());
-                });
-
-                // Atualizar stats
-                const imported = this.asaasCustomers.filter(c => c.isImported).length;
-                const pending = this.asaasCustomers.length - imported;
-
-                document.getElementById('asaas-imported').textContent = imported;
-                document.getElementById('asaas-pending').textContent = pending;
-            }
-
-        } catch (error) {
-            console.error('Erro ao verificar clientes importados:', error);
+            document.getElementById('asaas-imported').textContent = imported;
+            document.getElementById('asaas-pending').textContent = pending;
         }
-    }
 
-    /**
-     * Renderizar lista de clientes Asaas
-     */
-    renderAsaasCustomersList() {
-        const container = document.getElementById('asaas-customers-list');
-        
-        if (this.asaasCustomers.length === 0) {
-            container.innerHTML = `
+    } catch (error) {
+        console.error('Erro ao verificar clientes importados:', error);
+    }
+}
+
+/**
+ * Renderizar lista de clientes Asaas
+ */
+renderAsaasCustomersList() {
+    const container = document.getElementById('asaas-customers-list');
+
+    if (this.asaasCustomers.length === 0) {
+        container.innerHTML = `
                 <div class="empty-state-asaas">
                     <div class="empty-icon">📭</div>
                     <h3>Nenhum cliente encontrado</h3>
                     <p>Não há clientes no Asaas para importar</p>
                 </div>
             `;
-            return;
-        }
+        return;
+    }
 
-        const html = this.asaasCustomers.map(customer => `
+    const html = this.asaasCustomers.map(customer => `
             <div class="customer-card-asaas ${customer.isImported ? 'imported' : ''}" data-email="${customer.email || ''}">
                 <div class="customer-info">
                     <div class="customer-name">
@@ -1543,113 +1550,159 @@ class ImportController {
             </div>
         `).join('');
 
-        container.innerHTML = html;
-    }
+    container.innerHTML = html;
+}
 
-    /**
-     * Filtrar clientes por busca
-     */
-    filterAsaasCustomers(searchTerm) {
-        const cards = document.querySelectorAll('.customer-card-asaas');
-        const term = searchTerm.toLowerCase();
+/**
+ * Filtrar clientes por busca
+ */
+filterAsaasCustomers(searchTerm) {
+    const cards = document.querySelectorAll('.customer-card-asaas');
+    const term = searchTerm.toLowerCase();
 
-        cards.forEach(card => {
-            const name = card.querySelector('.customer-name').textContent.toLowerCase();
-            const email = card.querySelector('.customer-email').textContent.toLowerCase();
-            
-            if (name.includes(term) || email.includes(term)) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
+    cards.forEach(card => {
+        const name = card.querySelector('.customer-name').textContent.toLowerCase();
+        const email = card.querySelector('.customer-email').textContent.toLowerCase();
 
-    /**
-     * Filtrar por status
-     */
-    filterAsaasByStatus(status) {
-        const cards = document.querySelectorAll('.customer-card-asaas');
+        if (name.includes(term) || email.includes(term)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
-        cards.forEach(card => {
-            const isImported = card.classList.contains('imported');
+/**
+ * Filtrar por status
+ */
+filterAsaasByStatus(status) {
+    const cards = document.querySelectorAll('.customer-card-asaas');
 
-            if (status === 'all') {
-                card.style.display = 'flex';
-            } else if (status === 'imported' && isImported) {
-                card.style.display = 'flex';
-            } else if (status === 'pending' && !isImported) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
+    cards.forEach(card => {
+        const isImported = card.classList.contains('imported');
+
+        if (status === 'all') {
+            card.style.display = 'flex';
+        } else if (status === 'imported' && isImported) {
+            card.style.display = 'flex';
+        } else if (status === 'pending' && !isImported) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
     /**
      * Importar cliente individual
      */
     async importSingleAsaas(customerId) {
-        try {
-            const customer = this.asaasCustomers.find(c => c.id === customerId);
-            if (!customer) {
-                throw new Error('Cliente não encontrado');
-            }
-
-            this.showNotification(`Importando ${customer.name}...`, 'info');
-
-            const response = await this.moduleAPI.request('/api/asaas/import-customer', {
-                method: 'POST',
-                body: JSON.stringify({ customerId })
-            });
-
-            if (response.success) {
-                customer.isImported = true;
-                this.renderAsaasCustomersList();
-                await this.checkImportedAsaasCustomers();
-                this.showNotification(`${customer.name} importado com sucesso!`, 'success');
-            } else {
-                throw new Error(response.message || 'Falha na importação');
-            }
-
-        } catch (error) {
-            this.showNotification(`Erro: ${error.message}`, 'error');
+    try {
+        const customer = this.asaasCustomers.find(c => c.id === customerId);
+        if (!customer) {
+            throw new Error('Cliente não encontrado');
         }
+
+        this.showNotification(`Importando ${customer.name}...`, 'info');
+
+        // Get default course/plan
+        const defaultCourseId = this.container.querySelector('#import-default-course')?.value;
+        const defaultPlanId = this.container.querySelector('#import-default-plan')?.value;
+
+        const response = await this.moduleAPI.request('/api/asaas/import-customer', {
+            method: 'POST',
+            body: JSON.stringify({
+                customerId,
+                defaultCourseId: defaultCourseId || undefined,
+                defaultPlanId: defaultPlanId || undefined
+            })
+        });
+
+        if (response.success) {
+            customer.isImported = true;
+            this.renderAsaasCustomersList();
+            await this.checkImportedAsaasCustomers();
+            this.showNotification(`${customer.name} importado com sucesso!`, 'success');
+        } else {
+            throw new Error(response.message || 'Falha na importação');
+        }
+
+    } catch (error) {
+        this.showNotification(`Erro: ${error.message}`, 'error');
     }
+}
 
     /**
      * Importar todos os clientes pendentes
      */
     async importAllAsaas() {
+    try {
+        const pending = this.asaasCustomers.filter(c => !c.isImported && c.email);
+
+        if (pending.length === 0) {
+            this.showNotification('Não há clientes pendentes para importar', 'warning');
+            return;
+        }
+
+        const confirmed = confirm(`Importar ${pending.length} clientes do Asaas?\n\nApós a importação, duplicatas serão automaticamente removidas.`);
+        if (!confirmed) return;
+
+        const btn = document.getElementById('btn-import-all-asaas');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Importando...';
+
+        // Get default course/plan
+        const defaultCourseId = this.container.querySelector('#import-default-course')?.value;
+        const defaultPlanId = this.container.querySelector('#import-default-plan')?.value;
+
+        const results = {
+            success: 0,
+            failed: 0,
+            errors: []
+        };
+
+        // Importar em lote
+        // Se tiver API de batch real, usar ela. Se não, loop.
+        // Para batch, enviamos o array de IDs E os defaults
         try {
-            const pending = this.asaasCustomers.filter(c => !c.isImported && c.email);
-            
-            if (pending.length === 0) {
-                this.showNotification('Não há clientes pendentes para importar', 'warning');
-                return;
+            const response = await this.moduleAPI.request('/api/asaas/import-batch', {
+                method: 'POST',
+                body: JSON.stringify({
+                    customerIds: pending.map(c => c.id),
+                    defaultCourseId: defaultCourseId || undefined,
+                    defaultPlanId: defaultPlanId || undefined
+                })
+            });
+
+            if (response.success && response.data) {
+                results.success = response.data.success;
+                results.failed = response.data.failed;
+                results.errors = response.data.errors;
+
+                // Mark as imported locally
+                if (results.success > 0) {
+                    // We don't know exactly which ones failed without more detail, 
+                    // but we can assume success for now or re-fetch.
+                    // Re-fetching is safer.
+                }
+            } else {
+                throw new Error(response.message || 'Falha na importação em lote');
             }
+        } catch (batchError) {
+            // Fallback to individual import if batch fails or not implemented
+            console.warn('Batch import failed or not available, falling back to individual:', batchError);
 
-            const confirmed = confirm(`Importar ${pending.length} clientes do Asaas?\n\nApós a importação, duplicatas serão automaticamente removidas.`);
-            if (!confirmed) return;
-
-            const btn = document.getElementById('btn-import-all-asaas');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Importando...';
-
-            const results = {
-                success: 0,
-                failed: 0,
-                errors: []
-            };
-
-            // Importar em lote
             for (let i = 0; i < pending.length; i++) {
                 const customer = pending[i];
-                
+
                 try {
                     const response = await this.moduleAPI.request('/api/asaas/import-customer', {
                         method: 'POST',
-                        body: JSON.stringify({ customerId: customer.id })
+                        body: JSON.stringify({
+                            customerId: customer.id,
+                            defaultCourseId: defaultCourseId || undefined,
+                            defaultPlanId: defaultPlanId || undefined
+                        })
                     });
 
                     if (response.success) {
@@ -1668,78 +1721,79 @@ class ImportController {
                 // Atualizar progresso
                 btn.innerHTML = `⏳ Importando... ${i + 1}/${pending.length}`;
             }
-
-            // Limpar duplicatas automaticamente
-            if (results.success > 0) {
-                btn.innerHTML = '🧹 Limpando duplicatas...';
-                await this.cleanDuplicates();
-            }
-
-            // Mostrar resultados
-            this.showAsaasImportResults(results);
-            this.renderAsaasCustomersList();
-            await this.checkImportedAsaasCustomers();
-
-        } catch (error) {
-            this.showNotification(`Erro na importação: ${error.message}`, 'error');
-        } finally {
-            const btn = document.getElementById('btn-import-all-asaas');
-            btn.disabled = false;
-            btn.innerHTML = '📥 Importar Todos Pendentes';
         }
+
+        // Limpar duplicatas automaticamente
+        if (results.success > 0) {
+            btn.innerHTML = '🧹 Limpando duplicatas...';
+            await this.cleanDuplicates();
+        }
+
+        // Mostrar resultados
+        this.showAsaasImportResults(results);
+        this.renderAsaasCustomersList();
+        await this.checkImportedAsaasCustomers();
+
+    } catch (error) {
+        this.showNotification(`Erro na importação: ${error.message}`, 'error');
+    } finally {
+        const btn = document.getElementById('btn-import-all-asaas');
+        btn.disabled = false;
+        btn.innerHTML = '📥 Importar Todos Pendentes';
     }
+}
 
     /**
      * Limpar duplicatas
      */
     async cleanDuplicates() {
-        try {
-            this.showNotification('Verificando duplicatas...', 'info');
+    try {
+        this.showNotification('Verificando duplicatas...', 'info');
 
-            // Buscar duplicatas
-            const response = await this.moduleAPI.request('/api/students/check-duplicates', {
-                method: 'GET'
-            });
+        // Buscar duplicatas
+        const response = await this.moduleAPI.request('/api/students/check-duplicates', {
+            method: 'GET'
+        });
 
-            if (response.success && response.data) {
-                const { duplicates, total } = response.data;
+        if (response.success && response.data) {
+            const { duplicates, total } = response.data;
 
-                if (duplicates === 0) {
-                    this.showNotification('Nenhuma duplicata encontrada!', 'success');
-                    return;
-                }
-
-                const confirmed = confirm(`Encontradas ${duplicates} duplicatas de ${total} alunos.\n\nDeseja removê-las? (Será mantido o registro mais recente)`);
-                if (!confirmed) return;
-
-                // Remover duplicatas
-                const removeResponse = await this.moduleAPI.request('/api/students/remove-duplicates', {
-                    method: 'DELETE'
-                });
-
-                if (removeResponse.success) {
-                    this.showNotification(`${removeResponse.data.removed} duplicatas removidas com sucesso!`, 'success');
-                    
-                    // Atualizar lista
-                    await this.checkImportedAsaasCustomers();
-                } else {
-                    throw new Error(removeResponse.message || 'Falha ao remover duplicatas');
-                }
+            if (duplicates === 0) {
+                this.showNotification('Nenhuma duplicata encontrada!', 'success');
+                return;
             }
 
-        } catch (error) {
-            this.showNotification(`Erro ao limpar duplicatas: ${error.message}`, 'error');
+            const confirmed = confirm(`Encontradas ${duplicates} duplicatas de ${total} alunos.\n\nDeseja removê-las? (Será mantido o registro mais recente)`);
+            if (!confirmed) return;
+
+            // Remover duplicatas
+            const removeResponse = await this.moduleAPI.request('/api/students/remove-duplicates', {
+                method: 'DELETE'
+            });
+
+            if (removeResponse.success) {
+                this.showNotification(`${removeResponse.data.removed} duplicatas removidas com sucesso!`, 'success');
+
+                // Atualizar lista
+                await this.checkImportedAsaasCustomers();
+            } else {
+                throw new Error(removeResponse.message || 'Falha ao remover duplicatas');
+            }
         }
+
+    } catch (error) {
+        this.showNotification(`Erro ao limpar duplicatas: ${error.message}`, 'error');
     }
+}
 
-    /**
-     * Mostrar resultados da importação Asaas
-     */
-    showAsaasImportResults(results) {
-        const container = document.getElementById('asaas-import-results');
-        const content = document.getElementById('asaas-results-content');
+/**
+ * Mostrar resultados da importação Asaas
+ */
+showAsaasImportResults(results) {
+    const container = document.getElementById('asaas-import-results');
+    const content = document.getElementById('asaas-results-content');
 
-        const html = `
+    const html = `
             <div class="results-summary">
                 <div class="result-stat result-success">
                     <div class="result-icon">✅</div>
@@ -1768,26 +1822,26 @@ class ImportController {
             ` : ''}
         `;
 
-        content.innerHTML = html;
-        container.style.display = 'block';
-        container.scrollIntoView({ behavior: 'smooth' });
-    }
+    content.innerHTML = html;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth' });
+}
 
-    /**
-     * Mostrar notificação
-     */
-    showNotification(message, type = 'info') {
-        if (window.app && window.app.showNotification) {
-            window.app.showNotification(message, type);
-        } else {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
-            // Fallback: alert para mensagens importantes
-            if (type === 'error' || type === 'warning') {
-                alert(message);
-            }
+/**
+ * Mostrar notificação
+ */
+showNotification(message, type = 'info') {
+    if (window.app && window.app.showNotification) {
+        window.app.showNotification(message, type);
+    } else {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+
+        // Fallback: alert para mensagens importantes
+        if (type === 'error' || type === 'warning') {
+            alert(message);
         }
     }
+}
 }
 
 export default ImportController;

@@ -18,7 +18,8 @@ const start = async () => {
   try {
     const server = await buildApp();
 
-    await server.listen({ port: appConfig.server.port, host: appConfig.server.host });
+    // Force 0.0.0.0 to ensure LAN access for mobile testing
+    await server.listen({ port: appConfig.server.port, host: '0.0.0.0' });
     logger.info(`Server running at http://${appConfig.server.host}:${appConfig.server.port}`);
     logger.info(`✅ HTTP Server is ready and accepting connections`);
 

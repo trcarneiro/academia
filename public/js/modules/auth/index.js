@@ -225,7 +225,7 @@ if (typeof window.AuthModule !== 'undefined') {
           }
           if (!orgId) {
             console.warn(' No organizationId found - using default');
-            orgId = 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+            orgId = 'b03d6cc5-7d58-437e-87a7-834226931d2a'; // Academia Demo
           }
         }
 

@@ -4,50 +4,61 @@ import { prisma } from '@/utils/database';
 import { z } from 'zod';
 import { TechniqueImportService } from '../services/techniqueImportService';
 import { CourseImportService } from '../services/courseImportService';
+import fs from 'fs';
+import path from 'path';
+
+// Debug logger
+const debugLogFile = path.resolve('debug_requests.log');
+function logToFile(msg: string) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(debugLogFile, `[${timestamp}] ${msg}\n`);
+}
 
 // Helper: resolve organizationId from request headers or fallback
 async function getOrganizationId(request: FastifyRequest): Promise<string> {
-  console.log('🔍 getOrganizationId - Starting resolution...');
-  
+  logToFile(`🔍 getOrganizationId - Starting resolution for ${request.url}`);
+
   // 1) Try body organizationId
   const bodyOrgId = (request.body as any)?.organizationId as string | undefined;
   console.log('🔍 Body organizationId:', bodyOrgId);
   if (bodyOrgId) {
     const org = await prisma.organization.findUnique({ where: { id: bodyOrgId } });
-    if (org) {
-      console.log('✅ Organization found via body:', org.id);
-      return org.id;
-    }
+    logToFile(`✅ Organization found in body: ${bodyOrgId}`);
+    return bodyOrgId;
   }
 
-  // 2) Try headers
-  const headers = request.headers as Record<string, string | undefined>;
-  const headerId = headers['x-organization-id'] || headers['x-organizationid'] || headers['organization-id'];
-  const headerSlug = headers['x-organization-slug'] || headers['organization-slug'];
-  console.log('🔍 Header organizationId:', headerId);
-  console.log('🔍 Header organizationSlug:', headerSlug);
+  // 2) Try headers (x-organization-id or x-organization-slug)
+  const headerId = request.headers['x-organization-id'] as string | undefined;
+  const headerSlug = request.headers['x-organization-slug'] as string | undefined;
 
   if (headerId) {
     const org = await prisma.organization.findUnique({ where: { id: headerId } });
     if (org) {
-      console.log('✅ Organization found via header ID:', org.id);
+      logToFile(`✅ Organization found via header ID: ${org.id} (${org.name})`);
       return org.id;
+    } else {
+      logToFile(`⚠️ Organization ID from header NOT FOUND in DB: ${headerId}`);
     }
   }
 
   if (headerSlug) {
     const org = await prisma.organization.findUnique({ where: { slug: headerSlug } });
     if (org) {
-      console.log('✅ Organization found via header slug:', org.id);
+      logToFile(`✅ Organization found via header slug: ${org.id} (${org.name})`);
       return org.id;
+    } else {
+      logToFile(`⚠️ Organization slug from header NOT FOUND in DB: ${headerSlug}`);
     }
   }
 
   // 3) Fallback: first organization
-  console.log('🔍 Using fallback strategy - finding first available organization...');
+  logToFile('🔍 Using fallback strategy - finding first available organization...');
   const org = await prisma.organization.findFirst();
-  if (!org) throw new Error('No organization found');
-  console.log('⚠️ Using first available organization as fallback:', org.id);
+  if (!org) {
+    logToFile('❌ CRITICAL: No organization found in database!');
+    throw new Error('No organization found');
+  }
+  logToFile(`⚠️ Using first available organization as fallback: ${org.id} (${org.name})`);
   return org.id;
 }
 
@@ -143,9 +154,9 @@ export async function coursesRoutes(app: FastifyInstance) {
       // Ensure course exists
       const course = await prisma.course.findUnique({ where: { id } });
       if (!course) {
-        return reply.code(404).send({ 
-          success: false, 
-          error: 'Curso não encontrado' 
+        return reply.code(404).send({
+          success: false,
+          error: 'Curso não encontrado'
         });
       }
 
@@ -167,15 +178,15 @@ export async function coursesRoutes(app: FastifyInstance) {
         orderBy: { orderIndex: 'asc' }
       });
 
-      return reply.send({ 
-        success: true, 
-        data: courseTechniques 
+      return reply.send({
+        success: true,
+        data: courseTechniques
       });
     } catch (error) {
       request.log?.error(error);
-      return reply.code(500).send({ 
-        success: false, 
-        error: 'Erro ao buscar técnicas do curso' 
+      return reply.code(500).send({
+        success: false,
+        error: 'Erro ao buscar técnicas do curso'
       });
     }
   });
@@ -201,7 +212,16 @@ export async function coursesRoutes(app: FastifyInstance) {
         ...(Array.isArray(body.objectives?.specific) ? body.objectives.specific : [])
       ];
       const requirements: string[] = Array.isArray(body.requirements) ? body.requirements : [];
+      const prerequisites: string[] = Array.isArray(body.prerequisites) ? body.prerequisites : [];
       const category = (body.category || 'ADULT').toString();
+
+      const minAge = Number(body.minAge) || null;
+      const maxAge = Number(body.maxAge) || null;
+      const orderIndex = Number(body.orderIndex) || 1;
+      const sequence = Number(body.sequence) || 1;
+      const isBaseCourse = Boolean(body.isBaseCourse);
+      const isActive = body.isActive !== undefined ? Boolean(body.isActive) : true;
+      const imageUrl = body.imageUrl?.toString() || null;
 
       // Upsert by organizationId+name
       const existing = await prisma.course.findFirst({ where: { organizationId: orgId, name } });
@@ -209,11 +229,16 @@ export async function coursesRoutes(app: FastifyInstance) {
       if (existing) {
         course = await prisma.course.update({
           where: { id: existing.id },
-          data: { description, level, duration, classesPerWeek, totalClasses, objectives, requirements, category }
+          data: { description, level, duration, classesPerWeek, totalClasses, objectives, requirements, category, minAge, maxAge, orderIndex, sequence, isBaseCourse, isActive, imageUrl }
         });
       } else {
         course = await prisma.course.create({
-          data: { organizationId: orgId, name, description, level, duration, classesPerWeek, totalClasses, objectives, requirements, category }
+          data: {
+            organization: { connect: { id: orgId } },
+            name, description, level, duration, classesPerWeek, totalClasses,
+            objectives, requirements, prerequisites, category,
+            minAge, maxAge, orderIndex, sequence, isBaseCourse, isActive, imageUrl
+          }
         });
       }
 
@@ -232,14 +257,16 @@ export async function coursesRoutes(app: FastifyInstance) {
           const wk = t?.weekNumber ?? null;
           const ln = t?.lessonNumber ?? null;
           const isRequired = t?.isRequired ?? true;
-          await prisma.courseTechnique.create({ data: {
-            courseId: course.id,
-            techniqueId: technique.id,
-            orderIndex: t?.orderIndex || orderIndex++,
-            weekNumber: wk,
-            lessonNumber: ln,
-            isRequired
-          }});
+          await prisma.courseTechnique.create({
+            data: {
+              courseId: course.id,
+              techniqueId: technique.id,
+              orderIndex: t?.orderIndex || orderIndex++,
+              weekNumber: wk,
+              lessonNumber: ln,
+              isRequired
+            }
+          });
           linked++;
         }
       }
@@ -256,10 +283,10 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.post('/import-techniques', async (request, reply) => {
     try {
       const body = (request.body as any) || {};
-      
+
       // Debug: Log the incoming request
       console.log('🔍 Incoming technique import request:', JSON.stringify(body, null, 2));
-      
+
       // Validation schema for technique import
       const techniqueSchema = z.object({
         id: z.string().min(1, 'ID é obrigatório'),
@@ -335,10 +362,10 @@ export async function coursesRoutes(app: FastifyInstance) {
       const countsByPlan = new Map<string, number>();
       if (planIds.length) {
         const countsRaw = await prisma.$queryRawUnsafe<any[]>(
-          `SELECT "lessonPlanId" as id, COUNT(*)::int as cnt FROM lesson_plan_activities WHERE "lessonPlanId" IN (${planIds.map((_,i)=>`$${i+1}`).join(',')}) GROUP BY 1`,
+          `SELECT "lessonPlanId" as id, COUNT(*)::int as cnt FROM lesson_plan_activities WHERE "lessonPlanId" IN (${planIds.map((_, i) => `$${i + 1}`).join(',')}) GROUP BY 1`,
           ...planIds
         );
-        countsRaw.forEach((row:any)=> countsByPlan.set(row.id, row.cnt));
+        countsRaw.forEach((row: any) => countsByPlan.set(row.id, row.cnt));
       }
       const data = (plans as any[]).map((p) => ({
         id: p.id,
@@ -434,7 +461,7 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.post('/import-full-course', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const courseData = request.body as any;
-      
+
       console.log('📥 ========== COURSE IMPORT STARTED ==========');
       console.log('📦 Body keys:', Object.keys(courseData || {}));
       console.log('📊 Techniques count:', courseData?.techniques?.length || 0);
@@ -446,28 +473,32 @@ export async function coursesRoutes(app: FastifyInstance) {
 
       // Extract createMissingTechniques flag (default: true for ease of use)
       const createMissingTechniques = courseData.createMissingTechniques ?? true;
-      
+
       console.log('🚀 createMissingTechniques:', createMissingTechniques);
-      
+
       // Remove flag from course data object
       delete courseData.createMissingTechniques;
 
-      // Validate basic structure
-      if (!courseData.courseId || !courseData.name || !courseData.techniques) {
+      // Validate basic structure (support legacy and v2.0)
+      const hasId = courseData.courseId || courseData.id;
+      const hasName = courseData.name;
+      const hasContent = (courseData.techniques && courseData.techniques.length > 0) || (courseData.lessons && courseData.lessons.length > 0);
+
+      if (!hasId || !hasName || !hasContent) {
         console.log('❌ Validation failed:', {
-          hasCourseId: !!courseData.courseId,
-          hasName: !!courseData.name,
-          hasTechniques: !!courseData.techniques,
-          courseId: courseData.courseId,
+          hasId: !!hasId,
+          hasName: !!hasName,
+          hasContent: !!hasContent,
+          courseId: courseData.courseId || courseData.id,
           name: courseData.name
         });
         return reply.code(400).send({
           success: false,
-          message: 'Dados do curso inválidos. Campos obrigatórios: courseId, name, techniques',
+          message: 'Dados do curso inválidos. Campos obrigatórios: ID (courseId/id), name, e conteúdo (techniques ou lessons)',
           details: {
-            hasCourseId: !!courseData.courseId,
-            hasName: !!courseData.name,
-            hasTechniques: !!courseData.techniques
+            hasId: !!hasId,
+            hasName: !!hasName,
+            hasContent: !!hasContent
           }
         });
       }
@@ -476,11 +507,11 @@ export async function coursesRoutes(app: FastifyInstance) {
       console.log('🔄 Calling CourseImportService.importFullCourse...');
 
       const result = await CourseImportService.importFullCourse(courseData, organizationId, createMissingTechniques);
-      
+
       console.log('📤 Service result:', result.success ? '✅ SUCCESS' : '❌ ERROR');
       console.log('📤 Result data:', JSON.stringify(result, null, 2));
       console.log('📥 ========== COURSE IMPORT ENDED ==========');
-      
+
       if (result.success) {
         reply.code(201).send(result);
       } else {
@@ -505,9 +536,14 @@ export async function coursesRoutes(app: FastifyInstance) {
   app.post('/import-preview', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const courseData = request.body as any;
-      
+
       // Validate basic structure
-      if (!courseData.courseId || !courseData.name || !courseData.techniques) {
+      // Validate basic structure (support legacy and v2.0)
+      const hasId = courseData.courseId || courseData.id;
+      const hasName = courseData.name;
+      const hasContent = (courseData.techniques && courseData.techniques.length > 0) || (courseData.lessons && courseData.lessons.length > 0);
+
+      if (!hasId || !hasName || !hasContent) {
         return reply.code(400).send({
           success: false,
           message: 'Dados do curso inválidos para prévia'
@@ -515,7 +551,7 @@ export async function coursesRoutes(app: FastifyInstance) {
       }
 
       const preview = await CourseImportService.validateImportData(courseData);
-      
+
       reply.send({
         success: true,
         data: preview

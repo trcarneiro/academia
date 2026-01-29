@@ -225,7 +225,7 @@
         </form>
 
         <div class="footer-links">
-            <a href="#">Esqueceu a senha?</a>
+            <a href="reset-password.html">Esqueceu a senha?</a>
         </div>
     </div>
 
@@ -247,30 +247,58 @@
         })
 
         // Handle OAuth Callback (Hash parsing)
+        // Handle OAuth Callback (Hash parsing)
         window.addEventListener('load', async () => {
             // Check if we have a hash with access_token
             if (window.location.hash && window.location.hash.includes('access_token')) {
                 const { data, error } = await supabaseClient.auth.getSession()
 
                 if (data?.session) {
-                    // Save to localStorage
-                    localStorage.setItem('token', data.session.access_token)
-                    localStorage.setItem('authToken', data.session.access_token) // Fix for ApiClient
+                    const email = data.session.user.email;
 
-                    // Construct basic user object from session
-                    const user = {
-                        id: data.session.user.id,
-                        email: data.session.user.email,
-                        organizationId: data.session.user.user_metadata?.orgId || '',
-                        role: data.session.user.user_metadata?.role || 'STUDENT'
+                    try {
+                        // Fetch real user data from our backend to get correct organizationId
+                        // This fixes the issue where Supabase metadata might be stale or missing
+                        const response = await fetch(`/api/auth/users/by-email?email=${encodeURIComponent(email)}`);
+                        const result = await response.json();
+
+                        let organizationId = '';
+                        let role = 'STUDENT';
+
+                        if (result.success && result.data) {
+                            organizationId = result.data.organizationId;
+                            role = result.data.role;
+                        } else {
+                            // Fallback to metadata if backend sync hasn't happened yet (unlikely if user exists)
+                            organizationId = data.session.user.user_metadata?.orgId || '';
+                            role = data.session.user.user_metadata?.role || 'STUDENT';
+                        }
+
+                        // Save to localStorage
+                        localStorage.setItem('token', data.session.access_token)
+                        localStorage.setItem('authToken', data.session.access_token)
+
+                        const user = {
+                            id: data.session.user.id,
+                            email: email,
+                            organizationId: organizationId,
+                            role: role
+                        }
+
+                        localStorage.setItem('user', JSON.stringify(user))
+                        if (user.organizationId) {
+                            localStorage.setItem('activeOrganizationId', user.organizationId)
+                        }
+
+                        window.location.href = '/'
+
+                    } catch (err) {
+                        console.error('Failed to sync user data after Google login:', err);
+                        // Fallback implementation if backend fails
+                        localStorage.setItem('token', data.session.access_token)
+                        localStorage.setItem('authToken', data.session.access_token)
+                        window.location.href = '/'
                     }
-
-                    localStorage.setItem('user', JSON.stringify(user))
-                    if (user.organizationId) {
-                        localStorage.setItem('activeOrganizationId', user.organizationId)
-                    }
-
-                    window.location.href = '/'
                 }
             }
         })

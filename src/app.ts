@@ -70,6 +70,7 @@ import crmRoutes from '@/routes/crm';
 import googleAdsRoutes from '@/routes/googleAds';
 import marketingRoutes from '@/routes/marketing';
 import landingPublicRoutes from '@/routes/landing-public';
+import publicCrmRoutes from '@/routes/public-crm';
 import devAuthRoutes from '@/routes/dev-auth';
 import packagesRoutes from '@/routes/packages-simple';
 import subscriptionsRoutes from '@/routes/subscriptions';
@@ -86,6 +87,7 @@ import instructorDashboardRoutes from '@/routes/instructor-dashboard';
 import classroomDisplayRoutes from '@/routes/classroom-display';
 import deploySessionsRoutes from '@/routes/ops/deploySessions';
 import frequencyRoutes from '@/routes/frequency';
+import adminBroadcastRoutes from '@/routes/admin/broadcast';
 
 export const buildApp = async () => {
   // ✅ HTTPS Configuration
@@ -226,6 +228,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(googleAdsRoutes, 'googleAdsRoutes'), { prefix: '/api/google-ads' } as any);
   await server.register(normalizePlugin(marketingRoutes, 'marketingRoutes'), { prefix: '/api/marketing' } as any);
   await server.register(normalizePlugin(landingPublicRoutes, 'landingPublicRoutes'), { prefix: '/lp' } as any);
+  await server.register(normalizePlugin(publicCrmRoutes, 'publicCrmRoutes'), { prefix: '/lp/crm' } as any);
   await server.register(normalizePlugin(devAuthRoutes, 'devAuthRoutes'), { prefix: '/api/dev-auth' } as any);
 
   // const frequencyRoutesFunction = frequencyRoutes.default || frequencyRoutes;
@@ -241,6 +244,7 @@ export const buildApp = async () => {
   await server.register(normalizePlugin(preEnrollmentRoutes, 'preEnrollmentRoutes'), { prefix: '/api/pre-enrollment' } as any);
   await server.register(normalizePlugin(instructorDashboardRoutes, 'instructorDashboardRoutes'), { prefix: '/api/instructor' } as any);
   await server.register(normalizePlugin(classroomDisplayRoutes, 'classroomDisplayRoutes'), { prefix: '/api/classroom-display' } as any);
+  await server.register(normalizePlugin(adminBroadcastRoutes, 'adminBroadcastRoutes'), { prefix: '/api/admin/broadcast' } as any);
 
   server.setErrorHandler(errorHandler);
 

@@ -1,0 +1,2459 @@
+{
+  "course": {
+    "id": "krav-maga-faixa-branca-2025",
+    "name": "Krav Maga - Faixa Branca",
+    "description": "Curso completo de fundamentos do Krav Maga para iniciantes. Aborda posturas básicas, socos, chutes, defesas e movimentações essenciais em 48 aulas, com foco em personalização e simulações realistas.",
+    "level": "BEGINNER",
+    "duration": "6 meses / 24 semanas",
+    "totalLessons": 48,
+    "graduation": {
+      "currentBelt": "BRANCA",
+      "nextBelt": "AMARELA",
+      "beltColor": "#FFFFFF",
+      "nextBeltColor": "#FFD700",
+      "progressionSystem": {
+        "type": "PERCENTAGE_BASED",
+        "totalDegrees": 4,
+        "degreePercentageIncrement": 25,
+        "description": "Sistema de 4 graus baseado nos 5 Mini-Testes Modulares do curso de 48 aulas."
+      },
+      "degrees": [
+        {
+          "degree": 1,
+          "name": "1º Grau - Fundamentos (Mini-Teste 1)",
+          "requiredPercentage": 20,
+          "requiredLessons": 8,
+          "badge": "⭐",
+          "color": "#FFD700",
+          "description": "Domínio de posturas básicas e socos iniciais (Guarda, Jab, Direto)",
+          "estimatedWeeks": "4 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 2,
+          "name": "2º Grau - Ataque Básico (Mini-Teste 2)",
+          "requiredPercentage": 40,
+          "requiredLessons": 16,
+          "badge": "⭐⭐",
+          "color": "#FFA500",
+          "description": "Socos e chutes fundamentais com potência",
+          "estimatedWeeks": "8 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 3,
+          "name": "3º Grau - Defesa Intermediária (Mini-Teste 3)",
+          "requiredPercentage": 60,
+          "requiredLessons": 24,
+          "badge": "⭐⭐⭐",
+          "color": "#FF6347",
+          "description": "Defesas contra estrangulamentos, agarramentos e quedas básicas",
+          "estimatedWeeks": "12 semanas (2 aulas/semana)"
+        },
+        {
+          "degree": 4,
+          "name": "4º Grau - Preparação Final (Mini-Teste 4)",
+          "requiredPercentage": 80,
+          "requiredLessons": 32,
+          "badge": "⭐⭐⭐⭐",
+          "color": "#DC143C",
+          "description": "Refinamento técnico, defesas avançadas e preparação para simulações",
+          "estimatedWeeks": "16 semanas (2 aulas/semana)",
+          "requiresSimulation": true
+        }
+      ],
+      "requirements": {
+        "forGraduation": {
+          "minimumAttendanceRate": 80,
+          "minimumQualityRating": 3,
+          "minimumRepetitionsTotal": 3000,
+          "minimumMonthsEnrolled": 3,
+          "requiresInstructorApproval": true,
+          "requiresSimulationPass": true
+        },
+        "description": "Requisitos para troca de faixa (BRANCA → AMARELA): 80% de frequência, 3 meses mínimos, repetições totais e aprovação qualitativa do instrutor."
+      }
+    },
+    "activityCategories": [
+      {
+        "id": "posturas",
+        "name": "POSTURAS E GUARDAS",
+        "description": "Posições fundamentais de combate e defesa (4 técnicas)",
+        "color": "#3B82F6",
+        "icon": "🥋",
+        "order": 1,
+        "minimumForGraduation": 100
+      },
+      {
+        "id": "socos",
+        "name": "SOCOS E GOLPES DE MÃO",
+        "description": "Técnicas de ataque com mãos e punhos (7 técnicas incluindo combinações)",
+        "color": "#EF4444",
+        "icon": "👊",
+        "order": 2,
+        "minimumForGraduation": 200
+      },
+      {
+        "id": "chutes",
+        "name": "CHUTES E JOELHADAS",
+        "description": "Técnicas de ataque com pernas e joelhos (5 técnicas)",
+        "color": "#F59E0B",
+        "icon": "🦵",
+        "order": 3,
+        "minimumForGraduation": 150
+      },
+      {
+        "id": "defesas",
+        "name": "DEFESAS E BLOQUEIOS",
+        "description": "Proteção contra ataques diversos (17 técnicas de defesa e 4 gerais)",
+        "color": "#10B981",
+        "icon": "🛡️",
+        "order": 4,
+        "minimumForGraduation": 150
+      },
+      {
+        "id": "quedas",
+        "name": "QUEDAS E ROLAMENTOS",
+        "description": "Técnicas de proteção ao cair (4 técnicas)",
+        "color": "#8B5CF6",
+        "icon": "🤸",
+        "order": 5,
+        "minimumForGraduation": 80
+      },
+      {
+        "id": "combinacoes",
+        "name": "COMBINAÇÕES",
+        "description": "Sequências de técnicas encadeadas",
+        "color": "#EC4899",
+        "icon": "⚡",
+        "order": 6,
+        "minimumForGraduation": 100
+      }
+    ],
+    "lessons": [
+      {
+        "lessonNumber": 1,
+        "name": "Aula 1 - Fundamentos: Guarda de Boxe, Jab",
+        "description": "Aprender postura e soco básico",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 85,
+        "estimatedIntensity": "MODERATE",
+        "activities": [
+          {
+            "name": "Guarda de Boxe",
+            "category": "posturas",
+            "techniqueId": "guarda-de-boxe",
+            "minimumRepetitions": 29,
+            "recommendedRepetitions": 42,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Jab",
+            "category": "socos",
+            "techniqueId": "jab",
+            "minimumRepetitions": 29,
+            "recommendedRepetitions": 42,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 2,
+        "name": "Aula 2 - Posição Ortodoxa, Direto, Defesa 360°",
+        "description": "Dominar postura, defesa inicial e vigilância (Módulo: Código de Cores Cooper)",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 130,
+        "activities": [
+          {
+            "name": "Posição Ortodoxa",
+            "category": "posturas",
+            "techniqueId": "posicao-ortodoxa",
+            "minimumRepetitions": 30,
+            "recommendedRepetitions": 43,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Direto",
+            "category": "socos",
+            "techniqueId": "direto",
+            "minimumRepetitions": 30,
+            "recommendedRepetitions": 43,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa 360°",
+            "category": "defesas",
+            "techniqueId": "defesa-360",
+            "minimumRepetitions": 30,
+            "recommendedRepetitions": 43,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 3,
+        "name": "Aula 3 - Posição Canhota, Jab + Direto, Simulação (Desescalada Verbal)",
+        "description": "Iniciar combinações, prática realista e desescalada",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 75,
+        "activities": [
+          {
+            "name": "Posição Canhota",
+            "category": "posturas",
+            "techniqueId": "posicao-canhota",
+            "minimumRepetitions": 17,
+            "recommendedRepetitions": 25,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Jab + Direto",
+            "category": "socos",
+            "techniqueId": "jab-direto",
+            "minimumRepetitions": 17,
+            "recommendedRepetitions": 25,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 17,
+            "recommendedRepetitions": 25,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 4,
+        "name": "Aula 4 - Gancho Esq./Dir., Defesa contra Soco Reto",
+        "description": "Aprender socos curvos e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 80,
+        "activities": [
+          {
+            "name": "Gancho Esq./Dir.",
+            "category": "socos",
+            "techniqueId": "gancho-esqdir",
+            "minimumRepetitions": 28,
+            "recommendedRepetitions": 40,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa contra Soco Reto",
+            "category": "socos",
+            "techniqueId": "defesa-contra-soco-reto",
+            "minimumRepetitions": 28,
+            "recommendedRepetitions": 40,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 5,
+        "name": "Aula 5 - Uppercut Esq./Dir., Defesa Estrangulamento (Dedos, Frontal)",
+        "description": "Dominar socos ascendentes e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 90,
+        "activities": [
+          {
+            "name": "Uppercut Esq./Dir.",
+            "category": "socos",
+            "techniqueId": "uppercut-esqdir",
+            "minimumRepetitions": 31,
+            "recommendedRepetitions": 45,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa Estrangulamento",
+            "category": "defesas",
+            "techniqueId": "defesa-estrangulamento",
+            "minimumRepetitions": 31,
+            "recommendedRepetitions": 45,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 6,
+        "name": "Aula 6 - Combinação: Jab + Gancho, Chute Reto (Módulo: Leitura de Comportamento)",
+        "description": "Combinar socos, iniciar chutes e antecipar ameaças",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 110,
+        "activities": [
+          {
+            "name": "Jab + Gancho",
+            "category": "socos",
+            "techniqueId": "jab-gancho",
+            "minimumRepetitions": 38,
+            "recommendedRepetitions": 55,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Chute Reto (Módulo",
+            "category": "chutes",
+            "techniqueId": "chute-reto-modulo",
+            "minimumRepetitions": 38,
+            "recommendedRepetitions": 55,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 7,
+        "name": "Aula 7 - Revisão (Guarda, Jab, Direto, Defesa 360°), Simulação (Soco Reto)",
+        "description": "Consolidar fundamentos",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 70,
+        "activities": [
+          {
+            "name": "Revisão",
+            "category": "socos",
+            "techniqueId": "revisao",
+            "minimumRepetitions": 24,
+            "recommendedRepetitions": 35,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 24,
+            "recommendedRepetitions": 35,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 8,
+        "name": "Aula 8 - Mini-teste 1 / 1º Grau ⭐",
+        "description": "Avaliação de Fundamentos (Guarda, Jab, Direto, Defesa 360°, Defesa Soco Reto) e Teste Físico.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_1_TEST",
+        "degreeAchieved": 1,
+        "totalRepetitionsPlanned": 100,
+        "celebrationMessage": "🎉 Parabéns! Você alcançou o 1º GRAU em Krav Maga! Certificado Digital emitido.",
+        "activities": [
+          {
+            "name": "Mini-teste 1 / 1º Grau ⭐",
+            "category": "socos",
+            "techniqueId": "miniteste-1-1-grau",
+            "minimumRepetitions": 70,
+            "recommendedRepetitions": 100,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 9,
+        "name": "Aula 9 - Combinação: Direto + Uppercut, Chute Lateral",
+        "description": "Aprender combinação e chute",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 120,
+        "activities": [
+          {
+            "name": "Direto + Uppercut",
+            "category": "socos",
+            "techniqueId": "direto-uppercut",
+            "minimumRepetitions": 42,
+            "recommendedRepetitions": 60,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Chute Lateral",
+            "category": "chutes",
+            "techniqueId": "chute-lateral",
+            "minimumRepetitions": 42,
+            "recommendedRepetitions": 60,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 10,
+        "name": "Aula 10 - Chute Circular Baixo, Defesa Estrangulamento (Joelho, Frontal)",
+        "description": "Dominar chute e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 115,
+        "activities": [
+          {
+            "name": "Chute Circular Baixo",
+            "category": "chutes",
+            "techniqueId": "chute-circular-baixo",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa Estrangulamento",
+            "category": "defesas",
+            "techniqueId": "defesa-estrangulamento",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 11,
+        "name": "Aula 11 - Joelhada Frontal, Combinação: Jab + Joelhada",
+        "description": "Iniciar joelhadas e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 105,
+        "activities": [
+          {
+            "name": "Jab + Joelhada",
+            "category": "socos",
+            "techniqueId": "jab-joelhada",
+            "minimumRepetitions": 73,
+            "recommendedRepetitions": 105,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 12,
+        "name": "Aula 12 - Defesa Estrangulamento (Empurrão, Frontal), Simulação (Regulação Emocional)",
+        "description": "Aprender defesa, prática realista e controle emocional.",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 90,
+        "activities": [
+          {
+            "name": "Defesa Estrangulamento",
+            "category": "defesas",
+            "techniqueId": "defesa-estrangulamento",
+            "minimumRepetitions": 31,
+            "recommendedRepetitions": 45,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 31,
+            "recommendedRepetitions": 45,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 13,
+        "name": "Aula 13 - Cotovelada Traseira, Combinação: Jab + Cotovelada",
+        "description": "Iniciar cotoveladas e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 130,
+        "activities": [
+          {
+            "name": "Jab + Cotovelada",
+            "category": "socos",
+            "techniqueId": "jab-cotovelada",
+            "minimumRepetitions": 91,
+            "recommendedRepetitions": 130,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 14,
+        "name": "Aula 14 - Cotovelada Lateral, Defesa Agarramento Frontal (Não Agressivo)",
+        "description": "Dominar cotovelada e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 125,
+        "activities": [
+          {
+            "name": "Cotovelada Lateral",
+            "category": "socos",
+            "techniqueId": "cotovelada-lateral",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa Agarramento Frontal",
+            "category": "chutes",
+            "techniqueId": "defesa-agarramento-frontal",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 15,
+        "name": "Aula 15 - Revisão (Chutes, Socos, Defesas Frontais) (Módulo: Planejamento de Escape)",
+        "description": "Consolidar golpes, defesas e planejar fuga",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 85,
+        "activities": [
+          {
+            "name": "Planejamento de Escape)",
+            "category": "socos",
+            "techniqueId": "planejamento-de-escape",
+            "minimumRepetitions": 59,
+            "recommendedRepetitions": 85,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 16,
+        "name": "Aula 16 - Mini-teste 2 / 2º Grau ⭐⭐",
+        "description": "Avaliação de Golpes (Chute Reto, Joelhada, Defesas Estrangulamento/Agarramento) e Teste Físico.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_2_TEST",
+        "degreeAchieved": 2,
+        "totalRepetitionsPlanned": 110,
+        "celebrationMessage": "🎉 Parabéns! Você alcançou o 2º GRAU em Krav Maga! Certificado Digital emitido.",
+        "activities": [
+          {
+            "name": "Mini-teste 2 / 2º Grau ⭐⭐",
+            "category": "socos",
+            "techniqueId": "miniteste-2-2-grau",
+            "minimumRepetitions": 77,
+            "recommendedRepetitions": 110,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 17,
+        "name": "Aula 17 - Cotovelada Frontal, Defesa Estrangulamento Posterior",
+        "description": "Aprender cotovelada e defesa traseira",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 100,
+        "activities": [
+          {
+            "name": "Cotovelada Frontal",
+            "category": "socos",
+            "techniqueId": "cotovelada-frontal",
+            "minimumRepetitions": 35,
+            "recommendedRepetitions": 50,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa Estrangulamento Posterior",
+            "category": "defesas",
+            "techniqueId": "defesa-estrangulamento-posterior",
+            "minimumRepetitions": 35,
+            "recommendedRepetitions": 50,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 18,
+        "name": "Aula 18 - Cotovelada Uppercut, Defesa Empurrão Posterior",
+        "description": "Dominar cotovelada e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 95,
+        "activities": [
+          {
+            "name": "Cotovelada Uppercut",
+            "category": "socos",
+            "techniqueId": "cotovelada-uppercut",
+            "minimumRepetitions": 32,
+            "recommendedRepetitions": 47,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa Empurrão Posterior",
+            "category": "defesas",
+            "techniqueId": "defesa-empurrao-posterior",
+            "minimumRepetitions": 32,
+            "recommendedRepetitions": 47,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 19,
+        "name": "Aula 19 - Queda para Trás, Combinação: Jab + Direto + Chute Reto",
+        "description": "Iniciar quedas e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 120,
+        "activities": [
+          {
+            "name": "Jab + Direto + Chute Reto",
+            "category": "socos",
+            "techniqueId": "jab-direto-chute-reto",
+            "minimumRepetitions": 84,
+            "recommendedRepetitions": 120,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 20,
+        "name": "Aula 20 - Defesa Agarramento Frontal (Agressivo), Simulação (Debrief Emocional)",
+        "description": "Aprender defesa, prática realista e apoio emocional",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 135,
+        "activities": [
+          {
+            "name": "Defesa Agarramento Frontal",
+            "category": "chutes",
+            "techniqueId": "defesa-agarramento-frontal",
+            "minimumRepetitions": 46,
+            "recommendedRepetitions": 67,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 46,
+            "recommendedRepetitions": 67,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 21,
+        "name": "Aula 21 - Cotovelada Martelo, Queda Frente Suave",
+        "description": "Dominar cotovelada e queda",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 105,
+        "activities": [
+          {
+            "name": "Cotovelada Martelo",
+            "category": "socos",
+            "techniqueId": "cotovelada-martelo",
+            "minimumRepetitions": 36,
+            "recommendedRepetitions": 52,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Queda Frente Suave",
+            "category": "quedas",
+            "techniqueId": "queda-frente-suave",
+            "minimumRepetitions": 36,
+            "recommendedRepetitions": 52,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 22,
+        "name": "Aula 22 - Defesa Estrangulamento Lateral, Combinação: Jab + Cotovelada",
+        "description": "Aprender defesa lateral e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 90,
+        "activities": [
+          {
+            "name": "Jab + Cotovelada",
+            "category": "socos",
+            "techniqueId": "jab-cotovelada",
+            "minimumRepetitions": 62,
+            "recommendedRepetitions": 90,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 23,
+        "name": "Aula 23 - Revisão (Defesas, Chutes, Cotoveladas), Simulação (Estrangulamento)",
+        "description": "Consolidar defesas e golpes",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 80,
+        "activities": [
+          {
+            "name": "Revisão",
+            "category": "socos",
+            "techniqueId": "revisao",
+            "minimumRepetitions": 28,
+            "recommendedRepetitions": 40,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 28,
+            "recommendedRepetitions": 40,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 24,
+        "name": "Aula 24 - Mini-teste 3 / 3º Grau ⭐⭐⭐ (Dia do Guerreiro)",
+        "description": "Avaliação de Defesas/Quedas (Cotovelada Traseira, Queda para Trás, Agarramento Frontal Agressivo) e Evento Social.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_3_TEST_EVENT",
+        "degreeAchieved": 3,
+        "totalRepetitionsPlanned": 120,
+        "celebrationMessage": "🎉 Você alcançou o 3º GRAU! Certificado Digital emitido e Evento Dia do Guerreiro.",
+        "activities": [
+          {
+            "name": "Mini-teste 3 / 3º Grau ⭐⭐⭐",
+            "category": "socos",
+            "techniqueId": "miniteste-3-3-grau",
+            "minimumRepetitions": 84,
+            "recommendedRepetitions": 120,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 25,
+        "name": "Aula 25 - Queda Lateral, Defesa Agarramento por Trás (Externa) (Módulo: Controle de Adrenalina)",
+        "description": "Iniciar quedas, defesa traseira e resposta sob pressão",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 110,
+        "activities": [
+          {
+            "name": "Controle de Adrenalina)",
+            "category": "socos",
+            "techniqueId": "controle-de-adrenalina",
+            "minimumRepetitions": 77,
+            "recommendedRepetitions": 110,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 26,
+        "name": "Aula 26 - Defesa Agarramento por Trás (Interna), Combinação: Direto + Chute Circular",
+        "description": "Aprender defesa e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 105,
+        "activities": [
+          {
+            "name": "Direto + Chute Circular",
+            "category": "socos",
+            "techniqueId": "direto-chute-circular",
+            "minimumRepetitions": 73,
+            "recommendedRepetitions": 105,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 27,
+        "name": "Aula 27 - Defesa contra Soco Gancho, Shadow Boxing com Socos e Chutes",
+        "description": "Dominar defesa e prática livre",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 95,
+        "activities": [
+          {
+            "name": "Defesa contra Soco Gancho",
+            "category": "socos",
+            "techniqueId": "defesa-contra-soco-gancho",
+            "minimumRepetitions": 32,
+            "recommendedRepetitions": 47,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Shadow Boxing com Socos e Chutes",
+            "category": "socos",
+            "techniqueId": "shadow-boxing-com-socos-e-chutes",
+            "minimumRepetitions": 32,
+            "recommendedRepetitions": 47,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 28,
+        "name": "Aula 28 - Queda Frente Dura, Defesa 360° + Contra-ataque",
+        "description": "Aprender queda e defesa avançada",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 115,
+        "activities": [
+          {
+            "name": "Queda Frente Dura",
+            "category": "quedas",
+            "techniqueId": "queda-frente-dura",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa 360° + Contra-ataque",
+            "category": "defesas",
+            "techniqueId": "defesa-360-contraataque",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 29,
+        "name": "Aula 29 - Combinação: Jab + Uppercut + Chute Lateral, Simulação (Soco Gancho)",
+        "description": "Combinar golpes e prática realista",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 125,
+        "activities": [
+          {
+            "name": "Jab + Uppercut + Chute Lateral",
+            "category": "socos",
+            "techniqueId": "jab-uppercut-chute-lateral",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 30,
+        "name": "Aula 30 - Defesa Agarramento com Imobilização",
+        "description": "Dominar defesa complexa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 100,
+        "activities": [
+          {
+            "name": "Defesa Agarramento com Imobilização",
+            "category": "defesas",
+            "techniqueId": "defesa-agarramento-com-imobilizacao",
+            "minimumRepetitions": 70,
+            "recommendedRepetitions": 100,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 31,
+        "name": "Aula 31 - Revisão (Defesas Traseiras, Quedas), Simulação (Agarramento)",
+        "description": "Consolidar defesas avançadas",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 85,
+        "activities": [
+          {
+            "name": "Revisão",
+            "category": "socos",
+            "techniqueId": "revisao",
+            "minimumRepetitions": 29,
+            "recommendedRepetitions": 42,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação",
+            "category": "socos",
+            "techniqueId": "simulacao",
+            "minimumRepetitions": 29,
+            "recommendedRepetitions": 42,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 32,
+        "name": "Aula 32 - Mini-teste 4 / 4º Grau ⭐⭐⭐⭐",
+        "description": "Avaliação Avançada (Queda Lateral, Defesa Agarramento por Trás, Defesa Soco Gancho) e Teste Físico.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "DEGREE_4_TEST",
+        "degreeAchieved": 4,
+        "totalRepetitionsPlanned": 110,
+        "celebrationMessage": "🎉 Você alcançou o 4º GRAU! Certificado Digital emitido.",
+        "nextStepMessage": "Próximo objetivo: Integração e preparação para o Dia de Avaliação (Aulas 33-48).",
+        "activities": [
+          {
+            "name": "Mini-teste 4 / 4º Grau ⭐⭐⭐⭐",
+            "category": "socos",
+            "techniqueId": "miniteste-4-4-grau",
+            "minimumRepetitions": 77,
+            "recommendedRepetitions": 110,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 33,
+        "name": "Aula 33 - Rolamento Frente, Combinação: Jab + Cotovelada + Chute Reto",
+        "description": "Iniciar rolamentos e combinação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 120,
+        "activities": [
+          {
+            "name": "Jab + Cotovelada + Chute Reto",
+            "category": "socos",
+            "techniqueId": "jab-cotovelada-chute-reto",
+            "minimumRepetitions": 84,
+            "recommendedRepetitions": 120,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 34,
+        "name": "Aula 34 - Rolamento Trás, Defesa 360° + Contra-ataque",
+        "description": "Dominar rolamento e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 115,
+        "activities": [
+          {
+            "name": "Rolamento Trás",
+            "category": "quedas",
+            "techniqueId": "rolamento-tras",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesa 360° + Contra-ataque",
+            "category": "defesas",
+            "techniqueId": "defesa-360-contraataque",
+            "minimumRepetitions": 39,
+            "recommendedRepetitions": 57,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 35,
+        "name": "Aula 35 - Combinação: Direto + Joelhada + Defesa Soco Reto",
+        "description": "Combinar golpes e defesa.",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 105,
+        "activities": [
+          {
+            "name": "Direto + Joelhada + Defesa Soco Reto",
+            "category": "socos",
+            "techniqueId": "direto-joelhada-defesa-soco-reto",
+            "minimumRepetitions": 73,
+            "recommendedRepetitions": 105,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 36,
+        "name": "Aula 36 - Simulação (Estrangulamento + Agarramento), Revisão Quedas (Módulo: Avaliação de Ambiente)",
+        "description": "Praticar cenários, quedas e consciência ambiental",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 130,
+        "activities": [
+          {
+            "name": "Avaliação de Ambiente)",
+            "category": "socos",
+            "techniqueId": "avaliacao-de-ambiente",
+            "minimumRepetitions": 91,
+            "recommendedRepetitions": 130,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 37,
+        "name": "Aula 37 - Combinação: Jab + Chute Circular + Defesa 360°",
+        "description": "Combinar golpes e defesa",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 110,
+        "activities": [
+          {
+            "name": "Jab + Chute Circular + Defesa 360°",
+            "category": "socos",
+            "techniqueId": "jab-chute-circular-defesa-360",
+            "minimumRepetitions": 77,
+            "recommendedRepetitions": 110,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 38,
+        "name": "Aula 38 - Treino de Reação Rápida (Socos, Chutes, Defesas)",
+        "description": "Desenvolver reflexos",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 90,
+        "activities": [
+          {
+            "name": "Treino de Reação Rápida",
+            "category": "socos",
+            "techniqueId": "treino-de-reacao-rapida",
+            "minimumRepetitions": 62,
+            "recommendedRepetitions": 90,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 39,
+        "name": "Aula 39 - Simulação Completa (Módulo de Segurança Urbana: ex., corredor)",
+        "description": "Aplicar técnicas em cenário urbano",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 125,
+        "activities": [
+          {
+            "name": "ex.",
+            "category": "socos",
+            "techniqueId": "ex",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "corredor)",
+            "category": "socos",
+            "techniqueId": "corredor",
+            "minimumRepetitions": 43,
+            "recommendedRepetitions": 62,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 40,
+        "name": "Aula 40 - Mini-teste 5 / Avaliação de Integração",
+        "description": "Avaliação da Integração (Rolamento Frente, Defesa Agarramento com Imobilização, Queda Frente Dura) e Teste Físico.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "MODULAR_TEST_5",
+        "degreeAchieved": 0,
+        "totalRepetitionsPlanned": 100,
+        "celebrationMessage": "🎉 Excelente! Você completou o último mini-teste modular. Próximo passo: Exame Final!",
+        "activities": [
+          {
+            "name": "Mini-teste 5 / Avaliação de Integração",
+            "category": "socos",
+            "techniqueId": "miniteste-5-avaliacao-de-integracao",
+            "minimumRepetitions": 70,
+            "recommendedRepetitions": 100,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 41,
+        "name": "Aula 41 - Revisão Socos, Chutes, Defesas Básicas",
+        "description": "Consolidar fundamentos",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 80,
+        "activities": [
+          {
+            "name": "Revisão Socos",
+            "category": "socos",
+            "techniqueId": "revisao-socos",
+            "minimumRepetitions": 18,
+            "recommendedRepetitions": 26,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Chutes",
+            "category": "chutes",
+            "techniqueId": "chutes",
+            "minimumRepetitions": 18,
+            "recommendedRepetitions": 26,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesas Básicas",
+            "category": "defesas",
+            "techniqueId": "defesas-basicas",
+            "minimumRepetitions": 18,
+            "recommendedRepetitions": 26,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 42,
+        "name": "Aula 42 - Revisão Cotoveladas, Quedas, Defesas Avançadas",
+        "description": "Reforçar técnicas avançadas",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 90,
+        "activities": [
+          {
+            "name": "Revisão Cotoveladas",
+            "category": "socos",
+            "techniqueId": "revisao-cotoveladas",
+            "minimumRepetitions": 21,
+            "recommendedRepetitions": 30,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Quedas",
+            "category": "quedas",
+            "techniqueId": "quedas",
+            "minimumRepetitions": 21,
+            "recommendedRepetitions": 30,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Defesas Avançadas",
+            "category": "defesas",
+            "techniqueId": "defesas-avancadas",
+            "minimumRepetitions": 21,
+            "recommendedRepetitions": 30,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 43,
+        "name": "Aula 43 - Simulação Completa (Módulo de Segurança Urbana: Tomada de Decisão Rápida)",
+        "description": "Praticar cenário urbano e decisões rápidas",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 120,
+        "activities": [
+          {
+            "name": "Tomada de Decisão Rápida)",
+            "category": "socos",
+            "techniqueId": "tomada-de-decisao-rapida",
+            "minimumRepetitions": 84,
+            "recommendedRepetitions": 120,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 44,
+        "name": "Aula 44 - Treino de Sequência Criativa (4 técnicas escolhidas)",
+        "description": "Criar combinações próprias",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 110,
+        "activities": [
+          {
+            "name": "Treino de Sequência Criativa",
+            "category": "combinacoes",
+            "techniqueId": "treino-de-sequencia-criativa",
+            "minimumRepetitions": 77,
+            "recommendedRepetitions": 110,
+            "intensity": "HIGH"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 45,
+        "name": "Aula 45 - Revisão para Evento Final (Socos, Chutes, Defesas)",
+        "description": "Preparar para exame",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 105,
+        "activities": [
+          {
+            "name": "Revisão para Evento Final",
+            "category": "socos",
+            "techniqueId": "revisao-para-evento-final",
+            "minimumRepetitions": 73,
+            "recommendedRepetitions": 105,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 46,
+        "name": "Aula 46 - Simulação Completa (Módulo de Segurança Urbana)",
+        "description": "Aplicar técnicas em cenário realista",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 130,
+        "activities": [
+          {
+            "name": "Simulação Completa",
+            "category": "socos",
+            "techniqueId": "simulacao-completa",
+            "minimumRepetitions": 91,
+            "recommendedRepetitions": 130,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 47,
+        "name": "Aula 47 - Revisão Final (8 técnicas do exame), Simulação Prática",
+        "description": "Finalizar preparação",
+        "durationMinutes": 60,
+        "totalRepetitionsPlanned": 100,
+        "activities": [
+          {
+            "name": "Revisão Final",
+            "category": "socos",
+            "techniqueId": "revisao-final",
+            "minimumRepetitions": 35,
+            "recommendedRepetitions": 50,
+            "intensity": "MODERATE"
+          },
+          {
+            "name": "Simulação Prática",
+            "category": "socos",
+            "techniqueId": "simulacao-pratica",
+            "minimumRepetitions": 35,
+            "recommendedRepetitions": 50,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 48,
+        "name": "Aula 48 - Conclusão e Convite à Graduação (Resiliência Psicológica)",
+        "description": "Revisão Completa, Simulação Realista, Entrega de Convite para Dia de Avaliação.",
+        "durationMinutes": 60,
+        "isCheckpoint": true,
+        "checkpointType": "COURSE_CONCLUSION",
+        "degreeAchieved": 0,
+        "totalRepetitionsPlanned": 150,
+        "completionMessage": "🎉 Parabéns, guerreiro(a)! Curso regular concluído. Próximo passo: o Dia de Avaliação da Faixa Branca!",
+        "activities": [
+          {
+            "name": "Conclusão e Convite à Graduação",
+            "category": "socos",
+            "techniqueId": "conclusao-e-convite-a-graduacao",
+            "minimumRepetitions": 105,
+            "recommendedRepetitions": 150,
+            "intensity": "MODERATE"
+          }
+        ]
+      },
+      {
+        "lessonNumber": 49,
+        "name": "Dia de Avaliação da Faixa Branca 🏆 (Evento Separado)",
+        "description": "Avaliação oficial das 8 técnicas principais, simulação de rua e cerimônia de graduação.",
+        "durationMinutes": 90,
+        "isCheckpoint": true,
+        "isFinalExam": true,
+        "checkpointType": "BELT_EXAM",
+        "totalRepetitionsPlanned": 200,
+        "completionMessage": "🏆 PARABÉNS! Você foi aprovado(a) e graduado(a) para a Faixa Amarela!",
+        "activities": [
+          {
+            "name": "Dia de Avaliação da Faixa Branca 🏆",
+            "category": "socos",
+            "techniqueId": "dia-de-avaliacao-da-faixa-branca",
+            "minimumRepetitions": 140,
+            "recommendedRepetitions": 200,
+            "intensity": "MODERATE"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "totalPlannedRepetitions": 5000,
+      "averageRepetitionsPerLesson": 104,
+      "estimatedCompletionTimeWeeks": 24,
+      "requiredWeeklyFrequency": 2,
+      "version": "3.0.0_UNIFIED_FINAL",
+      "author": "Smart Defence - Sistema de Currículo Unificado",
+      "notes": [
+        "Curso oficialmente unificado com 48 aulas.",
+        "4 Graus alinhados aos Mini-Testes Modulares (Aulas 8, 16, 24, 32).",
+        "Mini-Teste 5 (Aula 40) é um Checkpoint, mas não um Grau formal.",
+        "Requisito de 3 meses e 3000 repetições mínimas obrigatório para graduação.",
+        "Exame Final modelado como Aula 49 (Evento Separado)."
+      ]
+    },
+    "gamification": {
+      "achievements": [
+        {
+          "code": "DEGREE_1",
+          "name": "Fundamentos Sólidos",
+          "description": "Alcançou o 1º Grau (Mini-Teste 1)",
+          "icon": "⭐",
+          "rarity": "RARE",
+          "unlockedAt": "LESSON_8"
+        },
+        {
+          "code": "DEGREE_2",
+          "name": "Atacante Básico",
+          "description": "Alcançou o 2º Grau (Mini-Teste 2)",
+          "icon": "⭐⭐",
+          "rarity": "RARE",
+          "unlockedAt": "LESSON_16"
+        },
+        {
+          "code": "DEGREE_3",
+          "name": "Defensor Intermediário",
+          "description": "Alcançou o 3º Grau (Mini-Teste 3)",
+          "icon": "⭐⭐⭐",
+          "rarity": "EPIC",
+          "unlockedAt": "LESSON_24"
+        },
+        {
+          "code": "DEGREE_4",
+          "name": "Quase Faixa Amarela",
+          "description": "Alcançou o 4º Grau (Mini-Teste 4)",
+          "icon": "⭐⭐⭐⭐",
+          "rarity": "EPIC",
+          "unlockedAt": "LESSON_32"
+        },
+        {
+          "code": "YELLOW_BELT",
+          "name": "Faixa Amarela Conquistada",
+          "description": "Graduado para Faixa Amarela",
+          "icon": "🏆",
+          "rarity": "LEGENDARY",
+          "unlockedAt": "LESSON_49"
+        },
+        {
+          "code": "FINAL_TEST_PASS",
+          "name": "Aprovado no Exame Final",
+          "description": "Passou na Simulação Realista da Aula 49",
+          "icon": "✅",
+          "rarity": "LEGENDARY",
+          "unlockedAt": "LESSON_49"
+        },
+        {
+          "code": "FIRST_PUNCH",
+          "name": "Primeiro Soco",
+          "description": "Executou seu primeiro jab",
+          "icon": "👊",
+          "rarity": "COMMON",
+          "unlockedAt": "LESSON_1"
+        },
+        {
+          "code": "PERFECT_ATTENDANCE",
+          "name": "Presença Perfeita",
+          "description": "100% de presença em 1 mês",
+          "icon": "🔥",
+          "rarity": "EPIC"
+        },
+        {
+          "code": "HUNDRED_PUNCHES",
+          "name": "Centurião",
+          "description": "100 repetições de socos em uma aula",
+          "icon": "💯",
+          "rarity": "RARE"
+        }
+      ],
+      "milestones": [
+        {
+          "percentage": 10,
+          "message": "🎯 10% completo! Continue firme!"
+        },
+        {
+          "percentage": 25,
+          "message": "⚡ 25% completo! Você está no caminho certo!"
+        },
+        {
+          "percentage": 50,
+          "message": "🔥 Metade do caminho! Não desista agora!"
+        },
+        {
+          "percentage": 75,
+          "message": "💪 75% completo! A faixa amarela está próxima!"
+        },
+        {
+          "percentage": 90,
+          "message": "🏆 90% completo! Prepare-se para o exame final!"
+        },
+        {
+          "percentage": 100,
+          "message": "🎉 PARABÉNS! Você concluiu o curso Faixa Branca!"
+        }
+      ]
+    },
+    "techniques": [
+      {
+        "id": "postura-guarda-de-boxe",
+        "type": "TECHNIQUE",
+        "title": "Guarda de Boxe",
+        "description": "Postura base com pés afastados, joelhos levemente flexionados, mãos em guarda alta, queixo protegido.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens"
+        ],
+        "safety": "Joelhos flexionados para equilíbrio. Instrutor corrige alinhamento.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Pausas curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 50,
+            "Adulto Feminino": 40
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "postura-posicao-ortodoxa",
+        "type": "TECHNIQUE",
+        "title": "Posição Ortodoxa",
+        "description": "Postura para destros: pé esquerdo à frente, direito atrás, guarda alta.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens"
+        ],
+        "safety": "Evitar inclinação do tronco. Instrutor verifica alinhamento.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "postura-guarda-de-boxe"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 50,
+            "Adulto Feminino": 40
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "postura-posicao-canhota",
+        "type": "TECHNIQUE",
+        "title": "Posição Canhota",
+        "description": "Postura para canhotos: pé direito à frente, esquerdo atrás, guarda alta.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens"
+        ],
+        "safety": "Peso equilibrado para evitar quedas. Instrutor corrige postura.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "postura-guarda-de-boxe"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 50,
+            "Adulto Feminino": 40
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "postura-shadow-boxing-passo-planos-saltos",
+        "type": "TECHNIQUE",
+        "title": "Shadow Boxing (Passo, Planos, Saltos)",
+        "description": "Treino livre com deslocamentos laterais, frontais e saltos, mantendo guarda de boxe.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens"
+        ],
+        "safety": "Evitar saltos altos em iniciantes. Tatame macio. Instrutor supervisiona ritmo.",
+        "adaptations": [
+          "TEA: Fitas para área.",
+          "TDAH: 1 min por série."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 3,
+            "Adulto Feminino": 2
+          },
+          "duration": "3 minutos",
+          "precision": "75%"
+        }
+      },
+      {
+        "id": "soco-jab",
+        "type": "TECHNIQUE",
+        "title": "Jab",
+        "description": "Soco reto com mão dianteira (esquerda para ortodoxos, direita para canhotos), partindo da guarda.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Guarda alta, punho firme para evitar lesões. Treino em pares a 70% de força.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas (10 reps)."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "postura-guarda-de-boxe"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 50,
+            "Adulto Feminino": 40
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "soco-direto",
+        "type": "TECHNIQUE",
+        "title": "Direto",
+        "description": "Soco reto com mão traseira, usando rotação do quadril e ombro para potência.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Proteger queixo com mão oposta. Evitar hiperextensão do cotovelo.",
+        "adaptations": [
+          "TEA: Fitas para pés.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "soco-jab"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 50,
+            "Adulto Feminino": 40
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "soco-gancho-esquerdo-direito",
+        "type": "TECHNIQUE",
+        "title": "Gancho Esquerdo/Direito",
+        "description": "Soco curvo com rotação do tronco, visando lateral da cabeça ou corpo.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Punho firme, evitar rotação excessiva. Treino em pares a 70% de força.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "soco-jab"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "soco-uppercut-esquerdo-direito",
+        "type": "TECHNIQUE",
+        "title": "Uppercut Esquerdo/Direito",
+        "description": "Soco ascendente visando o queixo ou tronco, com flexão de joelhos.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Evitar inclinação excessiva. Punho firme para evitar lesões.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "soco-jab"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "combinacao-jab-direto",
+        "type": "TECHNIQUE",
+        "title": "Jab + Direto",
+        "description": "Sequência de jab seguido de direto, alternando mãos para velocidade e potência.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Manter guarda, evitar hiperextensão. Treino em pares a 70% de força.",
+        "adaptations": [
+          "TEA: Fitas para pés.",
+          "TDAH: Séries de 10 combos."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "soco-jab",
+          "soco-direto"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "combinacao-jab-gancho",
+        "type": "TECHNIQUE",
+        "title": "Jab + Gancho",
+        "description": "Jab seguido de gancho, visando velocidade e ataque lateral.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Evitar rotação excessiva do tronco. Instrutor corrige alinhamento.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "soco-jab",
+          "soco-gancho-esquerdo-direito"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "combinacao-direto-uppercut",
+        "type": "TECHNIQUE",
+        "title": "Direto + Uppercut",
+        "description": "Direto seguido de uppercut, alternando potência e ataque ascendente.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Saco de pancada (opcional)"
+        ],
+        "safety": "Proteger queixo com mão oposta. Evitar inclinação excessiva.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "soco-direto",
+          "soco-uppercut-esquerdo-direito"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "cotovelada-traseira",
+        "type": "TECHNIQUE",
+        "title": "Cotovelada Traseira",
+        "description": "Golpe com cotovelo para trás, visando o rosto ou tronco do agressor.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Protetor de cotovelo (opcional)"
+        ],
+        "safety": "Evitar contato direto em treinos. Instrutor supervisiona ângulo.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "cotovelada-lateral",
+        "type": "TECHNIQUE",
+        "title": "Cotovelada Lateral",
+        "description": "Golpe com cotovelo lateral, visando a cabeça ou costelas.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Protetor de cotovelo (opcional)"
+        ],
+        "safety": "Manter guarda alta. Treino em pares a 50% de força.",
+        "adaptations": [
+          "TEA: Fitas para pés.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "cotovelada-frontal",
+        "type": "TECHNIQUE",
+        "title": "Cotovelada Frontal",
+        "description": "Golpe com cotovelo frontal, visando o rosto ou peito.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Protetor de cotovelo (opcional)"
+        ],
+        "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "cotovelada-traseira"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "cotovelada-uppercut",
+        "type": "TECHNIQUE",
+        "title": "Cotovelada Uppercut",
+        "description": "Golpe ascendente com cotovelo, visando o queixo ou tronco.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Protetor de cotovelo (opcional)"
+        ],
+        "safety": "Manter guarda alta. Evitar inclinação excessiva.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "cotovelada-frontal"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "cotovelada-martelo",
+        "type": "TECHNIQUE",
+        "title": "Cotovelada Martelo",
+        "description": "Golpe descendente com cotovelo, visando a cabeça ou ombro.",
+        "equipment": [
+          "Luvas de boxe",
+          "Bandagens",
+          "Protetor de cotovelo (opcional)"
+        ],
+        "safety": "Evitar contato direto. Instrutor supervisiona ângulo.",
+        "adaptations": [
+          "TEA: Fitas para pés.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "cotovelada-frontal"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 40,
+            "Adulto Feminino": 32
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "chute-reto",
+        "type": "TECHNIQUE",
+        "title": "Chute Reto",
+        "description": "Chute frontal com perna dianteira, visando a virilha ou abdômen.",
+        "equipment": [
+          "Protetor de canela (opcional)",
+          "Tatame macio"
+        ],
+        "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "chute-lateral",
+        "type": "TECHNIQUE",
+        "title": "Chute Lateral",
+        "description": "Chute lateral com perna traseira, visando costelas ou cabeça.",
+        "equipment": [
+          "Protetor de canela (opcional)",
+          "Tatame macio"
+        ],
+        "safety": "Perna de apoio firme. Instrutor corrige equilíbrio.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "chute-reto"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "chute-circular-baixo",
+        "type": "TECHNIQUE",
+        "title": "Chute Circular Baixo",
+        "description": "Chute circular visando a coxa ou canela, com rotação do quadril.",
+        "equipment": [
+          "Protetor de canela (opcional)",
+          "Tatame macio"
+        ],
+        "safety": "Evitar contato direto. Instrutor supervisiona pivô.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "chute-reto"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "chute-joelhada-frontal",
+        "type": "TECHNIQUE",
+        "title": "Joelhada Frontal",
+        "description": "Joelhada frontal visando abdômen ou rosto, com elevação do joelho.",
+        "equipment": [
+          "Protetor de joelho (opcional)",
+          "Tatame macio"
+        ],
+        "safety": "Evitar contato direto. Instrutor corrige ângulo.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "chute-empurrao",
+        "type": "TECHNIQUE",
+        "title": "Empurrão",
+        "description": "Chute de empurrão com sola do pé, visando peito ou abdômen.",
+        "equipment": [
+          "Protetor de canela (opcional)",
+          "Tatame macio"
+        ],
+        "safety": "Evitar hiperextensão do joelho. Treino em pares a 50% de força.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [
+          "chute-reto"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-dedos-frontal",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Dedos (Frontal)",
+        "description": "Defesa contra estrangulamento frontal, usando dedos para afastar mãos do agressor.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Treino a 50% de força. Evitar lesões no pescoço.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-joelho-frontal",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Joelho (Frontal)",
+        "description": "Defesa contra estrangulamento frontal, usando joelhada para desequilibrar.",
+        "equipment": [
+          "Tatame macio",
+          "Protetor de joelho (opcional)"
+        ],
+        "safety": "Evitar contato direto com joelho. Treino a 50% de força.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-estrangulamento-dedos-frontal"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-empurrao-frontal",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Empurrão (Frontal)",
+        "description": "Defesa contra estrangulamento frontal, empurrando o agressor com mãos ou braços.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Evitar força excessiva no pescoço. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-estrangulamento-dedos-frontal"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-posterior",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Posterior",
+        "description": "Defesa contra estrangulamento por trás, usando movimento de ombros e contra-ataque.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-empurrao-posterior",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Empurrão (Posterior)",
+        "description": "Defesa contra estrangulamento por trás, empurrando para liberar o pescoço.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Evitar contato direto no pescoço. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-estrangulamento-posterior"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-estrangulamento-lateral",
+        "type": "TECHNIQUE",
+        "title": "Defesa Estrangulamento Lateral",
+        "description": "Defesa contra estrangulamento lateral, usando movimento de ombro e contra-ataque.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Treino a 50% de força. Evitar pressão no pescoço.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-agarramento-frontal-nao-agressivo",
+        "type": "TECHNIQUE",
+        "title": "Defesa Agarramento Frontal Não Agressivo",
+        "description": "Defesa contra agarramento frontal (ex.: camisa), liberando com braços.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Evitar força excessiva. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-agarramento-frontal-agressivo",
+        "type": "TECHNIQUE",
+        "title": "Defesa Agarramento Frontal Agressivo",
+        "description": "Defesa contra agarramento frontal agressivo, usando braços e contra-ataque.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe",
+          "Protetor de joelho (opcional)"
+        ],
+        "safety": "Treino a 50% de força. Evitar contato direto com joelhada.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-agarramento-frontal-nao-agressivo"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-agarramento-imobilizacao",
+        "type": "TECHNIQUE",
+        "title": "Defesa Agarramento com Imobilização",
+        "description": "Defesa contra agarramento com braços imobilizados, usando movimento de quadril.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Evitar pressão nos braços. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Avançado",
+        "refTechniqueId": [
+          "defesa-agarramento-frontal-agressivo"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-agarramento-tras-externa",
+        "type": "TECHNIQUE",
+        "title": "Defesa Agarramento por Trás Externa",
+        "description": "Defesa contra agarramento por trás (braços livres), usando movimento de ombros.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Treino a 50% de força. Evitar contato direto.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-agarramento-tras-interna",
+        "type": "TECHNIQUE",
+        "title": "Defesa Agarramento por Trás Interna",
+        "description": "Defesa contra agarramento por trás (braços presos), usando movimento de quadril.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe",
+          "Protetor de canela (opcional)"
+        ],
+        "safety": "Evitar contato direto com chute. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-agarramento-tras-externa"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-geral-360",
+        "type": "TECHNIQUE",
+        "title": "Defesa 360°",
+        "description": "Defesa circular contra ataques de ângulos variados, usando braços para bloquear.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Manter braços firmes. Treino a 50% de força.",
+        "adaptations": [
+          "TEA: Fitas para ângulos.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-geral-360-contra-ataque",
+        "type": "TECHNIQUE",
+        "title": "Defesa 360° + Contra-ataque",
+        "description": "Defesa 360° seguida de contra-ataque (ex.: jab ou chute).",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Evitar contato direto no contra-ataque. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Fitas para ângulos.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-geral-360"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-geral-soco-reto",
+        "type": "TECHNIQUE",
+        "title": "Defesa Soco Reto",
+        "description": "Defesa contra soco reto, desviando com antebraço, guarda alta.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Treino a 50% de força. Evitar impacto direto no antebraço.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 30,
+            "Adulto Feminino": 24
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "defesa-geral-soco-gancho",
+        "type": "TECHNIQUE",
+        "title": "Defesa Soco Gancho",
+        "description": "Defesa contra soco gancho, bloqueando com antebraço ou desvio.",
+        "equipment": [
+          "Tatame macio",
+          "Luvas de boxe"
+        ],
+        "safety": "Manter guarda alta. Treino a 50% de força.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "defesa-geral-soco-reto"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "2 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "queda-tras",
+        "type": "TECHNIQUE",
+        "title": "Queda para Trás",
+        "description": "Queda protegendo cabeça e coluna, com braços e pernas amortecendo.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Evitar impacto na cabeça.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "queda-frente-suave",
+        "type": "TECHNIQUE",
+        "title": "Queda Frente Suave",
+        "description": "Queda frontal suave, usando braços para amortecer e proteger o rosto.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Evitar impacto no rosto.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Iniciante",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "queda-frente-dura",
+        "type": "TECHNIQUE",
+        "title": "Queda Frente Dura",
+        "description": "Queda frontal com maior impacto, usando braços e pernas para amortecer.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Marcações no tatame.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [
+          "queda-frente-suave"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "queda-lateral",
+        "type": "TECHNIQUE",
+        "title": "Queda Lateral",
+        "description": "Queda lateral, protegendo cabeça e quadril, com braço e perna amortecendo.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Evitar impacto no ombro ou cabeça.",
+        "adaptations": [
+          "TEA: Fitas para posição.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Intermediário",
+        "refTechniqueId": [],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 20,
+            "Adulto Feminino": 16
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "rolamento-frente",
+        "type": "TECHNIQUE",
+        "title": "Rolamento Frente",
+        "description": "Rolamento frontal, começando agachado, rolando sobre o ombro para voltar à guarda.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Evitar impacto na cabeça ou pescoço.",
+        "adaptations": [
+          "TEA: Fitas para trajetória.",
+          "TDAH: Séries curtas."
+        ],
+        "difficulty": "Avançado",
+        "refTechniqueId": [
+          "queda-frente-suave"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 15,
+            "Adulto Feminino": 12
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      },
+      {
+        "id": "rolamento-tras",
+        "type": "TECHNIQUE",
+        "title": "Rolamento Trás",
+        "description": "Rolamento traseiro, rolando sobre o ombro para voltar à guarda.",
+        "equipment": [
+          "Tatame macio"
+        ],
+        "safety": "Tatame ≥3 cm. Instrutor supervisiona.",
+        "adaptations": [
+          "TEA: Fitas para trajetória.",
+          "TDAH: Séries de 10 reps."
+        ],
+        "difficulty": "Avançado",
+        "refTechniqueId": [
+          "queda-tras"
+        ],
+        "defaultParams": {
+          "repetitions": {
+            "Adulto Masculino": 15,
+            "Adulto Feminino": 12
+          },
+          "duration": "3 minutos",
+          "precision": "80%"
+        }
+      }
+    ]
+  }
+}

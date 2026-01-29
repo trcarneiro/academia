@@ -15,6 +15,9 @@ type AppSettings = {
     contactEmail?: string | null;
     contactPhone?: string | null;
   };
+  asaas: {
+    environment: 'sandbox' | 'production';
+  };
 };
 
 function getDataFilePath(currentDir: string) {
@@ -39,6 +42,9 @@ async function ensureDefaults(filePath: string, dataDir: string): Promise<AppSet
       contactEmail: null,
       contactPhone: null,
     },
+    asaas: {
+      environment: 'sandbox'
+    }
   };
 
   try {
@@ -47,7 +53,8 @@ async function ensureDefaults(filePath: string, dataDir: string): Promise<AppSet
       await fs.writeFile(filePath, JSON.stringify(defaults, null, 2), 'utf-8');
     });
     const content = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(content || '{}') || defaults;
+    const parsed = JSON.parse(content || '{}');
+    return { ...defaults, ...parsed }; // Merge to ensure new defaults exist
   } catch {
     return defaults;
   }
@@ -97,6 +104,9 @@ export default async function settingsRoutes(
           contactEmail: body.branding?.contactEmail ?? current.branding.contactEmail ?? null,
           contactPhone: body.branding?.contactPhone ?? current.branding.contactPhone ?? null,
         },
+        asaas: {
+          environment: body.asaas?.environment === 'production' ? 'production' : 'sandbox'
+        }
       };
 
       await fs.mkdir(dataDir, { recursive: true });

@@ -1,12 +1,15 @@
 # Relatório de Conformidade dos Módulos
 
-**Última atualização:** 2025-11-20
-**Status Geral:** Em Progresso
+**Última atualização:** 2026-01-26
+**Status Geral:** Em Progresso (Módulos Críticos Auditados)
 
 ## Resumo de Conformidade
 
 | Módulo | Tipo | Pontuação | Problemas |
 |--------|------|-----------|-----------|
+| 🟢 **broadcast** | Multi-file | **100%** | ✅ Compliant (Antigravity Audit) |
+| 🟢 **crm-public** | Multi-file | **100%** | ✅ Compliant (Booking Flow Audit) |
+
 | 🔴 **evaluations** | Single-file | **10%** | Missing API Client, Missing Premium Header... |
 | 🔴 **progress** | Single-file | **10%** | Missing API Client, Missing Premium Header... |
 | 🔴 **activities-service** | Single-file | **30%** | Missing API Client, Missing Premium Header... |

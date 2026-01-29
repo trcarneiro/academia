@@ -3,7 +3,7 @@
 ## Project Overview
 Multi-tenant Krav Maga academy management system with TypeScript/Fastify backend + modular vanilla JavaScript frontend. Emphasizes API-first design, isolated modules, and full-screen UI patterns.
 
-**Documentation Hierarchy**: `AGENTS.md` (master) → `/dev` specs → this file. On conflicts, AGENTS.md wins.
+**Documentation Hierarchy**: `AGENTS.md` (master) → Antigravity Brain (Features) → `/dev` specs → this file. On conflicts, AGENTS.md wins.
 
 ## Critical Architecture Patterns
 
@@ -181,6 +181,7 @@ export default async function studentsRoutes(fastify: FastifyInstance) {
 3. **Prisma includes**: Think about what frontend needs - avoid N+1 queries
 4. **Path aliases**: `@/utils/database` not `../../utils/database`
 5. **Validation**: Use Zod schemas before database operations
+6. **DATABASE INTEGRITY (CRITICAL)**: NEVER run `npx prisma migrate reset` or any destructive command. Data persistence is mandatory. If you need to sync the schema, only use `npx prisma db push` and never if it requires a data wipe.
 
 ## Frontend Architecture (Vanilla JS + Modules)
 
@@ -308,6 +309,10 @@ Best for: Complex workflows, multiple views, 600+ lines (20% of use cases)
 - **Routes**: `src/routes/auth.ts`
 - **Frontend**: `public/js/modules/auth/` (no API client needed - direct auth)
 
+### Database Safety
+- **Rule**: DO NOT delete tables or records unless explicitly asked.
+- **Rule**: Scripts like `npm run reset:demo` or `npm run db:reset` are for USER use only. AI should never run them.
+
 ## Common Pitfalls & Anti-Patterns
 
 ### ❌ DON'T DO THIS
@@ -387,13 +392,15 @@ Check `AUDIT_REPORT.md` for current compliance status:
 3. **dev/MODULE_STANDARDS.md** - Single-file vs Multi-file decision guide
 4. **dev/WORKFLOW.md** - Step-by-step SOPs for common tasks
 5. **dev/DESIGN_SYSTEM.md** - CSS tokens + UI patterns
-6. **.github/copilot-instructions.md** - This file (quick reference)
+6. **Antigravity Brain** - Feature-specific docs (Broadcast, CRM, User Flow)
+7. **.github/copilot-instructions.md** - This file (quick reference)
 
 ### When You Need To...
 - **Create new module**: Read `dev/MODULE_STANDARDS.md` → choose template → copy structure
 - **Fix bugs**: Check `dev/FALLBACK_RULES.md` for common issues
 - **Style UI**: Reference `dev/DESIGN_SYSTEM.md` + `public/css/design-system/tokens.css`
 - **Write tests**: See `tests/README.md` + existing test files
+- **Check feature architecture**: Read `C:\Users\trcar\.gemini\antigravity\brain\4c97989d-d339-4ac2-8e91-9a5e5d2bdd11\walkthrough.md` for Broadcast and CRM details.
 - **Deploy**: Check `dev/DOCUMENTATION.md` deployment section
 
 ## Quick Start Commands

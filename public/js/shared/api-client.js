@@ -10,7 +10,7 @@
 if (typeof window.UI_STATES === 'undefined') {
     window.UI_STATES = {
         LOADING: 'loading',
-        SUCCESS: 'success', 
+        SUCCESS: 'success',
         ERROR: 'error',
         EMPTY: 'empty'
     };
@@ -123,7 +123,7 @@ class ApiClient {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const response = await this.executeRequest(method, fullURL, data, config);
-                
+
                 // Cache successful GET responses
                 if (method === 'GET' && config.cache) {
                     this.cache.set(cacheKey, {
@@ -135,13 +135,13 @@ class ApiClient {
                 return this.normalizeResponse(response);
             } catch (error) {
                 lastError = error;
-                
+
                 if (attempt < maxRetries && this.shouldRetry(error)) {
                     console.warn(`🔄 Retry ${attempt}/${maxRetries} for ${url}:`, error.message);
                     await this.delay(config.retryDelay * attempt);
                     continue;
                 }
-                
+
                 break;
             }
         }
@@ -200,17 +200,17 @@ class ApiClient {
                 const ss = (typeof window !== 'undefined') ? window.sessionStorage : null;
                 let orgId = (ls?.getItem('activeOrganizationId')) || (ss?.getItem('activeOrganizationId')) || (typeof window !== 'undefined' ? window.currentOrganizationId : null);
                 const orgSlug = (ls?.getItem('activeOrganizationSlug')) || (ss?.getItem('activeOrganizationSlug')) || (typeof window !== 'undefined' ? window.currentOrganizationSlug : null);
-                
+
                 // Note: org context may be available shortly after page load; only warn if truly missing after app initialization
                 // Modules should call ensureOrganizationContext() before making API calls to avoid timing issues
-                
+
                 // ✅ FIX: Use lowercase para compatibilidade com Fastify schema validation
                 if (orgId) orgHeaders['x-organization-id'] = orgId;
                 else if (orgSlug) orgHeaders['x-organization-slug'] = orgSlug;
-                
+
                 // Removed warning here - it was firing before org context was ready and causing confusion
                 // Org context is set during app.js initialization and should be available within 500ms
-            } catch (_) {}
+            } catch (_) { }
 
             const fetchOptions = {
                 method,
@@ -238,36 +238,39 @@ class ApiClient {
             if (!response.ok) {
                 // Parse error body to extract server message when available
                 let serverMsg = '';
+                let errorData = null;
                 try {
                     const ct = response.headers.get('content-type') || '';
                     if (ct.includes('application/json')) {
                         const j = await response.json();
                         serverMsg = j?.message || JSON.stringify(j);
+                        errorData = j;
                     } else if (ct.includes('text/')) {
                         serverMsg = await response.text();
+                        errorData = { raw: serverMsg };
                     }
-                } catch (_) {}
+                } catch (_) { }
                 const msg = serverMsg || `HTTP ${response.status}: ${response.statusText}`;
-                throw new ApiError(msg, response.status, url);
+                throw new ApiError(msg, response.status, url, errorData);
             }
 
             const responseData = await this.parseResponse(response);
-            
+
             console.log(`✅ ${method} ${url} completed successfully`);
-            
+
             return responseData;
 
         } catch (error) {
             clearTimeout(timeoutId);
-            
+
             if (error.name === 'AbortError') {
                 throw new ApiError(`Request timeout (${config.timeout}ms)`, 408, url);
             }
-            
+
             if (error instanceof ApiError) {
                 throw error;
             }
-            
+
             throw new ApiError(`Network error: ${error.message}`, 0, url);
         }
     }
@@ -277,23 +280,23 @@ class ApiClient {
      */
     async parseResponse(response) {
         const contentType = response.headers.get('content-type');
-        
+
         console.log('🔧 parseResponse - Content-Type:', contentType);
-        
+
         if (contentType?.includes('application/json')) {
             const text = await response.text();
             console.log('🔧 parseResponse - Raw text:', text);
-            
+
             const json = JSON.parse(text);
             console.log('🔧 parseResponse - Parsed JSON:', json);
-            
+
             return json;
         }
-        
+
         if (contentType?.includes('text/')) {
             return await response.text();
         }
-        
+
         return await response.blob();
     }
 
@@ -304,7 +307,7 @@ class ApiClient {
         if (url.startsWith('http')) {
             return url;
         }
-        
+
         return `${this.baseURL}${url}`;
     }
 
@@ -345,7 +348,7 @@ class ApiClient {
             // Retry on server errors (5xx) and some client errors
             return error.status >= 500 || error.status === 408 || error.status === 429;
         }
-        
+
         // Retry on network errors
         return error.name === 'TypeError' || error.name === 'AbortError';
     }
@@ -578,7 +581,7 @@ class ModuleAPIHelper {
      * Buscar dados com UI states automáticos (Guidelines.MD compliance)
      */
     async fetchWithStates(endpoint, options = {}) {
-        const { 
+        const {
             loadingElement,
             targetElement,
             onLoading,
@@ -592,7 +595,7 @@ class ModuleAPIHelper {
         try {
             // Estado: Loading
             this._setState(UI_STATES.LOADING, { loadingElement, onLoading });
-            
+
             // Build URL with query params when provided
             let url = endpoint;
             if (params && typeof params === 'object') {
@@ -603,9 +606,9 @@ class ModuleAPIHelper {
                 const qs = usp.toString();
                 if (qs) url += (endpoint.includes('?') ? '&' : '?') + qs;
             }
-            
+
             const result = await this.api.get(url, { headers });
-            
+
             if (!result.success) {
                 throw new Error(result.message || 'API returned error');
             }
@@ -625,12 +628,12 @@ class ModuleAPIHelper {
         } catch (error) {
             console.error(`❌ ${this.moduleName} fetch error:`, error);
             this._setState(UI_STATES.ERROR, { targetElement, onError, error });
-            
+
             // Não re-lançar erro se há um handler onError (previne "Uncaught in promise")
             if (options.onError) {
                 return { success: false, message: error.message, error };
             }
-            
+
             throw error; // Apenas lança se não há handler
         }
     }
@@ -643,12 +646,12 @@ class ModuleAPIHelper {
 
         try {
             console.log(`💾 ${this.moduleName} saving data...`);
-            
+
             const result = await this.api[method.toLowerCase()](endpoint, data);
-            
+
             if (onSuccess) onSuccess(result.data);
             console.log(`✅ ${this.moduleName} data saved successfully`);
-            
+
             return result;
 
         } catch (error) {
@@ -804,27 +807,27 @@ const DATABASE_ERRORS = {
  */
 function parseDatabaseError(error) {
     const message = error?.message || error?.toString() || '';
-    
+
     // Check for Prisma error codes
     const prismaMatch = message.match(/P\d{4}/);
     if (prismaMatch) {
         const code = prismaMatch[0];
         return { code, ...DATABASE_ERRORS[code] };
     }
-    
+
     // Check for connection errors
     if (message.includes('503') || message.includes('Service Unavailable')) {
         return { code: 'SERVICE_UNAVAILABLE', ...DATABASE_ERRORS['SERVICE_UNAVAILABLE'] };
     }
-    
+
     if (message.includes('ECONNREFUSED') || message.includes('Connection refused')) {
         return { code: 'CONNECTION_REFUSED', ...DATABASE_ERRORS['CONNECTION_REFUSED'] };
     }
-    
+
     if (message.includes('timeout') || message.includes('Timeout')) {
         return { code: 'TIMEOUT', ...DATABASE_ERRORS['TIMEOUT'] };
     }
-    
+
     return null;
 }
 
@@ -833,12 +836,13 @@ function parseDatabaseError(error) {
 // ==============================================
 
 class ApiError extends Error {
-    constructor(message, status = 0, url = '') {
+    constructor(message, status = 0, url = '', data = null) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
         this.url = url;
-        
+        this.data = data; // Store full error payload
+
         // Parse database-specific error info
         this.dbError = parseDatabaseError({ message, status });
     }
@@ -901,13 +905,13 @@ if (typeof window !== 'undefined') {
     window.UI_STATES = UI_STATES;
 
     // Helper factory para módulos
-    window.createModuleAPI = function(moduleName, options = {}) {
+    window.createModuleAPI = function (moduleName, options = {}) {
         const moduleAPI = new ModuleAPIHelper(moduleName, apiClient);
-        
+
         // Se foram fornecidos headers padrão, override o método request
         if (options.defaultHeaders) {
             const originalRequest = moduleAPI.api.request.bind(moduleAPI.api);
-            moduleAPI.api.request = async function(method, url, data = null, requestOptions = {}) {
+            moduleAPI.api.request = async function (method, url, data = null, requestOptions = {}) {
                 const mergedOptions = {
                     ...requestOptions,
                     headers: {
@@ -918,24 +922,24 @@ if (typeof window !== 'undefined') {
                 return originalRequest(method, url, data, mergedOptions);
             };
         }
-        
+
         return moduleAPI;
     };
 
     // Wait for API client to be ready
-    window.waitForAPIClient = async function() {
+    window.waitForAPIClient = async function () {
         let attempts = 0;
         const maxAttempts = 50; // 5 seconds (50 * 100ms)
-        
+
         while (!window.createModuleAPI && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
-        
+
         if (!window.createModuleAPI) {
             throw new Error('API client not available after waiting 5 seconds');
         }
-        
+
         return true;
     };
 

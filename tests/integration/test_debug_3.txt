@@ -1,0 +1,78 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769315059223,"pid":114660,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mStarting Setup...
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mOrg created: cee888c8-02e1-4182-95f7-d240b3f8f61a
+Creating Instructor User...
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mInstructor created: faeebc76-7725-46a5-89a1-70bb2976c766
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mSetup Complete
+
+ [31m❯[39m tests/integration/public-crm.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 107128[2mms[22m[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould fetch lead info publicly[39m[33m 32790[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould list available classes for trial[39m[33m 33095[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould book a trial class PUBLICLY[39m[33m 32786[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould fetch lead info publicly
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m132:14[22m[39m
+    [90m130| [39m        [35mawait[39m prisma[33m.[39muser[33m.[39m[34mdeleteMany[39m({ where[33m:[39m { organizationId } })[33m;[39m
+    [90m131| [39m        await prisma.organization.deleteMany({ where: { id: organizati…
+    [90m132| [39m    })[33m;[39m
+    [90m   | [39m             [31m^[39m
+    [90m133| [39m
+    [90m134| [39m    [34mit[39m([32m'should fetch lead info publicly'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould list available classes for trial
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m142:14[22m[39m
+    [90m140| [39m        [34mexpect[39m(res[33m.[39mbody[33m.[39mdata[33m.[39mname)[33m.[39m[34mtoBe[39m([32m'Public Booking Lead'[39m)[33m;[39m
+    [90m141| [39m        expect(res.body.data.organization.primaryColor).toBe('#000000'…
+    [90m142| [39m    })[33m;[39m
+    [90m   | [39m             [31m^[39m
+    [90m143| [39m
+    [90m144| [39m    [34mit[39m([32m'should list available classes for trial'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould book a trial class PUBLICLY
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m156:14[22m[39m
+    [90m154| [39m        expect(res.body.data[dateKey][0].courseName).toBe('Defesa Pess…
+    [90m155| [39m        [34mexpect[39m(res[33m.[39mbody[33m.[39mdata[dateKey][[34m0[39m][33m.[39mmodality)[33m.[39m[34mtoBe[39m([32m'Krav Maga'[39m)[33m;[39m
+    [90m156| [39m    })[33m;[39m
+    [90m   | [39m             [31m^[39m
+    [90m157| [39m
+    [90m158| [39m    [34mit[39m([32m'should book a trial class PUBLICLY'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[90m (3)[39m
+[2m   Start at [22m 01:24:16
+[2m   Duration [22m 115.95s[2m (transform 1.59s, setup 99ms, collect 8.04s, tests 107.13s, environment 0ms, prepare 248ms)[22m
+

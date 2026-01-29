@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
+import { UserRole } from '@/types';
 
 interface ClassFilters {
   date?: string;
@@ -46,7 +47,7 @@ export class AgendaController {
   /**
    * Buscar aulas com filtros
    */
-  async getClasses(filters: ClassFilters & { organizationId?: string }) {
+  async getClasses(filters: ClassFilters & { organizationId?: string }, user?: { id: string; role: string }) {
     try {
       const whereClause: any = {};
       if (filters.organizationId) {
@@ -171,6 +172,30 @@ export class AgendaController {
         if (filters.instructor) {
           psWhere.personalClass = { ...(psWhere.personalClass || {}), instructorId: filters.instructor };
         }
+
+        // --- VISIBILITY FILTER ---
+        if (user) {
+          if (user.role === UserRole.STUDENT) {
+            // Student can ONLY see their own personal sessions
+            const student = await this.prisma.student.findFirst({ where: { userId: user.id } });
+            if (student) {
+              psWhere.personalClass = { ...(psWhere.personalClass || {}), studentId: student.id };
+            } else {
+              // If valid student record not found, likely inconsistent state. Better safe than sorry.
+              // Prevent showing ANY personal session.
+              psWhere.id = '00000000-0000-0000-0000-000000000000';
+            }
+          } else if (user.role === UserRole.INSTRUCTOR) {
+            // Instructor can ONLY see sessions they teach (OR maybe their own if they are a student too? Access hierarchy?)
+            // Assuming strict instructor view for now.
+            const instructor = await this.prisma.instructor.findFirst({ where: { userId: user.id } });
+            if (instructor) {
+              psWhere.personalClass = { ...(psWhere.personalClass || {}), instructorId: instructor.id };
+            }
+          }
+          // ADMIN / MANAGER / SUPER_ADMIN see all (no extra filter)
+        }
+
         personalSessions = await this.prisma.personalTrainingSession.findMany({
           where: psWhere,
           include: {
@@ -254,7 +279,7 @@ export class AgendaController {
         return { success: true, data: sorted, total: sorted.length, source: 'personal_only' };
       }
 
-  if (!filters.type && filters.startDate && filters.endDate) {
+      if (!filters.type && filters.startDate && filters.endDate) {
         turmaClasses = await this.generateVirtualClassesFromTurmas(filters);
       }
 
@@ -364,11 +389,11 @@ export class AgendaController {
         where: lessonWhere,
         include: {
           turma: {
-             include: {
-                course: true,
-                instructor: true,
-                unit: true
-             }
+            include: {
+              course: true,
+              instructor: true,
+              unit: true
+            }
           },
           lessonPlan: {
             select: {
@@ -404,7 +429,7 @@ export class AgendaController {
       });
 
       const virtualClasses: any[] = [];
-      
+
       // 3. Iterar dias e turmas
       const currentDate = new Date(startDate);
       while (currentDate <= endDate) {
@@ -412,112 +437,112 @@ export class AgendaController {
         const dateKey = this.formatLocalYMD(currentDate);
 
         for (const turma of turmas) {
-           // Check turma validity dates
-           if (turma.startDate && currentDate < turma.startDate) continue;
-           if (turma.endDate && currentDate > turma.endDate) continue;
+          // Check turma validity dates
+          if (turma.startDate && currentDate < turma.startDate) continue;
+          if (turma.endDate && currentDate > turma.endDate) continue;
 
-           // Parse schedule
-           const schedule = turma.schedule as any; 
-           if (!schedule || !Array.isArray(schedule.daysOfWeek)) continue;
+          // Parse schedule
+          const schedule = turma.schedule as any;
+          if (!schedule || !Array.isArray(schedule.daysOfWeek)) continue;
 
-           if (schedule.daysOfWeek.includes(dayOfWeek)) {
-             // Check if concrete lesson exists
-             const existing = lessonMap.get(`${turma.id}-${dateKey}`);
-             
-             if (existing) {
-               // Use existing lesson
-               const startTime = existing.scheduledDate;
-               const endTime = new Date(startTime.getTime() + (existing.duration || 60) * 60 * 1000);
-               const instructor = existing.turma?.instructor || turma.instructor;
-               const instructorName = instructor
-                  ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
-                  : '';
+          if (schedule.daysOfWeek.includes(dayOfWeek)) {
+            // Check if concrete lesson exists
+            const existing = lessonMap.get(`${turma.id}-${dateKey}`);
 
-               virtualClasses.push({
-                  id: `turmaLesson-${existing.id}`,
-                  type: 'TURMA',
-                  title: this.formatTurmaLessonTitle(existing.title, existing.lessonNumber),
-                  lessonNumber: existing.lessonNumber,
-                  startTime: startTime.toISOString(),
-                  endTime: endTime.toISOString(),
-                  status: existing.status,
-                  maxStudents: turma.maxStudents ?? 0,
-                  actualStudents: existing.attendances.length,
-                  description: existing.lessonPlan?.description || existing.notes || turma.description || `Aula da turma ${turma.name}`,
-                  notes: existing.notes || null,
-                  course: turma.course ? {
-                    id: turma.course.id,
-                    name: turma.course.name,
-                    category: turma.course.category
-                  } : null,
-                  instructor: instructor ? {
-                    id: turma.instructorId,
-                    name: instructorName || instructor.email || 'Instrutor',
-                    email: instructor.email ?? ''
-                  } : null,
-                  attendanceCount: existing.attendances.length,
-                  attendances: [], 
-                  isVirtual: false,
-                  turmaId: existing.turmaId,
-                  unit: turma.unit ? {
-                    id: turma.unit.id,
-                    name: turma.unit.name
-                  } : null
-               });
-             } else {
-               // Create virtual lesson
-               if (filters.status && filters.status !== 'SCHEDULED') continue;
+            if (existing) {
+              // Use existing lesson
+              const startTime = existing.scheduledDate;
+              const endTime = new Date(startTime.getTime() + (existing.duration || 60) * 60 * 1000);
+              const instructor = existing.turma?.instructor || turma.instructor;
+              const instructorName = instructor
+                ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
+                : '';
 
-               const timeParts = (schedule.time || '00:00').split(':');
-               const hour = parseInt(timeParts[0]);
-               const minute = parseInt(timeParts[1]);
-               
-               const startTime = new Date(currentDate);
-               startTime.setHours(hour, minute, 0, 0);
-               
-               const duration = parseInt(schedule.duration || '60');
-               const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
-               
-               const instructor = turma.instructor;
-               const instructorName = instructor
-                  ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
-                  : '';
+              virtualClasses.push({
+                id: `turmaLesson-${existing.id}`,
+                type: 'TURMA',
+                title: this.formatTurmaLessonTitle(existing.title, existing.lessonNumber),
+                lessonNumber: existing.lessonNumber,
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                status: existing.status,
+                maxStudents: turma.maxStudents ?? 0,
+                actualStudents: existing.attendances.length,
+                description: existing.lessonPlan?.description || existing.notes || turma.description || `Aula da turma ${turma.name}`,
+                notes: existing.notes || null,
+                course: turma.course ? {
+                  id: turma.course.id,
+                  name: turma.course.name,
+                  category: turma.course.category
+                } : null,
+                instructor: instructor ? {
+                  id: turma.instructorId,
+                  name: instructorName || instructor.email || 'Instrutor',
+                  email: instructor.email ?? ''
+                } : null,
+                attendanceCount: existing.attendances.length,
+                attendances: [],
+                isVirtual: false,
+                turmaId: existing.turmaId,
+                unit: turma.unit ? {
+                  id: turma.unit.id,
+                  name: turma.unit.name
+                } : null
+              });
+            } else {
+              // Create virtual lesson
+              if (filters.status && filters.status !== 'SCHEDULED') continue;
 
-               virtualClasses.push({
-                  id: `virtual-${turma.id}-${dateKey}`,
-                  type: 'TURMA',
-                  title: turma.name,
-                  lessonNumber: null,
-                  startTime: startTime.toISOString(),
-                  endTime: endTime.toISOString(),
-                  status: 'SCHEDULED',
-                  maxStudents: turma.maxStudents ?? 0,
-                  actualStudents: 0,
-                  description: turma.description || `Aula da turma ${turma.name}`,
-                  notes: null,
-                  course: turma.course ? {
-                    id: turma.course.id,
-                    name: turma.course.name,
-                    category: turma.course.category
-                  } : null,
-                  instructor: instructor ? {
-                    id: turma.instructorId,
-                    name: instructorName || instructor.email || 'Instrutor',
-                    email: instructor.email ?? ''
-                  } : null,
-                  attendanceCount: 0,
-                  attendances: [],
-                  isVirtual: true,
-                  turmaId: turma.id,
-                  unit: turma.unit ? {
-                    id: turma.unit.id,
-                    name: turma.unit.name
-                  } : null
-               });
-             }
-           }
+              const timeParts = (schedule.time || '00:00').split(':');
+              const hour = parseInt(timeParts[0]);
+              const minute = parseInt(timeParts[1]);
+
+              const startTime = new Date(currentDate);
+              startTime.setHours(hour, minute, 0, 0);
+
+              const duration = parseInt(schedule.duration || '60');
+              const endTime = new Date(startTime.getTime() + duration * 60 * 1000);
+
+              const instructor = turma.instructor;
+              const instructorName = instructor
+                ? `${instructor.firstName ?? ''} ${instructor.lastName ?? ''}`.trim()
+                : '';
+
+              virtualClasses.push({
+                id: `virtual-${turma.id}-${dateKey}`,
+                type: 'TURMA',
+                title: turma.name,
+                lessonNumber: null,
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                status: 'SCHEDULED',
+                maxStudents: turma.maxStudents ?? 0,
+                actualStudents: 0,
+                description: turma.description || `Aula da turma ${turma.name}`,
+                notes: null,
+                course: turma.course ? {
+                  id: turma.course.id,
+                  name: turma.course.name,
+                  category: turma.course.category
+                } : null,
+                instructor: instructor ? {
+                  id: turma.instructorId,
+                  name: instructorName || instructor.email || 'Instrutor',
+                  email: instructor.email ?? ''
+                } : null,
+                attendanceCount: 0,
+                attendances: [],
+                isVirtual: true,
+                turmaId: turma.id,
+                unit: turma.unit ? {
+                  id: turma.unit.id,
+                  name: turma.unit.name
+                } : null
+              });
+            }
+          }
         }
-        
+
         // Next day
         currentDate.setDate(currentDate.getDate() + 1);
       }
@@ -619,7 +644,7 @@ export class AgendaController {
         this.fastify.log.warn({ e }, 'Failed to compute virtual turmas count');
       }
 
-  return {
+      return {
         success: true,
         data: {
           totalClasses: totalClasses + virtualCount,
@@ -631,7 +656,7 @@ export class AgendaController {
         }
       };
     } catch (error) {
-  this.fastify.log.error({ err: error }, 'Error in getDayStats');
+      this.fastify.log.error({ err: error }, 'Error in getDayStats');
       throw error;
     }
   }
@@ -722,7 +747,7 @@ export class AgendaController {
         data: groupedClasses
       };
     } catch (error) {
-  this.fastify.log.error({ err: error }, 'Error in getTodayClasses');
+      this.fastify.log.error({ err: error }, 'Error in getTodayClasses');
       throw error;
     }
   }
@@ -736,14 +761,14 @@ export class AgendaController {
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
-      
+
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 7);
 
       const classes = await this.prisma.class.findMany({
         where: {
-            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
-            startTime: {
+          ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+          startTime: {
             gte: startOfWeek,
             lt: endOfWeek
           }
@@ -779,11 +804,11 @@ export class AgendaController {
       const groupedClasses = classes.reduce((acc: Record<string, any[]>, cls) => {
         const dayIndex = cls.startTime.getDay();
         const dayName: string = (weekDays[dayIndex] as unknown as string) ?? String(dayIndex);
-        
+
         if (!acc[dayName]) {
           acc[dayName] = [];
         }
-        
+
         acc[dayName].push({
           id: cls.id,
           title: cls.title,
@@ -800,7 +825,7 @@ export class AgendaController {
             name: `${(cls as any).instructor.user.firstName} ${(cls as any).instructor.user.lastName}`.trim()
           } : null
         });
-        
+
         return acc;
       }, {});
 
@@ -809,7 +834,7 @@ export class AgendaController {
         data: groupedClasses
       };
     } catch (error) {
-  this.fastify.log.error({ err: error }, 'Error in getWeekClasses');
+      this.fastify.log.error({ err: error }, 'Error in getWeekClasses');
       throw error;
     }
   }
@@ -879,9 +904,9 @@ export class AgendaController {
    */
   async updateClassStatus(classId: string, status: string, ctx?: { organizationId?: string }) {
     try {
-  const updatedClass = await this.prisma.class.update({
+      const updatedClass = await this.prisma.class.update({
         where: { id: classId },
-    data: { status: status as any },
+        data: { status: status as any },
         include: {
           course: {
             select: {
@@ -891,8 +916,8 @@ export class AgendaController {
           },
           instructor: {
             select: {
-      id: true,
-      user: { select: { firstName: true, lastName: true } }
+              id: true,
+              user: { select: { firstName: true, lastName: true } }
             }
           }
         }
@@ -935,7 +960,7 @@ export class AgendaController {
       }
 
       // Buscar classe real no banco
-  const classDetails = await this.prisma.class.findFirst({
+      const classDetails = await this.prisma.class.findFirst({
         where: { id: classId, ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}) },
         include: {
           course: {
@@ -1014,7 +1039,7 @@ export class AgendaController {
         }
       };
     } catch (error) {
-  console.error('Error in getClassDetails:', error);
+      console.error('Error in getClassDetails:', error);
       throw error;
     }
   }
@@ -1034,8 +1059,8 @@ export class AgendaController {
         };
       }
 
-  const turmaId = match[1] as string;
-  const dateStr = match[2] as string;
+      const turmaId = match[1] as string;
+      const dateStr = match[2] as string;
 
       // Buscar a turma
       const turma = await this.prisma.turma.findFirst({
@@ -1259,10 +1284,10 @@ export class AgendaController {
       const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
       const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
 
-  const classes = await this.prisma.class.findMany({
+      const classes = await this.prisma.class.findMany({
         where: {
-            ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
-            startTime: {
+          ...(ctx?.organizationId ? { organizationId: ctx.organizationId } : {}),
+          startTime: {
             gte: startOfDay,
             lt: endOfDay
           }
@@ -1277,8 +1302,8 @@ export class AgendaController {
           },
           instructor: {
             select: {
-      id: true,
-      user: { select: { firstName: true, lastName: true } }
+              id: true,
+              user: { select: { firstName: true, lastName: true } }
             }
           },
           attendances: {
@@ -1318,7 +1343,7 @@ export class AgendaController {
         }
       };
     } catch (error) {
-  this.fastify.log.error({ err: error }, 'Error in getScheduleByDate');
+      this.fastify.log.error({ err: error }, 'Error in getScheduleByDate');
       throw error;
     }
   }

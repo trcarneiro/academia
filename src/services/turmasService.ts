@@ -54,6 +54,8 @@ export interface ReportFilters {
   isActive?: boolean;
 }
 
+import { normalizeSchedule } from '@/utils/schedule';
+
 export class TurmasService {
   /**
    * Helper method to convert Instructor.id to User.id
@@ -472,11 +474,11 @@ export class TurmasService {
       return [];
     }
 
-    // Cast schedule to proper type
-    const scheduleData = schedule as { daysOfWeek: number[]; time: string; duration: number };
+    // Use centralized normalization
+    const slots = normalizeSchedule(schedule);
 
-    if (!scheduleData?.daysOfWeek || scheduleData.daysOfWeek.length === 0) {
-      console.warn(`Turma ${turmaId} possui cronograma sem dias da semana definidos. Ignorando geração de aulas.`);
+    if (slots.length === 0) {
+      console.warn(`Turma ${turmaId} possui cronograma sem dias válidos. Ignorando geração de aulas.`);
       return [];
     }
 
@@ -500,19 +502,8 @@ export class TurmasService {
     }
 
     const maxDate = endLocal ? new Date(endLocal) : addDays(new Date(startLocal), 365);
-    const rawDays = Array.isArray(scheduleData.daysOfWeek) ? scheduleData.daysOfWeek : [];
-    const scheduleDays = rawDays
-      .map((day) => Number(day))
-      .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
 
-    if (scheduleDays.length === 0) {
-      console.warn(`Turma ${turmaId} possui cronograma sem dias válidos. Ignorando geração de aulas.`);
-      return [];
-    }
-
-    const timeParts = (scheduleData.time || '00:00').split(':');
-    const h = Number.parseInt(timeParts[0] ?? '0', 10);
-    const m = Number.parseInt(timeParts[1] ?? '0', 10);
+    const scheduleDays = [...new Set(slots.map(s => s.dayOfWeek))];
 
     // Encontrar o primeiro dia alinhado ao cronograma a partir da data inicial
     let currentDate = new Date(startLocal);
@@ -530,19 +521,20 @@ export class TurmasService {
     const lessonLimit = lessonPlans.length > 0 ? lessonPlans.length * 104 : 0; // ~2 years guard
 
     while (currentDate <= maxDate) {
-      if (scheduleDays.includes(currentDate.getDay())) {
+      const daySlots = slots.filter(s => s.dayOfWeek === currentDate.getDay())
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      for (const slot of daySlots) {
         const lessonPlan = lessonPlans.length
           ? lessonPlans[lessonIndex % lessonPlans.length]
           : null;
 
+        const [h, m] = slot.startTime.split(':').map(Number);
         const scheduledDate = new Date(
           currentDate.getFullYear(),
           currentDate.getMonth(),
           currentDate.getDate(),
-          Number.isFinite(h) ? h : 0,
-          Number.isFinite(m) ? m : 0,
-          0,
-          0
+          h, m, 0, 0
         );
 
         lessons.push({
@@ -552,14 +544,16 @@ export class TurmasService {
           title: this.buildLessonTitle(lessonPlan?.title, lessonIndex + 1),
           scheduledDate,
           status: 'SCHEDULED',
-          duration: scheduleData.duration || 60
+          duration: slot.duration || 60,
+          materials: '',
+          objectives: ''
         });
 
         lessonIndex += 1;
+      }
 
-        if (!endLocal && lessonLimit && lessonIndex >= lessonLimit) {
-          break;
-        }
+      if (!endLocal && lessonLimit && lessonIndex >= lessonLimit) {
+        break;
       }
 
       currentDate = addDays(currentDate, 1);

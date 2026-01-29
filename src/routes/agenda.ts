@@ -29,7 +29,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       const { date, startDate, endDate, instructor, course, status, type, limit = '50', offset = '0' } = request.query;
       const normalizedType = (type === 'CLASS' || type === 'PERSONAL_SESSION' || type === 'TURMA') ? type : undefined;
-      
+
       const filters: any = {
         organizationId,
         limit: parseInt(limit, 10),
@@ -43,11 +43,11 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       if (status) filters.status = status;
       if (normalizedType) filters.type = normalizedType;
 
-      const classes = await agendaController.getClasses(filters);
+      const classes = await agendaController.getClasses(filters, (request as any).user);
 
       return reply.code(200).send(classes);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching agenda classes:');
+      fastify.log.error({ err: error }, 'Error fetching agenda classes:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -62,7 +62,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const stats = await agendaController.getDayStats({ organizationId } as any);
       return reply.code(200).send(stats);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching agenda stats:');
+      fastify.log.error({ err: error }, 'Error fetching agenda stats:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -77,7 +77,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const todayClasses = await agendaController.getTodayClasses({ organizationId } as any);
       return reply.code(200).send(todayClasses);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching today classes:');
+      fastify.log.error({ err: error }, 'Error fetching today classes:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -92,7 +92,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const weekClasses = await agendaController.getWeekClasses({ organizationId } as any);
       return reply.code(200).send(weekClasses);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching week classes:');
+      fastify.log.error({ err: error }, 'Error fetching week classes:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -107,7 +107,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const instructors = await agendaController.getInstructors({ organizationId } as any);
       return reply.code(200).send(instructors);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching instructors:');
+      fastify.log.error({ err: error }, 'Error fetching instructors:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -122,7 +122,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const courses = await agendaController.getCourses({ organizationId } as any);
       return reply.code(200).send(courses);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching courses:');
+      fastify.log.error({ err: error }, 'Error fetching courses:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -150,7 +150,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const updatedClass = await agendaController.updateClassStatus(id, status, { organizationId } as any);
       return reply.code(200).send(updatedClass);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error updating class status:');
+      fastify.log.error({ err: error }, 'Error updating class status:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -166,14 +166,14 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const { id } = request.params;
       const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
       const classDetails = await agendaController.getClassDetails(id, { organizationId } as any);
-      
+
       if (!classDetails.success) {
         return reply.code(404).send(classDetails);
       }
 
       return reply.code(200).send(classDetails);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching class details:');
+      fastify.log.error({ err: error }, 'Error fetching class details:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -188,7 +188,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const { date } = request.params;
       const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
-      
+
       // Validate date format
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return reply.code(400).send({
@@ -200,7 +200,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const schedule = await agendaController.getScheduleByDate(date, { organizationId } as any);
       return reply.code(200).send(schedule);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching schedule:');
+      fastify.log.error({ err: error }, 'Error fetching schedule:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -215,7 +215,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const turmasWithSchedules = await agendaController.getTurmasWithSchedules({ organizationId } as any);
       return reply.code(200).send(turmasWithSchedules);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching turmas schedules:');
+      fastify.log.error({ err: error }, 'Error fetching turmas schedules:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'
@@ -230,7 +230,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const { date } = request.query;
       const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
-      
+
       if (!date) {
         return reply.code(400).send({
           success: false,
@@ -249,7 +249,7 @@ const agendaRoutes: FastifyPluginAsync = async (fastify) => {
       const checkins = await agendaController.getCheckinsByDate(date, { organizationId } as any);
       return reply.code(200).send(checkins);
     } catch (error) {
-  fastify.log.error({ err: error }, 'Error fetching checkins:');
+      fastify.log.error({ err: error }, 'Error fetching checkins:');
       return reply.code(500).send({
         success: false,
         error: 'Erro interno do servidor'

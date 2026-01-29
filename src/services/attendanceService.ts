@@ -7,6 +7,7 @@ import { AttendanceStatus, CheckInMethod, UserRole, ClassStatus } from '@/types'
 import { EnrollmentStatus, SubscriptionStatus, AttendanceTrend } from '@prisma/client';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
+import { CRMService } from '@/services/crmService';
 
 dayjs.extend(quarterOfYear);
 
@@ -414,6 +415,11 @@ export class AttendanceService {
     // Update attendance pattern (async)
     this.updateAttendancePattern(studentId).catch((error) => {
       logger.error({ error, studentId }, 'Failed to update attendance pattern');
+    });
+
+    // 🆕 CRM INTEGRATION: Update Lead stage if it's a Trial
+    CRMService.updateLeadOnAttendance(studentId, classId).catch(err => {
+      logger.error({ err, studentId }, 'Failed to trigger CRM update on attendance');
     });
 
     logger.info(

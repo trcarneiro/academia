@@ -14,7 +14,7 @@ export async function renderDashboard(container) {
 
     // Get User Data
     let user = JSON.parse(localStorage.getItem('portal_user') || 'null');
-    
+
     // If no user in cache, try to fetch (or use placeholder)
     if (!user) {
         try {
@@ -73,6 +73,11 @@ export async function renderDashboard(container) {
                 <div class="action-icon">💬</div>
                 <span class="action-label">Ajuda</span>
             </button>
+            <button class="action-btn" id="btn-notifications">
+                <div class="action-icon">🔔</div>
+                <span class="action-label">Avisos</span>
+                <span id="unread-count" class="badge" style="display: none;"></span>
+            </button>
         </div>
 
         <!-- Progress -->
@@ -127,6 +132,9 @@ export async function renderDashboard(container) {
     // Fetch Inactive Classes
     fetchInactiveClasses(content, user);
 
+    // Fetch Credit Summary
+    fetchCreditSummary(content, user);
+
     // Access Modal (Hidden)
     const modal = document.createElement('div');
     modal.id = 'access-modal';
@@ -149,6 +157,28 @@ export async function renderDashboard(container) {
     content.querySelector('#btn-schedule').addEventListener('click', () => router.navigate('/schedule'));
     content.querySelector('#btn-payments').addEventListener('click', () => router.navigate('/payments'));
     content.querySelector('#btn-chat').addEventListener('click', () => router.navigate('/chat'));
+    content.querySelector('#btn-notifications').addEventListener('click', () => router.navigate('/notifications'));
+
+    // Check Unread Notifications
+    try {
+        const res = await api.request('GET', '/notifications');
+        if (res.success && res.data.unreadCount > 0) {
+            const badge = content.querySelector('#unread-count');
+            badge.textContent = res.data.unreadCount;
+            badge.style.display = 'block';
+            badge.style.position = 'absolute';
+            badge.style.top = '0';
+            badge.style.right = '10px';
+            badge.style.background = '#ef4444';
+            badge.style.color = 'white';
+            badge.style.fontSize = '0.7rem';
+            badge.style.padding = '2px 6px';
+            badge.style.borderRadius = '10px';
+            badge.style.fontWeight = 'bold';
+        }
+    } catch (e) {
+        console.warn('Failed to fetch unread count', e);
+    }
 
     // Modal Events
     const closeBtn = modal.querySelector('.close-modal');
@@ -174,7 +204,7 @@ async function loadRankingWidget() {
 
     try {
         const response = await api.request('GET', '/courses/ranking');
-        
+
         if (response.success && response.data?.ranking) {
             const ranking = response.data.ranking.slice(0, 3);
             const userRank = response.data.userRank;
@@ -214,18 +244,18 @@ let qrTimerInterval;
 
 async function showAccessModal(modal) {
     const qrContainer = modal.querySelector('#qr-container');
-    
+
     modal.classList.add('visible');
     qrContainer.innerHTML = '<div class="spinner"></div>';
-    
+
     try {
         // Simulate API call for MVP
         // const response = await api.request('GET', '/dashboard/access-qrcode');
-        
+
         // Mock response
         await new Promise(r => setTimeout(r, 1000));
         const mockQr = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ACCESS_TOKEN_123';
-        
+
         qrContainer.innerHTML = `<img src="${mockQr}" alt="QR Code de Acesso">`;
         startQrTimer(300); // 5 minutes
 
@@ -239,9 +269,9 @@ function startQrTimer(seconds) {
     stopQrTimer();
     const display = document.getElementById('qr-timer');
     let remaining = seconds;
-    
+
     updateDisplay(remaining);
-    
+
     qrTimerInterval = setInterval(() => {
         remaining--;
         if (remaining < 0) {
@@ -252,7 +282,7 @@ function startQrTimer(seconds) {
         }
         updateDisplay(remaining);
     }, 1000);
-    
+
     function updateDisplay(s) {
         if (!display) return;
         const m = Math.floor(s / 60);
@@ -275,9 +305,9 @@ async function fetchInactiveClasses(content, user) {
             const inactiveClasses = response.data;
             const list = content.querySelector('#inactive-classes-list');
             const section = content.querySelector('#inactive-classes-section');
-            
+
             section.style.display = 'block';
-            
+
             list.innerHTML = inactiveClasses.map(turma => {
                 const interested = turma._count?.interests || 0;
                 const needed = turma.minimumStudents || 5;
@@ -291,10 +321,10 @@ async function fetchInactiveClasses(content, user) {
                 // Or better, the API should return `isInterested` flag if user context is known.
                 // Since we are using `api.request`, it sends the token.
                 // But `TurmasService.list` doesn't check for specific user interest.
-                
+
                 // Workaround: We will handle the button state optimistically or just show "Tenho Interesse" and if they click and already are, handle the error or toggle.
                 // Ideally, we update the API to return `isInterested`.
-                
+
                 const isInterested = false; // Placeholder until API update
 
                 // Format schedule
@@ -339,7 +369,7 @@ async function fetchInactiveClasses(content, user) {
                         alert('Erro: Perfil de aluno não encontrado.');
                         return;
                     }
-                    
+
                     const res = await api.request('POST', `/turmas/${turmaId}/interest`, { studentId: user.studentId });
                     if (res.success) {
                         alert('Interesse registrado com sucesso! Você será notificado quando a turma for ativada.');
@@ -359,6 +389,71 @@ async function fetchInactiveClasses(content, user) {
         }
     } catch (e) {
         console.error('Failed to fetch inactive classes', e);
+    }
+}
+
+async function fetchCreditSummary(content, user) {
+    if (!user || !user.studentId) return;
+
+    try {
+        const response = await api.request('GET', `/credits/summary/${user.studentId}`);
+        if (response.success && response.data) {
+            const summary = response.data;
+
+            // Create Credit Card
+            const creditCard = document.createElement('div');
+            creditCard.className = 'section';
+            creditCard.innerHTML = `
+                <div class="section-header">
+                    <h3>💳 Meus Créditos</h3>
+                    <span style="font-size: 0.9rem; color: #666;">Renova em ${summary.expiringFirst?.daysUntilExpiry ? summary.expiringFirst.daysUntilExpiry + ' dias' : 'N/A'}</span>
+                </div>
+                <div class="credit-summary-card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div>
+                            <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Saldo Atual</div>
+                            <div style="font-size: 2rem; font-weight: 700;">${summary.totalAvailable} <span style="font-size: 1rem; font-weight: 400; color: #cbd5e1;">créditos</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px;">
+                            🎫
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px;">
+                            <div style="font-size: 0.75rem; color: #94a3b8;">Usados</div>
+                            <div style="font-size: 1.1rem; font-weight: 600;">${summary.totalUsed}</div>
+                        </div>
+                        <div style="flex: 1; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px;">
+                            <div style="font-size: 0.75rem; color: #94a3b8;">Total do Plano</div>
+                            <div style="font-size: 1.1rem; font-weight: 600;">${summary.totalCredits}</div>
+                        </div>
+                    </div>
+
+                    ${summary.totalAvailable === 0 ? `
+                        <div style="margin-top: 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); padding: 8px; border-radius: 6px; font-size: 0.85rem; color: #fca5a5; display: flex; align-items: center; gap: 8px;">
+                            ⚠️ <strong>Sem créditos!</strong> Nova cobrança será gerada ao agendar.
+                        </div>
+                    ` : ''}
+
+                    ${summary.totalAvailable > 0 && summary.totalAvailable <= 2 ? `
+                        <div style="margin-top: 12px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); padding: 8px; border-radius: 6px; font-size: 0.85rem; color: #fcd34d; display: flex; align-items: center; gap: 8px;">
+                            ⚠️ <strong>Créditos baixos</strong>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Insert after "Quick Actions" (index 1 in childNodes? or just prepend/append)
+            // dashboard-content structure:
+            // 0: next-class-card
+            // 1: quick-actions
+            // 2: progress section
+            // We want it maybe after Progress?
+            content.insertBefore(creditCard, content.childNodes[3]); // Insert after Progress
+        }
+    } catch (e) {
+        console.warn('Failed to fetch credit summary', e);
     }
 }
 

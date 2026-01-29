@@ -114,11 +114,15 @@
                 }
             } else {
                 console.warn('⚠️ CoursesAPI not available, using raw fetch (Auth may fail)');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const organizationId = localStorage.getItem('activeOrganizationId');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (organizationId) headers['x-organization-id'] = organizationId;
+
                 const response = await fetch('/api/courses', {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                    headers
                 });
                 console.log('[Courses] fetch /api/courses status:', response.status);
                 if (!response.ok) {
@@ -223,21 +227,39 @@
             if (!importCourseFile.files.length) return;
             try {
                 const text = await importCourseFile.files[0].text();
-                const data = JSON.parse(text);
+                let data = JSON.parse(text);
+
+                // Support for new export format (wrapped in "course" object)
+                if (data.course) {
+                    console.log('📦 Detected wrapped course data, unwrapping...');
+                    data = data.course;
+                }
+
                 if (!data.name) return alert('JSON inválido: campo "name" obrigatório');
+
+                if (!confirm(`Importar curso "${data.name}"?\n\n⚠️ Comportamento:\n- Se já existir: ATUALIZA os dados.\n- Se não existir: CRIA um novo.`)) {
+                    importCourseFile.value = '';
+                    return;
+                }
 
                 let j;
                 if (coursesAPI) {
                     j = await coursesAPI.request('/api/courses/import', { method: 'POST', body: JSON.stringify(data) });
                 } else {
-                    const resp = await fetch('/api/courses/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                    const organizationId = localStorage.getItem('activeOrganizationId');
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+                    if (organizationId) headers['x-organization-id'] = organizationId;
+
+                    const resp = await fetch('/api/courses/import', { method: 'POST', headers, body: JSON.stringify(data) });
                     j = await resp.json();
                     if (!resp.ok) throw new Error(j.message || 'Falha ao importar curso');
                 }
 
                 if (!j.success) throw new Error(j.message || 'Falha ao importar curso');
 
-                alert('Curso importado com sucesso');
+                alert('Curso importado com sucesso!');
                 importCourseFile.value = '';
                 await loadInitialData(); // Recarregar a lista de cursos
             } catch (e) { alert('Erro na importação de curso: ' + (e.message || e)); }
@@ -594,8 +616,15 @@
                 }
             } else {
                 console.warn('⚠️ CoursesAPI not available, using raw fetch');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const organizationId = localStorage.getItem('activeOrganizationId');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (organizationId) headers['x-organization-id'] = organizationId;
+
                 const response = await fetch(`/api/courses/${courseId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers
                 });
 
                 if (response.ok) {

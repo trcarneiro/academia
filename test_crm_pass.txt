@@ -1,0 +1,149 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769313117202,"pid":121256,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+Sourcemap for "H:/projetos/academia/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+{"level":30,"time":1769313126038,"pid":121256,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/crm-automation.test.ts
+[22m[39m[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769313126066,"pid":121256,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769313126085,"pid":121256,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769313127194,"pid":121256,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769313127520,"pid":121256,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+{"level":30,"time":1769313129509,"pid":121256,"hostname":"C02","msg":"Server running at http://0.0.0.0:3000"}
+{"level":30,"time":1769313129509,"pid":121256,"hostname":"C02","msg":"✅ HTTP Server is ready and accepting connections"}
+{"level":30,"time":1769313129509,"pid":121256,"hostname":"C02","msg":"Skipping Cron Scheduler initialization in test environment"}
+[90mstdout[2m | tests/integration/crm-automation.test.ts[2m > [22m[2mCRM Automation Integration
+[22m[39mOrg: a4e9e385-234f-4ccc-8188-e206601b07b9
+Course: 9c407e49-aed6-4f04-925a-853f77008082
+User: e4bf5ec1-5d8b-408b-8ccb-ac4a3326e723
+Instructor Obj: {
+  id: [32m'fe342968-4bf9-411a-ab8d-c74fdd732027'[39m,
+  organizationId: [32m'a4e9e385-234f-4ccc-8188-e206601b07b9'[39m,
+  userId: [32m'e4bf5ec1-5d8b-408b-8ccb-ac4a3326e723'[39m,
+  specializations: [],
+  certifications: [],
+  bio: [1mnull[22m,
+  martialArts: [],
+  maxStudentsPerClass: [33m20[39m,
+  experience: [1mnull[22m,
+  availability: [1mnull[22m,
+  hourlyRate: [1mnull[22m,
+  preferredUnits: [],
+  hireDate: [35m2026-01-25T03:52:13.007Z[39m,
+  isActive: [33mtrue[39m,
+  createdAt: [35m2026-01-25T03:52:13.007Z[39m,
+  updatedAt: [35m2026-01-25T03:52:13.007Z[39m
+}
+Instructor ID: fe342968-4bf9-411a-ab8d-c74fdd732027
+
+[90mstdout[2m | tests/integration/crm-automation.test.ts[2m > [22m[2mCRM Automation Integration
+[22m[39mVerify Instructor in DB: {
+  id: [32m'fe342968-4bf9-411a-ab8d-c74fdd732027'[39m,
+  organizationId: [32m'a4e9e385-234f-4ccc-8188-e206601b07b9'[39m,
+  userId: [32m'e4bf5ec1-5d8b-408b-8ccb-ac4a3326e723'[39m,
+  specializations: [],
+  certifications: [],
+  bio: [1mnull[22m,
+  martialArts: [],
+  maxStudentsPerClass: [33m20[39m,
+  experience: [1mnull[22m,
+  availability: [1mnull[22m,
+  hourlyRate: [1mnull[22m,
+  preferredUnits: [],
+  hireDate: [35m2026-01-25T03:52:13.007Z[39m,
+  isActive: [33mtrue[39m,
+  createdAt: [35m2026-01-25T03:52:13.007Z[39m,
+  updatedAt: [35m2026-01-25T03:52:13.007Z[39m
+}
+
+[90mstdout[2m | tests/integration/crm-automation.test.ts[2m > [22m[2mCRM Automation Integration
+[22m[39mprisma:error 
+Invalid `prisma.organization.delete()` invocation in
+H:\projetos\academia\tests\integration\crm-automation.test.ts:100:35
+
+   97 
+   98 afterAll(async () => {
+   99     // Cleanup based on organizationId cascade ideally, or manual
+→ 100     await prisma.organization.delete(
+An operation failed because it depends on one or more records that were required but not found. No record was found for a delete.
+
+ [31m❯[39m tests/integration/crm-automation.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 135847[2mms[22m[39m
+[31m   [31m×[31m CRM Automation Integration[2m > [22mshould create a lead[39m[33m 32549[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m CRM Automation Integration[2m > [22mshould generate a trial link[39m[33m 32305[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m CRM Automation Integration[2m > [22mshould book a trial class[39m[33m 32211[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+[31m   [31m×[31m CRM Automation Integration[2m > [22mshould update lead stage to TRIAL_ATTENDED after check-in[39m[33m 32241[2mms[22m[39m
+[31m     → Cannot read properties of undefined (reading 'address')[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/crm-automation.test.ts[2m > [22mCRM Automation Integration[2m > [22mshould create a lead
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/crm-automation.test.ts:[2m105:14[22m[39m
+    [90m103| [39m    [34mit[39m([32m'should create a lead'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m104| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m105| [39m            [33m.[39m[34mpost[39m([32m'/api/crm/leads'[39m)
+    [90m   | [39m             [31m^[39m
+    [90m106| [39m            [33m.[39m[35mset[39m([32m'x-organization-id'[39m[33m,[39m organizationId)
+    [90m107| [39m            [33m.[39m[34msend[39m({
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/crm-automation.test.ts[2m > [22mCRM Automation Integration[2m > [22mshould generate a trial link
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/crm-automation.test.ts:[2m121:14[22m[39m
+    [90m119| [39m    [34mit[39m([32m'should generate a trial link'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m120| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m121| [39m            [33m.[39m[35mget[39m([32m`/api/crm/leads/[39m[36m${[39mleadId[36m}[39m[32m/trial-link`[39m)[33m;[39m
+    [90m   | [39m             [31m^[39m
+    [90m122| [39m
+    [90m123| [39m        [34mexpect[39m(res[33m.[39mstatus)[33m.[39m[34mtoBe[39m([34m200[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/crm-automation.test.ts[2m > [22mCRM Automation Integration[2m > [22mshould book a trial class
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/crm-automation.test.ts:[2m129:14[22m[39m
+    [90m127| [39m    [34mit[39m([32m'should book a trial class'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m128| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m129| [39m            [33m.[39m[34mpost[39m([32m`/api/crm/leads/[39m[36m${[39mleadId[36m}[39m[32m/book-trial`[39m)
+    [90m   | [39m             [31m^[39m
+    [90m130| [39m            [33m.[39m[35mset[39m([32m'x-organization-id'[39m[33m,[39m organizationId)
+    [90m131| [39m            [33m.[39m[34msend[39m({
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/crm-automation.test.ts[2m > [22mCRM Automation Integration[2m > [22mshould update lead stage to TRIAL_ATTENDED after check-in
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'address')[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/crm-automation.test.ts:[2m150:14[22m[39m
+    [90m148| [39m        [90m// Simulate check-in[39m
+    [90m149| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m150| [39m            [33m.[39m[34mpost[39m([32m'/api/attendance/checkin'[39m)
+    [90m   | [39m             [31m^[39m
+    [90m151| [39m            [33m.[39m[34msend[39m({
+    [90m152| [39m                studentId[33m,[39m [90m// Kiosk mode[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[90m (4)[39m
+[2m   Start at [22m 00:51:50
+[2m   Duration [22m 154.90s[2m (transform 3.59s, setup 177ms, collect 17.67s, tests 135.85s, environment 0ms, prepare 467ms)[22m
+

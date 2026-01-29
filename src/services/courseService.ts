@@ -28,16 +28,38 @@ export interface CourseData {
   evaluationCriteria?: string[];
 }
 
-export interface UpdateCourseData extends Partial<CourseData> {}
+export interface UpdateCourseData extends Partial<CourseData> { }
 
 // Mapeia os dados do Prisma para o formato esperado pelo frontend
 const mapCourseToViewModel = (course: Course) => {
   // Parse objectives into general and specific
-  const objectives = course.objectives || [];
+  let objectives: string[] = [];
+  try {
+    if (typeof course.objectives === 'string') {
+      objectives = JSON.parse(course.objectives);
+    } else if (Array.isArray(course.objectives)) {
+      objectives = course.objectives;
+    }
+  } catch (e) {
+    // If parse fails or it's just a plain string, wrap in array or keep empty
+    objectives = course.objectives ? [course.objectives as string] : [];
+  }
+
+  let requirements: string[] = [];
+  try {
+    if (typeof course.requirements === 'string') {
+      requirements = JSON.parse(course.requirements);
+    } else if (Array.isArray(course.requirements)) {
+      requirements = course.requirements;
+    }
+  } catch (e) {
+    requirements = course.requirements ? [course.requirements as string] : [];
+  }
+
   const generalObjectives = objectives.filter(obj => !obj.startsWith('[') && !obj.includes('específico'));
   const specificObjectives = objectives.filter(obj => obj.includes('específico') || obj.startsWith('[ESPECÍFICO]'));
   const evaluationCriteria = objectives.filter(obj => obj.startsWith('[AVALIAÇÃO]')).map(c => c.replace('[AVALIAÇÃO] ', ''));
-  
+
   return {
     id: course.id,
     name: course.name,
@@ -56,8 +78,8 @@ const mapCourseToViewModel = (course: Course) => {
     objectives: objectives,
     generalObjectives: generalObjectives,
     specificObjectives: specificObjectives,
-    requirements: course.requirements || [],
-    resources: course.requirements || [], // Alias for requirements
+    requirements: requirements,
+    resources: requirements, // Alias for requirements
     targetAudience: course.category || 'ADULT',
     methodology: course.description || '', // Placeholder
     evaluation: {
@@ -75,7 +97,7 @@ export const courseService = {
     if (isActive !== undefined) {
       where.isActive = isActive;
     }
-    
+
     const courses = await prisma.course.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -109,7 +131,7 @@ export const courseService = {
     if (!course) {
       return null;
     }
-    
+
     // Map techniques with week information
     const techniques = course.techniques.map(ct => ({
       id: ct.technique.id,
@@ -123,7 +145,7 @@ export const courseService = {
       lessonNumber: ct.lessonNumber,
       isRequired: ct.isRequired
     }));
-    
+
     // Generate schedule from lesson plans
     const schedule = {
       weeks: course.duration,
@@ -134,10 +156,10 @@ export const courseService = {
         objectives: string[];
       }>
     };
-    
+
     for (let week = 1; week <= course.duration; week++) {
       const weekPlans = course.lessonPlans.filter(lp => lp.weekNumber === week);
-      
+
       schedule.lessonsPerWeek.push({
         week: week,
         lessons: course.classesPerWeek,
@@ -145,7 +167,7 @@ export const courseService = {
         objectives: weekPlans.length > 0 ? weekPlans.flatMap(p => p.objectives || []) : []
       });
     }
-    
+
     return {
       ...mapCourseToViewModel(course),
       techniques,
@@ -167,7 +189,7 @@ export const courseService = {
   async updateCourse(id: string, data: UpdateCourseData, organizationId: string) {
     // Process complex data structure  
     const updateData: any = { ...data };
-    
+
     // Merge objectives arrays properly
     if (data.generalObjectives || data.specificObjectives) {
       const generalObjectives = data.generalObjectives || [];
@@ -176,24 +198,24 @@ export const courseService = {
     } else if (data.objectives) {
       updateData.objectives = data.objectives;
     }
-    
+
     // Merge resources and requirements
     if (data.resources) {
-      updateData.requirements = data.requirements ? 
-        [...data.requirements, ...data.resources] : 
+      updateData.requirements = data.requirements ?
+        [...data.requirements, ...data.resources] :
         data.resources;
     }
-    
+
     // Process evaluation criteria
     if (data.evaluation?.criteria) {
       // Store evaluation criteria in objectives for now
       // In future, add dedicated evaluation fields to schema
       const evalPrefix = data.evaluation.criteria.map(c => `[AVALIAÇÃO] ${c}`);
-      updateData.objectives = updateData.objectives ? 
-        [...updateData.objectives, ...evalPrefix] : 
+      updateData.objectives = updateData.objectives ?
+        [...updateData.objectives, ...evalPrefix] :
         evalPrefix;
     }
-    
+
     // Clean up nested objects that Prisma doesn't handle directly
     delete updateData.generalObjectives;
     delete updateData.specificObjectives;
@@ -204,7 +226,7 @@ export const courseService = {
     delete updateData.methodology; // Remove if sent by frontend (not in schema)
 
     console.log('🔄 Updating course with processed data:', updateData);
-    
+
     const updatedCourse = await prisma.course.update({
       where: { id, organizationId }, // Add organizationId for security
       data: updateData,
@@ -215,30 +237,30 @@ export const courseService = {
   async deleteCourse(id: string, organizationId: string): Promise<void> {
     // Primeiro, verificar se o curso pertence à organização para segurança
     const course = await prisma.course.findFirst({
-        where: { id, organizationId },
+      where: { id, organizationId },
     });
 
     if (!course) {
-        throw new Error('Curso não encontrado ou não pertence à organização');
+      throw new Error('Curso não encontrado ou não pertence à organização');
     }
-      
+
     await prisma.course.delete({
       where: { id },
     });
   },
-  
+
   async findCourseByName(name: string, organizationId: string, excludeId?: string) {
     const whereClause: any = {
       name,
       organizationId,
     };
-    
+
     if (excludeId) {
       whereClause.NOT = {
         id: excludeId,
       };
     }
-    
+
     return prisma.course.findFirst({
       where: whereClause,
     });

@@ -8,7 +8,7 @@
  * @author Academia System
  */
 
-(function() {
+(function () {
   'use strict';
 
   // Prevent double loading
@@ -17,7 +17,7 @@
     return;
   }
 
-  const DEV_ORG_ID = 'ff5ee00e-d8a3-4291-9428-d28b852fb472'; // Smart Defence
+  const DEV_ORG_ID = 'b03d6cc5-7d58-437e-87a7-834226931d2a'; // Academia Demo
 
   class OrganizationContext {
     constructor() {
@@ -27,7 +27,7 @@
       this.userOrganizations = [];
       this.listeners = new Set();
       this.isInitialized = false;
-      
+
       console.log('🏢 OrganizationContext initialized');
     }
 
@@ -68,10 +68,10 @@
 
       } catch (error) {
         console.error('❌ Failed to initialize organization context:', error);
-        
+
         // Fallback: usar Smart Defence em desenvolvimento
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1';
+        const isDevelopment = window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1';
         if (isDevelopment) {
           console.log('🔧 [DEV] Using Smart Defence as fallback');
           this.currentOrgId = DEV_ORG_ID;
@@ -169,8 +169,8 @@
       }
 
       // 5. Development fallback
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
+      const isDevelopment = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
       if (isDevelopment) {
         console.log('🔧 [DEV] Using Smart Defence as fallback');
         return DEV_ORG_ID;
@@ -185,10 +185,10 @@
      */
     isValidOrganization(orgId) {
       if (!orgId) return false;
-      
+
       // Em desenvolvimento, sempre permitir DEV_ORG_ID
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
+      const isDevelopment = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
       if (isDevelopment && orgId === DEV_ORG_ID) {
         return true;
       }
@@ -215,13 +215,13 @@
       try {
         // Buscar dados completos da organização
         const orgData = this.userOrganizations.find(org => org.id === orgId);
-        
+
         if (!orgData) {
           // Tentar buscar da API
           if (window.createModuleAPI) {
             const api = window.createModuleAPI('OrganizationContext');
             const response = await api.request(`/api/organizations/${orgId}`);
-            
+
             if (response.success && response.data) {
               this.currentOrgData = response.data;
               this.currentOrgSlug = response.data.slug;
@@ -265,7 +265,7 @@
       if (this.currentOrgId) {
         localStorage.setItem('activeOrganizationId', this.currentOrgId);
         sessionStorage.setItem('activeOrganizationId', this.currentOrgId);
-        
+
         // Backward compatibility
         localStorage.setItem('organizationId', this.currentOrgId);
         window.currentOrganizationId = this.currentOrgId;
@@ -274,7 +274,7 @@
       if (this.currentOrgSlug) {
         localStorage.setItem('activeOrganizationSlug', this.currentOrgSlug);
         sessionStorage.setItem('activeOrganizationSlug', this.currentOrgSlug);
-        
+
         // Backward compatibility
         window.currentOrganizationSlug = this.currentOrgSlug;
       }

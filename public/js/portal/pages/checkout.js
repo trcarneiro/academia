@@ -7,7 +7,7 @@ const PLANS = {
     anual: { name: 'Plano Anual', price: 149.90, label: 'R$ 149,90' }
 };
 
-export function renderCheckout(container) {
+export async function renderCheckout(container) {
     loadCSS('/css/portal/pages/checkout.css');
 
     // Auth Check
@@ -23,7 +23,7 @@ export function renderCheckout(container) {
     container.innerHTML = `
         <div class="checkout-page">
             <header class="checkout-header">
-                <h2>Finalizar Pagamento</h2>
+                <h2>Finalizar Assinatura</h2>
             </header>
             
             <div class="checkout-content">
@@ -31,31 +31,32 @@ export function renderCheckout(container) {
                     <div class="plan-summary">
                         <div class="plan-details">
                             <h3>${plan.name}</h3>
-                            <p>Cobrança recorrente</p>
+                            <p>Renovação automática</p>
                         </div>
                         <div class="plan-price">${plan.label}</div>
                     </div>
                     
+                    <span class="step-title">1. Escolha a forma de pagamento</span>
                     <div class="payment-methods">
-                        <button id="btn-pix" class="payment-method-btn active">
-                            <i>💠</i>
-                            <div>
+                        <button id="btn-method-pix" class="payment-method-btn active">
+                            <div class="method-icon">💠</div>
+                            <div class="method-info">
                                 <strong>PIX</strong>
-                                <div style="font-size: 0.8rem; color: #666">Aprovação imediata</div>
+                                <span>Liberação imediata</span>
                             </div>
                         </button>
                         
-                        <button disabled class="payment-method-btn" style="opacity: 0.5; cursor: not-allowed">
-                            <i>💳</i>
-                            <div>
+                        <button class="payment-method-btn" disabled style="opacity: 0.6;">
+                            <div class="method-icon">💳</div>
+                            <div class="method-info">
                                 <strong>Cartão de Crédito</strong>
-                                <div style="font-size: 0.8rem; color: #666">Em breve</div>
+                                <span>Em breve</span>
                             </div>
                         </button>
                     </div>
 
-                    <div id="payment-area" style="margin-top: 20px;">
-                        <button id="btn-pay" class="btn-primary btn-block btn-large">
+                    <div id="payment-action-area">
+                        <button id="btn-generate-payment" class="cta-button" style="width: 100%; padding: 1rem; background: var(--premium-blue); color: white; border: none; border-radius: 1rem; font-weight: 700; cursor: pointer;">
                             Gerar PIX de ${plan.label}
                         </button>
                     </div>
@@ -64,12 +65,12 @@ export function renderCheckout(container) {
         </div>
     `;
 
-    document.getElementById('btn-pay').addEventListener('click', async () => {
-        const btn = document.getElementById('btn-pay');
-        const paymentArea = document.getElementById('payment-area');
-        
-        btn.disabled = true;
-        btn.textContent = 'Gerando cobrança...';
+    const btnGenerate = document.getElementById('btn-generate-payment');
+    btnGenerate.addEventListener('click', async () => {
+        const actionArea = document.getElementById('payment-action-area');
+
+        btnGenerate.disabled = true;
+        btnGenerate.innerHTML = '<div class="spinner-ring" style="width:20px; height:20px; border-width:2px; margin: 0 auto;"></div>';
 
         try {
             const response = await api.request('POST', '/payments/create', {
@@ -79,87 +80,89 @@ export function renderCheckout(container) {
             });
 
             if (response.success) {
-                renderPixPayment(paymentArea, response.data);
+                renderPixUI(actionArea, response.data);
             } else {
                 throw new Error(response.message || 'Erro ao gerar pagamento');
             }
         } catch (error) {
             console.error(error);
-            alert('Erro ao processar pagamento: ' + error.message);
-            btn.disabled = false;
-            btn.textContent = `Gerar PIX de ${plan.label}`;
+            Swal.fire({ icon: 'error', title: 'Erro', text: error.message });
+            btnGenerate.disabled = false;
+            btnGenerate.textContent = `Gerar PIX de ${plan.label}`;
         }
     });
 }
 
-function renderPixPayment(container, data) {
-    // data should contain { id, encodedImage (base64), payload (copy paste) }
-    // Adjust based on actual API response
+function renderPixUI(container, data) {
     const qrCodeImage = data.encodedImage ? `data:image/png;base64,${data.encodedImage}` : '';
     const copyPaste = data.payload || '';
 
     container.innerHTML = `
-        <div class="pix-container">
-            <div class="status-badge status-pending">Aguardando Pagamento</div>
+        <div class="pix-container" style="text-align: center; animation: fadeIn 0.4s ease;">
+            <div class="status-badge status-pending">
+                <div class="dot"></div> Aguardando seu pagamento
+            </div>
             
-            <div style="margin: 20px 0;">
-                ${qrCodeImage ? `<img src="${qrCodeImage}" class="qr-code" alt="QR Code PIX">` : '<div class="qr-code">QR Code Indisponível</div>'}
+            <div class="qr-code-wrapper">
+                ${qrCodeImage ? `<img src="${qrCodeImage}" style="width: 180px; height: 180px; display: block;" alt="QR Code PIX">` : '<div style="padding: 40px; color: #999;">QR Code Indisponível</div>'}
             </div>
 
-            <div class="pix-code-box">
+            <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.75rem;">Ou copie o código abaixo:</p>
+            <div class="pix-code-box" id="pix-copy-box">
                 ${copyPaste}
             </div>
             
-            <button id="btn-copy" class="btn-outline btn-sm">
+            <button id="btn-copy-pix" class="btn-secondary" style="margin-bottom: 1.5rem; width: 100%; border: 1px solid #e5e7eb; background: white; padding: 0.75rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer;">
                 Copiar Código PIX
             </button>
 
-            <div style="margin-top: 20px;">
-                <button id="btn-check-status" class="btn-primary btn-block">
-                    Já paguei
-                </button>
+            <div class="polling-indicator">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span>Sincronizando com o banco...</span>
             </div>
         </div>
     `;
 
-    document.getElementById('btn-copy').addEventListener('click', () => {
+    document.getElementById('pix-copy-box').addEventListener('click', copyPix);
+    document.getElementById('btn-copy-pix').addEventListener('click', copyPix);
+
+    function copyPix() {
         navigator.clipboard.writeText(copyPaste);
-        const btn = document.getElementById('btn-copy');
-        btn.textContent = 'Copiado!';
-        setTimeout(() => btn.textContent = 'Copiar Código PIX', 2000);
-    });
+        const btn = document.getElementById('btn-copy-pix');
+        const box = document.getElementById('pix-copy-box');
+        btn.textContent = '✅ Código Copiado!';
+        box.style.background = '#f0fdf4';
+        box.style.borderColor = '#bbf7d0';
+        setTimeout(() => {
+            btn.textContent = 'Copiar Código PIX';
+            box.style.background = '#f9fafb';
+            box.style.borderColor = '#d1d5db';
+        }, 2000);
+    }
 
-    document.getElementById('btn-check-status').addEventListener('click', () => {
-        checkPaymentStatus(data.id);
-    });
-
-    // Start polling
+    // Start Polling
     startPolling(data.id);
 }
 
-let pollInterval;
+let pollInterval = null;
 
 function startPolling(paymentId) {
     if (pollInterval) clearInterval(pollInterval);
-    
-    pollInterval = setInterval(() => {
-        checkPaymentStatus(paymentId, true);
-    }, 5000); // Check every 5 seconds
-}
 
-async function checkPaymentStatus(paymentId, silent = false) {
-    try {
-        const response = await api.request('GET', `/payments/${paymentId}/status`);
-        
-        if (response.success && (response.status === 'RECEIVED' || response.status === 'CONFIRMED')) {
-            clearInterval(pollInterval);
-            router.navigate('/success');
-        } else if (!silent) {
-            alert('Pagamento ainda não confirmado. Aguarde alguns instantes.');
+    pollInterval = setInterval(async () => {
+        try {
+            const response = await api.request('GET', `/payments/${paymentId}/status`);
+
+            if (response.success && (response.status === 'RECEIVED' || response.status === 'CONFIRMED' || response.status === 'PAID')) {
+                clearInterval(pollInterval);
+                router.navigate('/success');
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
         }
-    } catch (error) {
-        console.error('Error checking status:', error);
-    }
+    }, 4000); // slightly faster polling for better UX
 }
 
 function loadCSS(href) {

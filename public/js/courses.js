@@ -46,31 +46,38 @@ function initCourseEventListeners() {
  */
 async function loadAndRenderCourses() {
     console.log('🔄 Loading courses from API...');
-    
+
     // Show loading state
     showCoursesLoadingState();
-    
+
     try {
-        const response = await fetch('/api/courses');
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        const organizationId = localStorage.getItem('activeOrganizationId');
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (organizationId) headers['x-organization-id'] = organizationId;
+
+        const response = await fetch('/api/courses', { headers });
         const result = await response.json();
-        
+
         if (!result.success) {
             throw new Error(result.message || 'Failed to load courses');
         }
-        
+
         // Store courses in cache
         allCourses = result.data || [];
         console.log(`✅ Loaded ${allCourses.length} courses from API`);
-        
+
         // Render the courses table
         renderCoursesTable(allCourses);
-        
+
         // Hide loading state
         hideCoursesLoadingState();
-        
+
         // Update counters and other UI elements
         updateCoursesCounter();
-        
+
     } catch (error) {
         console.error('❌ Error loading courses:', error);
         showCoursesErrorState(error.message);
@@ -84,7 +91,7 @@ async function loadAndRenderCourses() {
 function renderCoursesTable(courses) {
     const tableBody = document.getElementById('courses-table-body');
     if (!tableBody) return;
-    
+
     if (courses.length === 0) {
         tableBody.innerHTML = `
             <tr>
@@ -99,7 +106,7 @@ function renderCoursesTable(courses) {
         `;
         return;
     }
-    
+
     const html = courses.map(course => {
         const name = course.name || 'Nome não disponível';
         const category = course.category || 'N/A';
@@ -110,7 +117,7 @@ function renderCoursesTable(courses) {
         const status = course.isActive ? 'Ativo' : 'Inativo';
         const statusColor = course.isActive ? '#10B981' : '#EF4444';
         const instructorName = course.instructor?.name || course.instructorName || 'N/A';
-        
+
         return `
             <tr class="course-row" data-course-id="${course.id}" style="cursor: pointer; transition: background-color 0.2s ease;" 
                 onmouseover="this.style.backgroundColor='rgba(59, 130, 246, 0.1)'" 
@@ -168,9 +175,9 @@ function renderCoursesTable(courses) {
             </tr>
         `;
     }).join('');
-    
+
     tableBody.innerHTML = html;
-    
+
     console.log(`✅ Rendered ${courses.length} courses in table`);
 }
 
@@ -181,14 +188,14 @@ function renderCoursesTable(courses) {
 function handleCourseSearch(event) {
     const searchTerm = event.target.value.toLowerCase().trim();
     console.log(`🔍 Filtering courses with: "${searchTerm}"`);
-    
+
     // If no search term, show all courses
     if (!searchTerm) {
         renderCoursesTable(allCourses);
         updateFilteredCounter(allCourses.length, allCourses.length);
         return;
     }
-    
+
     // Filter courses based on search term
     const filteredCourses = allCourses.filter(course => {
         const name = (course.name || '').toLowerCase();
@@ -197,7 +204,7 @@ function handleCourseSearch(event) {
         const level = (course.level || '').toLowerCase();
         const instructorName = (course.instructor?.name || course.instructorName || '').toLowerCase();
         const courseId = course.id.toLowerCase();
-        
+
         return (
             name.includes(searchTerm) ||
             description.includes(searchTerm) ||
@@ -207,9 +214,9 @@ function handleCourseSearch(event) {
             courseId.includes(searchTerm)
         );
     });
-    
+
     console.log(`✅ Found ${filteredCourses.length} courses matching "${searchTerm}"`);
-    
+
     // Render filtered results
     renderCoursesTable(filteredCourses);
     updateFilteredCounter(filteredCourses.length, allCourses.length);
@@ -222,12 +229,12 @@ function handleCourseSearch(event) {
 function handleCourseTableClick(event) {
     const actionBtn = event.target.closest('.action-btn');
     const courseRow = event.target.closest('.course-row');
-    
+
     if (actionBtn) {
         event.stopPropagation();
         const action = actionBtn.dataset.action;
         const courseId = actionBtn.dataset.courseId;
-        
+
         switch (action) {
             case 'view':
                 openCourseDetailModal(courseId);
@@ -257,20 +264,20 @@ async function openCourseDetailModal(courseId) {
         console.error(`Course with ID ${courseId} not found in cache.`);
         return;
     }
-    
+
     currentEditingCourseId = courseId;
     currentEditingCourse = course;
-    
+
     console.log('Opening details for course:', course);
     const modal = document.getElementById('courseDetailModal');
     if (!modal) return;
-    
+
     // Populate basic modal fields
     await populateCourseDetailsModal(course);
-    
+
     // Load default tab data
     await loadCourseModalTabData(courseId, 'overview');
-    
+
     modal.style.display = 'block';
 }
 
@@ -293,17 +300,24 @@ function closeCourseDetailModal() {
 async function populateCourseDetailsModal(course) {
     try {
         // Fetch fresh course data from API
-        const response = await fetch(`/api/courses/${course.id}`);
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        const organizationId = localStorage.getItem('activeOrganizationId');
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (organizationId) headers['x-organization-id'] = organizationId;
+
+        const response = await fetch(`/api/courses/${course.id}`, { headers });
         const result = await response.json();
-        
+
         if (!result.success) {
             console.warn('Failed to load fresh course data, using cached data');
             populateBasicCourseInfo(course);
             return;
         }
-        
+
         const freshCourse = result.data;
-        
+
         // Update basic information
         const nameEl = document.getElementById('modalCourseName');
         const idEl = document.getElementById('modalCourseId');
@@ -313,7 +327,7 @@ async function populateCourseDetailsModal(course) {
         const statusEl = document.getElementById('modalCourseStatus');
         const durationEl = document.getElementById('modalCourseDuration');
         const instructorEl = document.getElementById('modalCourseInstructor');
-        
+
         if (nameEl) nameEl.textContent = freshCourse.name || 'Nome não disponível';
         if (idEl) idEl.textContent = `ID: ${freshCourse.id}`;
         if (descriptionEl) descriptionEl.textContent = freshCourse.description || 'Sem descrição';
@@ -325,9 +339,9 @@ async function populateCourseDetailsModal(course) {
             statusEl.textContent = freshCourse.isActive ? 'Ativo' : 'Inativo';
             statusEl.style.color = freshCourse.isActive ? '#10B981' : '#EF4444';
         }
-        
+
         console.log('✅ Course modal populated with fresh data');
-        
+
     } catch (error) {
         console.error('❌ Error loading fresh course data:', error);
         populateBasicCourseInfo(course);
@@ -347,7 +361,7 @@ function populateBasicCourseInfo(course) {
     const statusEl = document.getElementById('modalCourseStatus');
     const durationEl = document.getElementById('modalCourseDuration');
     const instructorEl = document.getElementById('modalCourseInstructor');
-    
+
     if (nameEl) nameEl.textContent = course.name || 'Nome não disponível';
     if (idEl) idEl.textContent = `ID: ${course.id}`;
     if (descriptionEl) descriptionEl.textContent = course.description || 'Sem descrição';
@@ -406,7 +420,7 @@ function handleCourseModalTabClick(event) {
  */
 async function loadCourseModalTabData(courseId, tabName) {
     console.log(`🔄 Loading ${tabName} tab data for course ${courseId}`);
-    
+
     try {
         switch (tabName) {
             case 'overview':
@@ -438,9 +452,16 @@ async function loadCourseModalTabData(courseId, tabName) {
  * @param {string} courseId - The ID of the course.
  */
 async function loadCourseModulesData(courseId) {
-    const response = await fetch(`/api/courses/${courseId}/modules`);
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const organizationId = localStorage.getItem('activeOrganizationId');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (organizationId) headers['x-organization-id'] = organizationId;
+
+    const response = await fetch(`/api/courses/${courseId}/modules`, { headers });
     const result = await response.json();
-    
+
     if (result.success) {
         const contentEl = document.getElementById('course-modules-content');
         if (contentEl) {
@@ -457,9 +478,16 @@ async function loadCourseModulesData(courseId) {
  * @param {string} courseId - The ID of the course.
  */
 async function loadCourseStudentsData(courseId) {
-    const response = await fetch(`/api/courses/${courseId}/students`);
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const organizationId = localStorage.getItem('activeOrganizationId');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (organizationId) headers['x-organization-id'] = organizationId;
+
+    const response = await fetch(`/api/courses/${courseId}/students`, { headers });
     const result = await response.json();
-    
+
     if (result.success) {
         const contentEl = document.getElementById('course-students-content');
         if (contentEl) {
@@ -476,9 +504,16 @@ async function loadCourseStudentsData(courseId) {
  * @param {string} courseId - The ID of the course.
  */
 async function loadCourseClassesData(courseId) {
-    const response = await fetch(`/api/courses/${courseId}/classes`);
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const organizationId = localStorage.getItem('activeOrganizationId');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (organizationId) headers['x-organization-id'] = organizationId;
+
+    const response = await fetch(`/api/courses/${courseId}/classes`, { headers });
     const result = await response.json();
-    
+
     if (result.success) {
         const contentEl = document.getElementById('course-classes-content');
         if (contentEl) {
@@ -495,9 +530,16 @@ async function loadCourseClassesData(courseId) {
  * @param {string} courseId - The ID of the course.
  */
 async function loadCourseProgressData(courseId) {
-    const response = await fetch(`/api/courses/${courseId}/progress`);
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const organizationId = localStorage.getItem('activeOrganizationId');
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (organizationId) headers['x-organization-id'] = organizationId;
+
+    const response = await fetch(`/api/courses/${courseId}/progress`, { headers });
     const result = await response.json();
-    
+
     if (result.success) {
         const contentEl = document.getElementById('course-progress-content');
         if (contentEl) {
@@ -582,7 +624,7 @@ function renderCourseModules(modules) {
     if (!modules || modules.length === 0) {
         return '<div style="padding: 1rem; color: #94A3B8; text-align: center;">Nenhum módulo encontrado</div>';
     }
-    
+
     return `
         <div style="padding: 1rem;">
             <h4 style="color: #F8FAFC; margin-bottom: 1rem;">📚 Módulos do Curso</h4>
@@ -601,7 +643,7 @@ function renderCourseStudents(students) {
     if (!students || students.length === 0) {
         return '<div style="padding: 1rem; color: #94A3B8; text-align: center;">Nenhum aluno matriculado</div>';
     }
-    
+
     return `
         <div style="padding: 1rem;">
             <h4 style="color: #F8FAFC; margin-bottom: 1rem;">👥 Alunos Matriculados</h4>
@@ -620,7 +662,7 @@ function renderCourseClasses(classes) {
     if (!classes || classes.length === 0) {
         return '<div style="padding: 1rem; color: #94A3B8; text-align: center;">Nenhuma turma encontrada</div>';
     }
-    
+
     return `
         <div style="padding: 1rem;">
             <h4 style="color: #F8FAFC; margin-bottom: 1rem;">🏫 Turmas</h4>
@@ -657,20 +699,20 @@ function renderCourseProgress(progress) {
 // Course action functions
 function openNewCourseForm() {
     console.log('➕ Opening new course form...');
-    
+
     // Clear any existing editing course ID
     localStorage.removeItem('editingCourseId');
-    
+
     // Navigate to course-editor for new course creation
     navigateToModule('course-editor');
 }
 
 function editCourse(courseId) {
     console.log('✏️ Editing course:', courseId);
-    
+
     // Store course ID for course-editor to use
     localStorage.setItem('editingCourseId', courseId);
-    
+
     // Navigate to course-editor with the course ID
     navigateToModule('course-editor', { courseId: courseId });
 }
@@ -679,14 +721,22 @@ async function deleteCourse(courseId) {
     if (!confirm('Tem certeza que deseja excluir este curso?')) {
         return;
     }
-    
+
     try {
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+        const organizationId = localStorage.getItem('activeOrganizationId');
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (organizationId) headers['x-organization-id'] = organizationId;
+
         const response = await fetch(`/api/courses/${courseId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             window.showToast('Curso excluído com sucesso!', 'success');
             // Refresh the courses list
@@ -716,7 +766,7 @@ function openCourseModal() {
         // Clear the form
         const form = document.getElementById('addCourseForm');
         if (form) form.reset();
-        
+
         // Open the modal
         modal.classList.add('active');
     } else {
@@ -744,7 +794,7 @@ function populateEditCourseModal(course) {
         'editCourseObjectives': (course.objectives || []).join('\n'),
         'editCourseRequirements': (course.requirements || []).join('\n')
     };
-    
+
     for (const [fieldId, value] of Object.entries(fields)) {
         const element = document.getElementById(fieldId);
         if (element) {
@@ -760,9 +810,9 @@ function initCourseFormHandlers() {
     // Handle course creation form
     const addCourseForm = document.getElementById('addCourseForm');
     if (addCourseForm) {
-        addCourseForm.addEventListener('submit', async function(e) {
+        addCourseForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = {
                 name: document.getElementById('courseName').value,
                 description: document.getElementById('courseDescription').value,
@@ -776,18 +826,25 @@ function initCourseFormHandlers() {
                 objectives: document.getElementById('courseObjectives').value.split('\n').filter(obj => obj.trim()),
                 requirements: document.getElementById('courseRequirements').value.split('\n').filter(req => req.trim())
             };
-            
+
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const organizationId = localStorage.getItem('activeOrganizationId');
+
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (organizationId) headers['x-organization-id'] = organizationId;
+
                 const response = await fetch('/api/courses', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: headers,
                     body: JSON.stringify(formData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     window.showToast('Curso criado com sucesso!', 'success');
                     closeModal('addCourseModal');
@@ -802,13 +859,13 @@ function initCourseFormHandlers() {
             }
         });
     }
-    
+
     // Handle course edit form
     const editCourseForm = document.getElementById('editCourseForm');
     if (editCourseForm) {
-        editCourseForm.addEventListener('submit', async function(e) {
+        editCourseForm.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const courseId = document.getElementById('editCourseId').value;
             const formData = {
                 name: document.getElementById('editCourseName').value,
@@ -823,7 +880,7 @@ function initCourseFormHandlers() {
                 objectives: document.getElementById('editCourseObjectives').value.split('\n').filter(obj => obj.trim()),
                 requirements: document.getElementById('editCourseRequirements').value.split('\n').filter(req => req.trim())
             };
-            
+
             try {
                 const response = await fetch(`/api/courses/${courseId}`, {
                     method: 'PUT',
@@ -832,9 +889,9 @@ function initCourseFormHandlers() {
                     },
                     body: JSON.stringify(formData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     window.showToast('Curso atualizado com sucesso!', 'success');
                     closeModal('editCourseModal');
@@ -979,14 +1036,14 @@ function closeModal(modalId) {
 }
 
 // Global function exposure for HTML onclick handlers
-try { window.refreshCourses = loadAndRenderCourses; } catch(_) {}
-try { window.exportCourses = exportCourses; } catch(_) {}
+try { window.refreshCourses = loadAndRenderCourses; } catch (_) { }
+try { window.exportCourses = exportCourses; } catch (_) { }
 
 // Safe exposure for openCourseModal - fallback navigates to course editor
 if (typeof openCourseModal === 'function') {
     window.openCourseModal = openCourseModal;
 } else {
-    window.openCourseModal = function() { console.warn('openCourseModal not available, falling back'); if (window.router) return window.router.navigateTo('course-editor'); location.hash = 'course-editor'; };
+    window.openCourseModal = function () { console.warn('openCourseModal not available, falling back'); if (window.router) return window.router.navigateTo('course-editor'); location.hash = 'course-editor'; };
 }
 
 if (typeof openNewCourseForm === 'function') window.openNewCourseForm = openNewCourseForm; else window.openNewCourseForm = window.openCourseModal;
@@ -998,12 +1055,12 @@ if (typeof closeModal === 'function') window.closeModal = closeModal;
 // Prevent re-wrapping recursion: bind to real implementation if available
 if (typeof openCoursePicker === 'function') {
     const __impl = openCoursePicker;
-    window.openCoursePicker = function(options) { return __impl(options); };
+    window.openCoursePicker = function (options) { return __impl(options); };
 } else {
-    window.openCoursePicker = function(options) { console.warn('openCoursePicker not implemented'); return Promise.resolve(); };
+    window.openCoursePicker = function (options) { console.warn('openCoursePicker not implemented'); return Promise.resolve(); };
 }
 
-window.filterCourses = function() {
+window.filterCourses = function () {
     const event = { target: document.getElementById('courseSearch') };
     try { handleCourseSearch(event); } catch (e) { console.warn('handleCourseSearch not available', e); }
 };

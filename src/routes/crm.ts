@@ -4,6 +4,7 @@ import { logger } from '@/utils/logger';
 import { getDefaultOrganizationId } from '@/config/dev';
 import { requireOrganizationId } from '@/utils/tenantHelpers';
 import { LeadStage, LeadStatus, LeadTemperature, Prisma } from '@prisma/client';
+import { CRMService } from '@/services/crmService';
 
 /**
  * CRM Routes - Lead Management & Google Ads Integration
@@ -22,11 +23,11 @@ export default async function crmRoutes(fastify: FastifyInstance) {
     try {
       const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
 
-      const { 
-        stage, 
-        status, 
+      const {
+        stage,
+        status,
         temperature,
-        assignedToId, 
+        assignedToId,
         search,
         page = '1',
         limit = '50',
@@ -43,7 +44,7 @@ export default async function crmRoutes(fastify: FastifyInstance) {
       if (status) where.status = status as LeadStatus;
       if (temperature) where.temperature = temperature as LeadTemperature;
       if (assignedToId) where.assignedToId = assignedToId;
-      
+
       if (search) {
         where.OR = [
           { name: { contains: search, mode: 'insensitive' } },
@@ -315,6 +316,70 @@ export default async function crmRoutes(fastify: FastifyInstance) {
   });
 
   // ============================================================================
+  // AUTOMATION & LINKS
+  // ============================================================================
+
+  /**
+   * POST /api/crm/leads/:id/book-trial
+   * Books a trial class for the lead, converting to student if necessary
+   */
+  fastify.post('/leads/:id/book-trial', async (request, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as any;
+      const { classId, date } = request.body as any;
+      const organizationId = requireOrganizationId(request as any, reply as any) as string; if (!organizationId) { return; }
+
+      if (!classId || !date) {
+        return reply.code(400).send({ success: false, message: 'classId and date are required' });
+      }
+
+      const result = await CRMService.bookTrial(id, classId, new Date(date), organizationId);
+
+      reply.send({
+        success: true,
+        data: result,
+        message: 'Trial booked successfully'
+      });
+    } catch (error) {
+      logger.error('❌ Error booking trial:', error);
+      reply.code(500).send({
+        success: false,
+        message: 'Failed to book trial',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  /**
+   * GET /api/crm/leads/:id/trial-link
+   * Generates a link for the lead to book a trial
+   */
+  fastify.get('/leads/:id/trial-link', async (request, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as any;
+      const link = await CRMService.generateTrialLink(id);
+      reply.send({ success: true, link });
+    } catch (error) {
+      reply.code(500).send({ success: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * GET /api/crm/leads/:id/purchase-link
+   * Generates a link for the lead to purchase a plan
+   */
+  fastify.get('/leads/:id/purchase-link', async (request, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as any;
+      const { planId } = request.query as any;
+      const link = await CRMService.generatePurchaseLink(id, planId);
+      reply.send({ success: true, link });
+    } catch (error) {
+      reply.code(500).send({ success: false, error: (error as Error).message });
+    }
+  });
+
+  // ============================================================================
   // PIPELINE MANAGEMENT
   // ============================================================================
 
@@ -324,8 +389,8 @@ export default async function crmRoutes(fastify: FastifyInstance) {
   fastify.get('/pipeline', async (request, reply: FastifyReply) => {
     try {
       const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            getDefaultOrganizationId();
+        (request.query as any).organizationId ||
+        getDefaultOrganizationId();
 
       // Count leads by stage
       const leadsByStage = await prisma.lead.groupBy({
@@ -631,8 +696,8 @@ export default async function crmRoutes(fastify: FastifyInstance) {
   fastify.get('/analytics/roi', async (request, reply: FastifyReply) => {
     try {
       const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            getDefaultOrganizationId();
+        (request.query as any).organizationId ||
+        getDefaultOrganizationId();
 
       const { startDate, endDate } = request.query as any;
 
@@ -697,11 +762,11 @@ export default async function crmRoutes(fastify: FastifyInstance) {
   fastify.get('/analytics/funnel', async (request, reply: FastifyReply) => {
     try {
       const organizationId = (request.headers as any)['x-organization-id'] ||
-                            (request.query as any).organizationId ||
-                            getDefaultOrganizationId();
+        (request.query as any).organizationId ||
+        getDefaultOrganizationId();
 
       const stages = Object.values(LeadStage);
-      
+
       const funnelData = await Promise.all(
         stages.map(async (stage, index) => {
           const count = await prisma.lead.count({

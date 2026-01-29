@@ -1,2 +1,0 @@
--- no-op migration to reconcile Prisma state after manual SQL adjustments
--- This file intentionally left blank to avoid redundant operations on techniques/slug and added columns.

@@ -12,7 +12,7 @@ class App {
 
     async init() {
         console.log('Portal App Initialized');
-        
+
         // Public Routes
         this.router.addRoute('/', async (container) => {
             const { renderLanding } = await import('./pages/landing.js');
@@ -61,9 +61,21 @@ class App {
             await renderProfile(container);
             this.initNotifications();
         });
+        this.router.addRoute('/crm-config', async (container) => {
+            const { renderCrmConfig } = await import('./pages/crm-config.js');
+            await renderCrmConfig(container);
+            this.initNotifications();
+        });
         this.router.addRoute('/technique/:id', async (container, params) => {
             const { render: renderTechnique } = await import('./pages/technique.js');
             await renderTechnique(container, params);
+            this.initNotifications();
+        });
+
+        // Admin Routes
+        this.router.addRoute('/admin/notifications', async (container) => {
+            const { renderAdminNotifications } = await import('./pages/admin/notifications.js');
+            await renderAdminNotifications(container);
             this.initNotifications();
         });
         this.router.addRoute('/ranking', async (container) => {

@@ -1,0 +1,84 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mH:/projetos/academia[39m
+
+{"level":30,"time":1769315192129,"pid":24528,"hostname":"C02","msg":"AgentExecutorService initialized with Gemini API"}
+{"level":30,"time":1769315199230,"pid":24528,"hostname":"C02","msg":"✅ Gemini AI Service initialized successfully"}
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mStarting Setup...
+[Gemini] SDK inicializado com chave: AIzaSyCNPl...
+
+{"level":30,"time":1769315199245,"pid":24528,"hostname":"C02","msg":"📁 Serving static files from: H:\\projetos\\academia\\public"}
+{"level":30,"time":1769315199257,"pid":24528,"hostname":"C02","msg":"✅ Health check routes registered (5 endpoints)"}
+{"level":30,"time":1769315199617,"pid":24528,"hostname":"C02","msg":"✅ CRM routes registered"}
+{"level":30,"time":1769315199713,"pid":24528,"hostname":"C02","msg":"Biometric routes registered successfully (8 endpoints)"}
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mOrg created: 8f6d468f-7991-4ea0-a0d2-b2665115cc8f
+Creating Instructor User...
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mInstructor created: fd435c2e-4346-4e84-993d-38a03905c497
+
+[90mstdout[2m | tests/integration/public-crm.test.ts[2m > [22m[2mPublic CRM Integration
+[22m[39mSetup Complete
+
+ [31m❯[39m tests/integration/public-crm.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[33m 104839[2mms[22m[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould fetch lead info publicly[39m[33m 31776[2mms[22m[39m
+[31m     → app.address is not a function[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould list available classes for trial[39m[33m 32017[2mms[22m[39m
+[31m     → app.address is not a function[39m
+[31m   [31m×[31m Public CRM Integration[2m > [22mshould book a trial class PUBLICLY[39m[33m 31775[2mms[22m[39m
+[31m     → app.address is not a function[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould fetch lead info publicly
+[31m[1mTypeError[22m: app.address is not a function[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m136:14[22m[39m
+    [90m134| [39m    [34mit[39m([32m'should fetch lead info publicly'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m135| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m136| [39m            [33m.[39m[35mget[39m([32m`/lp/crm/info/[39m[36m${[39mleadId[36m}[39m[32m`[39m)[33m;[39m
+    [90m   | [39m             [31m^[39m
+    [90m137| [39m
+    [90m138| [39m        [34mexpect[39m(res[33m.[39mstatus)[33m.[39m[34mtoBe[39m([34m200[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould list available classes for trial
+[31m[1mTypeError[22m: app.address is not a function[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as get] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m146:14[22m[39m
+    [90m144| [39m    [34mit[39m([32m'should list available classes for trial'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m145| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m146| [39m            [33m.[39m[35mget[39m([32m`/lp/crm/classes`[39m)
+    [90m   | [39m             [31m^[39m
+    [90m147| [39m            [33m.[39m[34mquery[39m({ leadId })[33m;[39m [90m// Use leadId to auto-detect org[39m
+    [90m148| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/integration/public-crm.test.ts[2m > [22mPublic CRM Integration[2m > [22mshould book a trial class PUBLICLY
+[31m[1mTypeError[22m: app.address is not a function[39m
+[90m [2m❯[22m Test.serverAddress node_modules/supertest/lib/test.js:[2m61:22[22m[39m
+[90m [2m❯[22m new Test node_modules/supertest/lib/test.js:[2m49:14[22m[39m
+[90m [2m❯[22m Object.obj.<computed> [as post] node_modules/supertest/index.js:[2m39:18[22m[39m
+[36m [2m❯[22m tests/integration/public-crm.test.ts:[2m160:14[22m[39m
+    [90m158| [39m    [34mit[39m([32m'should book a trial class PUBLICLY'[39m[33m,[39m [35masync[39m () [33m=>[39m {
+    [90m159| [39m        [35mconst[39m res [33m=[39m [35mawait[39m [34mrequest[39m(app)
+    [90m160| [39m            [33m.[39m[34mpost[39m([32m'/lp/crm/book'[39m)
+    [90m   | [39m             [31m^[39m
+    [90m161| [39m            [33m.[39m[34msend[39m({
+    [90m162| [39m                leadId[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[90m (3)[39m
+[2m   Start at [22m 01:26:28
+[2m   Duration [22m 115.13s[2m (transform 1.85s, setup 114ms, collect 9.58s, tests 104.84s, environment 0ms, prepare 194ms)[22m
+

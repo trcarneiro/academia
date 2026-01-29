@@ -2,13 +2,18 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@/utils/database';
 import { ResponseHelper } from '@/utils/response';
+import { authenticateToken, allRoles } from '@/middlewares/auth';
 
 /**
  * 📦 Packages Routes - API de Pacotes (Planos de Assinatura)
  * Versão simplificada sem schemas inline - TEMPORARY
  */
-function resolveOrganizationId(request: any) {
-  return request.user?.organizationId || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
+async function resolveOrganizationId(request: any) {
+  const userOrg = request.user?.organizationId;
+  if (userOrg) return userOrg;
+
+  const org = await prisma.organization.findFirst();
+  return org?.id || 'ff5ee00e-d8a3-4291-9428-d28b852fb472';
 }
 
 function normalizeBillingType(rawType?: string) {
@@ -83,7 +88,9 @@ function buildPackagePayload(body: any, options: { existing?: any; includeOrgani
 
   if (body.duration !== undefined) payload.duration = body.duration;
 
-  if (body.features !== undefined) payload.features = body.features;
+  if (body.features !== undefined) {
+    payload.features = typeof body.features === 'object' ? JSON.stringify(body.features) : body.features;
+  }
 
   const booleanFields = [
     'hasPersonalTraining',
@@ -124,10 +131,11 @@ function buildPackagePayload(body: any, options: { existing?: any; includeOrgani
 
 export default async function packagesRoutes(fastify: FastifyInstance) {
   // GET /api/packages - Listar todos os pacotes
-  fastify.get('/', async (request, reply) => {
+  fastify.get('/', {
+    // preHandler: [authenticateToken, allRoles],
+  }, async (request, reply) => {
     try {
-      // 🔧 TEMPORARY: Use hardcoded organizationId when no auth
-      const organizationId = resolveOrganizationId(request);
+      const organizationId = await resolveOrganizationId(request);
 
       const packages = await prisma.billingPlan.findMany({
         where: { organizationId },
@@ -152,10 +160,12 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   });
 
   // GET /api/packages/:id - Buscar pacote específico
-  fastify.get('/:id', async (request, reply) => {
+  fastify.get('/:id', {
+    // preHandler: [authenticateToken, allRoles],
+  }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = resolveOrganizationId(request);
+      const organizationId = await resolveOrganizationId(request);
 
       const packageData = await prisma.billingPlan.findFirst({
         where: { id, organizationId },
@@ -187,9 +197,11 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   });
 
   // POST /api/packages - Criar novo pacote (versão simplificada)
-  fastify.post('/', async (request, reply) => {
+  fastify.post('/', {
+    // preHandler: [authenticateToken, allRoles],
+  }, async (request, reply) => {
     try {
-      const organizationId = resolveOrganizationId(request);
+      const organizationId = await resolveOrganizationId(request);
       const body = request.body as any;
 
       const payload = buildPackagePayload(body, {
@@ -217,10 +229,12 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   });
 
   // PUT /api/packages/:id - Atualizar pacote (versão simplificada)
-  fastify.put('/:id', async (request, reply) => {
+  fastify.put('/:id', {
+    // preHandler: [authenticateToken, allRoles],
+  }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = resolveOrganizationId(request);
+      const organizationId = await resolveOrganizationId(request);
       const body = request.body as any;
 
       const existing = await prisma.billingPlan.findFirst({
@@ -247,10 +261,12 @@ export default async function packagesRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE /api/packages/:id - Excluir/desativar pacote
-  fastify.delete('/:id', async (request, reply) => {
+  fastify.delete('/:id', {
+    // preHandler: [authenticateToken, allRoles],
+  }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const organizationId = resolveOrganizationId(request);
+      const organizationId = await resolveOrganizationId(request);
 
       // Verificar se pacote existe
       const existingPackage = await prisma.billingPlan.findFirst({
