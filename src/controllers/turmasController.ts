@@ -131,11 +131,14 @@ export class TurmasController {
       console.log('[TurmasController] Turma created successfully:', turma.id);
 
       // Trigger autonomous lesson generation
-      // We don't await this to avoid blocking the response, or we could await if we want to ensure it's done.
-      // Given it might be heavy, let's fire and forget, capturing errors in logs.
-      RecurrenceService.generateLessonsForTurma(turma.id).catch(err => {
+      // We await this to ensure reliability and that the lessons are generated before responding.
+      try {
+        await RecurrenceService.generateLessonsForTurma(turma.id);
+        console.log('[TurmasController] Recurrent lessons generated successfully');
+      } catch (err) {
         console.error('[TurmasController] Failed to generate recurrent lessons:', err);
-      });
+        // We log the error but the turma itself was already created.
+      }
 
       return ResponseHelper.created(reply, turma);
     } catch (error) {
@@ -184,10 +187,13 @@ export class TurmasController {
       console.log('[TurmasController] Returning success response');
       console.log('[TurmasController] Returning success response');
 
-      // Trigger recurrence update if schedule was changed (or blindly on any update for safety)
-      RecurrenceService.generateLessonsForTurma(turma.id).catch(err => {
+      // Trigger recurrence update if schedule was changed
+      try {
+        await RecurrenceService.generateLessonsForTurma(turma.id);
+        console.log('[TurmasController] Recurrent lessons updated successfully');
+      } catch (err) {
         console.error('[TurmasController] Failed to update recurrent lessons:', err);
-      });
+      }
 
       return ResponseHelper.success(reply, turma);
     } catch (error) {
