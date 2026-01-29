@@ -11,7 +11,7 @@
  */
 function showError(message, context = 'General') {
     console.error(`[${context}] Error:`, message);
-    
+
     // Fallback to a simple alert if no sophisticated UI feedback is available.
     // In a real app, this should trigger a standardized toast or modal.
     if (window.app && window.app.handleError) {
@@ -62,7 +62,7 @@ function formatPhone(phone) {
  */
 function debounce(func, delay) {
     let timeoutId;
-    return function(...args) {
+    return function (...args) {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             func.apply(this, args);
@@ -128,6 +128,21 @@ function showLoading(show, message = 'Carregando...') {
     }
 }
 
+/**
+ * Escapes a string for safe use in HTML.
+ * @param {string} str The string to escape.
+ * @returns {string} The escaped string.
+ */
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // Expose functions to the global scope if needed, but modules should ideally handle dependencies.
 window.showError = showError;
 window.formatCPF = formatCPF;
@@ -136,3 +151,4 @@ window.formatZipCode = formatZipCode;
 window.lookupAddress = lookupAddress;
 window.showLoading = showLoading;
 window.debounce = debounce;
+window.escapeHTML = escapeHTML;

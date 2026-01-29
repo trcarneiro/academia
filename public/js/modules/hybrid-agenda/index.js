@@ -271,11 +271,19 @@ class HybridAgendaModule {
         try {
             // Show loading state
             this.showLoadingState();
-            // Load agenda data and stats in parallel
-            await Promise.all([
-                this.loadAgendaData(),
-                this.loadStats()
-            ]);
+
+            // Ensure currentDate is valid
+            if (!this.currentDate || isNaN(this.currentDate.getTime())) {
+                console.warn('⚠️ Invalid currentDate detected, resetting to today');
+                this.currentDate = new Date();
+            }
+
+            // Load agenda data first
+            await this.loadAgendaData();
+
+            // Then try to load stats (calculated from data)
+            await this.loadStats();
+
             // Hide loading and show content
             this.hideLoadingState();
             this.renderCurrentView();
@@ -285,118 +293,38 @@ class HybridAgendaModule {
             window.app?.handleError(error, 'hybrid-agenda-load');
         }
     }
+
     async loadAgendaData() {
         try {
-            const response = await this.api.fetchWithStates('/api/hybrid-agenda', {
-                onSuccess: (response) => {
-                    console.log('… Agenda data loaded:', response);
-                    if (response && response.items && Array.isArray(response.items)) {
-                        this.agendaData = response.items;
-                        // Log data for debugging
-                        console.log('📅 Events loaded:', this.agendaData.map(item => ({
-                            id: item.id,
-                            title: item.title,
-                            startTime: item.startTime,
-                            date: new Date(item.startTime).toDateString()
-                        })));
-                        // Check for empty state
-                        if (this.agendaData.length === 0) {
-                            this.showEmptyState();
-                            return;
-                        }
-                    } else {
-                        console.warn('⚠️ Unexpected API response format:', response);
-                        this.agendaData = [];
-                        this.showEmptyState();
-                        return;
-                    }
-                },
-                onError: (error) => {
-                    console.error('❌ Failed to load agenda data:', error);
-                    throw error;
-                }
-            });
-        } catch (error) {
-            console.error('Error loading agenda data:', error);
-            throw error;
-        }
-    }
-    async loadStats() {
-        try {
-            const response = await this.api.fetchWithStates('/api/hybrid-agenda', {
-                onSuccess: (response) => {
-                    console.log('… Stats loaded:', response);
-                    if (response && response.summary) {
-                        const summary = response.summary;
-                        stats = {
-                            turmas: { total: summary.totalTurmas || 0 },
-                            personalSessions: { total: summary.totalPersonalSessions || 0 },
-                            instructors: { active: summary.totalInstructors || 0 }
-                        };
-                        this.updateStatsDisplay();
-                    }
-                },
-                onError: (error) => {
-                    console.error('❌ Failed to load stats:', error);
-                }
-            });
-        } catch (error) {
-            console.error('Error loading stats:', error);
-            // Stats failure is not critical
-        }
-    }
-    updateStatsDisplay() {
-        const turmasEl = document.getElementById('stat-turmas');
-        const personalEl = document.getElementById('stat-personal');
-        const instructorsEl = document.getElementById('stat-instructors');
-        if (turmasEl) turmasEl.textContent = stats.turmas?.total || 0;
-        if (personalEl) personalEl.textContent = stats.personalSessions?.total || 0;
-        if (instructorsEl) instructorsEl.textContent = stats.instructors?.active || 0;
-    }
-    async loadInitialData() {
-        try {
-            // Load agenda data first
-            await this.loadAgendaData();
-            // Then try to load stats (with graceful fallback)
-            await this.loadStats();
-            this.renderCurrentView();
-        } catch (error) {
-            console.error('❌ Error loading initial data:', error);
-            window.app?.handleError(error, 'hybrid-agenda-initial-data');
-            this.showErrorState(error);
-        }
-    }
-    async loadAgendaData() {
-        try {
-            // Ensure currentDate is valid
-            if (!this.currentDate || isNaN(this.currentDate.getTime())) {
-                console.warn('⚠️ Invalid currentDate detected, resetting to today');
-                this.currentDate = new Date();
-            }
             const startDate = this.getWeekStart(this.currentDate);
             const endDate = this.getWeekEnd(this.currentDate);
-            // Validate dates before converting to ISO string
+
+            // Validate dates
             if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
                 throw new Error('Invalid date range calculated');
             }
+
             const params = {
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 tzOffsetMinutes: new Date().getTimezoneOffset(),
                 ...this.selectedFilters
             };
+
             // Enable all-records mode for audit if hash includes 'agendaAll' or 'all=1'
             const hash = window.location.hash || '';
             if (/#.*(agendaAll|all=1)/i.test(hash)) {
                 params.all = '1';
             }
+
             const query = new URLSearchParams(params).toString();
+
             await this.api.fetchWithStates(`/api/hybrid-agenda?${query}`, {
                 method: 'GET',
-                loadingElement: document.getElementById('agenda-container'),
                 onSuccess: (data) => {
                     this.agendaData = data.items || [];
-                    // Debug: summarize items per day for quick visual verification
+
+                    // Debug: summarize items per day
                     if (typeof window !== 'undefined' && (/#.*debugAgenda/i.test(hash))) {
                         const byDay = this.agendaData.reduce((acc, it) => {
                             const d = new Date(it.startTime);
@@ -406,10 +334,12 @@ class HybridAgendaModule {
                         }, {});
                         console.log('🧭 Agenda summary by day:', byDay);
                     }
-                    this.renderCurrentView();
-                },
-                onEmpty: () => {
-                    this.showEmptyState();
+
+                    if (this.agendaData.length === 0) {
+                        this.showEmptyState();
+                    } else {
+                        this.renderCurrentView();
+                    }
                 },
                 onError: (error) => {
                     this.showErrorState(error);
@@ -421,37 +351,44 @@ class HybridAgendaModule {
             this.showErrorState(error);
         }
     }
+
     async loadStats() {
         try {
-            // Calculate stats directly from loaded agenda data (endpoint doesn't exist)
-            console.log('📊 Calculating stats from agenda data...');
-            this.calculateStatsFromData();
+            // Calculate stats directly from loaded agenda data
+            const data = Array.isArray(this.agendaData) ? this.agendaData : (this.agendaData?.items || []);
+            const turmas = data.filter(item => item.type === 'TURMA');
+            const personalSessions = data.filter(item => item.type === 'PERSONAL_SESSION');
+            const instructors = [...new Set(data.map(item => item.instructor?.name).filter(Boolean))];
+
+            this.stats = {
+                turmas: { total: turmas.length },
+                personalSessions: { total: personalSessions.length },
+                instructors: { active: instructors.length }
+            };
+
+            this.updateStatsDisplay();
         } catch (error) {
             console.error('📊 Error calculating stats:', error);
-            // Set default stats if calculation fails
             this.stats = {
-                totalItems: 0,
-                totalTurmas: 0,
-                totalPersonalSessions: 0,
-                totalScheduled: 0,
-                totalConfirmed: 0
+                turmas: { total: 0 },
+                personalSessions: { total: 0 },
+                instructors: { active: 0 }
             };
-            this.renderStats();
+            this.updateStatsDisplay();
         }
     }
-    calculateStatsFromData() {
-        // Calculate stats from this.agendaData if available
-        const data = Array.isArray(this.agendaData) ? this.agendaData : (this.agendaData?.items || []);
-        const turmas = data.filter(item => item.type === 'TURMA');
-        const personalSessions = data.filter(item => item.type === 'PERSONAL_SESSION');
-        const instructors = [...new Set(data.map(item => item.instructor?.name).filter(Boolean))];
-        this.stats = {
-            turmas: { total: turmas.length },
-            personalSessions: { total: personalSessions.length },
-            instructors: { active: instructors.length }
-        };
-        this.renderStats();
+
+    updateStatsDisplay() {
+        const turmasEl = document.getElementById('stat-turmas');
+        const personalEl = document.getElementById('stat-personal');
+        const instructorsEl = document.getElementById('stat-instructors');
+
+        if (turmasEl) turmasEl.textContent = this.stats.turmas?.total || 0;
+        if (personalEl) personalEl.textContent = this.stats.personalSessions?.total || 0;
+        if (instructorsEl) instructorsEl.textContent = this.stats.instructors?.active || 0;
     }
+
+
     renderCurrentView() {
         const container = document.getElementById('agenda-container');
         if (!container) return;
@@ -734,9 +671,9 @@ class HybridAgendaModule {
         return `
             <div class="day-item ${typeClass} agenda-item" data-id="${item.id}" data-type="${item.type}">
                 <div class="item-time">${startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-                <div class="item-title">${item.title}</div>
-                <div class="item-instructor">${item.instructor?.name || 'N/A'}</div>
-                <div class="item-status status-${item.status.toLowerCase()}">${this.getStatusLabel(item.status)}</div>
+                <div class="item-title">${escapeHTML(item.title)}</div>
+                <div class="item-instructor">${escapeHTML(item.instructor?.name || 'N/A')}</div>
+                <div class="item-status status-${item.status.toLowerCase()}">${escapeHTML(this.getStatusLabel(item.status))}</div>
             </div>
         `;
     }
@@ -753,12 +690,12 @@ class HybridAgendaModule {
                         <span class="type-label">${item.type === 'TURMA' ? 'Turma' : 'Personal Training'}</span>
                     </div>
                     <div class="agenda-item-status status-${item.status.toLowerCase()}">
-                        ${this.getStatusLabel(item.status)}
+                        ${escapeHTML(this.getStatusLabel(item.status))}
                     </div>
                 </div>
                 <div class="agenda-item-content">
-                    <h3 class="agenda-item-title">${item.title}</h3>
-                    <p class="agenda-item-description">${item.description || ''}</p>
+                    <h3 class="agenda-item-title">${escapeHTML(item.title)}</h3>
+                    <p class="agenda-item-description">${escapeHTML(item.description || '')}</p>
                     <div class="agenda-item-details">
                         <div class="detail-group">
                             <span class="detail-icon">🕐</span>
@@ -774,11 +711,11 @@ class HybridAgendaModule {
                         </div>
                         <div class="detail-group">
                             <span class="detail-icon">👨‍🏫</span>
-                            <span class="detail-text">${item.instructor?.name || 'N/A'}</span>
+                            <span class="detail-text">${escapeHTML(item.instructor?.name || 'N/A')}</span>
                         </div>
                         <div class="detail-group">
                             <span class="detail-icon">📍</span>
-                            <span class="detail-text">${item.trainingArea?.name || 'N/A'}</span>
+                            <span class="detail-text">${escapeHTML(item.trainingArea?.name || 'N/A')}</span>
                         </div>
                         <div class="detail-group">
                             <span class="detail-icon">👥</span>

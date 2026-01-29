@@ -496,78 +496,23 @@ export class CourseImportService {
 
     if (notFoundByIds.length > 0) {
       console.log(`⚠️ ${notFoundByIds.length} techniques not found by ID, will try name matching`);
-      console.log(`⚠️ Missing IDs:`, notFoundByIds.map(t => t.id).slice(0, 5).join(', '), '...');
 
       // OPTIMIZATION: Only do name matching if < 50 missing (otherwise too slow)
       if (notFoundByIds.length < 50) {
-        console.log(`🔍 Starting name similarity matching...`);
-
         // Get all techniques from database for comparison
         const allTechniques = await prisma.technique.findMany({
           select: { id: true, name: true }
         });
-        console.log(`📊 Database has ${allTechniques.length} techniques to compare`);
 
         for (const jsonTech of notFoundByIds) {
-          // Extract keywords from JSON technique name
-          const jsonKeywords = jsonTech.name
-            .toLowerCase()
-            .split(/[-\s,]+/)
-            .filter(word => word.length > 2 && !['com', 'para', 'por', 'pela', 'pelo', 'contra', 'dos', 'das'].includes(word));
+          const bestMatch = this.findBestTechniqueMatch(jsonTech.name, allTechniques);
 
-          let bestMatch = null;
-          let bestScore = 0;
-
-          // Evaluate each technique in database
-          for (const dbTech of allTechniques) {
-            const dbName = dbTech.name.toLowerCase();
-            const dbId = dbTech.id.toLowerCase();
-            let score = 0;
-
-            // Calculate score based on keyword matches
-            for (const keyword of jsonKeywords) {
-              if (dbName.includes(keyword) || dbId.includes(keyword)) {
-                score += keyword.length; // Longer words have more weight
-              }
-            }
-
-            // Bonus for exact matches of specific words
-            if (jsonKeywords.includes('soco') && (dbName.includes('soco') || dbId.includes('soco'))) {
-              score += 10;
-            }
-            if (jsonKeywords.includes('defesa') && (dbName.includes('defesa') || dbId.includes('defesa'))) {
-              score += 10;
-            }
-            if (jsonKeywords.includes('estrangulamento') && (dbName.includes('estrangulamento') || dbId.includes('estrangulamento'))) {
-              score += 15;
-            }
-            if (jsonKeywords.includes('uppercut') && (dbName.includes('uppercut') || dbId.includes('uppercut'))) {
-              score += 15;
-            }
-            if (jsonKeywords.includes('combinação') && (dbName.includes('combinação') || dbId.includes('combinacao'))) {
-              score += 15;
-            }
-            if (jsonKeywords.includes('cotovelada') && (dbName.includes('cotovelada') || dbId.includes('cotovelada'))) {
-              score += 15;
-            }
-
-            if (score > bestScore) {
-              bestScore = score;
-              bestMatch = dbTech;
-            }
-          }
-
-          // Only map if confidence score is high enough
-          if (bestMatch && bestScore >= 5) {
+          if (bestMatch) {
             nameMapping.set(jsonTech.id, bestMatch.id);
             existingByName.push(bestMatch);
-            console.log(`🔍 Mapped "${jsonTech.name}" -> "${bestMatch.name}" (${bestMatch.id}) [score: ${bestScore}]`);
-          } else {
-            console.log(`⚠️ Could not find good match for "${jsonTech.name}" (best score: ${bestScore})`);
+            console.log(`🔍 Mapped "${jsonTech.name}" -> "${bestMatch.name}" (${bestMatch.id})`);
           }
         }
-      } else {
-        console.log(`⏭️ Skipping name matching (too many missing: ${notFoundByIds.length})`);
       }
     } else {
       console.log(`✅ All ${existingById.length} techniques found by exact ID match`);
@@ -1696,4 +1641,51 @@ export class CourseImportService {
       console.log(`  ✅ Created ${techniquesToLink.length} lesson plan technique links`);
     }
   } */
+  /**
+   * Find best matching technique from a list based on name similarity
+   */
+  private static findBestTechniqueMatch(name: string, techniques: Array<{ id: string, name: string }>) {
+    const keywords = name
+      .toLowerCase()
+      .split(/[-\s,]+/)
+      .filter(word => word.length > 2 && !['com', 'para', 'por', 'pela', 'pelo', 'contra', 'dos', 'das'].includes(word));
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const tech of techniques) {
+      const dbName = tech.name.toLowerCase();
+      const dbId = tech.id.toLowerCase();
+      let score = 0;
+
+      for (const keyword of keywords) {
+        if (dbName.includes(keyword) || dbId.includes(keyword)) {
+          score += keyword.length;
+        }
+      }
+
+      // Semantic bonuses
+      const bonuses = [
+        { word: 'soco', weight: 10 },
+        { word: 'defesa', weight: 10 },
+        { word: 'estrangulamento', weight: 15 },
+        { word: 'uppercut', weight: 15 },
+        { word: 'combinação', weight: 15 },
+        { word: 'cotovelada', weight: 15 }
+      ];
+
+      bonuses.forEach(b => {
+        if (keywords.includes(b.word) && (dbName.includes(b.word) || dbId.includes(b.word))) {
+          score += b.weight;
+        }
+      });
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = tech;
+      }
+    }
+
+    return bestScore >= 5 ? bestMatch : null;
+  }
 }
